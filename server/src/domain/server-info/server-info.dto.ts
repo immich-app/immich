@@ -1,5 +1,6 @@
 import { FeatureFlags, IServerVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
+import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
 export class ServerPingResponse {
   @ApiResponseProperty({ type: String, example: 'pong' })
@@ -77,6 +78,10 @@ export class ServerMediaTypesResponseDto {
   video!: string[];
   image!: string[];
   sidecar!: string[];
+}
+
+export class ServerThemeDto {
+  theme!: SystemConfigThemeDto;
 }
 
 export class ServerConfigDto {

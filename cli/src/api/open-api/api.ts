@@ -2961,6 +2961,19 @@ export interface ServerStatsResponseDto {
 /**
  * 
  * @export
+ * @interface ServerThemeDto
+ */
+export interface ServerThemeDto {
+    /**
+     * 
+     * @type {SystemConfigThemeDto}
+     * @memberof ServerThemeDto
+     */
+    'theme': SystemConfigThemeDto;
+}
+/**
+ * 
+ * @export
  * @interface ServerVersionResponseDto
  */
 export interface ServerVersionResponseDto {
@@ -13207,6 +13220,35 @@ export const ServerInfoApiAxiosParamCreator = function (configuration?: Configur
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getTheme: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/server-info/theme`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         pingServer: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/server-info/ping`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -13300,6 +13342,15 @@ export const ServerInfoApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getTheme(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServerThemeDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTheme(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async pingServer(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServerPingResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.pingServer(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -13361,6 +13412,14 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
          */
         getSupportedMediaTypes(options?: AxiosRequestConfig): AxiosPromise<ServerMediaTypesResponseDto> {
             return localVarFp.getSupportedMediaTypes(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTheme(options?: AxiosRequestConfig): AxiosPromise<ServerThemeDto> {
+            return localVarFp.getTheme(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -13438,6 +13497,16 @@ export class ServerInfoApi extends BaseAPI {
      */
     public getSupportedMediaTypes(options?: AxiosRequestConfig) {
         return ServerInfoApiFp(this.configuration).getSupportedMediaTypes(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServerInfoApi
+     */
+    public getTheme(options?: AxiosRequestConfig) {
+        return ServerInfoApiFp(this.configuration).getTheme(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

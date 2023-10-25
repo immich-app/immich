@@ -47,6 +47,11 @@ void main() {
       // TODO
     });
 
+    //Future<ServerThemeDto> getTheme() async
+    test('test getTheme', () async {
+      // TODO
+    });
+
     //Future<ServerPingResponse> pingServer() async
     test('test pingServer', () async {
       // TODO

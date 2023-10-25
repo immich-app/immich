@@ -4126,6 +4126,27 @@
         ]
       }
     },
+    "/server-info/theme": {
+      "get": {
+        "operationId": "getTheme",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerThemeDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/version": {
       "get": {
         "operationId": "getServerVersion",
@@ -7809,6 +7830,17 @@
           "videos",
           "usage",
           "usageByUser"
+        ],
+        "type": "object"
+      },
+      "ServerThemeDto": {
+        "properties": {
+          "theme": {
+            "$ref": "#/components/schemas/SystemConfigThemeDto"
+          }
+        },
+        "required": [
+          "theme"
         ],
         "type": "object"
       },
