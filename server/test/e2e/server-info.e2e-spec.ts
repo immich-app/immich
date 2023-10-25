@@ -155,4 +155,16 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       });
     });
   });
+
+  describe('GET /server-info/theme', () => {
+    it('should respond with the server theme', async () => {
+      const { status, body } = await request(server).get('/server-info/theme');
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        theme: {
+          customCss: '',
+        },
+      });
+    });
+  });
 });
