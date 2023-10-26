@@ -33,6 +33,9 @@
   export let readonly = false;
   export let showArchiveIcon = false;
 
+  let className = '';
+  export { className as class };
+
   let mouseOver = false;
 
   $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
@@ -85,7 +88,7 @@
     on:keydown={thumbnailKeyDownHandler}
   >
     {#if intersecting}
-      <div class="absolute z-20 h-full w-full">
+      <div class="absolute z-20 h-full w-full {className}">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button

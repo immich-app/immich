@@ -26,6 +26,7 @@
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -54,8 +55,18 @@
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
 
-  $: hasStackedAssets = asset.stackCount > 0 && asset.stack;
+  $: {
+    if (asset.stackCount > 0 && asset.stack) {
+      $stackAssetsStore = asset.stack;
+      $stackAssetsStore = [...$stackAssetsStore, asset].sort(
+        (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
+      );
+    }
 
+    if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
+      $stackAssetsStore = [];
+    }
+  }
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
@@ -69,6 +80,15 @@
     // TODO: Move to regular import once the package correctly supports ESM.
     const module = await import('copy-image-clipboard');
     canCopyImagesToClipboard = module.canCopyImagesToClipboard();
+
+    if (asset.stackCount > 0 && asset.stack) {
+      $stackAssetsStore = asset.stack;
+      $stackAssetsStore = [...$stackAssetsStore, asset].sort(
+        (a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime(),
+      );
+    } else {
+      $stackAssetsStore = [];
+    }
   });
 
   onDestroy(() => {
@@ -452,12 +472,18 @@
   </div>
 
   <!-- Stack & Stack Controller -->
-  {#if hasStackedAssets && asset.stack != null}
+  {#if $stackAssetsStore.length > 0}
     <div class="z-[1005] w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar">
       <div class="relative whitespace-nowrap transition-all inline-block">
-        {#each asset.stack as stackedAsset (stackedAsset.id)}
+        {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
           <div class="relative mr-1 inline-block aspect-square h-[125px] rounded-xl">
-            <Thumbnail asset={stackedAsset} on:click={() => {}} on:select={() => {}} readonly thumbnailSize={125} />
+            <Thumbnail
+              class="{stackedAsset.id == asset.id ? 'bg-transparent' : 'bg-gray-700/50'} hover:bg-transparent"
+              asset={stackedAsset}
+              on:click={() => (asset = stackedAsset)}
+              readonly
+              thumbnailSize={125}
+            />
           </div>
         {/each}
       </div>
@@ -548,7 +574,7 @@
 
   /* Handle on hover */
   .horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #4250afad;
+    background: #adcbfa;
     border-radius: 16px;
   }
 </style>
