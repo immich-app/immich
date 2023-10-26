@@ -25,6 +25,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -56,9 +57,7 @@
   $: hasStackedAssets = asset.stackCount > 0 && asset.stack;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
-  $: {
-    console.log(asset.stackCount);
-  }
+
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
 
@@ -450,26 +449,21 @@
         />
       {/if}
     {/key}
+  </div>
 
-    {#if hasStackedAssets && asset.stack != null}
-      <div class="z-[1005] w-full col-span-4 col-start-1 absolute bottom-0 overflow-x-auto">
-        <div class="relative whitespace-nowrap transition-all">
-          <div class="inline-block border-red-300 border-2">
-            {#each asset.stack as stackedAsset (stackedAsset.id)}
-              <button class="relative mr-1 inline-block aspect-square h-[125px] rounded-xl" on:click={() => {}}>
-                <img
-                  class="h-full w-full rounded-xl object-cover"
-                  src={api.getAssetThumbnailUrl(stackedAsset.id, 'JPEG')}
-                  alt={stackedAsset.id}
-                  draggable="false"
-                />
-              </button>
-            {/each}
-          </div>
+  {#if hasStackedAssets && asset.stack != null}
+    <div class="z-[1005] w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar">
+      <div class="relative whitespace-nowrap transition-all">
+        <div class="inline-block">
+          {#each asset.stack as stackedAsset (stackedAsset.id)}
+            <div class="relative mr-1 inline-block aspect-square h-[125px] rounded-xl">
+              <Thumbnail asset={stackedAsset} on:click={() => {}} on:select={() => {}} readonly thumbnailSize={125} />
+            </div>
+          {/each}
         </div>
       </div>
-    {/if}
-  </div>
+    </div>
+  {/if}
 
   {#if !isSlideshowMode && showNavigation}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
@@ -534,5 +528,28 @@
 <style>
   #immich-asset-viewer {
     contain: layout;
+  }
+
+  .horizontal-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 10px;
+  }
+
+  /* Track */
+  .horizontal-scrollbar::-webkit-scrollbar-track {
+    background: #000000;
+    border-radius: 16px;
+  }
+
+  /* Handle */
+  .horizontal-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(159, 159, 159, 0.408);
+    border-radius: 16px;
+  }
+
+  /* Handle on hover */
+  .horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4250afad;
+    border-radius: 16px;
   }
 </style>
