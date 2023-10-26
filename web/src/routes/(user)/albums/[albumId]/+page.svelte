@@ -34,7 +34,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { TimeBucketSize, UserResponseDto, api } from '@api';
+  import { UserResponseDto, api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -76,11 +76,11 @@
   let currentAlbumName = '';
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id });
+  const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  const timelineStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: false }, album.id);
+  const timelineStore = new AssetStore({ isArchived: false }, album.id);
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 

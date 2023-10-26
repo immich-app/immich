@@ -10,14 +10,13 @@
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { TimeBucketSize } from '@api';
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
   import { mdiPlus, mdiArrowLeft } from '@mdi/js';
 
   export let data: PageData;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, userId: data.partner.id, isArchived: false });
+  const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
