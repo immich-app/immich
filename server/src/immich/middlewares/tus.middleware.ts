@@ -3,12 +3,13 @@ import { AuthService } from '@app/domain/auth/auth.service';
 import { AssetService as AssetServiceV1 } from '@app/immich/api-v1/asset/asset.service';
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { EVENTS, Upload } from '@tus/server';
+import { plainToInstance } from 'class-transformer';
 import { NextFunction } from 'express';
 import { IncomingMessage, ServerResponse } from 'http';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { CreateAssetDto } from '../api-v1/asset/dto/create-asset.dto';
+import { CreateAssetDto, CreateTusAssetDto } from '../api-v1/asset/dto/create-asset.dto';
 import { TusService } from '../api-v1/asset/tus.service';
 
 @Injectable()
@@ -50,27 +51,13 @@ export class TusMiddleware implements NestMiddleware {
     }
 
     this.tusService.getServer(user.id, (server) => {
-      server.addListener(EVENTS.POST_CREATE, (req, res, upload: Upload, url: string) => {
-        this.logger.log(`Upload ${JSON.stringify(upload)}`);
-        this.logger.log(`URL ${url}`);
-      });
-
       server.addListener(EVENTS.POST_FINISH, async (req, res, upload: Upload) => {
         const file = this.mapUploadToUploadFile(upload, user.id);
-        const metadata = upload.metadata ?? {};
-        const dto: CreateAssetDto = {
-          deviceAssetId: metadata['deviceAssetId'] ?? '',
-          deviceId: metadata['deviceId'] ?? '',
-          fileCreatedAt: new Date(metadata['fileCreatedAt'] ?? ''),
-          fileModifiedAt: new Date(metadata['fileModifiedAt'] ?? ''),
-          isFavorite: (metadata['isFavorite'] ?? 'false') === 'true',
-          duration: metadata['duration'] ?? '',
-          assetData: new File([file.originalPath], metadata['filename'] ?? ''),
-        };
-
+        if (await this.tusService.validateMetadata(upload)) {
+          const dto: CreateAssetDto = plainToInstance(CreateTusAssetDto, upload.metadata);
         // TODO async stuff?
         await this.assetV1Service.uploadFile(user, dto, file, undefined, undefined);
-        this.logger.log(`Uploaded to asset service with ${JSON.stringify(dto)}, file ${JSON.stringify(file)}`);
+        }
       });
     });
 
@@ -79,7 +66,6 @@ export class TusMiddleware implements NestMiddleware {
 
   mapUploadToUploadFile(upload: Upload, userId: string): UploadFile {
     const uploadedPath = join(StorageCore.getBaseFolder(StorageFolder.TUS_PARTIAL), userId, upload.id);
-    this.logger.log(`uploaded path: ${uploadedPath}`);
     const hash = createHash('sha1');
     const fileBuffer = readFileSync(uploadedPath);
     hash.update(fileBuffer);

@@ -1,10 +1,13 @@
 import { StorageCore, StorageFolder } from '@app/domain';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { FileStore } from '@tus/file-store';
-import { EVENTS, Server } from '@tus/server';
+import { EVENTS, Server, Upload } from '@tus/server';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { IncomingMessage, ServerResponse } from 'http';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
+import { CreateTusAssetDto } from './dto/create-asset.dto';
 
 @Injectable()
 export class TusService implements OnModuleInit {
@@ -50,6 +53,14 @@ export class TusService implements OnModuleInit {
 
         return randomBytes(16).toString('hex') + '.' + extension;
       },
+      onUploadCreate: async (req, res, upload) => {
+        const isValid = await this.validateMetadata(upload);
+        if (!isValid) {
+          throw { status_code: 500, body: 'Metadata sent is invalid' }; // if undefined, falls back to 500 with "Internal server error".
+        }
+        // We have to return the (modified) response.
+        return res;
+      },
     });
 
     this.tusServers[userId].on(EVENTS.POST_FINISH, (req, res, upload) => {
@@ -82,5 +93,19 @@ export class TusService implements OnModuleInit {
     });
 
     return metadata;
+  }
+
+  async validateMetadata(upload: Upload): Promise<boolean> {
+    const errors = await validate(plainToInstance(CreateTusAssetDto, upload.metadata), {
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+    });
+
+    if (errors.length > 0) {
+      this.logger.error('Validation for upload metadata sent from client error', errors);
+      return false;
+    }
+
+    return true;
   }
 }

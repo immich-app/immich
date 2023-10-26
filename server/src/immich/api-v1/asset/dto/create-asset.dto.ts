@@ -70,6 +70,12 @@ export class CreateAssetDto extends CreateAssetBase {
   [UploadFieldName.SIDECAR_DATA]?: any;
 }
 
+export class CreateTusAssetDto extends CreateAssetDto {
+  @Optional()
+  @IsString()
+  filename?: string;
+}
+
 export class ImportAssetDto extends CreateAssetBase {
   @Optional()
   @IsBoolean()
