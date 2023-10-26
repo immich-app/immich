@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
-import { AUDIT_LOG_MAX_DURATION } from '../domain.constant';
+import { AUDIT_LOG_CLEANUP_DURATION, AUDIT_LOG_MAX_DURATION } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import {
@@ -44,7 +44,7 @@ export class AuditService {
   }
 
   async handleCleanup(): Promise<boolean> {
-    await this.repository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
+    await this.repository.removeBefore(DateTime.now().minus(AUDIT_LOG_CLEANUP_DURATION).toJSDate());
     return true;
   }
 
@@ -52,15 +52,16 @@ export class AuditService {
     const userId = dto.userId || authUser.id;
     await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
 
+    const now = DateTime.utc();
+    const duration = now.diff(DateTime.fromJSDate(dto.after));
     const audits = await this.repository.getAfter(dto.after, {
       ownerId: userId,
       entityType: dto.entityType,
       action: DatabaseAction.DELETE,
     });
 
-    const duration = DateTime.now().diff(DateTime.fromJSDate(dto.after));
-
     return {
+      timeOfRequest: now.toJSDate(),
       needsFullSync: duration > AUDIT_LOG_MAX_DURATION,
       ids: audits.map(({ entityId }) => entityId),
     };

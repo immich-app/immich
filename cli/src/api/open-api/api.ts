@@ -959,6 +959,12 @@ export interface AuditDeletesResponseDto {
      * @memberof AuditDeletesResponseDto
      */
     'needsFullSync': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof AuditDeletesResponseDto
+     */
+    'timeOfRequest'?: string;
 }
 /**
  * 

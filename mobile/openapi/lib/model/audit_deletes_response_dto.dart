@@ -15,30 +15,46 @@ class AuditDeletesResponseDto {
   AuditDeletesResponseDto({
     this.ids = const [],
     required this.needsFullSync,
+    this.timeOfRequest,
   });
 
   List<String> ids;
 
   bool needsFullSync;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? timeOfRequest;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AuditDeletesResponseDto &&
      other.ids == ids &&
-     other.needsFullSync == needsFullSync;
+     other.needsFullSync == needsFullSync &&
+     other.timeOfRequest == timeOfRequest;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (ids.hashCode) +
-    (needsFullSync.hashCode);
+    (needsFullSync.hashCode) +
+    (timeOfRequest == null ? 0 : timeOfRequest!.hashCode);
 
   @override
-  String toString() => 'AuditDeletesResponseDto[ids=$ids, needsFullSync=$needsFullSync]';
+  String toString() => 'AuditDeletesResponseDto[ids=$ids, needsFullSync=$needsFullSync, timeOfRequest=$timeOfRequest]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'ids'] = this.ids;
       json[r'needsFullSync'] = this.needsFullSync;
+    if (this.timeOfRequest != null) {
+      json[r'timeOfRequest'] = this.timeOfRequest!.toUtc().toIso8601String();
+    } else {
+    //  json[r'timeOfRequest'] = null;
+    }
     return json;
   }
 
@@ -54,6 +70,7 @@ class AuditDeletesResponseDto {
             ? (json[r'ids'] as List).cast<String>()
             : const [],
         needsFullSync: mapValueOfType<bool>(json, r'needsFullSync')!,
+        timeOfRequest: mapDateTime(json, r'timeOfRequest', ''),
       );
     }
     return null;

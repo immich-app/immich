@@ -30,6 +30,7 @@ export enum PathEntityType {
 export class AuditDeletesResponseDto {
   needsFullSync!: boolean;
   ids!: string[];
+  timeOfRequest?: Date;
 }
 
 export class FileReportDto {

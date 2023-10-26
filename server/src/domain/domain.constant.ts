@@ -4,6 +4,7 @@ import { extname } from 'node:path';
 import pkg from 'src/../../package.json';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
+export const AUDIT_LOG_CLEANUP_DURATION = Duration.fromObject({ days: 101 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
 export interface IServerVersion {
@@ -13,11 +14,7 @@ export interface IServerVersion {
 }
 
 export class ServerVersion implements IServerVersion {
-  constructor(
-    public readonly major: number,
-    public readonly minor: number,
-    public readonly patch: number,
-  ) {}
+  constructor(public readonly major: number, public readonly minor: number, public readonly patch: number) {}
 
   toString() {
     return `${this.major}.${this.minor}.${this.patch}`;
@@ -131,7 +128,7 @@ const sidecar: Record<string, string[]> = {
 const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
 
 const lookup = (filename: string) =>
-  ({ ...image, ...video, ...sidecar })[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
+  ({ ...image, ...video, ...sidecar }[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream');
 
 export const mimeTypes = {
   image,

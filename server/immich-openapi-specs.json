@@ -6826,6 +6826,10 @@
           },
           "needsFullSync": {
             "type": "boolean"
+          },
+          "timeOfRequest": {
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [
