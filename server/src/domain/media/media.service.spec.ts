@@ -1515,6 +1515,7 @@ describe(MediaService.name, () => {
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.RKMPP },
         { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
       ]);
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
@@ -1524,7 +1525,7 @@ describe(MediaService.name, () => {
         {
           inputOptions: [],
           outputOptions: [
-            `-c:v h264_rkmpp_encoder`,
+            `-c:v hevc_rkmpp_encoder`,
             '-c:a aac',
             '-movflags faststart',
             '-fps_mode passthrough',
@@ -1571,7 +1572,7 @@ describe(MediaService.name, () => {
             '-map 0:1',
             '-g 256',
             '-v verbose',
-            '-level 153',
+            '-level 51',
             '-rc_mode 2',
             '-quality_min 51',
             '-quality_max 51',

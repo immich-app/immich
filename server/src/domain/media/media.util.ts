@@ -564,7 +564,10 @@ export class VAAPIConfig extends BaseHWConfig {
 }
 
 export class RKMPPConfig extends BaseHWConfig {
-  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo | undefined): TranscodeOptions {
+  getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo): TranscodeOptions {
+    if (this.config.twoPass) {
+      throw Error('RKMPP is incompatible with twoPass');
+    }
     const options = super.getOptions(videoStream, audioStream);
     options.ffmpegPath = 'ffmpeg_mpp';
     options.ldLibraryPath = '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp';
@@ -580,11 +583,7 @@ export class RKMPPConfig extends BaseHWConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = [];
-    if (this.shouldToneMap(videoStream)) {
-      options.push(...this.getToneMapping());
-    }
-    return options;
+    return this.shouldToneMap(videoStream) ? this.getToneMapping() : [];
   }
 
   getSizeOptions(videoStream: VideoStreamInfo) {
@@ -596,7 +595,16 @@ export class RKMPPConfig extends BaseHWConfig {
   }
 
   getPresetOptions() {
-    return ['-level 153'];
+    switch (this.config.targetVideoCodec) {
+      case VideoCodec.H264:
+        // from ffmpeg_mpp help, commonly referred to as H264 level 5.1
+        return ['-level 51'];
+      case VideoCodec.HEVC:
+        // from ffmpeg_mpp help, commonly referred to as HEVC level 5.1
+        return ['-level 153'];
+      default:
+        throw Error(`Incompatible video codec for RKMPP: ${this.config.targetVideoCodec}`);
+    }
   }
 
   getBitrateOptions() {
@@ -604,8 +612,8 @@ export class RKMPPConfig extends BaseHWConfig {
     if (bitrate > 0) {
       return ['-rc_mode 3', '-quality_min 0', '-quality_max 100', `-b:v ${bitrate}${this.getBitrateUnit()}`];
     } else {
-      // convert CQP from 51-10 to 0-100
-      const quality = Math.floor(125 - this.config.crf * 2.45);
+      // convert CQP from 51-10 to 0-100, values below 10 are set to 10
+      const quality = Math.floor(125 - Math.max(this.config.crf, 10) * (125 / 51));
       return ['-rc_mode 2', `-quality_min ${quality}`, `-quality_max ${quality}`];
     }
   }
