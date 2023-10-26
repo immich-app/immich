@@ -15,7 +15,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { api, TimeBucketSize } from '@api';
+  import { api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
@@ -28,7 +28,7 @@
 
   $: $featureFlags.trash || goto(AppRoute.PHOTOS);
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, isTrashed: true });
+  const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
   let isShowEmptyConfirmation = false;
