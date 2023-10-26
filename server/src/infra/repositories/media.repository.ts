@@ -76,17 +76,7 @@ export class MediaRepository implements IMediaRepository {
           process.env['LD_LIBRARY_PATH'] = (oldLdLibraryPath || '') + options.ldLibraryPath;
         }
         try {
-          ffmpeg(input, { niceness: 10 })
-            .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
-            .inputOptions(options.inputOptions)
-            .outputOptions(options.outputOptions)
-            .output(output)
-            .on('error', (err, stdout, stderr) => {
-              this.logger.error(stderr);
-              reject(err);
-            })
-            .on('end', resolve)
-            .run();
+          this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
         } finally {
           if (options.ldLibraryPath) {
             process.env['LD_LIBRARY_PATH'] = oldLdLibraryPath;
@@ -102,29 +92,18 @@ export class MediaRepository implements IMediaRepository {
     // two-pass allows for precise control of bitrate at the cost of running twice
     // recommended for vp9 for better quality and compression
     return new Promise((resolve, reject) => {
-      ffmpeg(input, { niceness: 10 })
-        .inputOptions(options.inputOptions)
-        .outputOptions(options.outputOptions)
+      // first pass output is not saved as only the .log file is needed
+      this.configureFfmpegCall(input, '/dev/null', options)
         .addOptions('-pass', '1')
         .addOptions('-passlogfile', output)
         .addOptions('-f null')
-        .output('/dev/null') // first pass output is not saved as only the .log file is needed
-        .on('error', (err, stdout, stderr) => {
-          this.logger.error(stderr);
-          reject(err);
-        })
+        .on('error', reject)
         .on('end', () => {
           // second pass
-          ffmpeg(input, { niceness: 10 })
-            .inputOptions(options.inputOptions)
-            .outputOptions(options.outputOptions)
+          this.configureFfmpegCall(input, output, options)
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
-            .output(output)
-            .on('error', (err, stdout, stderr) => {
-              this.logger.error(stderr);
-              reject(err);
-            })
+            .on('error', reject)
             .on('end', () => fs.unlink(`${output}-0.log`))
             .on('end', () => fs.rm(`${output}-0.log.mbtree`, { force: true }))
             .on('end', resolve)
@@ -132,6 +111,15 @@ export class MediaRepository implements IMediaRepository {
         })
         .run();
     });
+  }
+
+  configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
+    return ffmpeg(input, { niceness: 10 })
+      .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
+      .inputOptions(options.inputOptions)
+      .outputOptions(options.outputOptions)
+      .output(output)
+      .on('error', (err, stdout, stderr) => this.logger.error(stderr));
   }
 
   async generateThumbhash(imagePath: string): Promise<Buffer> {
