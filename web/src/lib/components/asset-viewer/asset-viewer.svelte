@@ -451,16 +451,15 @@
     {/key}
   </div>
 
+  <!-- Stack & Stack Controller -->
   {#if hasStackedAssets && asset.stack != null}
     <div class="z-[1005] w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar">
-      <div class="relative whitespace-nowrap transition-all">
-        <div class="inline-block">
-          {#each asset.stack as stackedAsset (stackedAsset.id)}
-            <div class="relative mr-1 inline-block aspect-square h-[125px] rounded-xl">
-              <Thumbnail asset={stackedAsset} on:click={() => {}} on:select={() => {}} readonly thumbnailSize={125} />
-            </div>
-          {/each}
-        </div>
+      <div class="relative whitespace-nowrap transition-all inline-block">
+        {#each asset.stack as stackedAsset (stackedAsset.id)}
+          <div class="relative mr-1 inline-block aspect-square h-[125px] rounded-xl">
+            <Thumbnail asset={stackedAsset} on:click={() => {}} on:select={() => {}} readonly thumbnailSize={125} />
+          </div>
+        {/each}
       </div>
     </div>
   {/if}
