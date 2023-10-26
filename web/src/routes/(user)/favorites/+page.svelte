@@ -14,13 +14,12 @@
   import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { TimeBucketSize } from '@api';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
 
   export let data: PageData;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, isFavorite: true });
+  const assetStore = new AssetStore({ isFavorite: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 

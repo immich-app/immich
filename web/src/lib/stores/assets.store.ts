@@ -1,4 +1,4 @@
-import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto } from '@api';
+import { api, AssetApiGetTimeBucketsRequest, AssetResponseDto, TimeBucketSize } from '@api';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { Unsubscriber, writable } from 'svelte/store';
@@ -12,7 +12,7 @@ export enum BucketPosition {
   Unknown = 'unknown',
 }
 
-export type AssetStoreOptions = AssetApiGetTimeBucketsRequest;
+export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
 
 export interface Viewport {
   width: number;
@@ -64,6 +64,7 @@ export class AssetStore {
   private assetToBucket: Record<string, AssetLookup> = {};
   private pendingChanges: PendingChange[] = [];
   private unsubscribers: Unsubscriber[] = [];
+  private options: AssetApiGetTimeBucketsRequest;
 
   initialized = false;
   timelineHeight = 0;
@@ -71,7 +72,8 @@ export class AssetStore {
   assets: AssetResponseDto[] = [];
   albumAssets: Set<string> = new Set();
 
-  constructor(private options: AssetStoreOptions, private albumId?: string) {
+  constructor(options: AssetStoreOptions, private albumId?: string) {
+    this.options = { ...options, size: TimeBucketSize.Month };
     this.store$.set(this);
   }
 

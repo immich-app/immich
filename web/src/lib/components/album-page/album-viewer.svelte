@@ -5,7 +5,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { locale } from '$lib/stores/preferences.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { TimeBucketSize, type AlbumResponseDto, type SharedLinkResponseDto } from '@api';
+  import type { AlbumResponseDto, SharedLinkResponseDto } from '@api';
   import { onDestroy, onMount } from 'svelte';
   import { dateFormats } from '../../constants';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
@@ -27,7 +27,7 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id });
+  const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
