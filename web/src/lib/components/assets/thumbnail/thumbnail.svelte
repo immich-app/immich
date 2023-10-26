@@ -145,7 +145,7 @@
         {/if}
 
         <!-- Stacked asset -->
-        {#if asset.stackCount > 0}
+        {#if asset.stackCount && asset.stackCount > 0}
           <div class="absolute right-1 bottom-2 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pr-2 pt-2">
               <Icon path={mdiCameraBurst} size="24" />
