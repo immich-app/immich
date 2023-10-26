@@ -3261,10 +3261,10 @@ export interface SystemConfigDto {
     'job': SystemConfigJobDto;
     /**
      * 
-     * @type {SystemConfigLibraryScanDto}
+     * @type {SystemConfigLibraryDto}
      * @memberof SystemConfigDto
      */
-    'libraryScan': SystemConfigLibraryScanDto;
+    'library': SystemConfigLibraryDto;
     /**
      * 
      * @type {SystemConfigMachineLearningDto}
@@ -3515,6 +3515,19 @@ export interface SystemConfigJobDto {
      * @memberof SystemConfigJobDto
      */
     'videoConversion': JobSettingsDto;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigLibraryDto
+ */
+export interface SystemConfigLibraryDto {
+    /**
+     * 
+     * @type {SystemConfigLibraryScanDto}
+     * @memberof SystemConfigLibraryDto
+     */
+    'scan': SystemConfigLibraryScanDto;
 }
 /**
  * 
