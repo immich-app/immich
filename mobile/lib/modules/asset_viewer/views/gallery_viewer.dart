@@ -83,7 +83,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         navStack.length > 2 &&
         navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
     final stackIndex = useState(-1);
-    final stack = showStack && currentAsset.stackCount > 0
+    final stack = showStack && currentAsset.stackChildrenCount > 0
         ? ref.watch(assetStackStateProvider(currentAsset))
         : <Asset>[];
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
