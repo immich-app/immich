@@ -56,7 +56,7 @@
   let canCopyImagesToClipboard: boolean;
 
   $: {
-    if (asset.stackCount > 0 && asset.stack) {
+    if (asset.stackCount && asset.stack) {
       $stackAssetsStore = asset.stack;
       $stackAssetsStore = [...$stackAssetsStore, asset].sort(
         (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
@@ -81,7 +81,7 @@
     const module = await import('copy-image-clipboard');
     canCopyImagesToClipboard = module.canCopyImagesToClipboard();
 
-    if (asset.stackCount > 0 && asset.stack) {
+    if (asset.stackCount && asset.stack) {
       $stackAssetsStore = asset.stack;
       $stackAssetsStore = [...$stackAssetsStore, asset].sort(
         (a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime(),
