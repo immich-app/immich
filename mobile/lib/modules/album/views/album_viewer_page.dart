@@ -164,8 +164,13 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget buildAlbumDateRange(Album album) {
-      final DateTime startDate = album.assets.first.fileCreatedAt;
-      final DateTime endDate = album.assets.last.fileCreatedAt; //Need default.
+      final DateTime? startDate = album.startDate;
+      final DateTime? endDate = album.endDate;
+
+      if (startDate == null || endDate == null) {
+        return const SizedBox();
+      }
+
       final String startDateText = (startDate.year == endDate.year
               ? DateFormat.MMMd()
               : DateFormat.yMMMd())

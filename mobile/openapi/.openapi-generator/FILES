@@ -115,6 +115,7 @@ doc/ServerInfoResponseDto.md
 doc/ServerMediaTypesResponseDto.md
 doc/ServerPingResponse.md
 doc/ServerStatsResponseDto.md
+doc/ServerThemeDto.md
 doc/ServerVersionResponseDto.md
 doc/SharedLinkApi.md
 doc/SharedLinkCreateDto.md
@@ -285,6 +286,7 @@ lib/model/server_info_response_dto.dart
 lib/model/server_media_types_response_dto.dart
 lib/model/server_ping_response.dart
 lib/model/server_stats_response_dto.dart
+lib/model/server_theme_dto.dart
 lib/model/server_version_response_dto.dart
 lib/model/shared_link_create_dto.dart
 lib/model/shared_link_edit_dto.dart
@@ -438,6 +440,7 @@ test/server_info_response_dto_test.dart
 test/server_media_types_response_dto_test.dart
 test/server_ping_response_test.dart
 test/server_stats_response_dto_test.dart
+test/server_theme_dto_test.dart
 test/server_version_response_dto_test.dart
 test/shared_link_api_test.dart
 test/shared_link_create_dto_test.dart

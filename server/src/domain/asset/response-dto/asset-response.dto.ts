@@ -45,7 +45,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   stackParentId?: string | null;
   stack?: AssetResponseDto[];
   @ApiProperty({ type: 'integer' })
-  stackCount!: number;
+  stackCount!: number | null;
 }
 
 export type AssetMapOptions = {
@@ -102,7 +102,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     checksum: entity.checksum.toString('base64'),
     stackParentId: entity.stackParentId,
     stack: withStack ? entity.stack?.map((a) => mapAsset(a, { stripMetadata })) ?? undefined : undefined,
-    stackCount: entity.stack?.length ?? 0,
+    stackCount: entity.stack?.length ?? null,
     isExternal: entity.isExternal,
     isOffline: entity.isOffline,
     isReadOnly: entity.isReadOnly,

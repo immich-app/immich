@@ -262,6 +262,47 @@ class ServerInfoApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /server-info/theme' operation and returns the [Response].
+  Future<Response> getThemeWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/server-info/theme';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<ServerThemeDto?> getTheme() async {
+    final response = await getThemeWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ServerThemeDto',) as ServerThemeDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /server-info/ping' operation and returns the [Response].
   Future<Response> pingServerWithHttpInfo() async {
     // ignore: prefer_const_declarations

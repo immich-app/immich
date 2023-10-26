@@ -165,6 +165,7 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
+*ServerInfoApi* | [**getTheme**](doc//ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 *SharedLinkApi* | [**addSharedLinkAssets**](doc//SharedLinkApi.md#addsharedlinkassets) | **PUT** /shared-link/{id}/assets | 
 *SharedLinkApi* | [**createSharedLink**](doc//SharedLinkApi.md#createsharedlink) | **POST** /shared-link | 
@@ -300,6 +301,7 @@ Class | Method | HTTP request | Description
  - [ServerMediaTypesResponseDto](doc//ServerMediaTypesResponseDto.md)
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
+ - [ServerThemeDto](doc//ServerThemeDto.md)
  - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)

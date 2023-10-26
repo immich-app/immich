@@ -104,16 +104,16 @@ class ThumbnailImage extends StatelessWidget {
         right: 5,
         child: Row(
           children: [
-            if (asset.stackCount > 1)
+            if (asset.stackChildrenCount > 1)
               Text(
-                "${asset.stackCount}",
+                "${asset.stackChildrenCount}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            if (asset.stackCount > 1)
+            if (asset.stackChildrenCount > 1)
               const SizedBox(
                 width: 3,
               ),
@@ -233,7 +233,7 @@ class ThumbnailImage extends StatelessWidget {
               ),
             ),
           if (!asset.isImage) buildVideoIcon(),
-          if (asset.isImage && asset.stackCount > 0) buildStackIcon(),
+          if (asset.isImage && asset.stackChildrenCount > 0) buildStackIcon(),
         ],
       ),
     );

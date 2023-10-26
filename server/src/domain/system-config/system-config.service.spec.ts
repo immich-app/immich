@@ -298,4 +298,10 @@ describe(SystemConfigService.name, () => {
       subscription.unsubscribe();
     });
   });
+
+  describe('getTheme', () => {
+    it('should return the default theme', async () => {
+      await expect(sut.getTheme()).resolves.toEqual(defaults.theme);
+    });
+  });
 });
