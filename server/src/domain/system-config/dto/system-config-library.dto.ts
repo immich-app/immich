@@ -1,3 +1,4 @@
+import { validateCronExpression } from '@app/domain';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -10,20 +11,13 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { CronJob } from 'cron';
 
 const isEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 
 @ValidatorConstraint({ name: 'cronValidator' })
 class CronValidator implements ValidatorConstraintInterface {
   validate(expression: string): boolean {
-    try {
-      new CronJob(expression, () => {});
-    } catch (error) {
-      return false;
-    }
-
-    return true;
+    return validateCronExpression(expression);
   }
 }
 

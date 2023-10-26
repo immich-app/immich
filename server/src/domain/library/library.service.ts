@@ -10,8 +10,6 @@ import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
-import { CronJob, CronTime } from 'cron';
-import { SystemConfigCore } from '..';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -23,6 +21,7 @@ import {
   IUserRepository,
   WithProperty,
 } from '../repositories';
+import { SystemConfigCore } from '../system-config';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -50,34 +49,22 @@ export class LibraryService {
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
+    this.configCore.addValidator((config) => jobRepository.validateCronExpression(config.library.scan.cronExpression));
   }
 
   async init() {
     const config = await this.configCore.getConfig();
-    const libraryScanJob = new CronJob(
+    this.jobRepository.addCronJob(
+      'libraryScan',
       config.library.scan.cronExpression,
       async () => {
         await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
       },
-      // function to run onComplete
-      undefined,
-      // whether it should start directly
       config.library.scan.enabled,
-      // timezone
-      undefined,
-      // context
-      undefined,
-      // runOnInit
-      undefined,
-      // utcOffset
-      undefined,
-      // prevents memory leaking by automatically stopping when the node process finishes
-      true,
     );
 
     this.configCore.config$.subscribe((config) => {
-      libraryScanJob.setTime(new CronTime(config.library.scan.cronExpression));
-      config.library.scan.enabled ? libraryScanJob.start() : libraryScanJob.stop();
+      this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
     });
   }
 
