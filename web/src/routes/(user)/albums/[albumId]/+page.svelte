@@ -46,6 +46,7 @@
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import ImageThumbnail from '../../../../lib/components/assets/thumbnail/image-thumbnail.svelte';
 
   export let data: PageData;
 
@@ -53,6 +54,7 @@
 
   let album = data.album;
   $: album = data.album;
+  $: albumPersons = data.albumPersons;
 
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
@@ -507,6 +509,22 @@
               {album.description || 'Add description'}
             </button>
           {/if}
+          {#if albumPersons.length}
+            <div class="personWrapper">
+              {#each albumPersons as person}
+                <button>
+                  <ImageThumbnail
+                    circle
+                    shadow
+                    url={api.getPeopleThumbnailUrl(person.id)}
+                    altText={person.name}
+                    widthStyle="3.375rem"
+                    heightStyle="3.375rem"
+                  />
+                </button>
+              {/each}
+            </div>
+          {/if}
         </section>
       {/if}
 
@@ -570,3 +588,12 @@
     on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}
+
+<style>
+  .personWrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>
