@@ -28,7 +28,7 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { SlideshowState, assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
@@ -52,7 +52,7 @@
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer, setAssetId, slideshow, slideshowShuffle } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId, slideshowState, slideshowShuffle } = assetViewingStore;
 
   let album = data.album;
   $: album = data.album;
@@ -112,7 +112,7 @@
     const asset = $slideshowShuffle ? assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
       setAssetId(asset.id);
-      $slideshow = true;
+      $slideshowState = SlideshowState.PlaySlideshow;
     }
   };
 
