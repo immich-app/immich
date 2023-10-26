@@ -56,7 +56,9 @@
   $: hasStackedAssets = asset.stackCount > 0 && asset.stack;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
-
+  $: {
+    console.log(asset.stackCount);
+  }
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
 

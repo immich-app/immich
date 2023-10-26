@@ -9,6 +9,7 @@
   import VideoThumbnail from './video-thumbnail.svelte';
   import {
     mdiArchiveArrowDownOutline,
+    mdiCameraBurst,
     mdiCheckCircle,
     mdiHeart,
     mdiImageBrokenVariant,
@@ -136,6 +137,15 @@
           <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pr-2 pt-2">
               <Icon path={mdiRotate360} size="24" />
+            </span>
+          </div>
+        {/if}
+
+        <!-- Stacked asset -->
+        {#if asset.stackCount > 0}
+          <div class="absolute right-1 bottom-2 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pr-2 pt-2">
+              <Icon path={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
