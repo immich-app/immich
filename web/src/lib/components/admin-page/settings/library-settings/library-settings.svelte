@@ -10,6 +10,7 @@
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../../../utils/handle-error';
+  import SettingAccordion from '../setting-accordion.svelte';
 
   export let libraryConfig: SystemConfigLibraryDto; // this is the config that is being edited
   export let disabled = false;
@@ -82,61 +83,63 @@
 <div>
   {#await getConfigs() then}
     <div in:fade={{ duration: 500 }}>
-      <form autocomplete="off" on:submit|preventDefault>
-        <div class="ml-4 mt-4 flex flex-col gap-4">
-          <SettingSwitch
-            title="ENABLED"
-            {disabled}
-            subtitle="Enable automatic library scanning"
-            bind:checked={libraryConfig.scan.enabled}
-          />
+      <SettingAccordion title="Scanning" subtitle="Settings for library scanning" isOpen>
+        <form autocomplete="off" on:submit|preventDefault>
+          <div class="ml-4 mt-4 flex flex-col gap-4">
+            <SettingSwitch
+              title="ENABLED"
+              {disabled}
+              subtitle="Enable automatic library scanning"
+              bind:checked={libraryConfig.scan.enabled}
+            />
 
-          <div class="flex flex-col my-2 dark:text-immich-dark-fg">
-            <label class="text-sm" for="expression-select">Cron Expression Presets</label>
-            <select
-              class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
+            <div class="flex flex-col my-2 dark:text-immich-dark-fg">
+              <label class="text-sm" for="expression-select">Cron Expression Presets</label>
+              <select
+                class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
+                disabled={disabled || !libraryConfig.scan.enabled}
+                name="expression"
+                id="expression-select"
+                bind:value={libraryConfig.scan.cronExpression}
+              >
+                {#each cronExpressionOptions as { title, expression }}
+                  <option value={expression}>{title}</option>
+                {/each}
+              </select>
+            </div>
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              required={true}
               disabled={disabled || !libraryConfig.scan.enabled}
-              name="expression"
-              id="expression-select"
+              label="Cron Expression"
               bind:value={libraryConfig.scan.cronExpression}
+              isEdited={libraryConfig.scan.cronExpression !== savedConfig.scan.cronExpression}
             >
-              {#each cronExpressionOptions as { title, expression }}
-                <option value={expression}>{title}</option>
-              {/each}
-            </select>
+              <svelte:fragment slot="desc">
+                <p class="text-sm dark:text-immich-dark-fg">
+                  Set the scanning interval using the cron format. For more information please refer to e.g. <a
+                    href="https://crontab.guru"
+                    class="underline"
+                    target="_blank"
+                    rel="noreferrer">Crontab Guru</a
+                  >
+                </p>
+              </svelte:fragment>
+            </SettingInputField>
           </div>
 
-          <SettingInputField
-            inputType={SettingInputFieldType.TEXT}
-            required={true}
-            disabled={disabled || !libraryConfig.scan.enabled}
-            label="Cron Expression"
-            bind:value={libraryConfig.scan.cronExpression}
-            isEdited={libraryConfig.scan.cronExpression !== savedConfig.scan.cronExpression}
-          >
-            <svelte:fragment slot="desc">
-              <p class="text-sm dark:text-immich-dark-fg">
-                Set the scanning interval using the cron format. For more information please refer to e.g. <a
-                  href="https://crontab.guru"
-                  class="underline"
-                  target="_blank"
-                  rel="noreferrer">Crontab Guru</a
-                >
-              </p>
-            </svelte:fragment>
-          </SettingInputField>
-        </div>
-
-        <div class="ml-4">
-          <SettingButtonsRow
-            on:reset={reset}
-            on:save={saveSetting}
-            on:reset-to-default={resetToDefault}
-            showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-            {disabled}
-          />
-        </div>
-      </form>
+          <div class="ml-4">
+            <SettingButtonsRow
+              on:reset={reset}
+              on:save={saveSetting}
+              on:reset-to-default={resetToDefault}
+              showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+              {disabled}
+            />
+          </div>
+        </form>
+      </SettingAccordion>
     </div>
   {/await}
 </div>
