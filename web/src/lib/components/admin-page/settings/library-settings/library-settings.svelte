@@ -14,6 +14,13 @@
   export let libraryConfig: SystemConfigLibraryDto; // this is the config that is being edited
   export let disabled = false;
 
+  const cronExpressionOptions = [
+    { title: 'Every night at midnight', expression: '0 0 * * *' },
+    { title: 'Every night at 2am', expression: '0 2 * * *' },
+    { title: 'Every day at 1pm', expression: '0 13 * * *' },
+    { title: 'Every 6 hours', expression: '0 */6 * * *' },
+  ];
+
   let savedConfig: SystemConfigLibraryDto;
   let defaultConfig: SystemConfigLibraryDto;
 
@@ -83,6 +90,21 @@
             subtitle="Enable automatic library scanning"
             bind:checked={libraryConfig.scan.enabled}
           />
+
+          <div class="flex flex-col my-2 dark:text-immich-dark-fg">
+            <label class="text-sm" for="expression-select">Cron Expression Presets</label>
+            <select
+              class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
+              disabled={disabled || !libraryConfig.scan.enabled}
+              name="expression"
+              id="expression-select"
+              bind:value={libraryConfig.scan.cronExpression}
+            >
+              {#each cronExpressionOptions as { title, expression }}
+                <option value={expression}>{title}</option>
+              {/each}
+            </select>
+          </div>
 
           <SettingInputField
             inputType={SettingInputFieldType.TEXT}
