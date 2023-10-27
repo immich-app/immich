@@ -545,12 +545,49 @@
 <section
   id="immich-asset-viewer"
   class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
-  bind:this={assetViewerHtmlElement}
 >
-  <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
+  <!-- Top navigation bar -->
+  {#if $slideshowState === SlideshowState.None}
+    <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
+      <AssetViewerNavBar
+        {asset}
+        isMotionPhotoPlaying={shouldPlayMotionPhoto}
+        showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
+        showZoomButton={asset.type === AssetTypeEnum.Image}
+        showMotionPlayButton={!!asset.livePhotoVideoId}
+        showDownloadButton={shouldShowDownloadButton}
+        showDetailButton={shouldShowDetailButton}
+        showSlideshow={!!assetStore}
+        hasStackChildern={$stackAssetsStore.length > 0}
+        on:goBack={closeViewer}
+        on:showDetail={showDetailInfoHandler}
+        on:download={() => downloadFile(asset)}
+        on:delete={trashOrDelete}
+        on:favorite={toggleFavorite}
+        on:addToAlbum={() => openAlbumPicker(false)}
+        on:addToSharedAlbum={() => openAlbumPicker(true)}
+        on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
+        on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
+        on:toggleArchive={toggleArchive}
+        on:asProfileImage={() => (isShowProfileImageCrop = true)}
+        on:runJob={({ detail: job }) => handleRunJob(job)}
+        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
+        on:unstack={handleUnstack}
+      />
+    </div>
+  {/if}
+
+  {#if $slideshowState === SlideshowState.None && showNavigation}
+    <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
+      <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
+    </div>
+  {/if}
+
+  <!-- Asset Viewer -->
+  <div class="z-[1000] relative col-start-1 col-span-4 row-start-1 row-span-full" bind:this={assetViewerHtmlElement}>
     {#if $slideshowState != SlideshowState.None}
-      <!-- SlideShowController -->
-      <div class="flex">
+      <!-- Slideshow actions bar -->
+      <div class="z-[1000] absolute w-full flex">
         <div class="m-4 flex gap-2">
           <CircleIconButton
             icon={mdiClose}
@@ -582,42 +619,8 @@
           duration={5000}
         />
       </div>
-    {:else}
-      <AssetViewerNavBar
-        {asset}
-        isMotionPhotoPlaying={shouldPlayMotionPhoto}
-        showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
-        showZoomButton={asset.type === AssetTypeEnum.Image}
-        showMotionPlayButton={!!asset.livePhotoVideoId}
-        showDownloadButton={shouldShowDownloadButton}
-        showDetailButton={shouldShowDetailButton}
-        showSlideshow={!!assetStore}
-        hasStackChildern={$stackAssetsStore.length > 0}
-        on:goBack={closeViewer}
-        on:showDetail={showDetailInfoHandler}
-        on:download={() => downloadFile(asset)}
-        on:delete={trashOrDelete}
-        on:favorite={toggleFavorite}
-        on:addToAlbum={() => openAlbumPicker(false)}
-        on:addToSharedAlbum={() => openAlbumPicker(true)}
-        on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
-        on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-        on:toggleArchive={toggleArchive}
-        on:asProfileImage={() => (isShowProfileImageCrop = true)}
-        on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
-        on:unstack={handleUnstack}
-      />
     {/if}
-  </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
-    <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
-      <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
-    </div>
-  {/if}
-  <!-- Asset Viewer -->
-  <div class="relative col-span-4 col-start-1 row-span-full row-start-1">
     {#if previewStackedAsset}
       {#key previewStackedAsset.id}
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
@@ -726,7 +729,7 @@
   </div>
 
   {#if $slideshowState === SlideshowState.None && showNavigation}
-    <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
+    <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
     </div>
   {/if}
@@ -735,7 +738,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel
