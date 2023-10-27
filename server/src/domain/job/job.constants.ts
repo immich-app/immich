@@ -110,6 +110,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
+  [JobName.SYSTEM_CONFIG_CHANGE]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
@@ -130,7 +131,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // storage template
   [JobName.STORAGE_TEMPLATE_MIGRATION]: QueueName.STORAGE_TEMPLATE_MIGRATION,
   [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
-  [JobName.SYSTEM_CONFIG_CHANGE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
 
   // migration
   [JobName.QUEUE_MIGRATION]: QueueName.MIGRATION,
