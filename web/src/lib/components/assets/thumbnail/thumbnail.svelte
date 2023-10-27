@@ -70,6 +70,14 @@
       dispatch('select', { asset });
     }
   };
+
+  const onMouseEnter = () => {
+    mouseOver = true;
+  };
+
+  const onMouseLeave = () => {
+    mouseOver = false;
+  };
 </script>
 
 <IntersectionObserver once={false} let:intersecting>
@@ -82,8 +90,8 @@
       : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
     class:cursor-not-allowed={disabled}
     class:hover:cursor-pointer={!disabled}
-    on:mouseenter={() => (mouseOver = true)}
-    on:mouseleave={() => (mouseOver = false)}
+    on:mouseenter={() => onMouseEnter()}
+    on:mouseleave={() => onMouseLeave()}
     on:click={thumbnailClickedHandler}
     on:keydown={thumbnailKeyDownHandler}
   >
@@ -145,9 +153,15 @@
         {/if}
 
         <!-- Stacked asset -->
+
         {#if asset.stackCount}
-          <div class="absolute right-1 bottom-2 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
-            <span class="pr-2 pt-2">
+          <div
+            class="absolute {asset.type == AssetTypeEnum.Image
+              ? 'top-0 right-0'
+              : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
+          >
+            <span class="pr-2 pt-2 flex place-items-center gap-1">
+              <p>{asset.stackCount}</p>
               <Icon path={mdiCameraBurst} size="24" />
             </span>
           </div>

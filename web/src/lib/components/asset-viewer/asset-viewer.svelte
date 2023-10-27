@@ -469,32 +469,32 @@
         />
       {/if}
     {/key}
+
+    {#if $stackAssetsStore.length > 0}
+      <div
+        id="stack-slideshow"
+        class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
+      >
+        <div class="relative whitespace-nowrap transition-all inline-block">
+          {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
+            <div class="relative inline-block aspect-square rounded-xl mr-1">
+              <Thumbnail
+                class="{stackedAsset.id == asset.id
+                  ? 'bg-transparent translate-y-4'
+                  : 'bg-gray-700/70'} hover:bg-transparent transition-all"
+                asset={stackedAsset}
+                on:click={() => (asset = stackedAsset)}
+                readonly
+                thumbnailSize={75}
+              />
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
   </div>
 
   <!-- Stack & Stack Controller -->
-  {#if $stackAssetsStore.length > 0}
-    <div id="stack-slideshow" class="z-[1005] w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar">
-      <div id="stack-controller" class="z-[1006] border-2 border-red-400 absolute left-0 bottom-[155px] bg-green-400">
-        Stack Controller
-      </div>
-      <div class="relative whitespace-nowrap transition-all inline-block">
-        {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
-          <div class="relative mr-1 inline-block aspect-square h-[125px] rounded-xl">
-            <Thumbnail
-              class="{stackedAsset.id == asset.id
-                ? 'bg-transparent border-4 border-immich-dark-primary'
-                : 'bg-gray-700/50'} hover:bg-transparent"
-              asset={stackedAsset}
-              on:click={() => (asset = stackedAsset)}
-              selected={stackedAsset.id == asset.id}
-              readonly
-              thumbnailSize={125}
-            />
-          </div>
-        {/each}
-      </div>
-    </div>
-  {/if}
 
   {#if !isSlideshowMode && showNavigation}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
@@ -506,7 +506,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-start-1 row-span-5 border border-red-400 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel
