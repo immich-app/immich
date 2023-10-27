@@ -13,26 +13,26 @@ part of openapi.api;
 class ServerThemeDto {
   /// Returns a new [ServerThemeDto] instance.
   ServerThemeDto({
-    required this.theme,
+    required this.customCss,
   });
 
-  SystemConfigThemeDto theme;
+  String customCss;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerThemeDto &&
-     other.theme == theme;
+     other.customCss == customCss;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (theme.hashCode);
+    (customCss.hashCode);
 
   @override
-  String toString() => 'ServerThemeDto[theme=$theme]';
+  String toString() => 'ServerThemeDto[customCss=$customCss]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'theme'] = this.theme;
+      json[r'customCss'] = this.customCss;
     return json;
   }
 
@@ -44,7 +44,7 @@ class ServerThemeDto {
       final json = value.cast<String, dynamic>();
 
       return ServerThemeDto(
-        theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
+        customCss: mapValueOfType<String>(json, r'customCss')!,
       );
     }
     return null;
@@ -92,7 +92,7 @@ class ServerThemeDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'theme',
+    'customCss',
   };
 }
 

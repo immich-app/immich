@@ -7836,12 +7836,12 @@
       },
       "ServerThemeDto": {
         "properties": {
-          "theme": {
-            "$ref": "#/components/schemas/SystemConfigThemeDto"
+          "customCss": {
+            "type": "string"
           }
         },
         "required": [
-          "theme"
+          "customCss"
         ],
         "type": "object"
       },

@@ -16,8 +16,8 @@ void main() {
   // final instance = ServerThemeDto();
 
   group('test ServerThemeDto', () {
-    // SystemConfigThemeDto theme
-    test('to test the property `theme`', () async {
+    // String customCss
+    test('to test the property `customCss`', () async {
       // TODO
     });
 

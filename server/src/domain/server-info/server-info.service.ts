@@ -72,7 +72,7 @@ export class ServerInfoService {
 
   async getTheme() {
     const { theme } = await this.configCore.getConfig();
-    return { theme };
+    return theme;
   }
 
   async getConfig(): Promise<ServerConfigDto> {

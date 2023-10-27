@@ -1,9 +1,7 @@
 import { RequestHandler, text } from '@sveltejs/kit';
 export const GET = (async ({ locals: { api } }) => {
   const {
-    data: {
-      theme: { customCss },
-    },
+    data: { customCss },
   } = await api.serverInfoApi.getTheme();
   return text(customCss, {
     headers: {
