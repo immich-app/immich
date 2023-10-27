@@ -17,7 +17,9 @@ Name | Type | Description | Notes
 **expiresAt** | [**DateTime**](DateTime.md) |  | 
 **id** | **String** |  | 
 **key** | **String** |  | 
+**password** | **String** |  | 
 **showMetadata** | **bool** |  | 
+**token** | **String** |  | [optional] 
 **type** | [**SharedLinkType**](SharedLinkType.md) |  | 
 **userId** | **String** |  | 
 

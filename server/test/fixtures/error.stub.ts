@@ -24,6 +24,11 @@ export const errorStub = {
     statusCode: 401,
     message: 'Invalid share key',
   },
+  invalidSharePassword: {
+    error: 'Unauthorized',
+    statusCode: 401,
+    message: 'Invalid password',
+  },
   badRequest: (message: any = null) => ({
     error: 'Bad Request',
     statusCode: 400,

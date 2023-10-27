@@ -2,13 +2,16 @@ import {
   AssetIdsDto,
   AssetIdsResponseDto,
   AuthUserDto,
+  IMMICH_SHARED_LINK_ACCESS_COOKIE,
   SharedLinkCreateDto,
   SharedLinkEditDto,
+  SharedLinkPasswordDto,
   SharedLinkResponseDto,
   SharedLinkService,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -27,8 +30,16 @@ export class SharedLinkController {
 
   @SharedLinkRoute()
   @Get('me')
-  getMySharedLink(@AuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
-    return this.service.getMine(authUser);
+  getMySharedLink(
+    @AuthUser() authUser: AuthUserDto,
+    @Query() dto: SharedLinkPasswordDto,
+    @Req() req: Request,
+  ): Promise<SharedLinkResponseDto> {
+    const sharedLinkToken = req.cookies?.[IMMICH_SHARED_LINK_ACCESS_COOKIE];
+    if (sharedLinkToken) {
+      dto.token = sharedLinkToken;
+    }
+    return this.service.getMine(authUser, dto);
   }
 
   @Get(':id')
