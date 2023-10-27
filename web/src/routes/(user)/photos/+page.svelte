@@ -17,7 +17,6 @@
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { TimeBucketSize } from '@api';
   import type { PageData } from './$types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
@@ -26,7 +25,7 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: false });
+  const assetStore = new AssetStore({ isArchived: false });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
