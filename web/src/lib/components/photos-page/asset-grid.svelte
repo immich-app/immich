@@ -48,7 +48,7 @@
     showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
     assetStore.connect();
-    await assetStore.init(viewport, withStacked);
+    await assetStore.init(viewport);
   });
 
   onDestroy(() => {
