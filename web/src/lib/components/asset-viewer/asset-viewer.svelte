@@ -522,24 +522,24 @@
           {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
             <div
               class="{stackedAsset.id == asset.id
-                ? '-translate-y-2'
-                : 'translate-y-0'} inline-block px-1 transition-transform"
+                ? '-translate-y-0'
+                : '-translate-y-4'} inline-block px-1 transition-transform"
             >
               <Thumbnail
                 class="{stackedAsset.id == asset.id
-                  ? 'bg-transparent'
+                  ? 'bg-transparent border-2 border-white rounded-lg'
                   : 'bg-gray-700/40'} inline-block hover:bg-transparent"
                 asset={stackedAsset}
                 on:click={() => (asset = stackedAsset)}
                 on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
                 readonly
-                thumbnailSize={70}
+                thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
                 showStackedIcon={false}
               />
 
               {#if stackedAsset.id == asset.id}
                 <div class="w-full flex place-items-center place-content-center">
-                  <div class="w-2 h-2 bg-green-700 rounded-full flex mt-2" />
+                  <div class="w-2 h-2 bg-white rounded-full flex mt-2" />
                 </div>
               {/if}
             </div>
