@@ -476,7 +476,16 @@
     <!-- Condition to show preview of stacked asset on hovered -->
     {#if displayedAsset}
       {#key displayedAsset.id}
-        <PhotoViewer asset={displayedAsset} on:close={closeViewer} haveFadeTransition={false} />
+        {#if displayedAsset.type === AssetTypeEnum.Image}
+          <PhotoViewer asset={displayedAsset} on:close={closeViewer} haveFadeTransition={false} />
+        {:else}
+          <VideoViewer
+            assetId={displayedAsset.id}
+            on:close={closeViewer}
+            on:onVideoEnded={handleVideoEnded}
+            on:onVideoStarted={handleVideoStarted}
+          />
+        {/if}
       {/key}
     {:else}
       {#key asset.id}
@@ -518,16 +527,16 @@
         id="stack-slideshow"
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
       >
-        <div class="relative whitespace-nowrap transition-all pt-10">
+        <div class="relative whitespace-nowrap transition-all">
           {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
             <div
               class="{stackedAsset.id == asset.id
-                ? '-translate-y-0'
-                : '-translate-y-4'} inline-block px-1 transition-transform"
+                ? '-translate-y-[1px]'
+                : '-translate-y-0'} inline-block px-1 transition-transform"
             >
               <Thumbnail
                 class="{stackedAsset.id == asset.id
-                  ? 'bg-transparent border-2 border-white rounded-lg'
+                  ? 'bg-transparent border-2 border-white'
                   : 'bg-gray-700/40'} inline-block hover:bg-transparent"
                 asset={stackedAsset}
                 on:click={() => (asset = stackedAsset)}
@@ -539,7 +548,7 @@
 
               {#if stackedAsset.id == asset.id}
                 <div class="w-full flex place-items-center place-content-center">
-                  <div class="w-2 h-2 bg-white rounded-full flex mt-2" />
+                  <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
                 </div>
               {/if}
             </div>
