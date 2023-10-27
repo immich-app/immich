@@ -488,6 +488,7 @@ export class AssetRepository implements IAssetRepository {
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(truncated, 'timeBucket')
+      .where('asset."stackParentId" is NULL')
       .groupBy(truncated)
       .orderBy(truncated, 'DESC')
       .getRawMany();
