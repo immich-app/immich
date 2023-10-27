@@ -25,6 +25,7 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+  export let withStacked = false;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
   export let forceDelete = false;
@@ -47,7 +48,7 @@
     showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
     assetStore.connect();
-    await assetStore.init(viewport);
+    await assetStore.init(viewport, withStacked);
   });
 
   onDestroy(() => {

@@ -546,7 +546,7 @@ export class AssetRepository implements IAssetRepository {
 
     console.log('with stack', withStacked);
     if (withStacked) {
-      builder = builder.andWhere('asset.stackParent IS NULL');
+      builder = builder.andWhere('asset.stackParentId IS NULL');
     }
 
     return builder;

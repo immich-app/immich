@@ -65,6 +65,7 @@ export class AssetStore {
   private pendingChanges: PendingChange[] = [];
   private unsubscribers: Unsubscriber[] = [];
   private options: AssetApiGetTimeBucketsRequest;
+  private withStacked = false;
 
   initialized = false;
   timelineHeight = 0;
@@ -135,16 +136,18 @@ export class AssetStore {
     this.emit(true);
   }, 10_000);
 
-  async init(viewport: Viewport) {
+  async init(viewport: Viewport, withStacked = false) {
     this.initialized = false;
     this.timelineHeight = 0;
     this.buckets = [];
     this.assets = [];
     this.assetToBucket = {};
     this.albumAssets = new Set();
+    this.withStacked = withStacked;
 
     const { data: buckets } = await api.assetApi.getTimeBuckets({
       ...this.options,
+      withStacked: this.withStacked,
       key: api.getKey(),
     });
 
@@ -200,6 +203,7 @@ export class AssetStore {
         {
           ...this.options,
           timeBucket: bucketDate,
+          withStacked: this.withStacked,
           key: api.getKey(),
         },
         { signal: bucket.cancelToken.signal },
