@@ -19,7 +19,11 @@
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    click: { asset: AssetResponseDto };
+    select: { asset: AssetResponseDto };
+    'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
+  }>();
 
   export let asset: AssetResponseDto;
   export let groupIndex = 0;

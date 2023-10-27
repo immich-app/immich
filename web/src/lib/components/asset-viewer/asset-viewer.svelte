@@ -54,6 +54,8 @@
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
+  let previewStackedAsset: AssetResponseDto | undefined;
+  $: displayedAsset = previewStackedAsset || asset;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -67,6 +69,7 @@
       $stackAssetsStore = [];
     }
   }
+
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
@@ -374,6 +377,16 @@
       progressBar.restart(false);
     }
   };
+
+  const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
+    const { isMouseOver } = e.detail;
+
+    if (isMouseOver) {
+      previewStackedAsset = asset;
+    } else {
+      previewStackedAsset = undefined;
+    }
+  };
 </script>
 
 <section
@@ -436,39 +449,47 @@
     </div>
   {/if}
 
+  <!-- Asset Viewer -->
   <div class="col-span-4 col-start-1 row-span-full row-start-1">
-    {#key asset.id}
-      {#if !asset.resized}
-        <div class="flex h-full w-full justify-center">
-          <div
-            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-          >
-            <Icon path={mdiImageBrokenVariant} size="25%" />
+    <!-- Condition to show preview of stacked asset on hovered -->
+    {#if displayedAsset}
+      {#key displayedAsset.id}
+        <PhotoViewer asset={displayedAsset} on:close={closeViewer} haveFadeTransition={false} />
+      {/key}
+    {:else}
+      {#key asset.id}
+        {#if !asset.resized}
+          <div class="flex h-full w-full justify-center">
+            <div
+              class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
+            >
+              <Icon path={mdiImageBrokenVariant} size="25%" />
+            </div>
           </div>
-        </div>
-      {:else if asset.type === AssetTypeEnum.Image}
-        {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-          <VideoViewer
-            assetId={asset.livePhotoVideoId}
-            on:close={closeViewer}
-            on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-          />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
-              .toLowerCase()
-              .endsWith('.insp'))}
-          <PanoramaViewer {asset} />
+        {:else if asset.type === AssetTypeEnum.Image}
+          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+            <VideoViewer
+              assetId={asset.livePhotoVideoId}
+              on:close={closeViewer}
+              on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+            />
+          {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
+                .toLowerCase()
+                .endsWith('.insp'))}
+            <PanoramaViewer {asset} />
+          {:else}
+            <PhotoViewer {asset} on:close={closeViewer} />
+          {/if}
         {:else}
-          <PhotoViewer {asset} on:close={closeViewer} />
+          <VideoViewer
+            assetId={asset.id}
+            on:close={closeViewer}
+            on:onVideoEnded={handleVideoEnded}
+            on:onVideoStarted={handleVideoStarted}
+          />
         {/if}
-      {:else}
-        <VideoViewer
-          assetId={asset.id}
-          on:close={closeViewer}
-          on:onVideoEnded={handleVideoEnded}
-          on:onVideoStarted={handleVideoStarted}
-        />
-      {/if}
-    {/key}
+      {/key}
+    {/if}
 
     {#if $stackAssetsStore.length > 0}
       <div
@@ -484,6 +505,7 @@
                   : 'bg-gray-700/70'} hover:bg-transparent transition-all"
                 asset={stackedAsset}
                 on:click={() => (asset = stackedAsset)}
+                on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
                 readonly
                 thumbnailSize={75}
                 showStackedIcon={false}
