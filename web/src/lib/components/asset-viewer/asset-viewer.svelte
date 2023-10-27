@@ -87,6 +87,7 @@
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
+  let slideshowStateUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
@@ -166,6 +167,14 @@
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
 
+    slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
+      if (value === SlideshowState.PlaySlideshow) {
+        handlePlaySlideshow();
+      } else if (value === SlideshowState.StopSlideshow) {
+        handleStopSlideshow();
+      }
+    });
+
     if (!sharedLink) {
       await getAllAlbums();
     }
@@ -189,19 +198,13 @@
     if (browser) {
       document.removeEventListener('keydown', onKeyboardPress);
     }
+
+    if (slideshowStateUnsubscribe) {
+      slideshowStateUnsubscribe();
+    }
   });
 
   $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
-
-  $: $slideshowState,
-    (() => {
-      if ($slideshowState === SlideshowState.PlaySlideshow) {
-        handlePlaySlideshow();
-      } else if ($slideshowState === SlideshowState.StopSlideshow) {
-        handleStopSlideshow();
-      }
-    })();
-
   $: $slideshowShuffle && preload();
 
   const getAllAlbums = async () => {
