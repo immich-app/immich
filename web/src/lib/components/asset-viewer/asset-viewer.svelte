@@ -34,6 +34,7 @@
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
   export let force = false;
+  export let withStacked = false;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -522,7 +523,7 @@
       {/key}
     {/if}
 
-    {#if $stackAssetsStore.length > 0}
+    {#if $stackAssetsStore.length > 0 && withStacked}
       <div
         id="stack-slideshow"
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"

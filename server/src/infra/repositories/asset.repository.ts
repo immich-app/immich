@@ -544,7 +544,6 @@ export class AssetRepository implements IAssetRepository {
         .andWhere('person.id = :personId', { personId });
     }
 
-    console.log('with stack', withStacked);
     if (withStacked) {
       builder = builder.andWhere('asset.stackParentId IS NULL');
     }

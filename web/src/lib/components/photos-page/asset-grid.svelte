@@ -366,6 +366,7 @@
           <div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
             {#if intersecting}
               <AssetDateGroup
+                {withStacked}
                 {assetStore}
                 {assetInteractionStore}
                 {isSelectionMode}
@@ -390,6 +391,7 @@
 <Portal target="body">
   {#if $showAssetViewer}
     <AssetViewer
+      {withStacked}
       {assetStore}
       asset={$viewingAsset}
       force={forceDelete || !isTrashEnabled}
