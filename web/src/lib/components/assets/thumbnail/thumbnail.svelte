@@ -32,6 +32,7 @@
   export let disabled = false;
   export let readonly = false;
   export let showArchiveIcon = false;
+  export let showStackedIcon = true;
 
   let className = '';
   export { className as class };
@@ -154,7 +155,7 @@
 
         <!-- Stacked asset -->
 
-        {#if asset.stackCount}
+        {#if asset.stackCount && showStackedIcon}
           <div
             class="absolute {asset.type == AssetTypeEnum.Image
               ? 'top-0 right-0'

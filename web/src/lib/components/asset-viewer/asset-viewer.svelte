@@ -486,6 +486,7 @@
                 on:click={() => (asset = stackedAsset)}
                 readonly
                 thumbnailSize={75}
+                showStackedIcon={false}
               />
             </div>
           {/each}

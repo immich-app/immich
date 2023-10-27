@@ -40,6 +40,13 @@
     }
   })();
 
+  $: {
+    if (!asset.exifInfo) {
+      api.assetApi.getAssetById({ id: asset.id }).then((res) => {
+        asset.exifInfo = res.data?.exifInfo;
+      });
+    }
+  }
   $: lat = latlng ? latlng[0] : undefined;
   $: lng = latlng ? latlng[1] : undefined;
 
