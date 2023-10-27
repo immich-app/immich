@@ -9,9 +9,9 @@ import {
   SharedLinkResponseDto,
   SharedLinkService,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -30,16 +30,25 @@ export class SharedLinkController {
 
   @SharedLinkRoute()
   @Get('me')
-  getMySharedLink(
+  async getMySharedLink(
     @AuthUser() authUser: AuthUserDto,
     @Query() dto: SharedLinkPasswordDto,
     @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<SharedLinkResponseDto> {
     const sharedLinkToken = req.cookies?.[IMMICH_SHARED_LINK_ACCESS_COOKIE];
     if (sharedLinkToken) {
       dto.token = sharedLinkToken;
     }
-    return this.service.getMine(authUser, dto);
+    const sharedLinkResponse = await this.service.getMine(authUser, dto);
+    if (sharedLinkResponse.token) {
+      res.cookie(IMMICH_SHARED_LINK_ACCESS_COOKIE, sharedLinkResponse.token, {
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        httpOnly: true,
+        sameSite: 'lax',
+      });
+    }
+    return sharedLinkResponse;
   }
 
   @Get(':id')

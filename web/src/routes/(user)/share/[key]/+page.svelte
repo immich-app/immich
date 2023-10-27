@@ -11,8 +11,9 @@
 
   export let data: PageData;
   let { sharedLink, passwordRequired, sharedLinkKey: key } = data;
+  let { title, description } = data.meta;
 
-  let isOwned = false;
+  let isOwned = data.user ? data.user.id === sharedLink?.userId : false;
   let password = '';
 
   const handlePasswordSubmit = async () => {
@@ -21,17 +22,18 @@
       passwordRequired = false;
       sharedLink = result.data;
       isOwned = data.user ? data.user.id === sharedLink.userId : false;
-      document.title = (sharedLink.album ? sharedLink.album.albumName : 'Public Share') + ' - Immich';
-      document
-        .querySelector('meta[name="description"]')
-        ?.setAttribute('content', sharedLink.description || `${sharedLink.assets.length} shared photos & videos.`);
-      document.cookie = `immich_shared_link_token=${sharedLink.token}; path=/; max-age=86400; samesite=Lax`;
+      title = (sharedLink.album ? sharedLink.album.albumName : 'Public Share') + ' - Immich';
+      description = sharedLink.description || `${sharedLink.assets.length} shared photos & videos.`;
     } catch (error) {
       handleError(error, 'Failed to get shared link');
     }
   };
 </script>
 
+<svelte:head>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+</svelte:head>
 {#if passwordRequired}
   <header>
     <ControlAppBar showBackButton={false}>
