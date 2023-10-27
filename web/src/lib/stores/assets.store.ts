@@ -135,7 +135,7 @@ export class AssetStore {
     this.emit(true);
   }, 10_000);
 
-  async init(viewport: Viewport, withStackedAssets = true) {
+  async init(viewport: Viewport) {
     this.initialized = false;
     this.timelineHeight = 0;
     this.buckets = [];
@@ -172,7 +172,7 @@ export class AssetStore {
     for (const bucket of this.buckets) {
       if (height < viewport.height) {
         height += bucket.bucketHeight;
-        this.loadBucket(bucket.bucketDate, BucketPosition.Visible, withStackedAssets);
+        this.loadBucket(bucket.bucketDate, BucketPosition.Visible);
         continue;
       }
 
@@ -180,7 +180,7 @@ export class AssetStore {
     }
   }
 
-  async loadBucket(bucketDate: string, position: BucketPosition, withStackedAssets = true): Promise<void> {
+  async loadBucket(bucketDate: string, position: BucketPosition): Promise<void> {
     try {
       const bucket = this.getBucketByDate(bucketDate);
       if (!bucket) {
@@ -221,11 +221,7 @@ export class AssetStore {
         }
       }
 
-      if (withStackedAssets) {
-        bucket.assets = assets;
-      } else {
-        bucket.assets = assets.filter((asset) => !asset.stackParentId);
-      }
+      bucket.assets = assets;
 
       this.emit(true);
     } catch (error) {

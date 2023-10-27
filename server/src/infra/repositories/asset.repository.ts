@@ -488,7 +488,6 @@ export class AssetRepository implements IAssetRepository {
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(truncated, 'timeBucket')
-      .where('asset."stackParentId" is NULL')
       .groupBy(truncated)
       .orderBy(truncated, 'DESC')
       .getRawMany();
@@ -544,11 +543,9 @@ export class AssetRepository implements IAssetRepository {
         .andWhere('person.id = :personId', { personId });
     }
 
-    // Hide stack children only in main timeline
-    // Uncomment after adding support for stacked assets in web client
-    // if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
-    //   builder = builder.andWhere('asset.stackParent IS NULL');
-    // }
+    if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
+      builder = builder.andWhere('asset.stackParent IS NULL');
+    }
 
     return builder;
   }
