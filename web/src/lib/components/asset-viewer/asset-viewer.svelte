@@ -496,20 +496,30 @@
         id="stack-slideshow"
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
       >
-        <div class="relative whitespace-nowrap transition-all inline-block">
+        <div class="relative whitespace-nowrap transition-all pt-10">
           {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
-            <div class="relative inline-block aspect-square rounded-xl mr-1">
+            <div
+              class="{stackedAsset.id == asset.id
+                ? '-translate-y-2'
+                : 'translate-y-0'} inline-block px-1 transition-transform"
+            >
               <Thumbnail
                 class="{stackedAsset.id == asset.id
-                  ? 'bg-transparent translate-y-4'
-                  : 'bg-gray-700/70'} hover:bg-transparent"
+                  ? 'bg-transparent'
+                  : 'bg-gray-700/40'} inline-block hover:bg-transparent"
                 asset={stackedAsset}
                 on:click={() => (asset = stackedAsset)}
                 on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
                 readonly
-                thumbnailSize={75}
+                thumbnailSize={70}
                 showStackedIcon={false}
               />
+
+              {#if stackedAsset.id == asset.id}
+                <div class="w-full flex place-items-center place-content-center">
+                  <div class="w-2 h-2 bg-green-700 rounded-full flex mt-2" />
+                </div>
+              {/if}
             </div>
           {/each}
         </div>
