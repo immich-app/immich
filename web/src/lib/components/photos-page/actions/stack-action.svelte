@@ -28,13 +28,17 @@
         await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
       }
 
+      let childrenCount = parent.stackCount ?? 0;
       for (const asset of children) {
         asset.stackParentId = parent?.id;
+        // Add grand-children's count to new parent
+        childrenCount += asset.stackCount == null ? 1 : asset.stackCount + 1;
+        // Reset children stack info
+        asset.stackCount = null;
+        asset.stack = [];
       }
 
-      // Not the perfect count, but doesn't matter for the web client as long as it is > 0
-      parent.stackCount = children.length;
-
+      parent.stackCount = childrenCount;
       onStack?.(ids);
 
       notificationController.show({
