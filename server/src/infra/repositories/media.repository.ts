@@ -70,16 +70,16 @@ export class MediaRepository implements IMediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        const oldLdLibraryPath = process.env['LD_LIBRARY_PATH'];
+        const oldLdLibraryPath = process.env.LD_LIBRARY_PATH;
         if (options.ldLibraryPath) {
           // fluent ffmpeg does not allow to set environment variables, so we do it manually
-          process.env['LD_LIBRARY_PATH'] = (oldLdLibraryPath || '') + options.ldLibraryPath;
+          process.env.LD_LIBRARY_PATH = this.chainPath(oldLdLibraryPath || '', options.ldLibraryPath);
         }
         try {
           this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
         } finally {
           if (options.ldLibraryPath) {
-            process.env['LD_LIBRARY_PATH'] = oldLdLibraryPath;
+            process.env.LD_LIBRARY_PATH = oldLdLibraryPath;
           }
         }
       });
@@ -119,7 +119,12 @@ export class MediaRepository implements IMediaRepository {
       .inputOptions(options.inputOptions)
       .outputOptions(options.outputOptions)
       .output(output)
-      .on('error', (err, stdout, stderr) => this.logger.error(stderr));
+      .on('error', (err, stdout, stderr) => this.logger.error(stderr || err));
+  }
+
+  chainPath(existing: string, path: string) {
+    const sep = existing.endsWith(':') ? '' : ':';
+    return `${existing}${sep}${path}`;
   }
 
   async generateThumbhash(imagePath: string): Promise<Buffer> {

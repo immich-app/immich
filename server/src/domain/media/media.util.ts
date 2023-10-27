@@ -565,14 +565,15 @@ export class VAAPIConfig extends BaseHWConfig {
 
 export class RKMPPConfig extends BaseHWConfig {
   getOptions(videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo): TranscodeOptions {
-    if (this.config.twoPass) {
-      throw Error('RKMPP is incompatible with twoPass');
-    }
     const options = super.getOptions(videoStream, audioStream);
     options.ffmpegPath = 'ffmpeg_mpp';
     options.ldLibraryPath = '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp';
     options.outputOptions.push(...this.getSizeOptions(videoStream));
     return options;
+  }
+
+  eligibleForTwoPass(): boolean {
+    return false;
   }
 
   getBaseInputOptions() {
