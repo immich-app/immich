@@ -161,9 +161,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/server-info/theme');
       expect(status).toBe(200);
       expect(body).toEqual({
-        theme: {
-          customCss: '',
-        },
+        customCss: '',
       });
     });
   });

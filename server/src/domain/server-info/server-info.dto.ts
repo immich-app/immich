@@ -80,9 +80,7 @@ export class ServerMediaTypesResponseDto {
   sidecar!: string[];
 }
 
-export class ServerThemeDto {
-  theme!: SystemConfigThemeDto;
-}
+export class ServerThemeDto extends SystemConfigThemeDto {}
 
 export class ServerConfigDto {
   oauthButtonText!: string;
