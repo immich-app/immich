@@ -135,7 +135,7 @@ export class AssetStore {
     this.emit(true);
   }, 10_000);
 
-  async init(viewport: Viewport, withStacked = false) {
+  async init(viewport: Viewport) {
     this.initialized = false;
     this.timelineHeight = 0;
     this.buckets = [];
