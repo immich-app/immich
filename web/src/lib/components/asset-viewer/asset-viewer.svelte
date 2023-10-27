@@ -502,7 +502,7 @@
               <Thumbnail
                 class="{stackedAsset.id == asset.id
                   ? 'bg-transparent translate-y-4'
-                  : 'bg-gray-700/70'} hover:bg-transparent transition-all"
+                  : 'bg-gray-700/70'} hover:bg-transparent"
                 asset={stackedAsset}
                 on:click={() => (asset = stackedAsset)}
                 on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
