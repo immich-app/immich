@@ -75,6 +75,7 @@
       <SideBarButton title="People" logo={Account} isSelected={$page.route.id === '/(user)/people'} />
     </a>
   {/if}
+  {#if $sidebarSettings.sharing}
   <a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
     <SideBarButton
       title="Sharing"
@@ -92,6 +93,7 @@
       </svelte:fragment>
     </SideBarButton>
   </a>
+  {/if}
 
   <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
     <p class="hidden p-6 group-hover:sm:block md:block">LIBRARY</p>
