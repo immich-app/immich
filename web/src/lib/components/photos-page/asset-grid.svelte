@@ -400,6 +400,7 @@
       on:unarchived={({ detail: asset }) => handleAction(asset, AssetAction.UNARCHIVE)}
       on:favorite={({ detail: asset }) => handleAction(asset, AssetAction.FAVORITE)}
       on:unfavorite={({ detail: asset }) => handleAction(asset, AssetAction.UNFAVORITE)}
+      on:unstack={() => handleClose()}
     />
   {/if}
 </Portal>

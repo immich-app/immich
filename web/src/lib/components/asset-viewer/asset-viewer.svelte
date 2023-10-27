@@ -43,6 +43,7 @@
     close: void;
     next: void;
     previous: void;
+    unstack: void;
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
@@ -387,6 +388,25 @@
       previewStackedAsset = undefined;
     }
   };
+
+  const handleUnstack = async () => {
+    try {
+      const ids = $stackAssetsStore.map(({ id }) => id);
+      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
+      for (const child of $stackAssetsStore) {
+        child.stackParentId = null;
+        assetStore?.addAsset(child);
+      }
+      asset.stackCount = 0;
+      asset.stack = [];
+      assetStore?.updateAsset(asset);
+
+      dispatch('unstack');
+      notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
+    } catch (error) {
+      await handleError(error, `Unable to unstack`);
+    }
+  };
 </script>
 
 <section
@@ -426,6 +446,7 @@
         showDownloadButton={shouldShowDownloadButton}
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
+        hasStackChildern={$stackAssetsStore.length > 0}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -439,6 +460,7 @@
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={handlePlaySlideshow}
+        on:unstack={handleUnstack}
       />
     {/if}
   </div>

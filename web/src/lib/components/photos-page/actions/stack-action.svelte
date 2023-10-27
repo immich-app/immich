@@ -44,6 +44,7 @@
       notificationController.show({
         message: `Stacked ${ids.length + 1} assets`,
         type: NotificationType.Info,
+        timeout: 1500,
       });
 
       clearSelect();
