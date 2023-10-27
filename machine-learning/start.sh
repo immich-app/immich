@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-export LD_PRELOAD="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
+export LD_PRELOAD="/opt/conda/lib/libmimalloc.so"
 
 : "${MACHINE_LEARNING_HOST:=0.0.0.0}"
 : "${MACHINE_LEARNING_PORT:=3003}"

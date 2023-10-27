@@ -69,29 +69,6 @@ init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 warn_untyped_fields = true
-
-[[tool.mypy.overrides]]
-module = [
-    "huggingface_hub",
-    "transformers",
-    "gunicorn",
-    "cv2",
-    "insightface.model_zoo",
-    "insightface.utils.face_align",
-    "insightface.utils.storage",
-    "onnxruntime",
-    "optimum",
-    "optimum.pipelines",
-    "optimum.onnxruntime",
-    "clip_server.model.clip",
-    "clip_server.model.clip_onnx",
-    "clip_server.model.pretrained_models",
-    "clip_server.model.tokenization",
-    "torchvision.transforms",
-    "aiocache.backends.memory",
-    "aiocache.lock",
-    "aiocache.plugins"
-]
 ignore_missing_imports = true
 
 [tool.ruff]

@@ -1,24 +1,5 @@
-FROM python:3.11-bookworm as builder
+FROM mambaorg/micromamba:bookworm-slim as builder
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-  PYTHONUNBUFFERED=1 \
-  PIP_NO_CACHE_DIR=true
-
-RUN pip install --upgrade pip && pip install poetry
-RUN poetry config installer.max-workers 10 && \
-  poetry config virtualenvs.create false
-RUN python -m venv /opt/venv
-ENV VIRTUAL_ENV="/opt/venv" PATH="/opt/venv/bin:${PATH}"
-
-COPY poetry.lock pyproject.toml requirements.txt ./
-RUN poetry install --sync --no-interaction --no-ansi --no-root --only main
-RUN pip install --no-deps -r requirements.txt
-
-FROM python:3.11-slim-bookworm
-
-RUN apt-get update && apt-get install -y --no-install-recommends tini libmimalloc2.0 && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /usr/src/app
 ENV NODE_ENV=production \
   TRANSFORMERS_CACHE=/cache \
   PYTHONDONTWRITEBYTECODE=1 \
@@ -26,8 +7,15 @@ ENV NODE_ENV=production \
   PATH="/opt/venv/bin:$PATH" \
   PYTHONPATH=/usr/src
 
-COPY --from=builder /opt/venv /opt/venv
-COPY start.sh log_conf.json ./
-COPY app .
-ENTRYPOINT ["tini", "--"]
+COPY --chown=$MAMBA_USER:$MAMBA_USER conda-lock.yml /tmp/conda-lock.yml
+RUN micromamba install -y -n base -f /tmp/conda-lock.yml && \
+    micromamba remove -y -n base cxx-compiler && \
+    micromamba clean --all --yes
+
+WORKDIR /usr/src/app
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER start.sh .
+COPY --chown=$MAMBA_USER:$MAMBA_USER app .
+
+ENTRYPOINT ["/usr/local/bin/_entrypoint.sh"]
 CMD ["./start.sh"]
