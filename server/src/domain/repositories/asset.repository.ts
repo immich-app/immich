@@ -65,6 +65,7 @@ export interface TimeBucketOptions {
   albumId?: string;
   personId?: string;
   userId?: string;
+  withStacked?: boolean;
 }
 
 export interface TimeBucketItem {

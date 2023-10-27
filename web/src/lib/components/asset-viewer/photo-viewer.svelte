@@ -10,6 +10,7 @@
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
+  export let haveFadeTransition = true;
 
   let imgElement: HTMLDivElement;
   let assetData: string;
@@ -116,7 +117,7 @@
 
 <div
   bind:this={element}
-  transition:fade={{ duration: 150 }}
+  transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
   class="flex h-full select-none place-content-center place-items-center"
 >
   {#await loadAssetData({ loadOriginal: false })}
@@ -124,7 +125,7 @@
   {:then}
     <div bind:this={imgElement} class="h-full w-full">
       <img
-        transition:fade={{ duration: 150 }}
+        transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
         alt={asset.id}
         class="h-full w-full object-contain"

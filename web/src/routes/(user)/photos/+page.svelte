@@ -7,6 +7,7 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
@@ -25,7 +26,7 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
-  const assetStore = new AssetStore({ isArchived: false });
+  const assetStore = new AssetStore({ isArchived: false, withStacked: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -62,13 +63,22 @@
       <FavoriteAction menuItem removeFavorite={isAllFavorite} />
       <DownloadAction menuItem />
       <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
+      {#if $selectedAssets.size > 1}
+        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+      {/if}
       <AssetJobActions />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}
 
 <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
-  <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.ARCHIVE} on:escape={handleEscape}>
+  <AssetGrid
+    {assetStore}
+    {assetInteractionStore}
+    removeAction={AssetAction.ARCHIVE}
+    on:escape={handleEscape}
+    withStacked
+  >
     {#if data.user.memoriesEnabled}
       <MemoryLane />
     {/if}

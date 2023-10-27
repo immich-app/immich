@@ -32,10 +32,11 @@
   export let showDownloadButton: boolean;
   export let showDetailButton: boolean;
   export let showSlideshow = false;
+  export let hasStackChildern = false;
 
   $: isOwner = asset.ownerId === $page.data.user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow';
+  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'unstack';
 
   const dispatch = createEventDispatcher<{
     goBack: void;
@@ -51,6 +52,7 @@
     asProfileImage: void;
     runJob: AssetJobName;
     playSlideShow: void;
+    unstack: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -173,6 +175,11 @@
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
               <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
+
+              {#if hasStackChildern}
+                <MenuOption on:click={() => onMenuClick('unstack')} text="Un-Stack" />
+              {/if}
+
               <MenuOption
                 on:click={() => onJobClick(AssetJobName.RefreshMetadata)}
                 text={api.getAssetJobName(AssetJobName.RefreshMetadata)}

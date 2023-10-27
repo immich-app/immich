@@ -222,6 +222,7 @@ export class AssetStore {
       }
 
       bucket.assets = assets;
+
       this.emit(true);
     } catch (error) {
       handleError(error, 'Failed to load assets');
@@ -251,7 +252,7 @@ export class AssetStore {
     return scrollTimeline ? delta : 0;
   }
 
-  private addAsset(asset: AssetResponseDto): void {
+  addAsset(asset: AssetResponseDto): void {
     if (
       this.assetToBucket[asset.id] ||
       this.options.userId ||

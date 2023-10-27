@@ -25,6 +25,7 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+  export let withStacked = false;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
   export let forceDelete = false;
@@ -365,6 +366,7 @@
           <div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
             {#if intersecting}
               <AssetDateGroup
+                {withStacked}
                 {assetStore}
                 {assetInteractionStore}
                 {isSelectionMode}
@@ -389,6 +391,7 @@
 <Portal target="body">
   {#if $showAssetViewer}
     <AssetViewer
+      {withStacked}
       {assetStore}
       asset={$viewingAsset}
       force={forceDelete || !isTrashEnabled}
@@ -399,6 +402,7 @@
       on:unarchived={({ detail: asset }) => handleAction(asset, AssetAction.UNARCHIVE)}
       on:favorite={({ detail: asset }) => handleAction(asset, AssetAction.FAVORITE)}
       on:unfavorite={({ detail: asset }) => handleAction(asset, AssetAction.UNFAVORITE)}
+      on:unstack={() => handleClose()}
     />
   {/if}
 </Portal>

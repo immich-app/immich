@@ -25,6 +25,8 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -32,6 +34,7 @@
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
   export let force = false;
+  export let withStacked = false;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -41,6 +44,7 @@
     close: void;
     next: void;
     previous: void;
+    unstack: void;
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
@@ -52,6 +56,21 @@
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
+  let previewStackedAsset: AssetResponseDto | undefined;
+  $: displayedAsset = previewStackedAsset || asset;
+
+  $: {
+    if (asset.stackCount && asset.stack) {
+      $stackAssetsStore = asset.stack;
+      $stackAssetsStore = [...$stackAssetsStore, asset].sort(
+        (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
+      );
+    }
+
+    if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
+      $stackAssetsStore = [];
+    }
+  }
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
@@ -66,6 +85,15 @@
     // TODO: Move to regular import once the package correctly supports ESM.
     const module = await import('copy-image-clipboard');
     canCopyImagesToClipboard = module.canCopyImagesToClipboard();
+
+    if (asset.stackCount && asset.stack) {
+      $stackAssetsStore = asset.stack;
+      $stackAssetsStore = [...$stackAssetsStore, asset].sort(
+        (a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime(),
+      );
+    } else {
+      $stackAssetsStore = [];
+    }
   });
 
   onDestroy(() => {
@@ -351,6 +379,35 @@
       progressBar.restart(false);
     }
   };
+
+  const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
+    const { isMouseOver } = e.detail;
+
+    if (isMouseOver) {
+      previewStackedAsset = asset;
+    } else {
+      previewStackedAsset = undefined;
+    }
+  };
+
+  const handleUnstack = async () => {
+    try {
+      const ids = $stackAssetsStore.map(({ id }) => id);
+      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
+      for (const child of $stackAssetsStore) {
+        child.stackParentId = null;
+        assetStore?.addAsset(child);
+      }
+      asset.stackCount = 0;
+      asset.stack = [];
+      assetStore?.updateAsset(asset);
+
+      dispatch('unstack');
+      notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
+    } catch (error) {
+      await handleError(error, `Unable to unstack`);
+    }
+  };
 </script>
 
 <section
@@ -390,6 +447,7 @@
         showDownloadButton={shouldShowDownloadButton}
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
+        hasStackChildern={$stackAssetsStore.length > 0}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -403,6 +461,7 @@
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={handlePlaySlideshow}
+        on:unstack={handleUnstack}
       />
     {/if}
   </div>
@@ -413,40 +472,94 @@
     </div>
   {/if}
 
+  <!-- Asset Viewer -->
   <div class="col-span-4 col-start-1 row-span-full row-start-1">
-    {#key asset.id}
-      {#if !asset.resized}
-        <div class="flex h-full w-full justify-center">
-          <div
-            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-          >
-            <Icon path={mdiImageBrokenVariant} size="25%" />
-          </div>
-        </div>
-      {:else if asset.type === AssetTypeEnum.Image}
-        {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-          <VideoViewer
-            assetId={asset.livePhotoVideoId}
-            on:close={closeViewer}
-            on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-          />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
-              .toLowerCase()
-              .endsWith('.insp'))}
-          <PanoramaViewer {asset} />
+    <!-- Condition to show preview of stacked asset on hovered -->
+    {#if displayedAsset}
+      {#key displayedAsset.id}
+        {#if displayedAsset.type === AssetTypeEnum.Image}
+          <PhotoViewer asset={displayedAsset} on:close={closeViewer} haveFadeTransition={false} />
         {:else}
-          <PhotoViewer {asset} on:close={closeViewer} />
+          <VideoViewer
+            assetId={displayedAsset.id}
+            on:close={closeViewer}
+            on:onVideoEnded={handleVideoEnded}
+            on:onVideoStarted={handleVideoStarted}
+          />
         {/if}
-      {:else}
-        <VideoViewer
-          assetId={asset.id}
-          on:close={closeViewer}
-          on:onVideoEnded={handleVideoEnded}
-          on:onVideoStarted={handleVideoStarted}
-        />
-      {/if}
-    {/key}
+      {/key}
+    {:else}
+      {#key asset.id}
+        {#if !asset.resized}
+          <div class="flex h-full w-full justify-center">
+            <div
+              class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
+            >
+              <Icon path={mdiImageBrokenVariant} size="25%" />
+            </div>
+          </div>
+        {:else if asset.type === AssetTypeEnum.Image}
+          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+            <VideoViewer
+              assetId={asset.livePhotoVideoId}
+              on:close={closeViewer}
+              on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+            />
+          {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
+                .toLowerCase()
+                .endsWith('.insp'))}
+            <PanoramaViewer {asset} />
+          {:else}
+            <PhotoViewer {asset} on:close={closeViewer} />
+          {/if}
+        {:else}
+          <VideoViewer
+            assetId={asset.id}
+            on:close={closeViewer}
+            on:onVideoEnded={handleVideoEnded}
+            on:onVideoStarted={handleVideoStarted}
+          />
+        {/if}
+      {/key}
+    {/if}
+
+    {#if $stackAssetsStore.length > 0 && withStacked}
+      <div
+        id="stack-slideshow"
+        class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
+      >
+        <div class="relative whitespace-nowrap transition-all">
+          {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
+            <div
+              class="{stackedAsset.id == asset.id
+                ? '-translate-y-[1px]'
+                : '-translate-y-0'} inline-block px-1 transition-transform"
+            >
+              <Thumbnail
+                class="{stackedAsset.id == asset.id
+                  ? 'bg-transparent border-2 border-white'
+                  : 'bg-gray-700/40'} inline-block hover:bg-transparent"
+                asset={stackedAsset}
+                on:click={() => (asset = stackedAsset)}
+                on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+                readonly
+                thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
+                showStackedIcon={false}
+              />
+
+              {#if stackedAsset.id == asset.id}
+                <div class="w-full flex place-items-center place-content-center">
+                  <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
   </div>
+
+  <!-- Stack & Stack Controller -->
 
   {#if !isSlideshowMode && showNavigation}
     <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
@@ -458,7 +571,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel
@@ -511,5 +624,28 @@
 <style>
   #immich-asset-viewer {
     contain: layout;
+  }
+
+  .horizontal-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 10px;
+  }
+
+  /* Track */
+  .horizontal-scrollbar::-webkit-scrollbar-track {
+    background: #000000;
+    border-radius: 16px;
+  }
+
+  /* Handle */
+  .horizontal-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(159, 159, 159, 0.408);
+    border-radius: 16px;
+  }
+
+  /* Handle on hover */
+  .horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #adcbfa;
+    border-radius: 16px;
   }
 </style>

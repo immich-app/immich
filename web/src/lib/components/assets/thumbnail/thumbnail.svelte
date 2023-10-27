@@ -9,6 +9,7 @@
   import VideoThumbnail from './video-thumbnail.svelte';
   import {
     mdiArchiveArrowDownOutline,
+    mdiCameraBurst,
     mdiCheckCircle,
     mdiHeart,
     mdiImageBrokenVariant,
@@ -18,7 +19,11 @@
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    click: { asset: AssetResponseDto };
+    select: { asset: AssetResponseDto };
+    'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
+  }>();
 
   export let asset: AssetResponseDto;
   export let groupIndex = 0;
@@ -31,6 +36,10 @@
   export let disabled = false;
   export let readonly = false;
   export let showArchiveIcon = false;
+  export let showStackedIcon = true;
+
+  let className = '';
+  export { className as class };
 
   let mouseOver = false;
 
@@ -66,6 +75,14 @@
       dispatch('select', { asset });
     }
   };
+
+  const onMouseEnter = () => {
+    mouseOver = true;
+  };
+
+  const onMouseLeave = () => {
+    mouseOver = false;
+  };
 </script>
 
 <IntersectionObserver once={false} let:intersecting>
@@ -78,13 +95,13 @@
       : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
     class:cursor-not-allowed={disabled}
     class:hover:cursor-pointer={!disabled}
-    on:mouseenter={() => (mouseOver = true)}
-    on:mouseleave={() => (mouseOver = false)}
+    on:mouseenter={() => onMouseEnter()}
+    on:mouseleave={() => onMouseLeave()}
     on:click={thumbnailClickedHandler}
     on:keydown={thumbnailKeyDownHandler}
   >
     {#if intersecting}
-      <div class="absolute z-20 h-full w-full">
+      <div class="absolute z-20 h-full w-full {className}">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
@@ -136,6 +153,21 @@
           <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pr-2 pt-2">
               <Icon path={mdiRotate360} size="24" />
+            </span>
+          </div>
+        {/if}
+
+        <!-- Stacked asset -->
+
+        {#if asset.stackCount && showStackedIcon}
+          <div
+            class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == null
+              ? 'top-0 right-0'
+              : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
+          >
+            <span class="pr-2 pt-2 flex place-items-center gap-1">
+              <p>{asset.stackCount}</p>
+              <Icon path={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
