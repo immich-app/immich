@@ -6323,11 +6323,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
+         * @param {boolean} [withStacked] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getByTimeBucket: async (size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getByTimeBucket: async (size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'size' is not null or undefined
             assertParamExists('getByTimeBucket', 'size', size)
             // verify required parameter 'timeBucket' is not null or undefined
@@ -6379,6 +6380,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isTrashed !== undefined) {
                 localVarQueryParameter['isTrashed'] = isTrashed;
+            }
+
+            if (withStacked !== undefined) {
+                localVarQueryParameter['withStacked'] = withStacked;
             }
 
             if (timeBucket !== undefined) {
@@ -6691,11 +6696,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
+         * @param {boolean} [withStacked] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTimeBuckets: async (size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getTimeBuckets: async (size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'size' is not null or undefined
             assertParamExists('getTimeBuckets', 'size', size)
             const localVarPath = `/asset/time-buckets`;
@@ -6745,6 +6751,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isTrashed !== undefined) {
                 localVarQueryParameter['isTrashed'] = isTrashed;
+            }
+
+            if (withStacked !== undefined) {
+                localVarQueryParameter['withStacked'] = withStacked;
             }
 
             if (key !== undefined) {
@@ -7485,12 +7495,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
+         * @param {boolean} [withStacked] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getByTimeBucket(size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getByTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, key, options);
+        async getByTimeBucket(size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getByTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -7565,12 +7576,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
+         * @param {boolean} [withStacked] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTimeBuckets(size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TimeBucketResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, key, options);
+        async getTimeBuckets(size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TimeBucketResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -7815,7 +7827,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getByTimeBucket(requestParameters: AssetApiGetByTimeBucketRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getByTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getByTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7876,7 +7888,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getTimeBuckets(requestParameters: AssetApiGetTimeBucketsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<TimeBucketResponseDto>> {
-            return localVarFp.getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all asset of a device that are in the database, ID only.
@@ -8253,6 +8265,13 @@ export interface AssetApiGetByTimeBucketRequest {
 
     /**
      * 
+     * @type {boolean}
+     * @memberof AssetApiGetByTimeBucket
+     */
+    readonly withStacked?: boolean
+
+    /**
+     * 
      * @type {string}
      * @memberof AssetApiGetByTimeBucket
      */
@@ -8404,6 +8423,13 @@ export interface AssetApiGetTimeBucketsRequest {
      * @memberof AssetApiGetTimeBuckets
      */
     readonly isTrashed?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiGetTimeBuckets
+     */
+    readonly withStacked?: boolean
 
     /**
      * 
@@ -8820,7 +8846,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getByTimeBucket(requestParameters: AssetApiGetByTimeBucketRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getByTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getByTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8895,7 +8921,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getTimeBuckets(requestParameters: AssetApiGetTimeBucketsRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

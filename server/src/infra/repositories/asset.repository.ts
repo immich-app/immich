@@ -19,6 +19,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
+import { dot } from 'node:test/reporters';
 import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
@@ -507,7 +508,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, isTrashed, albumId, personId, userId } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId, withStacked } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -543,7 +544,8 @@ export class AssetRepository implements IAssetRepository {
         .andWhere('person.id = :personId', { personId });
     }
 
-    if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
+    console.log('with stack', withStacked);
+    if (withStacked) {
       builder = builder.andWhere('asset.stackParent IS NULL');
     }
 
