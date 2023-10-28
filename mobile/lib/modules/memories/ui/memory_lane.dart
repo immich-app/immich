@@ -16,7 +16,8 @@ class MemoryLane extends HookConsumerWidget {
     final memoryLane = memoryLaneFutureProvider
         .whenData(
           (memories) => memories != null
-              ? SizedBox(
+              ? Container(
+                  margin: const EdgeInsets.only(top: 10),
                   height: 200,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,

@@ -46,7 +46,7 @@ class UserCircleAvatar extends ConsumerWidget {
       radius: radius,
       child: user.profileImagePath == ""
           ? Text(
-              user.firstName[0],
+              user.firstName[0].toUpperCase(),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -62,7 +62,8 @@ class UserCircleAvatar extends ConsumerWidget {
                 image: NetworkImage(
                   profileImageUrl,
                   headers: {
-                    "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
+                    "Authorization":
+                        "Bearer ${Store.get(StoreKey.accessToken)}",
                   },
                 ),
                 fadeInDuration: const Duration(milliseconds: 200),
