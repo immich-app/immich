@@ -265,6 +265,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                   if (data.isRemote) buildControlButton(data),
                 ],
               ),
+              isOwner: userId == data.ownerId,
             ),
           ),
         ),

@@ -18,7 +18,7 @@
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
-    mdiMoviePlayOutline,
+    mdiPlaySpeed,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
@@ -100,7 +100,7 @@
       {:else}
         <CircleIconButton
           isOpacity={true}
-          icon={mdiMoviePlayOutline}
+          icon={mdiPlaySpeed}
           title="Play Motion Photo"
           on:click={() => dispatch('playMotionPhoto')}
         />

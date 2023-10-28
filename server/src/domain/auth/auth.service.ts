@@ -221,7 +221,7 @@ export class AuthService {
     }
 
     const client = await this.getOAuthClient(config);
-    const url = await client.authorizationUrl({
+    const url = client.authorizationUrl({
       redirect_uri: this.normalize(config, dto.redirectUri),
       scope: config.oauth.scope,
       state: generators.state(),
@@ -331,13 +331,18 @@ export class AuthService {
       response_types: ['code'],
     };
 
-    const issuer = await Issuer.discover(issuerUrl);
-    const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
-    if (algorithms[0] === 'HS256') {
-      metadata.id_token_signed_response_alg = algorithms[0];
-    }
+    try {
+      const issuer = await Issuer.discover(issuerUrl);
+      const algorithms = (issuer.id_token_signing_alg_values_supported || []) as string[];
+      if (algorithms[0] === 'HS256') {
+        metadata.id_token_signed_response_alg = algorithms[0];
+      }
 
-    return new issuer.Client(metadata);
+      return new issuer.Client(metadata);
+    } catch (error: Error | any) {
+      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack);
+      throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });
+    }
   }
 
   private normalize(config: SystemConfig, redirectUri: string) {
