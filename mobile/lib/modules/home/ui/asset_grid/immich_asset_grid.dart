@@ -33,6 +33,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool shrinkWrap;
   final bool showDragScroll;
   final bool showStack;
+  final bool isOwner;
 
   const ImmichAssetGrid({
     super.key,
@@ -53,6 +54,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.shrinkWrap = false,
     this.showDragScroll = true,
     this.showStack = false,
+    this.isOwner = true,
   });
 
   @override
@@ -117,6 +119,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           shrinkWrap: shrinkWrap,
           showDragScroll: showDragScroll,
           showStack: showStack,
+          isOwner: isOwner,
         ),
       );
     }
