@@ -549,7 +549,9 @@
 
   const handleStopSlideshow = async () => {
     try {
-      await document.exitFullscreen();
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
     } catch (error) {
       console.error('Error exiting fullscreen', error);
     } finally {
