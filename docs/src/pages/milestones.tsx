@@ -8,6 +8,7 @@ import {
   mdiCheckAll,
   mdiCheckboxMarked,
   mdiCollage,
+  mdiContentCopy,
   mdiDevices,
   mdiFaceMan,
   mdiFaceManOutline,
@@ -26,6 +27,7 @@ import {
   mdiMerge,
   mdiMonitor,
   mdiMotionPlayOutline,
+  mdiPalette,
   mdiPanVertical,
   mdiPartyPopper,
   mdiRaw,
@@ -47,6 +49,24 @@ import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiContentCopy,
+    title: 'Stack assets',
+    description: 'Manual asset stacking for grouping and hiding related assets in the main timeline.',
+    release: 'v1.83.0',
+    tag: 'v1.83.0',
+    date: new Date(2023, 9, 28),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiPalette,
+    title: 'Custom theme',
+    description: 'Apply your custom CSS for modifying fonts, colors, and styles in the web application.',
+    release: 'v1.83.0',
+    tag: 'v1.83.0',
+    date: new Date(2023, 9, 28),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiTrashCanOutline,
     title: 'Trash Feature',
