@@ -50,6 +50,15 @@ import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
   {
+    icon: mdiStar,
+    description: 'Reach 20K Stars on GitHub!',
+    title: '20,000 Stars',
+    release: 'v1.83.0',
+    tag: 'v1.83.0',
+    date: new Date(2023, 9, 28),
+    dateType: DateType.RELEASE,
+  },
+  {
     icon: mdiContentCopy,
     title: 'Stack assets',
     description: 'Manual asset stacking for grouping and hiding related assets in the main timeline.',
@@ -303,7 +312,7 @@ const items: Item[] = [
   },
   {
     icon: mdiStar,
-    description: 'Reach 10K Starts on GitHub!',
+    description: 'Reach 10K Stars on GitHub!',
     title: '10,000 Stars',
     release: 'v1.54.0',
     tag: 'v1.54.0',
