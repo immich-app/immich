@@ -28,7 +28,7 @@
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
-  import { BucketPosition, type AssetStore } from '$lib/stores/assets.store';
+  import type { AssetStore } from '$lib/stores/assets.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
@@ -88,6 +88,7 @@
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
   let slideshowStateUnsubscribe: () => void;
+  let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
@@ -169,9 +170,16 @@
 
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
+        resetSlideshowHistory(asset.id);
         handlePlaySlideshow();
       } else if (value === SlideshowState.StopSlideshow) {
         handleStopSlideshow();
+      }
+    });
+
+    shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
+      if (value) {
+        resetSlideshowHistory(asset.id);
       }
     });
 
@@ -201,6 +209,10 @@
 
     if (slideshowStateUnsubscribe) {
       slideshowStateUnsubscribe();
+    }
+
+    if (shuffleSlideshowUnsubscribe) {
+      shuffleSlideshowUnsubscribe();
     }
   });
 
@@ -290,13 +302,15 @@
       return;
     }
 
+    appendToSlideshowHistory(asset.id);
+
     setAssetId(asset.id);
     progressBar.restart(true);
   };
 
   const navigateAssetForward = async (e?: Event) => {
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      return navigateAssetRandom();
+      return navigateHistoryForward() || navigateAssetRandom();
     }
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore && progressBar) {
@@ -314,7 +328,8 @@
 
   const navigateAssetBackward = (e?: Event) => {
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      return navigateAssetRandom();
+      navigateHistoryBackward();
+      return;
     }
 
     if ($slideshowState === SlideshowState.PlaySlideshow && progressBar) {
@@ -469,6 +484,47 @@
   let assetViewerHtmlElement: HTMLElement;
   let progressBar: ProgressBar;
   let progressBarStatus: ProgressBarStatus;
+
+  let slideshowHistory: string[] = [];
+  let slideshowHistoryIndex = 0;
+
+  const resetSlideshowHistory = (assetId: string) => {
+    slideshowHistory = [assetId];
+    slideshowHistoryIndex = 0;
+  };
+
+  const appendToSlideshowHistory = (assetId: string) => {
+    slideshowHistory.push(assetId);
+
+    // If we were at the end of the slideshow history, move the index to the new end
+    if (slideshowHistoryIndex === slideshowHistory.length - 2) {
+      slideshowHistoryIndex++;
+    }
+  };
+
+  const navigateHistoryForward = (): boolean => {
+    if (slideshowHistoryIndex === slideshowHistory.length - 1) {
+      return false;
+    }
+
+    slideshowHistoryIndex++;
+    setAssetId(slideshowHistory[slideshowHistoryIndex]);
+    progressBar.restart(true);
+
+    return true;
+  };
+
+  const navigateHistoryBackward = (): boolean => {
+    if (slideshowHistoryIndex === 0) {
+      return false;
+    }
+
+    slideshowHistoryIndex--;
+    setAssetId(slideshowHistory[slideshowHistoryIndex]);
+    progressBar.restart(true);
+
+    return true;
+  };
 
   const handleVideoStarted = () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
