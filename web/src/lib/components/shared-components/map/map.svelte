@@ -8,7 +8,7 @@
     Control,
     ControlGroup,
   } from 'svelte-maplibre';
-  import { colorTheme } from '$lib/stores/preferences.store';
+  import { mapSettings } from '$lib/stores/preferences.store';
   import { MapMarkerResponseDto, api } from '@api';
   import Cog from 'svelte-material-icons/Cog.svelte';
   import type { LngLatLike, StyleSpecification } from 'maplibre-gl';
@@ -19,7 +19,7 @@
   export let center: LngLatLike | undefined = undefined;
 
   $: style = (async () => {
-    const { data } = await api.systemConfigApi.getMapStyle({ theme: $colorTheme });
+    const { data } = await api.systemConfigApi.getMapStyle({ theme: $mapSettings.allowDarkMode ? 'dark' : 'light' });
     return data as StyleSpecification;
   })();
 </script>
