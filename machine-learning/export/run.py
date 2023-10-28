@@ -1,11 +1,12 @@
 import gc
 import os
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from app.models.clip import OpenCLIPEncoder, MCLIPEncoder
+from models import openclip, mclip
 from rich.progress import Progress
 
-from huggingface_hub import upload_folder, upload_file, create_repo, login
+from huggingface_hub import upload_folder, create_repo, login
 
 
 models = [
@@ -34,6 +35,10 @@ models = [
     "ViT-L-14-336::openai",
     "ViT-H-14::laion2b-s32b-b79k",
     "ViT-g-14::laion2b-s12b-b42k",
+    "M-CLIP/LABSE-Vit-L-14",
+    "M-CLIP/XLM-Roberta-Large-Vit-B-32",
+    "M-CLIP/XLM-Roberta-Large-Vit-B-16Plus",
+    "M-CLIP/XLM-Roberta-Large-Vit-L-14"
 ]
 
 login(token=os.environ["HF_AUTH_TOKEN"])
@@ -43,8 +48,9 @@ with Progress() as progress:
     task2 = progress.add_task("[yellow]Uploading models...", total=len(models))
     
     with TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
         for model in models:
-            model_name = model.replace("::", "__")
+            model_name = model.split("/")[-1].replace("::", "__")
             config_path = tmpdir / model_name / "config.json"
 
             def upload():
@@ -53,20 +59,19 @@ with Progress() as progress:
 
                 create_repo(repo_id, exist_ok=True)
                 upload_folder(repo_id=repo_id, folder_path=tmpdir / model_name)
-                upload_file(repo_id=repo_id, path_or_fileobj=config_path, path_in_repo="config.json")
                 progress.update(task2, advance=1)
 
             def export():
                 progress.update(task1, description=f"[green]Exporting {model_name}")
-
-                if (model_name.startswith("M-CLIP")):
-                    clip_encoder = MCLIPEncoder(model, cache_dir=tmpdir / model_name)
+                visual_dir = tmpdir / model_name / "visual"
+                textual_dir = tmpdir / model_name / "textual"
+                if (model.startswith("M-CLIP")):
+                    mclip.to_onnx(model, visual_dir, textual_dir)
                 else:
-                    clip_encoder = OpenCLIPEncoder(model, cache_dir=tmpdir / model_name)
-                clip_encoder.download()
+                    name, _, pretrained = model_name.partition("__")
+                    openclip.to_onnx(openclip.OpenCLIPModelConfig(name, pretrained), visual_dir, textual_dir)
+
                 progress.update(task1, advance=1)
-        
-                del clip_encoder
                 gc.collect()
 
             export()

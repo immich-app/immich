@@ -7,30 +7,21 @@ from typing import Any, Literal
 import numpy as np
 import onnxruntime as ort
 import open_clip
+from huggingface_hub import snapshot_download
 from open_clip.factory import PreprocessCfg
 from PIL import Image
 from transformers import AutoTokenizer
 
-from app.config import get_cache_dir, log
+from app.config import log
 from app.schemas import ModelType, ndarray
 
 from .base import InferenceModel
-
-# from .export.openclip import OpenCLIPModelConfig
 
 
 class OpenCLIPModelConfig:
     def __init__(self, name: str, pretrained: str) -> None:
         self.name = name
         self.pretrained = pretrained
-
-
-_MCLIP_TO_OPENCLIP = {
-    "M-CLIP/XLM-Roberta-Large-Vit-B-32": OpenCLIPModelConfig("ViT-B-32", "openai"),
-    "M-CLIP/XLM-Roberta-Large-Vit-B-16Plus": OpenCLIPModelConfig("ViT-B-16-plus-240", "laion400m_e32"),
-    "M-CLIP/LABSE-Vit-L-14": OpenCLIPModelConfig("ViT-L-14", "openai"),
-    "M-CLIP/XLM-Roberta-Large-Vit-L-14": OpenCLIPModelConfig("ViT-L-14", "openai"),
-}
 
 
 class BaseCLIPEncoder(InferenceModel):
@@ -110,12 +101,16 @@ class BaseCLIPEncoder(InferenceModel):
         return self.cache_dir / "textual"
 
     @property
-    def textual_path(self) -> Path:
-        return self.textual_dir / "model.onnx"
-
-    @property
     def visual_dir(self) -> Path:
         return self.cache_dir / "visual"
+
+    @property
+    def model_cfg_path(self) -> Path:
+        return self.cache_dir / "config.json"
+
+    @property
+    def textual_path(self) -> Path:
+        return self.textual_dir / "model.onnx"
 
     @property
     def visual_path(self) -> Path:
@@ -136,18 +131,12 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         model_name: str,
         cache_dir: str | None = None,
         mode: Literal["text", "vision"] | None = None,
-        model_cfg: OpenCLIPModelConfig | None = None,
         **model_kwargs: Any,
     ) -> None:
-        if model_cfg is not None:
-            self.model_cfg = model_cfg
-        else:
-            name, _, pretrained = model_name.replace("hf_hub:", "").partition("::")
-            self.model_cfg = OpenCLIPModelConfig(name, pretrained)
-        super().__init__(self.model_cfg.name, cache_dir, mode, **model_kwargs)
+        super().__init__(_clean_model_name(model_name), cache_dir, mode, **model_kwargs)
 
     def _download(self) -> None:
-        export_openclip.to_onnx(self.model_cfg, self.visual_dir, self.textual_dir, self.preprocess_cfg_path)
+        snapshot_download(f"immich-app/{self.model_name}", cache_dir=self.cache_dir)
 
     def encode_image(self, image: Image.Image) -> ndarray:
         inputs = {"image": self.transform(image).unsqueeze(0).numpy()}
@@ -174,39 +163,61 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
 
 class MCLIPEncoder(OpenCLIPEncoder):
-    def __init__(
-        self,
-        model_name: str,
-        cache_dir: str | None = None,
-        mode: Literal["text", "vision"] | None = None,
-        **model_kwargs: Any,
-    ) -> None:
-        if model_name not in _MCLIP_TO_OPENCLIP:
-            raise ValueError(f"Unsupported M-CLIP model: {model_name}; options are {list(_MCLIP_TO_OPENCLIP)}")
-        super().__init__(model_name, cache_dir, mode, _MCLIP_TO_OPENCLIP[model_name], **model_kwargs)
-        self.model_name = model_name
-
-    def _download(self) -> None:
-        export_mclip.to_onnx(self.model_name, self.textual_dir)
-        # M-CLIP is text-only, so we also export the corresponding OpenCLIP visual model
-        export_openclip.to_onnx(
-            self.model_cfg, self.visual_dir, self._get_openclip_cache_dir() / "textual", self.preprocess_cfg_path
-        )
-
     def encode_text(self, text: str) -> ndarray:
         tokens = self.tokenizer(text, return_tensors="np")
         inputs = {
-            "input_ids": tokens["input_ids"].astype(np.int32),
-            "attention_mask": tokens["attention_mask"].astype(np.int32),
+            "input_ids": tokens.input_ids.astype(np.int32),
+            "attention_mask": tokens.attention_mask.astype(np.int32),
         }
         return self.text_model.run(None, inputs)
 
-    @property
-    def visual_dir(self) -> Path:
-        return self._get_openclip_cache_dir() / "visual"
-
     def _load_tokenizer(self) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.textual_dir)
 
-    def _get_openclip_cache_dir(self):
-        return get_cache_dir(f"{self.model_cfg.name}::{self.model_cfg.pretrained}", ModelType.CLIP)
+
+_OPENCLIP_MODELS = {
+    "RN50__openai",
+    "RN50__yfcc15m",
+    "RN50__cc12m",
+    "RN101__openai",
+    "RN101__yfcc15m",
+    "RN50x4__openai",
+    "RN50x16__openai",
+    "RN50x64__openai",
+    "ViT-B-32__openai",
+    "ViT-B-32__laion2b_e16",
+    "ViT-B-32__laion400m_e31",
+    "ViT-B-32__laion400m_e32",
+    "ViT-B-32__laion2b-s34b-b79k",
+    "ViT-B-16__openai",
+    "ViT-B-16__laion400m_e31",
+    "ViT-B-16__laion400m_e32",
+    "ViT-B-16-plus-240__laion400m_e31",
+    "ViT-B-16-plus-240__laion400m_e32",
+    "ViT-L-14__openai",
+    "ViT-L-14__laion400m_e31",
+    "ViT-L-14__laion400m_e32",
+    "ViT-L-14__laion2b-s32b-b82k",
+    "ViT-L-14-336__openai",
+    "ViT-H-14__laion2b-s32b-b79k",
+    "ViT-g-14__laion2b-s12b-b42k",
+}
+
+_MCLIP_MODELS = {
+    "LABSE-Vit-L-14",
+    "XLM-Roberta-Large-Vit-B-32",
+    "XLM-Roberta-Large-Vit-B-16Plus",
+    "XLM-Roberta-Large-Vit-L-14"
+}
+
+
+def _clean_model_name(model_name: str) -> str:
+    return model_name.split("/")[-1].replace("::", "__")
+
+
+def is_openclip(model_name: str) -> bool:
+    return _clean_model_name(model_name) in _OPENCLIP_MODELS
+
+
+def is_mclip(model_name: str) -> bool:
+    return _clean_model_name(model_name) in _MCLIP_MODELS

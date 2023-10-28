@@ -1,28 +1,39 @@
 import tempfile
 import warnings
-from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
 from pathlib import Path
 
 import torch
+from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
+from transformers import AutoTokenizer
 
-from export.util import get_model_path
-
+from .openclip import OpenCLIPModelConfig, to_onnx as openclip_to_onnx
 from .optimize import optimize
+from .util import get_model_path
+
+
+_MCLIP_TO_OPENCLIP = {
+    "M-CLIP/XLM-Roberta-Large-Vit-B-32": OpenCLIPModelConfig("ViT-B-32", "openai"),
+    "M-CLIP/XLM-Roberta-Large-Vit-B-16Plus": OpenCLIPModelConfig("ViT-B-16-plus-240", "laion400m_e32"),
+    "M-CLIP/LABSE-Vit-L-14": OpenCLIPModelConfig("ViT-L-14", "openai"),
+    "M-CLIP/XLM-Roberta-Large-Vit-L-14": OpenCLIPModelConfig("ViT-L-14", "openai"),
+}
 
 
 def to_onnx(
     model_name: str,
+    output_dir_visual: Path | str,
     output_dir_textual: Path | str,
 ) -> None:
+    textual_path = get_model_path(output_dir_textual)
     with tempfile.TemporaryDirectory() as tmpdir:
         model = MultilingualCLIP.from_pretrained(model_name, cache_dir=tmpdir)
+        AutoTokenizer.from_pretrained(model_name).save_pretrained(output_dir_textual)
 
         for param in model.parameters():
             param.requires_grad_(False)
-
-        textual_path = get_model_path(output_dir_textual)
-
+        
         export_text_encoder(model, textual_path)
+        openclip_to_onnx(_MCLIP_TO_OPENCLIP[model_name], output_dir_visual)
         optimize(textual_path)
 
 

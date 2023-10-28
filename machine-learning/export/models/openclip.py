@@ -1,4 +1,3 @@
-import json
 import tempfile
 import warnings
 from dataclasses import dataclass, field
@@ -7,7 +6,7 @@ from pathlib import Path
 import open_clip
 import torch
 
-from export.util import get_model_path
+from .util import get_model_path, save_config
 
 from .optimize import optimize
 
@@ -47,8 +46,8 @@ def to_onnx(
         if output_dir_visual is not None:
             visual_path = get_model_path(output_dir_visual)
 
-            _save_preprocess_cfg(output_dir_visual)
-            _save_model_cfg(model_cfg, output_dir_visual.parent)
+            save_config(open_clip.get_model_preprocess_cfg(model), output_dir_visual / "preprocess_cfg.json")
+            save_config(open_clip.get_model_config(model_cfg.name), output_dir_visual.parent / "config.json")
             export_image_encoder(model, model_cfg, visual_path)
 
             optimize(visual_path)
@@ -102,20 +101,3 @@ def export_text_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, o
             opset_version=17,
             dynamic_axes={"text": {0: "batch_size"}},
         )
-
-def _save_preprocess_cfg(model: open_clip.CLIP, output_dir: Path | str) -> None:
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    preprocess_cfg_path = output_dir / "preprocess_cfg.json"
-    preprocess_cfg = open_clip.get_model_preprocess_cfg(model)
-    json.dump(preprocess_cfg, preprocess_cfg_path.open("w"))
-
-
-def _save_model_cfg(model_cfg: OpenCLIPModelConfig, output_dir: Path | str) -> None:
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    model_cfg = open_clip.get_model_config(model_cfg.name)
-    model_cfg_path = output_dir / "config.json"
-    json.dump(model_cfg, model_cfg_path.open("w"))
