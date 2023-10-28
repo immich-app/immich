@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -32,9 +33,11 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     buildProfilePhoto() {
       return InkWell(
-        onTap: () {
-          Scaffold.of(context).openDrawer();
-        },
+        onTap: () => showDialog(
+          context: context,
+          useRootNavigator: false,
+          builder: (ctx) => const ImmichAppBarDialog(),
+        ),
         borderRadius: BorderRadius.circular(12),
         child: authState.profileImagePath.isEmpty || user == null
             ? const Icon(

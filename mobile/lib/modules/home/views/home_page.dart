@@ -18,7 +18,6 @@ import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_lane.dart';
-import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -73,10 +72,6 @@ class HomePage extends HookConsumerWidget {
       },
       [],
     );
-
-    void reloadAllAsset() {
-      ref.watch(assetProvider.notifier).getAllAsset();
-    }
 
     Widget buildBody() {
       void selectionListener(
@@ -376,7 +371,6 @@ class HomePage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: !selectionEnabledHook.value ? const ImmichAppBar() : null,
-      drawer: const ProfileDrawer(),
       body: buildBody(),
     );
   }

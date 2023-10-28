@@ -6,8 +6,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class ServerInfoBox extends HookConsumerWidget {
-  const ServerInfoBox({
+class AppBarServerInfo extends HookConsumerWidget {
+  const AppBarServerInfo({
     Key? key,
   }) : super(key: key);
 
@@ -35,15 +35,15 @@ class ServerInfoBox extends HookConsumerWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        elevation: 0,
-        color: Theme.of(context).scaffoldBackgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5), // if you need this
-          side: const BorderSide(
-            color: Color.fromARGB(101, 201, 201, 201),
-            width: 1,
+      padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Theme.of(context).scaffoldBackgroundColor
+              : const Color.fromARGB(255, 225, 229, 240),
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(10),
+            bottomRight: Radius.circular(10),
           ),
         ),
         child: Padding(
@@ -72,20 +72,29 @@ class ServerInfoBox extends HookConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "server_info_box_app_version".tr(),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      "server_info_box_app_version".tr(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).textTheme.labelSmall?.color,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  Text(
-                    "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    flex: 0,
+                    child: Text(
+                      "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context)
+                            .textTheme
+                            .labelSmall
+                            ?.color
+                            ?.withOpacity(0.5),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -97,22 +106,31 @@ class ServerInfoBox extends HookConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "server_info_box_server_version".tr(),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      "server_info_box_server_version".tr(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).textTheme.labelSmall?.color,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  Text(
-                    serverInfoState.serverVersion.major > 0
-                        ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
-                        : "?",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    flex: 0,
+                    child: Text(
+                      serverInfoState.serverVersion.major > 0
+                          ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
+                          : "?",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context)
+                            .textTheme
+                            .labelSmall
+                            ?.color
+                            ?.withOpacity(0.5),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
