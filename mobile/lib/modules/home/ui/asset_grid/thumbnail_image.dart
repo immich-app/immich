@@ -70,7 +70,7 @@ class ThumbnailImage extends StatelessWidget {
       final durationString = asset.duration.toString();
       return Positioned(
         top: 5,
-        right: 5,
+        right: 8,
         child: Row(
           children: [
             Text(
@@ -100,8 +100,8 @@ class ThumbnailImage extends StatelessWidget {
 
     Widget buildStackIcon() {
       return Positioned(
-        top: 5,
-        right: 5,
+        top: !asset.isImage ? 28 : 5,
+        right: 8,
         child: Row(
           children: [
             if (asset.stackChildrenCount > 1)
@@ -214,7 +214,7 @@ class ThumbnailImage extends StatelessWidget {
             ),
           if (showStorageIndicator)
             Positioned(
-              right: 10,
+              right: 8,
               bottom: 5,
               child: Icon(
                 storageIcon(asset),
@@ -224,7 +224,7 @@ class ThumbnailImage extends StatelessWidget {
             ),
           if (asset.isFavorite)
             const Positioned(
-              left: 10,
+              left: 8,
               bottom: 5,
               child: Icon(
                 Icons.favorite,
@@ -233,7 +233,7 @@ class ThumbnailImage extends StatelessWidget {
               ),
             ),
           if (!asset.isImage) buildVideoIcon(),
-          if (asset.isImage && asset.stackChildrenCount > 0) buildStackIcon(),
+          if (asset.stackChildrenCount > 0) buildStackIcon(),
         ],
       ),
     );
