@@ -8,6 +8,10 @@ doc/APIKeyCreateDto.md
 doc/APIKeyCreateResponseDto.md
 doc/APIKeyResponseDto.md
 doc/APIKeyUpdateDto.md
+doc/ActivityApi.md
+doc/ActivityCommentDto.md
+doc/ActivityFavoriteDto.md
+doc/ActivityReponseDto.md
 doc/AddUsersDto.md
 doc/AdminSignupResponseDto.md
 doc/AlbumApi.md
@@ -124,6 +128,7 @@ doc/SharedLinkResponseDto.md
 doc/SharedLinkType.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
+doc/StatisticsResponseDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
@@ -156,12 +161,14 @@ doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
 doc/UserApi.md
+doc/UserCommentDto.md
 doc/UserCountResponseDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
 doc/VideoCodec.md
 git_push.sh
 lib/api.dart
+lib/api/activity_api.dart
 lib/api/album_api.dart
 lib/api/api_key_api.dart
 lib/api/asset_api.dart
@@ -186,6 +193,9 @@ lib/auth/authentication.dart
 lib/auth/http_basic_auth.dart
 lib/auth/http_bearer_auth.dart
 lib/auth/oauth.dart
+lib/model/activity_comment_dto.dart
+lib/model/activity_favorite_dto.dart
+lib/model/activity_reponse_dto.dart
 lib/model/add_users_dto.dart
 lib/model/admin_signup_response_dto.dart
 lib/model/album_count_response_dto.dart
@@ -294,6 +304,7 @@ lib/model/shared_link_response_dto.dart
 lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
+lib/model/statistics_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
@@ -323,11 +334,16 @@ lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
+lib/model/user_comment_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 lib/model/video_codec.dart
 pubspec.yaml
+test/activity_api_test.dart
+test/activity_comment_dto_test.dart
+test/activity_favorite_dto_test.dart
+test/activity_reponse_dto_test.dart
 test/add_users_dto_test.dart
 test/admin_signup_response_dto_test.dart
 test/album_api_test.dart
@@ -449,6 +465,7 @@ test/shared_link_response_dto_test.dart
 test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
 test/smart_info_response_dto_test.dart
+test/statistics_response_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
@@ -481,6 +498,7 @@ test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart
 test/user_api_test.dart
+test/user_comment_dto_test.dart
 test/user_count_response_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart

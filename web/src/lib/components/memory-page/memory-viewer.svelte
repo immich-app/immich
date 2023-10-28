@@ -2,7 +2,7 @@
   import { memoryStore } from '$lib/stores/memory.store';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
-  import { api } from '@api';
+  import { UserResponseDto, api } from '@api';
   import { goto } from '$app/navigation';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';

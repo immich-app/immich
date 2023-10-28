@@ -13,6 +13,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ActivityEntity } from './activity.entity';
 import { AlbumEntity } from './album.entity';
 import { AssetFaceEntity } from './asset-face.entity';
 import { ExifEntity } from './exif.entity';
@@ -158,6 +159,9 @@ export class AssetEntity {
 
   @OneToMany(() => AssetEntity, (asset) => asset.stackParent)
   stack?: AssetEntity[];
+
+  @OneToMany(() => ActivityEntity, (activity) => activity.asset)
+  activity!: ActivityEntity[];
 }
 
 export enum AssetType {

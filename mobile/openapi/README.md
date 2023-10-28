@@ -77,6 +77,12 @@ Class | Method | HTTP request | Description
 *APIKeyApi* | [**getKey**](doc//APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
 *APIKeyApi* | [**getKeys**](doc//APIKeyApi.md#getkeys) | **GET** /api-key | 
 *APIKeyApi* | [**updateKey**](doc//APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
+*ActivityApi* | [**addComment**](doc//ActivityApi.md#addcomment) | **PUT** /activity/comment/{id}/{albumId} | 
+*ActivityApi* | [**changeFavorite**](doc//ActivityApi.md#changefavorite) | **PUT** /activity/favorite/{id}/{albumId} | 
+*ActivityApi* | [**deleteComment**](doc//ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
+*ActivityApi* | [**getActivity**](doc//ActivityApi.md#getactivity) | **GET** /activity/{id}/{albumId} | 
+*ActivityApi* | [**getFavorite**](doc//ActivityApi.md#getfavorite) | **GET** /activity/favorite/{id}/{albumId} | 
+*ActivityApi* | [**getStatistics**](doc//ActivityApi.md#getstatistics) | **GET** /activity/numberofcomment/{id}/{albumId} | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
@@ -205,6 +211,9 @@ Class | Method | HTTP request | Description
  - [APIKeyCreateResponseDto](doc//APIKeyCreateResponseDto.md)
  - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
  - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
+ - [ActivityCommentDto](doc//ActivityCommentDto.md)
+ - [ActivityFavoriteDto](doc//ActivityFavoriteDto.md)
+ - [ActivityReponseDto](doc//ActivityReponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
@@ -309,6 +318,7 @@ Class | Method | HTTP request | Description
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
+ - [StatisticsResponseDto](doc//StatisticsResponseDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
@@ -338,6 +348,7 @@ Class | Method | HTTP request | Description
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
+ - [UserCommentDto](doc//UserCommentDto.md)
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)

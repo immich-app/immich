@@ -102,6 +102,69 @@ export interface APIKeyUpdateDto {
 /**
  * 
  * @export
+ * @interface ActivityCommentDto
+ */
+export interface ActivityCommentDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityCommentDto
+     */
+    'comment': string;
+}
+/**
+ * 
+ * @export
+ * @interface ActivityFavoriteDto
+ */
+export interface ActivityFavoriteDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ActivityFavoriteDto
+     */
+    'favorite': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface ActivityReponseDto
+ */
+export interface ActivityReponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityReponseDto
+     */
+    'comment': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityReponseDto
+     */
+    'createdAt': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityReponseDto
+     */
+    'id': string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ActivityReponseDto
+     */
+    'isFavorite': boolean;
+    /**
+     * 
+     * @type {UserCommentDto}
+     * @memberof ActivityReponseDto
+     */
+    'user': UserCommentDto | null;
+}
+/**
+ * 
+ * @export
  * @interface AddUsersDto
  */
 export interface AddUsersDto {
@@ -3244,6 +3307,19 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
+ * @interface StatisticsResponseDto
+ */
+export interface StatisticsResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof StatisticsResponseDto
+     */
+    'comments': number;
+}
+/**
+ * 
+ * @export
  * @interface SystemConfigDto
  */
 export interface SystemConfigDto {
@@ -4188,6 +4264,43 @@ export interface UsageByUserDto {
 /**
  * 
  * @export
+ * @interface UserCommentDto
+ */
+export interface UserCommentDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserCommentDto
+     */
+    'email': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserCommentDto
+     */
+    'firstName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserCommentDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserCommentDto
+     */
+    'lastName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserCommentDto
+     */
+    'profileImagePath': string;
+}
+/**
+ * 
+ * @export
  * @interface UserCountResponseDto
  */
 export interface UserCountResponseDto {
@@ -4777,6 +4890,648 @@ export class APIKeyApi extends BaseAPI {
      */
     public updateKey(requestParameters: APIKeyApiUpdateKeyRequest, options?: AxiosRequestConfig) {
         return APIKeyApiFp(this.configuration).updateKey(requestParameters.id, requestParameters.aPIKeyUpdateDto, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * ActivityApi - axios parameter creator
+ * @export
+ */
+export const ActivityApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {ActivityCommentDto} activityCommentDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        addComment: async (id: string, albumId: string, activityCommentDto: ActivityCommentDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('addComment', 'id', id)
+            // verify required parameter 'albumId' is not null or undefined
+            assertParamExists('addComment', 'albumId', albumId)
+            // verify required parameter 'activityCommentDto' is not null or undefined
+            assertParamExists('addComment', 'activityCommentDto', activityCommentDto)
+            const localVarPath = `/activity/comment/{id}/{albumId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(activityCommentDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {ActivityFavoriteDto} activityFavoriteDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        changeFavorite: async (id: string, albumId: string, activityFavoriteDto: ActivityFavoriteDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('changeFavorite', 'id', id)
+            // verify required parameter 'albumId' is not null or undefined
+            assertParamExists('changeFavorite', 'albumId', albumId)
+            // verify required parameter 'activityFavoriteDto' is not null or undefined
+            assertParamExists('changeFavorite', 'activityFavoriteDto', activityFavoriteDto)
+            const localVarPath = `/activity/favorite/{id}/{albumId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(activityFavoriteDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteComment: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('deleteComment', 'id', id)
+            const localVarPath = `/activity/comment/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getActivity: async (id: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getActivity', 'id', id)
+            // verify required parameter 'albumId' is not null or undefined
+            assertParamExists('getActivity', 'albumId', albumId)
+            const localVarPath = `/activity/{id}/{albumId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getFavorite: async (id: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getFavorite', 'id', id)
+            // verify required parameter 'albumId' is not null or undefined
+            assertParamExists('getFavorite', 'albumId', albumId)
+            const localVarPath = `/activity/favorite/{id}/{albumId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getStatistics: async (id: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getStatistics', 'id', id)
+            // verify required parameter 'albumId' is not null or undefined
+            assertParamExists('getStatistics', 'albumId', albumId)
+            const localVarPath = `/activity/numberofcomment/{id}/{albumId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * ActivityApi - functional programming interface
+ * @export
+ */
+export const ActivityApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = ActivityApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {ActivityCommentDto} activityCommentDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async addComment(id: string, albumId: string, activityCommentDto: ActivityCommentDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityReponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addComment(id, albumId, activityCommentDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {ActivityFavoriteDto} activityFavoriteDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async changeFavorite(id: string, albumId: string, activityFavoriteDto: ActivityFavoriteDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityReponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.changeFavorite(id, albumId, activityFavoriteDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteComment(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteComment(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getActivity(id: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityReponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivity(id, albumId, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getFavorite(id: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityReponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getFavorite(id, albumId, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} albumId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getStatistics(id: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatisticsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getStatistics(id, albumId, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * ActivityApi - factory interface
+ * @export
+ */
+export const ActivityApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = ActivityApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {ActivityApiAddCommentRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        addComment(requestParameters: ActivityApiAddCommentRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityReponseDto> {
+            return localVarFp.addComment(requestParameters.id, requestParameters.albumId, requestParameters.activityCommentDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {ActivityApiChangeFavoriteRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        changeFavorite(requestParameters: ActivityApiChangeFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityReponseDto> {
+            return localVarFp.changeFavorite(requestParameters.id, requestParameters.albumId, requestParameters.activityFavoriteDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {ActivityApiDeleteCommentRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteComment(requestParameters: ActivityApiDeleteCommentRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteComment(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {ActivityApiGetActivityRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getActivity(requestParameters: ActivityApiGetActivityRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityReponseDto>> {
+            return localVarFp.getActivity(requestParameters.id, requestParameters.albumId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {ActivityApiGetFavoriteRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getFavorite(requestParameters: ActivityApiGetFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityReponseDto> {
+            return localVarFp.getFavorite(requestParameters.id, requestParameters.albumId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {ActivityApiGetStatisticsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getStatistics(requestParameters: ActivityApiGetStatisticsRequest, options?: AxiosRequestConfig): AxiosPromise<StatisticsResponseDto> {
+            return localVarFp.getStatistics(requestParameters.id, requestParameters.albumId, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * Request parameters for addComment operation in ActivityApi.
+ * @export
+ * @interface ActivityApiAddCommentRequest
+ */
+export interface ActivityApiAddCommentRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiAddComment
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiAddComment
+     */
+    readonly albumId: string
+
+    /**
+     * 
+     * @type {ActivityCommentDto}
+     * @memberof ActivityApiAddComment
+     */
+    readonly activityCommentDto: ActivityCommentDto
+}
+
+/**
+ * Request parameters for changeFavorite operation in ActivityApi.
+ * @export
+ * @interface ActivityApiChangeFavoriteRequest
+ */
+export interface ActivityApiChangeFavoriteRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiChangeFavorite
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiChangeFavorite
+     */
+    readonly albumId: string
+
+    /**
+     * 
+     * @type {ActivityFavoriteDto}
+     * @memberof ActivityApiChangeFavorite
+     */
+    readonly activityFavoriteDto: ActivityFavoriteDto
+}
+
+/**
+ * Request parameters for deleteComment operation in ActivityApi.
+ * @export
+ * @interface ActivityApiDeleteCommentRequest
+ */
+export interface ActivityApiDeleteCommentRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiDeleteComment
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for getActivity operation in ActivityApi.
+ * @export
+ * @interface ActivityApiGetActivityRequest
+ */
+export interface ActivityApiGetActivityRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiGetActivity
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiGetActivity
+     */
+    readonly albumId: string
+}
+
+/**
+ * Request parameters for getFavorite operation in ActivityApi.
+ * @export
+ * @interface ActivityApiGetFavoriteRequest
+ */
+export interface ActivityApiGetFavoriteRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiGetFavorite
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiGetFavorite
+     */
+    readonly albumId: string
+}
+
+/**
+ * Request parameters for getStatistics operation in ActivityApi.
+ * @export
+ * @interface ActivityApiGetStatisticsRequest
+ */
+export interface ActivityApiGetStatisticsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiGetStatistics
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityApiGetStatistics
+     */
+    readonly albumId: string
+}
+
+/**
+ * ActivityApi - object-oriented interface
+ * @export
+ * @class ActivityApi
+ * @extends {BaseAPI}
+ */
+export class ActivityApi extends BaseAPI {
+    /**
+     * 
+     * @param {ActivityApiAddCommentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ActivityApi
+     */
+    public addComment(requestParameters: ActivityApiAddCommentRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).addComment(requestParameters.id, requestParameters.albumId, requestParameters.activityCommentDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {ActivityApiChangeFavoriteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ActivityApi
+     */
+    public changeFavorite(requestParameters: ActivityApiChangeFavoriteRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).changeFavorite(requestParameters.id, requestParameters.albumId, requestParameters.activityFavoriteDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {ActivityApiDeleteCommentRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ActivityApi
+     */
+    public deleteComment(requestParameters: ActivityApiDeleteCommentRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).deleteComment(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {ActivityApiGetActivityRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ActivityApi
+     */
+    public getActivity(requestParameters: ActivityApiGetActivityRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).getActivity(requestParameters.id, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {ActivityApiGetFavoriteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ActivityApi
+     */
+    public getFavorite(requestParameters: ActivityApiGetFavoriteRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).getFavorite(requestParameters.id, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {ActivityApiGetStatisticsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ActivityApi
+     */
+    public getStatistics(requestParameters: ActivityApiGetStatisticsRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).getStatistics(requestParameters.id, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

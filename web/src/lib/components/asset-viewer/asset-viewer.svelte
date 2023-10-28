@@ -1,6 +1,15 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
+  import {
+    ActivityReponseDto,
+    AlbumResponseDto,
+    api,
+    AssetJobName,
+    AssetResponseDto,
+    AssetTypeEnum,
+    SharedLinkResponseDto,
+    UserResponseDto,
+  } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
@@ -23,10 +32,21 @@
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
+  import {
+    mdiChevronLeft,
+    mdiHeartOutline,
+    mdiHeart,
+    mdiCommentOutline,
+    mdiChevronRight,
+    mdiClose,
+    mdiImageBrokenVariant,
+    mdiPause,
+    mdiPlay,
+  } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
+  import ActivityViewer from './activity-viewer.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -35,6 +55,11 @@
   $: isTrashEnabled = $featureFlags.trash;
   export let force = false;
   export let withStacked = false;
+  export let isShared = true;
+  export let user: UserResponseDto | null = null;
+  export let album: AlbumResponseDto | null = null;
+
+  let reactions: ActivityReponseDto[] = [];
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -57,7 +82,17 @@
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
   let previewStackedAsset: AssetResponseDto | undefined;
+  let isShowActivity = false;
+  let isFavorite: ActivityReponseDto | null = null;
+  let numberOfComments: number | null = null;
+  let isOwner = false;
   $: displayedAsset = previewStackedAsset || asset;
+
+  $: {
+    if (user && user.id === asset.ownerId) {
+      isOwner = true;
+    }
+  }
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -72,6 +107,58 @@
     }
   }
 
+  const handleFavorite = async () => {
+    if (album) {
+      try {
+        const { data } = await api.activityApi.changeFavorite({
+          id: asset.id,
+          albumId: album.id,
+          activityFavoriteDto: { favorite: !isFavorite?.isFavorite },
+        });
+
+        if (data.isFavorite) {
+          reactions.push(data);
+          reactions = reactions;
+        } else {
+          reactions = reactions.filter(
+            (obj) => (obj.user && user && obj.user.id !== user.id) || obj.isFavorite !== true,
+          );
+        }
+        isFavorite = data;
+      } catch (error) {
+        handleError(error, "Can't change favorite for asset");
+      }
+    }
+  };
+
+  const getFavorite = async () => {
+    if (album) {
+      try {
+        const { data } = await api.activityApi.getFavorite({ id: asset.id, albumId: album.id });
+        isFavorite = data;
+      } catch (error) {
+        handleError(error, "Can't get Favorite");
+      }
+    }
+  };
+
+  const getNumberOfComments = async () => {
+    if (album) {
+      try {
+        const { data } = await api.activityApi.getStatistics({ id: asset.id, albumId: album.id });
+        numberOfComments = data.comments;
+      } catch (error) {
+        handleError(error, "Can't get number of comments");
+      }
+    }
+  };
+
+  $: {
+    if (true && asset.id) {
+      getFavorite();
+      getNumberOfComments();
+    }
+  }
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
@@ -117,6 +204,13 @@
     }
   };
 
+  const handleOpenActivity = () => {
+    if ($isShowDetail) {
+      $isShowDetail = false;
+    }
+    isShowActivity = !isShowActivity;
+  };
+
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
@@ -158,6 +252,7 @@
         toggleFavorite();
         return;
       case 'i':
+        isShowActivity = false;
         $isShowDetail = !$isShowDetail;
         return;
     }
@@ -194,6 +289,9 @@
   };
 
   const showDetailInfoHandler = () => {
+    if (isShowActivity) {
+      isShowActivity = false;
+    }
     $isShowDetail = !$isShowDetail;
   };
 
@@ -473,7 +571,7 @@
   {/if}
 
   <!-- Asset Viewer -->
-  <div class="col-span-4 col-start-1 row-span-full row-start-1">
+  <div class="relative col-span-4 col-start-1 row-span-full row-start-1">
     <!-- Condition to show preview of stacked asset on hovered -->
     {#if displayedAsset}
       {#key displayedAsset.id}
@@ -486,6 +584,31 @@
             on:onVideoEnded={handleVideoEnded}
             on:onVideoStarted={handleVideoStarted}
           />
+        {/if}
+        {#if isShared}
+          <div class="z-[9999] absolute bottom-0 right-0 mb-[30px] mr-[30px] justify-self-end">
+            <div
+              class="w-32 h-14 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
+            >
+              <button on:click={handleFavorite}>
+                <div class="h-8 items-center justify-center">
+                  {#if isFavorite}
+                    <Icon path={isFavorite.isFavorite ? mdiHeart : mdiHeartOutline} size={30} />
+                  {:else}
+                    <Icon path={mdiHeartOutline} size={30} />
+                  {/if}
+                </div>
+              </button>
+              <button on:click={handleOpenActivity}>
+                <div class="flex h-8 gap-1 items-center justify-center">
+                  <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={30} />
+                  {#if numberOfComments}
+                    <div class="text-2xl">{numberOfComments}</div>
+                  {/if}
+                </div>
+              </button>
+            </div>
+          </div>
         {/if}
       {/key}
     {:else}
@@ -581,6 +704,27 @@
         on:close-viewer={handleCloseViewer}
         on:description-focus-in={disableKeyDownEvent}
         on:description-focus-out={enableKeyDownEvent}
+      />
+    </div>
+  {/if}
+
+  {#if isShared && album && isShowActivity && user}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="detail-panel"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      translate="yes"
+    >
+      <ActivityViewer
+        {isOwner}
+        {user}
+        albumOwnerId={album.ownerId}
+        albumId={album.id}
+        assetId={asset.id}
+        bind:reactions
+        on:addComment={() => (numberOfComments ? numberOfComments++ : '')}
+        on:deleteComment={() => (numberOfComments ? numberOfComments-- : '')}
+        on:close={() => (isShowActivity = false)}
       />
     </div>
   {/if}

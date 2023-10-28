@@ -7,6 +7,7 @@
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+  import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -54,11 +55,14 @@
     }
   };
 
-  const handleKeypress = async ({ metaKey, ctrlKey, key }: KeyboardEvent) => {
+  const handleKeypress = async (event: KeyboardEvent) => {
+    if (shouldIgnoreShortcut(event)) {
+      return;
+    }
     if (window.getSelection()?.type === 'Range') {
       return;
     }
-    if ((metaKey || ctrlKey) && key === 'c') {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'c') {
       await doCopy();
     }
   };
@@ -118,7 +122,7 @@
 <div
   bind:this={element}
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-  class="flex h-full select-none place-content-center place-items-center"
+  class="relative h-full select-none place-content-center place-items-center"
 >
   {#await loadAssetData({ loadOriginal: false })}
     <LoadingSpinner />

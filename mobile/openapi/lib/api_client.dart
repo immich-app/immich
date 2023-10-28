@@ -189,6 +189,12 @@ class ApiClient {
           return APIKeyResponseDto.fromJson(value);
         case 'APIKeyUpdateDto':
           return APIKeyUpdateDto.fromJson(value);
+        case 'ActivityCommentDto':
+          return ActivityCommentDto.fromJson(value);
+        case 'ActivityFavoriteDto':
+          return ActivityFavoriteDto.fromJson(value);
+        case 'ActivityReponseDto':
+          return ActivityReponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
         case 'AdminSignupResponseDto':
@@ -397,6 +403,8 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
+        case 'StatisticsResponseDto':
+          return StatisticsResponseDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
@@ -455,6 +463,8 @@ class ApiClient {
           return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
+        case 'UserCommentDto':
+          return UserCommentDto.fromJson(value);
         case 'UserCountResponseDto':
           return UserCountResponseDto.fromJson(value);
         case 'UserResponseDto':
