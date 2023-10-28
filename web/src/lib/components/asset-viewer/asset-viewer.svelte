@@ -57,7 +57,6 @@
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
   let previewStackedAsset: AssetResponseDto | undefined;
-  $: displayedAsset = previewStackedAsset || asset;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -471,17 +470,15 @@
       <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
     </div>
   {/if}
-
   <!-- Asset Viewer -->
   <div class="col-span-4 col-start-1 row-span-full row-start-1">
-    <!-- Condition to show preview of stacked asset on hovered -->
-    {#if displayedAsset}
-      {#key displayedAsset.id}
-        {#if displayedAsset.type === AssetTypeEnum.Image}
-          <PhotoViewer asset={displayedAsset} on:close={closeViewer} haveFadeTransition={false} />
+    {#if previewStackedAsset}
+      {#key previewStackedAsset.id}
+        {#if previewStackedAsset.type === AssetTypeEnum.Image}
+          <PhotoViewer asset={previewStackedAsset} on:close={closeViewer} haveFadeTransition={false} />
         {:else}
           <VideoViewer
-            assetId={displayedAsset.id}
+            assetId={previewStackedAsset.id}
             on:close={closeViewer}
             on:onVideoEnded={handleVideoEnded}
             on:onVideoStarted={handleVideoStarted}
