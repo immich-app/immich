@@ -33,6 +33,7 @@
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { assetViewingStore, SlideshowState } from '$lib/stores/asset-viewing.store';
+  import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { featureFlags } from '$lib/stores/server-config.store';
   import {
     mdiChevronLeft,
@@ -170,7 +171,7 @@
 
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
-        resetSlideshowHistory(asset.id);
+        slideshowHistory.reset(asset.id);
         handlePlaySlideshow();
       } else if (value === SlideshowState.StopSlideshow) {
         handleStopSlideshow();
@@ -179,7 +180,7 @@
 
     shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
       if (value) {
-        resetSlideshowHistory(asset.id);
+        slideshowHistory.reset(asset.id);
       }
     });
 
@@ -302,7 +303,7 @@
       return;
     }
 
-    appendToSlideshowHistory(asset.id);
+    slideshowHistory.append(asset.id);
 
     setAssetId(asset.id);
     progressBar.restart(true);
@@ -310,7 +311,7 @@
 
   const navigateAssetForward = async (e?: Event) => {
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      return navigateHistoryForward() || navigateAssetRandom();
+      return slideshowHistory.navigateForward() || navigateAssetRandom();
     }
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore && progressBar) {
@@ -328,7 +329,7 @@
 
   const navigateAssetBackward = (e?: Event) => {
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      navigateHistoryBackward();
+      slideshowHistory.navigateBackward();
       return;
     }
 
@@ -485,46 +486,10 @@
   let progressBar: ProgressBar;
   let progressBarStatus: ProgressBarStatus;
 
-  let slideshowHistory: string[] = [];
-  let slideshowHistoryIndex = 0;
-
-  const resetSlideshowHistory = (assetId: string) => {
-    slideshowHistory = [assetId];
-    slideshowHistoryIndex = 0;
-  };
-
-  const appendToSlideshowHistory = (assetId: string) => {
-    slideshowHistory.push(assetId);
-
-    // If we were at the end of the slideshow history, move the index to the new end
-    if (slideshowHistoryIndex === slideshowHistory.length - 2) {
-      slideshowHistoryIndex++;
-    }
-  };
-
-  const navigateHistoryForward = (): boolean => {
-    if (slideshowHistoryIndex === slideshowHistory.length - 1) {
-      return false;
-    }
-
-    slideshowHistoryIndex++;
-    setAssetId(slideshowHistory[slideshowHistoryIndex]);
+  const slideshowHistory = new SlideshowHistory((assetId: string) => {
+    setAssetId(assetId);
     progressBar.restart(true);
-
-    return true;
-  };
-
-  const navigateHistoryBackward = (): boolean => {
-    if (slideshowHistoryIndex === 0) {
-      return false;
-    }
-
-    slideshowHistoryIndex--;
-    setAssetId(slideshowHistory[slideshowHistoryIndex]);
-    progressBar.restart(true);
-
-    return true;
-  };
+  });
 
   const handleVideoStarted = () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
