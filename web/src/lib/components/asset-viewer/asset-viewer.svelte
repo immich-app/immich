@@ -205,7 +205,6 @@
   });
 
   $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
-  $: $slideshowShuffle && preload();
 
   const getAllAlbums = async () => {
     if (api.isSharedLink) {
@@ -286,7 +285,7 @@
       return;
     }
 
-    const asset = assetStore.getRandomAsset();
+    const asset = await assetStore.getRandomAsset();
     if (!asset) {
       return;
     }
@@ -480,15 +479,6 @@
   const handleVideoEnded = async () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
       await navigateAssetForward();
-    }
-  };
-
-  const preload = async () => {
-    // load all the asset buckets
-    if (assetStore && $slideshowShuffle) {
-      for (const bucket of assetStore.buckets) {
-        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
-      }
     }
   };
 

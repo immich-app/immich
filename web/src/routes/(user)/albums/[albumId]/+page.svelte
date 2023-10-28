@@ -108,8 +108,8 @@
     }
   });
 
-  const handleStartSlideshow = () => {
-    const asset = $slideshowShuffle ? assetStore.getRandomAsset() : assetStore.assets[0];
+  const handleStartSlideshow = async () => {
+    const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
       setAssetId(asset.id);
       $slideshowState = SlideshowState.PlaySlideshow;
