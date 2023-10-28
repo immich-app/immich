@@ -1,7 +1,7 @@
 from enum import StrEnum
 from typing import TypeAlias
-import numpy as np
 
+import numpy as np
 from pydantic import BaseModel
 
 

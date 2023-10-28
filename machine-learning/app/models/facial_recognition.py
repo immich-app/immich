@@ -9,8 +9,9 @@ from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop
 from insightface.utils.storage import BASE_REPO_URL, download_file
 
-from .base import InferenceModel
 from app.schemas import ModelType, ndarray
+
+from .base import InferenceModel
 
 
 class FaceRecognizer(InferenceModel):

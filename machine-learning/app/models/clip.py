@@ -3,22 +3,26 @@ from abc import abstractmethod
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Literal
-import numpy as np
 
+import numpy as np
 import onnxruntime as ort
 import open_clip
 from open_clip.factory import PreprocessCfg
 from PIL import Image
 from transformers import AutoTokenizer
 
-import app.models.export.mclip as export_mclip
-import app.models.export.openclip as export_openclip
 from app.config import get_cache_dir, log
-from app.schemas import ModelType
+from app.schemas import ModelType, ndarray
 
 from .base import InferenceModel
-from .export.openclip import OpenCLIPModelConfig
-from app.schemas import ndarray
+
+# from .export.openclip import OpenCLIPModelConfig
+
+
+class OpenCLIPModelConfig:
+    def __init__(self, name: str, pretrained: str) -> None:
+        self.name = name
+        self.pretrained = pretrained
 
 
 _MCLIP_TO_OPENCLIP = {
@@ -185,7 +189,9 @@ class MCLIPEncoder(OpenCLIPEncoder):
     def _download(self) -> None:
         export_mclip.to_onnx(self.model_name, self.textual_dir)
         # M-CLIP is text-only, so we also export the corresponding OpenCLIP visual model
-        export_openclip.to_onnx(self.model_cfg, self.visual_dir, self._get_openclip_cache_dir() / "textual", self.preprocess_cfg_path)
+        export_openclip.to_onnx(
+            self.model_cfg, self.visual_dir, self._get_openclip_cache_dir() / "textual", self.preprocess_cfg_path
+        )
 
     def encode_text(self, text: str) -> ndarray:
         tokens = self.tokenizer(text, return_tensors="np")
