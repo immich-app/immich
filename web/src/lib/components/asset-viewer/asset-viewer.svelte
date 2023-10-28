@@ -85,14 +85,6 @@
   let isShowActivity = false;
   let isFavorite: ActivityReponseDto | null = null;
   let numberOfComments: number | null = null;
-  let isOwner = false;
-  $: displayedAsset = previewStackedAsset || asset;
-
-  $: {
-    if (user && user.id === asset.ownerId) {
-      isOwner = true;
-    }
-  }
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -714,7 +706,6 @@
       translate="yes"
     >
       <ActivityViewer
-        {isOwner}
         {user}
         albumOwnerId={album.ownerId}
         albumId={album.id}

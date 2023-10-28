@@ -279,7 +279,7 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /activity/numberofcomment/{id}/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activity/statistics/{id}/{albumId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -287,7 +287,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   Future<Response> getStatisticsWithHttpInfo(String id, String albumId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/numberofcomment/{id}/{albumId}'
+    final path = r'/activity/statistics/{id}/{albumId}'
       .replaceAll('{id}', id)
       .replaceAll('{albumId}', albumId);
 

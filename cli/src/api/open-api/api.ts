@@ -5150,7 +5150,7 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
             assertParamExists('getStatistics', 'id', id)
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getStatistics', 'albumId', albumId)
-            const localVarPath = `/activity/numberofcomment/{id}/{albumId}`
+            const localVarPath = `/activity/statistics/{id}/{albumId}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)))
                 .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.

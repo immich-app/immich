@@ -14,7 +14,7 @@ Method | HTTP request | Description
 [**deleteComment**](ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
 [**getActivity**](ActivityApi.md#getactivity) | **GET** /activity/{id}/{albumId} | 
 [**getFavorite**](ActivityApi.md#getfavorite) | **GET** /activity/favorite/{id}/{albumId} | 
-[**getStatistics**](ActivityApi.md#getstatistics) | **GET** /activity/numberofcomment/{id}/{albumId} | 
+[**getStatistics**](ActivityApi.md#getstatistics) | **GET** /activity/statistics/{id}/{albumId} | 
 
 
 # **addComment**

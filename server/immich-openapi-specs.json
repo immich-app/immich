@@ -204,7 +204,7 @@
         ]
       }
     },
-    "/activity/numberofcomment/{id}/{albumId}": {
+    "/activity/statistics/{id}/{albumId}": {
       "get": {
         "operationId": "getStatistics",
         "parameters": [

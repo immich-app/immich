@@ -12,7 +12,6 @@
   export let user: UserResponseDto;
   export let assetId: string;
   export let albumId: string;
-  export let isOwner: boolean;
   export let albumOwnerId: string;
 
   let previousAssetId: string | null;
@@ -125,7 +124,7 @@
               </div>
 
               <div class="w-full">{reaction.comment}</div>
-              {#if (user && reaction.user && reaction.user.id === user.id) || (user && user.isAdmin) || isOwner || albumOwnerId === user.id}
+              {#if (user && reaction.user && reaction.user.id === user.id) || (user && user.isAdmin) || albumOwnerId === user.id}
                 <div>
                   <button on:click={() => (!showDeleteComment[index] ? showOptionsMenu(index) : '')}>
                     <Icon path={mdiDotsVertical} />

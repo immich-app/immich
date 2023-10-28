@@ -21,7 +21,7 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 export class ActivityController {
   constructor(private service: ActivityService) {}
 
-  @Get('numberofcomment/:id/:albumId')
+  @Get('statistics/:id/:albumId')
   getStatistics(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,

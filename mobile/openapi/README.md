@@ -82,7 +82,7 @@ Class | Method | HTTP request | Description
 *ActivityApi* | [**deleteComment**](doc//ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
 *ActivityApi* | [**getActivity**](doc//ActivityApi.md#getactivity) | **GET** /activity/{id}/{albumId} | 
 *ActivityApi* | [**getFavorite**](doc//ActivityApi.md#getfavorite) | **GET** /activity/favorite/{id}/{albumId} | 
-*ActivityApi* | [**getStatistics**](doc//ActivityApi.md#getstatistics) | **GET** /activity/numberofcomment/{id}/{albumId} | 
+*ActivityApi* | [**getStatistics**](doc//ActivityApi.md#getstatistics) | **GET** /activity/statistics/{id}/{albumId} | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
