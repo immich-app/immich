@@ -31,7 +31,14 @@ class DescriptionInput extends HookConsumerWidget {
     final owner = ref.watch(currentUserProvider);
     final hasError = useState(false);
 
-    controller.text = description;
+    useEffect(
+      () {
+        controller.text = description;
+        isTextEmpty.value = description.isEmpty;
+        return null;
+      },
+      [description],
+    );
 
     submitDescription(String description) async {
       hasError.value = false;
