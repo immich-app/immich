@@ -1,4 +1,5 @@
 import {
+  AlbumsForPersonResponseDto,
   AssetResponseDto,
   AuthUserDto,
   BulkIdResponseDto,
@@ -83,5 +84,10 @@ export class PersonController {
     @Body() dto: MergePersonDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.mergePerson(authUser, id, dto);
+  }
+
+  @Get(':id/albums')
+  getPersonAlbums(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AlbumsForPersonResponseDto[]> {
+    return this.service.getAlbums(authUser, id);
   }
 }

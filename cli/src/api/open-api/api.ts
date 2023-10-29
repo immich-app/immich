@@ -280,6 +280,25 @@ export interface AlbumResponseDto {
 /**
  * 
  * @export
+ * @interface AlbumsForPersonResponseDto
+ */
+export interface AlbumsForPersonResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof AlbumsForPersonResponseDto
+     */
+    'albumId': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof AlbumsForPersonResponseDto
+     */
+    'assetCount': number;
+}
+/**
+ * 
+ * @export
  * @interface AllJobStatusResponseDto
  */
 export interface AllJobStatusResponseDto {
@@ -11920,6 +11939,48 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getPersonAlbums: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getPersonAlbums', 'id', id)
+            const localVarPath = `/person/{id}/albums`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getPersonAssets: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getPersonAssets', 'id', id)
@@ -12216,6 +12277,16 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getPersonAlbums(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AlbumsForPersonResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonAlbums(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getPersonAssets(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPersonAssets(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -12302,6 +12373,15 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         },
         /**
          * 
+         * @param {PersonApiGetPersonAlbumsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getPersonAlbums(requestParameters: PersonApiGetPersonAlbumsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AlbumsForPersonResponseDto>> {
+            return localVarFp.getPersonAlbums(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {PersonApiGetPersonAssetsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -12381,6 +12461,20 @@ export interface PersonApiGetPersonRequest {
      * 
      * @type {string}
      * @memberof PersonApiGetPerson
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for getPersonAlbums operation in PersonApi.
+ * @export
+ * @interface PersonApiGetPersonAlbumsRequest
+ */
+export interface PersonApiGetPersonAlbumsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonApiGetPersonAlbums
      */
     readonly id: string
 }
@@ -12510,6 +12604,17 @@ export class PersonApi extends BaseAPI {
      */
     public getPerson(requestParameters: PersonApiGetPersonRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getPerson(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiGetPersonAlbumsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public getPersonAlbums(requestParameters: PersonApiGetPersonAlbumsRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).getPersonAlbums(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

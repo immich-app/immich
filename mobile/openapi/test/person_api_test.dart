@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AlbumsForPersonResponseDto>> getPersonAlbums(String id) async
+    test('test getPersonAlbums', () async {
+      // TODO
+    });
+
     //Future<List<AssetResponseDto>> getPersonAssets(String id) async
     test('test getPersonAssets', () async {
       // TODO

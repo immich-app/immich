@@ -1,4 +1,5 @@
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { AlbumAssetCount } from './album.repository';
 
 export const IPersonRepository = 'IPersonRepository';
 
@@ -36,6 +37,7 @@ export interface IPersonRepository {
   getAssets(personId: string): Promise<AssetEntity[]>;
   prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
+  getAlbums(personId: string): Promise<AlbumAssetCount[]>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
