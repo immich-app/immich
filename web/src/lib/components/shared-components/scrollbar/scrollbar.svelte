@@ -106,14 +106,12 @@
         on:mousemove={() => (hoverLabel = label)}
       >
         {#if new Date(segments[index - 1]?.timeGroup).getFullYear() !== year}
-          {#if segment.height > 8}
-            <div
-              aria-label={segment.timeGroup + ' ' + segment.count}
-              class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg"
-            >
-              {year}
-            </div>
-          {/if}
+          <div
+            aria-label={segment.timeGroup + ' ' + segment.count}
+            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg"
+          >
+            {year}
+          </div>
         {:else if segment.height > 5}
           <div
             aria-label={segment.timeGroup + ' ' + segment.count}
