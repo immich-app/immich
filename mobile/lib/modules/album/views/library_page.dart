@@ -10,6 +10,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 
 class LibraryPage extends HookConsumerWidget {
@@ -17,6 +18,8 @@ class LibraryPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final trashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider);
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     var settings = ref.watch(appSettingsServiceProvider);
@@ -222,8 +225,23 @@ class LibraryPage extends HookConsumerWidget {
 
     final local = albums.where((a) => a.isLocal).toList();
 
+    Widget? shareTrashButton() {
+      return trashEnabled
+          ? InkWell(
+              onTap: () => AutoRouter.of(context).push(const TrashRoute()),
+              borderRadius: BorderRadius.circular(12),
+              child: const Icon(
+                Icons.delete_rounded,
+                size: 25,
+              ),
+            )
+          : null;
+    }
+
     return Scaffold(
-      appBar: const ImmichAppBar(),
+      appBar: ImmichAppBar(
+        action: shareTrashButton(),
+      ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(

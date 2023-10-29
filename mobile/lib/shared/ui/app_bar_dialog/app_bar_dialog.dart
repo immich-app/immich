@@ -9,7 +9,6 @@ import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.da
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_profile_info.dart';
@@ -21,8 +20,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final trashEnabled =
-        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     BackUpState backupState = ref.watch(backupProvider);
     final theme = Theme.of(context);
     bool isDarkTheme = theme.brightness == Brightness.dark;
@@ -65,7 +62,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildActionButton(IconData icon, String text, PageRouteInfo route) {
+    buildActionButton(IconData icon, String text, Function() onTap) {
       return ListTile(
         dense: true,
         visualDensity: VisualDensity.compact,
@@ -83,9 +80,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           style:
               theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
-        onTap: () {
-          AutoRouter.of(context).push(route);
-        },
+        onTap: onTap,
       );
     }
 
@@ -93,7 +88,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(
         Icons.settings_rounded,
         "profile_drawer_settings",
-        const SettingsRoute(),
+        () => AutoRouter.of(context).push(const SettingsRoute()),
       );
     }
 
@@ -101,15 +96,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(
         Icons.assignment_outlined,
         "profile_drawer_app_logs",
-        const AppLogRoute(),
-      );
-    }
-
-    buildTrashButton() {
-      return buildActionButton(
-        Icons.delete_rounded,
-        "profile_drawer_trash",
-        const TrashRoute(),
+        () => AutoRouter.of(context).push(const AppLogRoute()),
       );
     }
 
@@ -278,7 +265,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               const AppBarServerInfo(),
               buildAppLogButton(),
               buildSettingButton(),
-              if (trashEnabled) buildTrashButton(),
               buildFooter(),
             ],
           ),
