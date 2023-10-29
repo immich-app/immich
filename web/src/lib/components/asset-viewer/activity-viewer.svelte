@@ -131,14 +131,14 @@
             </div>
           {/if}
           {#if reaction.comment}
-            <div class="flex items-center dark:bg-slate-500 bg-gray-200 p-2 m-2 rounded-3xl gap-2 justify-start">
+            <div class="flex dark:bg-slate-500 bg-gray-200 p-2 m-2 rounded-3xl gap-2 justify-start">
               <div>
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
-              <div class="w-full leading-4 flex">{reaction.comment}</div>
+              <div class="w-full leading-4 flex items-center">{reaction.comment}</div>
               {#if (user && reaction.user && reaction.user.id === user.id) || (user && user.isAdmin) || albumOwnerId === user.id}
-                <div>
+                <div class="flex items-start w-fit pt-[5px]">
                   <button on:click={() => (!showDeleteComment[index] ? showOptionsMenu(index) : '')}>
                     <Icon path={mdiDotsVertical} />
                   </button>
