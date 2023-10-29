@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from .main import app, init_state
-from .schemas import ndarray
+from .schemas import ndarray_f32
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def pil_image() -> Image.Image:
 
 
 @pytest.fixture
-def cv_image(pil_image: Image.Image) -> ndarray:
+def cv_image(pil_image: Image.Image) -> ndarray_f32:
     return np.asarray(pil_image)[:, :, ::-1]  # PIL uses RGB while cv2 uses BGR
 
 

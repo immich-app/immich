@@ -13,7 +13,7 @@ from transformers import AutoTokenizer
 
 from app.config import log
 from app.models.transforms import crop, get_pil_resampling, normalize, resize, to_numpy
-from app.schemas import ModelType, ndarray
+from app.schemas import ModelType, ndarray_f32, ndarray_i32, ndarray_i64
 
 from .base import InferenceModel
 
@@ -73,19 +73,19 @@ class BaseCLIPEncoder(InferenceModel):
         return outputs[0][0].tolist()
 
     @abstractmethod
-    def encode_image(self, image: Image.Image) -> ndarray:
+    def encode_image(self, image: Image.Image) -> ndarray_f32:
         pass
 
     @abstractmethod
-    def encode_text(self, text: str) -> ndarray:
+    def encode_text(self, text: str) -> ndarray_f32:
         pass
 
     @abstractmethod
-    def tokenize(self, text: str) -> dict[str, np.ndarray[Any, np.dtype[np.int32]]]:
+    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
         pass
 
     @abstractmethod
-    def transform(self, image: Image.Image) -> dict[str, ndarray]:
+    def transform(self, image: Image.Image) -> dict[str, ndarray_f32]:
         pass
 
     @property
@@ -148,14 +148,14 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         self.mean = np.array(self.preprocess_cfg["mean"], dtype=np.float32)
         self.std = np.array(self.preprocess_cfg["std"], dtype=np.float32)
 
-    def encode_image(self, image: Image.Image) -> ndarray:
+    def encode_image(self, image: Image.Image) -> ndarray_f32:
         return self.vision_model.run(None, self.transform(image))
 
-    def encode_text(self, text: str) -> ndarray:
+    def encode_text(self, text: str) -> ndarray_f32:
         return self.text_model.run(None, self.tokenize(text))
 
-    def tokenize(self, text: str) -> dict[str, np.ndarray[Any, np.dtype[np.int32]]]:
-        input_ids: np.ndarray[Any, np.dtype[np.int64]] = self.tokenizer(
+    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
+        input_ids: ndarray_i64 = self.tokenizer(
             text,
             max_length=self.sequence_length,
             return_tensors="np",
@@ -165,7 +165,7 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         ).input_ids
         return {"text": input_ids.astype(np.int32)}
 
-    def transform(self, image: Image.Image) -> dict[str, ndarray]:
+    def transform(self, image: Image.Image) -> dict[str, ndarray_f32]:
         image = resize(image, self.size)
         image = crop(image, self.size)
         image_np = to_numpy(image)
@@ -182,8 +182,8 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
 
 class MCLIPEncoder(OpenCLIPEncoder):
-    def tokenize(self, text: str) -> dict[str, np.ndarray[Any, np.dtype[np.int32]]]:
-        tokens: dict[str, np.ndarray[int, np.dtype[np.int64]]] = self.tokenizer(text, return_tensors="np")
+    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
+        tokens: dict[str, ndarray_i64] = self.tokenizer(text, return_tensors="np")
         return {k: v.astype(np.int32) for k, v in tokens.items()}
 
 
