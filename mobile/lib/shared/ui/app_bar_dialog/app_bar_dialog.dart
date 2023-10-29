@@ -13,6 +13,7 @@ import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_server_info.dart';
+import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImmichAppBarDialog extends HookConsumerWidget {
@@ -101,42 +102,30 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }
 
     buildSignOutButton() {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDarkTheme
-                ? Theme.of(context).scaffoldBackgroundColor
-                : const Color.fromARGB(255, 225, 229, 240),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.only(left: 20),
-            minLeadingWidth: 50,
-            leading: SizedBox(
-              child: Icon(
-                Icons.logout_rounded,
-                color: Theme.of(context).textTheme.labelMedium?.color,
-                size: 20,
-              ),
-            ),
-            title: Text(
-              "profile_drawer_sign_out",
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ).tr(),
-            onTap: () async {
-              await ref.watch(authenticationProvider.notifier).logout();
+      return buildActionButton(
+        Icons.logout_rounded,
+        "profile_drawer_sign_out",
+        () async {
+          showDialog(
+            context: context,
+            builder: (BuildContext ctx) {
+              return ConfirmDialog(
+                title: "app_bar_signout_dialog_title",
+                content: "app_bar_signout_dialog_content",
+                ok: "app_bar_signout_dialog_ok",
+                onOk: () async {
+                  await ref.watch(authenticationProvider.notifier).logout();
 
-              ref.read(manualUploadProvider.notifier).cancelBackup();
-              ref.watch(backupProvider.notifier).cancelBackup();
-              ref.watch(assetProvider.notifier).clearAllAsset();
-              ref.watch(websocketProvider.notifier).disconnect();
-              AutoRouter.of(context).replace(const LoginRoute());
+                  ref.read(manualUploadProvider.notifier).cancelBackup();
+                  ref.watch(backupProvider.notifier).cancelBackup();
+                  ref.watch(assetProvider.notifier).clearAllAsset();
+                  ref.watch(websocketProvider.notifier).disconnect();
+                  AutoRouter.of(context).replace(const LoginRoute());
+                },
+              );
             },
-          ),
-        ),
+          );
+        },
       );
     }
 
@@ -260,11 +249,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 child: buildTopRow(),
               ),
               const AppBarProfileInfoBox(),
-              buildSignOutButton(),
               buildStorageInformation(),
               const AppBarServerInfo(),
               buildAppLogButton(),
               buildSettingButton(),
+              buildSignOutButton(),
               buildFooter(),
             ],
           ),

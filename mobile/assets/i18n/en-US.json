@@ -369,5 +369,8 @@
   "viewer_unstack": "Un-Stack",
   "cache_settings_tile_title": "Local Storage",
   "cache_settings_tile_subtitle": "Control the local storage behaviour",
-  "viewer_stack_use_as_main_asset": "Use as Main Asset"
+  "viewer_stack_use_as_main_asset": "Use as Main Asset",
+  "app_bar_signout_dialog_title": "Sign out",
+  "app_bar_signout_dialog_content": "Are you sure you wanna sign out?",
+  "app_bar_signout_dialog_ok": "Yes"
 }
