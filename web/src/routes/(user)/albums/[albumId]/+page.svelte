@@ -39,6 +39,7 @@
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import ImageThumbnail from '../../../../lib/components/assets/thumbnail/image-thumbnail.svelte';
   import {
     mdiPlus,
     mdiDotsVertical,
@@ -56,6 +57,8 @@
 
   let album = data.album;
   $: album = data.album;
+  $: albumPeoples = data.albumPeoples;
+  $: console.log('albumPeoples', albumPeoples);
 
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
@@ -510,6 +513,25 @@
               {album.description || 'Add description'}
             </button>
           {/if}
+          {#if albumPeoples.length}
+            <div class="personWrapper">
+              {#each albumPeoples as people}
+                <a href="/people/{people.id}">
+                  <button>
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={api.getPeopleThumbnailUrl(people.id)}
+                      altText={people.name}
+                      title={people.name}
+                      widthStyle="3.375rem"
+                      heightStyle="3.375rem"
+                    />
+                  </button></a
+                >
+              {/each}
+            </div>
+          {/if}
         </section>
       {/if}
 
@@ -575,3 +597,12 @@
     on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}
+
+<style>
+  .personWrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>
