@@ -26,7 +26,8 @@
       "@app/infra/*": ["src/infra/*"],
       "@app/domain": ["src/domain"],
       "@app/domain/*": ["src/domain/*"]
-    }
+    },
+    "lib": ["ESNext"]
   },
   "exclude": ["dist", "node_modules", "upload"]
 }
