@@ -52,6 +52,8 @@
 
       albumId = editingLink.album?.id;
       assetIds = editingLink.assets.map(({ id }) => id);
+
+      enablePassword = !!editingLink.password;
     }
 
     const module = await import('copy-image-clipboard');
@@ -126,7 +128,7 @@
         id: editingLink.id,
         sharedLinkEditDto: {
           description,
-          password,
+          password: enablePassword ? password : '',
           expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
           allowUpload,
           allowDownload,
@@ -202,7 +204,7 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={'Enable password'} />
+          <SettingSwitch bind:checked={enablePassword} title={'Require password'} />
         </div>
 
         <div class="my-3">
