@@ -222,11 +222,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               onTap: () {
                 Navigator.of(context).pop();
                 launchUrl(
-                  Uri.parse('https://discord.gg/D8JsnBEuKb'),
+                  Uri.parse('https://github.com/immich-app/immich'),
                 );
               },
               child: Text(
-                "profile_drawer_discord",
+                "profile_drawer_github",
                 style: Theme.of(context).textTheme.bodySmall,
               ).tr(),
             ),
