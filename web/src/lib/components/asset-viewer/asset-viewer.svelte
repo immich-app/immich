@@ -573,7 +573,7 @@
         showDownloadButton={shouldShowDownloadButton}
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
-        hasStackChildern={$stackAssetsStore.length > 0}
+        hasStackChildren={$stackAssetsStore.length > 0}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
