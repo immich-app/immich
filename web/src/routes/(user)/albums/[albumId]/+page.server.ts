@@ -27,7 +27,18 @@ export const load = (async ({ params, locals: { api, user } }) => {
       }
     }
 
-    albumPeoples.sort((a, b) => b.appears - a.appears || b.name.localeCompare(a.name));
+    albumPeoples.sort((a, b) => {
+      if (b.appears !== a.appears) {
+        return b.appears - a.appears;
+      }
+      if (a.name === '') {
+        return 1;
+      } else if (b.name === '') {
+        return -1;
+      } else {
+        return a.name.localeCompare(b.name);
+      }
+    });
 
     return {
       album,

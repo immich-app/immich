@@ -55,6 +55,7 @@
   let album = data.album;
   $: album = data.album;
   $: albumPeoples = data.albumPeoples;
+  $: console.log('albumPeoples', albumPeoples);
 
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
@@ -512,16 +513,19 @@
           {#if albumPeoples.length}
             <div class="personWrapper">
               {#each albumPeoples as people}
-                <button>
-                  <ImageThumbnail
-                    circle
-                    shadow
-                    url={api.getPeopleThumbnailUrl(people.id)}
-                    altText={people.name}
-                    widthStyle="3.375rem"
-                    heightStyle="3.375rem"
-                  />
-                </button>
+                <a href="/people/{people.id}">
+                  <button>
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={api.getPeopleThumbnailUrl(people.id)}
+                      altText={people.name}
+                      title={people.name}
+                      widthStyle="3.375rem"
+                      heightStyle="3.375rem"
+                    />
+                  </button></a
+                >
               {/each}
             </div>
           {/if}
