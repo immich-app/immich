@@ -68,7 +68,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     clip: {
       enabled: true,
-      modelName: 'ViT-B-32::openai',
+      modelName: 'ViT-B-32__openai',
     },
     facialRecognition: {
       enabled: true,
