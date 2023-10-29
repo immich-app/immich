@@ -176,6 +176,7 @@ export const sharedLinkStub = {
       albumThumbnailAssetId: null,
       sharedUsers: [],
       sharedLinks: [],
+      activity: [],
       assets: [
         {
           id: 'id_1',

@@ -146,7 +146,7 @@
   };
 
   $: {
-    if (true && asset.id) {
+    if (isShared && asset.id) {
       getFavorite();
       getNumberOfComments();
     }
@@ -562,7 +562,7 @@
     </div>
   {/if}
   <!-- Asset Viewer -->
-  <div class="col-span-4 col-start-1 row-span-full row-start-1">
+  <div class="relative col-span-4 col-start-1 row-span-full row-start-1">
     {#if previewStackedAsset}
       {#key previewStackedAsset.id}
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
@@ -574,31 +574,6 @@
             on:onVideoEnded={handleVideoEnded}
             on:onVideoStarted={handleVideoStarted}
           />
-        {/if}
-        {#if isShared}
-          <div class="z-[9999] absolute bottom-0 right-0 mb-[30px] mr-[30px] justify-self-end">
-            <div
-              class="w-32 h-14 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
-            >
-              <button on:click={handleFavorite}>
-                <div class="h-8 items-center justify-center">
-                  {#if isFavorite}
-                    <Icon path={isFavorite.isFavorite ? mdiHeart : mdiHeartOutline} size={30} />
-                  {:else}
-                    <Icon path={mdiHeartOutline} size={30} />
-                  {/if}
-                </div>
-              </button>
-              <button on:click={handleOpenActivity}>
-                <div class="flex h-8 gap-1 items-center justify-center">
-                  <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={30} />
-                  {#if numberOfComments}
-                    <div class="text-2xl">{numberOfComments}</div>
-                  {/if}
-                </div>
-              </button>
-            </div>
-          </div>
         {/if}
       {/key}
     {:else}
@@ -632,6 +607,31 @@
             on:onVideoEnded={handleVideoEnded}
             on:onVideoStarted={handleVideoStarted}
           />
+        {/if}
+        {#if isShared}
+          <div class="z-[9999] absolute bottom-0 right-0 mb-[30px] mr-[30px] justify-self-end">
+            <div
+              class="w-32 h-14 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
+            >
+              <button on:click={handleFavorite}>
+                <div class="h-8 items-center justify-center">
+                  {#if isFavorite}
+                    <Icon path={isFavorite.isFavorite ? mdiHeart : mdiHeartOutline} size={30} />
+                  {:else}
+                    <Icon path={mdiHeartOutline} size={30} />
+                  {/if}
+                </div>
+              </button>
+              <button on:click={handleOpenActivity}>
+                <div class="flex h-8 gap-1 items-center justify-center">
+                  <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={30} />
+                  {#if numberOfComments}
+                    <div class="text-2xl">{numberOfComments}</div>
+                  {/if}
+                </div>
+              </button>
+            </div>
+          </div>
         {/if}
       {/key}
     {/if}

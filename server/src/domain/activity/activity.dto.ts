@@ -33,8 +33,6 @@ export class FavoriteDto {
   favorite!: boolean;
 }
 
-
-
 export class ActivityCommentDto {
   @IsString()
   @IsNotEmpty()

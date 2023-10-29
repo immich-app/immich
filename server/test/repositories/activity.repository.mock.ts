@@ -2,7 +2,11 @@ import { IActivityRepository } from '@app/domain';
 
 export const newCryptoRepositoryMock = (): jest.Mocked<IActivityRepository> => {
   return {
-    getById: jest.fn(),
     update: jest.fn(),
+    getById: jest.fn(),
+    getFavorite: jest.fn(),
+    delete: jest.fn(),
+    getReactionById: jest.fn(),
+    getStatistics: jest.fn(),
   };
 };
