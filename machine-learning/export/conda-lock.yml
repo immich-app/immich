@@ -13,7 +13,7 @@
 version: 1
 metadata:
   content_hash:
-    linux-64: a0ec0626f6f983feac7870dfacd8d90a7b8eb4eb671fd89f22693c317be9bcb9
+    linux-64: d42204fa0b65bc7acfc3edfff2d027fb2c395335b1de603909316cf7971a602a
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -46,50 +46,6 @@ package:
   hash:
     md5: a73ecd2988327ad4c8f2c331482917f2
     sha256: 525b7b6b5135b952ec1808de84e5eca57c7c7ff144e29ef3e96ae4040ff432c1
-  category: main
-  optional: false
-- name: cuda-cudart
-  version: 11.8.89
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/cuda-cudart-11.8.89-0.tar.bz2
-  hash:
-    md5: b68c7ef3eda01e95d5903fb508c5e440
-    sha256: f8cf96ae45acf1bef5ff0be3e849d87e3543144ec8c0075db235f4933113a3b0
-  category: main
-  optional: false
-- name: cuda-cupti
-  version: 11.8.87
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/cuda-cupti-11.8.87-0.tar.bz2
-  hash:
-    md5: 2f4b4933285400137cf029fef9a7daa6
-    sha256: 38bdbaf93504da170945b9e1db4d28e2e053c5a93baa7d7e3f09ca94ad6948bb
-  category: main
-  optional: false
-- name: cuda-nvrtc
-  version: 11.8.89
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/cuda-nvrtc-11.8.89-0.tar.bz2
-  hash:
-    md5: f4af75ee32661708c979630cdb8f4987
-    sha256: 8ed6b83df491ab3bee78ee561c3361854d36ec01ef944a9578332774e9c21611
-  category: main
-  optional: false
-- name: cuda-nvtx
-  version: 11.8.86
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/cuda-nvtx-11.8.86-0.tar.bz2
-  hash:
-    md5: 1825ffc3feb608f2752073935e90bb49
-    sha256: 50cb4a4c91cf7eb8a8771c3dca7dda2e1d55be9d65d249b4303120f0437f8605
   category: main
   optional: false
 - name: font-ttf-dejavu-sans-mono
@@ -158,72 +114,6 @@ package:
     sha256: f6cc89d887555912d6c61b295d398cff9ec982a3417d38025c45d5dd9b9e79cd
   category: main
   optional: false
-- name: libcublas
-  version: 11.11.3.6
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/libcublas-11.11.3.6-0.tar.bz2
-  hash:
-    md5: 7700a48c99151d2b77e7838aa0852da9
-    sha256: c03d5d7ee8b279808f8bd11ccbb5b6ced263f56dcb87e9268cb590a705729b6f
-  category: main
-  optional: false
-- name: libcufft
-  version: 10.9.0.58
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/libcufft-10.9.0.58-0.tar.bz2
-  hash:
-    md5: dbb21687334ce5f8e6a233cb18ee406b
-    sha256: 3d9d93773d69b5826cd61c93333da45f7efd3a3aa09164effc9562eb7039cc8b
-  category: main
-  optional: false
-- name: libcufile
-  version: 1.8.0.34
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/libcufile-1.8.0.34-0.tar.bz2
-  hash:
-    md5: 6c5b94a8881d400a0fcb77ba2ffe343d
-    sha256: ea341c09e92aa877baad574fbe658fcdf094d3960e086dfdee1d4356d2b91035
-  category: main
-  optional: false
-- name: libcurand
-  version: 10.3.4.52
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/libcurand-10.3.4.52-0.tar.bz2
-  hash:
-    md5: 184f8dc889f632f17c6fe56f04d30107
-    sha256: b778aaffc50c348220c6d523c8063ce567a8aca8bd210c68bca9cabba9877262
-  category: main
-  optional: false
-- name: libcusolver
-  version: 11.4.1.48
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/libcusolver-11.4.1.48-0.tar.bz2
-  hash:
-    md5: a497123295be4e0bd221da5bf215f8b8
-    sha256: d04ae207677639c79ef2f9e90f92186e61b82ccc26632bac87ddc9e607ac3173
-  category: main
-  optional: false
-- name: libcusparse
-  version: 11.7.5.86
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/libcusparse-11.7.5.86-0.tar.bz2
-  hash:
-    md5: 853c37fabd07b5b91d3007afc82c3ed4
-    sha256: 61f9bee3a0ed675a8978815071b63a6bbfe3ea141c2d12613ba1d1cc65c584d2
-  category: main
-  optional: false
 - name: libgcc-devel_linux-64
   version: 12.3.0
   manager: conda
@@ -233,28 +123,6 @@ package:
   hash:
     md5: ed613582de7b8569fdc53ca141be176a
     sha256: 7e12d0496389017ca526254913b24d9024e1728c849a0d6476a4b7fde9d03cba
-  category: main
-  optional: false
-- name: libnpp
-  version: 11.8.0.86
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/libnpp-11.8.0.86-0.tar.bz2
-  hash:
-    md5: 03822c4b5dae5988ba9dcb7eae837345
-    sha256: 086cf6c07bad0b0856400b8ba7e53f525f1fdb0a5d9ab635a11509d676c933cb
-  category: main
-  optional: false
-- name: libnvjpeg
-  version: 11.9.0.86
-  manager: conda
-  platform: linux-64
-  dependencies: {}
-  url: https://conda.anaconda.org/nvidia/linux-64/libnvjpeg-11.9.0.86-0.tar.bz2
-  hash:
-    md5: e42d6f0f20feb0cba0165d5cae33362f
-    sha256: edc9f27315dd85a97490b9af3943ce2a2d3eb7e13fc287a37c33cf78853f6421
   category: main
   optional: false
 - name: libstdcxx-devel_linux-64
@@ -306,9 +174,9 @@ package:
   manager: conda
   platform: linux-64
   dependencies: {}
-  url: https://conda.anaconda.org/pytorch-nightly/noarch/pytorch-mutex-1.0-cuda.tar.bz2
+  url: https://conda.anaconda.org/pytorch-nightly/noarch/pytorch-mutex-1.0-cpu.tar.bz2
   hash:
-    md5: a948316e36fb5b11223b3fcfa93f8358
+    md5: 49565ed726991fd28d08a39885caa88d
   category: main
   optional: false
 - name: tzdata
@@ -320,27 +188,6 @@ package:
   hash:
     md5: 939e3e74d8be4dac89ce83b20de2492a
     sha256: 0449138224adfa125b220154408419ec37c06b0b49f63c5954724325903ecf55
-  category: main
-  optional: false
-- name: cuda-libraries
-  version: 11.8.0
-  manager: conda
-  platform: linux-64
-  dependencies:
-    cuda-cudart: '>=11.8.89'
-    cuda-nvrtc: '>=11.8.89'
-    libcublas: '>=11.11.3.6'
-    libcufft: '>=10.9.0.58'
-    libcufile: '>=1.4.0.31'
-    libcurand: '>=10.3.0.86'
-    libcusolver: '>=11.4.1.48'
-    libcusparse: '>=11.7.5.86'
-    libnpp: '>=11.8.0.86'
-    libnvjpeg: '>=11.9.0.86'
-  url: https://conda.anaconda.org/nvidia/linux-64/cuda-libraries-11.8.0-0.tar.bz2
-  hash:
-    md5: 3a43d100104e52ac8209a834c82ab231
-    sha256: c49445809212502739d41f2a5613dfaba32e0e39d45ffa5b154528d5b3a004cd
   category: main
   optional: false
 - name: fonts-conda-forge
@@ -395,18 +242,6 @@ package:
     sha256: a7e0ea2b71a5b03d82e5a58fb6b612ab1c44d72ce161f9aa441f7ba467cd4c8d
   category: main
   optional: false
-- name: cuda-runtime
-  version: 11.8.0
-  manager: conda
-  platform: linux-64
-  dependencies:
-    cuda-libraries: '>=11.8.0'
-  url: https://conda.anaconda.org/nvidia/linux-64/cuda-runtime-11.8.0-0.tar.bz2
-  hash:
-    md5: 3ca379d762f8d7bd727df9e2c9b30664
-    sha256: 4ec90f237174c33514a898a363eb9e65edd93df0b571362ac0bda590d7d4ba29
-  category: main
-  optional: false
 - name: fonts-conda-ecosystem
   version: '1'
   manager: conda
@@ -442,29 +277,6 @@ package:
   hash:
     md5: adfebae9fdc63a598495dfe3b006973a
     sha256: 333f3339d94c93bcc02a723e3e460cb6ff6075e05f5247e15bef5dcdcec541a3
-  category: main
-  optional: false
-- name: pytorch-cuda
-  version: '11.8'
-  manager: conda
-  platform: linux-64
-  dependencies:
-    cuda-cudart: '>=11.8,<12.0'
-    cuda-cupti: '>=11.8,<12.0'
-    cuda-libraries: '>=11.8,<12.0'
-    cuda-nvrtc: '>=11.8,<12.0'
-    cuda-nvtx: '>=11.8,<12.0'
-    cuda-runtime: '>=11.8,<12.0'
-    libcublas: '>=11.11.3.6,<12.0.1.189'
-    libcufft: '>=10.9.0.58,<11.0.0.21'
-    libcusolver: '>=11.4.1.48,<11.4.2.57'
-    libcusparse: '>=11.7.5.86,<12.0.0.76'
-    libnpp: '>=11.8.0.86,<12.0.0.30'
-    libnvjpeg: '>=11.9.0.86,<12.0.0.28'
-  url: https://conda.anaconda.org/pytorch-nightly/linux-64/pytorch-cuda-11.8-h7e8668a_5.tar.bz2
-  hash:
-    md5: 48e990086eb245cce92f09b45a34651e
-    sha256: 81a9df218f84b45386818dbc180180a5adb7a5df097d1c4c7ec05c5fa5b0f8ca
   category: main
   optional: false
 - name: _openmp_mutex
@@ -945,19 +757,6 @@ package:
   hash:
     md5: 318b08df404f9c9be5712aaa5a6f0bb0
     sha256: 1b4c105a887f9b2041219d57036f72c4739ab9e9fe5a1486f094e58c76b31f5f
-  category: main
-  optional: false
-- name: mimalloc
-  version: 2.1.2
-  manager: conda
-  platform: linux-64
-  dependencies:
-    libgcc-ng: '>=12'
-    libstdcxx-ng: '>=12'
-  url: https://conda.anaconda.org/conda-forge/linux-64/mimalloc-2.1.2-h59595ed_1.conda
-  hash:
-    md5: 53683e71296b81f87c90001a1f7e5391
-    sha256: 96565d3f54119d3021371d2a04ce7d5dcb083c7abc575ede5a750e42644609ee
   category: main
   optional: false
 - name: ncurses
@@ -1958,18 +1757,6 @@ package:
     sha256: 7a02a7beac472ae2759498550b5fc5261bf5be7a9a2b4648a3f67818a7bfefcf
   category: main
   optional: false
-- name: aiocache
-  version: 0.12.2
-  manager: conda
-  platform: linux-64
-  dependencies:
-    python: '>=3.6'
-  url: https://conda.anaconda.org/conda-forge/noarch/aiocache-0.12.2-pyhd8ed1ab_0.conda
-  hash:
-    md5: 60f5e5202f57b50dba8b893d65851534
-    sha256: 9ea26096791782101c1fd4783b9e0a8ee3778bafc83452db5ca3038cd6b3344b
-  category: main
-  optional: false
 - name: attrs
   version: 23.1.0
   manager: conda
@@ -2126,18 +1913,6 @@ package:
   hash:
     md5: 5e4f3466526c52bc9af2d2353a1460bd
     sha256: 4ff20c6be028be2825235631c45d9e4a75bca1de65f8840c02dfb28ea0137c45
-  category: main
-  optional: false
-- name: exceptiongroup
-  version: 1.1.3
-  manager: conda
-  platform: linux-64
-  dependencies:
-    python: '>=3.7'
-  url: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.1.3-pyhd8ed1ab_0.conda
-  hash:
-    md5: e6518222753f519e911e83136d2158d9
-    sha256: c28f715e049fe0f09785660bcbffa175ffb438720e5bc5a60d56d4b08364b315
   category: main
   optional: false
 - name: filelock
@@ -2369,15 +2144,15 @@ package:
   category: main
   optional: false
 - name: networkx
-  version: '3.2'
+  version: 3.2.1
   manager: conda
   platform: linux-64
   dependencies:
     python: '>=3.9'
-  url: https://conda.anaconda.org/conda-forge/noarch/networkx-3.2-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/networkx-3.2.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 522039fb968d6d0a10e872e6f3856f53
-    sha256: 857dc30c287f90da1dd1c0a781a5305abb92db900fd5675c8bdd16ae339abb45
+    md5: 425fce3b531bed6ec3c74fab3e5f0a1c
+    sha256: 7629aa4f9f8cdff45ea7a4701fe58dccce5bf2faa01c26eb44cbb27b7e15ca9d
   category: main
   optional: false
 - name: openjpeg
@@ -2457,18 +2232,6 @@ package:
   hash:
     md5: 131dd3656f3b731ab852fc66d3c41058
     sha256: 6d2fdc92fce4124e2d32403b71da89e9f3e65393670d74466b4ff4843434392e
-  category: main
-  optional: false
-- name: python-multipart
-  version: 0.0.6
-  manager: conda
-  platform: linux-64
-  dependencies:
-    python: '>=3.7'
-  url: https://conda.anaconda.org/conda-forge/noarch/python-multipart-0.0.6-pyhd8ed1ab_0.conda
-  hash:
-    md5: f4f642eeda814c1b65f46fbdf7e89096
-    sha256: 2a9b8d02a6ec9862433cfc2741c4cbfe321e4ae3bab066f7ed84bc00effb73d7
   category: main
   optional: false
 - name: python-tzdata
@@ -2610,18 +2373,6 @@ package:
     sha256: a85c38227b446f42c5b90d9b642f2c0567880c15d72492d8da074a59c8f91dd6
   category: main
   optional: false
-- name: sniffio
-  version: 1.3.0
-  manager: conda
-  platform: linux-64
-  dependencies:
-    python: '>=3.7'
-  url: https://conda.anaconda.org/conda-forge/noarch/sniffio-1.3.0-pyhd8ed1ab_0.tar.bz2
-  hash:
-    md5: dd6cbc539e74cb1f430efbd4575b9303
-    sha256: a3fd30754c20ddb28b777db38345ea00d958f46701f0decd6291a81c0f4eee78
-  category: main
-  optional: false
 - name: tbb
   version: 2021.10.0
   manager: conda
@@ -2727,22 +2478,6 @@ package:
     sha256: 575c742e14c86575986dc867463582a970463da50b77264cdf54df74f5563783
   category: main
   optional: false
-- name: anyio
-  version: 3.7.1
-  manager: conda
-  platform: linux-64
-  dependencies:
-    exceptiongroup: ''
-    idna: '>=2.8'
-    python: '>=3.7'
-    sniffio: '>=1.1'
-    typing_extensions: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/anyio-3.7.1-pyhd8ed1ab_0.conda
-  hash:
-    md5: 7b517e7a6f0790337906c055aa97ca49
-    sha256: 62637ac498bcf47783cbf4f48e9b09e4e2f5a6ad42f43ca8f632c353827b94f4
-  category: main
-  optional: false
 - name: aws-c-auth
   version: 0.7.4
   manager: conda
@@ -2842,34 +2577,6 @@ package:
   hash:
     md5: 364c6ae36c4e36fcbd4d273cf4db78af
     sha256: 472b6b7f967df1db634c67d71c6b31cd186d18b5d0548196c2e426833ff17d99
-  category: main
-  optional: false
-- name: gunicorn
-  version: 21.2.0
-  manager: conda
-  platform: linux-64
-  dependencies:
-    packaging: ''
-    python: '>=3.11,<3.12.0a0'
-    python_abi: 3.11.*
-    setuptools: '>=3.0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/gunicorn-21.2.0-py311h38be061_1.conda
-  hash:
-    md5: 6ffcdfe45b9b37a4a735d03a71b1a708
-    sha256: b5d204fe26ad7e4b2a4b40761b12ec1f54fa63e498001ad14a75821e0f19297d
-  category: main
-  optional: false
-- name: h11
-  version: 0.14.0
-  manager: conda
-  platform: linux-64
-  dependencies:
-    python: '>=3'
-    typing_extensions: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/h11-0.14.0-pyhd8ed1ab_0.tar.bz2
-  hash:
-    md5: b21ed0883505ba1910994f1df031a428
-    sha256: 817d2c77d53afe3f3d9cf7f6eb8745cdd8ea76c7adaa9d7ced75c455a2c2c085
   category: main
   optional: false
 - name: importlib-metadata
@@ -3228,21 +2935,6 @@ package:
     sha256: 93d957608b17ada3039ff0acad2b8596451caa6829b3502fe87375e639ffc34e
   category: main
   optional: false
-- name: pydantic
-  version: 1.10.13
-  manager: conda
-  platform: linux-64
-  dependencies:
-    libgcc-ng: '>=12'
-    python: '>=3.11,<3.12.0a0'
-    python_abi: 3.11.*
-    typing-extensions: '>=4.2.0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/pydantic-1.10.13-py311h459d7ec_1.conda
-  hash:
-    md5: 8a92f40420211897a35841861e7e8348
-    sha256: f2d3a838fc90699c5dcd537aff10c78b33bd755232d0b21b26247cbf185cced7
-  category: main
-  optional: false
 - name: requests
   version: 2.31.0
   manager: conda
@@ -3289,35 +2981,6 @@ package:
   hash:
     md5: 76c3c384fe0941f1b08193736e8e277a
     sha256: 2fdc52c648c0a0d80f2f6f484cd0933f9b553d2e568bf8b63abe444974eb75b5
-  category: main
-  optional: false
-- name: starlette
-  version: 0.27.0
-  manager: conda
-  platform: linux-64
-  dependencies:
-    anyio: <5,>=3.4.0
-    python: '>=3.7'
-    typing_extensions: '>=3.10.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/starlette-0.27.0-pyhd8ed1ab_0.conda
-  hash:
-    md5: 6facb6fc201d334257db8004439705d3
-    sha256: d155b6be8071b5c29c2056dd9e7ba8fee1ce38f977450d99a925918c1af12521
-  category: main
-  optional: false
-- name: uvicorn
-  version: 0.23.2
-  manager: conda
-  platform: linux-64
-  dependencies:
-    click: '>=7.0'
-    h11: '>=0.8'
-    python: '>=3.11,<3.12.0a0'
-    python_abi: 3.11.*
-  url: https://conda.anaconda.org/conda-forge/linux-64/uvicorn-0.23.2-py311h38be061_1.conda
-  hash:
-    md5: 9184151aa69290804f1a14701bf5a4e7
-    sha256: 1004beeac1b2ef97633951a2a8f063e29ccfd85c999e9fd946965d3cbefaaf85
   category: main
   optional: false
 - name: wcwidth
@@ -3374,22 +3037,6 @@ package:
   hash:
     md5: e8d7b464afc246d61f1ccd0dde385626
     sha256: 2dc35e61bdfeec9dd65fa392d767e4bd56bea31e2c473341dd25e09c49bd7c62
-  category: main
-  optional: false
-- name: fastapi
-  version: 0.104.0
-  manager: conda
-  platform: linux-64
-  dependencies:
-    anyio: '>=3.7.1,<4.0.0'
-    pydantic: '>=1.7.4,!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0'
-    python: '>=3.8'
-    starlette: '>=0.27.0,<0.28.0'
-    typing-extensions: '>=4.8.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/fastapi-0.104.0-pyhd8ed1ab_0.conda
-  hash:
-    md5: 054e4357fda8c9ad892c05a2f94884b3
-    sha256: 2da82262481549192761aa42cbf02af3d8b6d16426470cb08c910089bb35ef6f
   category: main
   optional: false
 - name: ftfy
@@ -3619,6 +3266,25 @@ package:
     sha256: 627694b001dd6f27618311d6769967da23181a5cabe373f4f6d70b5f34c704a8
   category: main
   optional: false
+- name: onnx
+  version: 1.14.1
+  manager: conda
+  platform: linux-64
+  dependencies:
+    libgcc-ng: '>=12'
+    libprotobuf: '>=4.24.3,<4.24.4.0a0'
+    libstdcxx-ng: '>=12'
+    numpy: '>=1.23.5,<2.0a0'
+    protobuf: ''
+    python: '>=3.11,<3.12.0a0'
+    python_abi: 3.11.*
+    typing-extensions: '>=3.6.2.1'
+  url: https://conda.anaconda.org/conda-forge/linux-64/onnx-1.14.1-py311h0f0ab71_3.conda
+  hash:
+    md5: fc47944dd5840f6fee04c8da7ebdc84a
+    sha256: fe58d2b64cd717732e6ae8e734bb628fb82a3276b37fc36f28d3d80166389c0b
+  category: main
+  optional: false
 - name: onnxruntime
   version: 1.16.1
   manager: conda
@@ -3723,6 +3389,48 @@ package:
     sha256: fe6d93c4260c70817b9b31e178acb94562d6831bacbab3f771f5733008db6719
   category: main
   optional: false
+- name: pytorch
+  version: 2.2.0.dev20231028
+  manager: conda
+  platform: linux-64
+  dependencies:
+    blas: '*'
+    filelock: ''
+    jinja2: ''
+    llvm-openmp: <16
+    mkl: '>=2018'
+    networkx: ''
+    python: '>=3.11,<3.12.0a0'
+    pytorch-mutex: '1.0'
+    pyyaml: ''
+    sympy: ''
+    typing_extensions: ''
+  url: https://conda.anaconda.org/pytorch-nightly/linux-64/pytorch-2.2.0.dev20231028-py3.11_cpu_0.tar.bz2
+  hash:
+    md5: 24f4eacf75c41cfb75212b20c732b5e7
+    sha256: 59d772e48c4522b42ccd258b68876586c35ab83820c3c769ed752f630cc207f6
+  category: main
+  optional: false
+- name: torchvision
+  version: 0.17.0.dev20231028
+  manager: conda
+  platform: linux-64
+  dependencies:
+    ffmpeg: '>=4.2'
+    libjpeg-turbo: ''
+    libpng: ''
+    numpy: '>=1.23.5'
+    pillow: '>=5.3.0,!=8.3.*'
+    python: '>=3.11,<3.12.0a0'
+    pytorch: 2.2.0.dev20231028
+    pytorch-mutex: '1.0'
+    requests: ''
+  url: https://conda.anaconda.org/pytorch-nightly/linux-64/torchvision-0.17.0.dev20231028-py311_cpu.tar.bz2
+  hash:
+    md5: 1d02d809860d49d10f618dbbb23ada89
+    sha256: c580064c2c3de5447b58e7c22c8b6df3aaf4ee0249456677ebe1426067b93954
+  category: main
+  optional: false
 - name: transformers
   version: 4.34.1
   manager: conda
@@ -3747,87 +3455,6 @@ package:
   hash:
     md5: 56eff02cf489a3324fdfc69b486e8d32
     sha256: b50103b6d7f216e2558a513c9144195c3d6102efeae6188500b1b796977d31dd
-  category: main
-  optional: false
-- name: optimum
-  version: 1.13.2
-  manager: conda
-  platform: linux-64
-  dependencies:
-    coloredlogs: ''
-    datasets: ''
-    huggingface_hub: '>=0.8.0'
-    numpy: ''
-    packaging: ''
-    protobuf: ''
-    python: '>=3.7'
-    pytorch: '>=1.9'
-    sentencepiece: '>=0.1.91'
-    sympy: ''
-    transformers: '>=4.26.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/optimum-1.13.2-pyhd8ed1ab_0.conda
-  hash:
-    md5: 7bc29f1226e7e63bceed63fa46e09322
-    sha256: 4fa7a2cde0426cbc000aa1db96639d86122a172364aff262fecccfa0e2a57004
-  category: main
-  optional: false
-- name: pytorch
-  version: 2.2.0.dev20231027
-  manager: conda
-  platform: linux-64
-  dependencies:
-    blas: '*'
-    filelock: ''
-    jinja2: ''
-    llvm-openmp: <16
-    mkl: '>=2018'
-    networkx: ''
-    python: '>=3.11,<3.12.0a0'
-    pytorch-cuda: '>=11.8,<11.9'
-    pytorch-mutex: '1.0'
-    pyyaml: ''
-    sympy: ''
-    torchtriton: 2.1.0+6e4932cda8
-    typing_extensions: ''
-  url: https://conda.anaconda.org/pytorch-nightly/linux-64/pytorch-2.2.0.dev20231027-py3.11_cuda11.8_cudnn8.7.0_0.tar.bz2
-  hash:
-    md5: 79cbc286a657edfb104b018b873c97ac
-    sha256: ff23572136473f3c182b52a3f9465c4bcbeb8dfa10174eaae3f4f9c062f54440
-  category: main
-  optional: false
-- name: torchtriton
-  version: 2.1.0+6e4932cda8
-  manager: conda
-  platform: linux-64
-  dependencies:
-    filelock: ''
-    python: '>=3.11,<3.12.0a0'
-    pytorch: ''
-  url: https://conda.anaconda.org/pytorch-nightly/linux-64/torchtriton-2.1.0+6e4932cda8-py311.tar.bz2
-  hash:
-    md5: 0bacbddb9576a36a0287bc5a553029f8
-    sha256: 7950bfc55187a1edf633c2707c1235809cf46b90b3cde1b733cdeeddee9763a8
-  category: main
-  optional: false
-- name: torchvision
-  version: 0.17.0.dev20231027
-  manager: conda
-  platform: linux-64
-  dependencies:
-    ffmpeg: '>=4.2'
-    libjpeg-turbo: ''
-    libpng: ''
-    numpy: '>=1.23.5'
-    pillow: '>=5.3.0,!=8.3.*'
-    python: '>=3.11,<3.12.0a0'
-    pytorch: 2.2.0.dev20231027
-    pytorch-cuda: 11.8.*
-    pytorch-mutex: '1.0'
-    requests: ''
-  url: https://conda.anaconda.org/pytorch-nightly/linux-64/torchvision-0.17.0.dev20231027-py311_cu118.tar.bz2
-  hash:
-    md5: 86486e21ab3bcf56aeaa2e5ab36466bf
-    sha256: 7266564c9043dae2cad5fcbb672c382b1930c64a5a45bfb17e983f72be54f480
   category: main
   optional: false
 - name: timm
@@ -3868,108 +3495,6 @@ package:
     sha256: 50886e8ed3b78ac90e3729141edd4fdf8374bd7f34eda7a6d215f5faa0ce339f
   category: main
   optional: false
-- name: contourpy
-  version: 1.1.1
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/b7/f6/78f60fa0b6ae64971178e2542e8b3ad3ba5f4f379b918ab7b18038a3f897/contourpy-1.1.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: b04c2f0adaf255bf756cf08ebef1be132d3c7a06fe6f9877d55640c5e60c72c5
-  category: main
-  optional: false
-- name: cycler
-  version: 0.12.1
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/e7/05/c19819d5e3d95294a6f5947fb9b9629efb316b96de511b418c53d245aae6/cycler-0.12.1-py3-none-any.whl
-  hash:
-    sha256: 85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30
-  category: main
-  optional: false
-- name: cython
-  version: 3.0.4
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/85/35/4768394247be7c9e2c128b515725f58aad1a0aa8857d6e2633d40d134117/Cython-3.0.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: 6da74000a672eac0d7cf02adc140b2f9c7d54eae6c196e615a1b5deb694d9203
-  category: main
-  optional: false
-- name: easydict
-  version: '1.11'
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/0a/d2/deb3296d08097fedd622d423c0ec8b68b78c1704b3f1545326f6ce05c75c/easydict-1.11.tar.gz
-  hash:
-    sha256: dcb1d2ed28eb300c8e46cd371340373abc62f7c14d6dea74fdfc6f1069061c78
-  category: main
-  optional: false
-- name: fonttools
-  version: 4.43.1
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/72/2c/7634a6c16b29d0c31cf54051beefab796abdfe8f52abead6d09e5403696e/fonttools-4.43.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: 7bbbf8174501285049e64d174e29f9578495e1b3b16c07c31910d55ad57683d8
-  category: main
-  optional: false
-- name: kiwisolver
-  version: 1.4.5
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/17/ba/17a706b232308e65f57deeccae503c268292e6a091313f6ce833a23093ea/kiwisolver-1.4.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: 040c1aebeda72197ef477a906782b5ab0d387642e93bda547336b8957c61022e
-  category: main
-  optional: false
-- name: lazy-loader
-  version: '0.3'
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/a1/c3/65b3814e155836acacf720e5be3b5757130346670ac454fee29d3eda1381/lazy_loader-0.3-py3-none-any.whl
-  hash:
-    sha256: 1e9e76ee8631e264c62ce10006718e80b2cfc74340d17d1031e0f84af7478554
-  category: main
-  optional: false
-- name: pyparsing
-  version: 3.1.1
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/39/92/8486ede85fcc088f1b3dba4ce92dd29d126fd96b0008ea213167940a2475/pyparsing-3.1.1-py3-none-any.whl
-  hash:
-    sha256: 32c7c0b711493c72ff18a981d24f28aaf9c1fb7ed5e9667c9e84e3db623bdbfb
-  category: main
-  optional: false
-- name: threadpoolctl
-  version: 3.2.0
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/81/12/fd4dea011af9d69e1cad05c75f3f7202cdcbeac9b712eea58ca779a72865/threadpoolctl-3.2.0-py3-none-any.whl
-  hash:
-    sha256: 2b7818516e423bdaebb97c723f86a7c6b0a83d3f3b0970328d66f4d9104dc032
-  category: main
-  optional: false
-- name: imageio
-  version: 2.31.5
-  manager: pip
-  platform: linux-64
-  dependencies:
-    numpy: '*'
-    pillow: '>=8.3.2'
-  url: https://files.pythonhosted.org/packages/f6/37/e21e6f38b93878ba80302e95b8ccd4718d80f0c53055ccae343e606b1e2d/imageio-2.31.5-py3-none-any.whl
-  hash:
-    sha256: 97f68e12ba676f2f4b541684ed81f7f3370dc347e8321bc68ee34d37b2dbac9f
-  category: main
-  optional: false
 - name: multilingual-clip
   version: 1.0.10
   manager: pip
@@ -3981,176 +3506,15 @@ package:
     sha256: b9acf95b8309c85a0db5e9c88c5f1b400687e08d72408c460731ae31e71dc73a
   category: main
   optional: false
-- name: onnx
-  version: 1.15.0
+- name: onnx-simplifier
+  version: 0.4.35
   manager: pip
   platform: linux-64
   dependencies:
-    numpy: '*'
-    protobuf: '>=3.20.2'
-  url: https://files.pythonhosted.org/packages/fe/33/a84bb5164f1462edd10d15516d5b12fee8a5e7d94b73829c7d32545cdc22/onnx-1.15.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: d8a7c94d2ebead8f739fdb70d1ce5a71726f4e17b3e5b8ad64455ea1b2801a85
-  category: main
-  optional: false
-- name: opencv-python-headless
-  version: 4.8.1.78
-  manager: pip
-  platform: linux-64
-  dependencies:
-    numpy: '>=1.17.3'
-  url: https://files.pythonhosted.org/packages/9d/d7/e2aaf344254292d2046f9984b54212e4e7d69a57d30ae15e7294840710f6/opencv_python_headless-4.8.1.78-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: 58e70d2f0915fe23e02c6e405588276c9397844a47d38b9c87fac5f7f9ba2dcc
-  category: main
-  optional: false
-- name: prettytable
-  version: 3.9.0
-  manager: pip
-  platform: linux-64
-  dependencies:
-    wcwidth: '*'
-  url: https://files.pythonhosted.org/packages/4d/81/316b6a55a0d1f327d04cc7b0ba9d04058cb62de6c3a4d4b0df280cbe3b0b/prettytable-3.9.0-py3-none-any.whl
-  hash:
-    sha256: a71292ab7769a5de274b146b276ce938786f56c31cf7cea88b6f3775d82fe8c8
-  category: main
-  optional: false
-- name: scipy
-  version: 1.11.3
-  manager: pip
-  platform: linux-64
-  dependencies:
-    numpy: '>=1.21.6,<1.28.0'
-  url: https://files.pythonhosted.org/packages/ef/1b/7538792254aec6850657d5b940fd05fe60582af829ffe40d6c054f065f34/scipy-1.11.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: 5f290cf561a4b4edfe8d1001ee4be6da60c1c4ea712985b58bf6bc62badee221
-  category: main
-  optional: false
-- name: setuptools-scm
-  version: 8.0.4
-  manager: pip
-  platform: linux-64
-  dependencies:
-    packaging: '>=20'
-    typing-extensions: '*'
-  url: https://files.pythonhosted.org/packages/0e/a3/b9a8b0adfe672bf0df5901707aa929d30a97ee390ba651910186776746d2/setuptools_scm-8.0.4-py3-none-any.whl
-  hash:
-    sha256: b47844cd2a84b83b3187a5782c71128c28b4c94cad8bfb871da2784a5cb54c4f
-  category: main
-  optional: false
-- name: tifffile
-  version: 2023.9.26
-  manager: pip
-  platform: linux-64
-  dependencies:
-    numpy: '*'
-  url: https://files.pythonhosted.org/packages/f5/72/68ea763b5f3e3d9871492683059ed4724fd700dbe54aa03cdda7a9692129/tifffile-2023.9.26-py3-none-any.whl
-  hash:
-    sha256: 1de47fa945fddaade256e25ad4f375ae65547f3c1354063aded881c32a64cf89
-  category: main
-  optional: false
-- name: matplotlib
-  version: 3.8.0
-  manager: pip
-  platform: linux-64
-  dependencies:
-    contourpy: '>=1.0.1'
-    cycler: '>=0.10'
-    fonttools: '>=4.22.0'
-    kiwisolver: '>=1.0.1'
-    numpy: '>=1.21,<2'
-    packaging: '>=20.0'
-    pillow: '>=6.2.0'
-    pyparsing: '>=2.3.1'
-    python-dateutil: '>=2.7'
-    setuptools-scm: '>=7'
-  url: https://files.pythonhosted.org/packages/65/5b/3b8fd7d66043f0638a35fa650570cbe69efd42fe169e5024f9307598b47e/matplotlib-3.8.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: eee482731c8c17d86d9ddb5194d38621f9b0f0d53c99006275a12523ab021732
-  category: main
-  optional: false
-- name: scikit-image
-  version: 0.22.0
-  manager: pip
-  platform: linux-64
-  dependencies:
-    numpy: '>=1.22'
-    scipy: '>=1.8'
-    networkx: '>=2.8'
-    pillow: '>=9.0.1'
-    imageio: '>=2.27'
-    tifffile: '>=2022.8.12'
-    packaging: '>=21'
-    lazy-loader: '>=0.3'
-  url: https://files.pythonhosted.org/packages/d4/34/e27bf2bfe7b52b884b49bd71ea91ff81e4737246735ee5ea383314c31876/scikit_image-0.22.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: c5c378db54e61b491b9edeefff87e49fcf7fdf729bb93c777d7a5f15d36f743e
-  category: main
-  optional: false
-- name: scikit-learn
-  version: 1.3.2
-  manager: pip
-  platform: linux-64
-  dependencies:
-    numpy: '>=1.17.3,<2.0'
-    scipy: '>=1.5.0'
-    joblib: '>=1.1.1'
-    threadpoolctl: '>=2.0.0'
-  url: https://files.pythonhosted.org/packages/0c/2a/d3ff6091406bc2207e0adb832ebd15e40ac685811c7e2e3b432bfd969b71/scikit_learn-1.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  hash:
-    sha256: fc4144a5004a676d5022b798d9e573b05139e77f271253a4703eed295bde0433
-  category: main
-  optional: false
-- name: qudida
-  version: 0.0.4
-  manager: pip
-  platform: linux-64
-  dependencies:
-    numpy: '>=0.18.0'
-    scikit-learn: '>=0.19.1'
-    typing-extensions: '*'
-    opencv-python-headless: '>=4.0.1'
-  url: https://files.pythonhosted.org/packages/f0/a1/a5f4bebaa31d109003909809d88aeb0d4b201463a9ea29308d9e4f9e7655/qudida-0.0.4-py3-none-any.whl
-  hash:
-    sha256: 4519714c40cd0f2e6c51e1735edae8f8b19f4efe1f33be13e9d644ca5f736dd6
-  category: main
-  optional: false
-- name: albumentations
-  version: 1.3.1
-  manager: pip
-  platform: linux-64
-  dependencies:
-    numpy: '>=1.11.1'
-    scipy: '>=1.1.0'
-    scikit-image: '>=0.16.1'
-    pyyaml: '*'
-    qudida: '>=0.0.4'
-    opencv-python-headless: '>=4.1.1'
-  url: https://files.pythonhosted.org/packages/9b/f6/c486cedb4f75147232f32ec4c97026714cfef7c7e247a1f0427bc5489f66/albumentations-1.3.1-py3-none-any.whl
-  hash:
-    sha256: 6b641d13733181d9ecdc29550e6ad580d1bfa9d25e2213a66940062f25e291bd
-  category: main
-  optional: false
-- name: insightface
-  version: 0.7.3
-  manager: pip
-  platform: linux-64
-  dependencies:
-    pillow: '*'
-    albumentations: '*'
-    cython: '*'
-    easydict: '*'
-    matplotlib: '*'
-    numpy: '*'
     onnx: '*'
-    prettytable: '*'
-    requests: '*'
-    scikit-image: '*'
-    scikit-learn: '*'
-    scipy: '*'
-    tqdm: '*'
-  url: https://files.pythonhosted.org/packages/0b/8d/0f4af90999ca96cf8cb846eb5ae27c5ef5b390f9c090dd19e4fa76364c13/insightface-0.7.3.tar.gz
+    rich: '*'
+  url: https://files.pythonhosted.org/packages/5f/b3/b953aa4d877661c66e626fdd57830b4e217b45b0139ba6d5e0f38a663b1c/onnx_simplifier-0.4.35-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   hash:
-    sha256: f191f719612ebb37018f41936814500544cd0f86e6fcd676c023f354c668ddf7
+    sha256: 4986c4272440e719d0652c3bbecba5d842ae2ddb7de7804f23c781761e11cc8a
   category: main
   optional: false
