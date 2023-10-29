@@ -27,6 +27,8 @@
   let password = '';
   let shouldChangeExpirationTime = false;
   let canCopyImagesToClipboard = true;
+  let enablePassword = false;
+
   const dispatch = createEventDispatcher();
 
   const expiredDateOption: ImmichDropDownOption = {
@@ -191,7 +193,16 @@
         </div>
 
         <div class="mb-2">
-          <SettingInputField inputType={SettingInputFieldType.TEXT} label="Password" bind:value={password} />
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label="Password"
+            bind:value={password}
+            disabled={!enablePassword}
+          />
+        </div>
+
+        <div class="my-3">
+          <SettingSwitch bind:checked={enablePassword} title={'Enable password'} />
         </div>
 
         <div class="my-3">
