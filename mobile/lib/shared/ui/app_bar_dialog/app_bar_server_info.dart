@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/server_info/server_info.model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class AppBarServerInfo extends HookConsumerWidget {
@@ -65,71 +66,135 @@ class AppBarServerInfo extends HookConsumerWidget {
                   ),
                 ),
               ),
-              const Divider(
-                color: Color.fromARGB(101, 201, 201, 201),
-                thickness: 1,
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Divider(
+                  color: Color.fromARGB(101, 201, 201, 201),
+                  thickness: 1,
+                ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      "server_info_box_app_version".tr(),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(context).textTheme.labelSmall?.color,
-                        fontWeight: FontWeight.bold,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: Text(
+                        "server_info_box_app_version".tr(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).textTheme.labelSmall?.color,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                   Expanded(
                     flex: 0,
-                    child: Text(
-                      "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.color
-                            ?.withOpacity(0.5),
-                        fontWeight: FontWeight.bold,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10.0),
+                      child: Text(
+                        "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.color
+                              ?.withOpacity(0.5),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-              const Divider(
-                color: Color.fromARGB(101, 201, 201, 201),
-                thickness: 1,
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Divider(
+                  color: Color.fromARGB(101, 201, 201, 201),
+                  thickness: 1,
+                ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      "server_info_box_server_version".tr(),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(context).textTheme.labelSmall?.color,
-                        fontWeight: FontWeight.bold,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: Text(
+                        "server_info_box_server_version".tr(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).textTheme.labelSmall?.color,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                   Expanded(
                     flex: 0,
-                    child: Text(
-                      serverInfoState.serverVersion.major > 0
-                          ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
-                          : "?",
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.color
-                            ?.withOpacity(0.5),
-                        fontWeight: FontWeight.bold,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10.0),
+                      child: Text(
+                        serverInfoState.serverVersion.major > 0
+                            ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
+                            : "?",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.color
+                              ?.withOpacity(0.5),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Divider(
+                  color: Color.fromARGB(101, 201, 201, 201),
+                  thickness: 1,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: Text(
+                        "server_info_box_server_url".tr(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).textTheme.labelSmall?.color,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 0,
+                    child: Container(
+                      width: 200,
+                      padding: const EdgeInsets.only(right: 10.0),
+                      child: Text(
+                        getServerUrl() ?? '--',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.color
+                              ?.withOpacity(0.5),
+                          fontWeight: FontWeight.bold,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        textAlign: TextAlign.end,
                       ),
                     ),
                   ),
