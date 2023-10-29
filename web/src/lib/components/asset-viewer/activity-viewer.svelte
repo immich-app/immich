@@ -14,6 +14,7 @@
   export let albumId: string;
   export let albumOwnerId: string;
 
+  let textArea: HTMLTextAreaElement;
   let previousAssetId: string | null;
 
   $: {
@@ -30,6 +31,18 @@
     } catch (error) {
       handleError(error, 'Error when fetching reactions');
     }
+  };
+
+  const handleEnter = (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      handleSendComment();
+      return;
+    }
+  };
+
+  const autoGrow = () => {
+    textArea.style.height = '5px';
+    textArea.style.height = textArea.scrollHeight + 'px';
   };
 
   const timeOptions = {
@@ -118,12 +131,12 @@
             </div>
           {/if}
           {#if reaction.comment}
-            <div class="flex dark:bg-slate-500 bg-gray-200 p-2 m-2 rounded-3xl gap-2 justify-start">
+            <div class="flex items-center dark:bg-slate-500 bg-gray-200 p-2 m-2 rounded-3xl gap-2 justify-start">
               <div>
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
-              <div class="w-full">{reaction.comment}</div>
+              <div class="w-full leading-4 flex">{reaction.comment}</div>
               {#if (user && reaction.user && reaction.user.id === user.id) || (user && user.isAdmin) || albumOwnerId === user.id}
                 <div>
                   <button on:click={() => (!showDeleteComment[index] ? showOptionsMenu(index) : '')}>
@@ -160,20 +173,24 @@
 
   <div class="fixed bottom-0 w-[359px] overflow-x-hidden">
     <div class="flex items-center justify-center p-2">
-      <div class="flex items-center p-2 bg-slate-400 h-fit dark:bg-gray-900 rounded-3xl gap-2 w-full text-white">
+      <div class="flex p-2 bg-slate-400 h-fit dark:bg-gray-900 rounded-3xl gap-2 w-full text-white">
         <UserAvatar {user} size="md" showTitle={false} />
-        <form on:submit|preventDefault={() => handleSendComment()}>
-          <input
-            bind:value={message}
-            style="--height: auto"
-            placeholder="Say something"
-            class="w-60 leading-3 outline-none resize-none max-w-60 bg-slate-400 dark:bg-gray-900 text-white"
-          />
-          {#if message}
-            <button class="mr-0">
+        <form class="flex max-h-56 gap-2" on:submit|preventDefault={() => handleSendComment()}>
+          <div class="flex items-center">
+            <textarea
+              bind:this={textArea}
+              bind:value={message}
+              placeholder="Say something"
+              on:input={autoGrow}
+              on:keypress={handleEnter}
+              class="w-64 h-[18px] max-h-56 items-center overflow-y-auto leading-4 outline-none resize-none bg-slate-400 dark:bg-gray-900 text-white"
+            />
+          </div>
+          <div class="flex items-end pb-3">
+            <button class="mr-0 {message ? '' : 'opacity-30'}" disabled={message ? false : true}>
               <Icon path={mdiSend} />
             </button>
-          {/if}
+          </div>
         </form>
       </div>
     </div>
