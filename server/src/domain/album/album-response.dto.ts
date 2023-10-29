@@ -36,14 +36,13 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
   const hasSharedLink = entity.sharedLinks?.length > 0;
   const hasSharedUser = sharedUsers.length > 0;
 
-  let startDate, endDate: Date | undefined;
-  for (const asset of assets) {
-    if (!startDate || startDate > asset.fileCreatedAt) {
-      startDate = asset.fileCreatedAt;
-    }
-    if (!endDate || endDate < asset.fileCreatedAt) {
-      endDate = asset.fileCreatedAt;
-    }
+  let startDate = assets.at(0)?.fileCreatedAt || undefined;
+  let endDate = assets.at(-1)?.fileCreatedAt || undefined;
+  // Swap dates if start date is greater than end date.
+  if (startDate && endDate && startDate > endDate) {
+    const temp = startDate;
+    startDate = endDate;
+    endDate = temp;
   }
 
   return {
