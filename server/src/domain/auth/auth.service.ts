@@ -341,7 +341,7 @@ export class AuthService {
       return new issuer.Client(metadata);
     } catch (error: any) {
       if (error instanceof AggregateError) {
-        this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors)
+        this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
       } else if (error instanceof Error) {
         this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack);
       }

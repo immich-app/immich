@@ -18,6 +18,7 @@ class SharedLinkEditDto {
     this.changeExpiryTime,
     this.description,
     this.expiresAt,
+    this.password,
     this.showMetadata,
   });
 
@@ -62,6 +63,14 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  String? password;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? showMetadata;
 
   @override
@@ -71,6 +80,7 @@ class SharedLinkEditDto {
      other.changeExpiryTime == changeExpiryTime &&
      other.description == description &&
      other.expiresAt == expiresAt &&
+     other.password == password &&
      other.showMetadata == showMetadata;
 
   @override
@@ -81,10 +91,11 @@ class SharedLinkEditDto {
     (changeExpiryTime == null ? 0 : changeExpiryTime!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
+    (password == null ? 0 : password!.hashCode) +
     (showMetadata == null ? 0 : showMetadata!.hashCode);
 
   @override
-  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, showMetadata=$showMetadata]';
+  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -113,6 +124,11 @@ class SharedLinkEditDto {
     } else {
     //  json[r'expiresAt'] = null;
     }
+    if (this.password != null) {
+      json[r'password'] = this.password;
+    } else {
+    //  json[r'password'] = null;
+    }
     if (this.showMetadata != null) {
       json[r'showMetadata'] = this.showMetadata;
     } else {
@@ -134,6 +150,7 @@ class SharedLinkEditDto {
         changeExpiryTime: mapValueOfType<bool>(json, r'changeExpiryTime'),
         description: mapValueOfType<String>(json, r'description'),
         expiresAt: mapDateTime(json, r'expiresAt', ''),
+        password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
       );
     }

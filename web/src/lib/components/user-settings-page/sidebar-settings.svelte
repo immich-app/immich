@@ -10,6 +10,9 @@
       <div class="ml-4">
         <SettingSwitch title="People" subtitle="Display a link to People" bind:checked={$sidebarSettings.people} />
       </div>
+      <div class="ml-4">
+        <SettingSwitch title="Sharing" subtitle="Display a link to Sharing" bind:checked={$sidebarSettings.sharing} />
+      </div>
     </div>
   </div>
 </section>

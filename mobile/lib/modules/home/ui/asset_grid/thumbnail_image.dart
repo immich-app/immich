@@ -14,6 +14,7 @@ class ThumbnailImage extends StatelessWidget {
   final int totalAssets;
   final bool showStorageIndicator;
   final bool showStack;
+  final bool isOwner;
   final bool useGrayBoxPlaceholder;
   final bool isSelected;
   final bool multiselectEnabled;
@@ -29,6 +30,7 @@ class ThumbnailImage extends StatelessWidget {
     required this.totalAssets,
     this.showStorageIndicator = true,
     this.showStack = false,
+    this.isOwner = true,
     this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
@@ -181,6 +183,7 @@ class ThumbnailImage extends StatelessWidget {
               totalAssets: totalAssets,
               heroOffset: heroOffset,
               showStack: showStack,
+              isOwner: isOwner,
             ),
           );
         }

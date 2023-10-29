@@ -24,6 +24,7 @@
   let allowUpload = false;
   let showMetadata = true;
   let expirationTime = '';
+  let password = '';
   let shouldChangeExpirationTime = false;
   let canCopyImagesToClipboard = true;
   const dispatch = createEventDispatcher();
@@ -39,6 +40,9 @@
     if (editingLink) {
       if (editingLink.description) {
         description = editingLink.description;
+      }
+      if (editingLink.password) {
+        password = editingLink.password;
       }
       allowUpload = editingLink.allowUpload;
       allowDownload = editingLink.allowDownload;
@@ -66,6 +70,7 @@
           expiresAt: expirationDate,
           allowUpload,
           description,
+          password,
           allowDownload,
           showMetadata,
         },
@@ -81,7 +86,7 @@
       return;
     }
 
-    await copyToClipboard(sharedLink);
+    await copyToClipboard(password ? `Link: ${sharedLink}\nPassword: ${password}` : sharedLink);
   };
 
   const getExpirationTimeInMillisecond = () => {
@@ -119,6 +124,7 @@
         id: editingLink.id,
         sharedLinkEditDto: {
           description,
+          password,
           expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
           allowUpload,
           allowDownload,
@@ -178,10 +184,14 @@
     <div class="mb-2 mt-4">
       <p class="text-xs">LINK OPTIONS</p>
     </div>
-    <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40">
+    <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 max-h-[330px] overflow-y-scroll">
       <div class="flex flex-col">
         <div class="mb-2">
           <SettingInputField inputType={SettingInputFieldType.TEXT} label="Description" bind:value={description} />
+        </div>
+
+        <div class="mb-2">
+          <SettingInputField inputType={SettingInputFieldType.TEXT} label="Password" bind:value={password} />
         </div>
 
         <div class="my-3">

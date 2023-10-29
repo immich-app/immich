@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // String password
+    test('to test the property `password`', () async {
+      // TODO
+    });
+
     // bool showMetadata (default value: true)
     test('to test the property `showMetadata`', () async {
       // TODO

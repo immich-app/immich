@@ -15,6 +15,7 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.isPlayingMotionVideo,
     required this.onFavorite,
     required this.onUploadPressed,
+    required this.isOwner,
   }) : super(key: key);
 
   final Asset asset;
@@ -25,6 +26,7 @@ class TopControlAppBar extends HookConsumerWidget {
   final VoidCallback onAddToAlbumPressed;
   final Function(Asset) onFavorite;
   final bool isPlayingMotionVideo;
+  final bool isOwner;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -123,11 +125,11 @@ class TopControlAppBar extends HookConsumerWidget {
         size: iconSize,
       ),
       actions: [
-        if (asset.isRemote) buildFavoriteButton(a),
+        if (asset.isRemote && isOwner) buildFavoriteButton(a),
         if (asset.livePhotoVideoId != null) buildLivePhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
-        if (asset.isRemote && !asset.isLocal) buildDownloadButton(),
-        if (asset.isRemote) buildAddToAlbumButtom(),
+        if (asset.isRemote && !asset.isLocal && isOwner) buildDownloadButton(),
+        if (asset.isRemote && isOwner) buildAddToAlbumButtom(),
         buildMoreInfoButton(),
       ],
     );

@@ -9,6 +9,7 @@ class SharedLink {
   final bool allowUpload;
   final String? thumbAssetId;
   final String? description;
+  final String? password;
   final DateTime? expiresAt;
   final String key;
   final bool showMetadata;
@@ -21,6 +22,7 @@ class SharedLink {
     required this.allowUpload,
     required this.thumbAssetId,
     required this.description,
+    required this.password,
     required this.expiresAt,
     required this.key,
     required this.showMetadata,
@@ -34,6 +36,7 @@ class SharedLink {
     bool? allowDownload,
     bool? allowUpload,
     String? description,
+    String? password,
     DateTime? expiresAt,
     String? key,
     bool? showMetadata,
@@ -46,6 +49,7 @@ class SharedLink {
       allowDownload: allowDownload ?? this.allowDownload,
       allowUpload: allowUpload ?? this.allowUpload,
       description: description ?? this.description,
+      password: password ?? this.password,
       expiresAt: expiresAt ?? this.expiresAt,
       key: key ?? this.key,
       showMetadata: showMetadata ?? this.showMetadata,
@@ -58,6 +62,7 @@ class SharedLink {
         allowDownload = dto.allowDownload,
         allowUpload = dto.allowUpload,
         description = dto.description,
+        password = dto.password,
         expiresAt = dto.expiresAt,
         key = dto.key,
         showMetadata = dto.showMetadata,
@@ -75,7 +80,7 @@ class SharedLink {
 
   @override
   String toString() =>
-      'SharedLink(id=$id, title=$title, thumbAssetId=$thumbAssetId, allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, expiresAt=$expiresAt, key=$key, showMetadata=$showMetadata, type=$type)';
+      'SharedLink(id=$id, title=$title, thumbAssetId=$thumbAssetId, allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, password=$password, expiresAt=$expiresAt, key=$key, showMetadata=$showMetadata, type=$type)';
 
   @override
   bool operator ==(Object other) =>
@@ -87,6 +92,7 @@ class SharedLink {
           other.allowDownload == allowDownload &&
           other.allowUpload == allowUpload &&
           other.description == description &&
+          other.password == password &&
           other.expiresAt == expiresAt &&
           other.key == key &&
           other.showMetadata == showMetadata &&
@@ -100,6 +106,7 @@ class SharedLink {
       allowDownload.hashCode ^
       allowUpload.hashCode ^
       description.hashCode ^
+      password.hashCode ^
       expiresAt.hashCode ^
       key.hashCode ^
       showMetadata.hashCode ^
