@@ -54,7 +54,7 @@
 
   let album = data.album;
   $: album = data.album;
-  $: albumPersons = data.albumPersons;
+  $: albumPeoples = data.albumPeoples;
 
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
@@ -509,15 +509,15 @@
               {album.description || 'Add description'}
             </button>
           {/if}
-          {#if albumPersons.length}
+          {#if albumPeoples.length}
             <div class="personWrapper">
-              {#each albumPersons as person}
+              {#each albumPeoples as people}
                 <button>
                   <ImageThumbnail
                     circle
                     shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
+                    url={api.getPeopleThumbnailUrl(people.id)}
+                    altText={people.name}
                     widthStyle="3.375rem"
                     heightStyle="3.375rem"
                   />
