@@ -96,6 +96,11 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Offline support                              | Yes    | No  |
 | Read-only gallery                            | Yes    | Yes |
 
+### All Thanks To Our Contributors :
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=alextran1502/immich" />
+</a>
+
 # Support the project
 
 I've committed to this project, and I will not stop. I will keep updating the docs, adding new features, and fixing bugs. But I can't do it alone. So I need your help to give me additional motivation to keep going.
