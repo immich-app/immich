@@ -141,6 +141,14 @@
           EXIF
         </div>
       {/if}
+
+      {#if link.password}
+        <div
+          class="flex w-[100px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
+        >
+          Password
+        </div>
+      {/if}
     </div>
   </div>
 
