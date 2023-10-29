@@ -54,7 +54,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
         return const SizedBox(
           height: 40,
           width: 40,
-          child: ImmichLoadingIndicator(),
+          child: ImmichLoadingIndicator(borderRadius: 20),
         );
       }
 
@@ -73,9 +73,15 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
             await ref.watch(uploadProfileImageProvider.notifier).upload(image);
 
         if (success) {
+          final profileImagePath =
+              ref.read(uploadProfileImageProvider).profileImagePath;
           ref.watch(authenticationProvider.notifier).updateUserProfileImagePath(
-                ref.read(uploadProfileImageProvider).profileImagePath,
+                profileImagePath,
               );
+          if (user != null) {
+            user.profileImagePath = profileImagePath;
+            Store.put(StoreKey.currentUser, user);
+          }
         }
       }
     }

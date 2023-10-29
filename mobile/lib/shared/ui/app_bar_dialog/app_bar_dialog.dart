@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/login/providers/authentication.provider.da
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_server_info.dart';
@@ -27,13 +28,14 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     bool isDarkTheme = theme.brightness == Brightness.dark;
     bool isHorizontal = MediaQuery.of(context).size.width > 600;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
+    final user = ref.watch(currentUserProvider);
 
     useEffect(
       () {
         ref.read(backupProvider.notifier).updateServerInfo();
         return null;
       },
-      [],
+      [user],
     );
 
     buildTopRow() {
