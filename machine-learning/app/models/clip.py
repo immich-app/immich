@@ -61,24 +61,16 @@ class BaseCLIPEncoder(InferenceModel):
                 if self.mode == "text":
                     raise TypeError("Cannot encode image as text-only model")
 
-                outputs = self.encode_image(image_or_text)
+                outputs = self.vision_model.run(None, self.transform(image_or_text))
             case str():
                 if self.mode == "vision":
                     raise TypeError("Cannot encode text as vision-only model")
 
-                outputs = self.encode_text(image_or_text)
+                outputs = self.text_model.run(None, self.tokenize(image_or_text))
             case _:
                 raise TypeError(f"Expected Image or str, but got: {type(image_or_text)}")
 
         return outputs[0][0].tolist()
-
-    @abstractmethod
-    def encode_image(self, image: Image.Image) -> ndarray_f32:
-        pass
-
-    @abstractmethod
-    def encode_text(self, text: str) -> ndarray_f32:
-        pass
 
     @abstractmethod
     def tokenize(self, text: str) -> dict[str, ndarray_i32]:
@@ -147,12 +139,6 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         self.resampling = get_pil_resampling(self.preprocess_cfg["interpolation"])
         self.mean = np.array(self.preprocess_cfg["mean"], dtype=np.float32)
         self.std = np.array(self.preprocess_cfg["std"], dtype=np.float32)
-
-    def encode_image(self, image: Image.Image) -> ndarray_f32:
-        return self.vision_model.run(None, self.transform(image))
-
-    def encode_text(self, text: str) -> ndarray_f32:
-        return self.text_model.run(None, self.tokenize(text))
 
     def tokenize(self, text: str) -> dict[str, ndarray_i32]:
         input_ids: ndarray_i64 = self.tokenizer(
