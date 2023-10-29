@@ -184,7 +184,7 @@
     <div class="mb-2 mt-4">
       <p class="text-xs">LINK OPTIONS</p>
     </div>
-    <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 max-h-[330px] overflow-y-scroll">
+    <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 overflow-y-auto">
       <div class="flex flex-col">
         <div class="mb-2">
           <SettingInputField inputType={SettingInputFieldType.TEXT} label="Description" bind:value={description} />
@@ -227,7 +227,7 @@
 
   <hr />
 
-  <section class="m-6">
+  <section slot="sticky-bottom">
     {#if !sharedLink}
       {#if editingLink}
         <div class="flex justify-end">
