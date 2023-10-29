@@ -9,8 +9,8 @@ packages = [{include = "app"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 torch = [
-    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=2.0.1", source = "pypi"},
-    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.0.1", source = "pytorch-cpu"}
+    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=2.1.0", source = "pypi"},
+    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.1.0", source = "pytorch-cpu"}
 ]
 transformers = "^4.29.2"
 onnxruntime = "^1.15.0"
@@ -23,8 +23,8 @@ pydantic = "^1.10.8"
 aiocache = "^0.12.1"
 optimum = "^1.9.1"
 torchvision = [
-    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=0.15.2", source = "pypi"},
-    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=0.15.2", source = "pytorch-cpu"}
+    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=0.16.0", source = "pypi"},
+    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=0.16.0", source = "pytorch-cpu"}
 ]
 rich = "^13.4.2"
 ftfy = "^6.1.1"
@@ -63,13 +63,13 @@ warn_redundant_casts = true
 disallow_any_generics = true
 check_untyped_defs = true
 disallow_untyped_defs = true
+ignore_missing_imports = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 warn_untyped_fields = true
-ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 120
