@@ -200,7 +200,7 @@
 <style>
   ::placeholder {
     color: white;
-    opacity: 1; /* Firefox */
+    opacity: 0.6;
   }
 
   ::-ms-input-placeholder {
