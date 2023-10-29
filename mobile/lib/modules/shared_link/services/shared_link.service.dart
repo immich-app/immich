@@ -40,6 +40,7 @@ class SharedLinkService {
     required bool allowDownload,
     required bool allowUpload,
     String? description,
+    String? password,
     String? albumId,
     List<String>? assetIds,
     DateTime? expiresAt,
@@ -57,6 +58,7 @@ class SharedLinkService {
           allowUpload: allowUpload,
           expiresAt: expiresAt,
           description: description,
+          password: password,
         );
       } else if (assetIds != null) {
         dto = SharedLinkCreateDto(
@@ -66,6 +68,7 @@ class SharedLinkService {
           allowUpload: allowUpload,
           expiresAt: expiresAt,
           description: description,
+          password: password,
           assetIds: assetIds,
         );
       }
@@ -90,6 +93,7 @@ class SharedLinkService {
     required bool? allowUpload,
     bool? changeExpiry = false,
     String? description,
+    String? password,
     DateTime? expiresAt,
   }) async {
     try {
@@ -101,6 +105,7 @@ class SharedLinkService {
           allowUpload: allowUpload,
           expiresAt: expiresAt,
           description: description,
+          password: password,
           changeExpiryTime: changeExpiry,
         ),
       );

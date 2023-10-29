@@ -30,6 +30,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
     final descriptionController =
         useTextEditingController(text: existingLink?.description ?? "");
     final descriptionFocusNode = useFocusNode();
+    final passwordController =
+        useTextEditingController(text: existingLink?.password ?? "");
     final showMetadata = useState(existingLink?.showMetadata ?? true);
     final allowDownload = useState(existingLink?.allowDownload ?? true);
     final allowUpload = useState(existingLink?.allowUpload ?? false);
@@ -110,6 +112,31 @@ class SharedLinkEditPage extends HookConsumerWidget {
           ),
         ),
         onTapOutside: (_) => descriptionFocusNode.unfocus(),
+      );
+    }
+
+    Widget buildPasswordField() {
+      return TextField(
+        controller: passwordController,
+        enabled: newShareLink.value.isEmpty,
+        autofocus: false,
+        decoration: InputDecoration(
+          labelText: 'shared_link_edit_password'.tr(),
+          labelStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: themeData.primaryColor,
+          ),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          border: const OutlineInputBorder(),
+          hintText: 'shared_link_edit_password_hint'.tr(),
+          hintStyle: const TextStyle(
+            fontWeight: FontWeight.normal,
+            fontSize: 14,
+          ),
+          disabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey.withOpacity(0.5)),
+          ),
+        ),
       );
     }
 
@@ -229,7 +256,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
     void copyLinkToClipboard() {
       Clipboard.setData(
         ClipboardData(
-          text: newShareLink.value,
+          text: passwordController.text.isEmpty
+              ? newShareLink.value
+              : "Link: ${newShareLink.value}\nPassword: ${passwordController.text}",
         ),
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -302,6 +331,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 description: descriptionController.text.isEmpty
                     ? null
                     : descriptionController.text,
+                password: passwordController.text.isEmpty
+                    ? null
+                    : passwordController.text,
                 expiresAt: expiryAfter.value == 0 ? null : calculateExpiry(),
               );
       ref.invalidate(sharedLinksStateProvider);
@@ -324,6 +356,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? upload;
       bool? meta;
       String? desc;
+      String? password;
       DateTime? expiry;
       bool? changeExpiry;
 
@@ -343,6 +376,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         desc = descriptionController.text;
       }
 
+      if (passwordController.text != existingLink!.password) {
+        password = passwordController.text;
+      }
+
       if (editExpiry.value) {
         expiry = expiryAfter.value == 0 ? null : calculateExpiry();
         changeExpiry = true;
@@ -354,6 +391,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             allowDownload: download,
             allowUpload: upload,
             description: desc,
+            password: password,
             expiresAt: expiry,
             changeExpiry: changeExpiry,
           );
@@ -384,6 +422,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(padding),
               child: buildDescriptionField(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(padding),
+              child: buildPasswordField(),
             ),
             Padding(
               padding: const EdgeInsets.only(

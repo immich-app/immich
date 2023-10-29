@@ -21,6 +21,9 @@ export class SharedLinkEntity {
   @Column({ type: 'varchar', nullable: true })
   description!: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  password!: string | null;
+
   @Column()
   userId!: string;
 

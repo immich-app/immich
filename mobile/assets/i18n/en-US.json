@@ -311,6 +311,8 @@
   "shared_link_edit_change_expiry": "Change expiration time",
   "shared_link_edit_description": "Description",
   "shared_link_edit_description_hint": "Enter the share description",
+  "shared_link_edit_password": "Password",
+  "shared_link_edit_password_hint": "Enter the share password",
   "shared_link_edit_show_meta": "Show metadata",
   "shared_link_edit_submit_button": "Update link",
   "shared_link_empty": "You don't have any shared links",

@@ -4264,6 +4264,23 @@
         "operationId": "getMySharedLink",
         "parameters": [
           {
+            "name": "password",
+            "required": false,
+            "in": "query",
+            "example": "password",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "key",
             "required": false,
             "in": "query",
@@ -7910,6 +7927,9 @@
             "nullable": true,
             "type": "string"
           },
+          "password": {
+            "type": "string"
+          },
           "showMetadata": {
             "default": true,
             "type": "boolean"
@@ -7941,6 +7961,9 @@
           "expiresAt": {
             "format": "date-time",
             "nullable": true,
+            "type": "string"
+          },
+          "password": {
             "type": "string"
           },
           "showMetadata": {
@@ -7985,8 +8008,16 @@
           "key": {
             "type": "string"
           },
+          "password": {
+            "nullable": true,
+            "type": "string"
+          },
           "showMetadata": {
             "type": "boolean"
+          },
+          "token": {
+            "nullable": true,
+            "type": "string"
           },
           "type": {
             "$ref": "#/components/schemas/SharedLinkType"
@@ -7999,6 +8030,7 @@
           "type",
           "id",
           "description",
+          "password",
           "userId",
           "key",
           "createdAt",
