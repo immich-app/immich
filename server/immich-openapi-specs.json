@@ -3549,6 +3549,51 @@
         ]
       }
     },
+    "/person/{id}/albums": {
+      "get": {
+        "operationId": "getPersonAlbums",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlbumsForPersonResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      }
+    },
     "/person/{id}/assets": {
       "get": {
         "operationId": "getPersonAssets",
@@ -5693,6 +5738,22 @@
           "hasSharedLink",
           "assets",
           "owner"
+        ],
+        "type": "object"
+      },
+      "AlbumsForPersonResponseDto": {
+        "properties": {
+          "albumId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetCount": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetCount"
         ],
         "type": "object"
       },

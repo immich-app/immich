@@ -72,276 +72,278 @@ All URIs are relative to */api*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*APIKeyApi* | [**createKey**](doc//APIKeyApi.md#createkey) | **POST** /api-key | 
-*APIKeyApi* | [**deleteKey**](doc//APIKeyApi.md#deletekey) | **DELETE** /api-key/{id} | 
-*APIKeyApi* | [**getKey**](doc//APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
-*APIKeyApi* | [**getKeys**](doc//APIKeyApi.md#getkeys) | **GET** /api-key | 
-*APIKeyApi* | [**updateKey**](doc//APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
-*AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
-*AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
-*AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
-*AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
-*AlbumApi* | [**getAlbumCount**](doc//AlbumApi.md#getalbumcount) | **GET** /album/count | 
-*AlbumApi* | [**getAlbumInfo**](doc//AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
-*AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /album | 
-*AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
-*AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
-*AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
-*AssetApi* | [**bulkUploadCheck**](doc//AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
-*AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-*AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
-*AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
-*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
-*AssetApi* | [**emptyTrash**](doc//AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
-*AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
-*AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
-*AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
-*AssetApi* | [**getAssetStats**](doc//AssetApi.md#getassetstats) | **GET** /asset/statistics | 
-*AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-*AssetApi* | [**getByTimeBucket**](doc//AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
-*AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
-*AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-*AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
-*AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
-*AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
-*AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
-*AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-*AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
-*AssetApi* | [**importFile**](doc//AssetApi.md#importfile) | **POST** /asset/import | 
-*AssetApi* | [**restoreAssets**](doc//AssetApi.md#restoreassets) | **POST** /asset/restore | 
-*AssetApi* | [**restoreTrash**](doc//AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
-*AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
-*AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
-*AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
-*AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
-*AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
-*AssetApi* | [**updateStackParent**](doc//AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
-*AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
-*AuditApi* | [**fixAuditFiles**](doc//AuditApi.md#fixauditfiles) | **POST** /audit/file-report/fix | 
-*AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
-*AuditApi* | [**getAuditFiles**](doc//AuditApi.md#getauditfiles) | **GET** /audit/file-report | 
-*AuditApi* | [**getFileChecksums**](doc//AuditApi.md#getfilechecksums) | **POST** /audit/file-report/checksum | 
-*AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
-*AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
-*AuthenticationApi* | [**getAuthDevices**](doc//AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 
-*AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
-*AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
-*AuthenticationApi* | [**logoutAuthDevice**](doc//AuthenticationApi.md#logoutauthdevice) | **DELETE** /auth/devices/{id} | 
-*AuthenticationApi* | [**logoutAuthDevices**](doc//AuthenticationApi.md#logoutauthdevices) | **DELETE** /auth/devices | 
-*AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
-*JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
-*JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
-*LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
-*LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
-*LibraryApi* | [**getAllForUser**](doc//LibraryApi.md#getallforuser) | **GET** /library | 
-*LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
-*LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
-*LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
-*LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
-*LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
-*OAuthApi* | [**authorizeOAuth**](doc//OAuthApi.md#authorizeoauth) | **POST** /oauth/authorize | 
-*OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
-*OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
-*OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
-*OAuthApi* | [**mobileRedirect**](doc//OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
-*OAuthApi* | [**unlink**](doc//OAuthApi.md#unlink) | **POST** /oauth/unlink | 
-*PartnerApi* | [**createPartner**](doc//PartnerApi.md#createpartner) | **POST** /partner/{id} | 
-*PartnerApi* | [**getPartners**](doc//PartnerApi.md#getpartners) | **GET** /partner | 
-*PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
-*PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
-*PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
-*PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
-*PersonApi* | [**getPersonStatistics**](doc//PersonApi.md#getpersonstatistics) | **GET** /person/{id}/statistics | 
-*PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
-*PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
-*PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
-*PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
-*SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
-*SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 
-*SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
-*ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
-*ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
-*ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
-*ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
-*ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
-*ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
-*ServerInfoApi* | [**getTheme**](doc//ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
-*ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
-*SharedLinkApi* | [**addSharedLinkAssets**](doc//SharedLinkApi.md#addsharedlinkassets) | **PUT** /shared-link/{id}/assets | 
-*SharedLinkApi* | [**createSharedLink**](doc//SharedLinkApi.md#createsharedlink) | **POST** /shared-link | 
-*SharedLinkApi* | [**getAllSharedLinks**](doc//SharedLinkApi.md#getallsharedlinks) | **GET** /shared-link | 
-*SharedLinkApi* | [**getMySharedLink**](doc//SharedLinkApi.md#getmysharedlink) | **GET** /shared-link/me | 
-*SharedLinkApi* | [**getSharedLinkById**](doc//SharedLinkApi.md#getsharedlinkbyid) | **GET** /shared-link/{id} | 
-*SharedLinkApi* | [**removeSharedLink**](doc//SharedLinkApi.md#removesharedlink) | **DELETE** /shared-link/{id} | 
-*SharedLinkApi* | [**removeSharedLinkAssets**](doc//SharedLinkApi.md#removesharedlinkassets) | **DELETE** /shared-link/{id}/assets | 
-*SharedLinkApi* | [**updateSharedLink**](doc//SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-link/{id} | 
-*SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
-*SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
-*SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
-*SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
-*TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 
-*TagApi* | [**deleteTag**](doc//TagApi.md#deletetag) | **DELETE** /tag/{id} | 
-*TagApi* | [**getAllTags**](doc//TagApi.md#getalltags) | **GET** /tag | 
-*TagApi* | [**getTagAssets**](doc//TagApi.md#gettagassets) | **GET** /tag/{id}/assets | 
-*TagApi* | [**getTagById**](doc//TagApi.md#gettagbyid) | **GET** /tag/{id} | 
-*TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
-*TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
-*TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
-*UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
-*UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
-*UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{id} | 
-*UserApi* | [**getAllUsers**](doc//UserApi.md#getallusers) | **GET** /user | 
-*UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
-*UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
-*UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
-*UserApi* | [**getUserCount**](doc//UserApi.md#getusercount) | **GET** /user/count | 
-*UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
-*UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
+*APIKeyApi* | [**createKey**](doc\/APIKeyApi.md#createkey) | **POST** /api-key | 
+*APIKeyApi* | [**deleteKey**](doc\/APIKeyApi.md#deletekey) | **DELETE** /api-key/{id} | 
+*APIKeyApi* | [**getKey**](doc\/APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
+*APIKeyApi* | [**getKeys**](doc\/APIKeyApi.md#getkeys) | **GET** /api-key | 
+*APIKeyApi* | [**updateKey**](doc\/APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
+*AlbumApi* | [**addAssetsToAlbum**](doc\/AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
+*AlbumApi* | [**addUsersToAlbum**](doc\/AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
+*AlbumApi* | [**createAlbum**](doc\/AlbumApi.md#createalbum) | **POST** /album | 
+*AlbumApi* | [**deleteAlbum**](doc\/AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
+*AlbumApi* | [**getAlbumCount**](doc\/AlbumApi.md#getalbumcount) | **GET** /album/count | 
+*AlbumApi* | [**getAlbumInfo**](doc\/AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
+*AlbumApi* | [**getAllAlbums**](doc\/AlbumApi.md#getallalbums) | **GET** /album | 
+*AlbumApi* | [**removeAssetFromAlbum**](doc\/AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
+*AlbumApi* | [**removeUserFromAlbum**](doc\/AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
+*AlbumApi* | [**updateAlbumInfo**](doc\/AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
+*AssetApi* | [**bulkUploadCheck**](doc\/AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
+*AssetApi* | [**checkExistingAssets**](doc\/AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
+*AssetApi* | [**deleteAssets**](doc\/AssetApi.md#deleteassets) | **DELETE** /asset | 
+*AssetApi* | [**downloadArchive**](doc\/AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
+*AssetApi* | [**downloadFile**](doc\/AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
+*AssetApi* | [**emptyTrash**](doc\/AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
+*AssetApi* | [**getAllAssets**](doc\/AssetApi.md#getallassets) | **GET** /asset | 
+*AssetApi* | [**getAssetById**](doc\/AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
+*AssetApi* | [**getAssetSearchTerms**](doc\/AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
+*AssetApi* | [**getAssetStats**](doc\/AssetApi.md#getassetstats) | **GET** /asset/statistics | 
+*AssetApi* | [**getAssetThumbnail**](doc\/AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
+*AssetApi* | [**getByTimeBucket**](doc\/AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
+*AssetApi* | [**getCuratedLocations**](doc\/AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
+*AssetApi* | [**getCuratedObjects**](doc\/AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
+*AssetApi* | [**getDownloadInfo**](doc\/AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
+*AssetApi* | [**getMapMarkers**](doc\/AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
+*AssetApi* | [**getMemoryLane**](doc\/AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
+*AssetApi* | [**getRandom**](doc\/AssetApi.md#getrandom) | **GET** /asset/random | 
+*AssetApi* | [**getTimeBuckets**](doc\/AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
+*AssetApi* | [**getUserAssetsByDeviceId**](doc\/AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+*AssetApi* | [**importFile**](doc\/AssetApi.md#importfile) | **POST** /asset/import | 
+*AssetApi* | [**restoreAssets**](doc\/AssetApi.md#restoreassets) | **POST** /asset/restore | 
+*AssetApi* | [**restoreTrash**](doc\/AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
+*AssetApi* | [**runAssetJobs**](doc\/AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
+*AssetApi* | [**searchAsset**](doc\/AssetApi.md#searchasset) | **POST** /asset/search | 
+*AssetApi* | [**serveFile**](doc\/AssetApi.md#servefile) | **GET** /asset/file/{id} | 
+*AssetApi* | [**updateAsset**](doc\/AssetApi.md#updateasset) | **PUT** /asset/{id} | 
+*AssetApi* | [**updateAssets**](doc\/AssetApi.md#updateassets) | **PUT** /asset | 
+*AssetApi* | [**updateStackParent**](doc\/AssetApi.md#updatestackparent) | **PUT** /asset/stack/parent | 
+*AssetApi* | [**uploadFile**](doc\/AssetApi.md#uploadfile) | **POST** /asset/upload | 
+*AuditApi* | [**fixAuditFiles**](doc\/AuditApi.md#fixauditfiles) | **POST** /audit/file-report/fix | 
+*AuditApi* | [**getAuditDeletes**](doc\/AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
+*AuditApi* | [**getAuditFiles**](doc\/AuditApi.md#getauditfiles) | **GET** /audit/file-report | 
+*AuditApi* | [**getFileChecksums**](doc\/AuditApi.md#getfilechecksums) | **POST** /audit/file-report/checksum | 
+*AuthenticationApi* | [**adminSignUp**](doc\/AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
+*AuthenticationApi* | [**changePassword**](doc\/AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
+*AuthenticationApi* | [**getAuthDevices**](doc\/AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 
+*AuthenticationApi* | [**login**](doc\/AuthenticationApi.md#login) | **POST** /auth/login | 
+*AuthenticationApi* | [**logout**](doc\/AuthenticationApi.md#logout) | **POST** /auth/logout | 
+*AuthenticationApi* | [**logoutAuthDevice**](doc\/AuthenticationApi.md#logoutauthdevice) | **DELETE** /auth/devices/{id} | 
+*AuthenticationApi* | [**logoutAuthDevices**](doc\/AuthenticationApi.md#logoutauthdevices) | **DELETE** /auth/devices | 
+*AuthenticationApi* | [**validateAccessToken**](doc\/AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*JobApi* | [**getAllJobsStatus**](doc\/JobApi.md#getalljobsstatus) | **GET** /jobs | 
+*JobApi* | [**sendJobCommand**](doc\/JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
+*LibraryApi* | [**createLibrary**](doc\/LibraryApi.md#createlibrary) | **POST** /library | 
+*LibraryApi* | [**deleteLibrary**](doc\/LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
+*LibraryApi* | [**getAllForUser**](doc\/LibraryApi.md#getallforuser) | **GET** /library | 
+*LibraryApi* | [**getLibraryInfo**](doc\/LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
+*LibraryApi* | [**getLibraryStatistics**](doc\/LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
+*LibraryApi* | [**removeOfflineFiles**](doc\/LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
+*LibraryApi* | [**scanLibrary**](doc\/LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
+*LibraryApi* | [**updateLibrary**](doc\/LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
+*OAuthApi* | [**authorizeOAuth**](doc\/OAuthApi.md#authorizeoauth) | **POST** /oauth/authorize | 
+*OAuthApi* | [**callback**](doc\/OAuthApi.md#callback) | **POST** /oauth/callback | 
+*OAuthApi* | [**generateConfig**](doc\/OAuthApi.md#generateconfig) | **POST** /oauth/config | 
+*OAuthApi* | [**link**](doc\/OAuthApi.md#link) | **POST** /oauth/link | 
+*OAuthApi* | [**mobileRedirect**](doc\/OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
+*OAuthApi* | [**unlink**](doc\/OAuthApi.md#unlink) | **POST** /oauth/unlink | 
+*PartnerApi* | [**createPartner**](doc\/PartnerApi.md#createpartner) | **POST** /partner/{id} | 
+*PartnerApi* | [**getPartners**](doc\/PartnerApi.md#getpartners) | **GET** /partner | 
+*PartnerApi* | [**removePartner**](doc\/PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
+*PersonApi* | [**getAllPeople**](doc\/PersonApi.md#getallpeople) | **GET** /person | 
+*PersonApi* | [**getPerson**](doc\/PersonApi.md#getperson) | **GET** /person/{id} | 
+*PersonApi* | [**getPersonAlbums**](doc\/PersonApi.md#getpersonalbums) | **GET** /person/{id}/albums | 
+*PersonApi* | [**getPersonAssets**](doc\/PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
+*PersonApi* | [**getPersonStatistics**](doc\/PersonApi.md#getpersonstatistics) | **GET** /person/{id}/statistics | 
+*PersonApi* | [**getPersonThumbnail**](doc\/PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
+*PersonApi* | [**mergePerson**](doc\/PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
+*PersonApi* | [**updatePeople**](doc\/PersonApi.md#updatepeople) | **PUT** /person | 
+*PersonApi* | [**updatePerson**](doc\/PersonApi.md#updateperson) | **PUT** /person/{id} | 
+*SearchApi* | [**getExploreData**](doc\/SearchApi.md#getexploredata) | **GET** /search/explore | 
+*SearchApi* | [**search**](doc\/SearchApi.md#search) | **GET** /search | 
+*SearchApi* | [**searchPerson**](doc\/SearchApi.md#searchperson) | **GET** /search/person | 
+*ServerInfoApi* | [**getServerConfig**](doc\/ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
+*ServerInfoApi* | [**getServerFeatures**](doc\/ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
+*ServerInfoApi* | [**getServerInfo**](doc\/ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
+*ServerInfoApi* | [**getServerVersion**](doc\/ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
+*ServerInfoApi* | [**getStats**](doc\/ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
+*ServerInfoApi* | [**getSupportedMediaTypes**](doc\/ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
+*ServerInfoApi* | [**getTheme**](doc\/ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
+*ServerInfoApi* | [**pingServer**](doc\/ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
+*SharedLinkApi* | [**addSharedLinkAssets**](doc\/SharedLinkApi.md#addsharedlinkassets) | **PUT** /shared-link/{id}/assets | 
+*SharedLinkApi* | [**createSharedLink**](doc\/SharedLinkApi.md#createsharedlink) | **POST** /shared-link | 
+*SharedLinkApi* | [**getAllSharedLinks**](doc\/SharedLinkApi.md#getallsharedlinks) | **GET** /shared-link | 
+*SharedLinkApi* | [**getMySharedLink**](doc\/SharedLinkApi.md#getmysharedlink) | **GET** /shared-link/me | 
+*SharedLinkApi* | [**getSharedLinkById**](doc\/SharedLinkApi.md#getsharedlinkbyid) | **GET** /shared-link/{id} | 
+*SharedLinkApi* | [**removeSharedLink**](doc\/SharedLinkApi.md#removesharedlink) | **DELETE** /shared-link/{id} | 
+*SharedLinkApi* | [**removeSharedLinkAssets**](doc\/SharedLinkApi.md#removesharedlinkassets) | **DELETE** /shared-link/{id}/assets | 
+*SharedLinkApi* | [**updateSharedLink**](doc\/SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-link/{id} | 
+*SystemConfigApi* | [**getConfig**](doc\/SystemConfigApi.md#getconfig) | **GET** /system-config | 
+*SystemConfigApi* | [**getDefaults**](doc\/SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
+*SystemConfigApi* | [**getStorageTemplateOptions**](doc\/SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
+*SystemConfigApi* | [**updateConfig**](doc\/SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
+*TagApi* | [**createTag**](doc\/TagApi.md#createtag) | **POST** /tag | 
+*TagApi* | [**deleteTag**](doc\/TagApi.md#deletetag) | **DELETE** /tag/{id} | 
+*TagApi* | [**getAllTags**](doc\/TagApi.md#getalltags) | **GET** /tag | 
+*TagApi* | [**getTagAssets**](doc\/TagApi.md#gettagassets) | **GET** /tag/{id}/assets | 
+*TagApi* | [**getTagById**](doc\/TagApi.md#gettagbyid) | **GET** /tag/{id} | 
+*TagApi* | [**tagAssets**](doc\/TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
+*TagApi* | [**untagAssets**](doc\/TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
+*TagApi* | [**updateTag**](doc\/TagApi.md#updatetag) | **PATCH** /tag/{id} | 
+*UserApi* | [**createProfileImage**](doc\/UserApi.md#createprofileimage) | **POST** /user/profile-image | 
+*UserApi* | [**createUser**](doc\/UserApi.md#createuser) | **POST** /user | 
+*UserApi* | [**deleteUser**](doc\/UserApi.md#deleteuser) | **DELETE** /user/{id} | 
+*UserApi* | [**getAllUsers**](doc\/UserApi.md#getallusers) | **GET** /user | 
+*UserApi* | [**getMyUserInfo**](doc\/UserApi.md#getmyuserinfo) | **GET** /user/me | 
+*UserApi* | [**getProfileImage**](doc\/UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
+*UserApi* | [**getUserById**](doc\/UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
+*UserApi* | [**getUserCount**](doc\/UserApi.md#getusercount) | **GET** /user/count | 
+*UserApi* | [**restoreUser**](doc\/UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
+*UserApi* | [**updateUser**](doc\/UserApi.md#updateuser) | **PUT** /user | 
 
 
 ## Documentation For Models
 
- - [APIKeyCreateDto](doc//APIKeyCreateDto.md)
- - [APIKeyCreateResponseDto](doc//APIKeyCreateResponseDto.md)
- - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
- - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
- - [AddUsersDto](doc//AddUsersDto.md)
- - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
- - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
- - [AlbumResponseDto](doc//AlbumResponseDto.md)
- - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
- - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
- - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
- - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
- - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
- - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
- - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
- - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
- - [AssetIdsDto](doc//AssetIdsDto.md)
- - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
- - [AssetJobName](doc//AssetJobName.md)
- - [AssetJobsDto](doc//AssetJobsDto.md)
- - [AssetResponseDto](doc//AssetResponseDto.md)
- - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
- - [AssetTypeEnum](doc//AssetTypeEnum.md)
- - [AudioCodec](doc//AudioCodec.md)
- - [AuditDeletesResponseDto](doc//AuditDeletesResponseDto.md)
- - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
- - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
- - [BulkIdsDto](doc//BulkIdsDto.md)
- - [CLIPConfig](doc//CLIPConfig.md)
- - [CLIPMode](doc//CLIPMode.md)
- - [CQMode](doc//CQMode.md)
- - [ChangePasswordDto](doc//ChangePasswordDto.md)
- - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
- - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
- - [CitiesFile](doc//CitiesFile.md)
- - [ClassificationConfig](doc//ClassificationConfig.md)
- - [Colorspace](doc//Colorspace.md)
- - [CreateAlbumDto](doc//CreateAlbumDto.md)
- - [CreateLibraryDto](doc//CreateLibraryDto.md)
- - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
- - [CreateTagDto](doc//CreateTagDto.md)
- - [CreateUserDto](doc//CreateUserDto.md)
- - [CuratedLocationsResponseDto](doc//CuratedLocationsResponseDto.md)
- - [CuratedObjectsResponseDto](doc//CuratedObjectsResponseDto.md)
- - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
- - [DownloadInfoDto](doc//DownloadInfoDto.md)
- - [DownloadResponseDto](doc//DownloadResponseDto.md)
- - [EntityType](doc//EntityType.md)
- - [ExifResponseDto](doc//ExifResponseDto.md)
- - [FileChecksumDto](doc//FileChecksumDto.md)
- - [FileChecksumResponseDto](doc//FileChecksumResponseDto.md)
- - [FileReportDto](doc//FileReportDto.md)
- - [FileReportFixDto](doc//FileReportFixDto.md)
- - [FileReportItemDto](doc//FileReportItemDto.md)
- - [ImportAssetDto](doc//ImportAssetDto.md)
- - [JobCommand](doc//JobCommand.md)
- - [JobCommandDto](doc//JobCommandDto.md)
- - [JobCountsDto](doc//JobCountsDto.md)
- - [JobName](doc//JobName.md)
- - [JobSettingsDto](doc//JobSettingsDto.md)
- - [JobStatusDto](doc//JobStatusDto.md)
- - [LibraryResponseDto](doc//LibraryResponseDto.md)
- - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
- - [LibraryType](doc//LibraryType.md)
- - [LoginCredentialDto](doc//LoginCredentialDto.md)
- - [LoginResponseDto](doc//LoginResponseDto.md)
- - [LogoutResponseDto](doc//LogoutResponseDto.md)
- - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
- - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
- - [MergePersonDto](doc//MergePersonDto.md)
- - [ModelType](doc//ModelType.md)
- - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
- - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
- - [OAuthConfigDto](doc//OAuthConfigDto.md)
- - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
- - [PathEntityType](doc//PathEntityType.md)
- - [PathType](doc//PathType.md)
- - [PeopleResponseDto](doc//PeopleResponseDto.md)
- - [PeopleUpdateDto](doc//PeopleUpdateDto.md)
- - [PeopleUpdateItem](doc//PeopleUpdateItem.md)
- - [PersonResponseDto](doc//PersonResponseDto.md)
- - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
- - [PersonUpdateDto](doc//PersonUpdateDto.md)
- - [QueueStatusDto](doc//QueueStatusDto.md)
- - [RecognitionConfig](doc//RecognitionConfig.md)
- - [ScanLibraryDto](doc//ScanLibraryDto.md)
- - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
- - [SearchAssetDto](doc//SearchAssetDto.md)
- - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
- - [SearchExploreItem](doc//SearchExploreItem.md)
- - [SearchExploreResponseDto](doc//SearchExploreResponseDto.md)
- - [SearchFacetCountResponseDto](doc//SearchFacetCountResponseDto.md)
- - [SearchFacetResponseDto](doc//SearchFacetResponseDto.md)
- - [SearchResponseDto](doc//SearchResponseDto.md)
- - [ServerConfigDto](doc//ServerConfigDto.md)
- - [ServerFeaturesDto](doc//ServerFeaturesDto.md)
- - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
- - [ServerMediaTypesResponseDto](doc//ServerMediaTypesResponseDto.md)
- - [ServerPingResponse](doc//ServerPingResponse.md)
- - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
- - [ServerThemeDto](doc//ServerThemeDto.md)
- - [ServerVersionResponseDto](doc//ServerVersionResponseDto.md)
- - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
- - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
- - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
- - [SharedLinkType](doc//SharedLinkType.md)
- - [SignUpDto](doc//SignUpDto.md)
- - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
- - [SystemConfigDto](doc//SystemConfigDto.md)
- - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
- - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
- - [SystemConfigMachineLearningDto](doc//SystemConfigMachineLearningDto.md)
- - [SystemConfigMapDto](doc//SystemConfigMapDto.md)
- - [SystemConfigNewVersionCheckDto](doc//SystemConfigNewVersionCheckDto.md)
- - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
- - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
- - [SystemConfigReverseGeocodingDto](doc//SystemConfigReverseGeocodingDto.md)
- - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
- - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
- - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
- - [SystemConfigThumbnailDto](doc//SystemConfigThumbnailDto.md)
- - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
- - [TagResponseDto](doc//TagResponseDto.md)
- - [TagTypeEnum](doc//TagTypeEnum.md)
- - [ThumbnailFormat](doc//ThumbnailFormat.md)
- - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)
- - [TimeBucketSize](doc//TimeBucketSize.md)
- - [ToneMapping](doc//ToneMapping.md)
- - [TranscodeHWAccel](doc//TranscodeHWAccel.md)
- - [TranscodePolicy](doc//TranscodePolicy.md)
- - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
- - [UpdateAssetDto](doc//UpdateAssetDto.md)
- - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
- - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
- - [UpdateTagDto](doc//UpdateTagDto.md)
- - [UpdateUserDto](doc//UpdateUserDto.md)
- - [UsageByUserDto](doc//UsageByUserDto.md)
- - [UserCountResponseDto](doc//UserCountResponseDto.md)
- - [UserResponseDto](doc//UserResponseDto.md)
- - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
- - [VideoCodec](doc//VideoCodec.md)
+ - [APIKeyCreateDto](doc\/APIKeyCreateDto.md)
+ - [APIKeyCreateResponseDto](doc\/APIKeyCreateResponseDto.md)
+ - [APIKeyResponseDto](doc\/APIKeyResponseDto.md)
+ - [APIKeyUpdateDto](doc\/APIKeyUpdateDto.md)
+ - [AddUsersDto](doc\/AddUsersDto.md)
+ - [AdminSignupResponseDto](doc\/AdminSignupResponseDto.md)
+ - [AlbumCountResponseDto](doc\/AlbumCountResponseDto.md)
+ - [AlbumResponseDto](doc\/AlbumResponseDto.md)
+ - [AlbumsForPersonResponseDto](doc\/AlbumsForPersonResponseDto.md)
+ - [AllJobStatusResponseDto](doc\/AllJobStatusResponseDto.md)
+ - [AssetBulkDeleteDto](doc\/AssetBulkDeleteDto.md)
+ - [AssetBulkUpdateDto](doc\/AssetBulkUpdateDto.md)
+ - [AssetBulkUploadCheckDto](doc\/AssetBulkUploadCheckDto.md)
+ - [AssetBulkUploadCheckItem](doc\/AssetBulkUploadCheckItem.md)
+ - [AssetBulkUploadCheckResponseDto](doc\/AssetBulkUploadCheckResponseDto.md)
+ - [AssetBulkUploadCheckResult](doc\/AssetBulkUploadCheckResult.md)
+ - [AssetFileUploadResponseDto](doc\/AssetFileUploadResponseDto.md)
+ - [AssetIdsDto](doc\/AssetIdsDto.md)
+ - [AssetIdsResponseDto](doc\/AssetIdsResponseDto.md)
+ - [AssetJobName](doc\/AssetJobName.md)
+ - [AssetJobsDto](doc\/AssetJobsDto.md)
+ - [AssetResponseDto](doc\/AssetResponseDto.md)
+ - [AssetStatsResponseDto](doc\/AssetStatsResponseDto.md)
+ - [AssetTypeEnum](doc\/AssetTypeEnum.md)
+ - [AudioCodec](doc\/AudioCodec.md)
+ - [AuditDeletesResponseDto](doc\/AuditDeletesResponseDto.md)
+ - [AuthDeviceResponseDto](doc\/AuthDeviceResponseDto.md)
+ - [BulkIdResponseDto](doc\/BulkIdResponseDto.md)
+ - [BulkIdsDto](doc\/BulkIdsDto.md)
+ - [CLIPConfig](doc\/CLIPConfig.md)
+ - [CLIPMode](doc\/CLIPMode.md)
+ - [CQMode](doc\/CQMode.md)
+ - [ChangePasswordDto](doc\/ChangePasswordDto.md)
+ - [CheckExistingAssetsDto](doc\/CheckExistingAssetsDto.md)
+ - [CheckExistingAssetsResponseDto](doc\/CheckExistingAssetsResponseDto.md)
+ - [CitiesFile](doc\/CitiesFile.md)
+ - [ClassificationConfig](doc\/ClassificationConfig.md)
+ - [Colorspace](doc\/Colorspace.md)
+ - [CreateAlbumDto](doc\/CreateAlbumDto.md)
+ - [CreateLibraryDto](doc\/CreateLibraryDto.md)
+ - [CreateProfileImageResponseDto](doc\/CreateProfileImageResponseDto.md)
+ - [CreateTagDto](doc\/CreateTagDto.md)
+ - [CreateUserDto](doc\/CreateUserDto.md)
+ - [CuratedLocationsResponseDto](doc\/CuratedLocationsResponseDto.md)
+ - [CuratedObjectsResponseDto](doc\/CuratedObjectsResponseDto.md)
+ - [DownloadArchiveInfo](doc\/DownloadArchiveInfo.md)
+ - [DownloadInfoDto](doc\/DownloadInfoDto.md)
+ - [DownloadResponseDto](doc\/DownloadResponseDto.md)
+ - [EntityType](doc\/EntityType.md)
+ - [ExifResponseDto](doc\/ExifResponseDto.md)
+ - [FileChecksumDto](doc\/FileChecksumDto.md)
+ - [FileChecksumResponseDto](doc\/FileChecksumResponseDto.md)
+ - [FileReportDto](doc\/FileReportDto.md)
+ - [FileReportFixDto](doc\/FileReportFixDto.md)
+ - [FileReportItemDto](doc\/FileReportItemDto.md)
+ - [ImportAssetDto](doc\/ImportAssetDto.md)
+ - [JobCommand](doc\/JobCommand.md)
+ - [JobCommandDto](doc\/JobCommandDto.md)
+ - [JobCountsDto](doc\/JobCountsDto.md)
+ - [JobName](doc\/JobName.md)
+ - [JobSettingsDto](doc\/JobSettingsDto.md)
+ - [JobStatusDto](doc\/JobStatusDto.md)
+ - [LibraryResponseDto](doc\/LibraryResponseDto.md)
+ - [LibraryStatsResponseDto](doc\/LibraryStatsResponseDto.md)
+ - [LibraryType](doc\/LibraryType.md)
+ - [LoginCredentialDto](doc\/LoginCredentialDto.md)
+ - [LoginResponseDto](doc\/LoginResponseDto.md)
+ - [LogoutResponseDto](doc\/LogoutResponseDto.md)
+ - [MapMarkerResponseDto](doc\/MapMarkerResponseDto.md)
+ - [MemoryLaneResponseDto](doc\/MemoryLaneResponseDto.md)
+ - [MergePersonDto](doc\/MergePersonDto.md)
+ - [ModelType](doc\/ModelType.md)
+ - [OAuthAuthorizeResponseDto](doc\/OAuthAuthorizeResponseDto.md)
+ - [OAuthCallbackDto](doc\/OAuthCallbackDto.md)
+ - [OAuthConfigDto](doc\/OAuthConfigDto.md)
+ - [OAuthConfigResponseDto](doc\/OAuthConfigResponseDto.md)
+ - [PathEntityType](doc\/PathEntityType.md)
+ - [PathType](doc\/PathType.md)
+ - [PeopleResponseDto](doc\/PeopleResponseDto.md)
+ - [PeopleUpdateDto](doc\/PeopleUpdateDto.md)
+ - [PeopleUpdateItem](doc\/PeopleUpdateItem.md)
+ - [PersonResponseDto](doc\/PersonResponseDto.md)
+ - [PersonStatisticsResponseDto](doc\/PersonStatisticsResponseDto.md)
+ - [PersonUpdateDto](doc\/PersonUpdateDto.md)
+ - [QueueStatusDto](doc\/QueueStatusDto.md)
+ - [RecognitionConfig](doc\/RecognitionConfig.md)
+ - [ScanLibraryDto](doc\/ScanLibraryDto.md)
+ - [SearchAlbumResponseDto](doc\/SearchAlbumResponseDto.md)
+ - [SearchAssetDto](doc\/SearchAssetDto.md)
+ - [SearchAssetResponseDto](doc\/SearchAssetResponseDto.md)
+ - [SearchExploreItem](doc\/SearchExploreItem.md)
+ - [SearchExploreResponseDto](doc\/SearchExploreResponseDto.md)
+ - [SearchFacetCountResponseDto](doc\/SearchFacetCountResponseDto.md)
+ - [SearchFacetResponseDto](doc\/SearchFacetResponseDto.md)
+ - [SearchResponseDto](doc\/SearchResponseDto.md)
+ - [ServerConfigDto](doc\/ServerConfigDto.md)
+ - [ServerFeaturesDto](doc\/ServerFeaturesDto.md)
+ - [ServerInfoResponseDto](doc\/ServerInfoResponseDto.md)
+ - [ServerMediaTypesResponseDto](doc\/ServerMediaTypesResponseDto.md)
+ - [ServerPingResponse](doc\/ServerPingResponse.md)
+ - [ServerStatsResponseDto](doc\/ServerStatsResponseDto.md)
+ - [ServerThemeDto](doc\/ServerThemeDto.md)
+ - [ServerVersionResponseDto](doc\/ServerVersionResponseDto.md)
+ - [SharedLinkCreateDto](doc\/SharedLinkCreateDto.md)
+ - [SharedLinkEditDto](doc\/SharedLinkEditDto.md)
+ - [SharedLinkResponseDto](doc\/SharedLinkResponseDto.md)
+ - [SharedLinkType](doc\/SharedLinkType.md)
+ - [SignUpDto](doc\/SignUpDto.md)
+ - [SmartInfoResponseDto](doc\/SmartInfoResponseDto.md)
+ - [SystemConfigDto](doc\/SystemConfigDto.md)
+ - [SystemConfigFFmpegDto](doc\/SystemConfigFFmpegDto.md)
+ - [SystemConfigJobDto](doc\/SystemConfigJobDto.md)
+ - [SystemConfigMachineLearningDto](doc\/SystemConfigMachineLearningDto.md)
+ - [SystemConfigMapDto](doc\/SystemConfigMapDto.md)
+ - [SystemConfigNewVersionCheckDto](doc\/SystemConfigNewVersionCheckDto.md)
+ - [SystemConfigOAuthDto](doc\/SystemConfigOAuthDto.md)
+ - [SystemConfigPasswordLoginDto](doc\/SystemConfigPasswordLoginDto.md)
+ - [SystemConfigReverseGeocodingDto](doc\/SystemConfigReverseGeocodingDto.md)
+ - [SystemConfigStorageTemplateDto](doc\/SystemConfigStorageTemplateDto.md)
+ - [SystemConfigTemplateStorageOptionDto](doc\/SystemConfigTemplateStorageOptionDto.md)
+ - [SystemConfigThemeDto](doc\/SystemConfigThemeDto.md)
+ - [SystemConfigThumbnailDto](doc\/SystemConfigThumbnailDto.md)
+ - [SystemConfigTrashDto](doc\/SystemConfigTrashDto.md)
+ - [TagResponseDto](doc\/TagResponseDto.md)
+ - [TagTypeEnum](doc\/TagTypeEnum.md)
+ - [ThumbnailFormat](doc\/ThumbnailFormat.md)
+ - [TimeBucketResponseDto](doc\/TimeBucketResponseDto.md)
+ - [TimeBucketSize](doc\/TimeBucketSize.md)
+ - [ToneMapping](doc\/ToneMapping.md)
+ - [TranscodeHWAccel](doc\/TranscodeHWAccel.md)
+ - [TranscodePolicy](doc\/TranscodePolicy.md)
+ - [UpdateAlbumDto](doc\/UpdateAlbumDto.md)
+ - [UpdateAssetDto](doc\/UpdateAssetDto.md)
+ - [UpdateLibraryDto](doc\/UpdateLibraryDto.md)
+ - [UpdateStackParentDto](doc\/UpdateStackParentDto.md)
+ - [UpdateTagDto](doc\/UpdateTagDto.md)
+ - [UpdateUserDto](doc\/UpdateUserDto.md)
+ - [UsageByUserDto](doc\/UsageByUserDto.md)
+ - [UserCountResponseDto](doc\/UserCountResponseDto.md)
+ - [UserResponseDto](doc\/UserResponseDto.md)
+ - [ValidateAccessTokenResponseDto](doc\/ValidateAccessTokenResponseDto.md)
+ - [VideoCodec](doc\/VideoCodec.md)
 
 
 ## Documentation For Authorization
