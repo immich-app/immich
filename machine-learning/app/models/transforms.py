@@ -24,7 +24,7 @@ def crop(img: Image.Image, size: int) -> Image.Image:
 
 
 def to_numpy(img: Image.Image) -> ndarray:
-    return np.asarray(img.convert("RGB")).transpose(2, 0, 1) / 255.0
+    return np.asarray(img.convert("RGB")).astype(np.float32) / 255.0
 
 
 def normalize(img: ndarray, mean: float, std: float) -> ndarray:

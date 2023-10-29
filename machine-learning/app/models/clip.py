@@ -144,8 +144,8 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         self.sequence_length = model_cfg["text_cfg"]["context_length"]
         self.size = preprocess_cfg["size"][0] if type(preprocess_cfg["size"]) == list else preprocess_cfg["size"]
         self.resampling = get_pil_resampling(preprocess_cfg["interpolation"])
-        self.mean = preprocess_cfg["mean"]
-        self.std = preprocess_cfg["std"]
+        self.mean = np.array(preprocess_cfg["mean"], dtype=np.float32)
+        self.std = np.array(preprocess_cfg["std"], dtype=np.float32)
 
     def encode_image(self, image: Image.Image) -> ndarray:
         return self.vision_model.run(None, self.transform(image))
@@ -169,7 +169,7 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         image = crop(image, self.size)
         image_np = to_numpy(image)
         image_np = normalize(image_np, self.mean, self.std)
-        return {"image": np.expand_dims(image_np, 0)}
+        return {"image": np.expand_dims(image_np.transpose(2, 0, 1), 0)}
 
 
 class MCLIPEncoder(OpenCLIPEncoder):
