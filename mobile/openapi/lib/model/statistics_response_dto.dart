@@ -16,7 +16,7 @@ class StatisticsResponseDto {
     required this.comments,
   });
 
-  num comments;
+  int comments;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is StatisticsResponseDto &&
@@ -44,9 +44,7 @@ class StatisticsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return StatisticsResponseDto(
-        comments: json[r'comments'] == null
-            ? null
-            : num.parse(json[r'comments'].toString()),
+        comments: mapValueOfType<int>(json, r'comments')!,
       );
     }
     return null;

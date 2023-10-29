@@ -1,4 +1,5 @@
 import { ActivityEntity } from '@app/infra/entities';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class ActivityReponseDto {
@@ -10,6 +11,7 @@ export class ActivityReponseDto {
 }
 
 export class StatisticsResponseDto {
+  @ApiProperty({ type: 'integer' })
   comments!: number;
 }
 

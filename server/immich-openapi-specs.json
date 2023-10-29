@@ -8430,7 +8430,7 @@
       "StatisticsResponseDto": {
         "properties": {
           "comments": {
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [

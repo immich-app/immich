@@ -16,7 +16,7 @@ void main() {
   // final instance = StatisticsResponseDto();
 
   group('test StatisticsResponseDto', () {
-    // num comments
+    // int comments
     test('to test the property `comments`', () async {
       // TODO
     });
