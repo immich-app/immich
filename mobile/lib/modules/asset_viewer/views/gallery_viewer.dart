@@ -90,7 +90,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         : <Asset>[];
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
-    final isFromResponse = currentAsset.id == Isar.autoIncrement;
+    final isFromDto = currentAsset.id == Isar.autoIncrement;
 
     Asset asset() => stackIndex.value == -1
         ? currentAsset
@@ -773,7 +773,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: isFromResponse
+                      tag: isFromDto
                           ? '${a.remoteId}-$heroOffset'
                           : a.id + heroOffset,
                     ),
@@ -792,7 +792,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: isFromResponse
+                      tag: isFromDto
                           ? '${a.remoteId}-$heroOffset'
                           : a.id + heroOffset,
                     ),
