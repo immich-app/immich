@@ -118,7 +118,7 @@ class AssetResponseDto {
 
   List<AssetResponseDto> stack;
 
-  int stackCount;
+  int? stackCount;
 
   String? stackParentId;
 
@@ -194,7 +194,7 @@ class AssetResponseDto {
     (resized.hashCode) +
     (smartInfo == null ? 0 : smartInfo!.hashCode) +
     (stack.hashCode) +
-    (stackCount.hashCode) +
+    (stackCount == null ? 0 : stackCount!.hashCode) +
     (stackParentId == null ? 0 : stackParentId!.hashCode) +
     (tags.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
@@ -248,7 +248,11 @@ class AssetResponseDto {
     //  json[r'smartInfo'] = null;
     }
       json[r'stack'] = this.stack;
+    if (this.stackCount != null) {
       json[r'stackCount'] = this.stackCount;
+    } else {
+    //  json[r'stackCount'] = null;
+    }
     if (this.stackParentId != null) {
       json[r'stackParentId'] = this.stackParentId;
     } else {
@@ -299,7 +303,7 @@ class AssetResponseDto {
         resized: mapValueOfType<bool>(json, r'resized')!,
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         stack: AssetResponseDto.listFromJson(json[r'stack']),
-        stackCount: mapValueOfType<int>(json, r'stackCount')!,
+        stackCount: mapValueOfType<int>(json, r'stackCount'),
         stackParentId: mapValueOfType<String>(json, r'stackParentId'),
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),

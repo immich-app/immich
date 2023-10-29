@@ -18,6 +18,7 @@ export * from './shared-link.repository.mock';
 export * from './smart-info.repository.mock';
 export * from './storage.repository.mock';
 export * from './system-config.repository.mock';
+export * from './system-info.repository.mock';
 export * from './tag.repository.mock';
 export * from './user-token.repository.mock';
 export * from './user.repository.mock';

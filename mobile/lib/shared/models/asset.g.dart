@@ -250,7 +250,7 @@ Asset _assetDeserialize(
     localId: reader.readStringOrNull(offsets[10]),
     ownerId: reader.readLong(offsets[11]),
     remoteId: reader.readStringOrNull(offsets[12]),
-    stackCount: reader.readLong(offsets[13]),
+    stackCount: reader.readLongOrNull(offsets[13]),
     stackParentId: reader.readStringOrNull(offsets[14]),
     type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[15])] ??
         AssetType.other,
@@ -294,7 +294,7 @@ P _assetDeserializeProp<P>(
     case 12:
       return (reader.readStringOrNull(offset)) as P;
     case 13:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 14:
       return (reader.readStringOrNull(offset)) as P;
     case 15:
@@ -1825,8 +1825,24 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'stackCount',
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'stackCount',
+      ));
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountEqualTo(
-      int value) {
+      int? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'stackCount',
@@ -1836,7 +1852,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountGreaterThan(
-    int value, {
+    int? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1849,7 +1865,7 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountLessThan(
-    int value, {
+    int? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1862,8 +1878,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
   }
 
   QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountBetween(
-    int lower,
-    int upper, {
+    int? lower,
+    int? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -2854,7 +2870,7 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Asset, int, QQueryOperations> stackCountProperty() {
+  QueryBuilder<Asset, int?, QQueryOperations> stackCountProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'stackCount');
     });

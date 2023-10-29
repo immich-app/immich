@@ -42,6 +42,8 @@ const responseDto: PersonResponseDto = {
   isHidden: false,
 };
 
+const statistics = { assets: 3 };
+
 const croppedFace = Buffer.from('Cropped Face');
 
 const detectFaceMock = {
@@ -728,6 +730,23 @@ describe(PersonService.name, () => {
       ]);
 
       expect(personMock.delete).not.toHaveBeenCalled();
+      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+    });
+  });
+
+  describe('getStatistics', () => {
+    it('should get correct number of person', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      personMock.getStatistics.mockResolvedValue(statistics);
+      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      await expect(sut.getStatistics(authStub.admin, 'person-1')).resolves.toEqual({ assets: 3 });
+      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+    });
+
+    it('should require person.read permission', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
+      await expect(sut.getStatistics(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
     });
   });

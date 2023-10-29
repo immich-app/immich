@@ -151,7 +151,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **searchPerson**
-> List<PersonResponseDto> searchPerson(name)
+> List<PersonResponseDto> searchPerson(name, withHidden)
 
 
 
@@ -175,9 +175,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = SearchApi();
 final name = name_example; // String | 
+final withHidden = true; // bool | 
 
 try {
-    final result = api_instance.searchPerson(name);
+    final result = api_instance.searchPerson(name, withHidden);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->searchPerson: $e\n');
@@ -189,6 +190,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **name** | **String**|  | 
+ **withHidden** | **bool**|  | [optional] 
 
 ### Return type
 

@@ -15,6 +15,7 @@ Method | HTTP request | Description
 [**getServerVersion**](ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 [**getStats**](ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 [**getSupportedMediaTypes**](ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
+[**getTheme**](ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
 [**pingServer**](ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
 
 
@@ -256,6 +257,43 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**ServerMediaTypesResponseDto**](ServerMediaTypesResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getTheme**
+> ServerThemeDto getTheme()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = ServerInfoApi();
+
+try {
+    final result = api_instance.getTheme();
+    print(result);
+} catch (e) {
+    print('Exception when calling ServerInfoApi->getTheme: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ServerThemeDto**](ServerThemeDto.md)
 
 ### Authorization
 

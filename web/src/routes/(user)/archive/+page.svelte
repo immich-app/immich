@@ -14,14 +14,12 @@
   import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { TimeBucketSize } from '@api';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
+  import { mdiPlus, mdiDotsVertical } from '@mdi/js';
 
   export let data: PageData;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, isArchived: true });
+  const assetStore = new AssetStore({ isArchived: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -33,12 +31,12 @@
     <ArchiveAction unarchive onArchive={(ids) => assetStore.removeAssets(ids)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={Plus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Add">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
     <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
-    <AssetSelectContextMenu icon={DotsVertical} title="Add">
+    <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
       <DownloadAction menuItem />
       <FavoriteAction menuItem removeFavorite={isAllFavorite} />
     </AssetSelectContextMenu>

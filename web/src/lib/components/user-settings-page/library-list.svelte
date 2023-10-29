@@ -6,9 +6,7 @@
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { fade } from 'svelte/transition';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import Database from 'svelte-material-icons/Database.svelte';
-  import Upload from 'svelte-material-icons/Upload.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import Pulse from 'svelte-loading-spinners/Pulse.svelte';
   import { slide } from 'svelte/transition';
   import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
@@ -19,6 +17,7 @@
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -317,9 +316,9 @@
             >
               <td class="w-1/6 px-10 text-sm">
                 {#if library.type === LibraryType.External}
-                  <Database size="40" title="External library (created on {library.createdAt})" />
+                  <Icon path={mdiDatabase} size="40" title="External library (created on {library.createdAt})" />
                 {:else if library.type === LibraryType.Upload}
-                  <Upload size="40" title="Upload library (created on {library.createdAt})" />
+                  <Icon path={mdiUpload} size="40" title="Upload library (created on {library.createdAt})" />
                 {/if}</td
               >
 
@@ -340,7 +339,7 @@
                   class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   on:click|stopPropagation|preventDefault={(e) => showMenu(e, library, index)}
                 >
-                  <DotsVertical size="16" />
+                  <Icon path={mdiDotsVertical} size="16" />
                 </button>
 
                 {#if showContextMenu}

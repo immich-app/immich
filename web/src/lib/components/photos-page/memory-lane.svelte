@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '@api';
-  import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-  import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { memoryStore } from '$lib/stores/memory.store';
   import { goto } from '$app/navigation';
   import { fade } from 'svelte/transition';
+  import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
 
   $: shouldRender = $memoryStore?.length > 0;
 
@@ -50,7 +50,7 @@
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               on:click={scrollLeft}
             >
-              <ChevronLeft size="36" /></button
+              <Icon path={mdiChevronLeft} size="36" /></button
             >
           </div>
         {/if}
@@ -60,7 +60,7 @@
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               on:click={scrollRight}
             >
-              <ChevronRight size="36" /></button
+              <Icon path={mdiChevronRight} size="36" /></button
             >
           </div>
         {/if}

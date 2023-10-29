@@ -10,16 +10,17 @@
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
+  import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { downloadManager } from '$lib/stores/download';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { copyToClipboard } from '@api';
-  import Alert from 'svelte-material-icons/Alert.svelte';
-  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
-  import Download from 'svelte-material-icons/Download.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
+  import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
+  import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
 
   export let data: PageData;
 
@@ -37,7 +38,7 @@
 
 {#if $featureFlags.configFile}
   <div class="mb-8 flex flex-row items-center gap-2 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
-    <Alert class="text-yellow-400" size={18} />
+    <Icon path={mdiAlert} class="text-yellow-400" size={18} />
     <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">Config is currently set by a config file</h2>
   </div>
 {/if}
@@ -46,13 +47,13 @@
   <div class="flex justify-end gap-2" slot="buttons">
     <LinkButton on:click={() => copyToClipboard(JSON.stringify(configs, null, 2))}>
       <div class="flex place-items-center gap-2 text-sm">
-        <ContentCopy size="18" />
+        <Icon path={mdiContentCopy} size="18" />
         Copy to Clipboard
       </div>
     </LinkButton>
     <LinkButton on:click={() => downloadConfig()}>
       <div class="flex place-items-center gap-2 text-sm">
-        <Download size="18" />
+        <Icon path={mdiDownload} size="18" />
         Export as JSON
       </div>
     </LinkButton>
@@ -96,12 +97,20 @@
         />
       </SettingAccordion>
 
+      <SettingAccordion title="Theme Settings" subtitle="Manage customization of the Immich web interface">
+        <ThemeSettings disabled={$featureFlags.configFile} themeConfig={configs.theme} />
+      </SettingAccordion>
+
       <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
         <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
       </SettingAccordion>
 
       <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
         <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
+      </SettingAccordion>
+
+      <SettingAccordion title="Version Check" subtitle="Enable/disable the new version notification">
+        <NewVersionCheckSettings newVersionCheckConfig={configs.newVersionCheck} />
       </SettingAccordion>
 
       <SettingAccordion

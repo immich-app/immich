@@ -9,9 +9,13 @@ export enum CommunicationEvent {
   PERSON_THUMBNAIL = 'on_person_thumbnail',
   SERVER_VERSION = 'on_server_version',
   CONFIG_UPDATE = 'on_config_update',
+  NEW_RELEASE = 'on_new_release',
 }
+
+export type Callback = (userId: string) => Promise<void>;
 
 export interface ICommunicationRepository {
   send(event: CommunicationEvent, userId: string, data: any): void;
   broadcast(event: CommunicationEvent, data: any): void;
+  addEventListener(event: 'connect', callback: Callback): void;
 }

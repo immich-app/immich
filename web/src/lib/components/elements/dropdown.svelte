@@ -5,12 +5,14 @@
 </script>
 
 <script lang="ts" generics="T">
+  import Icon from './icon.svelte';
+
+  import { mdiCheck } from '@mdi/js';
+
   import _ from 'lodash';
   import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { fly } from 'svelte/transition';
-  import type Icon from 'svelte-material-icons/DotsVertical.svelte';
-  import Check from 'svelte-material-icons/Check.svelte';
   import { createEventDispatcher } from 'svelte';
 
   const dispatch = createEventDispatcher<{
@@ -24,7 +26,7 @@
 
   type RenderedOption = {
     title: string;
-    icon?: typeof Icon;
+    icon?: string;
   };
 
   let showMenu = false;
@@ -61,7 +63,7 @@
   <LinkButton on:click={() => (showMenu = true)}>
     <div class="flex place-items-center gap-2 text-sm">
       {#if renderedSelectedOption?.icon}
-        <svelte:component this={renderedSelectedOption.icon} size="18" />
+        <Icon path={renderedSelectedOption.icon} size="18" />
       {/if}
       <p class="hidden sm:block">{renderedSelectedOption.title}</p>
     </div>
@@ -81,7 +83,7 @@
         >
           {#if _.isEqual(selectedOption, option)}
             <div class="text-immich-primary dark:text-immich-dark-primary">
-              <Check size="18" />
+              <Icon path={mdiCheck} size="18" />
             </div>
             <p class="justify-self-start text-immich-primary dark:text-immich-dark-primary">
               {renderedOption.title}

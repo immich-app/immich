@@ -18,6 +18,8 @@ class Album {
     required this.name,
     required this.createdAt,
     required this.modifiedAt,
+    this.startDate,
+    this.endDate,
     this.lastModifiedAssetTimestamp,
     required this.shared,
   });
@@ -30,6 +32,8 @@ class Album {
   String name;
   DateTime createdAt;
   DateTime modifiedAt;
+  DateTime? startDate;
+  DateTime? endDate;
   DateTime? lastModifiedAssetTimestamp;
   bool shared;
   final IsarLink<User> owner = IsarLink<User>();
@@ -144,6 +148,8 @@ class Album {
       modifiedAt: dto.updatedAt,
       lastModifiedAssetTimestamp: dto.lastModifiedAssetTimestamp,
       shared: dto.shared,
+      startDate: dto.startDate,
+      endDate: dto.endDate,
     );
     a.owner.value = await db.users.getById(dto.ownerId);
     if (dto.albumThumbnailAssetId != null) {

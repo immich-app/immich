@@ -68,66 +68,6 @@ class AssetApi {
     return null;
   }
 
-  /// Check duplicated asset before uploading - for Web upload used
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [CheckDuplicateAssetDto] checkDuplicateAssetDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> checkDuplicateAssetWithHttpInfo(CheckDuplicateAssetDto checkDuplicateAssetDto, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/check';
-
-    // ignore: prefer_final_locals
-    Object? postBody = checkDuplicateAssetDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Check duplicated asset before uploading - for Web upload used
-  ///
-  /// Parameters:
-  ///
-  /// * [CheckDuplicateAssetDto] checkDuplicateAssetDto (required):
-  ///
-  /// * [String] key:
-  Future<CheckDuplicateAssetResponseDto?> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String? key, }) async {
-    final response = await checkDuplicateAssetWithHttpInfo(checkDuplicateAssetDto,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'CheckDuplicateAssetResponseDto',) as CheckDuplicateAssetResponseDto;
-    
-    }
-    return null;
-  }
-
   /// Checks if multiple assets exist on the server and returns all existing - used by background backup
   ///
   /// Note: This method returns the HTTP [Response].
@@ -712,8 +652,10 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [bool] withStacked:
+  ///
   /// * [String] key:
-  Future<Response> getByTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
+  Future<Response> getByTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-bucket';
 
@@ -742,6 +684,9 @@ class AssetApi {
     }
     if (isTrashed != null) {
       queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
+    }
+    if (withStacked != null) {
+      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
     }
       queryParams.addAll(_queryParams('', 'timeBucket', timeBucket));
     if (key != null) {
@@ -780,9 +725,11 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [bool] withStacked:
+  ///
   /// * [String] key:
-  Future<List<AssetResponseDto>?> getByTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
-    final response = await getByTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, );
+  Future<List<AssetResponseDto>?> getByTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, String? key, }) async {
+    final response = await getByTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, withStacked: withStacked, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1145,8 +1092,10 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [bool] withStacked:
+  ///
   /// * [String] key:
-  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-buckets';
 
@@ -1175,6 +1124,9 @@ class AssetApi {
     }
     if (isTrashed != null) {
       queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
+    }
+    if (withStacked != null) {
+      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
     }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
@@ -1210,9 +1162,11 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [bool] withStacked:
+  ///
   /// * [String] key:
-  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
-    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, );
+  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, String? key, }) async {
+    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, withStacked: withStacked, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -12,10 +12,12 @@ Name | Type | Description | Notes
 **job** | [**SystemConfigJobDto**](SystemConfigJobDto.md) |  | 
 **machineLearning** | [**SystemConfigMachineLearningDto**](SystemConfigMachineLearningDto.md) |  | 
 **map** | [**SystemConfigMapDto**](SystemConfigMapDto.md) |  | 
+**newVersionCheck** | [**SystemConfigNewVersionCheckDto**](SystemConfigNewVersionCheckDto.md) |  | 
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 
 **reverseGeocoding** | [**SystemConfigReverseGeocodingDto**](SystemConfigReverseGeocodingDto.md) |  | 
 **storageTemplate** | [**SystemConfigStorageTemplateDto**](SystemConfigStorageTemplateDto.md) |  | 
+**theme** | [**SystemConfigThemeDto**](SystemConfigThemeDto.md) |  | 
 **thumbnail** | [**SystemConfigThumbnailDto**](SystemConfigThumbnailDto.md) |  | 
 **trash** | [**SystemConfigTrashDto**](SystemConfigTrashDto.md) |  | 
 

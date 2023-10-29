@@ -201,7 +201,7 @@ export class AssetService {
     await this.timeBucketChecks(authUser, dto);
     const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
     if (authUser.isShowMetadata) {
-      return assets.map((asset) => mapAsset(asset));
+      return assets.map((asset) => mapAsset(asset, { withStack: true }));
     } else {
       return assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
     }
@@ -392,8 +392,10 @@ export class AssetService {
 
     if (asset.faces) {
       await Promise.all(
-        asset.faces.map(({ assetId, personId }) =>
-          this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
+        asset.faces.map(
+          ({ assetId, personId }) =>
+            personId != null &&
+            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
         ),
       );
     }

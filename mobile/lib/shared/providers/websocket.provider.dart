@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -175,9 +173,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         .where((c) => c.action == PendingAction.assetDelete)
         .toList();
     if (deleteChanges.isNotEmpty) {
-      List<String> remoteIds = deleteChanges
-          .map((a) => jsonDecode(a.value.toString()).toString())
-          .toList();
+      List<String> remoteIds =
+          deleteChanges.map((a) => a.value.toString()).toList();
       ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
       state = state.copyWith(
         pendingChanges: state.pendingChanges
@@ -188,21 +185,20 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   _handleOnUploadSuccess(dynamic data) {
-    final jsonString = jsonDecode(data.toString());
-    final dto = AssetResponseDto.fromJson(jsonString);
+    final dto = AssetResponseDto.fromJson(data);
     if (dto != null) {
       final newAsset = Asset.remote(dto);
       ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
     }
   }
 
-  _handleOnConfigUpdate(dynamic data) {
+  _handleOnConfigUpdate(dynamic _) {
     ref.read(serverInfoProvider.notifier).getServerFeatures();
     ref.read(serverInfoProvider.notifier).getServerConfig();
   }
 
   // Refresh updated assets
-  _handleServerUpdates(dynamic data) {
+  _handleServerUpdates(dynamic _) {
     ref.read(assetProvider.notifier).getAllAsset();
   }
 

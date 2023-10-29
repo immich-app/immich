@@ -1,9 +1,10 @@
 <script lang="ts">
   import { AlbumResponseDto, api } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import BaseModal from './base-modal.svelte';
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
+  import { mdiPlus } from '@mdi/js';
 
   let albums: AlbumResponseDto[] = [];
   let recentAlbums: AlbumResponseDto[] = [];
@@ -84,7 +85,7 @@
           class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
         >
           <div class="flex h-12 w-12 items-center justify-center">
-            <Plus size="30" />
+            <Icon path={mdiPlus} size="30" />
           </div>
           <p class="">
             New {#if shared}Shared {/if}Album {#if search.length > 0}<b>{search}</b>{/if}

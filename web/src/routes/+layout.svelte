@@ -18,7 +18,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { api } from '@api';
-  import { openWebsocketConnection } from '$lib/stores/websocket';
+  import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
 
   let showNavigationLoadingBar = false;
   export let data: LayoutData;
@@ -28,7 +28,18 @@
     api.setKey($page.params.key);
   }
 
-  beforeNavigate(() => {
+  beforeNavigate(({ from, to }) => {
+    const fromRoute = from?.route?.id || '';
+    const toRoute = to?.route?.id || '';
+
+    if (fromRoute.startsWith('/auth') && !toRoute.startsWith('/auth')) {
+      openWebsocketConnection();
+    }
+
+    if (!fromRoute.startsWith('/auth') && toRoute.startsWith('/auth')) {
+      closeWebsocketConnection();
+    }
+
     showNavigationLoadingBar = true;
   });
 
@@ -37,7 +48,9 @@
   });
 
   onMount(async () => {
-    openWebsocketConnection();
+    if ($page.route.id?.startsWith('/auth') === false) {
+      openWebsocketConnection();
+    }
 
     try {
       await loadConfig();
@@ -67,6 +80,7 @@
 <svelte:head>
   <title>{$page.data.meta?.title || 'Web'} - Immich</title>
   <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/custom.css" />
   <meta name="theme-color" content="currentColor" />
   <FaviconHeader />
   <AppleHeader />
@@ -107,7 +121,7 @@
 <NotificationList />
 
 {#if data.user?.isAdmin}
-  <VersionAnnouncementBox serverVersion={data.serverVersion} />
+  <VersionAnnouncementBox />
 {/if}
 
 {#if $page.route.id?.includes('(user)')}

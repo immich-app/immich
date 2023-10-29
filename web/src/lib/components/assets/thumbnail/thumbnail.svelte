@@ -4,18 +4,26 @@
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
   import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
-  import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-  import Heart from 'svelte-material-icons/Heart.svelte';
-  import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
-  import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
-  import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
-  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
+  import {
+    mdiArchiveArrowDownOutline,
+    mdiCameraBurst,
+    mdiCheckCircle,
+    mdiHeart,
+    mdiImageBrokenVariant,
+    mdiMotionPauseOutline,
+    mdiMotionPlayOutline,
+    mdiRotate360,
+  } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    click: { asset: AssetResponseDto };
+    select: { asset: AssetResponseDto };
+    'mouse-event': { isMouseOver: boolean; selectedGroupIndex: number };
+  }>();
 
   export let asset: AssetResponseDto;
   export let groupIndex = 0;
@@ -28,6 +36,10 @@
   export let disabled = false;
   export let readonly = false;
   export let showArchiveIcon = false;
+  export let showStackedIcon = true;
+
+  let className = '';
+  export { className as class };
 
   let mouseOver = false;
 
@@ -63,6 +75,14 @@
       dispatch('select', { asset });
     }
   };
+
+  const onMouseEnter = () => {
+    mouseOver = true;
+  };
+
+  const onMouseLeave = () => {
+    mouseOver = false;
+  };
 </script>
 
 <IntersectionObserver once={false} let:intersecting>
@@ -75,13 +95,13 @@
       : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
     class:cursor-not-allowed={disabled}
     class:hover:cursor-pointer={!disabled}
-    on:mouseenter={() => (mouseOver = true)}
-    on:mouseleave={() => (mouseOver = false)}
+    on:mouseenter={() => onMouseEnter()}
+    on:mouseleave={() => onMouseLeave()}
     on:click={thumbnailClickedHandler}
     on:keydown={thumbnailKeyDownHandler}
   >
     {#if intersecting}
-      <div class="absolute z-20 h-full w-full">
+      <div class="absolute z-20 h-full w-full {className}">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
@@ -93,13 +113,13 @@
             {disabled}
           >
             {#if disabled}
-              <CheckCircle size="24" class="text-zinc-800" />
+              <Icon path={mdiCheckCircle} size="24" class="text-zinc-800" />
             {:else if selected}
               <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-                <CheckCircle size="24" class="text-immich-primary" />
+                <Icon path={mdiCheckCircle} size="24" class="text-immich-primary" />
               </div>
             {:else}
-              <CheckCircle size="24" class="text-white/80 hover:text-white" />
+              <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
             {/if}
           </button>
         {/if}
@@ -119,20 +139,35 @@
         <!-- Favorite asset star -->
         {#if !api.isSharedLink && asset.isFavorite}
           <div class="absolute bottom-2 left-2 z-10">
-            <Heart size="24" class="text-white" />
+            <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if !api.isSharedLink && showArchiveIcon && asset.isArchived}
           <div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
-            <ArchiveArrowDownOutline size="24" class="text-white" />
+            <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.type === AssetTypeEnum.Image && asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR}
           <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pr-2 pt-2">
-              <Rotate360Icon size="24" />
+              <Icon path={mdiRotate360} size="24" />
+            </span>
+          </div>
+        {/if}
+
+        <!-- Stacked asset -->
+
+        {#if asset.stackCount && showStackedIcon}
+          <div
+            class="absolute {asset.type == AssetTypeEnum.Image && asset.livePhotoVideoId == null
+              ? 'top-0 right-0'
+              : 'top-7 right-1'} z-20 flex place-items-center gap-1 text-xs font-medium text-white"
+          >
+            <span class="pr-2 pt-2 flex place-items-center gap-1">
+              <p>{asset.stackCount}</p>
+              <Icon path={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
@@ -148,7 +183,7 @@
           />
         {:else}
           <div class="flex h-full w-full items-center justify-center p-4">
-            <ImageBrokenVariant size="48" />
+            <Icon path={mdiImageBrokenVariant} size="48" />
           </div>
         {/if}
 
@@ -167,8 +202,8 @@
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
               url={api.getAssetFileUrl(asset.livePhotoVideoId, false, true)}
-              pauseIcon={MotionPauseOutline}
-              playIcon={MotionPlayOutline}
+              pauseIcon={mdiMotionPauseOutline}
+              playIcon={mdiMotionPlayOutline}
               showTime={false}
               curve={selected}
               playbackOnIconHover

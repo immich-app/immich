@@ -1,14 +1,12 @@
 <script lang="ts">
   import { api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import OpenInNew from 'svelte-material-icons/OpenInNew.svelte';
-  import Delete from 'svelte-material-icons/TrashCanOutline.svelte';
-  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
-  import CircleEditOutline from 'svelte-material-icons/CircleEditOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import * as luxon from 'luxon';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
+  import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
 
   export let link: SharedLinkResponseDto;
 
@@ -110,7 +108,7 @@
               on:click={() => goto(`/share/${link.key}`)}
               on:keydown={() => goto(`/share/${link.key}`)}
             >
-              <OpenInNew />
+              <Icon path={mdiOpenInNew} />
             </div>
           {/if}
         </div>
@@ -148,9 +146,9 @@
 
   <div class="flex flex-auto flex-col place-content-center place-items-end text-right">
     <div class="flex">
-      <CircleIconButton logo={Delete} on:click={() => dispatch('delete')} />
-      <CircleIconButton logo={CircleEditOutline} on:click={() => dispatch('edit')} />
-      <CircleIconButton logo={ContentCopy} on:click={() => dispatch('copy')} />
+      <CircleIconButton icon={mdiDelete} on:click={() => dispatch('delete')} />
+      <CircleIconButton icon={mdiCircleEditOutline} on:click={() => dispatch('edit')} />
+      <CircleIconButton icon={mdiContentCopy} on:click={() => dispatch('copy')} />
     </div>
   </div>
 </div>

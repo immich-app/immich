@@ -173,7 +173,14 @@ class SyncService {
   /// Deletes remote-only assets, updates merged assets to be local-only
   Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
     return _db.writeTxn(() async {
-      await _db.assets.remote(idsToDelete).filter().localIdIsNull().deleteAll();
+      final idsToRemove = await _db.assets
+          .remote(idsToDelete)
+          .filter()
+          .localIdIsNull()
+          .idProperty()
+          .findAll();
+      await _db.assets.deleteAll(idsToRemove);
+      await _db.exifInfos.deleteAll(idsToRemove);
       final onlyLocal = await _db.assets.remote(idsToDelete).findAll();
       if (onlyLocal.isNotEmpty) {
         for (final Asset a in onlyLocal) {

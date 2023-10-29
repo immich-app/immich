@@ -17,10 +17,12 @@ class SystemConfigDto {
     required this.job,
     required this.machineLearning,
     required this.map,
+    required this.newVersionCheck,
     required this.oauth,
     required this.passwordLogin,
     required this.reverseGeocoding,
     required this.storageTemplate,
+    required this.theme,
     required this.thumbnail,
     required this.trash,
   });
@@ -33,6 +35,8 @@ class SystemConfigDto {
 
   SystemConfigMapDto map;
 
+  SystemConfigNewVersionCheckDto newVersionCheck;
+
   SystemConfigOAuthDto oauth;
 
   SystemConfigPasswordLoginDto passwordLogin;
@@ -40,6 +44,8 @@ class SystemConfigDto {
   SystemConfigReverseGeocodingDto reverseGeocoding;
 
   SystemConfigStorageTemplateDto storageTemplate;
+
+  SystemConfigThemeDto theme;
 
   SystemConfigThumbnailDto thumbnail;
 
@@ -51,10 +57,12 @@ class SystemConfigDto {
      other.job == job &&
      other.machineLearning == machineLearning &&
      other.map == map &&
+     other.newVersionCheck == newVersionCheck &&
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
      other.reverseGeocoding == reverseGeocoding &&
      other.storageTemplate == storageTemplate &&
+     other.theme == theme &&
      other.thumbnail == thumbnail &&
      other.trash == trash;
 
@@ -65,15 +73,17 @@ class SystemConfigDto {
     (job.hashCode) +
     (machineLearning.hashCode) +
     (map.hashCode) +
+    (newVersionCheck.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
     (storageTemplate.hashCode) +
+    (theme.hashCode) +
     (thumbnail.hashCode) +
     (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -81,10 +91,12 @@ class SystemConfigDto {
       json[r'job'] = this.job;
       json[r'machineLearning'] = this.machineLearning;
       json[r'map'] = this.map;
+      json[r'newVersionCheck'] = this.newVersionCheck;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'storageTemplate'] = this.storageTemplate;
+      json[r'theme'] = this.theme;
       json[r'thumbnail'] = this.thumbnail;
       json[r'trash'] = this.trash;
     return json;
@@ -102,10 +114,12 @@ class SystemConfigDto {
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
+        newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
+        theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
       );
@@ -159,10 +173,12 @@ class SystemConfigDto {
     'job',
     'machineLearning',
     'map',
+    'newVersionCheck',
     'oauth',
     'passwordLogin',
     'reverseGeocoding',
     'storageTemplate',
+    'theme',
     'thumbnail',
     'trash',
   };

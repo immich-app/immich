@@ -1,4 +1,11 @@
-import { AssetFaceId, IPersonRepository, PersonSearchOptions, UpdateFacesData } from '@app/domain';
+import {
+  AssetFaceId,
+  IPersonRepository,
+  PersonNameSearchOptions,
+  PersonSearchOptions,
+  PersonStatistics,
+  UpdateFacesData,
+} from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -96,14 +103,37 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getByName(userId: string, personName: string): Promise<PersonEntity[]> {
-    return this.personRepository
+  getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
+    const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
-      .andWhere('LOWER(person.name) LIKE :name', { name: `${personName.toLowerCase()}%` })
-      .limit(20)
-      .getMany();
+      .andWhere('LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere', {
+        nameStart: `${personName.toLowerCase()}%`,
+        nameAnywhere: `% ${personName.toLowerCase()}%`,
+      })
+      .groupBy('person.id')
+      .orderBy('COUNT(face.assetId)', 'DESC')
+      .limit(20);
+
+    if (!withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+    return queryBuilder.getMany();
+  }
+
+  async getStatistics(personId: string): Promise<PersonStatistics> {
+    return {
+      assets: await this.assetFaceRepository
+        .createQueryBuilder('face')
+        .leftJoin('face.asset', 'asset')
+        .where('face.personId = :personId', { personId })
+        .andWhere('asset.isArchived = false')
+        .andWhere('asset.deletedAt IS NULL')
+        .andWhere('asset.livePhotoVideoId IS NULL')
+        .distinct(true)
+        .getCount(),
+    };
   }
 
   getAssets(personId: string): Promise<AssetEntity[]> {

@@ -22,35 +22,45 @@ const AlbumSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'lastModifiedAssetTimestamp': PropertySchema(
+    r'endDate': PropertySchema(
       id: 1,
+      name: r'endDate',
+      type: IsarType.dateTime,
+    ),
+    r'lastModifiedAssetTimestamp': PropertySchema(
+      id: 2,
       name: r'lastModifiedAssetTimestamp',
       type: IsarType.dateTime,
     ),
     r'localId': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'localId',
       type: IsarType.string,
     ),
     r'modifiedAt': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'modifiedAt',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'name',
       type: IsarType.string,
     ),
     r'remoteId': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'shared': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'shared',
       type: IsarType.bool,
+    ),
+    r'startDate': PropertySchema(
+      id: 8,
+      name: r'startDate',
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _albumEstimateSize,
@@ -148,12 +158,14 @@ void _albumSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeDateTime(offsets[1], object.lastModifiedAssetTimestamp);
-  writer.writeString(offsets[2], object.localId);
-  writer.writeDateTime(offsets[3], object.modifiedAt);
-  writer.writeString(offsets[4], object.name);
-  writer.writeString(offsets[5], object.remoteId);
-  writer.writeBool(offsets[6], object.shared);
+  writer.writeDateTime(offsets[1], object.endDate);
+  writer.writeDateTime(offsets[2], object.lastModifiedAssetTimestamp);
+  writer.writeString(offsets[3], object.localId);
+  writer.writeDateTime(offsets[4], object.modifiedAt);
+  writer.writeString(offsets[5], object.name);
+  writer.writeString(offsets[6], object.remoteId);
+  writer.writeBool(offsets[7], object.shared);
+  writer.writeDateTime(offsets[8], object.startDate);
 }
 
 Album _albumDeserialize(
@@ -164,12 +176,14 @@ Album _albumDeserialize(
 ) {
   final object = Album(
     createdAt: reader.readDateTime(offsets[0]),
-    lastModifiedAssetTimestamp: reader.readDateTimeOrNull(offsets[1]),
-    localId: reader.readStringOrNull(offsets[2]),
-    modifiedAt: reader.readDateTime(offsets[3]),
-    name: reader.readString(offsets[4]),
-    remoteId: reader.readStringOrNull(offsets[5]),
-    shared: reader.readBool(offsets[6]),
+    endDate: reader.readDateTimeOrNull(offsets[1]),
+    lastModifiedAssetTimestamp: reader.readDateTimeOrNull(offsets[2]),
+    localId: reader.readStringOrNull(offsets[3]),
+    modifiedAt: reader.readDateTime(offsets[4]),
+    name: reader.readString(offsets[5]),
+    remoteId: reader.readStringOrNull(offsets[6]),
+    shared: reader.readBool(offsets[7]),
+    startDate: reader.readDateTimeOrNull(offsets[8]),
   );
   object.id = id;
   return object;
@@ -187,15 +201,19 @@ P _albumDeserializeProp<P>(
     case 1:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 3:
-      return (reader.readDateTime(offset)) as P;
-    case 4:
-      return (reader.readString(offset)) as P;
-    case 5:
       return (reader.readStringOrNull(offset)) as P;
+    case 4:
+      return (reader.readDateTime(offset)) as P;
+    case 5:
+      return (reader.readString(offset)) as P;
     case 6:
+      return (reader.readStringOrNull(offset)) as P;
+    case 7:
       return (reader.readBool(offset)) as P;
+    case 8:
+      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -469,6 +487,75 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'createdAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'endDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'endDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'endDate',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1084,6 +1171,75 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
       ));
     });
   }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'startDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'startDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'startDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension AlbumQueryObject on QueryBuilder<Album, Album, QFilterCondition> {}
@@ -1241,6 +1397,18 @@ extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterSortBy> sortByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByEndDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> sortByLastModifiedAssetTimestamp() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.asc);
@@ -1313,6 +1481,18 @@ extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
       return query.addSortBy(r'shared', Sort.desc);
     });
   }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByStartDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.desc);
+    });
+  }
 }
 
 extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
@@ -1325,6 +1505,18 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
   QueryBuilder<Album, Album, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByEndDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.desc);
     });
   }
 
@@ -1412,12 +1604,30 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
       return query.addSortBy(r'shared', Sort.desc);
     });
   }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByStartDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.desc);
+    });
+  }
 }
 
 extension AlbumQueryWhereDistinct on QueryBuilder<Album, Album, QDistinct> {
   QueryBuilder<Album, Album, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
+    });
+  }
+
+  QueryBuilder<Album, Album, QDistinct> distinctByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'endDate');
     });
   }
 
@@ -1459,6 +1669,12 @@ extension AlbumQueryWhereDistinct on QueryBuilder<Album, Album, QDistinct> {
       return query.addDistinctBy(r'shared');
     });
   }
+
+  QueryBuilder<Album, Album, QDistinct> distinctByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'startDate');
+    });
+  }
 }
 
 extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
@@ -1471,6 +1687,12 @@ extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
   QueryBuilder<Album, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
+    });
+  }
+
+  QueryBuilder<Album, DateTime?, QQueryOperations> endDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'endDate');
     });
   }
 
@@ -1508,6 +1730,12 @@ extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
   QueryBuilder<Album, bool, QQueryOperations> sharedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'shared');
+    });
+  }
+
+  QueryBuilder<Album, DateTime?, QQueryOperations> startDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'startDate');
     });
   }
 }

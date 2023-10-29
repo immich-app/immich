@@ -74,6 +74,8 @@ export class JobRepository implements IJobRepository {
         return { jobId: item.data.id };
       case JobName.GENERATE_PERSON_THUMBNAIL:
         return { priority: 1 };
+      case JobName.SYSTEM_CONFIG_CHANGE:
+        return { priority: 1 };
 
       default:
         return null;

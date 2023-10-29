@@ -4,12 +4,15 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
   import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
-  import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
-  import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
-  import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
-  import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
-  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
+  import {
+    mdiHeartMultipleOutline,
+    mdiClockOutline,
+    mdiPlayCircleOutline,
+    mdiMotionPlayOutline,
+    mdiRotate360,
+  } from '@mdi/js';
 
   export let data: PageData;
 
@@ -118,7 +121,7 @@
           class="flex w-full content-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
           draggable="false"
         >
-          <HeartMultipleOutline size={24} />
+          <Icon path={mdiHeartMultipleOutline} size={24} />
           <span>Favorites</span>
         </a>
         <a
@@ -126,7 +129,7 @@
           class="flex w-full content-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
           draggable="false"
         >
-          <ClockOutline size={24} />
+          <Icon path={mdiClockOutline} size={24} />
           <span>Recently added</span>
         </a>
       </div>
@@ -138,7 +141,7 @@
           href="/search?type={AssetTypeEnum.Video}"
           class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
         >
-          <PlayCircleOutline size={24} />
+          <Icon path={mdiPlayCircleOutline} size={24} />
           <span>Videos</span>
         </a>
         <div>
@@ -146,7 +149,7 @@
             href="/search?motion=true"
             class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
           >
-            <MotionPlayOutline size={24} />
+            <Icon path={mdiMotionPlayOutline} size={24} />
             <span>Motion photos</span>
           </a>
         </div>
@@ -155,7 +158,7 @@
             href="/search?exifInfo.projectionType=EQUIRECTANGULAR"
             class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
           >
-            <Rotate360Icon size={24} />
+            <Icon path={mdiRotate360} size={24} />
             <span>Panorama photos</span>
           </a>
         </div>

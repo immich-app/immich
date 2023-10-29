@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type Icon from 'svelte-material-icons/AbTesting.svelte';
-  import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-  import { fade } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiInformationOutline } from '@mdi/js';
 
   export let title: string;
-  export let logo: typeof Icon;
+  export let icon: string;
   export let isSelected: boolean;
   export let flippedLogo = false;
 
@@ -27,7 +27,7 @@
   "
 >
   <div class="flex w-full place-items-center gap-4 overflow-hidden truncate">
-    <svelte:component this={logo} size="1.5em" class="shrink-0 {flippedLogo ? '-scale-x-100' : ''}" />
+    <Icon path={icon} size="1.5em" class="shrink-0" flipped={flippedLogo} />
     <p class="text-sm font-medium">{title}</p>
   </div>
 
@@ -41,7 +41,7 @@
         on:mouseleave={() => (showMoreInformation = false)}
       >
         <div class="p-1 text-gray-600 hover:cursor-help dark:text-gray-400">
-          <InformationOutline />
+          <Icon path={mdiInformationOutline} />
         </div>
 
         {#if showMoreInformation}

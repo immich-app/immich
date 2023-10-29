@@ -14,6 +14,7 @@ export * from './metadata.repository';
 export * from './move.repository';
 export * from './partner.repository';
 export * from './person.repository';
+export * from './server-info.repository';
 export * from './shared-link.repository';
 export * from './smart-info.repository';
 export * from './system-config.repository';

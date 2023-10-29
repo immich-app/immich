@@ -30,7 +30,9 @@ const truncateMap: Record<TimeBucketSize, string> = {
 };
 
 const dateTrunc = (options: TimeBucketOptions) =>
-  `(date_trunc('${truncateMap[options.size]}', ("localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
+  `(date_trunc('${
+    truncateMap[options.size]
+  }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -505,13 +507,14 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, isTrashed, albumId, personId, userId } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId, withStacked } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.isVisible = true')
       .andWhere('asset.fileCreatedAt < NOW()')
-      .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.stack', 'stack');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
@@ -540,11 +543,9 @@ export class AssetRepository implements IAssetRepository {
         .andWhere('person.id = :personId', { personId });
     }
 
-    // Hide stack children only in main timeline
-    // Uncomment after adding support for stacked assets in web client
-    // if (!isArchived && !isFavorite && !personId && !albumId && !isTrashed) {
-    //   builder = builder.andWhere('asset.stackParent IS NULL');
-    // }
+    if (withStacked) {
+      builder = builder.andWhere('asset.stackParentId IS NULL');
+    }
 
     return builder;
   }
