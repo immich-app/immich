@@ -1,5 +1,6 @@
 import json
 from abc import abstractmethod
+from functools import cached_property
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Literal
@@ -136,16 +137,16 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
     def _load(self) -> None:
         super()._load()
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.textual_dir)
+        self.sequence_length = self.model_cfg["text_cfg"]["context_length"]
 
-        model_cfg = json.load(self.model_cfg_path.open())
-        preprocess_cfg = json.load(self.preprocess_cfg_path.open())
-
-        self.sequence_length = model_cfg["text_cfg"]["context_length"]
-        self.size = preprocess_cfg["size"][0] if type(preprocess_cfg["size"]) == list else preprocess_cfg["size"]
-        self.resampling = get_pil_resampling(preprocess_cfg["interpolation"])
-        self.mean = np.array(preprocess_cfg["mean"], dtype=np.float32)
-        self.std = np.array(preprocess_cfg["std"], dtype=np.float32)
+        self.size = (
+            self.preprocess_cfg["size"][0] if type(self.preprocess_cfg["size"]) == list else self.preprocess_cfg["size"]
+        )
+        self.resampling = get_pil_resampling(self.preprocess_cfg["interpolation"])
+        self.mean = np.array(self.preprocess_cfg["mean"], dtype=np.float32)
+        self.std = np.array(self.preprocess_cfg["std"], dtype=np.float32)
 
     def encode_image(self, image: Image.Image) -> ndarray:
         return self.vision_model.run(None, self.transform(image))
@@ -170,6 +171,14 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         image_np = to_numpy(image)
         image_np = normalize(image_np, self.mean, self.std)
         return {"image": np.expand_dims(image_np.transpose(2, 0, 1), 0)}
+
+    @cached_property
+    def model_cfg(self) -> dict[str, Any]:
+        return json.load(self.model_cfg_path.open())
+
+    @cached_property
+    def preprocess_cfg(self) -> dict[str, Any]:
+        return json.load(self.preprocess_cfg_path.open())
 
 
 class MCLIPEncoder(OpenCLIPEncoder):

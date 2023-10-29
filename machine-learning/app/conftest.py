@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import Any, Iterator
 from unittest import mock
 
@@ -23,7 +24,7 @@ def cv_image(pil_image: Image.Image) -> ndarray:
 
 @pytest.fixture
 def mock_get_model() -> Iterator[mock.Mock]:
-    with mock.patch("app.models.cache.InferenceModel.from_model_type", autospec=True) as mocked:
+    with mock.patch("app.models.cache.from_model_type", autospec=True) as mocked:
         yield mocked
 
 
@@ -36,3 +37,25 @@ def deployed_app() -> TestClient:
 @pytest.fixture(scope="session")
 def responses() -> dict[str, Any]:
     return json.load(open("responses.json", "r"))
+
+
+@pytest.fixture(scope="session")
+def clip_model_cfg() -> dict[str, Any]:
+    return {
+        "embed_dim": 512,
+        "vision_cfg": {"image_size": 224, "layers": 12, "width": 768, "patch_size": 32},
+        "text_cfg": {"context_length": 77, "vocab_size": 49408, "width": 512, "heads": 8, "layers": 12},
+    }
+
+
+@pytest.fixture(scope="session")
+def clip_preprocess_cfg() -> dict[str, Any]:
+    return {
+        "size": [224, 224],
+        "mode": "RGB",
+        "mean": [0.48145466, 0.4578275, 0.40821073],
+        "std": [0.26862954, 0.26130258, 0.27577711],
+        "interpolation": "bicubic",
+        "resize_mode": "shortest",
+        "fill_color": 0,
+    }

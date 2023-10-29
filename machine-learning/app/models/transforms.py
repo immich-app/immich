@@ -27,7 +27,7 @@ def to_numpy(img: Image.Image) -> ndarray:
     return np.asarray(img.convert("RGB")).astype(np.float32) / 255.0
 
 
-def normalize(img: ndarray, mean: float, std: float) -> ndarray:
+def normalize(img: ndarray, mean: float | ndarray, std: float | ndarray) -> ndarray:
     return (img - mean) / std
 
 
