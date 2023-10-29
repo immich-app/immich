@@ -7,6 +7,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart, timeSince } from '$lib/utils/timesince';
   import { clickOutside } from '$lib/utils/click-outside';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let reactions: ActivityReponseDto[];
   export let user: UserResponseDto;
@@ -174,23 +175,25 @@
   <div class="fixed bottom-0 w-[359px] overflow-x-hidden">
     <div class="flex items-center justify-center p-2">
       <div class="flex p-2 bg-slate-400 h-fit dark:bg-gray-900 rounded-3xl gap-2 w-full text-white">
-        <UserAvatar {user} size="md" showTitle={false} />
-        <form class="flex max-h-56 gap-2" on:submit|preventDefault={() => handleSendComment()}>
-          <div class="flex items-center">
+        <div>
+          <UserAvatar {user} size="md" showTitle={false} />
+        </div>
+        <form class="flex w-full max-h-56 gap-1" on:submit|preventDefault={() => handleSendComment()}>
+          <div class="flex w-full items-center">
             <textarea
               bind:this={textArea}
               bind:value={message}
               placeholder="Say something"
               on:input={autoGrow}
               on:keypress={handleEnter}
-              class="w-64 h-[18px] max-h-56 items-center overflow-y-auto leading-4 outline-none resize-none bg-slate-400 dark:bg-gray-900 text-white"
+              class=" h-[18px] w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-slate-400 dark:bg-gray-900 text-white"
             />
           </div>
-          <div class="flex items-end pb-3">
-            <button class="mr-0 {message ? '' : 'opacity-30'}" disabled={message ? false : true}>
-              <Icon path={mdiSend} />
-            </button>
-          </div>
+          {#if message}
+            <div class="flex items-end w-fit ml-0">
+              <CircleIconButton size="15" icon={mdiSend} />
+            </div>
+          {/if}
         </form>
       </div>
     </div>
