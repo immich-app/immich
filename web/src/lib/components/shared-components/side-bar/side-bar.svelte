@@ -77,23 +77,25 @@
       <SideBarButton title="People" icon={mdiAccount} isSelected={$page.route.id === '/(user)/people'} />
     </a>
   {/if}
-  <a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
-    <SideBarButton
-      title="Sharing"
-      icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
-      isSelected={isSharingSelected}
-    >
-      <svelte:fragment slot="moreInformation">
-        {#await getAlbumCount()}
-          <LoadingSpinner />
-        {:then data}
-          <div>
-            <p>{data.shared.toLocaleString($locale)} Albums</p>
-          </div>
-        {/await}
-      </svelte:fragment>
-    </SideBarButton>
-  </a>
+  {#if $sidebarSettings.sharing}
+    <a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
+      <SideBarButton
+        title="Sharing"
+        icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
+        isSelected={isSharingSelected}
+      >
+        <svelte:fragment slot="moreInformation">
+          {#await getAlbumCount()}
+            <LoadingSpinner />
+          {:then data}
+            <div>
+              <p>{data.shared.toLocaleString($locale)} Albums</p>
+            </div>
+          {/await}
+        </svelte:fragment>
+      </SideBarButton>
+    </a>
+  {/if}
 
   <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
     <p class="hidden p-6 group-hover:sm:block md:block">LIBRARY</p>
