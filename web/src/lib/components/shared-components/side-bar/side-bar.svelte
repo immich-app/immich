@@ -78,23 +78,23 @@
     </a>
   {/if}
   {#if $sidebarSettings.sharing}
-  <a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
-    <SideBarButton
-      title="Sharing"
-      icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
-      isSelected={isSharingSelected}
-    >
-      <svelte:fragment slot="moreInformation">
-        {#await getAlbumCount()}
-          <LoadingSpinner />
-        {:then data}
-          <div>
-            <p>{data.shared.toLocaleString($locale)} Albums</p>
-          </div>
-        {/await}
-      </svelte:fragment>
-    </SideBarButton>
-  </a>
+    <a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
+      <SideBarButton
+        title="Sharing"
+        icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
+        isSelected={isSharingSelected}
+      >
+        <svelte:fragment slot="moreInformation">
+          {#await getAlbumCount()}
+            <LoadingSpinner />
+          {:then data}
+            <div>
+              <p>{data.shared.toLocaleString($locale)} Albums</p>
+            </div>
+          {/await}
+        </svelte:fragment>
+      </SideBarButton>
+    </a>
   {/if}
 
   <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
