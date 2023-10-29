@@ -1,20 +1,22 @@
 import { BadRequestException } from '@nestjs/common';
-import { authStub, IAccessRepositoryMock, newAccessRepositoryMock } from '@test';
+import { authStub, IAccessRepositoryMock, newAccessRepositoryMock, newAlbumRepositoryMock } from '@test';
 import { activityStub } from '@test/fixtures/activity.stub';
 import { newActivityRepositoryMock } from '@test/repositories/activity.repository.mock';
-import { IActivityRepository } from '../repositories';
+import { IActivityRepository, IAlbumRepository } from '../repositories';
 import { ActivityService } from './activity.service';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;
   let accessMock: IAccessRepositoryMock;
   let activityMock: jest.Mocked<IActivityRepository>;
+  let albumMock: jest.Mocked<IAlbumRepository>;
 
   beforeEach(async () => {
     accessMock = newAccessRepositoryMock();
     activityMock = newActivityRepositoryMock();
+    albumMock = newAlbumRepositoryMock();
 
-    sut = new ActivityService(accessMock, activityMock);
+    sut = new ActivityService(accessMock, activityMock, albumMock);
   });
 
   it('should work', () => {
