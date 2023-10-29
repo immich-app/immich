@@ -5,10 +5,10 @@ from pathlib import Path
 
 import open_clip
 import torch
-
-from .util import get_model_path, save_config
+from transformers import AutoTokenizer
 
 from .optimize import optimize
+from .util import get_model_path, save_config
 
 
 @dataclass
@@ -40,21 +40,27 @@ def to_onnx(
             require_pretrained=True,
         )
 
+        text_vision_cfg = open_clip.get_model_config(model_cfg.name)
+
         for param in model.parameters():
             param.requires_grad_(False)
 
         if output_dir_visual is not None:
+            output_dir_visual = Path(output_dir_visual)
             visual_path = get_model_path(output_dir_visual)
 
             save_config(open_clip.get_model_preprocess_cfg(model), output_dir_visual / "preprocess_cfg.json")
-            save_config(open_clip.get_model_config(model_cfg.name), output_dir_visual.parent / "config.json")
+            save_config(text_vision_cfg, output_dir_visual.parent / "config.json")
             export_image_encoder(model, model_cfg, visual_path)
 
             optimize(visual_path)
 
         if output_dir_textual is not None:
+            output_dir_textual = Path(output_dir_textual)
             textual_path = get_model_path(output_dir_textual)
 
+            tokenizer_name = text_vision_cfg["text_cfg"].get("hf_tokenizer_name", "openai/clip-vit-base-patch32")
+            AutoTokenizer.from_pretrained(tokenizer_name).save_pretrained(output_dir_textual)
             export_text_encoder(model, model_cfg, textual_path)
             optimize(textual_path)
 

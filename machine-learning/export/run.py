@@ -3,11 +3,9 @@ import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from models import openclip, mclip
+from huggingface_hub import create_repo, login, upload_folder
+from models import mclip, openclip
 from rich.progress import Progress
-
-from huggingface_hub import upload_folder, create_repo, login
-
 
 models = [
     "RN50::openai",
@@ -38,22 +36,22 @@ models = [
     "M-CLIP/LABSE-Vit-L-14",
     "M-CLIP/XLM-Roberta-Large-Vit-B-32",
     "M-CLIP/XLM-Roberta-Large-Vit-B-16Plus",
-    "M-CLIP/XLM-Roberta-Large-Vit-L-14"
+    "M-CLIP/XLM-Roberta-Large-Vit-L-14",
 ]
 
 login(token=os.environ["HF_AUTH_TOKEN"])
 
 with Progress() as progress:
-    task1 = progress.add_task(f"[green]Exporting models...", total=len(models))
+    task1 = progress.add_task("[green]Exporting models...", total=len(models))
     task2 = progress.add_task("[yellow]Uploading models...", total=len(models))
-    
-    with TemporaryDirectory() as tmpdir:
-        tmpdir = Path(tmpdir)
+
+    with TemporaryDirectory() as tmp:
+        tmpdir = Path(tmp)
         for model in models:
             model_name = model.split("/")[-1].replace("::", "__")
             config_path = tmpdir / model_name / "config.json"
 
-            def upload():
+            def upload() -> None:
                 progress.update(task2, description=f"[yellow]Uploading {model_name}")
                 repo_id = f"immich-app/{model_name}"
 
@@ -61,11 +59,11 @@ with Progress() as progress:
                 upload_folder(repo_id=repo_id, folder_path=tmpdir / model_name)
                 progress.update(task2, advance=1)
 
-            def export():
+            def export() -> None:
                 progress.update(task1, description=f"[green]Exporting {model_name}")
                 visual_dir = tmpdir / model_name / "visual"
                 textual_dir = tmpdir / model_name / "textual"
-                if (model.startswith("M-CLIP")):
+                if model.startswith("M-CLIP"):
                     mclip.to_onnx(model, visual_dir, textual_dir)
                 else:
                     name, _, pretrained = model_name.partition("__")

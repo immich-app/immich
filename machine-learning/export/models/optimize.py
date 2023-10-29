@@ -30,6 +30,8 @@ def optimize_ort(
 
 
 def optimize(model_path: Path | str) -> None:
+    model_path = Path(model_path)
+
     optimize_ort(model_path, model_path)
     # onnxsim serializes large models as a blob, which uses much more memory when loading the model at runtime
     if not any(file.name.startswith("Constant") for file in model_path.parent.iterdir()):

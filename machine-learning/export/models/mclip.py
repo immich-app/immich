@@ -6,10 +6,10 @@ import torch
 from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
 from transformers import AutoTokenizer
 
-from .openclip import OpenCLIPModelConfig, to_onnx as openclip_to_onnx
+from .openclip import OpenCLIPModelConfig
+from .openclip import to_onnx as openclip_to_onnx
 from .optimize import optimize
 from .util import get_model_path
-
 
 _MCLIP_TO_OPENCLIP = {
     "M-CLIP/XLM-Roberta-Large-Vit-B-32": OpenCLIPModelConfig("ViT-B-32", "openai"),
@@ -31,7 +31,7 @@ def to_onnx(
 
         for param in model.parameters():
             param.requires_grad_(False)
-        
+
         export_text_encoder(model, textual_path)
         openclip_to_onnx(_MCLIP_TO_OPENCLIP[model_name], output_dir_visual)
         optimize(textual_path)

@@ -6,22 +6,15 @@ from typing import Any, Literal
 
 import numpy as np
 import onnxruntime as ort
-import open_clip
 from huggingface_hub import snapshot_download
-from open_clip.factory import PreprocessCfg
 from PIL import Image
 from transformers import AutoTokenizer
 
 from app.config import log
+from app.models.transforms import crop, get_pil_resampling, normalize, resize, to_numpy
 from app.schemas import ModelType, ndarray
 
 from .base import InferenceModel
-
-
-class OpenCLIPModelConfig:
-    def __init__(self, name: str, pretrained: str) -> None:
-        self.name = name
-        self.pretrained = pretrained
 
 
 class BaseCLIPEncoder(InferenceModel):
@@ -47,7 +40,6 @@ class BaseCLIPEncoder(InferenceModel):
                 providers=self.providers,
                 provider_options=self.provider_options,
             )
-            self._load_tokenizer()
 
         if self.mode == "vision" or self.mode is None:
             log.debug(f"Loading clip vision model '{self.model_name}'")
@@ -58,7 +50,6 @@ class BaseCLIPEncoder(InferenceModel):
                 providers=self.providers,
                 provider_options=self.provider_options,
             )
-            self._load_transform()
 
     def _predict(self, image_or_text: Image.Image | str) -> list[float]:
         if isinstance(image_or_text, bytes):
@@ -89,11 +80,11 @@ class BaseCLIPEncoder(InferenceModel):
         pass
 
     @abstractmethod
-    def _load_tokenizer(self) -> None:
+    def tokenize(self, text: str) -> dict[str, np.ndarray[Any, np.dtype[np.int32]]]:
         pass
 
     @abstractmethod
-    def _load_transform(self) -> None:
+    def transform(self, image: Image.Image) -> dict[str, ndarray]:
         pass
 
     @property
@@ -136,43 +127,55 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         super().__init__(_clean_model_name(model_name), cache_dir, mode, **model_kwargs)
 
     def _download(self) -> None:
-        snapshot_download(f"immich-app/{self.model_name}", cache_dir=self.cache_dir)
+        snapshot_download(
+            f"immich-app/{self.model_name}",
+            cache_dir=self.cache_dir,
+            local_dir=self.cache_dir,
+            local_dir_use_symlinks=False,
+        )
+
+    def _load(self) -> None:
+        super()._load()
+        self.tokenizer = AutoTokenizer.from_pretrained(self.textual_dir)
+
+        model_cfg = json.load(self.model_cfg_path.open())
+        preprocess_cfg = json.load(self.preprocess_cfg_path.open())
+
+        self.sequence_length = model_cfg["text_cfg"]["context_length"]
+        self.size = preprocess_cfg["size"][0] if type(preprocess_cfg["size"]) == list else preprocess_cfg["size"]
+        self.resampling = get_pil_resampling(preprocess_cfg["interpolation"])
+        self.mean = preprocess_cfg["mean"]
+        self.std = preprocess_cfg["std"]
 
     def encode_image(self, image: Image.Image) -> ndarray:
-        inputs = {"image": self.transform(image).unsqueeze(0).numpy()}
-        return self.vision_model.run(None, inputs)
+        return self.vision_model.run(None, self.transform(image))
 
     def encode_text(self, text: str) -> ndarray:
-        inputs = {"text": self.tokenizer(text).int().numpy()}
-        return self.text_model.run(None, inputs)
+        return self.text_model.run(None, self.tokenize(text))
 
-    def _load_tokenizer(self) -> None:
-        self.tokenizer = open_clip.get_tokenizer(self.model_name)
+    def tokenize(self, text: str) -> dict[str, np.ndarray[Any, np.dtype[np.int32]]]:
+        input_ids: np.ndarray[Any, np.dtype[np.int64]] = self.tokenizer(
+            text,
+            max_length=self.sequence_length,
+            return_tensors="np",
+            return_attention_mask=False,
+            padding="max_length",
+            truncation=True,
+        ).input_ids
+        return {"text": input_ids.astype(np.int32)}
 
-    def _load_transform(self) -> None:
-        preprocess_cfg = PreprocessCfg(**json.load(self.preprocess_cfg_path.open("r")))
-        self.transform = open_clip.image_transform(
-            image_size=preprocess_cfg.size,
-            is_train=False,
-            mean=preprocess_cfg.mean,
-            std=preprocess_cfg.std,
-            resize_mode=preprocess_cfg.resize_mode,
-            interpolation=preprocess_cfg.interpolation,
-            fill_color=preprocess_cfg.fill_color,
-        )
+    def transform(self, image: Image.Image) -> dict[str, ndarray]:
+        image = resize(image, self.size)
+        image = crop(image, self.size)
+        image_np = to_numpy(image)
+        image_np = normalize(image_np, self.mean, self.std)
+        return {"image": np.expand_dims(image_np, 0)}
 
 
 class MCLIPEncoder(OpenCLIPEncoder):
-    def encode_text(self, text: str) -> ndarray:
-        tokens = self.tokenizer(text, return_tensors="np")
-        inputs = {
-            "input_ids": tokens.input_ids.astype(np.int32),
-            "attention_mask": tokens.attention_mask.astype(np.int32),
-        }
-        return self.text_model.run(None, inputs)
-
-    def _load_tokenizer(self) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(self.textual_dir)
+    def tokenize(self, text: str) -> dict[str, np.ndarray[Any, np.dtype[np.int32]]]:
+        tokens: dict[str, np.ndarray[int, np.dtype[np.int64]]] = self.tokenizer(text, return_tensors="np")
+        return {k: v.astype(np.int32) for k, v in tokens.items()}
 
 
 _OPENCLIP_MODELS = {
@@ -203,11 +206,12 @@ _OPENCLIP_MODELS = {
     "ViT-g-14__laion2b-s12b-b42k",
 }
 
+
 _MCLIP_MODELS = {
     "LABSE-Vit-L-14",
     "XLM-Roberta-Large-Vit-B-32",
     "XLM-Roberta-Large-Vit-B-16Plus",
-    "XLM-Roberta-Large-Vit-L-14"
+    "XLM-Roberta-Large-Vit-L-14",
 }
 
 
