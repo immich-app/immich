@@ -465,8 +465,6 @@ class ApiClient {
           return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
-        case 'UserCountResponseDto':
-          return UserCountResponseDto.fromJson(value);
         case 'UserDto':
           return UserDto.fromJson(value);
         case 'UserResponseDto':

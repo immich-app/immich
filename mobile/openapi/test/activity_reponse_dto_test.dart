@@ -16,6 +16,11 @@ void main() {
   // final instance = ActivityReponseDto();
 
   group('test ActivityReponseDto', () {
+    // String assetId
+    test('to test the property `assetId`', () async {
+      // TODO
+    });
+
     // String comment
     test('to test the property `comment`', () async {
       // TODO

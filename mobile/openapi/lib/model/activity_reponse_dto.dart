@@ -13,12 +13,15 @@ part of openapi.api;
 class ActivityReponseDto {
   /// Returns a new [ActivityReponseDto] instance.
   ActivityReponseDto({
+    required this.assetId,
     this.comment,
     required this.createdAt,
     required this.id,
     required this.type,
     required this.user,
   });
+
+  String? assetId;
 
   String? comment;
 
@@ -32,6 +35,7 @@ class ActivityReponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityReponseDto &&
+     other.assetId == assetId &&
      other.comment == comment &&
      other.createdAt == createdAt &&
      other.id == id &&
@@ -41,6 +45,7 @@ class ActivityReponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (assetId == null ? 0 : assetId!.hashCode) +
     (comment == null ? 0 : comment!.hashCode) +
     (createdAt.hashCode) +
     (id.hashCode) +
@@ -48,10 +53,15 @@ class ActivityReponseDto {
     (user.hashCode);
 
   @override
-  String toString() => 'ActivityReponseDto[comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user]';
+  String toString() => 'ActivityReponseDto[assetId=$assetId, comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.assetId != null) {
+      json[r'assetId'] = this.assetId;
+    } else {
+    //  json[r'assetId'] = null;
+    }
     if (this.comment != null) {
       json[r'comment'] = this.comment;
     } else {
@@ -72,6 +82,7 @@ class ActivityReponseDto {
       final json = value.cast<String, dynamic>();
 
       return ActivityReponseDto(
+        assetId: mapValueOfType<String>(json, r'assetId'),
         comment: mapValueOfType<String>(json, r'comment'),
         createdAt: mapDateTime(json, r'createdAt', '')!,
         id: mapValueOfType<String>(json, r'id')!,
@@ -124,6 +135,7 @@ class ActivityReponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'assetId',
     'createdAt',
     'id',
     'type',

@@ -10,6 +10,7 @@ export enum ReactionType {
 
 export class ActivityReponseDto {
   id!: string;
+  assetId!: string | null;
   comment?: string | null;
   createdAt!: Date;
   type!: ReactionType;
@@ -48,6 +49,7 @@ export class ActivityCommentDto extends ActivityDto {
 export function mapActivity(activity: ActivityEntity): ActivityReponseDto {
   return {
     id: activity.id,
+    assetId: activity.assetId,
     createdAt: activity.createdAt,
     comment: activity.comment,
     type: activity.isLiked ? ReactionType.LIKE : ReactionType.COMMENT,

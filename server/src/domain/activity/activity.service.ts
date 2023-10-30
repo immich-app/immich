@@ -32,9 +32,6 @@ export class ActivityService {
     }
 
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
-    if (!album?.sharedUsers.length) {
-      throw new BadRequestException('Album is not shared');
-    }
     const activities = await this.findOrFail(dto.albumId, dto.assetId);
     const mappedActivities = activities.map(mapActivity);
     return mappedActivities;
@@ -43,18 +40,12 @@ export class ActivityService {
   async getStatistics(authUser: AuthUserDto, dto: ActivityDto): Promise<StatisticsResponseDto> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
-    if (!album?.sharedUsers.length) {
-      throw new BadRequestException('Album is not shared');
-    }
     return { comments: await this.repository.getStatistics(dto.assetId, dto.albumId) };
   }
 
   async getLikeStatus(authUser: AuthUserDto, dto: ActivityDto): Promise<LikeStatusReponseDto> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
-    if (!album?.sharedUsers.length) {
-      throw new BadRequestException('Album is not shared');
-    }
     const favorite = await this.repository.getFavorite(dto.albumId, authUser.id, dto.assetId);
     if (favorite) {
       return { value: true };
@@ -66,9 +57,6 @@ export class ActivityService {
   async addComment(authUser: AuthUserDto, dto: ActivityCommentDto): Promise<ActivityReponseDto> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
-    if (!album?.sharedUsers.length) {
-      throw new BadRequestException('Album is not shared');
-    }
     const comment = dto.comment;
     const activity = await this.repository.update({
       assetId: dto.assetId,
@@ -89,9 +77,6 @@ export class ActivityService {
   async updateLikeStatus(authUser: AuthUserDto, dto: ActivityFavoriteDto): Promise<ActivityReponseDto | void> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
-    if (!album?.sharedUsers.length) {
-      throw new BadRequestException('Album is not shared');
-    }
     const favorite = dto.favorite;
     const reaction = await this.repository.getFavorite(dto.albumId, authUser.id, dto.assetId);
     const isFavorite = reaction ? reaction.isLiked : false;

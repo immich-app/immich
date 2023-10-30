@@ -5817,6 +5817,10 @@
       },
       "ActivityReponseDto": {
         "properties": {
+          "assetId": {
+            "nullable": true,
+            "type": "string"
+          },
           "comment": {
             "nullable": true,
             "type": "string"
@@ -5841,6 +5845,7 @@
         },
         "required": [
           "id",
+          "assetId",
           "createdAt",
           "type",
           "user"

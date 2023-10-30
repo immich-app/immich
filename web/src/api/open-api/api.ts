@@ -160,6 +160,12 @@ export interface ActivityReponseDto {
      * @type {string}
      * @memberof ActivityReponseDto
      */
+    'assetId': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityReponseDto
+     */
     'comment'?: string | null;
     /**
      * 
@@ -4330,19 +4336,6 @@ export interface UsageByUserDto {
      * @memberof UsageByUserDto
      */
     'videos': number;
-}
-/**
- * 
- * @export
- * @interface UserCountResponseDto
- */
-export interface UserCountResponseDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof UserCountResponseDto
-     */
-    'userCount': number;
 }
 /**
  * 
