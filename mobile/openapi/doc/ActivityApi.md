@@ -10,11 +10,11 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addComment**](ActivityApi.md#addcomment) | **POST** /activity/comment | 
-[**changeFavorite**](ActivityApi.md#changefavorite) | **POST** /activity/favorite | 
+[**changeFavorite**](ActivityApi.md#changefavorite) | **PUT** /activity/like | 
 [**deleteComment**](ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
-[**getActivity**](ActivityApi.md#getactivity) | **GET** /activity/asset/{id}/album/{albumId} | 
-[**getFavorite**](ActivityApi.md#getfavorite) | **GET** /activity/favorite/asset/{id}/album/{albumId} | 
-[**getStatistics**](ActivityApi.md#getstatistics) | **GET** /activity/statistics/asset/{id}/album/{albumId} | 
+[**getActivity**](ActivityApi.md#getactivity) | **GET** /activity | 
+[**getFavorite**](ActivityApi.md#getfavorite) | **GET** /activity/like | 
+[**getStatistics**](ActivityApi.md#getstatistics) | **GET** /activity/statistics | 
 
 
 # **addComment**
@@ -182,7 +182,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getActivity**
-> List<ActivityReponseDto> getActivity(id, albumId)
+> List<ActivityReponseDto> getActivity(assetId, albumId)
 
 
 
@@ -205,11 +205,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final albumId = albumId_example; // String | 
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getActivity(id, albumId);
+    final result = api_instance.getActivity(assetId, albumId);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getActivity: $e\n');
@@ -220,7 +220,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
+ **assetId** | **String**|  | 
  **albumId** | **String**|  | 
 
 ### Return type
@@ -239,7 +239,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getFavorite**
-> ActivityReponseDto getFavorite(id, albumId)
+> ActivityReponseDto getFavorite(assetId, albumId)
 
 
 
@@ -262,11 +262,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final albumId = albumId_example; // String | 
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getFavorite(id, albumId);
+    final result = api_instance.getFavorite(assetId, albumId);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getFavorite: $e\n');
@@ -277,7 +277,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
+ **assetId** | **String**|  | 
  **albumId** | **String**|  | 
 
 ### Return type
@@ -296,7 +296,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getStatistics**
-> StatisticsResponseDto getStatistics(id, albumId)
+> StatisticsResponseDto getStatistics(assetId, albumId)
 
 
 
@@ -319,11 +319,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final albumId = albumId_example; // String | 
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getStatistics(id, albumId);
+    final result = api_instance.getStatistics(assetId, albumId);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getStatistics: $e\n');
@@ -334,7 +334,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
+ **assetId** | **String**|  | 
  **albumId** | **String**|  | 
 
 ### Return type

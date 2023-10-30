@@ -8,7 +8,7 @@ export const activityStub = {
   oneComment: Object.freeze<ActivityEntity>({
     id: 'activity-1',
     comment: 'comment',
-    isFavorite: false,
+    isLiked: false,
     userId: authStub.admin.id,
     user: userStub.admin,
     assetId: assetStub.image.id,
@@ -21,7 +21,7 @@ export const activityStub = {
   favorite: Object.freeze<ActivityEntity>({
     id: 'activity-2',
     comment: null,
-    isFavorite: true,
+    isLiked: true,
     userId: authStub.admin.id,
     user: userStub.admin,
     assetId: assetStub.image.id,

@@ -27,7 +27,7 @@
 
   const getReactions = async () => {
     try {
-      const { data } = await api.activityApi.getActivity({ id: assetId, albumId });
+      const { data } = await api.activityApi.getActivity({ assetId: assetId, albumId });
       reactions = data;
     } catch (error) {
       handleError(error, 'Error when fetching reactions');
@@ -115,7 +115,7 @@
     <div class="overflow-x-hidden mt-[64px] mb-[72px]">
       {#each reactions as reaction, index (reaction.id)}
         {#if reaction.user && reaction.createdAt}
-          {#if reaction.isFavorite}
+          {#if reaction.isLiked}
             <div
               class="flex p-2 m-2 rounded-full gap-2 items-center text-sm"
               title={new Date(reaction.createdAt).toLocaleDateString()}

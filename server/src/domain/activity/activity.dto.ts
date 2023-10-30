@@ -1,12 +1,13 @@
 import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { ValidateUUID } from '../domain.util';
 
 export class ActivityReponseDto {
   id!: string | null;
   comment!: string | null;
   createdAt!: Date | null;
-  isFavorite!: boolean;
+  isLiked!: boolean;
   user!: UserCommentDto | null;
 }
 
@@ -24,12 +25,10 @@ export class UserCommentDto {
 }
 
 export class ActivityDto {
-  @IsString()
-  @IsNotEmpty()
+  @ValidateUUID()
   assetId!: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @ValidateUUID()
   albumId!: string;
 }
 
@@ -50,7 +49,7 @@ export function mapActivity(activity: ActivityEntity): ActivityReponseDto {
     id: activity.id,
     createdAt: activity.createdAt,
     comment: activity.comment,
-    isFavorite: activity.isFavorite,
+    isLiked: activity.isLiked,
     user: {
       id: activity.user.id,
       firstName: activity.user.firstName,
@@ -67,7 +66,7 @@ export function mapFavorite(activity: ActivityEntity | null): ActivityReponseDto
       id: activity.id,
       createdAt: activity.createdAt,
       comment: activity.comment,
-      isFavorite: activity.isFavorite,
+      isLiked: activity.isLiked,
       user: {
         id: activity.user.id,
         firstName: activity.user.firstName,
@@ -81,7 +80,7 @@ export function mapFavorite(activity: ActivityEntity | null): ActivityReponseDto
     id: null,
     createdAt: null,
     comment: null,
-    isFavorite: false,
+    isLiked: false,
     user: null,
   };
 }
@@ -99,7 +98,7 @@ export function mapActivities(activities: ActivityEntity[]): ActivityReponseDto[
       id: activities[i].id,
       comment: activities[i].comment,
       createdAt: activities[i].createdAt,
-      isFavorite: activities[i].isFavorite,
+      isLiked: activities[i].isLiked,
       user: {
         id: activities[i].user.id,
         firstName: activities[i].user.firstName,

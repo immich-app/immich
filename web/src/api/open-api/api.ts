@@ -178,7 +178,7 @@ export interface ActivityReponseDto {
      * @type {boolean}
      * @memberof ActivityReponseDto
      */
-    'isFavorite': boolean;
+    'isLiked': boolean;
     /**
      * 
      * @type {UserCommentDto}
@@ -4977,7 +4977,7 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         changeFavorite: async (activityFavoriteDto: ActivityFavoriteDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'activityFavoriteDto' is not null or undefined
             assertParamExists('changeFavorite', 'activityFavoriteDto', activityFavoriteDto)
-            const localVarPath = `/activity/favorite`;
+            const localVarPath = `/activity/like`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -4985,7 +4985,7 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -5056,19 +5056,17 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} assetId 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivity: async (id: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getActivity', 'id', id)
+        getActivity: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('getActivity', 'assetId', assetId)
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getActivity', 'albumId', albumId)
-            const localVarPath = `/activity/asset/{id}/album/{albumId}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            const localVarPath = `/activity`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5089,6 +5087,14 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
+            if (assetId !== undefined) {
+                localVarQueryParameter['assetId'] = assetId;
+            }
+
+            if (albumId !== undefined) {
+                localVarQueryParameter['albumId'] = albumId;
+            }
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -5102,19 +5108,17 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} assetId 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFavorite: async (id: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getFavorite', 'id', id)
+        getFavorite: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('getFavorite', 'assetId', assetId)
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getFavorite', 'albumId', albumId)
-            const localVarPath = `/activity/favorite/asset/{id}/album/{albumId}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            const localVarPath = `/activity/like`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5134,6 +5138,14 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (assetId !== undefined) {
+                localVarQueryParameter['assetId'] = assetId;
+            }
+
+            if (albumId !== undefined) {
+                localVarQueryParameter['albumId'] = albumId;
+            }
 
 
     
@@ -5148,19 +5160,17 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} assetId 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStatistics: async (id: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getStatistics', 'id', id)
+        getStatistics: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('getStatistics', 'assetId', assetId)
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getStatistics', 'albumId', albumId)
-            const localVarPath = `/activity/statistics/asset/{id}/album/{albumId}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            const localVarPath = `/activity/statistics`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5180,6 +5190,14 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (assetId !== undefined) {
+                localVarQueryParameter['assetId'] = assetId;
+            }
+
+            if (albumId !== undefined) {
+                localVarQueryParameter['albumId'] = albumId;
+            }
 
 
     
@@ -5234,35 +5252,35 @@ export const ActivityApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} assetId 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivity(id: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityReponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivity(id, albumId, options);
+        async getActivity(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityReponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivity(assetId, albumId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} assetId 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFavorite(id: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityReponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getFavorite(id, albumId, options);
+        async getFavorite(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityReponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getFavorite(assetId, albumId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} assetId 
          * @param {string} albumId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getStatistics(id: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatisticsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getStatistics(id, albumId, options);
+        async getStatistics(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatisticsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getStatistics(assetId, albumId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -5309,7 +5327,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getActivity(requestParameters: ActivityApiGetActivityRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityReponseDto>> {
-            return localVarFp.getActivity(requestParameters.id, requestParameters.albumId, options).then((request) => request(axios, basePath));
+            return localVarFp.getActivity(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5318,7 +5336,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getFavorite(requestParameters: ActivityApiGetFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityReponseDto> {
-            return localVarFp.getFavorite(requestParameters.id, requestParameters.albumId, options).then((request) => request(axios, basePath));
+            return localVarFp.getFavorite(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5327,7 +5345,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getStatistics(requestParameters: ActivityApiGetStatisticsRequest, options?: AxiosRequestConfig): AxiosPromise<StatisticsResponseDto> {
-            return localVarFp.getStatistics(requestParameters.id, requestParameters.albumId, options).then((request) => request(axios, basePath));
+            return localVarFp.getStatistics(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5385,7 +5403,7 @@ export interface ActivityApiGetActivityRequest {
      * @type {string}
      * @memberof ActivityApiGetActivity
      */
-    readonly id: string
+    readonly assetId: string
 
     /**
      * 
@@ -5406,7 +5424,7 @@ export interface ActivityApiGetFavoriteRequest {
      * @type {string}
      * @memberof ActivityApiGetFavorite
      */
-    readonly id: string
+    readonly assetId: string
 
     /**
      * 
@@ -5427,7 +5445,7 @@ export interface ActivityApiGetStatisticsRequest {
      * @type {string}
      * @memberof ActivityApiGetStatistics
      */
-    readonly id: string
+    readonly assetId: string
 
     /**
      * 
@@ -5485,7 +5503,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getActivity(requestParameters: ActivityApiGetActivityRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivity(requestParameters.id, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getActivity(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5496,7 +5514,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getFavorite(requestParameters: ActivityApiGetFavoriteRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getFavorite(requestParameters.id, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getFavorite(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5507,7 +5525,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getStatistics(requestParameters: ActivityApiGetStatisticsRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getStatistics(requestParameters.id, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getStatistics(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

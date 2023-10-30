@@ -1,14 +1,14 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/activity/asset/{id}/album/{albumId}": {
+    "/activity": {
       "get": {
         "operationId": "getActivity",
         "parameters": [
           {
-            "name": "id",
+            "name": "assetId",
             "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -17,8 +17,9 @@
           {
             "name": "albumId",
             "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -131,56 +132,14 @@
         ]
       }
     },
-    "/activity/favorite": {
-      "post": {
-        "operationId": "changeFavorite",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActivityFavoriteDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityReponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Activity"
-        ]
-      }
-    },
-    "/activity/favorite/asset/{id}/album/{albumId}": {
+    "/activity/like": {
       "get": {
         "operationId": "getFavorite",
         "parameters": [
           {
-            "name": "id",
+            "name": "assetId",
             "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -189,8 +148,9 @@
           {
             "name": "albumId",
             "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -221,16 +181,56 @@
         "tags": [
           "Activity"
         ]
+      },
+      "put": {
+        "operationId": "changeFavorite",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityFavoriteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityReponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
       }
     },
-    "/activity/statistics/asset/{id}/album/{albumId}": {
+    "/activity/statistics": {
       "get": {
         "operationId": "getStatistics",
         "parameters": [
           {
-            "name": "id",
+            "name": "assetId",
             "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -239,8 +239,9 @@
           {
             "name": "albumId",
             "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -5812,9 +5813,11 @@
       "ActivityCommentDto": {
         "properties": {
           "albumId": {
+            "format": "uuid",
             "type": "string"
           },
           "assetId": {
+            "format": "uuid",
             "type": "string"
           },
           "comment": {
@@ -5822,18 +5825,20 @@
           }
         },
         "required": [
-          "comment",
           "assetId",
-          "albumId"
+          "albumId",
+          "comment"
         ],
         "type": "object"
       },
       "ActivityFavoriteDto": {
         "properties": {
           "albumId": {
+            "format": "uuid",
             "type": "string"
           },
           "assetId": {
+            "format": "uuid",
             "type": "string"
           },
           "favorite": {
@@ -5841,9 +5846,9 @@
           }
         },
         "required": [
-          "favorite",
           "assetId",
-          "albumId"
+          "albumId",
+          "favorite"
         ],
         "type": "object"
       },
@@ -5862,7 +5867,7 @@
             "nullable": true,
             "type": "string"
           },
-          "isFavorite": {
+          "isLiked": {
             "type": "boolean"
           },
           "user": {
@@ -5878,7 +5883,7 @@
           "id",
           "comment",
           "createdAt",
-          "isFavorite",
+          "isLiked",
           "user"
         ],
         "type": "object"

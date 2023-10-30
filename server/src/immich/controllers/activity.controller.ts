@@ -1,17 +1,17 @@
 import { AuthUserDto } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 
 import {
   ActivityCommentDto,
+  ActivityDto,
   ActivityFavoriteDto,
   ActivityReponseDto,
   ActivityService,
   StatisticsResponseDto,
 } from '@app/domain/activity';
-import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Activity')
@@ -21,34 +21,22 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 export class ActivityController {
   constructor(private service: ActivityService) {}
 
-  @Get('statistics/asset/:id/album/:albumId')
-  getStatistics(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('albumId', new ParseMeUUIDPipe({ version: '4' })) albumId: string,
-  ): Promise<StatisticsResponseDto> {
-    return this.service.getStatistics(authUser, id, albumId);
+  @Get('statistics')
+  getStatistics(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<StatisticsResponseDto> {
+    return this.service.getStatistics(authUser, dto);
   }
 
-  @Get('asset/:id/album/:albumId')
-  getActivity(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('albumId', new ParseMeUUIDPipe({ version: '4' })) albumId: string,
-  ): Promise<ActivityReponseDto[]> {
-    return this.service.getById(authUser, id, albumId);
+  @Get('')
+  getActivity(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<ActivityReponseDto[]> {
+    return this.service.getById(authUser, dto);
   }
 
-  @Get('favorite/asset/:id/album/:albumId')
-  getFavorite(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('albumId', new ParseMeUUIDPipe({ version: '4' })) albumId: string,
-  ): Promise<ActivityReponseDto> {
-    return this.service.getFavorite(authUser, id, albumId);
+  @Get('like')
+  getFavorite(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<ActivityReponseDto> {
+    return this.service.getFavorite(authUser, dto);
   }
 
-  @Post('favorite')
+  @Put('like')
   changeFavorite(@AuthUser() authUser: AuthUserDto, @Body() dto: ActivityFavoriteDto): Promise<ActivityReponseDto> {
     return this.service.changeFavorite(authUser, dto);
   }

@@ -29,10 +29,11 @@ describe(ActivityService.name, () => {
         activityMock.getStatistics.mockResolvedValue(1);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       await expect(
-        sut.getStatistics(authStub.admin, activityStub.oneComment.assetId, activityStub.oneComment.albumId),
-      ).resolves.toEqual({
-        comments: 1,
-      });
+        sut.getStatistics(authStub.admin, {
+          assetId: activityStub.oneComment.assetId,
+          albumId: activityStub.oneComment.albumId,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, activityStub.oneComment.assetId);
     });
   });
@@ -43,20 +44,11 @@ describe(ActivityService.name, () => {
         activityMock.getFavorite.mockResolvedValue(activityStub.favorite);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       await expect(
-        sut.getFavorite(authStub.admin, activityStub.oneComment.assetId, activityStub.oneComment.albumId),
-      ).resolves.toEqual({
-        isFavorite: true,
-        comment: null,
-        createdAt: activityStub.favorite.createdAt,
-        id: activityStub.favorite.id,
-        user: {
-          email: activityStub.favorite.user.email,
-          firstName: activityStub.favorite.user.firstName,
-          lastName: activityStub.favorite.user.lastName,
-          id: activityStub.favorite.user.id,
-          profileImagePath: activityStub.favorite.user.profileImagePath,
-        },
-      });
+        sut.getFavorite(authStub.admin, {
+          assetId: activityStub.oneComment.assetId,
+          albumId: activityStub.oneComment.albumId,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, activityStub.oneComment.assetId);
     });
     describe('changeFavorite', () => {
@@ -70,13 +62,7 @@ describe(ActivityService.name, () => {
             assetId: activityStub.oneComment.assetId,
             albumId: activityStub.oneComment.albumId,
           }),
-        ).resolves.toEqual({
-          id: null,
-          createdAt: null,
-          comment: null,
-          isFavorite: false,
-          user: null,
-        });
+        ).rejects.toBeInstanceOf(BadRequestException);
         expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(
           authStub.admin.id,
           activityStub.oneComment.assetId,

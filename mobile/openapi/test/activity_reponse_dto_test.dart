@@ -31,8 +31,8 @@ void main() {
       // TODO
     });
 
-    // bool isFavorite
-    test('to test the property `isFavorite`', () async {
+    // bool isLiked
+    test('to test the property `isLiked`', () async {
       // TODO
     });
 

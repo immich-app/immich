@@ -22,7 +22,7 @@ export class ActivityRepository implements IActivityRepository {
 
   getStatistics(assetId: string, albumId: string): Promise<number> {
     return this.activityRepository.count({
-      where: { assetId, albumId, isFavorite: false },
+      where: { assetId, albumId, isLiked: false },
       relations: {
         user: true,
       },
@@ -31,7 +31,7 @@ export class ActivityRepository implements IActivityRepository {
 
   getFavorite(assetId: string, albumId: string, userId: string): Promise<ActivityEntity | null> {
     return this.activityRepository.findOne({
-      where: { assetId, albumId, userId, isFavorite: true },
+      where: { assetId, albumId, userId, isLiked: true },
       relations: {
         user: true,
       },

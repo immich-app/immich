@@ -16,7 +16,7 @@ class ActivityReponseDto {
     required this.comment,
     required this.createdAt,
     required this.id,
-    required this.isFavorite,
+    required this.isLiked,
     required this.user,
   });
 
@@ -26,7 +26,7 @@ class ActivityReponseDto {
 
   String? id;
 
-  bool isFavorite;
+  bool isLiked;
 
   UserCommentDto? user;
 
@@ -35,7 +35,7 @@ class ActivityReponseDto {
      other.comment == comment &&
      other.createdAt == createdAt &&
      other.id == id &&
-     other.isFavorite == isFavorite &&
+     other.isLiked == isLiked &&
      other.user == user;
 
   @override
@@ -44,11 +44,11 @@ class ActivityReponseDto {
     (comment == null ? 0 : comment!.hashCode) +
     (createdAt == null ? 0 : createdAt!.hashCode) +
     (id == null ? 0 : id!.hashCode) +
-    (isFavorite.hashCode) +
+    (isLiked.hashCode) +
     (user == null ? 0 : user!.hashCode);
 
   @override
-  String toString() => 'ActivityReponseDto[comment=$comment, createdAt=$createdAt, id=$id, isFavorite=$isFavorite, user=$user]';
+  String toString() => 'ActivityReponseDto[comment=$comment, createdAt=$createdAt, id=$id, isLiked=$isLiked, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -67,7 +67,7 @@ class ActivityReponseDto {
     } else {
     //  json[r'id'] = null;
     }
-      json[r'isFavorite'] = this.isFavorite;
+      json[r'isLiked'] = this.isLiked;
     if (this.user != null) {
       json[r'user'] = this.user;
     } else {
@@ -87,7 +87,7 @@ class ActivityReponseDto {
         comment: mapValueOfType<String>(json, r'comment'),
         createdAt: mapDateTime(json, r'createdAt', ''),
         id: mapValueOfType<String>(json, r'id'),
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isLiked: mapValueOfType<bool>(json, r'isLiked')!,
         user: UserCommentDto.fromJson(json[r'user']),
       );
     }
@@ -139,7 +139,7 @@ class ActivityReponseDto {
     'comment',
     'createdAt',
     'id',
-    'isFavorite',
+    'isLiked',
     'user',
   };
 }

@@ -32,17 +32,17 @@ void main() {
       // TODO
     });
 
-    //Future<List<ActivityReponseDto>> getActivity(String id, String albumId) async
+    //Future<List<ActivityReponseDto>> getActivity(String assetId, String albumId) async
     test('test getActivity', () async {
       // TODO
     });
 
-    //Future<ActivityReponseDto> getFavorite(String id, String albumId) async
+    //Future<ActivityReponseDto> getFavorite(String assetId, String albumId) async
     test('test getFavorite', () async {
       // TODO
     });
 
-    //Future<StatisticsResponseDto> getStatistics(String id, String albumId) async
+    //Future<StatisticsResponseDto> getStatistics(String assetId, String albumId) async
     test('test getStatistics', () async {
       // TODO
     });

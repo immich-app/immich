@@ -63,13 +63,13 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /activity/favorite' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /activity/like' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [ActivityFavoriteDto] activityFavoriteDto (required):
   Future<Response> changeFavoriteWithHttpInfo(ActivityFavoriteDto activityFavoriteDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/favorite';
+    final path = r'/activity/like';
 
     // ignore: prefer_final_locals
     Object? postBody = activityFavoriteDto;
@@ -83,7 +83,7 @@ class ActivityApi {
 
     return apiClient.invokeAPI(
       path,
-      'POST',
+      'PUT',
       queryParams,
       postBody,
       headerParams,
@@ -150,17 +150,15 @@ class ActivityApi {
     }
   }
 
-  /// Performs an HTTP 'GET /activity/asset/{id}/album/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activity' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] id (required):
+  /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<Response> getActivityWithHttpInfo(String id, String albumId,) async {
+  Future<Response> getActivityWithHttpInfo(String assetId, String albumId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/asset/{id}/album/{albumId}'
-      .replaceAll('{id}', id)
-      .replaceAll('{albumId}', albumId);
+    final path = r'/activity';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -168,6 +166,9 @@ class ActivityApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'assetId', assetId));
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
 
@@ -185,11 +186,11 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [String] id (required):
+  /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<List<ActivityReponseDto>?> getActivity(String id, String albumId,) async {
-    final response = await getActivityWithHttpInfo(id, albumId,);
+  Future<List<ActivityReponseDto>?> getActivity(String assetId, String albumId,) async {
+    final response = await getActivityWithHttpInfo(assetId, albumId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -206,17 +207,15 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /activity/favorite/asset/{id}/album/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activity/like' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] id (required):
+  /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<Response> getFavoriteWithHttpInfo(String id, String albumId,) async {
+  Future<Response> getFavoriteWithHttpInfo(String assetId, String albumId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/favorite/asset/{id}/album/{albumId}'
-      .replaceAll('{id}', id)
-      .replaceAll('{albumId}', albumId);
+    final path = r'/activity/like';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -224,6 +223,9 @@ class ActivityApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'assetId', assetId));
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
 
@@ -241,11 +243,11 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [String] id (required):
+  /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<ActivityReponseDto?> getFavorite(String id, String albumId,) async {
-    final response = await getFavoriteWithHttpInfo(id, albumId,);
+  Future<ActivityReponseDto?> getFavorite(String assetId, String albumId,) async {
+    final response = await getFavoriteWithHttpInfo(assetId, albumId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -259,17 +261,15 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /activity/statistics/asset/{id}/album/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activity/statistics' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] id (required):
+  /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<Response> getStatisticsWithHttpInfo(String id, String albumId,) async {
+  Future<Response> getStatisticsWithHttpInfo(String assetId, String albumId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/statistics/asset/{id}/album/{albumId}'
-      .replaceAll('{id}', id)
-      .replaceAll('{albumId}', albumId);
+    final path = r'/activity/statistics';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -277,6 +277,9 @@ class ActivityApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'assetId', assetId));
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
 
@@ -294,11 +297,11 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [String] id (required):
+  /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<StatisticsResponseDto?> getStatistics(String id, String albumId,) async {
-    final response = await getStatisticsWithHttpInfo(id, albumId,);
+  Future<StatisticsResponseDto?> getStatistics(String assetId, String albumId,) async {
+    final response = await getStatisticsWithHttpInfo(assetId, albumId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

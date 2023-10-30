@@ -1,9 +1,10 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { AlbumEntity } from '.';
 import { AssetEntity } from './asset.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('activity')
+@Index('IDX_activity_like', ['assetId', 'userId', 'albumId'], { unique: true, where: '(isLiked = true)' })
 export class ActivityEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -27,7 +28,7 @@ export class ActivityEntity {
   comment!: string | null;
 
   @Column({ type: 'boolean', default: false })
-  isFavorite!: boolean;
+  isLiked!: boolean;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.activity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;

@@ -5,6 +5,7 @@ import { IAccessRepository, IActivityRepository, IAlbumRepository } from '../rep
 
 import {
   ActivityCommentDto,
+  ActivityDto,
   ActivityFavoriteDto,
   ActivityReponseDto,
   StatisticsResponseDto,
@@ -27,31 +28,31 @@ export class ActivityService {
     this.access = AccessCore.create(accessRepository);
   }
 
-  async getById(authUser: AuthUserDto, id: string, albumId: string): Promise<ActivityReponseDto[]> {
-    await this.access.requirePermission(authUser, Permission.ASSET_READ, id);
-    const album = await this.albumRepository.getById(albumId, { withAssets: false });
+  async getById(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityReponseDto[]> {
+    await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
+    const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
       throw new BadRequestException('Album is not shared');
     }
-    return this.findOrFail(id, albumId).then(mapActivities);
+    return this.findOrFail(dto.assetId, dto.albumId).then(mapActivities);
   }
 
-  async getStatistics(authUser: AuthUserDto, id: string, albumId: string): Promise<StatisticsResponseDto> {
-    await this.access.requirePermission(authUser, Permission.ASSET_READ, id);
-    const album = await this.albumRepository.getById(albumId, { withAssets: false });
+  async getStatistics(authUser: AuthUserDto, dto: ActivityDto): Promise<StatisticsResponseDto> {
+    await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
+    const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
       throw new BadRequestException('Album is not shared');
     }
-    return mapStatistics(await this.repository.getStatistics(id, albumId));
+    return mapStatistics(await this.repository.getStatistics(dto.assetId, dto.albumId));
   }
 
-  async getFavorite(authUser: AuthUserDto, id: string, albumId: string): Promise<ActivityReponseDto> {
-    await this.access.requirePermission(authUser, Permission.ASSET_READ, id);
-    const album = await this.albumRepository.getById(albumId, { withAssets: false });
+  async getFavorite(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityReponseDto> {
+    await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
+    const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
       throw new BadRequestException('Album is not shared');
     }
-    const favorite = await this.repository.getFavorite(id, albumId, authUser.id);
+    const favorite = await this.repository.getFavorite(dto.assetId, dto.albumId, authUser.id);
     return mapFavorite(favorite);
   }
 
@@ -92,7 +93,7 @@ export class ActivityService {
     }
     const favorite = dto.favorite;
     const reaction = await this.repository.getFavorite(dto.assetId, dto.albumId, authUser.id);
-    const isFavorite = reaction ? reaction.isFavorite : false;
+    const isFavorite = reaction ? reaction.isLiked : false;
 
     if (favorite === isFavorite) {
       return mapFavorite(reaction);
@@ -104,7 +105,7 @@ export class ActivityService {
         assetId: dto.assetId,
         userId: authUser.id,
         albumId: dto.albumId,
-        isFavorite: true,
+        isLiked: true,
       });
 
       return mapFavorite(test);

@@ -83,7 +83,7 @@
   let canCopyImagesToClipboard: boolean;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
-  let isFavorite: ActivityReponseDto | null = null;
+  let isLiked: ActivityReponseDto | null = null;
   let numberOfComments: number | null = null;
 
   $: {
@@ -103,18 +103,16 @@
     if (album) {
       try {
         const { data } = await api.activityApi.changeFavorite({
-          activityFavoriteDto: { favorite: !isFavorite?.isFavorite, albumId: album.id, assetId: asset.id },
+          activityFavoriteDto: { favorite: !isLiked?.isLiked, albumId: album.id, assetId: asset.id },
         });
 
-        if (data.isFavorite) {
+        if (data.isLiked) {
           reactions.push(data);
           reactions = reactions;
         } else {
-          reactions = reactions.filter(
-            (obj) => (obj.user && user && obj.user.id !== user.id) || obj.isFavorite !== true,
-          );
+          reactions = reactions.filter((obj) => (obj.user && user && obj.user.id !== user.id) || obj.isLiked !== true);
         }
-        isFavorite = data;
+        isLiked = data;
       } catch (error) {
         handleError(error, "Can't change favorite for asset");
       }
@@ -124,8 +122,8 @@
   const getFavorite = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.getFavorite({ id: asset.id, albumId: album.id });
-        isFavorite = data;
+        const { data } = await api.activityApi.getFavorite({ assetId: asset.id, albumId: album.id });
+        isLiked = data;
       } catch (error) {
         handleError(error, "Can't get Favorite");
       }
@@ -135,7 +133,7 @@
   const getNumberOfComments = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.getStatistics({ id: asset.id, albumId: album.id });
+        const { data } = await api.activityApi.getStatistics({ assetId: asset.id, albumId: album.id });
         numberOfComments = data.comments;
       } catch (error) {
         handleError(error, "Can't get number of comments");
@@ -613,8 +611,8 @@
             >
               <button on:click={handleFavorite}>
                 <div class="h-8 items-center justify-center">
-                  {#if isFavorite}
-                    <Icon path={isFavorite.isFavorite ? mdiHeart : mdiHeartOutline} size={30} />
+                  {#if isLiked}
+                    <Icon path={isLiked.isLiked ? mdiHeart : mdiHeartOutline} size={30} />
                   {:else}
                     <Icon path={mdiHeartOutline} size={30} />
                   {/if}
