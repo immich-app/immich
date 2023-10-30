@@ -49,18 +49,12 @@ export class ActivityController {
   }
 
   @Post('favorite')
-  changeFavorite(
-    @AuthUser() authUser: AuthUserDto,
-    @Body() dto: ActivityFavoriteDto,
-  ): Promise<ActivityReponseDto> {
+  changeFavorite(@AuthUser() authUser: AuthUserDto, @Body() dto: ActivityFavoriteDto): Promise<ActivityReponseDto> {
     return this.service.changeFavorite(authUser, dto);
   }
 
   @Post('comment')
-  addComment(
-    @AuthUser() authUser: AuthUserDto,
-    @Body() dto: ActivityCommentDto,
-  ): Promise<ActivityReponseDto> {
+  addComment(@AuthUser() authUser: AuthUserDto, @Body() dto: ActivityCommentDto): Promise<ActivityReponseDto> {
     return this.service.addComment(authUser, dto);
   }
 

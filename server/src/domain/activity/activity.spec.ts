@@ -65,12 +65,11 @@ describe(ActivityService.name, () => {
           activityMock.getFavorite.mockResolvedValue(activityStub.favorite);
         accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
         await expect(
-          sut.changeFavorite(
-            authStub.admin,
-            activityStub.oneComment.assetId,
-            { favorite: false },
-            activityStub.oneComment.albumId,
-          ),
+          sut.changeFavorite(authStub.admin, {
+            favorite: false,
+            assetId: activityStub.oneComment.assetId,
+            albumId: activityStub.oneComment.albumId,
+          }),
         ).resolves.toEqual({
           id: null,
           createdAt: null,
@@ -89,12 +88,11 @@ describe(ActivityService.name, () => {
       it("should add a user's comment for a specific album and asset", async () => {
         accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
         await expect(
-          sut.addComment(
-            authStub.admin,
-            activityStub.oneComment.assetId,
-            { comment: 'comment' },
-            activityStub.oneComment.albumId,
-          ),
+          sut.addComment(authStub.admin, {
+            comment: 'comment',
+            assetId: activityStub.oneComment.assetId,
+            albumId: activityStub.oneComment.albumId,
+          }),
         ).rejects.toBeInstanceOf(BadRequestException);
       });
     });
