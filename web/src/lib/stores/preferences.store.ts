@@ -52,7 +52,7 @@ export interface SidebarSettings {
   sharing: boolean;
 }
 
-export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings', {
+export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings-1', {
   people: false,
   sharing: true,
 });
