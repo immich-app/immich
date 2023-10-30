@@ -21,6 +21,8 @@ export enum Permission {
   ALBUM_SHARE = 'album.share',
   ALBUM_DOWNLOAD = 'album.download',
 
+  AUTH_DEVICE_DELETE = 'authDevice.delete',
+
   ARCHIVE_READ = 'archive.read',
 
   TIMELINE_READ = 'timeline.read',
@@ -195,6 +197,9 @@ export class AccessCore {
 
       case Permission.ARCHIVE_READ:
         return authUser.id === id;
+
+      case Permission.AUTH_DEVICE_DELETE:
+        return this.repository.authDevice.hasOwnerAccess(authUser.id, id);
 
       case Permission.TIMELINE_READ:
         return authUser.id === id || (await this.repository.timeline.hasPartnerAccess(authUser.id, id));

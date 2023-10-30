@@ -189,6 +189,14 @@ describe(`${AuthController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
+    it('should throw an error for a non-existent device id', async () => {
+      const { status, body } = await request(server)
+        .delete(`/auth/devices/${uuidStub.notFound}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Not found or no authDevice.delete access'));
+    });
+
     it('should logout a device', async () => {
       const [device] = await api.authApi.getAuthDevices(server, accessToken);
       const { status } = await request(server)
