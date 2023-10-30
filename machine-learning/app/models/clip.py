@@ -1,8 +1,9 @@
 import os
 import zipfile
 from io import BytesIO
-from typing import Any, Literal
+from typing import Any, Literal, TypeGuard
 
+import numpy as np
 import onnxruntime as ort
 import torch
 from clip_server.model.clip import BICUBIC, _convert_image_to_rgb
@@ -15,6 +16,14 @@ from torchvision.transforms import CenterCrop, Compose, Normalize, Resize, ToTen
 from ..config import log
 from ..schemas import ModelType
 from .base import InferenceModel
+
+
+def is_image_list(images: list[Any]) -> TypeGuard[list[Image.Image | bytes]]:
+    return any(isinstance(image, (Image.Image, bytes)) for image in images)
+
+
+def is_text_list(texts: list[Any]) -> TypeGuard[list[str]]:
+    return any(isinstance(text, str) for text in texts)
 
 
 class CLIPEncoder(InferenceModel):
@@ -70,31 +79,42 @@ class CLIPEncoder(InferenceModel):
             image_size = _VISUAL_MODEL_IMAGE_SIZE[CLIPOnnxModel.get_model_name(self.model_name)]
             self.transform = _transform_pil_image(image_size)
 
-    def _predict(self, image_or_text: Image.Image | str) -> list[float]:
-        if isinstance(image_or_text, bytes):
-            image_or_text = Image.open(BytesIO(image_or_text))
+    def _predict_batch(self, images_or_text: list[Image.Image | bytes] | list[str]) -> list[list[float]]:
+        if not images_or_text:
+            return []
 
-        match image_or_text:
-            case Image.Image():
-                if self.mode == "text":
-                    raise TypeError("Cannot encode image as text-only model")
-                pixel_values = self.transform(image_or_text)
-                assert isinstance(pixel_values, torch.Tensor)
-                pixel_values = torch.unsqueeze(pixel_values, 0).numpy()
-                outputs = self.vision_model.run(self.vision_outputs, {"pixel_values": pixel_values})
-            case str():
-                if self.mode == "vision":
-                    raise TypeError("Cannot encode text as vision-only model")
-                text_inputs: dict[str, torch.Tensor] = self.tokenizer(image_or_text)
-                inputs = {
-                    "input_ids": text_inputs["input_ids"].int().numpy(),
-                    "attention_mask": text_inputs["attention_mask"].int().numpy(),
-                }
-                outputs = self.text_model.run(self.text_outputs, inputs)
-            case _:
-                raise TypeError(f"Expected Image or str, but got: {type(image_or_text)}")
+        if is_image_list(images_or_text):
+            outputs = self._predict_images(images_or_text)
+        elif is_text_list(images_or_text):
+            outputs = self._predict_text(images_or_text)
+        else:
+            raise TypeError(f"Expected list of images or text, but got: {type(images_or_text[0])}")
 
-        return outputs[0][0].tolist()
+        return outputs
+
+    def _predict_images(self, images: list[Image.Image | bytes]) -> list[list[float]]:
+        if not images:
+            return []
+
+        for i, element in enumerate(images):
+            if isinstance(element, bytes):
+                images[i] = Image.open(BytesIO(element))
+
+        pixel_values = torch.stack([self.transform(image) for image in images]).numpy()
+        outputs = self.vision_model.run(self.vision_outputs, {"pixel_values": pixel_values})
+        return outputs[0].tolist()
+
+    def _predict_text(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+
+        text_inputs: dict[str, torch.Tensor] = self.tokenizer(texts)
+        inputs = {
+            "input_ids": text_inputs["input_ids"].int().numpy(),
+            "attention_mask": text_inputs["attention_mask"].int().numpy(),
+        }
+        outputs = self.text_model.run(self.text_outputs, inputs)
+        return outputs[0].tolist()
 
     def _download_model(self, model_name: str, model_md5: str) -> bool:
         # downloading logic is adapted from clip-server's CLIPOnnxModel class

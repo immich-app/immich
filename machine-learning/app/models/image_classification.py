@@ -63,13 +63,18 @@ class ImageClassifier(InferenceModel):
                 feature_extractor=processor,
             )
 
-    def _predict(self, image: Image.Image | bytes) -> list[str]:
-        if isinstance(image, bytes):
-            image = Image.open(BytesIO(image))
-        predictions: list[dict[str, Any]] = self.model(image)  # type: ignore
-        tags = [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
+    def _predict_batch(self, images: list[Image.Image | bytes]) -> list[list[str]]:
+        for i, image in enumerate(images):
+            if isinstance(image, bytes):
+                images[i] = Image.open(BytesIO(image))
 
-        return tags
+        batch_predictions: list[list[dict[str, Any]]] = self.model(images)
+        results = [self._postprocess(predictions) for predictions in batch_predictions]
+
+        return results
+
+    def _postprocess(self, predictions: list[dict[str, Any]]) -> list[str]:
+        return [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
 
     def configure(self, **model_kwargs: Any) -> None:
         self.min_score = model_kwargs.pop("minScore", self.min_score)

@@ -22,16 +22,17 @@ from .schemas import ModelType
 ndarray: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
 
 
+@pytest.mark.asyncio
 class TestImageClassifier:
-    classifier_preds = [
+    classifier_preds = [[
         {"label": "that's an image alright", "score": 0.8},
         {"label": "well it ends with .jpg", "score": 0.1},
         {"label": "idk, im just seeing bytes", "score": 0.05},
         {"label": "not sure", "score": 0.04},
         {"label": "probably a virus", "score": 0.01},
-    ]
+    ]]
 
-    def test_min_score(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
+    async def test_min_score(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
         mocker.patch.object(ImageClassifier, "load")
         classifier = ImageClassifier("test_model_name", min_score=0.0)
         assert classifier.min_score == 0.0
@@ -39,9 +40,9 @@ class TestImageClassifier:
         classifier.model = mock.Mock()
         classifier.model.return_value = self.classifier_preds
 
-        all_labels = classifier.predict(pil_image)
+        all_labels = await classifier.predict(pil_image)
         classifier.min_score = 0.5
-        filtered_labels = classifier.predict(pil_image)
+        filtered_labels = await classifier.predict(pil_image)
 
         assert all_labels == [
             "that's an image alright",
@@ -54,29 +55,30 @@ class TestImageClassifier:
         assert filtered_labels == ["that's an image alright"]
 
 
+@pytest.mark.asyncio
 class TestCLIP:
-    embedding = np.random.rand(512).astype(np.float32)
+    embedding = np.random.rand(1, 512).astype(np.float32)
 
-    def test_basic_image(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
+    async def test_basic_image(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
         mocker.patch.object(CLIPEncoder, "download")
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
-        mocked.return_value.run.return_value = [[self.embedding]]
+        mocked.return_value.run.return_value = [self.embedding]
         clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
         assert clip_encoder.mode == "vision"
-        embedding = clip_encoder.predict(pil_image)
+        embedding = await clip_encoder.predict(pil_image)
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
         clip_encoder.vision_model.run.assert_called_once()
 
-    def test_basic_text(self, mocker: MockerFixture) -> None:
+    async def test_basic_text(self, mocker: MockerFixture) -> None:
         mocker.patch.object(CLIPEncoder, "download")
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
-        mocked.return_value.run.return_value = [[self.embedding]]
+        mocked.return_value.run.return_value = [self.embedding]
         clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
         assert clip_encoder.mode == "text"
-        embedding = clip_encoder.predict("test search query")
+        embedding = await clip_encoder.predict("test search query")
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
@@ -91,7 +93,8 @@ class TestFaceRecognition:
 
         assert face_recognizer.min_score == 0.5
 
-    def test_basic(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+    @pytest.mark.asyncio
+    async def test_basic(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
         face_recognizer = FaceRecognizer("test_model_name", min_score=0.0, cache_dir="test_cache")
 
@@ -108,7 +111,7 @@ class TestFaceRecognition:
         rec_model.get_feat.return_value = embedding
         face_recognizer.rec_model = rec_model
 
-        faces = face_recognizer.predict(cv_image)
+        faces = await face_recognizer.predict(cv_image)
 
         assert len(faces) == num_faces
         for face in faces:
@@ -119,7 +122,7 @@ class TestFaceRecognition:
             assert all([isinstance(num, float) for num in face["embedding"]])
 
         det_model.detect.assert_called_once()
-        assert rec_model.get_feat.call_count == num_faces
+        rec_model.get_feat.assert_called_once()
 
 
 @pytest.mark.asyncio
