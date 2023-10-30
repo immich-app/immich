@@ -17,9 +17,7 @@ import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
-import 'package:immich_mobile/modules/home/ui/home_page_app_bar.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_lane.dart';
-import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -27,6 +25,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
@@ -73,10 +72,6 @@ class HomePage extends HookConsumerWidget {
       },
       [],
     );
-
-    void reloadAllAsset() {
-      ref.watch(assetProvider.notifier).getAllAsset();
-    }
 
     Widget buildBody() {
       void selectionListener(
@@ -375,10 +370,7 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: !selectionEnabledHook.value
-          ? HomePageAppBar(onPopBack: reloadAllAsset)
-          : null,
-      drawer: const ProfileDrawer(),
+      appBar: !selectionEnabledHook.value ? const ImmichAppBar() : null,
       body: buildBody(),
     );
   }

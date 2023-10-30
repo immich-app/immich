@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -46,7 +47,7 @@ class UserCircleAvatar extends ConsumerWidget {
       radius: radius,
       child: user.profileImagePath == ""
           ? Text(
-              user.firstName[0],
+              user.firstName[0].toUpperCase(),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -54,19 +55,18 @@ class UserCircleAvatar extends ConsumerWidget {
             )
           : ClipRRect(
               borderRadius: BorderRadius.circular(50),
-              child: FadeInImage(
+              child: CachedNetworkImage(
                 fit: BoxFit.cover,
-                placeholder: MemoryImage(kTransparentImage),
+                cacheKey: user.profileImagePath,
                 width: size,
                 height: size,
-                image: NetworkImage(
-                  profileImageUrl,
-                  headers: {
-                    "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
-                  },
-                ),
-                fadeInDuration: const Duration(milliseconds: 200),
-                imageErrorBuilder: (context, error, stackTrace) =>
+                placeholder: (_, __) => Image.memory(kTransparentImage),
+                imageUrl: profileImageUrl,
+                httpHeaders: {
+                  "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
+                },
+                fadeInDuration: const Duration(milliseconds: 300),
+                errorWidget: (context, error, stackTrace) =>
                     Image.memory(kTransparentImage),
               ),
             ),

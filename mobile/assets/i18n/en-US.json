@@ -253,6 +253,8 @@
   "profile_drawer_settings": "Settings",
   "profile_drawer_sign_out": "Sign Out",
   "profile_drawer_trash": "Trash",
+  "profile_drawer_documentation": "Documentation",
+  "profile_drawer_github": "GitHub",
   "recently_added_page_title": "Recently Added",
   "search_bar_hint": "Search your photos",
   "search_page_categories": "Categories",
@@ -277,6 +279,7 @@
   "select_user_for_sharing_page_share_suggestions": "Suggestions",
   "server_info_box_app_version": "App Version",
   "server_info_box_server_version": "Server Version",
+  "server_info_box_server_url": "Server URL",
   "setting_image_viewer_help": "The detail viewer loads the small thumbnail first, then loads the medium-size preview (if enabled), finally loads the original (if enabled).",
   "setting_image_viewer_original_subtitle": "Enable to load the original full-resolution image (large!). Disable to reduce data usage (both network and on device cache).",
   "setting_image_viewer_original_title": "Load original image",
@@ -366,5 +369,8 @@
   "viewer_unstack": "Un-Stack",
   "cache_settings_tile_title": "Local Storage",
   "cache_settings_tile_subtitle": "Control the local storage behaviour",
-  "viewer_stack_use_as_main_asset": "Use as Main Asset"
+  "viewer_stack_use_as_main_asset": "Use as Main Asset",
+  "app_bar_signout_dialog_title": "Sign out",
+  "app_bar_signout_dialog_content": "Are you sure you wanna sign out?",
+  "app_bar_signout_dialog_ok": "Yes"
 }
