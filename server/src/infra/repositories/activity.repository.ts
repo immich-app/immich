@@ -4,13 +4,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ActivityEntity } from '../entities/activity.entity';
 
+export interface ActivitySearch {
+  id?: string;
+  albumId?: string;
+  assetId?: string;
+  userId?: string;
+  isLiked?: boolean;
+}
+
 @Injectable()
 export class ActivityRepository implements IActivityRepository {
   constructor(@InjectRepository(ActivityEntity) private activityRepository: Repository<ActivityEntity>) {}
 
-  getById(assetId: string, albumId: string): Promise<ActivityEntity[] | null> {
-    return this.activityRepository.find({
-      where: { assetId, albumId },
+  get(id: string): Promise<ActivityEntity> {
+    return this.activityRepository.findOneOrFail({
+      where: { id },
       relations: {
         user: true,
       },
@@ -20,9 +28,15 @@ export class ActivityRepository implements IActivityRepository {
     });
   }
 
-  getAlbumActivityById(albumId: string): Promise<ActivityEntity[] | null> {
+  search(options: ActivitySearch): Promise<ActivityEntity[]> {
+    const { assetId, albumId, userId, isLiked } = options;
     return this.activityRepository.find({
-      where: { albumId },
+      where: {
+        assetId,
+        albumId,
+        userId,
+        isLiked,
+      },
       relations: {
         user: true,
       },
@@ -41,26 +55,11 @@ export class ActivityRepository implements IActivityRepository {
     });
   }
 
-  getFavorite(albumId: string, userId: string, assetId?: string): Promise<ActivityEntity | null> {
-    return this.activityRepository.findOne({
-      where: { assetId, albumId, userId, isLiked: true },
-      relations: {
-        user: true,
-      },
-    });
-  }
-
-  getReactionById(id: string): Promise<ActivityEntity | null> {
-    return this.activityRepository.findOneOrFail({
-      where: { id },
-      relations: {
-        user: true,
-      },
-    });
-  }
-
   async delete(entity: ActivityEntity) {
     await this.activityRepository.delete(entity.id);
+  }
+  async create(activity: Partial<ActivityEntity>): Promise<ActivityEntity> {
+    return await this.activityRepository.save(activity);
   }
 
   async update(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {

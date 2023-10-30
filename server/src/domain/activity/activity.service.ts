@@ -30,9 +30,7 @@ export class ActivityService {
     if (dto.assetId) {
       await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
     }
-
-    const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
-    const activities = await this.findOrFail(dto.albumId, dto.assetId);
+    const activities = await this.repository.search({ albumId: dto.albumId, assetId: dto.assetId });
     const mappedActivities = activities.map(mapActivity);
     return mappedActivities;
   }
@@ -46,7 +44,7 @@ export class ActivityService {
   async getLikeStatus(authUser: AuthUserDto, dto: ActivityDto): Promise<LikeStatusReponseDto> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
-    const favorite = await this.repository.getFavorite(dto.albumId, authUser.id, dto.assetId);
+    const favorite = await this.repository.search({ albumId: dto.albumId, userId: authUser.id, assetId: dto.assetId });
     if (favorite) {
       return { value: true };
     } else {
@@ -56,20 +54,19 @@ export class ActivityService {
 
   async addComment(authUser: AuthUserDto, dto: ActivityCommentDto): Promise<ActivityReponseDto> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
-    const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     const comment = dto.comment;
-    const activity = await this.repository.update({
+    const activity = await this.repository.create({
       assetId: dto.assetId,
       userId: authUser.id,
       albumId: dto.albumId,
       comment,
     });
-    return this.findSingleOrFail(activity.id).then(mapActivity);
+    return this.repository.get(activity.id).then(mapActivity);
   }
 
   async deleteComment(authUser: AuthUserDto, id: string): Promise<void> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_DELETE, id);
-    const comment = await this.findSingleOrFail(id);
+    const comment = await this.repository.get(id);
 
     this.repository.delete(comment);
   }
@@ -78,7 +75,11 @@ export class ActivityService {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     const favorite = dto.favorite;
-    const reaction = await this.repository.getFavorite(dto.albumId, authUser.id, dto.assetId);
+    const [reaction] = await this.repository.search({
+      albumId: dto.albumId,
+      userId: authUser.id,
+      assetId: dto.assetId,
+    });
     const isFavorite = reaction ? reaction.isLiked : false;
 
     if (favorite === isFavorite) {
@@ -100,23 +101,5 @@ export class ActivityService {
 
       return mapActivity(test);
     }
-  }
-
-  private async findSingleOrFail(id: string) {
-    const activity = await this.repository.getReactionById(id);
-    if (!activity) {
-      throw new BadRequestException('Activity not found');
-    }
-    return activity;
-  }
-
-  private async findOrFail(albumId: string, assetId?: string) {
-    const activity = assetId
-      ? await this.repository.getById(assetId, albumId)
-      : await this.repository.getAlbumActivityById(albumId);
-    if (!activity) {
-      throw new BadRequestException('Activity not found');
-    }
-    return activity;
   }
 }

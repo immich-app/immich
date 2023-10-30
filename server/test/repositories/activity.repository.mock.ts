@@ -3,11 +3,10 @@ import { IActivityRepository } from '@app/domain';
 export const newActivityRepositoryMock = (): jest.Mocked<IActivityRepository> => {
   return {
     update: jest.fn(),
-    getAlbumActivityById: jest.fn(),
-    getById: jest.fn(),
-    getFavorite: jest.fn(),
+    get: jest.fn(),
+    create: jest.fn(),
     delete: jest.fn(),
-    getReactionById: jest.fn(),
+    search: jest.fn(),
     getStatistics: jest.fn(),
   };
 };

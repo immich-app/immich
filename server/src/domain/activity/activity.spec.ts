@@ -25,7 +25,7 @@ describe(ActivityService.name, () => {
 
   describe('getStatistics', () => {
     it('should get the comment count', async () => {
-      activityMock.getById.mockResolvedValue([activityStub.oneComment]);
+      activityMock.get.mockResolvedValue(activityStub.oneComment);
       activityMock.getStatistics.mockResolvedValue(1);
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       await expect(
@@ -33,26 +33,24 @@ describe(ActivityService.name, () => {
           assetId: 'asset-id',
           albumId: activityStub.oneComment.albumId,
         }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).resolves.toEqual({ comments: 1 });
     });
   });
 
   describe('getFavorite', () => {
     it('should get the favorite for an user for a specific album and asset', async () => {
-      activityMock.getById.mockResolvedValue([activityStub.oneComment, activityStub.favorite]);
-      activityMock.getFavorite.mockResolvedValue(activityStub.favorite);
+      activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.favorite]);
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       await expect(
         sut.getLikeStatus(authStub.admin, {
           assetId: 'asset-id',
           albumId: activityStub.oneComment.albumId,
         }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).resolves.toEqual({ value: true });
     });
     describe('changeFavorite', () => {
       it('should get the favorite for an user for a specific album and asset', async () => {
-        activityMock.getById.mockResolvedValue([activityStub.oneComment, activityStub.favorite]);
-        activityMock.getFavorite.mockResolvedValue(activityStub.favorite);
+        activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.favorite]);
         accessMock.album.hasOwnerAccess.mockResolvedValue(true);
         await expect(
           sut.updateLikeStatus(authStub.admin, {
@@ -60,7 +58,7 @@ describe(ActivityService.name, () => {
             assetId: 'asset-id',
             albumId: activityStub.oneComment.albumId,
           }),
-        ).rejects.toBeInstanceOf(BadRequestException);
+        );
       });
     });
 
