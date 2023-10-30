@@ -23,7 +23,7 @@ import {
   IUserTokenRepository,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { UserCore, UserResponseDto } from '../user';
+import { UserCore, UserResponseDto, mapUser } from '../user';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -73,7 +73,7 @@ export class AuthService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
-    @Inject(IUserRepository) userRepository: IUserRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
@@ -91,7 +91,7 @@ export class AuthService {
       throw new UnauthorizedException('Password login has been disabled');
     }
 
-    let user = await this.userCore.getByEmail(dto.email, true);
+    let user = await this.userRepository.getByEmail(dto.email, true);
     if (user) {
       const isAuthenticated = this.validatePassword(dto.password, user);
       if (!isAuthenticated) {
@@ -120,7 +120,7 @@ export class AuthService {
 
   async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
     const { password, newPassword } = dto;
-    const user = await this.userCore.getByEmail(authUser.email, true);
+    const user = await this.userRepository.getByEmail(authUser.email, true);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -134,7 +134,7 @@ export class AuthService {
   }
 
   async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {
-    const adminUser = await this.userCore.getAdmin();
+    const adminUser = await this.userRepository.getAdmin();
 
     if (adminUser) {
       throw new BadRequestException('The server already has an admin');
@@ -243,13 +243,13 @@ export class AuthService {
     const config = await this.configCore.getConfig();
     const profile = await this.getOAuthProfile(config, dto.url);
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user = await this.userCore.getByOAuthId(profile.sub);
+    let user = await this.userRepository.getByOAuthId(profile.sub);
 
     // link existing user
     if (!user) {
-      const emailUser = await this.userCore.getByEmail(profile.email);
+      const emailUser = await this.userRepository.getByEmail(profile.email);
       if (emailUser) {
-        user = await this.userCore.updateUser(emailUser, emailUser.id, { oauthId: profile.sub });
+        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
       }
     }
 
@@ -285,16 +285,16 @@ export class AuthService {
   async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
     const config = await this.configCore.getConfig();
     const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
-    const duplicate = await this.userCore.getByOAuthId(oauthId);
+    const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
-    return this.userCore.updateUser(user, user.id, { oauthId });
+    return mapUser(await this.userRepository.update(user.id, { oauthId }));
   }
 
   async unlink(user: AuthUserDto): Promise<UserResponseDto> {
-    return this.userCore.updateUser(user, user.id, { oauthId: '' });
+    return mapUser(await this.userRepository.update(user.id, { oauthId: '' }));
   }
 
   private async getLogoutEndpoint(authType: AuthType): Promise<string> {

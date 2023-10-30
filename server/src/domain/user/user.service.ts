@@ -1,7 +1,8 @@
 import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
-import { ReadStream } from 'fs';
+import { ReadStream, constants, createReadStream } from 'fs';
+import fs from 'fs/promises';
 import { AuthUserDto } from '../auth';
 import { IEntityJob, JobName } from '../job';
 import {
@@ -36,12 +37,12 @@ export class UserService {
   }
 
   async getAll(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
-    const users = await this.userCore.getList({ withDeleted: !isAll });
+    const users = await this.userRepository.getList({ withDeleted: !isAll });
     return users.map(mapUser);
   }
 
   async get(userId: string, withDeleted = false): Promise<UserResponseDto> {
-    const user = await this.userCore.get(userId, withDeleted);
+    const user = await this.userRepository.get(userId, withDeleted);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -50,7 +51,7 @@ export class UserService {
   }
 
   async getMe(authUser: AuthUserDto): Promise<UserResponseDto> {
-    const user = await this.userCore.get(authUser.id);
+    const user = await this.userRepository.get(authUser.id);
     if (!user) {
       throw new BadRequestException('User not found');
     }
@@ -63,7 +64,7 @@ export class UserService {
   }
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {
-    const user = await this.userCore.get(dto.id);
+    const user = await this.userRepository.get(dto.id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -73,7 +74,7 @@ export class UserService {
   }
 
   async delete(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
-    const user = await this.userCore.get(userId);
+    const user = await this.userRepository.get(userId);
     if (!user) {
       throw new BadRequestException('User not found');
     }
@@ -83,7 +84,7 @@ export class UserService {
   }
 
   async restore(authUser: AuthUserDto, userId: string): Promise<UserResponseDto> {
-    const user = await this.userCore.get(userId, true);
+    const user = await this.userRepository.get(userId, true);
     if (!user) {
       throw new BadRequestException('User not found');
     }
@@ -101,15 +102,19 @@ export class UserService {
   }
 
   async getProfileImage(userId: string): Promise<ReadStream> {
-    const user = await this.userCore.get(userId);
+    const user = await this.userRepository.get(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return this.userCore.getUserProfileImage(user);
+    if (!user.profileImagePath) {
+      throw new NotFoundException('User does not have a profile image');
+    }
+    await fs.access(user.profileImagePath, constants.R_OK);
+    return createReadStream(user.profileImagePath);
   }
 
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
-    const admin = await this.userCore.getAdmin();
+    const admin = await this.userRepository.getAdmin();
     if (!admin) {
       throw new BadRequestException('Admin account does not exist');
     }

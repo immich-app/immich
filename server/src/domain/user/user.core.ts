@@ -1,17 +1,9 @@
 import { LibraryType, UserEntity } from '@app/infra/entities';
-import {
-  BadRequestException,
-  ForbiddenException,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { ReadStream, constants, createReadStream } from 'fs';
-import fs from 'fs/promises';
+import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
 import path from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository, ILibraryRepository, IUserRepository, UserListFilter } from '../repositories';
+import { ICryptoRepository, ILibraryRepository, IUserRepository } from '../repositories';
 
 const SALT_ROUNDS = 10;
 
@@ -129,34 +121,6 @@ export class UserCore {
       Logger.error(e, 'Create new user');
       throw new InternalServerErrorException('Failed to register new user');
     }
-  }
-
-  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
-    return this.userRepository.get(userId, withDeleted);
-  }
-
-  async getAdmin(): Promise<UserEntity | null> {
-    return this.userRepository.getAdmin();
-  }
-
-  async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
-    return this.userRepository.getByEmail(email, withPassword);
-  }
-
-  async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
-    return this.userRepository.getByOAuthId(oauthId);
-  }
-
-  async getUserProfileImage(user: UserEntity): Promise<ReadStream> {
-    if (!user.profileImagePath) {
-      throw new NotFoundException('User does not have a profile image');
-    }
-    await fs.access(user.profileImagePath, constants.R_OK);
-    return createReadStream(user.profileImagePath);
-  }
-
-  async getList(filter?: UserListFilter): Promise<UserEntity[]> {
-    return this.userRepository.getList(filter);
   }
 
   async createProfileImage(authUser: AuthUserDto, filePath: string): Promise<UserEntity> {
