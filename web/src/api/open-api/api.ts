@@ -116,7 +116,7 @@ export interface ActivityCommentDto {
      * @type {string}
      * @memberof ActivityCommentDto
      */
-    'assetId': string | null;
+    'assetId'?: string;
     /**
      * 
      * @type {string}
@@ -141,7 +141,7 @@ export interface ActivityFavoriteDto {
      * @type {string}
      * @memberof ActivityFavoriteDto
      */
-    'assetId': string | null;
+    'assetId'?: string;
     /**
      * 
      * @type {boolean}
@@ -3148,6 +3148,12 @@ export interface SharedLinkCreateDto {
     'expiresAt'?: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof SharedLinkCreateDto
+     */
+    'password'?: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof SharedLinkCreateDto
      */
@@ -3197,6 +3203,12 @@ export interface SharedLinkEditDto {
      * @memberof SharedLinkEditDto
      */
     'expiresAt'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkEditDto
+     */
+    'password'?: string;
     /**
      * 
      * @type {boolean}
@@ -3266,10 +3278,22 @@ export interface SharedLinkResponseDto {
     'key': string;
     /**
      * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'password': string | null;
+    /**
+     * 
      * @type {boolean}
      * @memberof SharedLinkResponseDto
      */
     'showMetadata': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkResponseDto
+     */
+    'token'?: string | null;
     /**
      * 
      * @type {SharedLinkType}
@@ -4061,6 +4085,7 @@ export const TranscodeHWAccel = {
     Nvenc: 'nvenc',
     Qsv: 'qsv',
     Vaapi: 'vaapi',
+    Rkmpp: 'rkmpp',
     Disabled: 'disabled'
 } as const;
 
@@ -5033,14 +5058,12 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} assetId 
          * @param {string} albumId 
+         * @param {string} [assetId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivities: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('getActivities', 'assetId', assetId)
+        getActivities: async (albumId: string, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getActivities', 'albumId', albumId)
             const localVarPath = `/activity`;
@@ -5085,14 +5108,12 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} assetId 
          * @param {string} albumId 
+         * @param {string} [assetId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivityLikeStatus: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('getActivityLikeStatus', 'assetId', assetId)
+        getActivityLikeStatus: async (albumId: string, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getActivityLikeStatus', 'albumId', albumId)
             const localVarPath = `/activity/like`;
@@ -5137,14 +5158,12 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} assetId 
          * @param {string} albumId 
+         * @param {string} [assetId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStatistics: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('getStatistics', 'assetId', assetId)
+        getStatistics: async (albumId: string, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getStatistics', 'albumId', albumId)
             const localVarPath = `/activity/statistics`;
@@ -5263,35 +5282,35 @@ export const ActivityApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} assetId 
          * @param {string} albumId 
+         * @param {string} [assetId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivities(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityReponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(assetId, albumId, options);
+        async getActivities(albumId: string, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityReponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {string} assetId 
          * @param {string} albumId 
+         * @param {string} [assetId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivityLikeStatus(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LikeStatusReponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivityLikeStatus(assetId, albumId, options);
+        async getActivityLikeStatus(albumId: string, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LikeStatusReponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivityLikeStatus(albumId, assetId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {string} assetId 
          * @param {string} albumId 
+         * @param {string} [assetId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getStatistics(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatisticsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getStatistics(assetId, albumId, options);
+        async getStatistics(albumId: string, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatisticsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getStatistics(albumId, assetId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5339,7 +5358,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityReponseDto>> {
-            return localVarFp.getActivities(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
+            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5348,7 +5367,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getActivityLikeStatus(requestParameters: ActivityApiGetActivityLikeStatusRequest, options?: AxiosRequestConfig): AxiosPromise<LikeStatusReponseDto> {
-            return localVarFp.getActivityLikeStatus(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
+            return localVarFp.getActivityLikeStatus(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5357,7 +5376,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getStatistics(requestParameters: ActivityApiGetStatisticsRequest, options?: AxiosRequestConfig): AxiosPromise<StatisticsResponseDto> {
-            return localVarFp.getStatistics(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
+            return localVarFp.getStatistics(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5410,14 +5429,14 @@ export interface ActivityApiGetActivitiesRequest {
      * @type {string}
      * @memberof ActivityApiGetActivities
      */
-    readonly assetId: string
+    readonly albumId: string
 
     /**
      * 
      * @type {string}
      * @memberof ActivityApiGetActivities
      */
-    readonly albumId: string
+    readonly assetId?: string
 }
 
 /**
@@ -5431,14 +5450,14 @@ export interface ActivityApiGetActivityLikeStatusRequest {
      * @type {string}
      * @memberof ActivityApiGetActivityLikeStatus
      */
-    readonly assetId: string
+    readonly albumId: string
 
     /**
      * 
      * @type {string}
      * @memberof ActivityApiGetActivityLikeStatus
      */
-    readonly albumId: string
+    readonly assetId?: string
 }
 
 /**
@@ -5452,14 +5471,14 @@ export interface ActivityApiGetStatisticsRequest {
      * @type {string}
      * @memberof ActivityApiGetStatistics
      */
-    readonly assetId: string
+    readonly albumId: string
 
     /**
      * 
      * @type {string}
      * @memberof ActivityApiGetStatistics
      */
-    readonly albumId: string
+    readonly assetId?: string
 }
 
 /**
@@ -5513,7 +5532,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivities(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5524,7 +5543,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getActivityLikeStatus(requestParameters: ActivityApiGetActivityLikeStatusRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivityLikeStatus(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getActivityLikeStatus(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5535,7 +5554,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getStatistics(requestParameters: ActivityApiGetStatisticsRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getStatistics(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getStatistics(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -14460,11 +14479,13 @@ export const SharedLinkApiAxiosParamCreator = function (configuration?: Configur
         },
         /**
          * 
+         * @param {string} [password] 
+         * @param {string} [token] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMySharedLink: async (key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getMySharedLink: async (password?: string, token?: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/shared-link/me`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -14485,6 +14506,14 @@ export const SharedLinkApiAxiosParamCreator = function (configuration?: Configur
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (password !== undefined) {
+                localVarQueryParameter['password'] = password;
+            }
+
+            if (token !== undefined) {
+                localVarQueryParameter['token'] = token;
+            }
 
             if (key !== undefined) {
                 localVarQueryParameter['key'] = key;
@@ -14729,12 +14758,14 @@ export const SharedLinkApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} [password] 
+         * @param {string} [token] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMySharedLink(key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMySharedLink(key, options);
+        async getMySharedLink(password?: string, token?: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMySharedLink(password, token, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -14823,7 +14854,7 @@ export const SharedLinkApiFactory = function (configuration?: Configuration, bas
          * @throws {RequiredError}
          */
         getMySharedLink(requestParameters: SharedLinkApiGetMySharedLinkRequest = {}, options?: AxiosRequestConfig): AxiosPromise<SharedLinkResponseDto> {
-            return localVarFp.getMySharedLink(requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getMySharedLink(requestParameters.password, requestParameters.token, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -14912,6 +14943,20 @@ export interface SharedLinkApiCreateSharedLinkRequest {
  * @interface SharedLinkApiGetMySharedLinkRequest
  */
 export interface SharedLinkApiGetMySharedLinkRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkApiGetMySharedLink
+     */
+    readonly password?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkApiGetMySharedLink
+     */
+    readonly token?: string
+
     /**
      * 
      * @type {string}
@@ -15044,7 +15089,7 @@ export class SharedLinkApi extends BaseAPI {
      * @memberof SharedLinkApi
      */
     public getMySharedLink(requestParameters: SharedLinkApiGetMySharedLinkRequest = {}, options?: AxiosRequestConfig) {
-        return SharedLinkApiFp(this.configuration).getMySharedLink(requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return SharedLinkApiFp(this.configuration).getMySharedLink(requestParameters.password, requestParameters.token, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -16473,49 +16518,6 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @param {boolean} [admin] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUserCount: async (admin?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/user/count`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (admin !== undefined) {
-                localVarQueryParameter['admin'] = admin;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -16681,16 +16683,6 @@ export const UserApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {boolean} [admin] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getUserCount(admin?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserCountResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserCount(admin, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -16780,15 +16772,6 @@ export const UserApiFactory = function (configuration?: Configuration, basePath?
          */
         getUserById(requestParameters: UserApiGetUserByIdRequest, options?: AxiosRequestConfig): AxiosPromise<UserResponseDto> {
             return localVarFp.getUserById(requestParameters.id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {UserApiGetUserCountRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUserCount(requestParameters: UserApiGetUserCountRequest = {}, options?: AxiosRequestConfig): AxiosPromise<UserCountResponseDto> {
-            return localVarFp.getUserCount(requestParameters.admin, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -16893,20 +16876,6 @@ export interface UserApiGetUserByIdRequest {
      * @memberof UserApiGetUserById
      */
     readonly id: string
-}
-
-/**
- * Request parameters for getUserCount operation in UserApi.
- * @export
- * @interface UserApiGetUserCountRequest
- */
-export interface UserApiGetUserCountRequest {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserApiGetUserCount
-     */
-    readonly admin?: boolean
 }
 
 /**
@@ -17018,17 +16987,6 @@ export class UserApi extends BaseAPI {
      */
     public getUserById(requestParameters: UserApiGetUserByIdRequest, options?: AxiosRequestConfig) {
         return UserApiFp(this.configuration).getUserById(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {UserApiGetUserCountRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UserApi
-     */
-    public getUserCount(requestParameters: UserApiGetUserCountRequest = {}, options?: AxiosRequestConfig) {
-        return UserApiFp(this.configuration).getUserCount(requestParameters.admin, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

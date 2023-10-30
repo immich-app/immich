@@ -106,10 +106,10 @@ class ActivityApi {
   /// Performs an HTTP 'GET /activity' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] assetId (required):
-  ///
   /// * [String] albumId (required):
-  Future<Response> getActivitiesWithHttpInfo(String assetId, String albumId,) async {
+  ///
+  /// * [String] assetId:
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity';
 
@@ -120,7 +120,9 @@ class ActivityApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
+    }
       queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
@@ -139,11 +141,11 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [String] assetId (required):
-  ///
   /// * [String] albumId (required):
-  Future<List<ActivityReponseDto>?> getActivities(String assetId, String albumId,) async {
-    final response = await getActivitiesWithHttpInfo(assetId, albumId,);
+  ///
+  /// * [String] assetId:
+  Future<List<ActivityReponseDto>?> getActivities(String albumId, { String? assetId, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -163,10 +165,10 @@ class ActivityApi {
   /// Performs an HTTP 'GET /activity/like' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] assetId (required):
-  ///
   /// * [String] albumId (required):
-  Future<Response> getActivityLikeStatusWithHttpInfo(String assetId, String albumId,) async {
+  ///
+  /// * [String] assetId:
+  Future<Response> getActivityLikeStatusWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity/like';
 
@@ -177,7 +179,9 @@ class ActivityApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
+    }
       queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
@@ -196,11 +200,11 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [String] assetId (required):
-  ///
   /// * [String] albumId (required):
-  Future<LikeStatusReponseDto?> getActivityLikeStatus(String assetId, String albumId,) async {
-    final response = await getActivityLikeStatusWithHttpInfo(assetId, albumId,);
+  ///
+  /// * [String] assetId:
+  Future<LikeStatusReponseDto?> getActivityLikeStatus(String albumId, { String? assetId, }) async {
+    final response = await getActivityLikeStatusWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -217,10 +221,10 @@ class ActivityApi {
   /// Performs an HTTP 'GET /activity/statistics' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] assetId (required):
-  ///
   /// * [String] albumId (required):
-  Future<Response> getStatisticsWithHttpInfo(String assetId, String albumId,) async {
+  ///
+  /// * [String] assetId:
+  Future<Response> getStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity/statistics';
 
@@ -231,7 +235,9 @@ class ActivityApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
+    }
       queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
@@ -250,11 +256,11 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [String] assetId (required):
-  ///
   /// * [String] albumId (required):
-  Future<StatisticsResponseDto?> getStatistics(String assetId, String albumId,) async {
-    final response = await getStatisticsWithHttpInfo(assetId, albumId,);
+  ///
+  /// * [String] assetId:
+  Future<StatisticsResponseDto?> getStatistics(String albumId, { String? assetId, }) async {
+    final response = await getStatisticsWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -9,7 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **albumId** | **String** |  | 
-**assetId** | **String** |  | 
+**assetId** | **String** |  | [optional] 
 **favorite** | **bool** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -27,17 +27,17 @@ void main() {
       // TODO
     });
 
-    //Future<List<ActivityReponseDto>> getActivities(String assetId, String albumId) async
+    //Future<List<ActivityReponseDto>> getActivities(String albumId, { String assetId }) async
     test('test getActivities', () async {
       // TODO
     });
 
-    //Future<LikeStatusReponseDto> getActivityLikeStatus(String assetId, String albumId) async
+    //Future<LikeStatusReponseDto> getActivityLikeStatus(String albumId, { String assetId }) async
     test('test getActivityLikeStatus', () async {
       // TODO
     });
 
-    //Future<StatisticsResponseDto> getStatistics(String assetId, String albumId) async
+    //Future<StatisticsResponseDto> getStatistics(String albumId, { String assetId }) async
     test('test getStatistics', () async {
       // TODO
     });

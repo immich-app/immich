@@ -127,7 +127,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getActivities**
-> List<ActivityReponseDto> getActivities(assetId, albumId)
+> List<ActivityReponseDto> getActivities(albumId, assetId)
 
 
 
@@ -150,11 +150,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final assetId = assetId_example; // String | 
 final albumId = albumId_example; // String | 
+final assetId = assetId_example; // String | 
 
 try {
-    final result = api_instance.getActivities(assetId, albumId);
+    final result = api_instance.getActivities(albumId, assetId);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getActivities: $e\n');
@@ -165,8 +165,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **assetId** | **String**|  | 
  **albumId** | **String**|  | 
+ **assetId** | **String**|  | [optional] 
 
 ### Return type
 
@@ -184,7 +184,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getActivityLikeStatus**
-> LikeStatusReponseDto getActivityLikeStatus(assetId, albumId)
+> LikeStatusReponseDto getActivityLikeStatus(albumId, assetId)
 
 
 
@@ -207,11 +207,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final assetId = assetId_example; // String | 
 final albumId = albumId_example; // String | 
+final assetId = assetId_example; // String | 
 
 try {
-    final result = api_instance.getActivityLikeStatus(assetId, albumId);
+    final result = api_instance.getActivityLikeStatus(albumId, assetId);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getActivityLikeStatus: $e\n');
@@ -222,8 +222,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **assetId** | **String**|  | 
  **albumId** | **String**|  | 
+ **assetId** | **String**|  | [optional] 
 
 ### Return type
 
@@ -241,7 +241,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getStatistics**
-> StatisticsResponseDto getStatistics(assetId, albumId)
+> StatisticsResponseDto getStatistics(albumId, assetId)
 
 
 
@@ -264,11 +264,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final assetId = assetId_example; // String | 
 final albumId = albumId_example; // String | 
+final assetId = assetId_example; // String | 
 
 try {
-    final result = api_instance.getStatistics(assetId, albumId);
+    final result = api_instance.getStatistics(albumId, assetId);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getStatistics: $e\n');
@@ -279,8 +279,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **assetId** | **String**|  | 
  **albumId** | **String**|  | 
+ **assetId** | **String**|  | [optional] 
 
 ### Return type
 

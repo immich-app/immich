@@ -200,7 +200,6 @@ Class | Method | HTTP request | Description
 *UserApi* | [**getMyUserInfo**](doc//UserApi.md#getmyuserinfo) | **GET** /user/me | 
 *UserApi* | [**getProfileImage**](doc//UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
 *UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
-*UserApi* | [**getUserCount**](doc//UserApi.md#getusercount) | **GET** /user/count | 
 *UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 *UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
 
