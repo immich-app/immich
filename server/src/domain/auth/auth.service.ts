@@ -345,8 +345,8 @@ export class AuthService {
       }
 
       return new issuer.Client(metadata);
-    } catch (error: Error | any) {
-      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack);
+    } catch (error: any | AggregateError) {
+      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
       throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });
     }
   }
