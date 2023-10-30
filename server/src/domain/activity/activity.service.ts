@@ -41,7 +41,7 @@ export class ActivityService {
   }
 
   async getStatistics(authUser: AuthUserDto, dto: ActivityDto): Promise<StatisticsResponseDto> {
-    //await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
+    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
       throw new BadRequestException('Album is not shared');
@@ -50,7 +50,7 @@ export class ActivityService {
   }
 
   async getLikeStatus(authUser: AuthUserDto, dto: ActivityDto): Promise<LikeStatusReponseDto> {
-    //await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
+    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
       throw new BadRequestException('Album is not shared');
@@ -64,7 +64,7 @@ export class ActivityService {
   }
 
   async addComment(authUser: AuthUserDto, dto: ActivityCommentDto): Promise<ActivityReponseDto> {
-    //await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
+    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
       throw new BadRequestException('Album is not shared');
@@ -80,20 +80,14 @@ export class ActivityService {
   }
 
   async deleteComment(authUser: AuthUserDto, id: string): Promise<void> {
+    await this.access.requirePermission(authUser, Permission.ACTIVITY_DELETE, id);
     const comment = await this.findSingleOrFail(id);
-    if (
-      !(await this.access.hasPermission(authUser, Permission.ALBUM_DELETE, comment.albumId)) &&
-      !(await authUser.isAdmin) &&
-      !(comment.userId === authUser.id)
-    ) {
-      throw new BadRequestException(`User ${authUser.id} has not the permission to delete comment ${comment.albumId}`);
-    }
 
     this.repository.delete(comment);
   }
 
   async updateLikeStatus(authUser: AuthUserDto, dto: ActivityFavoriteDto): Promise<ActivityReponseDto | void> {
-    //await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
+    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
       throw new BadRequestException('Album is not shared');

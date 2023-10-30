@@ -1,6 +1,7 @@
 import { AccessCore, IAccessRepository } from '@app/domain';
 
 export interface IAccessRepositoryMock {
+  activity: jest.Mocked<IAccessRepository['activity']>;
   asset: jest.Mocked<IAccessRepository['asset']>;
   album: jest.Mocked<IAccessRepository['album']>;
   library: jest.Mocked<IAccessRepository['library']>;
@@ -14,6 +15,11 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
   }
 
   return {
+    activity: {
+      hasOwnerAccess: jest.fn(),
+
+      hasAlbumOwnerAccess: jest.fn(),
+    },
     asset: {
       hasOwnerAccess: jest.fn(),
       hasAlbumAccess: jest.fn(),

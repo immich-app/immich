@@ -122,7 +122,7 @@
               </div>
 
               <div class="w-full leading-4 flex items-center">{reaction.comment}</div>
-              {#if (user && reaction.user && reaction.user.id === user.id) || (user && user.isAdmin) || albumOwnerId === user.id}
+              {#if (user && reaction.user && reaction.user.id === user.id) || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]">
                   <button on:click={() => (!showDeleteComment[index] ? showOptionsMenu(index) : '')}>
                     <Icon path={mdiDotsVertical} />
