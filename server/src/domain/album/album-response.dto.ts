@@ -29,6 +29,8 @@ export class AlbumResponseDto {
 export class AlbumsForPersonResponseDto {
   @ValidateUUID()
   albumId!: string;
+  @ApiProperty({ type: 'string' })
+  albumName!: string;
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
 }
@@ -36,6 +38,7 @@ export class AlbumsForPersonResponseDto {
 export function mapAlbumCount(entity: AlbumAssetCount): AlbumsForPersonResponseDto {
   return {
     albumId: entity.albumId,
+    albumName: entity.albumName,
     assetCount: entity.assetCount,
   };
 }

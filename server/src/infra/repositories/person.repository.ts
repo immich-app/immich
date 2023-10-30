@@ -165,17 +165,18 @@ export class PersonRepository implements IPersonRepository {
     const countByAlbums = await this.albumRepository
     .createQueryBuilder('album')
     .select('album.id')
-    .addSelect('COUNT(albums_assets.assetsId)', 'asset_count')
-    .innerJoin('albums_assets_assets', 'albums_assets', 'albums_assets.albumsId = album.id')
-    .innerJoin('asset_faces', 'asset_faces', 'asset_faces.assetId = albums_assets.assetId')
-    .innerJoin('person', 'person', 'asset_faces.personId = person.id')
-    .where('person.id = :personId', { personId })
-    .groupBy('person.id, album.name')
-    .orderBy('person.id, album.name')
+    .addSelect('album.albumName')
+    .addSelect('COUNT(asset.id)', 'asset_count')    
+    .innerJoin('album.assets', 'asset')
+    .innerJoin('asset.faces', 'face')
+    .where('face.personId = :personId', { personId })
+    .groupBy('face.personId, album.id')
+    .orderBy('face.personId, album.id')
     .getRawMany();
 
     return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
       albumId: albumCount['album_id'],
+      albumName: albumCount['album_name'],
       assetCount: Number(albumCount['asset_count']),
     }));
   }

@@ -77,6 +77,7 @@ export class AlbumRepository implements IAlbumRepository {
 
     return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
       albumId: albumCount['album_id'],
+      albumName: '',
       assetCount: Number(albumCount['asset_count']),
     }));
   }

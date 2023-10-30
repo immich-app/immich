@@ -4,6 +4,7 @@ export const IAlbumRepository = 'IAlbumRepository';
 
 export interface AlbumAssetCount {
   albumId: string;
+  albumName: string;
   assetCount: number;
 }
 

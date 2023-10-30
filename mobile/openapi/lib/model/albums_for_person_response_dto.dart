@@ -14,30 +14,36 @@ class AlbumsForPersonResponseDto {
   /// Returns a new [AlbumsForPersonResponseDto] instance.
   AlbumsForPersonResponseDto({
     required this.albumId,
+    required this.albumName,
     required this.assetCount,
   });
 
   String albumId;
+
+  String albumName;
 
   int assetCount;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumsForPersonResponseDto &&
      other.albumId == albumId &&
+     other.albumName == albumName &&
      other.assetCount == assetCount;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumId.hashCode) +
+    (albumName.hashCode) +
     (assetCount.hashCode);
 
   @override
-  String toString() => 'AlbumsForPersonResponseDto[albumId=$albumId, assetCount=$assetCount]';
+  String toString() => 'AlbumsForPersonResponseDto[albumId=$albumId, albumName=$albumName, assetCount=$assetCount]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumId'] = this.albumId;
+      json[r'albumName'] = this.albumName;
       json[r'assetCount'] = this.assetCount;
     return json;
   }
@@ -51,6 +57,7 @@ class AlbumsForPersonResponseDto {
 
       return AlbumsForPersonResponseDto(
         albumId: mapValueOfType<String>(json, r'albumId')!,
+        albumName: mapValueOfType<String>(json, r'albumName')!,
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
       );
     }
@@ -100,6 +107,7 @@ class AlbumsForPersonResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'albumId',
+    'albumName',
     'assetCount',
   };
 }
