@@ -13,7 +13,7 @@ part of openapi.api;
 class ActivityReponseDto {
   /// Returns a new [ActivityReponseDto] instance.
   ActivityReponseDto({
-    required this.comment,
+    this.comment,
     required this.createdAt,
     required this.id,
     required this.type,
@@ -26,7 +26,7 @@ class ActivityReponseDto {
 
   String id;
 
-  Object type;
+  ActivityReponseDtoTypeEnum type;
 
   UserDto user;
 
@@ -75,7 +75,7 @@ class ActivityReponseDto {
         comment: mapValueOfType<String>(json, r'comment'),
         createdAt: mapDateTime(json, r'createdAt', '')!,
         id: mapValueOfType<String>(json, r'id')!,
-        type: mapValueOfType<Object>(json, r'type')!,
+        type: ActivityReponseDtoTypeEnum.fromJson(json[r'type'])!,
         user: UserDto.fromJson(json[r'user'])!,
       );
     }
@@ -124,11 +124,84 @@ class ActivityReponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'comment',
     'createdAt',
     'id',
     'type',
     'user',
   };
 }
+
+
+class ActivityReponseDtoTypeEnum {
+  /// Instantiate a new enum with the provided [value].
+  const ActivityReponseDtoTypeEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const comment = ActivityReponseDtoTypeEnum._(r'comment');
+  static const like = ActivityReponseDtoTypeEnum._(r'like');
+
+  /// List of all possible values in this [enum][ActivityReponseDtoTypeEnum].
+  static const values = <ActivityReponseDtoTypeEnum>[
+    comment,
+    like,
+  ];
+
+  static ActivityReponseDtoTypeEnum? fromJson(dynamic value) => ActivityReponseDtoTypeEnumTypeTransformer().decode(value);
+
+  static List<ActivityReponseDtoTypeEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <ActivityReponseDtoTypeEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = ActivityReponseDtoTypeEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [ActivityReponseDtoTypeEnum] to String,
+/// and [decode] dynamic data back to [ActivityReponseDtoTypeEnum].
+class ActivityReponseDtoTypeEnumTypeTransformer {
+  factory ActivityReponseDtoTypeEnumTypeTransformer() => _instance ??= const ActivityReponseDtoTypeEnumTypeTransformer._();
+
+  const ActivityReponseDtoTypeEnumTypeTransformer._();
+
+  String encode(ActivityReponseDtoTypeEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a ActivityReponseDtoTypeEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  ActivityReponseDtoTypeEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'comment': return ActivityReponseDtoTypeEnum.comment;
+        case r'like': return ActivityReponseDtoTypeEnum.like;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [ActivityReponseDtoTypeEnumTypeTransformer] instance.
+  static ActivityReponseDtoTypeEnumTypeTransformer? _instance;
+}
+
 

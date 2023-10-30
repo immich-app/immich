@@ -20,7 +20,7 @@ class ActivityCommentDto {
 
   String albumId;
 
-  String assetId;
+  String? assetId;
 
   String comment;
 
@@ -34,7 +34,7 @@ class ActivityCommentDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumId.hashCode) +
-    (assetId.hashCode) +
+    (assetId == null ? 0 : assetId!.hashCode) +
     (comment.hashCode);
 
   @override
@@ -43,7 +43,11 @@ class ActivityCommentDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumId'] = this.albumId;
+    if (this.assetId != null) {
       json[r'assetId'] = this.assetId;
+    } else {
+    //  json[r'assetId'] = null;
+    }
       json[r'comment'] = this.comment;
     return json;
   }
@@ -57,7 +61,7 @@ class ActivityCommentDto {
 
       return ActivityCommentDto(
         albumId: mapValueOfType<String>(json, r'albumId')!,
-        assetId: mapValueOfType<String>(json, r'assetId')!,
+        assetId: mapValueOfType<String>(json, r'assetId'),
         comment: mapValueOfType<String>(json, r'comment')!,
       );
     }

@@ -30,7 +30,7 @@ describe(ActivityService.name, () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       await expect(
         sut.getStatistics(authStub.admin, {
-          assetId: activityStub.oneComment.assetId,
+          assetId: 'asset-id',
           albumId: activityStub.oneComment.albumId,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -44,8 +44,8 @@ describe(ActivityService.name, () => {
         activityMock.getFavorite.mockResolvedValue(activityStub.favorite);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       await expect(
-        sut.getFavorite(authStub.admin, {
-          assetId: activityStub.oneComment.assetId,
+        sut.getLikeStatus(authStub.admin, {
+          assetId: 'asset-id',
           albumId: activityStub.oneComment.albumId,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -57,9 +57,9 @@ describe(ActivityService.name, () => {
           activityMock.getFavorite.mockResolvedValue(activityStub.favorite);
         accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
         await expect(
-          sut.changeFavorite(authStub.admin, {
+          sut.updateLikeStatus(authStub.admin, {
             favorite: false,
-            assetId: activityStub.oneComment.assetId,
+            assetId: 'asset-id',
             albumId: activityStub.oneComment.albumId,
           }),
         ).rejects.toBeInstanceOf(BadRequestException);
@@ -76,7 +76,7 @@ describe(ActivityService.name, () => {
         await expect(
           sut.addComment(authStub.admin, {
             comment: 'comment',
-            assetId: activityStub.oneComment.assetId,
+            assetId: 'asset-id',
             albumId: activityStub.oneComment.albumId,
           }),
         ).rejects.toBeInstanceOf(BadRequestException);

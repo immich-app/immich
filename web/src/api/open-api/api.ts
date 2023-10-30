@@ -116,7 +116,7 @@ export interface ActivityCommentDto {
      * @type {string}
      * @memberof ActivityCommentDto
      */
-    'assetId': string;
+    'assetId': string | null;
     /**
      * 
      * @type {string}
@@ -141,7 +141,7 @@ export interface ActivityFavoriteDto {
      * @type {string}
      * @memberof ActivityFavoriteDto
      */
-    'assetId': string;
+    'assetId': string | null;
     /**
      * 
      * @type {boolean}
@@ -160,7 +160,7 @@ export interface ActivityReponseDto {
      * @type {string}
      * @memberof ActivityReponseDto
      */
-    'comment': string | null;
+    'comment'?: string | null;
     /**
      * 
      * @type {string}
@@ -175,10 +175,10 @@ export interface ActivityReponseDto {
     'id': string;
     /**
      * 
-     * @type {object}
+     * @type {string}
      * @memberof ActivityReponseDto
      */
-    'type': object;
+    'type': ActivityReponseDtoTypeEnum;
     /**
      * 
      * @type {UserDto}
@@ -186,6 +186,14 @@ export interface ActivityReponseDto {
      */
     'user': UserDto;
 }
+
+export const ActivityReponseDtoTypeEnum = {
+    Comment: 'comment',
+    Like: 'like'
+} as const;
+
+export type ActivityReponseDtoTypeEnum = typeof ActivityReponseDtoTypeEnum[keyof typeof ActivityReponseDtoTypeEnum];
+
 /**
  * 
  * @export
@@ -4983,50 +4991,6 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {ActivityFavoriteDto} activityFavoriteDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        changeFavorite: async (activityFavoriteDto: ActivityFavoriteDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'activityFavoriteDto' is not null or undefined
-            assertParamExists('changeFavorite', 'activityFavoriteDto', activityFavoriteDto)
-            const localVarPath = `/activity/like`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(activityFavoriteDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5074,11 +5038,11 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivity: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getActivities: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('getActivity', 'assetId', assetId)
+            assertParamExists('getActivities', 'assetId', assetId)
             // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('getActivity', 'albumId', albumId)
+            assertParamExists('getActivities', 'albumId', albumId)
             const localVarPath = `/activity`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5126,11 +5090,11 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFavorite: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getActivityLikeStatus: async (assetId: string, albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('getFavorite', 'assetId', assetId)
+            assertParamExists('getActivityLikeStatus', 'assetId', assetId)
             // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('getFavorite', 'albumId', albumId)
+            assertParamExists('getActivityLikeStatus', 'albumId', albumId)
             const localVarPath = `/activity/like`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5223,6 +5187,50 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {ActivityFavoriteDto} activityFavoriteDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateActivityLikeStatus: async (activityFavoriteDto: ActivityFavoriteDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'activityFavoriteDto' is not null or undefined
+            assertParamExists('updateActivityLikeStatus', 'activityFavoriteDto', activityFavoriteDto)
+            const localVarPath = `/activity/like`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(activityFavoriteDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -5245,16 +5253,6 @@ export const ActivityApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {ActivityFavoriteDto} activityFavoriteDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async changeFavorite(activityFavoriteDto: ActivityFavoriteDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.changeFavorite(activityFavoriteDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5270,8 +5268,8 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivity(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityReponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivity(assetId, albumId, options);
+        async getActivities(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityReponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(assetId, albumId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5281,8 +5279,8 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFavorite(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LikeStatusReponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getFavorite(assetId, albumId, options);
+        async getActivityLikeStatus(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LikeStatusReponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivityLikeStatus(assetId, albumId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5294,6 +5292,16 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          */
         async getStatistics(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StatisticsResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getStatistics(assetId, albumId, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {ActivityFavoriteDto} activityFavoriteDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updateActivityLikeStatus(activityFavoriteDto: ActivityFavoriteDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateActivityLikeStatus(activityFavoriteDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -5317,15 +5325,6 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
         },
         /**
          * 
-         * @param {ActivityApiChangeFavoriteRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        changeFavorite(requestParameters: ActivityApiChangeFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
-            return localVarFp.changeFavorite(requestParameters.activityFavoriteDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @param {ActivityApiDeleteCommentRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5335,21 +5334,21 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
         },
         /**
          * 
-         * @param {ActivityApiGetActivityRequest} requestParameters Request parameters.
+         * @param {ActivityApiGetActivitiesRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivity(requestParameters: ActivityApiGetActivityRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityReponseDto>> {
-            return localVarFp.getActivity(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
+        getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityReponseDto>> {
+            return localVarFp.getActivities(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {ActivityApiGetFavoriteRequest} requestParameters Request parameters.
+         * @param {ActivityApiGetActivityLikeStatusRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFavorite(requestParameters: ActivityApiGetFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<LikeStatusReponseDto> {
-            return localVarFp.getFavorite(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
+        getActivityLikeStatus(requestParameters: ActivityApiGetActivityLikeStatusRequest, options?: AxiosRequestConfig): AxiosPromise<LikeStatusReponseDto> {
+            return localVarFp.getActivityLikeStatus(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5359,6 +5358,15 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          */
         getStatistics(requestParameters: ActivityApiGetStatisticsRequest, options?: AxiosRequestConfig): AxiosPromise<StatisticsResponseDto> {
             return localVarFp.getStatistics(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {ActivityApiUpdateActivityLikeStatusRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updateActivityLikeStatus(requestParameters: ActivityApiUpdateActivityLikeStatusRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.updateActivityLikeStatus(requestParameters.activityFavoriteDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5378,20 +5386,6 @@ export interface ActivityApiAddCommentRequest {
 }
 
 /**
- * Request parameters for changeFavorite operation in ActivityApi.
- * @export
- * @interface ActivityApiChangeFavoriteRequest
- */
-export interface ActivityApiChangeFavoriteRequest {
-    /**
-     * 
-     * @type {ActivityFavoriteDto}
-     * @memberof ActivityApiChangeFavorite
-     */
-    readonly activityFavoriteDto: ActivityFavoriteDto
-}
-
-/**
  * Request parameters for deleteComment operation in ActivityApi.
  * @export
  * @interface ActivityApiDeleteCommentRequest
@@ -5406,43 +5400,43 @@ export interface ActivityApiDeleteCommentRequest {
 }
 
 /**
- * Request parameters for getActivity operation in ActivityApi.
+ * Request parameters for getActivities operation in ActivityApi.
  * @export
- * @interface ActivityApiGetActivityRequest
+ * @interface ActivityApiGetActivitiesRequest
  */
-export interface ActivityApiGetActivityRequest {
+export interface ActivityApiGetActivitiesRequest {
     /**
      * 
      * @type {string}
-     * @memberof ActivityApiGetActivity
+     * @memberof ActivityApiGetActivities
      */
     readonly assetId: string
 
     /**
      * 
      * @type {string}
-     * @memberof ActivityApiGetActivity
+     * @memberof ActivityApiGetActivities
      */
     readonly albumId: string
 }
 
 /**
- * Request parameters for getFavorite operation in ActivityApi.
+ * Request parameters for getActivityLikeStatus operation in ActivityApi.
  * @export
- * @interface ActivityApiGetFavoriteRequest
+ * @interface ActivityApiGetActivityLikeStatusRequest
  */
-export interface ActivityApiGetFavoriteRequest {
+export interface ActivityApiGetActivityLikeStatusRequest {
     /**
      * 
      * @type {string}
-     * @memberof ActivityApiGetFavorite
+     * @memberof ActivityApiGetActivityLikeStatus
      */
     readonly assetId: string
 
     /**
      * 
      * @type {string}
-     * @memberof ActivityApiGetFavorite
+     * @memberof ActivityApiGetActivityLikeStatus
      */
     readonly albumId: string
 }
@@ -5469,6 +5463,20 @@ export interface ActivityApiGetStatisticsRequest {
 }
 
 /**
+ * Request parameters for updateActivityLikeStatus operation in ActivityApi.
+ * @export
+ * @interface ActivityApiUpdateActivityLikeStatusRequest
+ */
+export interface ActivityApiUpdateActivityLikeStatusRequest {
+    /**
+     * 
+     * @type {ActivityFavoriteDto}
+     * @memberof ActivityApiUpdateActivityLikeStatus
+     */
+    readonly activityFavoriteDto: ActivityFavoriteDto
+}
+
+/**
  * ActivityApi - object-oriented interface
  * @export
  * @class ActivityApi
@@ -5488,17 +5496,6 @@ export class ActivityApi extends BaseAPI {
 
     /**
      * 
-     * @param {ActivityApiChangeFavoriteRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ActivityApi
-     */
-    public changeFavorite(requestParameters: ActivityApiChangeFavoriteRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).changeFavorite(requestParameters.activityFavoriteDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @param {ActivityApiDeleteCommentRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -5510,24 +5507,24 @@ export class ActivityApi extends BaseAPI {
 
     /**
      * 
-     * @param {ActivityApiGetActivityRequest} requestParameters Request parameters.
+     * @param {ActivityApiGetActivitiesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ActivityApi
      */
-    public getActivity(requestParameters: ActivityApiGetActivityRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivity(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+    public getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).getActivities(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {ActivityApiGetFavoriteRequest} requestParameters Request parameters.
+     * @param {ActivityApiGetActivityLikeStatusRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ActivityApi
      */
-    public getFavorite(requestParameters: ActivityApiGetFavoriteRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getFavorite(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+    public getActivityLikeStatus(requestParameters: ActivityApiGetActivityLikeStatusRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).getActivityLikeStatus(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5539,6 +5536,17 @@ export class ActivityApi extends BaseAPI {
      */
     public getStatistics(requestParameters: ActivityApiGetStatisticsRequest, options?: AxiosRequestConfig) {
         return ActivityApiFp(this.configuration).getStatistics(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {ActivityApiUpdateActivityLikeStatusRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ActivityApi
+     */
+    public updateActivityLikeStatus(requestParameters: ActivityApiUpdateActivityLikeStatusRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).updateActivityLikeStatus(requestParameters.activityFavoriteDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

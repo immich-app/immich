@@ -22,28 +22,28 @@ void main() {
       // TODO
     });
 
-    //Future<Object> changeFavorite(ActivityFavoriteDto activityFavoriteDto) async
-    test('test changeFavorite', () async {
-      // TODO
-    });
-
     //Future deleteComment(String id) async
     test('test deleteComment', () async {
       // TODO
     });
 
-    //Future<List<ActivityReponseDto>> getActivity(String assetId, String albumId) async
-    test('test getActivity', () async {
+    //Future<List<ActivityReponseDto>> getActivities(String assetId, String albumId) async
+    test('test getActivities', () async {
       // TODO
     });
 
-    //Future<LikeStatusReponseDto> getFavorite(String assetId, String albumId) async
-    test('test getFavorite', () async {
+    //Future<LikeStatusReponseDto> getActivityLikeStatus(String assetId, String albumId) async
+    test('test getActivityLikeStatus', () async {
       // TODO
     });
 
     //Future<StatisticsResponseDto> getStatistics(String assetId, String albumId) async
     test('test getStatistics', () async {
+      // TODO
+    });
+
+    //Future<Object> updateActivityLikeStatus(ActivityFavoriteDto activityFavoriteDto) async
+    test('test updateActivityLikeStatus', () async {
       // TODO
     });
 

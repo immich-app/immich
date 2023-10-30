@@ -20,7 +20,7 @@ class ActivityFavoriteDto {
 
   String albumId;
 
-  String assetId;
+  String? assetId;
 
   bool favorite;
 
@@ -34,7 +34,7 @@ class ActivityFavoriteDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumId.hashCode) +
-    (assetId.hashCode) +
+    (assetId == null ? 0 : assetId!.hashCode) +
     (favorite.hashCode);
 
   @override
@@ -43,7 +43,11 @@ class ActivityFavoriteDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumId'] = this.albumId;
+    if (this.assetId != null) {
       json[r'assetId'] = this.assetId;
+    } else {
+    //  json[r'assetId'] = null;
+    }
       json[r'favorite'] = this.favorite;
     return json;
   }
@@ -57,7 +61,7 @@ class ActivityFavoriteDto {
 
       return ActivityFavoriteDto(
         albumId: mapValueOfType<String>(json, r'albumId')!,
-        assetId: mapValueOfType<String>(json, r'assetId')!,
+        assetId: mapValueOfType<String>(json, r'assetId'),
         favorite: mapValueOfType<bool>(json, r'favorite')!,
       );
     }

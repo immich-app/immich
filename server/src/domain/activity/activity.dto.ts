@@ -1,14 +1,18 @@
 import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
-import { ValidateUUID } from '../domain.util';
 import { UserDto, mapSimpleUser } from '../user/response-dto';
+
+export enum ReactionType {
+  COMMENT = 'comment',
+  LIKE = 'like',
+}
 
 export class ActivityReponseDto {
   id!: string;
-  comment!: string | null;
+  comment?: string | null;
   createdAt!: Date;
-  type!: 'comment' | 'like';
+  type!: ReactionType;
   user!: UserDto;
 }
 
@@ -22,10 +26,10 @@ export class LikeStatusReponseDto {
 }
 
 export class ActivityDto {
-  @ValidateUUID()
-  assetId!: string;
+  @IsString()
+  assetId?: string;
 
-  @ValidateUUID()
+  @IsString()
   albumId!: string;
 }
 
@@ -46,27 +50,7 @@ export function mapActivity(activity: ActivityEntity): ActivityReponseDto {
     id: activity.id,
     createdAt: activity.createdAt,
     comment: activity.comment,
-    type: activity.isLiked ? 'like' : 'comment',
+    type: activity.isLiked ? ReactionType.LIKE : ReactionType.COMMENT,
     user: mapSimpleUser(activity.user),
   };
-}
-
-export function mapStatistics(comments: number): StatisticsResponseDto {
-  return {
-    comments,
-  };
-}
-
-export function mapActivities(activities: ActivityEntity[]): ActivityReponseDto[] {
-  const result: ActivityReponseDto[] = [];
-  for (let i = 0; i < activities.length; i++) {
-    result.push({
-      id: activities[i].id,
-      comment: activities[i].comment,
-      createdAt: activities[i].createdAt,
-      type: activities[i].isLiked ? 'like' : 'comment',
-      user: mapSimpleUser(activities[i].user),
-    });
-  }
-  return result;
 }

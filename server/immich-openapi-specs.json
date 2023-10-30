@@ -3,14 +3,13 @@
   "paths": {
     "/activity": {
       "get": {
-        "operationId": "getActivity",
+        "operationId": "getActivities",
         "parameters": [
           {
             "name": "assetId",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
-              "format": "uuid",
               "type": "string"
             }
           },
@@ -19,7 +18,6 @@
             "required": true,
             "in": "query",
             "schema": {
-              "format": "uuid",
               "type": "string"
             }
           }
@@ -134,14 +132,13 @@
     },
     "/activity/like": {
       "get": {
-        "operationId": "getFavorite",
+        "operationId": "getActivityLikeStatus",
         "parameters": [
           {
             "name": "assetId",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
-              "format": "uuid",
               "type": "string"
             }
           },
@@ -150,7 +147,6 @@
             "required": true,
             "in": "query",
             "schema": {
-              "format": "uuid",
               "type": "string"
             }
           }
@@ -183,7 +179,7 @@
         ]
       },
       "put": {
-        "operationId": "changeFavorite",
+        "operationId": "updateActivityLikeStatus",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -229,10 +225,9 @@
         "parameters": [
           {
             "name": "assetId",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
-              "format": "uuid",
               "type": "string"
             }
           },
@@ -241,7 +236,6 @@
             "required": true,
             "in": "query",
             "schema": {
-              "format": "uuid",
               "type": "string"
             }
           }
@@ -5813,11 +5807,9 @@
       "ActivityCommentDto": {
         "properties": {
           "albumId": {
-            "format": "uuid",
             "type": "string"
           },
           "assetId": {
-            "format": "uuid",
             "type": "string"
           },
           "comment": {
@@ -5825,7 +5817,6 @@
           }
         },
         "required": [
-          "assetId",
           "albumId",
           "comment"
         ],
@@ -5834,11 +5825,9 @@
       "ActivityFavoriteDto": {
         "properties": {
           "albumId": {
-            "format": "uuid",
             "type": "string"
           },
           "assetId": {
-            "format": "uuid",
             "type": "string"
           },
           "favorite": {
@@ -5846,7 +5835,6 @@
           }
         },
         "required": [
-          "assetId",
           "albumId",
           "favorite"
         ],
@@ -5866,7 +5854,11 @@
             "type": "string"
           },
           "type": {
-            "type": "object"
+            "enum": [
+              "comment",
+              "like"
+            ],
+            "type": "string"
           },
           "user": {
             "$ref": "#/components/schemas/UserDto"
@@ -5874,7 +5866,6 @@
         },
         "required": [
           "id",
-          "comment",
           "createdAt",
           "type",
           "user"

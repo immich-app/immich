@@ -28,21 +28,21 @@ export class ActivityController {
   }
 
   @Get('')
-  getActivity(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<ActivityReponseDto[]> {
-    return this.service.getById(authUser, dto);
+  getActivities(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<ActivityReponseDto[]> {
+    return this.service.getAll(authUser, dto);
   }
 
   @Get('like')
-  getFavorite(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<LikeStatusReponseDto> {
-    return this.service.getFavorite(authUser, dto);
+  getActivityLikeStatus(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<LikeStatusReponseDto> {
+    return this.service.getLikeStatus(authUser, dto);
   }
 
   @Put('like')
-  changeFavorite(
+  updateActivityLikeStatus(
     @AuthUser() authUser: AuthUserDto,
     @Body() dto: ActivityFavoriteDto,
   ): Promise<ActivityReponseDto | void> {
-    return this.service.changeFavorite(authUser, dto);
+    return this.service.updateLikeStatus(authUser, dto);
   }
 
   @Post('comment')

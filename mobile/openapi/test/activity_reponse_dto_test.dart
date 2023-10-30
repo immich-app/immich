@@ -31,7 +31,7 @@ void main() {
       // TODO
     });
 
-    // Object type
+    // String type
     test('to test the property `type`', () async {
       // TODO
     });

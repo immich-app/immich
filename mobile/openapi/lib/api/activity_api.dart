@@ -63,53 +63,6 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /activity/like' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [ActivityFavoriteDto] activityFavoriteDto (required):
-  Future<Response> changeFavoriteWithHttpInfo(ActivityFavoriteDto activityFavoriteDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/activity/like';
-
-    // ignore: prefer_final_locals
-    Object? postBody = activityFavoriteDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [ActivityFavoriteDto] activityFavoriteDto (required):
-  Future<Object?> changeFavorite(ActivityFavoriteDto activityFavoriteDto,) async {
-    final response = await changeFavoriteWithHttpInfo(activityFavoriteDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
-    
-    }
-    return null;
-  }
-
   /// Performs an HTTP 'DELETE /activity/comment/{id}' operation and returns the [Response].
   /// Parameters:
   ///
@@ -156,7 +109,7 @@ class ActivityApi {
   /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<Response> getActivityWithHttpInfo(String assetId, String albumId,) async {
+  Future<Response> getActivitiesWithHttpInfo(String assetId, String albumId,) async {
     // ignore: prefer_const_declarations
     final path = r'/activity';
 
@@ -189,8 +142,8 @@ class ActivityApi {
   /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<List<ActivityReponseDto>?> getActivity(String assetId, String albumId,) async {
-    final response = await getActivityWithHttpInfo(assetId, albumId,);
+  Future<List<ActivityReponseDto>?> getActivities(String assetId, String albumId,) async {
+    final response = await getActivitiesWithHttpInfo(assetId, albumId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -213,7 +166,7 @@ class ActivityApi {
   /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<Response> getFavoriteWithHttpInfo(String assetId, String albumId,) async {
+  Future<Response> getActivityLikeStatusWithHttpInfo(String assetId, String albumId,) async {
     // ignore: prefer_const_declarations
     final path = r'/activity/like';
 
@@ -246,8 +199,8 @@ class ActivityApi {
   /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<LikeStatusReponseDto?> getFavorite(String assetId, String albumId,) async {
-    final response = await getFavoriteWithHttpInfo(assetId, albumId,);
+  Future<LikeStatusReponseDto?> getActivityLikeStatus(String assetId, String albumId,) async {
+    final response = await getActivityLikeStatusWithHttpInfo(assetId, albumId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -310,6 +263,53 @@ class ActivityApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StatisticsResponseDto',) as StatisticsResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'PUT /activity/like' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [ActivityFavoriteDto] activityFavoriteDto (required):
+  Future<Response> updateActivityLikeStatusWithHttpInfo(ActivityFavoriteDto activityFavoriteDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/activity/like';
+
+    // ignore: prefer_final_locals
+    Object? postBody = activityFavoriteDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [ActivityFavoriteDto] activityFavoriteDto (required):
+  Future<Object?> updateActivityLikeStatus(ActivityFavoriteDto activityFavoriteDto,) async {
+    final response = await updateActivityLikeStatusWithHttpInfo(activityFavoriteDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
     
     }
     return null;

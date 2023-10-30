@@ -102,7 +102,7 @@
   const handleFavorite = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.changeFavorite({
+        const { data } = await api.activityApi.updateActivityLikeStatus({
           activityFavoriteDto: { favorite: !isLiked, albumId: album.id, assetId: asset.id },
         });
         if (data) {
@@ -122,7 +122,7 @@
   const getFavorite = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.getFavorite({ assetId: asset.id, albumId: album.id });
+        const { data } = await api.activityApi.getActivityLikeStatus({ assetId: asset.id, albumId: album.id });
         isLiked = data.value;
       } catch (error) {
         handleError(error, "Can't get Favorite");

@@ -20,6 +20,18 @@ export class ActivityRepository implements IActivityRepository {
     });
   }
 
+  getAlbumActivityById(albumId: string): Promise<ActivityEntity[] | null> {
+    return this.activityRepository.find({
+      where: { albumId },
+      relations: {
+        user: true,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+  }
+
   getStatistics(assetId: string, albumId: string): Promise<number> {
     return this.activityRepository.count({
       where: { assetId, albumId, isLiked: false },
@@ -29,7 +41,7 @@ export class ActivityRepository implements IActivityRepository {
     });
   }
 
-  getFavorite(assetId: string, albumId: string, userId: string): Promise<ActivityEntity | null> {
+  getFavorite(albumId: string, userId: string, assetId?: string): Promise<ActivityEntity | null> {
     return this.activityRepository.findOne({
       where: { assetId, albumId, userId, isLiked: true },
       relations: {

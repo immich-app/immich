@@ -78,11 +78,11 @@ Class | Method | HTTP request | Description
 *APIKeyApi* | [**getKeys**](doc//APIKeyApi.md#getkeys) | **GET** /api-key | 
 *APIKeyApi* | [**updateKey**](doc//APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
 *ActivityApi* | [**addComment**](doc//ActivityApi.md#addcomment) | **POST** /activity/comment | 
-*ActivityApi* | [**changeFavorite**](doc//ActivityApi.md#changefavorite) | **PUT** /activity/like | 
 *ActivityApi* | [**deleteComment**](doc//ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
-*ActivityApi* | [**getActivity**](doc//ActivityApi.md#getactivity) | **GET** /activity | 
-*ActivityApi* | [**getFavorite**](doc//ActivityApi.md#getfavorite) | **GET** /activity/like | 
+*ActivityApi* | [**getActivities**](doc//ActivityApi.md#getactivities) | **GET** /activity | 
+*ActivityApi* | [**getActivityLikeStatus**](doc//ActivityApi.md#getactivitylikestatus) | **GET** /activity/like | 
 *ActivityApi* | [**getStatistics**](doc//ActivityApi.md#getstatistics) | **GET** /activity/statistics | 
+*ActivityApi* | [**updateActivityLikeStatus**](doc//ActivityApi.md#updateactivitylikestatus) | **PUT** /activity/like | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
