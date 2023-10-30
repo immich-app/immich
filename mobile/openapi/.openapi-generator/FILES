@@ -156,7 +156,6 @@ doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
 doc/UserApi.md
-doc/UserCountResponseDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
 doc/VideoCodec.md
@@ -323,7 +322,6 @@ lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
-lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 lib/model/video_codec.dart
@@ -481,7 +479,6 @@ test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart
 test/user_api_test.dart
-test/user_count_response_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
 test/video_codec_test.dart
