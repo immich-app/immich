@@ -14,15 +14,8 @@ import {
   IUserRepository,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
-import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
-import {
-  CreateProfileImageResponseDto,
-  UserCountResponseDto,
-  UserResponseDto,
-  mapCreateProfileImageResponse,
-  mapUser,
-  mapUserCountResponse,
-} from './response-dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
+import { CreateProfileImageResponseDto, UserResponseDto, mapCreateProfileImageResponse, mapUser } from './response-dto';
 import { UserCore } from './user.core';
 
 @Injectable()
@@ -62,16 +55,6 @@ export class UserService {
       throw new BadRequestException('User not found');
     }
     return mapUser(user);
-  }
-
-  async getCount(dto: UserCountDto): Promise<UserCountResponseDto> {
-    let users = await this.userCore.getList();
-
-    if (dto.admin) {
-      users = users.filter((user) => user.isAdmin);
-    }
-
-    return mapUserCountResponse(users.length);
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {

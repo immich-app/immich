@@ -5177,48 +5177,6 @@
         ]
       }
     },
-    "/user/count": {
-      "get": {
-        "operationId": "getUserCount",
-        "parameters": [
-          {
-            "name": "admin",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": false,
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserCountResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
     "/user/info/{id}": {
       "get": {
         "operationId": "getUserById",
@@ -8766,17 +8724,6 @@
           "photos",
           "videos",
           "usage"
-        ],
-        "type": "object"
-      },
-      "UserCountResponseDto": {
-        "properties": {
-          "userCount": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "userCount"
         ],
         "type": "object"
       },
