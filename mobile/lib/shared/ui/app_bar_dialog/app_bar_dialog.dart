@@ -46,7 +46,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               size: 20,
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Align(
               alignment: Alignment.center,
               child: Text(
@@ -54,6 +54,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 style: TextStyle(
                   fontFamily: 'SnowburstOne',
                   fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
                   fontSize: 15,
                 ),
               ),
@@ -66,9 +67,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     buildActionButton(IconData icon, String text, Function() onTap) {
       return ListTile(
         dense: true,
-        visualDensity: VisualDensity.compact,
+        visualDensity: VisualDensity.standard,
         contentPadding: const EdgeInsets.only(left: 30),
-        minLeadingWidth: 50,
+        minLeadingWidth: 40,
         leading: SizedBox(
           child: Icon(
             icon,
@@ -133,7 +134,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
             color: isDarkTheme
                 ? Theme.of(context).scaffoldBackgroundColor
@@ -192,7 +193,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               onTap: () {
                 Navigator.of(context).pop();
                 launchUrl(
-                  Uri.parse('https://documentation.immich.app'),
+                  Uri.parse('https://immich.app'),
                 );
               },
               child: Text(
@@ -226,7 +227,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
     return Dialog(
       clipBehavior: Clip.hardEdge,
-      elevation: 1,
       alignment: Alignment.topCenter,
       insetPadding: EdgeInsets.only(
         top: isHorizontal ? 20 : 60,
@@ -236,7 +236,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       ),
       backgroundColor: theme.cardColor,
       shape: RoundedRectangleBorder(
-        side: const BorderSide(width: 1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: SizedBox(

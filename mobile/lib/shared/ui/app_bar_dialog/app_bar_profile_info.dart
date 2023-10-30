@@ -87,10 +87,9 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark
               ? Theme.of(context).scaffoldBackgroundColor
@@ -140,8 +139,9 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
           ),
           subtitle: Text(
             authState.userEmail,
-            style:
-                Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 12),
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontSize: 12,
+                ),
           ),
         ),
       ),
