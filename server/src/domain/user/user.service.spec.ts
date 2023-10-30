@@ -16,6 +16,7 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
+import { Readable } from 'stream';
 import { AuthUserDto } from '../auth';
 import { JobName } from '../job';
 import {
@@ -461,7 +462,7 @@ describe(UserService.name, () => {
     it('should throw an error if the user does not exist', async () => {
       userMock.get.mockResolvedValue(null);
 
-      await expect(sut.getProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.getProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(userMock.get).toHaveBeenCalledWith(adminUserAuth.id);
     });
@@ -472,6 +473,18 @@ describe(UserService.name, () => {
       await expect(sut.getProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(NotFoundException);
 
       expect(userMock.get).toHaveBeenCalledWith(adminUserAuth.id);
+    });
+
+    it('should return the profile picture', async () => {
+      const stream = new Readable();
+
+      userMock.get.mockResolvedValue(userStub.profilePath);
+      storageMock.createReadStream.mockResolvedValue({ stream });
+
+      await expect(sut.getProfileImage(userStub.profilePath.id)).resolves.toEqual({ stream });
+
+      expect(userMock.get).toHaveBeenCalledWith(userStub.profilePath.id);
+      expect(storageMock.createReadStream).toHaveBeenCalledWith('/path/to/profile.jpg', 'image/jpeg');
     });
   });
 

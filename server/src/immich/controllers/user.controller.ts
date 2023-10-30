@@ -17,16 +17,13 @@ import {
   Post,
   Put,
   Query,
-  Response,
-  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { Response as Res } from 'express';
 import { AdminRoute, AuthUser, Authenticated } from '../app.guard';
 import { FileUploadInterceptor, Route } from '../app.interceptor';
-import { UseValidation } from '../app.utils';
+import { UseValidation, asStreamableFile } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('User')
@@ -88,9 +85,7 @@ export class UserController {
 
   @Get('profile-image/:id')
   @Header('Cache-Control', 'private, no-cache, no-transform')
-  async getProfileImage(@Param() { id }: UUIDParamDto, @Response({ passthrough: true }) res: Res): Promise<any> {
-    const readableStream = await this.service.getProfileImage(id);
-    res.header('Content-Type', 'image/jpeg');
-    return new StreamableFile(readableStream);
+  getProfileImage(@Param() { id }: UUIDParamDto): Promise<any> {
+    return this.service.getProfileImage(id).then(asStreamableFile);
   }
 }
