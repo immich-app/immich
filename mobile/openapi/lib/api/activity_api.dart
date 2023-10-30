@@ -16,19 +16,13 @@ class ActivityApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /activity/comment/{id}/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'POST /activity/comment' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
-  /// * [String] albumId (required):
-  ///
   /// * [ActivityCommentDto] activityCommentDto (required):
-  Future<Response> addCommentWithHttpInfo(String id, String albumId, ActivityCommentDto activityCommentDto,) async {
+  Future<Response> addCommentWithHttpInfo(ActivityCommentDto activityCommentDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/comment/{id}/{albumId}'
-      .replaceAll('{id}', id)
-      .replaceAll('{albumId}', albumId);
+    final path = r'/activity/comment';
 
     // ignore: prefer_final_locals
     Object? postBody = activityCommentDto;
@@ -42,7 +36,7 @@ class ActivityApi {
 
     return apiClient.invokeAPI(
       path,
-      'PUT',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -53,13 +47,9 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
-  /// * [String] albumId (required):
-  ///
   /// * [ActivityCommentDto] activityCommentDto (required):
-  Future<ActivityReponseDto?> addComment(String id, String albumId, ActivityCommentDto activityCommentDto,) async {
-    final response = await addCommentWithHttpInfo(id, albumId, activityCommentDto,);
+  Future<ActivityReponseDto?> addComment(ActivityCommentDto activityCommentDto,) async {
+    final response = await addCommentWithHttpInfo(activityCommentDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -73,19 +63,13 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /activity/favorite/{id}/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'POST /activity/favorite' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
-  /// * [String] albumId (required):
-  ///
   /// * [ActivityFavoriteDto] activityFavoriteDto (required):
-  Future<Response> changeFavoriteWithHttpInfo(String id, String albumId, ActivityFavoriteDto activityFavoriteDto,) async {
+  Future<Response> changeFavoriteWithHttpInfo(ActivityFavoriteDto activityFavoriteDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/favorite/{id}/{albumId}'
-      .replaceAll('{id}', id)
-      .replaceAll('{albumId}', albumId);
+    final path = r'/activity/favorite';
 
     // ignore: prefer_final_locals
     Object? postBody = activityFavoriteDto;
@@ -99,7 +83,7 @@ class ActivityApi {
 
     return apiClient.invokeAPI(
       path,
-      'PUT',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -110,13 +94,9 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
-  /// * [String] albumId (required):
-  ///
   /// * [ActivityFavoriteDto] activityFavoriteDto (required):
-  Future<ActivityReponseDto?> changeFavorite(String id, String albumId, ActivityFavoriteDto activityFavoriteDto,) async {
-    final response = await changeFavoriteWithHttpInfo(id, albumId, activityFavoriteDto,);
+  Future<ActivityReponseDto?> changeFavorite(ActivityFavoriteDto activityFavoriteDto,) async {
+    final response = await changeFavoriteWithHttpInfo(activityFavoriteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -170,7 +150,7 @@ class ActivityApi {
     }
   }
 
-  /// Performs an HTTP 'GET /activity/{id}/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activity/asset/{id}/album/{albumId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -178,7 +158,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   Future<Response> getActivityWithHttpInfo(String id, String albumId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/{id}/{albumId}'
+    final path = r'/activity/asset/{id}/album/{albumId}'
       .replaceAll('{id}', id)
       .replaceAll('{albumId}', albumId);
 
@@ -226,7 +206,7 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /activity/favorite/{id}/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activity/favorite/asset/{id}/album/{albumId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -234,7 +214,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   Future<Response> getFavoriteWithHttpInfo(String id, String albumId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/favorite/{id}/{albumId}'
+    final path = r'/activity/favorite/asset/{id}/album/{albumId}'
       .replaceAll('{id}', id)
       .replaceAll('{albumId}', albumId);
 
@@ -279,7 +259,7 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /activity/statistics/{id}/{albumId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /activity/statistics/asset/{id}/album/{albumId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -287,7 +267,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   Future<Response> getStatisticsWithHttpInfo(String id, String albumId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/statistics/{id}/{albumId}'
+    final path = r'/activity/statistics/asset/{id}/album/{albumId}'
       .replaceAll('{id}', id)
       .replaceAll('{albumId}', albumId);
 

@@ -13,25 +13,37 @@ part of openapi.api;
 class ActivityFavoriteDto {
   /// Returns a new [ActivityFavoriteDto] instance.
   ActivityFavoriteDto({
+    required this.albumId,
+    required this.assetId,
     required this.favorite,
   });
+
+  String albumId;
+
+  String assetId;
 
   bool favorite;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityFavoriteDto &&
+     other.albumId == albumId &&
+     other.assetId == assetId &&
      other.favorite == favorite;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (albumId.hashCode) +
+    (assetId.hashCode) +
     (favorite.hashCode);
 
   @override
-  String toString() => 'ActivityFavoriteDto[favorite=$favorite]';
+  String toString() => 'ActivityFavoriteDto[albumId=$albumId, assetId=$assetId, favorite=$favorite]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'albumId'] = this.albumId;
+      json[r'assetId'] = this.assetId;
       json[r'favorite'] = this.favorite;
     return json;
   }
@@ -44,6 +56,8 @@ class ActivityFavoriteDto {
       final json = value.cast<String, dynamic>();
 
       return ActivityFavoriteDto(
+        albumId: mapValueOfType<String>(json, r'albumId')!,
+        assetId: mapValueOfType<String>(json, r'assetId')!,
         favorite: mapValueOfType<bool>(json, r'favorite')!,
       );
     }
@@ -92,6 +106,8 @@ class ActivityFavoriteDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'albumId',
+    'assetId',
     'favorite',
   };
 }

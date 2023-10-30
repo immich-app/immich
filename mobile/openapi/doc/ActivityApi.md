@@ -9,16 +9,16 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addComment**](ActivityApi.md#addcomment) | **PUT** /activity/comment/{id}/{albumId} | 
-[**changeFavorite**](ActivityApi.md#changefavorite) | **PUT** /activity/favorite/{id}/{albumId} | 
+[**addComment**](ActivityApi.md#addcomment) | **POST** /activity/comment | 
+[**changeFavorite**](ActivityApi.md#changefavorite) | **POST** /activity/favorite | 
 [**deleteComment**](ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
-[**getActivity**](ActivityApi.md#getactivity) | **GET** /activity/{id}/{albumId} | 
-[**getFavorite**](ActivityApi.md#getfavorite) | **GET** /activity/favorite/{id}/{albumId} | 
-[**getStatistics**](ActivityApi.md#getstatistics) | **GET** /activity/statistics/{id}/{albumId} | 
+[**getActivity**](ActivityApi.md#getactivity) | **GET** /activity/asset/{id}/album/{albumId} | 
+[**getFavorite**](ActivityApi.md#getfavorite) | **GET** /activity/favorite/asset/{id}/album/{albumId} | 
+[**getStatistics**](ActivityApi.md#getstatistics) | **GET** /activity/statistics/asset/{id}/album/{albumId} | 
 
 
 # **addComment**
-> ActivityReponseDto addComment(id, albumId, activityCommentDto)
+> ActivityReponseDto addComment(activityCommentDto)
 
 
 
@@ -41,12 +41,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final albumId = albumId_example; // String | 
 final activityCommentDto = ActivityCommentDto(); // ActivityCommentDto | 
 
 try {
-    final result = api_instance.addComment(id, albumId, activityCommentDto);
+    final result = api_instance.addComment(activityCommentDto);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->addComment: $e\n');
@@ -57,8 +55,6 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
- **albumId** | **String**|  | 
  **activityCommentDto** | [**ActivityCommentDto**](ActivityCommentDto.md)|  | 
 
 ### Return type
@@ -77,7 +73,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **changeFavorite**
-> ActivityReponseDto changeFavorite(id, albumId, activityFavoriteDto)
+> ActivityReponseDto changeFavorite(activityFavoriteDto)
 
 
 
@@ -100,12 +96,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final albumId = albumId_example; // String | 
 final activityFavoriteDto = ActivityFavoriteDto(); // ActivityFavoriteDto | 
 
 try {
-    final result = api_instance.changeFavorite(id, albumId, activityFavoriteDto);
+    final result = api_instance.changeFavorite(activityFavoriteDto);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->changeFavorite: $e\n');
@@ -116,8 +110,6 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
- **albumId** | **String**|  | 
  **activityFavoriteDto** | [**ActivityFavoriteDto**](ActivityFavoriteDto.md)|  | 
 
 ### Return type

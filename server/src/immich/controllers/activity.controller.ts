@@ -1,5 +1,5 @@
 import { AuthUserDto } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -21,7 +21,7 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 export class ActivityController {
   constructor(private service: ActivityService) {}
 
-  @Get('statistics/:id/:albumId')
+  @Get('statistics/asset/:id/album/:albumId')
   getStatistics(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
@@ -30,7 +30,7 @@ export class ActivityController {
     return this.service.getStatistics(authUser, id, albumId);
   }
 
-  @Get(':id/:albumId')
+  @Get('asset/:id/album/:albumId')
   getActivity(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
@@ -39,7 +39,7 @@ export class ActivityController {
     return this.service.getById(authUser, id, albumId);
   }
 
-  @Get('favorite/:id/:albumId')
+  @Get('favorite/asset/:id/album/:albumId')
   getFavorite(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
@@ -48,24 +48,20 @@ export class ActivityController {
     return this.service.getFavorite(authUser, id, albumId);
   }
 
-  @Put('favorite/:id/:albumId')
+  @Post('favorite')
   changeFavorite(
     @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
     @Body() dto: ActivityFavoriteDto,
-    @Param('albumId', new ParseMeUUIDPipe({ version: '4' })) albumId: string,
   ): Promise<ActivityReponseDto> {
-    return this.service.changeFavorite(authUser, id, dto, albumId);
+    return this.service.changeFavorite(authUser, dto);
   }
 
-  @Put('comment/:id/:albumId')
+  @Post('comment')
   addComment(
     @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
     @Body() dto: ActivityCommentDto,
-    @Param('albumId', new ParseMeUUIDPipe({ version: '4' })) albumId: string,
   ): Promise<ActivityReponseDto> {
-    return this.service.addComment(authUser, id, dto, albumId);
+    return this.service.addComment(authUser, dto);
   }
 
   @Delete('comment/:id')

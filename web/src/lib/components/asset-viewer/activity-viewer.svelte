@@ -81,9 +81,7 @@
     }
     try {
       const { data } = await api.activityApi.addComment({
-        id: assetId,
-        albumId,
-        activityCommentDto: { comment: message },
+        activityCommentDto: { albumId: albumId, assetId: assetId, comment: message },
       });
       reactions.push(data);
       message = '';

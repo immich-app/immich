@@ -16,6 +16,16 @@ void main() {
   // final instance = ActivityFavoriteDto();
 
   group('test ActivityFavoriteDto', () {
+    // String albumId
+    test('to test the property `albumId`', () async {
+      // TODO
+    });
+
+    // String assetId
+    test('to test the property `assetId`', () async {
+      // TODO
+    });
+
     // bool favorite
     test('to test the property `favorite`', () async {
       // TODO

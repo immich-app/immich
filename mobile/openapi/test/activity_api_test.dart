@@ -17,12 +17,12 @@ void main() {
   // final instance = ActivityApi();
 
   group('tests for ActivityApi', () {
-    //Future<ActivityReponseDto> addComment(String id, String albumId, ActivityCommentDto activityCommentDto) async
+    //Future<ActivityReponseDto> addComment(ActivityCommentDto activityCommentDto) async
     test('test addComment', () async {
       // TODO
     });
 
-    //Future<ActivityReponseDto> changeFavorite(String id, String albumId, ActivityFavoriteDto activityFavoriteDto) async
+    //Future<ActivityReponseDto> changeFavorite(ActivityFavoriteDto activityFavoriteDto) async
     test('test changeFavorite', () async {
       // TODO
     });

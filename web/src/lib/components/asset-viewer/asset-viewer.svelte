@@ -103,9 +103,7 @@
     if (album) {
       try {
         const { data } = await api.activityApi.changeFavorite({
-          id: asset.id,
-          albumId: album.id,
-          activityFavoriteDto: { favorite: !isFavorite?.isFavorite },
+          activityFavoriteDto: { favorite: !isFavorite?.isFavorite, albumId: album.id, assetId: asset.id },
         });
 
         if (data.isFavorite) {

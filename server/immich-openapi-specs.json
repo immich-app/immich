@@ -1,6 +1,101 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/activity/asset/{id}/album/{albumId}": {
+      "get": {
+        "operationId": "getActivity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "albumId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityReponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
+    "/activity/comment": {
+      "post": {
+        "operationId": "addComment",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityCommentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityReponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
     "/activity/comment/{id}": {
       "delete": {
         "operationId": "deleteComment",
@@ -36,40 +131,22 @@
         ]
       }
     },
-    "/activity/comment/{id}/{albumId}": {
-      "put": {
-        "operationId": "addComment",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "albumId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+    "/activity/favorite": {
+      "post": {
+        "operationId": "changeFavorite",
+        "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ActivityCommentDto"
+                "$ref": "#/components/schemas/ActivityFavoriteDto"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -96,7 +173,7 @@
         ]
       }
     },
-    "/activity/favorite/{id}/{albumId}": {
+    "/activity/favorite/asset/{id}/album/{albumId}": {
       "get": {
         "operationId": "getFavorite",
         "parameters": [
@@ -144,67 +221,9 @@
         "tags": [
           "Activity"
         ]
-      },
-      "put": {
-        "operationId": "changeFavorite",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "albumId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActivityFavoriteDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityReponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Activity"
-        ]
       }
     },
-    "/activity/statistics/{id}/{albumId}": {
+    "/activity/statistics/asset/{id}/album/{albumId}": {
       "get": {
         "operationId": "getStatistics",
         "parameters": [
@@ -232,59 +251,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StatisticsResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Activity"
-        ]
-      }
-    },
-    "/activity/{id}/{albumId}": {
-      "get": {
-        "operationId": "getActivity",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "albumId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/ActivityReponseDto"
-                  },
-                  "type": "array"
                 }
               }
             },
@@ -5845,23 +5811,39 @@
       },
       "ActivityCommentDto": {
         "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
           "comment": {
             "type": "string"
           }
         },
         "required": [
-          "comment"
+          "comment",
+          "assetId",
+          "albumId"
         ],
         "type": "object"
       },
       "ActivityFavoriteDto": {
         "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
           "favorite": {
             "type": "boolean"
           }
         },
         "required": [
-          "favorite"
+          "favorite",
+          "assetId",
+          "albumId"
         ],
         "type": "object"
       },

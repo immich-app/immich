@@ -13,25 +13,37 @@ part of openapi.api;
 class ActivityCommentDto {
   /// Returns a new [ActivityCommentDto] instance.
   ActivityCommentDto({
+    required this.albumId,
+    required this.assetId,
     required this.comment,
   });
+
+  String albumId;
+
+  String assetId;
 
   String comment;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityCommentDto &&
+     other.albumId == albumId &&
+     other.assetId == assetId &&
      other.comment == comment;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (albumId.hashCode) +
+    (assetId.hashCode) +
     (comment.hashCode);
 
   @override
-  String toString() => 'ActivityCommentDto[comment=$comment]';
+  String toString() => 'ActivityCommentDto[albumId=$albumId, assetId=$assetId, comment=$comment]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'albumId'] = this.albumId;
+      json[r'assetId'] = this.assetId;
       json[r'comment'] = this.comment;
     return json;
   }
@@ -44,6 +56,8 @@ class ActivityCommentDto {
       final json = value.cast<String, dynamic>();
 
       return ActivityCommentDto(
+        albumId: mapValueOfType<String>(json, r'albumId')!,
+        assetId: mapValueOfType<String>(json, r'assetId')!,
         comment: mapValueOfType<String>(json, r'comment')!,
       );
     }
@@ -92,6 +106,8 @@ class ActivityCommentDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'albumId',
+    'assetId',
     'comment',
   };
 }

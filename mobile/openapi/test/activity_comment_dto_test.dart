@@ -16,6 +16,16 @@ void main() {
   // final instance = ActivityCommentDto();
 
   group('test ActivityCommentDto', () {
+    // String albumId
+    test('to test the property `albumId`', () async {
+      // TODO
+    });
+
+    // String assetId
+    test('to test the property `assetId`', () async {
+      // TODO
+    });
+
     // String comment
     test('to test the property `comment`', () async {
       // TODO

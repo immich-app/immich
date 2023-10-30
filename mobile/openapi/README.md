@@ -77,12 +77,12 @@ Class | Method | HTTP request | Description
 *APIKeyApi* | [**getKey**](doc//APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
 *APIKeyApi* | [**getKeys**](doc//APIKeyApi.md#getkeys) | **GET** /api-key | 
 *APIKeyApi* | [**updateKey**](doc//APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
-*ActivityApi* | [**addComment**](doc//ActivityApi.md#addcomment) | **PUT** /activity/comment/{id}/{albumId} | 
-*ActivityApi* | [**changeFavorite**](doc//ActivityApi.md#changefavorite) | **PUT** /activity/favorite/{id}/{albumId} | 
+*ActivityApi* | [**addComment**](doc//ActivityApi.md#addcomment) | **POST** /activity/comment | 
+*ActivityApi* | [**changeFavorite**](doc//ActivityApi.md#changefavorite) | **POST** /activity/favorite | 
 *ActivityApi* | [**deleteComment**](doc//ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
-*ActivityApi* | [**getActivity**](doc//ActivityApi.md#getactivity) | **GET** /activity/{id}/{albumId} | 
-*ActivityApi* | [**getFavorite**](doc//ActivityApi.md#getfavorite) | **GET** /activity/favorite/{id}/{albumId} | 
-*ActivityApi* | [**getStatistics**](doc//ActivityApi.md#getstatistics) | **GET** /activity/statistics/{id}/{albumId} | 
+*ActivityApi* | [**getActivity**](doc//ActivityApi.md#getactivity) | **GET** /activity/asset/{id}/album/{albumId} | 
+*ActivityApi* | [**getFavorite**](doc//ActivityApi.md#getfavorite) | **GET** /activity/favorite/asset/{id}/album/{albumId} | 
+*ActivityApi* | [**getStatistics**](doc//ActivityApi.md#getstatistics) | **GET** /activity/statistics/asset/{id}/album/{albumId} | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 

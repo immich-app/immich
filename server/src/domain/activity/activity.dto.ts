@@ -23,19 +23,23 @@ export class UserCommentDto {
   profileImagePath!: string;
 }
 
-export class ActivityFavoriteDto {
+export class ActivityDto {
+  @IsString()
+  @IsNotEmpty()
+  assetId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  albumId!: string;
+}
+
+export class ActivityFavoriteDto extends ActivityDto {
   @IsBoolean()
   @IsNotEmpty()
   favorite!: boolean;
 }
 
-export class FavoriteDto {
-  @IsBoolean()
-  @IsNotEmpty()
-  favorite!: boolean;
-}
-
-export class ActivityCommentDto {
+export class ActivityCommentDto extends ActivityDto {
   @IsString()
   @IsNotEmpty()
   comment!: string;
