@@ -8,6 +8,7 @@
   import { isTenMinutesApart, timeSince } from '$lib/utils/timesince';
   import { clickOutside } from '$lib/utils/click-outside';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let reactions: ActivityReponseDto[];
   export let user: UserResponseDto;
@@ -36,6 +37,7 @@
 
   const handleEnter = (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
+      event.preventDefault();
       handleSendComment();
       return;
     }
@@ -57,6 +59,7 @@
 
   $: showDeleteComment = Array(reactions.length).fill(false);
   let message = '';
+  let isSendingMessage = false;
 
   const dispatch = createEventDispatcher();
 
@@ -79,18 +82,23 @@
     if (!message) {
       return;
     }
+    const timeout = setTimeout(() => (isSendingMessage = true), 100);
     try {
       const { data } = await api.activityApi.addComment({
         activityCommentDto: { albumId: albumId, assetId: assetId, comment: message },
       });
       reactions.push(data);
+      textArea.style.height = '18px';
       message = '';
       dispatch('addComment');
       // Re-render the activity feed
       reactions = reactions;
     } catch (error) {
       handleError(error, "Can't add your comment");
+    } finally {
+      clearTimeout(timeout);
     }
+    isSendingMessage = false;
   };
 
   const showOptionsMenu = (index: number) => {
@@ -99,8 +107,8 @@
 </script>
 
 <div class="relative overflow-x-hidden">
-  <div class=" dark:bg-immich-dark-bg dark:text-immich-dark-fg h-full overflow-x-hidden">
-    <div class="fixed z-[1000] w-[359px] dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white">
+  <div class=" dark:bg-immich-dark-bg dark:text-immich-dark-fg w-full h-full overflow-x-hidden">
+    <div class="fixed z-[1000] w-full h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white">
       <div class="flex place-items-center gap-2">
         <button
           class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
@@ -112,7 +120,7 @@
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Activity</p>
       </div>
     </div>
-    <div class="overflow-x-hidden mt-[64px] mb-[72px]">
+    <div class="mt-[64px] mb-[72px]">
       {#each reactions as reaction, index (reaction.id)}
         {#if reaction.user && reaction.createdAt}
           {#if reaction.type === 'comment'}
@@ -132,7 +140,7 @@
               <div>
                 {#if showDeleteComment[index]}
                   <button
-                    class="absolute right-6 rounded-xl items-center p-2 text-black bg-gray-100"
+                    class="absolute right-6 rounded-xl items-center bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
                     use:clickOutside
                     on:outclick={() => (showDeleteComment[index] = false)}
                     on:click={() => handleDeleteComment(reaction.id, index)}
@@ -183,10 +191,16 @@
               placeholder="Say something"
               on:input={autoGrow}
               on:keypress={handleEnter}
-              class=" h-[18px] w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-slate-400 dark:bg-gray-900 text-white"
+              class="h-[18px] w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-slate-400 dark:bg-gray-900 text-white"
             />
           </div>
-          {#if message}
+          {#if isSendingMessage}
+            <div class="flex items-end place-items-center pb-2 ml-0">
+              <div class="flex w-full place-items-center">
+                <LoadingSpinner />
+              </div>
+            </div>
+          {:else if message}
             <div class="flex items-end w-fit ml-0">
               <CircleIconButton size="15" icon={mdiSend} />
             </div>
