@@ -103,11 +103,7 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  async getByName(
-    userId: string,
-    personName: string,
-    { withHidden }: PersonNameSearchOptions,
-  ): Promise<PersonEntity[]> {
+  getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')

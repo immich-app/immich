@@ -22,7 +22,8 @@
     OBJECTS = 'smartInfo.objects',
   }
 
-  const MAX_ITEMS = 12;
+  let MAX_ITEMS = 12;
+  let innerWidth: number | null = null;
   const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
     const targetField = items.find((item) => item.fieldName === field);
     return targetField?.items || [];
@@ -32,6 +33,7 @@
   $: places = getFieldItems(data.items, Field.CITY);
   $: people = data.response.people.slice(0, MAX_ITEMS);
   $: hasPeople = data.response.total > 0;
+  $: MAX_ITEMS = innerWidth ? Math.floor(innerWidth / 112) : MAX_ITEMS;
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
@@ -45,19 +47,21 @@
           draggable="false">View All</a
         >
       </div>
-      <div class="flex flex-row flex-wrap gap-4">
-        {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-24 text-center">
-            <ImageThumbnail
-              circle
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              widthStyle="100%"
-            />
-            <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
-          </a>
-        {/each}
+      <div class="flex flex-row {MAX_ITEMS < 5 ? 'justify-center' : ''} flex-wrap gap-4" bind:offsetWidth={innerWidth}>
+        {#if innerWidth}
+          {#each people as person (person.id)}
+            <a href="/people/{person.id}" class="w-24 text-center">
+              <ImageThumbnail
+                circle
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
+            </a>
+          {/each}
+        {/if}
       </div>
     </div>
   {/if}
