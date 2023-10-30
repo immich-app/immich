@@ -16,7 +16,6 @@ Method | HTTP request | Description
 [**getMyUserInfo**](UserApi.md#getmyuserinfo) | **GET** /user/me | 
 [**getProfileImage**](UserApi.md#getprofileimage) | **GET** /user/profile-image/{id} | 
 [**getUserById**](UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
-[**getUserCount**](UserApi.md#getusercount) | **GET** /user/count | 
 [**restoreUser**](UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 [**updateUser**](UserApi.md#updateuser) | **PUT** /user | 
 
@@ -390,61 +389,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**UserResponseDto**](UserResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getUserCount**
-> UserCountResponseDto getUserCount(admin)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = UserApi();
-final admin = true; // bool | 
-
-try {
-    final result = api_instance.getUserCount(admin);
-    print(result);
-} catch (e) {
-    print('Exception when calling UserApi->getUserCount: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **admin** | **bool**|  | [optional] [default to false]
-
-### Return type
-
-[**UserCountResponseDto**](UserCountResponseDto.md)
 
 ### Authorization
 

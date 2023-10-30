@@ -1,11 +1,9 @@
 import {
   AuthUserDto,
-  UserCountDto as CountDto,
   CreateUserDto as CreateDto,
   CreateProfileImageDto,
   CreateProfileImageResponseDto,
   UpdateUserDto as UpdateDto,
-  UserCountResponseDto,
   UserResponseDto,
   UserService,
 } from '@app/domain';
@@ -57,12 +55,6 @@ export class UserController {
   @Post()
   createUser(@Body() createUserDto: CreateDto): Promise<UserResponseDto> {
     return this.service.create(createUserDto);
-  }
-
-  @AdminRoute()
-  @Get('count')
-  getUserCount(@Query() dto: CountDto): Promise<UserCountResponseDto> {
-    return this.service.getCount(dto);
   }
 
   @AdminRoute()

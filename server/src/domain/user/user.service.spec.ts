@@ -220,24 +220,6 @@ describe(UserService.name, () => {
     });
   });
 
-  describe('getCount', () => {
-    it('should get the user count', async () => {
-      userMock.getList.mockResolvedValue([adminUser]);
-
-      const response = await sut.getCount({});
-
-      expect(userMock.getList).toHaveBeenCalled();
-      expect(response).toEqual({ userCount: 1 });
-    });
-
-    it('should get the user count of all admin users', async () => {
-      userMock.getList.mockResolvedValue([adminUser, immichUser]);
-
-      await expect(sut.getCount({ admin: true })).resolves.toEqual({ userCount: 1 });
-      expect(userMock.getList).toHaveBeenCalled();
-    });
-  });
-
   describe('update', () => {
     it('should update user', async () => {
       const update: UpdateUserDto = {
