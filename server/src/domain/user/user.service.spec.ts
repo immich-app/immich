@@ -149,9 +149,7 @@ describe(UserService.name, () => {
     sut = new UserService(albumMock, assetMock, cryptoRepositoryMock, jobMock, libraryMock, storageMock, userMock);
 
     when(userMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
-    when(userMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);
     when(userMock.get).calledWith(immichUser.id).mockResolvedValue(immichUser);
-    when(userMock.get).calledWith(immichUser.id, undefined).mockResolvedValue(immichUser);
   });
 
   describe('getAll', () => {
@@ -207,7 +205,7 @@ describe(UserService.name, () => {
 
       const response = await sut.getMe(adminUser);
 
-      expect(userMock.get).toHaveBeenCalledWith(adminUser.id, undefined);
+      expect(userMock.get).toHaveBeenCalledWith(adminUser.id);
       expect(response).toEqual(adminUserResponse);
     });
 
@@ -216,7 +214,7 @@ describe(UserService.name, () => {
 
       await expect(sut.getMe(adminUser)).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(userMock.get).toHaveBeenCalledWith(adminUser.id, undefined);
+      expect(userMock.get).toHaveBeenCalledWith(adminUser.id);
     });
   });
 
@@ -256,7 +254,7 @@ describe(UserService.name, () => {
 
     it('user can only update its information', async () => {
       when(userMock.get)
-        .calledWith('not_immich_auth_user_id', undefined)
+        .calledWith('not_immich_auth_user_id')
         .mockResolvedValueOnce({
           ...immichUser,
           id: 'not_immich_auth_user_id',
@@ -321,7 +319,7 @@ describe(UserService.name, () => {
     });
 
     it('update user information should throw error if user not found', async () => {
-      when(userMock.get).calledWith(immichUser.id, undefined).mockResolvedValueOnce(null);
+      when(userMock.get).calledWith(immichUser.id).mockResolvedValueOnce(null);
 
       const result = sut.update(adminUser, {
         id: immichUser.id,
@@ -334,7 +332,6 @@ describe(UserService.name, () => {
     it('should let the admin update himself', async () => {
       const dto = { id: adminUser.id, shouldChangePassword: true, isAdmin: true };
 
-      when(userMock.get).calledWith(adminUser.id).mockResolvedValueOnce(null);
       when(userMock.update).calledWith(adminUser.id, dto).mockResolvedValueOnce(adminUser);
 
       await sut.update(adminUser, dto);
@@ -398,7 +395,7 @@ describe(UserService.name, () => {
       userMock.delete.mockResolvedValue(immichUser);
 
       await expect(sut.delete(adminUserAuth, immichUser.id)).resolves.toEqual(mapUser(immichUser));
-      expect(userMock.get).toHaveBeenCalledWith(immichUser.id, undefined);
+      expect(userMock.get).toHaveBeenCalledWith(immichUser.id);
       expect(userMock.delete).toHaveBeenCalledWith(immichUser);
     });
   });
@@ -466,7 +463,7 @@ describe(UserService.name, () => {
 
       await expect(sut.getProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(NotFoundException);
 
-      expect(userMock.get).toHaveBeenCalledWith(adminUserAuth.id, undefined);
+      expect(userMock.get).toHaveBeenCalledWith(adminUserAuth.id);
     });
 
     it('should throw an error if the user does not have a picture', async () => {
@@ -474,7 +471,7 @@ describe(UserService.name, () => {
 
       await expect(sut.getProfileImage(adminUserAuth.id)).rejects.toBeInstanceOf(NotFoundException);
 
-      expect(userMock.get).toHaveBeenCalledWith(adminUserAuth.id, undefined);
+      expect(userMock.get).toHaveBeenCalledWith(adminUserAuth.id);
     });
   });
 
