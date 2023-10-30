@@ -1,16 +1,25 @@
 import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AlbumEntity, AssetEntity, LibraryEntity, PartnerEntity, PersonEntity, SharedLinkEntity } from '../entities';
+import {
+  AlbumEntity,
+  AssetEntity,
+  LibraryEntity,
+  PartnerEntity,
+  PersonEntity,
+  SharedLinkEntity,
+  UserTokenEntity,
+} from '../entities';
 
 export class AccessRepository implements IAccessRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
+    @InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>,
     @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(SharedLinkEntity) private sharedLinkRepository: Repository<SharedLinkEntity>,
-    @InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>,
+    @InjectRepository(UserTokenEntity) private tokenRepository: Repository<UserTokenEntity>,
   ) {}
 
   library = {
@@ -144,6 +153,17 @@ export class AccessRepository implements IAccessRepository {
             },
           },
         ],
+      });
+    },
+  };
+
+  authDevice = {
+    hasOwnerAccess: (userId: string, deviceId: string): Promise<boolean> => {
+      return this.tokenRepository.exist({
+        where: {
+          userId,
+          id: deviceId,
+        },
       });
     },
   };

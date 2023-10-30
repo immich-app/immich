@@ -231,12 +231,9 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     AppLogRoute.name: (routeData) {
-      return CustomPage<dynamic>(
+      return MaterialPageX<dynamic>(
         routeData: routeData,
         child: const AppLogPage(),
-        transitionsBuilder: TransitionsBuilders.slideBottom,
-        opaque: true,
-        barrierDismissible: false,
       );
     },
     AppLogDetailRoute.name: (routeData) {
@@ -583,6 +580,7 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AppLogRoute.name,
           path: '/app-log-page',
+          guards: [duplicateGuard],
         ),
         RouteConfig(
           AppLogDetailRoute.name,

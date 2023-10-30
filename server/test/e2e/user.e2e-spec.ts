@@ -312,32 +312,4 @@ describe(`${UserController.name}`, () => {
       expect(before.updatedAt).not.toEqual(after.updatedAt);
     });
   });
-
-  describe('GET /user/count', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(server).get(`/user/count`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorStub.unauthorized);
-    });
-
-    it('should start with just the admin', async () => {
-      const { status, body } = await request(server).get(`/user/count`).set('Authorization', `Bearer ${accessToken}`);
-      expect(status).toBe(200);
-      expect(body).toEqual({ userCount: 1 });
-    });
-
-    it('should return the total user count', async () => {
-      for (let i = 0; i < 5; i++) {
-        await api.userApi.create(server, accessToken, {
-          email: `user${i + 1}@immich.app`,
-          password: 'Password123',
-          firstName: `User ${i + 1}`,
-          lastName: 'Test',
-        });
-      }
-      const { status, body } = await request(server).get(`/user/count`).set('Authorization', `Bearer ${accessToken}`);
-      expect(status).toBe(200);
-      expect(body).toEqual({ userCount: 6 });
-    });
-  });
 });

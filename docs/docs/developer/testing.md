@@ -12,6 +12,6 @@ The backend has an end-to-end test suite that can be called with `npm run test:e
 
 Note that there is a bug in nodejs <20.8 that causes segmentation faults when running these tests. If you run into segfaults, ensure you are using at least version 20.8.
 
-To perform a full e2e test, you need to run e2e tests inside docker. The easiest way to do that is to run `make test-e2e` in the root directory. This will build and start a docker-compose consisting of the server, microservices, and a postgres database. It will then perfom the tests and exit.
+To perform a full e2e test, you need to run e2e tests inside docker. The easiest way to do that is to run `make test-e2e` in the root directory. This will build and start a docker-compose consisting of the server, microservices, and a postgres database. It will then perform the tests and exit.
 
 If you manually install the dependencies (see the DOCKERFILE) on your development machine, you can also run the full e2e tests manually by setting the `IMMICH_RUN_ALL_TESTS` environment value to true, i.e. `IMMICH_RUN_ALL_TESTS=true npm run test:e2e`.

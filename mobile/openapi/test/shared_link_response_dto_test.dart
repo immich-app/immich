@@ -61,8 +61,18 @@ void main() {
       // TODO
     });
 
+    // String password
+    test('to test the property `password`', () async {
+      // TODO
+    });
+
     // bool showMetadata
     test('to test the property `showMetadata`', () async {
+      // TODO
+    });
+
+    // String token
+    test('to test the property `token`', () async {
       // TODO
     });
 

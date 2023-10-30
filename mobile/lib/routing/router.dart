@@ -133,10 +133,7 @@ part 'router.gr.dart';
         DuplicateGuard,
       ],
     ),
-    CustomRoute(
-      page: AppLogPage,
-      transitionsBuilder: TransitionsBuilders.slideBottom,
-    ),
+    AutoRoute(page: AppLogPage, guards: [DuplicateGuard]),
     AutoRoute(
       page: AppLogDetailPage,
     ),

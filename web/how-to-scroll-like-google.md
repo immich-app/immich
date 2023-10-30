@@ -11,7 +11,7 @@
 
 ## Order of Implementation
 
-### Custom scroolbar
+### Custom scrollbar
 
 * We need the custom scroll bar which represents the entire viewport.
 * The viewport can be estimated by the total number of the photos and the width of the occupied photo's grid

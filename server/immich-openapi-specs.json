@@ -4531,6 +4531,23 @@
         "operationId": "getMySharedLink",
         "parameters": [
           {
+            "name": "password",
+            "required": false,
+            "in": "query",
+            "example": "password",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "key",
             "required": false,
             "in": "query",
@@ -5405,48 +5422,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/user/count": {
-      "get": {
-        "operationId": "getUserCount",
-        "parameters": [
-          {
-            "name": "admin",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": false,
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserCountResponseDto"
                 }
               }
             },
@@ -8256,6 +8231,9 @@
             "nullable": true,
             "type": "string"
           },
+          "password": {
+            "type": "string"
+          },
           "showMetadata": {
             "default": true,
             "type": "boolean"
@@ -8287,6 +8265,9 @@
           "expiresAt": {
             "format": "date-time",
             "nullable": true,
+            "type": "string"
+          },
+          "password": {
             "type": "string"
           },
           "showMetadata": {
@@ -8331,8 +8312,16 @@
           "key": {
             "type": "string"
           },
+          "password": {
+            "nullable": true,
+            "type": "string"
+          },
           "showMetadata": {
             "type": "boolean"
+          },
+          "token": {
+            "nullable": true,
+            "type": "string"
           },
           "type": {
             "$ref": "#/components/schemas/SharedLinkType"
@@ -8345,6 +8334,7 @@
           "type",
           "id",
           "description",
+          "password",
           "userId",
           "key",
           "createdAt",
@@ -8932,6 +8922,7 @@
           "nvenc",
           "qsv",
           "vaapi",
+          "rkmpp",
           "disabled"
         ],
         "type": "string"

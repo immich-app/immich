@@ -19,6 +19,10 @@ export class SharedLinkCreateDto {
   @Optional()
   description?: string;
 
+  @IsString()
+  @Optional()
+  password?: string;
+
   @IsDate()
   @Type(() => Date)
   @Optional({ nullable: true })
@@ -41,6 +45,9 @@ export class SharedLinkEditDto {
   @Optional()
   description?: string;
 
+  @Optional()
+  password?: string;
+
   @Optional({ nullable: true })
   expiresAt?: Date | null;
 
@@ -61,4 +68,15 @@ export class SharedLinkEditDto {
   @Optional()
   @IsBoolean()
   changeExpiryTime?: boolean;
+}
+
+export class SharedLinkPasswordDto {
+  @IsString()
+  @Optional()
+  @ApiProperty({ example: 'password' })
+  password?: string;
+
+  @IsString()
+  @Optional()
+  token?: string;
 }

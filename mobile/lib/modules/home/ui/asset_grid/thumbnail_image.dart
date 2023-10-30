@@ -45,7 +45,7 @@ class ThumbnailImage extends StatelessWidget {
     final assetContainerColor =
         isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
-    final isFromResponse = asset.id == Isar.autoIncrement;
+    final isFromDto = asset.id == Isar.autoIncrement;
 
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
@@ -134,7 +134,7 @@ class ThumbnailImage extends StatelessWidget {
         width: 300,
         height: 300,
         child: Hero(
-          tag: isFromResponse
+          tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
               : asset.id + heroOffset,
           child: ImmichImage(

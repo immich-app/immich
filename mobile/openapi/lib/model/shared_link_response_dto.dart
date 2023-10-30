@@ -22,7 +22,9 @@ class SharedLinkResponseDto {
     required this.expiresAt,
     required this.id,
     required this.key,
+    required this.password,
     required this.showMetadata,
+    this.token,
     required this.type,
     required this.userId,
   });
@@ -51,7 +53,11 @@ class SharedLinkResponseDto {
 
   String key;
 
+  String? password;
+
   bool showMetadata;
+
+  String? token;
 
   SharedLinkType type;
 
@@ -68,7 +74,9 @@ class SharedLinkResponseDto {
      other.expiresAt == expiresAt &&
      other.id == id &&
      other.key == key &&
+     other.password == password &&
      other.showMetadata == showMetadata &&
+     other.token == token &&
      other.type == type &&
      other.userId == userId;
 
@@ -84,12 +92,14 @@ class SharedLinkResponseDto {
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (key.hashCode) +
+    (password == null ? 0 : password!.hashCode) +
     (showMetadata.hashCode) +
+    (token == null ? 0 : token!.hashCode) +
     (type.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, showMetadata=$showMetadata, type=$type, userId=$userId]';
+  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, token=$token, type=$type, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -114,7 +124,17 @@ class SharedLinkResponseDto {
     }
       json[r'id'] = this.id;
       json[r'key'] = this.key;
+    if (this.password != null) {
+      json[r'password'] = this.password;
+    } else {
+    //  json[r'password'] = null;
+    }
       json[r'showMetadata'] = this.showMetadata;
+    if (this.token != null) {
+      json[r'token'] = this.token;
+    } else {
+    //  json[r'token'] = null;
+    }
       json[r'type'] = this.type;
       json[r'userId'] = this.userId;
     return json;
@@ -137,7 +157,9 @@ class SharedLinkResponseDto {
         expiresAt: mapDateTime(json, r'expiresAt', ''),
         id: mapValueOfType<String>(json, r'id')!,
         key: mapValueOfType<String>(json, r'key')!,
+        password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata')!,
+        token: mapValueOfType<String>(json, r'token'),
         type: SharedLinkType.fromJson(json[r'type'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
@@ -195,6 +217,7 @@ class SharedLinkResponseDto {
     'expiresAt',
     'id',
     'key',
+    'password',
     'showMetadata',
     'type',
     'userId',

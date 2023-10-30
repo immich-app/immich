@@ -1,5 +1,5 @@
 import { SharedLinkType } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
   albumStub,
@@ -48,21 +48,28 @@ describe(SharedLinkService.name, () => {
 
   describe('getMine', () => {
     it('should only work for a public user', async () => {
-      await expect(sut.getMine(authStub.admin)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.getMine(authStub.admin, {})).rejects.toBeInstanceOf(ForbiddenException);
       expect(shareMock.get).not.toHaveBeenCalled();
     });
 
     it('should return the shared link for the public user', async () => {
       const authDto = authStub.adminSharedLink;
       shareMock.get.mockResolvedValue(sharedLinkStub.valid);
-      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.valid);
+      await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.valid);
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
 
     it('should not return metadata', async () => {
       const authDto = authStub.adminSharedLinkNoExif;
       shareMock.get.mockResolvedValue(sharedLinkStub.readonlyNoExif);
-      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.readonlyNoMetadata);
+      await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.readonlyNoMetadata);
+      expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
+    });
+
+    it('should throw an error for an password protected shared link', async () => {
+      const authDto = authStub.adminSharedLink;
+      shareMock.get.mockResolvedValue(sharedLinkStub.passwordRequired);
+      await expect(sut.getMine(authDto, {})).rejects.toBeInstanceOf(UnauthorizedException);
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
   });

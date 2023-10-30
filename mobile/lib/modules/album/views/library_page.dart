@@ -10,12 +10,16 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 
 class LibraryPage extends HookConsumerWidget {
   const LibraryPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final trashEnabled =
+        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider);
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     var settings = ref.watch(appSettingsServiceProvider);
@@ -27,21 +31,6 @@ class LibraryPage extends HookConsumerWidget {
       },
       [],
     );
-
-    AppBar buildAppBar() {
-      return AppBar(
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'IMMICH',
-          style: TextStyle(
-            fontFamily: 'SnowburstOne',
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
-      );
-    }
 
     final selectedAlbumSortOrder =
         useState(settings.getSetting(AppSettingsEnum.selectedAlbumSortOrder));
@@ -236,8 +225,23 @@ class LibraryPage extends HookConsumerWidget {
 
     final local = albums.where((a) => a.isLocal).toList();
 
+    Widget? shareTrashButton() {
+      return trashEnabled
+          ? InkWell(
+              onTap: () => AutoRouter.of(context).push(const TrashRoute()),
+              borderRadius: BorderRadius.circular(12),
+              child: const Icon(
+                Icons.delete_rounded,
+                size: 25,
+              ),
+            )
+          : null;
+    }
+
     return Scaffold(
-      appBar: buildAppBar(),
+      appBar: ImmichAppBar(
+        action: shareTrashButton(),
+      ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(

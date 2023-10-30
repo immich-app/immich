@@ -111,6 +111,34 @@ describe(`${PartnerController.name} (e2e)`, () => {
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.invalidShareKey);
     });
+
+    it('should return unauthorized for password protected link', async () => {
+      const passwordProtectedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+        type: SharedLinkType.ALBUM,
+        albumId: album.id,
+        password: 'foo',
+      });
+
+      const { status, body } = await request(server).get('/shared-link/me').query({ key: passwordProtectedLink.key });
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.invalidSharePassword);
+    });
+
+    it('should get data for correct password protected link', async () => {
+      const passwordProtectedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
+        type: SharedLinkType.ALBUM,
+        albumId: album.id,
+        password: 'foo',
+      });
+
+      const { status, body } = await request(server)
+        .get('/shared-link/me')
+        .query({ key: passwordProtectedLink.key, password: 'foo' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ album, userId: user1.userId, type: SharedLinkType.ALBUM }));
+    });
   });
 
   describe('GET /shared-link/:id', () => {
