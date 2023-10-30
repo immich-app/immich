@@ -1,8 +1,6 @@
 import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
-import { ReadStream, constants, createReadStream } from 'fs';
-import fs from 'fs/promises';
 import { AuthUserDto } from '../auth';
 import { IEntityJob, JobName } from '../job';
 import {
@@ -13,6 +11,7 @@ import {
   ILibraryRepository,
   IStorageRepository,
   IUserRepository,
+  ImmichReadStream,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { CreateUserDto, UpdateUserDto } from './dto';
@@ -41,8 +40,8 @@ export class UserService {
     return users.map(mapUser);
   }
 
-  async get(userId: string, withDeleted = false): Promise<UserResponseDto> {
-    const user = await this.userRepository.get(userId, withDeleted);
+  async get(userId: string): Promise<UserResponseDto> {
+    const user = await this.userRepository.get(userId, false);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -97,20 +96,16 @@ export class UserService {
     authUser: AuthUserDto,
     fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
-    const updatedUser = await this.userCore.createProfileImage(authUser, fileInfo.path);
+    const updatedUser = await this.userRepository.update(authUser.id, { profileImagePath: fileInfo.path });
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
   }
 
-  async getProfileImage(userId: string): Promise<ReadStream> {
-    const user = await this.userRepository.get(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+  async getProfileImage(id: string): Promise<ImmichReadStream> {
+    const user = await this.findOrFail(id);
     if (!user.profileImagePath) {
       throw new NotFoundException('User does not have a profile image');
     }
-    await fs.access(user.profileImagePath, constants.R_OK);
-    return createReadStream(user.profileImagePath);
+    return this.storageRepository.createReadStream(user.profileImagePath, 'image/jpeg');
   }
 
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
@@ -184,5 +179,13 @@ export class UserService {
     const msSinceDelete = new Date().getTime() - (Date.parse(user.deletedAt.toString()) || 0);
 
     return msSinceDelete >= msDeleteWait;
+  }
+
+  private async findOrFail(id: string) {
+    const user = await this.userRepository.get(id);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
   }
 }

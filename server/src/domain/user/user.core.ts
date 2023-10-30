@@ -123,15 +123,6 @@ export class UserCore {
     }
   }
 
-  async createProfileImage(authUser: AuthUserDto, filePath: string): Promise<UserEntity> {
-    try {
-      return this.userRepository.update(authUser.id, { profileImagePath: filePath });
-    } catch (e) {
-      Logger.error(e, 'Create User Profile Image');
-      throw new InternalServerErrorException('Failed to create new user profile image');
-    }
-  }
-
   async restoreUser(authUser: AuthUserDto, userToRestore: UserEntity): Promise<UserEntity> {
     if (!authUser.isAdmin) {
       throw new ForbiddenException('Unauthorized');
