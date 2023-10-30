@@ -3964,6 +3964,7 @@ export const TranscodeHWAccel = {
     Nvenc: 'nvenc',
     Qsv: 'qsv',
     Vaapi: 'vaapi',
+    Rkmpp: 'rkmpp',
     Disabled: 'disabled'
 } as const;
 

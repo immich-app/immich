@@ -1,0 +1,24 @@
+version: "3.8"
+
+# Hardware acceleration for transcoding using RKMPP for Rockchip SOCs
+# This is only needed if you want to use hardware acceleration for transcoding.
+# Supported host OS is Ubuntu Jammy 22.04 with custom ffmpeg from ppa:liujianfeng1994/rockchip-multimedia
+
+services:
+  hwaccel:
+    security_opt: # enables full access to /sys and /proc, still far better than privileged: true
+      - systempaths=unconfined
+      - apparmor=unconfined
+    group_add:
+      - video
+    devices:
+      - /dev/rga:/dev/rga
+      - /dev/dri:/dev/dri
+      - /dev/dma_heap:/dev/dma_heap
+      - /dev/mpp_service:/dev/mpp_service
+    volumes:
+      - /usr/bin/ffmpeg:/usr/bin/ffmpeg_mpp:ro
+      - /lib/aarch64-linux-gnu:/lib/ffmpeg-mpp:ro
+      - /lib/aarch64-linux-gnu/libblas.so.3:/lib/ffmpeg-mpp/libblas.so.3:ro # symlink is resolved by mounting
+      - /lib/aarch64-linux-gnu/liblapack.so.3:/lib/ffmpeg-mpp/liblapack.so.3:ro # symlink is resolved by mounting
+      - /lib/aarch64-linux-gnu/pulseaudio/libpulsecommon-15.99.so:/lib/ffmpeg-mpp/libpulsecommon-15.99.so:ro

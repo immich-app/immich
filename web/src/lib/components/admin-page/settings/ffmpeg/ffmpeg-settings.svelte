@@ -282,6 +282,10 @@
                     text: 'VAAPI',
                   },
                   {
+                    value: TranscodeHWAccel.Rkmpp,
+                    text: 'RKMPP (only on Rockchip SOCs)',
+                  },
+                  {
                     value: TranscodeHWAccel.Disabled,
                     text: 'Disabled',
                   },
