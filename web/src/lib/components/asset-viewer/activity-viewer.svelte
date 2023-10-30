@@ -108,7 +108,7 @@
 
 <div class="relative overflow-x-hidden">
   <div class=" dark:bg-immich-dark-bg dark:text-immich-dark-fg w-full h-full overflow-x-hidden">
-    <div class="fixed z-[1000] w-full h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white">
+    <div class="fixed z-[1000] w-[359px] h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white">
       <div class="flex place-items-center gap-2">
         <button
           class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
@@ -140,7 +140,7 @@
               <div>
                 {#if showDeleteComment[index]}
                   <button
-                    class="absolute right-6 rounded-xl items-center bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
+                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
                     use:clickOutside
                     on:outclick={() => (showDeleteComment[index] = false)}
                     on:click={() => handleDeleteComment(reaction.id, index)}
