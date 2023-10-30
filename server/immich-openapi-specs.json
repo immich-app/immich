@@ -5747,12 +5747,16 @@
             "format": "uuid",
             "type": "string"
           },
+          "albumName": {
+            "type": "string"
+          },
           "assetCount": {
             "type": "integer"
           }
         },
         "required": [
           "albumId",
+          "albumName",
           "assetCount"
         ],
         "type": "object"

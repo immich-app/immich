@@ -291,6 +291,12 @@ export interface AlbumsForPersonResponseDto {
     'albumId': string;
     /**
      * 
+     * @type {string}
+     * @memberof AlbumsForPersonResponseDto
+     */
+    'albumName': string;
+    /**
+     * 
      * @type {number}
      * @memberof AlbumsForPersonResponseDto
      */
