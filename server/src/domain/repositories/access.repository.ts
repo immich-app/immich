@@ -8,6 +8,10 @@ export interface IAccessRepository {
     hasSharedLinkAccess(sharedLinkId: string, assetId: string): Promise<boolean>;
   };
 
+  authDevice: {
+    hasOwnerAccess(userId: string, deviceId: string): Promise<boolean>;
+  };
+
   album: {
     hasOwnerAccess(userId: string, albumId: string): Promise<boolean>;
     hasSharedAlbumAccess(userId: string, albumId: string): Promise<boolean>;

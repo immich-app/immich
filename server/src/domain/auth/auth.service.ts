@@ -11,7 +11,9 @@ import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
+import { AccessCore, Permission } from '../access';
 import {
+  IAccessRepository,
   ICryptoRepository,
   IKeyRepository,
   ILibraryRepository,
@@ -61,19 +63,22 @@ interface OAuthProfile extends UserinfoResponse {
 
 @Injectable()
 export class AuthService {
-  private userCore: UserCore;
+  private access: AccessCore;
   private configCore: SystemConfigCore;
   private logger = new Logger(AuthService.name);
+  private userCore: UserCore;
 
   constructor(
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
     @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
-    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
+    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
@@ -104,7 +109,7 @@ export class AuthService {
 
   async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (authUser.accessTokenId) {
-      await this.userTokenRepository.delete(authUser.id, authUser.accessTokenId);
+      await this.userTokenRepository.delete(authUser.accessTokenId);
     }
 
     return {
@@ -175,8 +180,9 @@ export class AuthService {
     return userTokens.map((userToken) => mapUserToken(userToken, authUser.accessTokenId));
   }
 
-  async logoutDevice(authUser: AuthUserDto, deviceId: string): Promise<void> {
-    await this.userTokenRepository.delete(authUser.id, deviceId);
+  async logoutDevice(authUser: AuthUserDto, id: string): Promise<void> {
+    await this.access.requirePermission(authUser, Permission.AUTH_DEVICE_DELETE, id);
+    await this.userTokenRepository.delete(id);
   }
 
   async logoutDevices(authUser: AuthUserDto): Promise<void> {
@@ -185,7 +191,7 @@ export class AuthService {
       if (device.id === authUser.accessTokenId) {
         continue;
       }
-      await this.userTokenRepository.delete(authUser.id, device.id);
+      await this.userTokenRepository.delete(device.id);
     }
   }
 
