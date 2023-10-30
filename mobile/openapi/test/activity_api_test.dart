@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<ActivityReponseDto> changeFavorite(ActivityFavoriteDto activityFavoriteDto) async
+    //Future<Object> changeFavorite(ActivityFavoriteDto activityFavoriteDto) async
     test('test changeFavorite', () async {
       // TODO
     });
@@ -37,7 +37,7 @@ void main() {
       // TODO
     });
 
-    //Future<ActivityReponseDto> getFavorite(String assetId, String albumId) async
+    //Future<LikeStatusReponseDto> getFavorite(String assetId, String albumId) async
     test('test getFavorite', () async {
       // TODO
     });

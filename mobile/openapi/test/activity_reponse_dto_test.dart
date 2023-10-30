@@ -31,12 +31,12 @@ void main() {
       // TODO
     });
 
-    // bool isLiked
-    test('to test the property `isLiked`', () async {
+    // Object type
+    test('to test the property `type`', () async {
       // TODO
     });
 
-    // UserCommentDto user
+    // UserDto user
     test('to test the property `user`', () async {
       // TODO
     });

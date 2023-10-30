@@ -16,39 +16,39 @@ class ActivityReponseDto {
     required this.comment,
     required this.createdAt,
     required this.id,
-    required this.isLiked,
+    required this.type,
     required this.user,
   });
 
   String? comment;
 
-  DateTime? createdAt;
+  DateTime createdAt;
 
-  String? id;
+  String id;
 
-  bool isLiked;
+  Object type;
 
-  UserCommentDto? user;
+  UserDto user;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityReponseDto &&
      other.comment == comment &&
      other.createdAt == createdAt &&
      other.id == id &&
-     other.isLiked == isLiked &&
+     other.type == type &&
      other.user == user;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (comment == null ? 0 : comment!.hashCode) +
-    (createdAt == null ? 0 : createdAt!.hashCode) +
-    (id == null ? 0 : id!.hashCode) +
-    (isLiked.hashCode) +
-    (user == null ? 0 : user!.hashCode);
+    (createdAt.hashCode) +
+    (id.hashCode) +
+    (type.hashCode) +
+    (user.hashCode);
 
   @override
-  String toString() => 'ActivityReponseDto[comment=$comment, createdAt=$createdAt, id=$id, isLiked=$isLiked, user=$user]';
+  String toString() => 'ActivityReponseDto[comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -57,22 +57,10 @@ class ActivityReponseDto {
     } else {
     //  json[r'comment'] = null;
     }
-    if (this.createdAt != null) {
-      json[r'createdAt'] = this.createdAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'createdAt'] = null;
-    }
-    if (this.id != null) {
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
-    } else {
-    //  json[r'id'] = null;
-    }
-      json[r'isLiked'] = this.isLiked;
-    if (this.user != null) {
+      json[r'type'] = this.type;
       json[r'user'] = this.user;
-    } else {
-    //  json[r'user'] = null;
-    }
     return json;
   }
 
@@ -85,10 +73,10 @@ class ActivityReponseDto {
 
       return ActivityReponseDto(
         comment: mapValueOfType<String>(json, r'comment'),
-        createdAt: mapDateTime(json, r'createdAt', ''),
-        id: mapValueOfType<String>(json, r'id'),
-        isLiked: mapValueOfType<bool>(json, r'isLiked')!,
-        user: UserCommentDto.fromJson(json[r'user']),
+        createdAt: mapDateTime(json, r'createdAt', '')!,
+        id: mapValueOfType<String>(json, r'id')!,
+        type: mapValueOfType<Object>(json, r'type')!,
+        user: UserDto.fromJson(json[r'user'])!,
       );
     }
     return null;
@@ -139,7 +127,7 @@ class ActivityReponseDto {
     'comment',
     'createdAt',
     'id',
-    'isLiked',
+    'type',
     'user',
   };
 }

@@ -83,8 +83,8 @@
   let canCopyImagesToClipboard: boolean;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
-  let isLiked: ActivityReponseDto | null = null;
-  let numberOfComments: number | null = null;
+  let isLiked: boolean;
+  let numberOfComments: number;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -103,16 +103,16 @@
     if (album) {
       try {
         const { data } = await api.activityApi.changeFavorite({
-          activityFavoriteDto: { favorite: !isLiked?.isLiked, albumId: album.id, assetId: asset.id },
+          activityFavoriteDto: { favorite: !isLiked, albumId: album.id, assetId: asset.id },
         });
-
-        if (data.isLiked) {
-          reactions.push(data);
+        if (data) {
+          reactions.push(data as ActivityReponseDto);
           reactions = reactions;
+          isLiked = true;
         } else {
-          reactions = reactions.filter((obj) => (obj.user && user && obj.user.id !== user.id) || obj.isLiked !== true);
+          reactions = reactions.filter((obj) => (obj.user && user && obj.user.id !== user.id) || obj.comment);
+          isLiked = false;
         }
-        isLiked = data;
       } catch (error) {
         handleError(error, "Can't change favorite for asset");
       }
@@ -123,7 +123,7 @@
     if (album) {
       try {
         const { data } = await api.activityApi.getFavorite({ assetId: asset.id, albumId: album.id });
-        isLiked = data;
+        isLiked = data.value;
       } catch (error) {
         handleError(error, "Can't get Favorite");
       }
@@ -612,7 +612,7 @@
               <button on:click={handleFavorite}>
                 <div class="h-8 items-center justify-center">
                   {#if isLiked}
-                    <Icon path={isLiked.isLiked ? mdiHeart : mdiHeartOutline} size={30} />
+                    <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={30} />
                   {:else}
                     <Icon path={mdiHeartOutline} size={30} />
                   {/if}

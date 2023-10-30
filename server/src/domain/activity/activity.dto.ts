@@ -2,13 +2,14 @@ import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 import { ValidateUUID } from '../domain.util';
+import { UserDto, mapSimpleUser } from '../user/response-dto';
 
 export class ActivityReponseDto {
-  id!: string | null;
+  id!: string;
   comment!: string | null;
-  createdAt!: Date | null;
-  isLiked!: boolean;
-  user!: UserCommentDto | null;
+  createdAt!: Date;
+  type!: 'comment' | 'like';
+  user!: UserDto;
 }
 
 export class StatisticsResponseDto {
@@ -16,12 +17,8 @@ export class StatisticsResponseDto {
   comments!: number;
 }
 
-export class UserCommentDto {
-  id!: string;
-  firstName!: string;
-  lastName!: string;
-  email!: string;
-  profileImagePath!: string;
+export class LikeStatusReponseDto {
+  value!: boolean;
 }
 
 export class ActivityDto {
@@ -49,39 +46,8 @@ export function mapActivity(activity: ActivityEntity): ActivityReponseDto {
     id: activity.id,
     createdAt: activity.createdAt,
     comment: activity.comment,
-    isLiked: activity.isLiked,
-    user: {
-      id: activity.user.id,
-      firstName: activity.user.firstName,
-      lastName: activity.user.lastName,
-      email: activity.user.email,
-      profileImagePath: activity.user.profileImagePath,
-    },
-  };
-}
-
-export function mapFavorite(activity: ActivityEntity | null): ActivityReponseDto {
-  if (activity)
-    return {
-      id: activity.id,
-      createdAt: activity.createdAt,
-      comment: activity.comment,
-      isLiked: activity.isLiked,
-      user: {
-        id: activity.user.id,
-        firstName: activity.user.firstName,
-        lastName: activity.user.lastName,
-        email: activity.user.email,
-        profileImagePath: activity.user.profileImagePath,
-      },
-    };
-
-  return {
-    id: null,
-    createdAt: null,
-    comment: null,
-    isLiked: false,
-    user: null,
+    type: activity.isLiked ? 'like' : 'comment',
+    user: mapSimpleUser(activity.user),
   };
 }
 
@@ -98,14 +64,8 @@ export function mapActivities(activities: ActivityEntity[]): ActivityReponseDto[
       id: activities[i].id,
       comment: activities[i].comment,
       createdAt: activities[i].createdAt,
-      isLiked: activities[i].isLiked,
-      user: {
-        id: activities[i].user.id,
-        firstName: activities[i].user.firstName,
-        lastName: activities[i].user.lastName,
-        email: activities[i].user.email,
-        profileImagePath: activities[i].user.profileImagePath,
-      },
+      type: activities[i].isLiked ? 'like' : 'comment',
+      user: mapSimpleUser(activities[i].user),
     });
   }
   return result;

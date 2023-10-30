@@ -8,10 +8,10 @@ import {
   ActivityDto,
   ActivityFavoriteDto,
   ActivityReponseDto,
+  LikeStatusReponseDto,
   StatisticsResponseDto,
   mapActivities,
   mapActivity,
-  mapFavorite,
   mapStatistics,
 } from './activity.dto';
 
@@ -46,14 +46,18 @@ export class ActivityService {
     return mapStatistics(await this.repository.getStatistics(dto.assetId, dto.albumId));
   }
 
-  async getFavorite(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityReponseDto> {
+  async getFavorite(authUser: AuthUserDto, dto: ActivityDto): Promise<LikeStatusReponseDto> {
     await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
       throw new BadRequestException('Album is not shared');
     }
     const favorite = await this.repository.getFavorite(dto.assetId, dto.albumId, authUser.id);
-    return mapFavorite(favorite);
+    if (favorite) {
+      return { value: true };
+    } else {
+      return { value: false };
+    }
   }
 
   async addComment(authUser: AuthUserDto, dto: ActivityCommentDto): Promise<ActivityReponseDto> {
@@ -85,7 +89,7 @@ export class ActivityService {
     this.repository.delete(comment);
   }
 
-  async changeFavorite(authUser: AuthUserDto, dto: ActivityFavoriteDto): Promise<ActivityReponseDto> {
+  async changeFavorite(authUser: AuthUserDto, dto: ActivityFavoriteDto): Promise<ActivityReponseDto | void> {
     await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
     const album = await this.albumRepository.getById(dto.albumId, { withAssets: false });
     if (!album?.sharedUsers.length) {
@@ -96,10 +100,14 @@ export class ActivityService {
     const isFavorite = reaction ? reaction.isLiked : false;
 
     if (favorite === isFavorite) {
-      return mapFavorite(reaction);
+      if (reaction) {
+        return mapActivity(reaction);
+      } else {
+        return;
+      }
     } else if (reaction) {
       this.repository.delete(reaction);
-      return mapFavorite(null);
+      return;
     } else {
       const test = await this.repository.update({
         assetId: dto.assetId,
@@ -108,7 +116,7 @@ export class ActivityService {
         isLiked: true,
       });
 
-      return mapFavorite(test);
+      return mapActivity(test);
     }
   }
 

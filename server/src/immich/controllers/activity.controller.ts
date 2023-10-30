@@ -10,6 +10,7 @@ import {
   ActivityFavoriteDto,
   ActivityReponseDto,
   ActivityService,
+  LikeStatusReponseDto,
   StatisticsResponseDto,
 } from '@app/domain/activity';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -32,12 +33,15 @@ export class ActivityController {
   }
 
   @Get('like')
-  getFavorite(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<ActivityReponseDto> {
+  getFavorite(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<LikeStatusReponseDto> {
     return this.service.getFavorite(authUser, dto);
   }
 
   @Put('like')
-  changeFavorite(@AuthUser() authUser: AuthUserDto, @Body() dto: ActivityFavoriteDto): Promise<ActivityReponseDto> {
+  changeFavorite(
+    @AuthUser() authUser: AuthUserDto,
+    @Body() dto: ActivityFavoriteDto,
+  ): Promise<ActivityReponseDto | void> {
     return this.service.changeFavorite(authUser, dto);
   }
 

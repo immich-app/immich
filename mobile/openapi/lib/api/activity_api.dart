@@ -95,7 +95,7 @@ class ActivityApi {
   /// Parameters:
   ///
   /// * [ActivityFavoriteDto] activityFavoriteDto (required):
-  Future<ActivityReponseDto?> changeFavorite(ActivityFavoriteDto activityFavoriteDto,) async {
+  Future<Object?> changeFavorite(ActivityFavoriteDto activityFavoriteDto,) async {
     final response = await changeFavoriteWithHttpInfo(activityFavoriteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -104,7 +104,7 @@ class ActivityApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityReponseDto',) as ActivityReponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
     
     }
     return null;
@@ -246,7 +246,7 @@ class ActivityApi {
   /// * [String] assetId (required):
   ///
   /// * [String] albumId (required):
-  Future<ActivityReponseDto?> getFavorite(String assetId, String albumId,) async {
+  Future<LikeStatusReponseDto?> getFavorite(String assetId, String albumId,) async {
     final response = await getFavoriteWithHttpInfo(assetId, albumId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -255,7 +255,7 @@ class ActivityApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityReponseDto',) as ActivityReponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LikeStatusReponseDto',) as LikeStatusReponseDto;
     
     }
     return null;

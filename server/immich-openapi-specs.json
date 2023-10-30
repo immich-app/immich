@@ -160,7 +160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ActivityReponseDto"
+                  "$ref": "#/components/schemas/LikeStatusReponseDto"
                 }
               }
             },
@@ -200,7 +200,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ActivityReponseDto"
+                  "type": "object"
                 }
               }
             },
@@ -5860,30 +5860,23 @@
           },
           "createdAt": {
             "format": "date-time",
-            "nullable": true,
             "type": "string"
           },
           "id": {
-            "nullable": true,
             "type": "string"
           },
-          "isLiked": {
-            "type": "boolean"
+          "type": {
+            "type": "object"
           },
           "user": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserCommentDto"
-              }
-            ],
-            "nullable": true
+            "$ref": "#/components/schemas/UserDto"
           }
         },
         "required": [
           "id",
           "comment",
           "createdAt",
-          "isLiked",
+          "type",
           "user"
         ],
         "type": "object"
@@ -7445,6 +7438,17 @@
           "EXTERNAL"
         ],
         "type": "string"
+      },
+      "LikeStatusReponseDto": {
+        "properties": {
+          "value": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
       },
       "LoginCredentialDto": {
         "properties": {
@@ -9098,7 +9102,18 @@
         ],
         "type": "object"
       },
-      "UserCommentDto": {
+      "UserCountResponseDto": {
+        "properties": {
+          "userCount": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "userCount"
+        ],
+        "type": "object"
+      },
+      "UserDto": {
         "properties": {
           "email": {
             "type": "string"
@@ -9122,17 +9137,6 @@
           "lastName",
           "email",
           "profileImagePath"
-        ],
-        "type": "object"
-      },
-      "UserCountResponseDto": {
-        "properties": {
-          "userCount": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "userCount"
         ],
         "type": "object"
       },
@@ -9189,12 +9193,12 @@
         },
         "required": [
           "id",
-          "email",
           "firstName",
           "lastName",
+          "email",
+          "profileImagePath",
           "storageLabel",
           "externalPath",
-          "profileImagePath",
           "shouldChangePassword",
           "isAdmin",
           "createdAt",

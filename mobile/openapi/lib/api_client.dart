@@ -315,6 +315,8 @@ class ApiClient {
           return LibraryStatsResponseDto.fromJson(value);
         case 'LibraryType':
           return LibraryTypeTypeTransformer().decode(value);
+        case 'LikeStatusReponseDto':
+          return LikeStatusReponseDto.fromJson(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
@@ -463,10 +465,10 @@ class ApiClient {
           return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
-        case 'UserCommentDto':
-          return UserCommentDto.fromJson(value);
         case 'UserCountResponseDto':
           return UserCountResponseDto.fromJson(value);
+        case 'UserDto':
+          return UserDto.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':

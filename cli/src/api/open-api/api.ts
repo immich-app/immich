@@ -166,25 +166,25 @@ export interface ActivityReponseDto {
      * @type {string}
      * @memberof ActivityReponseDto
      */
-    'createdAt': string | null;
+    'createdAt': string;
     /**
      * 
      * @type {string}
      * @memberof ActivityReponseDto
      */
-    'id': string | null;
+    'id': string;
     /**
      * 
-     * @type {boolean}
+     * @type {object}
      * @memberof ActivityReponseDto
      */
-    'isLiked': boolean;
+    'type': object;
     /**
      * 
-     * @type {UserCommentDto}
+     * @type {UserDto}
      * @memberof ActivityReponseDto
      */
-    'user': UserCommentDto | null;
+    'user': UserDto;
 }
 /**
  * 
@@ -2127,6 +2127,19 @@ export const LibraryType = {
 export type LibraryType = typeof LibraryType[keyof typeof LibraryType];
 
 
+/**
+ * 
+ * @export
+ * @interface LikeStatusReponseDto
+ */
+export interface LikeStatusReponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof LikeStatusReponseDto
+     */
+    'value': boolean;
+}
 /**
  * 
  * @export
@@ -4288,43 +4301,6 @@ export interface UsageByUserDto {
 /**
  * 
  * @export
- * @interface UserCommentDto
- */
-export interface UserCommentDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof UserCommentDto
-     */
-    'email': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserCommentDto
-     */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserCommentDto
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserCommentDto
-     */
-    'lastName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserCommentDto
-     */
-    'profileImagePath': string;
-}
-/**
- * 
- * @export
  * @interface UserCountResponseDto
  */
 export interface UserCountResponseDto {
@@ -4334,6 +4310,43 @@ export interface UserCountResponseDto {
      * @memberof UserCountResponseDto
      */
     'userCount': number;
+}
+/**
+ * 
+ * @export
+ * @interface UserDto
+ */
+export interface UserDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
+    'email': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
+    'firstName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
+    'lastName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
+    'profileImagePath': string;
 }
 /**
  * 
@@ -5236,7 +5249,7 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async changeFavorite(activityFavoriteDto: ActivityFavoriteDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityReponseDto>> {
+        async changeFavorite(activityFavoriteDto: ActivityFavoriteDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.changeFavorite(activityFavoriteDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -5268,7 +5281,7 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFavorite(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityReponseDto>> {
+        async getFavorite(assetId: string, albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LikeStatusReponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getFavorite(assetId, albumId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -5308,7 +5321,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        changeFavorite(requestParameters: ActivityApiChangeFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityReponseDto> {
+        changeFavorite(requestParameters: ActivityApiChangeFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
             return localVarFp.changeFavorite(requestParameters.activityFavoriteDto, options).then((request) => request(axios, basePath));
         },
         /**
@@ -5335,7 +5348,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFavorite(requestParameters: ActivityApiGetFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityReponseDto> {
+        getFavorite(requestParameters: ActivityApiGetFavoriteRequest, options?: AxiosRequestConfig): AxiosPromise<LikeStatusReponseDto> {
             return localVarFp.getFavorite(requestParameters.assetId, requestParameters.albumId, options).then((request) => request(axios, basePath));
         },
         /**

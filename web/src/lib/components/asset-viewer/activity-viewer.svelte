@@ -115,20 +115,6 @@
     <div class="overflow-x-hidden mt-[64px] mb-[72px]">
       {#each reactions as reaction, index (reaction.id)}
         {#if reaction.user && reaction.createdAt}
-          {#if reaction.isLiked}
-            <div
-              class="flex p-2 m-2 rounded-full gap-2 items-center text-sm"
-              title={new Date(reaction.createdAt).toLocaleDateString()}
-            >
-              <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
-
-              <div>
-                {`${reaction.user.firstName} ${reaction.user.lastName} liked this asset `}&bull;{` ${timeSince(
-                  new Date(reaction.createdAt),
-                )}`}
-              </div>
-            </div>
-          {/if}
           {#if reaction.comment}
             <div class="flex dark:bg-slate-500 bg-gray-200 p-2 m-2 rounded-3xl gap-2 justify-start">
               <div>
@@ -164,6 +150,19 @@
                 {timeSince(new Date(reaction.createdAt))}
               </div>
             {/if}
+          {:else}
+            <div
+              class="flex p-2 m-2 rounded-full gap-2 items-center text-sm"
+              title={new Date(reaction.createdAt).toLocaleDateString()}
+            >
+              <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
+
+              <div>
+                {`${reaction.user.firstName} ${reaction.user.lastName} liked this asset `}&bull;{` ${timeSince(
+                  new Date(reaction.createdAt),
+                )}`}
+              </div>
+            </div>
           {/if}
         {/if}
       {/each}

@@ -78,6 +78,7 @@ doc/LibraryApi.md
 doc/LibraryResponseDto.md
 doc/LibraryStatsResponseDto.md
 doc/LibraryType.md
+doc/LikeStatusReponseDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -161,8 +162,8 @@ doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
 doc/UserApi.md
-doc/UserCommentDto.md
 doc/UserCountResponseDto.md
+doc/UserDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
 doc/VideoCodec.md
@@ -260,6 +261,7 @@ lib/model/job_status_dto.dart
 lib/model/library_response_dto.dart
 lib/model/library_stats_response_dto.dart
 lib/model/library_type.dart
+lib/model/like_status_reponse_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -334,8 +336,8 @@ lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
-lib/model/user_comment_dto.dart
 lib/model/user_count_response_dto.dart
+lib/model/user_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 lib/model/video_codec.dart
@@ -415,6 +417,7 @@ test/library_api_test.dart
 test/library_response_dto_test.dart
 test/library_stats_response_dto_test.dart
 test/library_type_test.dart
+test/like_status_reponse_dto_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
@@ -498,8 +501,8 @@ test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart
 test/user_api_test.dart
-test/user_comment_dto_test.dart
 test/user_count_response_dto_test.dart
+test/user_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
 test/video_codec_test.dart

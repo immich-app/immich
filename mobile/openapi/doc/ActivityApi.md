@@ -73,7 +73,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **changeFavorite**
-> ActivityReponseDto changeFavorite(activityFavoriteDto)
+> Object changeFavorite(activityFavoriteDto)
 
 
 
@@ -114,7 +114,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ActivityReponseDto**](ActivityReponseDto.md)
+[**Object**](Object.md)
 
 ### Authorization
 
@@ -239,7 +239,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getFavorite**
-> ActivityReponseDto getFavorite(assetId, albumId)
+> LikeStatusReponseDto getFavorite(assetId, albumId)
 
 
 
@@ -282,7 +282,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ActivityReponseDto**](ActivityReponseDto.md)
+[**LikeStatusReponseDto**](LikeStatusReponseDto.md)
 
 ### Authorization
 
