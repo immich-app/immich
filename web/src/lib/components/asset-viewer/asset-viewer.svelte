@@ -547,7 +547,7 @@
       }
       asset.stackCount = 0;
       asset.stack = [];
-      assetStore?.updateAsset(asset);
+      assetStore?.updateAsset(asset, true);
 
       dispatch('unstack');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
