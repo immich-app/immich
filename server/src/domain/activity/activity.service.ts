@@ -7,6 +7,7 @@ import {
   ActivityCreateDto,
   ActivityDto,
   ActivityResponseDto,
+  ActivitySearchDto,
   ActivityStatisticsResponseDto,
   MaybeDuplicate,
   ReactionType,
@@ -24,9 +25,13 @@ export class ActivityService {
     this.access = AccessCore.create(accessRepository);
   }
 
-  async getAll(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityResponseDto[]> {
+  async getAll(authUser: AuthUserDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, dto.albumId);
-    const activities = await this.repository.search({ albumId: dto.albumId, assetId: dto.assetId });
+    const activities = await this.repository.search({
+      albumId: dto.albumId,
+      assetId: dto.assetId,
+      isLiked: dto.type === ReactionType.LIKE,
+    });
     return activities.map(mapActivity);
   }
 
