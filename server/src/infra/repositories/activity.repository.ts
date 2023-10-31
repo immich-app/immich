@@ -16,12 +16,12 @@ export class ActivityRepository implements IActivityRepository {
   constructor(@InjectRepository(ActivityEntity) private repository: Repository<ActivityEntity>) {}
 
   search(options: ActivitySearch): Promise<ActivityEntity[]> {
-    const { assetId, albumId, userId, isLiked } = options;
+    const { userId, assetId, albumId, isLiked } = options;
     return this.repository.find({
       where: {
+        userId,
         assetId,
         albumId,
-        userId,
         isLiked,
       },
       relations: {

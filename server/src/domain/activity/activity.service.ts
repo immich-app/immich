@@ -30,8 +30,9 @@ export class ActivityService {
     const activities = await this.repository.search({
       albumId: dto.albumId,
       assetId: dto.assetId,
-      isLiked: dto.type === ReactionType.LIKE,
+      isLiked: dto.type && dto.type === ReactionType.LIKE,
     });
+
     return activities.map(mapActivity);
   }
 
@@ -44,8 +45,8 @@ export class ActivityService {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
 
     const common = {
-      assetId: dto.assetId,
       userId: authUser.id,
+      assetId: dto.assetId,
       albumId: dto.albumId,
     };
 

@@ -7,28 +7,11 @@ import { errorStub, uuidStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
-const users = [
-  {
-    email: 'user1@immich.app',
-    password: 'Password123',
-    firstName: 'User 1',
-    lastName: 'Test',
-  },
-  {
-    email: 'user2@immich.app',
-    password: 'Password123',
-    firstName: 'User 2',
-    lastName: 'Test',
-  },
-];
-
 describe(`${ActivityController.name} (e2e)`, () => {
   let server: any;
   let admin: LoginResponseDto;
-  let user1: LoginResponseDto;
-  let user2: LoginResponseDto;
-  let user1Asset: AssetFileUploadResponseDto;
-  let album1: AlbumResponseDto;
+  let asset: AssetFileUploadResponseDto;
+  let album: AlbumResponseDto;
 
   beforeAll(async () => {
     [server] = await testApp.create();
@@ -42,20 +25,8 @@ describe(`${ActivityController.name} (e2e)`, () => {
     await db.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
-
-    await Promise.all(users.map((user) => api.userApi.create(server, admin.accessToken, user)));
-    [user1, user2] = await Promise.all(
-      users.map((user) => api.authApi.login(server, { email: user.email, password: user.password })),
-    );
-
-    user1Asset = await api.assetApi.upload(server, user1.accessToken, 'example');
-    [album1] = await Promise.all([
-      api.albumApi.create(server, user1.accessToken, {
-        albumName: 'Album 1',
-        sharedWithUserIds: [user2.userId],
-        assetIds: [user1Asset.id],
-      }),
-    ]);
+    asset = await api.assetApi.upload(server, admin.accessToken, 'example');
+    album = await api.albumApi.create(server, admin.accessToken, { albumName: 'Album 1', assetIds: [asset.id] });
   });
 
   describe('GET /activity', () => {
@@ -68,7 +39,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
     it('should require an albumId', async () => {
       const { status, body } = await request(server)
         .get('/activity')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(errorStub.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
     });
@@ -77,7 +48,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
       const { status, body } = await request(server)
         .get('/activity')
         .query({ albumId: uuidStub.invalid })
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(errorStub.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
     });
@@ -86,7 +57,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
       const { status, body } = await request(server)
         .get('/activity')
         .query({ albumId: uuidStub.notFound, assetId: uuidStub.invalid })
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(400);
       expect(body).toEqual(errorStub.badRequest(expect.arrayContaining(['assetId must be a UUID'])));
     });
@@ -94,68 +65,89 @@ describe(`${ActivityController.name} (e2e)`, () => {
     it('should start off empty', async () => {
       const { status, body } = await request(server)
         .get('/activity')
-        .query({ albumId: album1.id })
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .query({ albumId: album.id })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([]);
       expect(status).toEqual(200);
     });
 
     it('should filter by album id', async () => {
-      const user2Asset = await api.assetApi.upload(server, user2.accessToken, 'example');
-      const album2 = await api.albumApi.create(server, user2.accessToken, {
+      const album2 = await api.albumApi.create(server, admin.accessToken, {
         albumName: 'Album 2',
-        assetIds: [user2Asset.id],
+        assetIds: [asset.id],
       });
-      const reaction = await api.activityApi.create(server, user1.accessToken, {
-        albumId: album1.id,
-        type: ReactionType.LIKE,
-      });
-      await api.activityApi.create(server, user2.accessToken, {
-        albumId: album2.id,
-        type: ReactionType.LIKE,
-      });
+      const [reaction] = await Promise.all([
+        api.activityApi.create(server, admin.accessToken, {
+          albumId: album.id,
+          type: ReactionType.LIKE,
+        }),
+        api.activityApi.create(server, admin.accessToken, {
+          albumId: album2.id,
+          type: ReactionType.LIKE,
+        }),
+      ]);
 
       const { status, body } = await request(server)
         .get('/activity')
-        .query({ albumId: album1.id })
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .query({ albumId: album.id })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
       expect(body.length).toBe(1);
       expect(body[0]).toEqual(reaction);
     });
 
     it('should filter by type=comment', async () => {
-      await api.activityApi.create(server, user2.accessToken, { albumId: album1.id, type: ReactionType.LIKE });
-      const reaction = await api.activityApi.create(server, user2.accessToken, {
-        albumId: album1.id,
-        type: ReactionType.COMMENT,
-        comment: 'comment',
-      });
+      const [reaction] = await Promise.all([
+        api.activityApi.create(server, admin.accessToken, {
+          albumId: album.id,
+          type: ReactionType.COMMENT,
+          comment: 'comment',
+        }),
+        api.activityApi.create(server, admin.accessToken, { albumId: album.id, type: ReactionType.LIKE }),
+      ]);
 
       const { status, body } = await request(server)
         .get('/activity')
-        .query({ albumId: album1.id, type: 'comment' })
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .query({ albumId: album.id, type: 'comment' })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
       expect(body.length).toBe(1);
       expect(body[0]).toEqual(reaction);
     });
 
     it('should filter by type=like', async () => {
-      const reaction = await api.activityApi.create(server, user2.accessToken, {
-        albumId: album1.id,
-        type: ReactionType.LIKE,
-      });
-      await api.activityApi.create(server, user2.accessToken, {
-        albumId: album1.id,
-        type: ReactionType.COMMENT,
-        comment: 'comment',
-      });
+      const [reaction] = await Promise.all([
+        api.activityApi.create(server, admin.accessToken, { albumId: album.id, type: ReactionType.LIKE }),
+        api.activityApi.create(server, admin.accessToken, {
+          albumId: album.id,
+          type: ReactionType.COMMENT,
+          comment: 'comment',
+        }),
+      ]);
 
       const { status, body } = await request(server)
         .get('/activity')
-        .query({ albumId: album1.id, type: 'like' })
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .query({ albumId: album.id, type: 'like' })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toEqual(200);
+      expect(body.length).toBe(1);
+      expect(body[0]).toEqual(reaction);
+    });
+
+    it('should filter by assetId', async () => {
+      const [reaction] = await Promise.all([
+        api.activityApi.create(server, admin.accessToken, {
+          albumId: album.id,
+          assetId: asset.id,
+          type: ReactionType.LIKE,
+        }),
+        api.activityApi.create(server, admin.accessToken, { albumId: album.id, type: ReactionType.LIKE }),
+      ]);
+
+      const { status, body } = await request(server)
+        .get('/activity')
+        .query({ albumId: album.id, assetId: asset.id })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(200);
       expect(body.length).toBe(1);
       expect(body[0]).toEqual(reaction);
@@ -172,7 +164,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
     it('should require an albumId', async () => {
       const { status, body } = await request(server)
         .post('/activity')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: uuidStub.invalid });
       expect(status).toEqual(400);
       expect(body).toEqual(errorStub.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
@@ -181,7 +173,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
     it('should require a comment when type is comment', async () => {
       const { status, body } = await request(server)
         .post('/activity')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ albumId: uuidStub.notFound, type: 'comment', comment: null });
       expect(status).toEqual(400);
       expect(body).toEqual(errorStub.badRequest(['comment must be a string', 'comment should not be empty']));
@@ -190,8 +182,8 @@ describe(`${ActivityController.name} (e2e)`, () => {
     it('should add a comment to an album', async () => {
       const { status, body } = await request(server)
         .post('/activity')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ albumId: album1.id, type: 'comment', comment: 'This is my first comment' });
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ albumId: album.id, type: 'comment', comment: 'This is my first comment' });
       expect(status).toEqual(201);
       expect(body).toEqual({
         id: expect.any(String),
@@ -199,15 +191,15 @@ describe(`${ActivityController.name} (e2e)`, () => {
         createdAt: expect.any(String),
         type: 'comment',
         comment: 'This is my first comment',
-        user: expect.objectContaining({ email: user1.userEmail }),
+        user: expect.objectContaining({ email: admin.userEmail }),
       });
     });
 
     it('should add a like to an album', async () => {
       const { status, body } = await request(server)
         .post('/activity')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ albumId: album1.id, type: 'like' });
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ albumId: album.id, type: 'like' });
       expect(status).toEqual(201);
       expect(body).toEqual({
         id: expect.any(String),
@@ -215,19 +207,65 @@ describe(`${ActivityController.name} (e2e)`, () => {
         createdAt: expect.any(String),
         type: 'like',
         comment: null,
-        user: expect.objectContaining({ email: user1.userEmail }),
+        user: expect.objectContaining({ email: admin.userEmail }),
       });
     });
 
-    it('should return a 200 for a duplicate like', async () => {
-      const reaction = await api.activityApi.create(server, user1.accessToken, {
-        albumId: album1.id,
+    it('should return a 200 for a duplicate like on the album', async () => {
+      const reaction = await api.activityApi.create(server, admin.accessToken, {
+        albumId: album.id,
         type: ReactionType.LIKE,
       });
       const { status, body } = await request(server)
         .post('/activity')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ albumId: album1.id, type: 'like' });
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ albumId: album.id, type: 'like' });
+      expect(status).toEqual(200);
+      expect(body).toEqual(reaction);
+    });
+
+    it('should add a comment to an asset', async () => {
+      const { status, body } = await request(server)
+        .post('/activity')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ albumId: album.id, assetId: asset.id, type: 'comment', comment: 'This is my first comment' });
+      expect(status).toEqual(201);
+      expect(body).toEqual({
+        id: expect.any(String),
+        assetId: asset.id,
+        createdAt: expect.any(String),
+        type: 'comment',
+        comment: 'This is my first comment',
+        user: expect.objectContaining({ email: admin.userEmail }),
+      });
+    });
+
+    it('should add a like to an asset', async () => {
+      const { status, body } = await request(server)
+        .post('/activity')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ albumId: album.id, assetId: asset.id, type: 'like' });
+      expect(status).toEqual(201);
+      expect(body).toEqual({
+        id: expect.any(String),
+        assetId: asset.id,
+        createdAt: expect.any(String),
+        type: 'like',
+        comment: null,
+        user: expect.objectContaining({ email: admin.userEmail }),
+      });
+    });
+
+    it('should return a 200 for a duplicate like on an asset', async () => {
+      const reaction = await api.activityApi.create(server, admin.accessToken, {
+        albumId: album.id,
+        assetId: asset.id,
+        type: ReactionType.LIKE,
+      });
+      const { status, body } = await request(server)
+        .post('/activity')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ albumId: album.id, assetId: asset.id, type: 'like' });
       expect(status).toEqual(200);
       expect(body).toEqual(reaction);
     });
@@ -243,32 +281,77 @@ describe(`${ActivityController.name} (e2e)`, () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(server)
         .delete(`/activity/${uuidStub.invalid}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.badRequest(['id must be a UUID']));
     });
 
     it('should remove a comment from an album', async () => {
-      const reaction = await api.activityApi.create(server, user1.accessToken, {
-        albumId: album1.id,
+      const reaction = await api.activityApi.create(server, admin.accessToken, {
+        albumId: album.id,
         type: ReactionType.COMMENT,
         comment: 'This is a test comment',
       });
       const { status } = await request(server)
         .delete(`/activity/${reaction.id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(204);
     });
 
     it('should remove a like from an album', async () => {
-      const reaction = await api.activityApi.create(server, user1.accessToken, {
-        albumId: album1.id,
+      const reaction = await api.activityApi.create(server, admin.accessToken, {
+        albumId: album.id,
         type: ReactionType.LIKE,
       });
       const { status } = await request(server)
         .delete(`/activity/${reaction.id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toEqual(204);
+    });
+
+    it('should let the owner remove a comment by another user', async () => {
+      const { id: userId } = await api.userApi.create(server, admin.accessToken, {
+        email: 'user1@immich.app',
+        password: 'Password123',
+        firstName: 'User 1',
+        lastName: 'Test',
+      });
+      await api.albumApi.addUsers(server, admin.accessToken, album.id, { sharedUserIds: [userId] });
+      const user = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
+
+      const reaction = await api.activityApi.create(server, user.accessToken, {
+        albumId: album.id,
+        type: ReactionType.COMMENT,
+        comment: 'This is a test comment',
+      });
+
+      const { status } = await request(server)
+        .delete(`/activity/${reaction.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toEqual(204);
+    });
+
+    it('should not let a user remove a comment by another user', async () => {
+      const { id: userId } = await api.userApi.create(server, admin.accessToken, {
+        email: 'user1@immich.app',
+        password: 'Password123',
+        firstName: 'User 1',
+        lastName: 'Test',
+      });
+      await api.albumApi.addUsers(server, admin.accessToken, album.id, { sharedUserIds: [userId] });
+      const user = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
+
+      const reaction = await api.activityApi.create(server, admin.accessToken, {
+        albumId: album.id,
+        type: ReactionType.COMMENT,
+        comment: 'This is a test comment',
+      });
+
+      const { status, body } = await request(server)
+        .delete(`/activity/${reaction.id}`)
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Not found or no activity.delete access'));
     });
   });
 });
