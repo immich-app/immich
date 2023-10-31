@@ -605,9 +605,7 @@
         {#if isShared}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <div
-              class="{numberOfComments || isShowActivity
-                ? 'w-32'
-                : 'w-64'} h-14 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
+              class="w-full h-14 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
             >
               <button on:click={handleFavorite}>
                 <div class="items-center justify-center">

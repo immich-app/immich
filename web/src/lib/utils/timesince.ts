@@ -1,4 +1,4 @@
-export const isTenMinutesApart = (date1: string | null, date2: string | null): boolean => {
+export const isTenMinutesApart = (date1: string, date2: string): boolean => {
   if (!date1 || !date2) {
     return false;
   }
