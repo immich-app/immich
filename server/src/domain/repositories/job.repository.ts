@@ -111,7 +111,6 @@ export const IJobRepository = 'IJobRepository';
 
 export interface IJobRepository {
   addHandler(queueName: QueueName, concurrency: number, handler: JobItemHandler): void;
-  validateCronExpression(expression: string): void;
   addCronJob(name: string, expression: string, onTick: () => void, start?: boolean): void;
   updateCronJob(name: string, expression?: string, start?: boolean): void;
   deleteCronJob(name: string): void;

@@ -7,7 +7,7 @@ import { basename, parse } from 'path';
 import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { usePagination } from '../domain.util';
+import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
 import {
@@ -49,7 +49,11 @@ export class LibraryService {
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-    this.configCore.addValidator((config) => jobRepository.validateCronExpression(config.library.scan.cronExpression));
+    this.configCore.addValidator((config) => {
+      if (!validateCronExpression(config.library.scan.cronExpression)) {
+        throw new Error(`Invalid cron expression ${config.library.scan.cronExpression}`);
+      }
+    });
   }
 
   async init() {
@@ -57,9 +61,7 @@ export class LibraryService {
     this.jobRepository.addCronJob(
       'libraryScan',
       config.library.scan.cronExpression,
-      async () => {
-        await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
-      },
+      () => this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }),
       config.library.scan.enabled,
     );
 

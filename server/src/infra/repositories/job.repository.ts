@@ -1,13 +1,4 @@
-import {
-  IJobRepository,
-  JobCounts,
-  JobItem,
-  JobName,
-  JOBS_TO_QUEUE,
-  QueueName,
-  QueueStatus,
-  validateCronExpression,
-} from '@app/domain';
+import { IJobRepository, JobCounts, JobItem, JobName, JOBS_TO_QUEUE, QueueName, QueueStatus } from '@app/domain';
 import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
@@ -30,12 +21,6 @@ export class JobRepository implements IJobRepository {
     const workerHandler: Processor = async (job: Job) => handler(job as JobItem);
     const workerOptions: WorkerOptions = { ...bullConfig, concurrency };
     this.workers[queueName] = new Worker(queueName, workerHandler, workerOptions);
-  }
-
-  validateCronExpression(expression: string) {
-    if (!validateCronExpression(expression)) {
-      throw new Error(`Invalid cron expression ${expression}`);
-    }
   }
 
   addCronJob(name: string, expression: string, onTick: () => void, start = true): void {

@@ -6,7 +6,6 @@ export const newJobRepositoryMock = (): jest.Mocked<IJobRepository> => {
     addCronJob: jest.fn(),
     deleteCronJob: jest.fn(),
     updateCronJob: jest.fn(),
-    validateCronExpression: jest.fn(),
     setConcurrency: jest.fn(),
     empty: jest.fn(),
     pause: jest.fn(),
