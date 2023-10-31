@@ -37,10 +37,6 @@ export class ActivityRepository implements IActivityRepository {
     return this.save(entity);
   }
 
-  update(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {
-    return this.save(entity);
-  }
-
   async delete(id: string): Promise<void> {
     await this.repository.delete(id);
   }
