@@ -522,7 +522,7 @@
                       shadow
                       url={api.getPeopleThumbnailUrl(people.id)}
                       altText={people.name}
-                      title={people.name || '<Un named>'}
+                      title={`${people.name || '<Un named>'} (${people.appears})`}
                       widthStyle="3.375rem"
                       heightStyle="3.375rem"
                     />
