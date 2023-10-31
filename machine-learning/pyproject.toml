@@ -9,8 +9,8 @@ packages = [{include = "app"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 torch = [
-    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=2.0.1", source = "pypi"},
-    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.0.1", source = "pytorch-cpu"}
+    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=2.1.0", source = "pypi"},
+    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.1.0", source = "pytorch-cpu"}
 ]
 transformers = "^4.29.2"
 onnxruntime = "^1.15.0"
@@ -22,14 +22,9 @@ uvicorn = {extras = ["standard"], version = "^0.22.0"}
 pydantic = "^1.10.8"
 aiocache = "^0.12.1"
 optimum = "^1.9.1"
-torchvision = [
-    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=0.15.2", source = "pypi"},
-    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=0.15.2", source = "pytorch-cpu"}
-]
 rich = "^13.4.2"
 ftfy = "^6.1.1"
 setuptools = "^68.0.0"
-open-clip-torch = "^2.20.0"
 python-multipart = "^0.0.6"
 orjson = "^3.9.5"
 safetensors = "0.3.2"
@@ -63,36 +58,13 @@ warn_redundant_casts = true
 disallow_any_generics = true
 check_untyped_defs = true
 disallow_untyped_defs = true
+ignore_missing_imports = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 warn_untyped_fields = true
-
-[[tool.mypy.overrides]]
-module = [
-    "huggingface_hub",
-    "transformers",
-    "gunicorn",
-    "cv2",
-    "insightface.model_zoo",
-    "insightface.utils.face_align",
-    "insightface.utils.storage",
-    "onnxruntime",
-    "optimum",
-    "optimum.pipelines",
-    "optimum.onnxruntime",
-    "clip_server.model.clip",
-    "clip_server.model.clip_onnx",
-    "clip_server.model.pretrained_models",
-    "clip_server.model.tokenization",
-    "torchvision.transforms",
-    "aiocache.backends.memory",
-    "aiocache.lock",
-    "aiocache.plugins"
-]
-ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 120

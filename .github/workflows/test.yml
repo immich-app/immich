@@ -166,7 +166,6 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --with dev
-          poetry run pip install --no-deps -r requirements.txt
       - name: Lint with ruff
         run: |
           poetry run ruff check --format=github app

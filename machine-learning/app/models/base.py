@@ -25,7 +25,7 @@ class InferenceModel(ABC):
     ) -> None:
         self.model_name = model_name
         self.loaded = False
-        self._cache_dir = Path(cache_dir) if cache_dir is not None else get_cache_dir(model_name, self.model_type)
+        self._cache_dir = Path(cache_dir) if cache_dir is not None else None
         self.providers = model_kwargs.pop("providers", ["CPUExecutionProvider"])
         #  don't pre-allocate more memory than needed
         self.provider_options = model_kwargs.pop(
@@ -92,7 +92,7 @@ class InferenceModel(ABC):
 
     @property
     def cache_dir(self) -> Path:
-        return self._cache_dir
+        return self._cache_dir if self._cache_dir is not None else get_cache_dir(self.model_name, self.model_type)
 
     @cache_dir.setter
     def cache_dir(self, cache_dir: Path) -> None:

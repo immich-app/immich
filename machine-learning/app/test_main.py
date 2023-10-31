@@ -1,7 +1,8 @@
 import json
 import pickle
 from io import BytesIO
-from typing import Any, TypeAlias
+from pathlib import Path
+from typing import Any, Callable
 from unittest import mock
 
 import cv2
@@ -14,12 +15,10 @@ from pytest_mock import MockerFixture
 from .config import settings
 from .models.base import PicklableSessionOptions
 from .models.cache import ModelCache
-from .models.clip import CLIPEncoder
+from .models.clip import OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
 from .schemas import ModelType
-
-ndarray: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
 
 
 class TestImageClassifier:
@@ -56,30 +55,50 @@ class TestImageClassifier:
 
 class TestCLIP:
     embedding = np.random.rand(512).astype(np.float32)
+    cache_dir = Path("test_cache")
 
-    def test_basic_image(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPEncoder, "download")
+    def test_basic_image(
+        self,
+        pil_image: Image.Image,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        mocker.patch.object(OpenCLIPEncoder, "download")
+        mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
+        mocker.patch("app.models.clip.AutoTokenizer.from_pretrained", autospec=True)
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
         mocked.return_value.run.return_value = [[self.embedding]]
-        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
-        assert clip_encoder.mode == "vision"
+
+        clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
         embedding = clip_encoder.predict(pil_image)
 
+        assert clip_encoder.mode == "vision"
         assert isinstance(embedding, list)
-        assert len(embedding) == 512
+        assert len(embedding) == clip_model_cfg["embed_dim"]
         assert all([isinstance(num, float) for num in embedding])
         clip_encoder.vision_model.run.assert_called_once()
 
-    def test_basic_text(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPEncoder, "download")
+    def test_basic_text(
+        self,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        mocker.patch.object(OpenCLIPEncoder, "download")
+        mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
+        mocker.patch("app.models.clip.AutoTokenizer.from_pretrained", autospec=True)
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
         mocked.return_value.run.return_value = [[self.embedding]]
-        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
-        assert clip_encoder.mode == "text"
+
+        clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
         embedding = clip_encoder.predict("test search query")
 
+        assert clip_encoder.mode == "text"
         assert isinstance(embedding, list)
-        assert len(embedding) == 512
+        assert len(embedding) == clip_model_cfg["embed_dim"]
         assert all([isinstance(num, float) for num in embedding])
         clip_encoder.text_model.run.assert_called_once()
 

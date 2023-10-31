@@ -1,2 +1,0 @@
-# requirements to be installed with `--no-deps` flag
-clip-server==0.8.*
