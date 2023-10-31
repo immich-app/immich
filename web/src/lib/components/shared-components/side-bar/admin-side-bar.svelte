@@ -24,7 +24,7 @@
   <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_STATS} draggable="false">
     <SideBarButton title="Server Stats" icon={mdiServer} isSelected={$page.route.id === AppRoute.ADMIN_STATS} />
   </a>
-  <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_REPAIR} draggable="false">
+  <a data-sveltekit-preload-data="off" href={AppRoute.ADMIN_REPAIR} draggable="false">
     <SideBarButton title="Repair" icon={mdiTools} isSelected={$page.route.id === AppRoute.ADMIN_REPAIR} />
   </a>
   <div class="mb-6 mt-auto">
