@@ -3,28 +3,33 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { ActivityResponseDto, api, type UserResponseDto } from '@api';
+  import { ActivityResponseDto, api, AssetTypeEnum, ReactionType, type UserResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart, timeSince } from '$lib/utils/timesince';
   import { clickOutside } from '$lib/utils/click-outside';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { getAssetType } from '$lib/utils/asset-utils';
 
   export let reactions: ActivityResponseDto[];
   export let user: UserResponseDto;
   export let assetId: string;
   export let albumId: string;
+  export let assetType: AssetTypeEnum;
   export let albumOwnerId: string;
 
   let textArea: HTMLTextAreaElement;
   let innerHeight: number;
+  let activityHeight: number;
+  let chatHeight: number;
   let divHeight: number;
   let previousAssetId: string | null;
 
   $: {
-    if (innerHeight) {
-      divHeight = innerHeight - 64;
+    if (innerHeight && activityHeight) {
+      console.log(activityHeight);
+      divHeight = innerHeight - activityHeight;
     }
   }
 
@@ -37,7 +42,7 @@
 
   const getReactions = async () => {
     try {
-      const { data } = await api.activityApi.getActivities({ assetId: assetId, albumId });
+      const { data } = await api.activityApi.getActivities({ assetId, albumId });
       reactions = data;
     } catch (error) {
       handleError(error, 'Error when fetching reactions');
@@ -72,22 +77,23 @@
 
   const dispatch = createEventDispatcher();
 
-  const handleDeleteComment = async (id: string | null, index: number) => {
-    if (id === null) {
-      return;
-    }
+  const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
     try {
-      await api.activityApi.deleteComment({ id });
+      await api.activityApi.deleteActivity({ id: reaction.id });
       reactions.splice(index, 1);
       showDeleteComment.splice(index, 1);
       reactions = reactions;
-      dispatch('deleteComment');
+      if (reaction.type === 'like' && reaction.user.id === user.id) {
+        dispatch('deleteLike');
+      } else {
+        dispatch('deleteComment');
+      }
       notificationController.show({
-        message: 'Comment deleted',
+        message: `${reaction.type} deleted`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, "Can't remove comment");
+      handleError(error, `Can't remove ${reaction.type}`);
     }
   };
 
@@ -97,8 +103,8 @@
     }
     const timeout = setTimeout(() => (isSendingMessage = true), 100);
     try {
-      const { data } = await api.activityApi.addComment({
-        activityCommentDto: { albumId: albumId, assetId: assetId, comment: message },
+      const { data } = await api.activityApi.createActivity({
+        activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },
       });
       reactions.push(data);
       textArea.style.height = '18px';
@@ -121,7 +127,10 @@
 
 <div class="overflow-y-hidden relative h-full" bind:offsetHeight={innerHeight}>
   <div class="dark:bg-immich-dark-bg dark:text-immich-dark-fg w-full h-full">
-    <div class="flex w-full h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white">
+    <div
+      class="flex w-full h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white"
+      bind:clientHeight={activityHeight}
+    >
       <div class="flex place-items-center gap-2">
         <button
           class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
@@ -134,18 +143,18 @@
       </div>
     </div>
     {#if innerHeight}
-      <div class="overflow-y-auto pb-[72px] relative" style="height: {divHeight}px;">
+      <div class="overflow-y-auto relative" style="height: {divHeight}px;padding-bottom: {chatHeight}px">
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.user && reaction.createdAt}
             {#if reaction.type === 'comment'}
-              <div class="flex dark:bg-slate-500 bg-gray-200 p-2 m-2 rounded-3xl gap-2 justify-start">
+              <div class="flex dark:bg-slate-500 bg-gray-200 p-2 mx-2 mt-2 rounded-3xl gap-2 justify-start">
                 <div>
                   <UserAvatar user={reaction.user} size="sm" />
                 </div>
 
                 <div class="w-full leading-4 flex items-center">{reaction.comment}</div>
                 {#if (user && reaction.user && reaction.user.id === user.id) || albumOwnerId === user.id}
-                  <div class="flex items-start w-fit pt-[5px]">
+                  <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
                     <button on:click={() => (!showDeleteComment[index] ? showOptionsMenu(index) : '')}>
                       <Icon path={mdiDotsVertical} />
                     </button>
@@ -157,7 +166,7 @@
                       class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
                       use:clickOutside
                       on:outclick={() => (showDeleteComment[index] = false)}
-                      on:click={() => handleDeleteComment(reaction.id, index)}
+                      on:click={() => handleDeleteReaction(reaction, index)}
                     >
                       Delete Comment
                     </button>
@@ -173,17 +182,46 @@
                 </div>
               {/if}
             {:else if reaction.type === 'like'}
-              <div
-                class="flex p-2 m-2 rounded-full gap-2 items-center text-sm"
-                title={new Date(reaction.createdAt).toLocaleDateString()}
-              >
-                <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
+              <div class="relative">
+                <div class="flex p-2 mx-2 mt-2 rounded-full gap-2 items-center text-sm">
+                  <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
-                <div>
-                  {`${reaction.user.firstName} ${reaction.user.lastName} liked this asset `}&bull;{` ${timeSince(
-                    new Date(reaction.createdAt),
-                  )}`}
+                  <div
+                    class="w-full"
+                    title={`${reaction.user.firstName} ${reaction.user.lastName} (${reaction.user.email})`}
+                  >
+                    {`${reaction.user.firstName} ${reaction.user.lastName} liked this ${getAssetType(
+                      assetType,
+                    ).toLowerCase()}`}
+                  </div>
+                  {#if (user && reaction.user && reaction.user.id === user.id) || albumOwnerId === user.id}
+                    <div class="flex items-start w-fit" title="Delete like">
+                      <button on:click={() => (!showDeleteComment[index] ? showOptionsMenu(index) : '')}>
+                        <Icon path={mdiDotsVertical} />
+                      </button>
+                    </div>
+                  {/if}
+                  <div>
+                    {#if showDeleteComment[index]}
+                      <button
+                        class="absolute top-2 right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
+                        use:clickOutside
+                        on:outclick={() => (showDeleteComment[index] = false)}
+                        on:click={() => handleDeleteReaction(reaction, index)}
+                      >
+                        Delete Comment
+                      </button>
+                    {/if}
+                  </div>
                 </div>
+                {#if (index > 0 && index != reactions.length - 1 && reactions[index].createdAt !== null && reactions[index + 1].createdAt !== null && isTenMinutesApart(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === 0 || index === reactions.length - 1}
+                  <div
+                    class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                    title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
+                  >
+                    {timeSince(new Date(reaction.createdAt))}
+                  </div>
+                {/if}
               </div>
             {/if}
           {/if}
@@ -193,7 +231,7 @@
   </div>
 
   <div class="absolute w-full bottom-0">
-    <div class="flex items-center justify-center p-2">
+    <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
       <div class="flex p-2 bg-slate-400 h-fit dark:bg-gray-900 rounded-3xl gap-2 w-full text-white">
         <div>
           <UserAvatar {user} size="md" showTitle={false} />

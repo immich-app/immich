@@ -7,6 +7,7 @@
     AssetJobName,
     AssetResponseDto,
     AssetTypeEnum,
+    ReactionType,
     SharedLinkResponseDto,
     UserResponseDto,
   } from '@api';
@@ -23,7 +24,7 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, downloadFile, getAssetType } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
@@ -83,7 +84,7 @@
   let canCopyImagesToClipboard: boolean;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
-  let isLiked: boolean;
+  let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
 
   $: {
@@ -103,20 +104,20 @@
     if (album) {
       try {
         if (isLiked) {
-          const { data } = await api.activityApi.deleteLike({
-            activityDto: { albumId: album.id, assetId: asset.id },
+          await api.activityApi.deleteActivity({
+            id: isLiked.id,
           });
 
           reactions = reactions.filter((obj) => (obj.user && user && obj.user.id !== user.id) || obj.comment);
-          isLiked = false;
+          isLiked = null;
         } else {
-          const { data } = await api.activityApi.createLike({
-            activityDto: { albumId: album.id, assetId: asset.id },
+          const { data } = await api.activityApi.createActivity({
+            activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
           });
 
-          reactions.push(data as ActivityResponseDto);
+          reactions.push(data);
           reactions = reactions;
-          isLiked = true;
+          isLiked = data;
         }
       } catch (error) {
         handleError(error, "Can't change favorite for asset");
@@ -127,9 +128,13 @@
   const getFavorite = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.getActivityLikeStatus({ assetId: asset.id, albumId: album.id });
-        if (data) {
-          isLiked = true;
+        const { data } = await api.activityApi.getActivities({
+          assetId: asset.id,
+          albumId: album.id,
+          type: ReactionType.Like,
+        });
+        if (data.length > 0) {
+          isLiked = data[0];
         }
       } catch (error) {
         handleError(error, "Can't get Favorite");
@@ -408,17 +413,6 @@
       });
     } catch (error) {
       await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
-    }
-  };
-
-  const getAssetType = () => {
-    switch (asset.type) {
-      case 'IMAGE':
-        return 'Photo';
-      case 'VIDEO':
-        return 'Video';
-      default:
-        return 'Asset';
     }
   };
 
@@ -710,12 +704,14 @@
     >
       <ActivityViewer
         {user}
+        assetType={asset.type}
         albumOwnerId={album.ownerId}
         albumId={album.id}
         assetId={asset.id}
         bind:reactions
         on:addComment={() => (numberOfComments ? numberOfComments++ : '')}
         on:deleteComment={() => (numberOfComments ? numberOfComments-- : '')}
+        on:deleteLike={() => (isLiked = null)}
         on:close={() => (isShowActivity = false)}
       />
     </div>
@@ -733,15 +729,15 @@
 
   {#if isShowDeleteConfirmation}
     <ConfirmDialogue
-      title="Delete {getAssetType()}"
+      title="Delete {getAssetType(asset.type)}"
       confirmText="Delete"
       on:confirm={deleteAsset}
       on:cancel={() => (isShowDeleteConfirmation = false)}
     >
       <svelte:fragment slot="prompt">
         <p>
-          Are you sure you want to delete this {getAssetType().toLowerCase()}? This will also remove it from its
-          album(s).
+          Are you sure you want to delete this {getAssetType(asset.type).toLowerCase()}? This will also remove it from
+          its album(s).
         </p>
         <p><b>You cannot undo this action!</b></p>
       </svelte:fragment>
