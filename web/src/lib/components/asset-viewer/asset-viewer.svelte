@@ -104,20 +104,17 @@
     if (album) {
       try {
         if (isLiked) {
-          await api.activityApi.deleteActivity({
-            id: isLiked.id,
-          });
-
-          reactions = reactions.filter((obj) => (obj.user && user && obj.user.id !== user.id) || obj.comment);
+          const activityId = isLiked.id;
+          await api.activityApi.deleteActivity({ id: activityId });
+          reactions = reactions.filter((reaction) => reaction.id !== activityId);
           isLiked = null;
         } else {
           const { data } = await api.activityApi.createActivity({
             activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
           });
 
-          reactions.push(data);
-          reactions = reactions;
           isLiked = data;
+          reactions = [...reactions, isLiked];
         }
       } catch (error) {
         handleError(error, "Can't change favorite for asset");
@@ -612,11 +609,7 @@
             >
               <button on:click={handleFavorite}>
                 <div class="h-8 items-center justify-center">
-                  {#if isLiked}
-                    <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={30} />
-                  {:else}
-                    <Icon path={mdiHeartOutline} size={30} />
-                  {/if}
+                  <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={30} />
                 </div>
               </button>
               <button on:click={handleOpenActivity}>
