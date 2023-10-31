@@ -72,6 +72,8 @@
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
+  $: albums = data.albums;
+  $: console.log('albums', albums);
 
   /**
    * Save the word used to search people name: for example,
@@ -411,6 +413,7 @@
     >
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Face information block -->
+
         <div
           role="button"
           class="relative w-fit p-4 sm:px-6"
@@ -418,6 +421,13 @@
           on:outclick={handleCancelEditName}
           on:escape={handleCancelEditName}
         >
+          <div style="background: aliceblue;">
+            {#if albums.length}
+              {#each albums as album}
+                <div>{album.albumName}</div>
+              {/each}
+            {/if}
+          </div>
           <section class="flex w-64 sm:w-96 place-items-center border-black">
             {#if isEditingName}
               <EditNameInput
