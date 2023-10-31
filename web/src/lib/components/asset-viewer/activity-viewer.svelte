@@ -9,6 +9,7 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let reactions: ActivityResponseDto[];
   export let user: UserResponseDto;
@@ -81,6 +82,10 @@
       showDeleteComment.splice(index, 1);
       reactions = reactions;
       dispatch('deleteComment');
+      notificationController.show({
+        message: 'Comment deleted',
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, "Can't remove comment");
     }
@@ -129,7 +134,7 @@
       </div>
     </div>
     {#if innerHeight}
-      <div class="overflow-y-auto pb-[72px]" style="height: {divHeight}px;">
+      <div class="overflow-y-auto pb-[72px] relative" style="height: {divHeight}px;">
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.user && reaction.createdAt}
             {#if reaction.type === 'comment'}

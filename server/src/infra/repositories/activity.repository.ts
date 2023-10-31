@@ -47,8 +47,16 @@ export class ActivityRepository implements IActivityRepository {
     });
   }
 
-  create(activity: Partial<ActivityEntity>): Promise<ActivityEntity> {
-    return this.repository.save(activity);
+  async create(activity: Partial<ActivityEntity>): Promise<ActivityEntity> {
+    const reaction = await this.repository.save(activity);
+    return this.repository.findOneOrFail({
+      where: {
+        id: reaction.id,
+      },
+      relations: {
+        user: true,
+      },
+    });
   }
 
   async update(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {

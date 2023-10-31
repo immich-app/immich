@@ -160,6 +160,7 @@ export class AssetEntity {
   @OneToMany(() => AssetEntity, (asset) => asset.stackParent)
   stack?: AssetEntity[];
 
+  @OneToMany(() => ActivityEntity, (activity) => activity.asset)
   activity!: ActivityEntity[];
 }
 
