@@ -3,14 +3,14 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { ActivityReponseDto, api, type UserResponseDto } from '@api';
+  import { ActivityResponseDto, api, type UserResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart, timeSince } from '$lib/utils/timesince';
   import { clickOutside } from '$lib/utils/click-outside';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
-  export let reactions: ActivityReponseDto[];
+  export let reactions: ActivityResponseDto[];
   export let user: UserResponseDto;
   export let assetId: string;
   export let albumId: string;

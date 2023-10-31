@@ -14,23 +14,11 @@ export interface ActivitySearch {
 
 @Injectable()
 export class ActivityRepository implements IActivityRepository {
-  constructor(@InjectRepository(ActivityEntity) private activityRepository: Repository<ActivityEntity>) {}
-
-  get(id: string): Promise<ActivityEntity> {
-    return this.activityRepository.findOneOrFail({
-      where: { id },
-      relations: {
-        user: true,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
-  }
+  constructor(@InjectRepository(ActivityEntity) private repository: Repository<ActivityEntity>) {}
 
   search(options: ActivitySearch): Promise<ActivityEntity[]> {
     const { assetId, albumId, userId, isLiked } = options;
-    return this.activityRepository.find({
+    return this.repository.find({
       where: {
         assetId,
         albumId,
@@ -46,26 +34,43 @@ export class ActivityRepository implements IActivityRepository {
     });
   }
 
-  getStatistics(assetId: string, albumId: string): Promise<number> {
-    return this.activityRepository.count({
-      where: { assetId, albumId, isLiked: false },
+  get(id: string): Promise<ActivityEntity | null> {
+    return this.repository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        user: true,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+  }
+
+  create(activity: Partial<ActivityEntity>): Promise<ActivityEntity> {
+    return this.repository.save(activity);
+  }
+
+  async update(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {
+    const { id } = await this.repository.save(entity);
+    return this.repository.findOneOrFail({
+      where: {
+        id,
+      },
       relations: {
         user: true,
       },
     });
   }
 
-  async delete(entity: ActivityEntity) {
-    await this.activityRepository.delete(entity.id);
-  }
-  async create(activity: Partial<ActivityEntity>): Promise<ActivityEntity> {
-    return await this.activityRepository.save(activity);
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
   }
 
-  async update(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {
-    const { id } = await this.activityRepository.save(entity);
-    return this.activityRepository.findOneOrFail({
-      where: { id },
+  getStatistics(assetId: string, albumId: string): Promise<number> {
+    return this.repository.count({
+      where: { assetId, albumId, isLiked: false },
       relations: {
         user: true,
       },

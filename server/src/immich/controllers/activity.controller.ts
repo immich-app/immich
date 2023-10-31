@@ -5,13 +5,13 @@ import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 
 import {
-  ActivityCommentDto,
   ActivityDto,
-  ActivityFavoriteDto,
-  ActivityReponseDto,
   ActivityService,
-  LikeStatusReponseDto,
-  StatisticsResponseDto,
+  ActivityCommentDto as CommentDto,
+  ActivityLikeDto as LikeDto,
+  ActivityLikeStatusResponseDto as LikeResponseDto,
+  ActivityResponseDto as ResponseDto,
+  ActivityStatisticsResponseDto as StatsResponseDto,
 } from '@app/domain/activity';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -23,30 +23,27 @@ export class ActivityController {
   constructor(private service: ActivityService) {}
 
   @Get('statistics')
-  getStatistics(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<StatisticsResponseDto> {
+  getActivityStatistics(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<StatsResponseDto> {
     return this.service.getStatistics(authUser, dto);
   }
 
   @Get('')
-  getActivities(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<ActivityReponseDto[]> {
+  getActivities(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<ResponseDto[]> {
     return this.service.getAll(authUser, dto);
   }
 
   @Get('like')
-  getActivityLikeStatus(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<LikeStatusReponseDto> {
+  getActivityLikeStatus(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<LikeResponseDto> {
     return this.service.getLikeStatus(authUser, dto);
   }
 
   @Put('like')
-  updateActivityLikeStatus(
-    @AuthUser() authUser: AuthUserDto,
-    @Body() dto: ActivityFavoriteDto,
-  ): Promise<ActivityReponseDto | void> {
+  updateActivityLikeStatus(@AuthUser() authUser: AuthUserDto, @Body() dto: LikeDto): Promise<LikeResponseDto> {
     return this.service.updateLikeStatus(authUser, dto);
   }
 
   @Post('comment')
-  addComment(@AuthUser() authUser: AuthUserDto, @Body() dto: ActivityCommentDto): Promise<ActivityReponseDto> {
+  addComment(@AuthUser() authUser: AuthUserDto, @Body() dto: CommentDto): Promise<ResponseDto> {
     return this.service.addComment(authUser, dto);
   }
 

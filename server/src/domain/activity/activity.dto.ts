@@ -1,6 +1,7 @@
 import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { ValidateUUID } from '../domain.util';
 import { UserDto, mapSimpleUser } from '../user/response-dto';
 
 export enum ReactionType {
@@ -8,36 +9,36 @@ export enum ReactionType {
   LIKE = 'like',
 }
 
-export class ActivityReponseDto {
+export class ActivityResponseDto {
   id!: string;
-  assetId!: string | null;
-  comment?: string | null;
   createdAt!: Date;
   type!: ReactionType;
   user!: UserDto;
+  assetId!: string | null;
+  comment?: string | null;
 }
 
-export class StatisticsResponseDto {
+export class ActivityStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   comments!: number;
 }
 
-export class LikeStatusReponseDto {
+export class ActivityLikeStatusResponseDto {
   value!: boolean;
 }
 
 export class ActivityDto {
-  @IsString()
-  assetId?: string;
-
-  @IsString()
+  @ValidateUUID()
   albumId!: string;
+
+  @ValidateUUID({ optional: true })
+  assetId?: string;
 }
 
-export class ActivityFavoriteDto extends ActivityDto {
+export class ActivityLikeDto extends ActivityDto {
   @IsBoolean()
   @IsNotEmpty()
-  favorite!: boolean;
+  value!: boolean;
 }
 
 export class ActivityCommentDto extends ActivityDto {
@@ -46,7 +47,7 @@ export class ActivityCommentDto extends ActivityDto {
   comment!: string;
 }
 
-export function mapActivity(activity: ActivityEntity): ActivityReponseDto {
+export function mapActivity(activity: ActivityEntity): ActivityResponseDto {
   return {
     id: activity.id,
     assetId: activity.assetId,

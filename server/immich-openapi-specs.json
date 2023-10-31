@@ -6,18 +6,20 @@
         "operationId": "getActivities",
         "parameters": [
           {
-            "name": "assetId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "albumId",
             "required": true,
             "in": "query",
             "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -28,7 +30,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/ActivityReponseDto"
+                    "$ref": "#/components/schemas/ActivityResponseDto"
                   },
                   "type": "array"
                 }
@@ -72,7 +74,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ActivityReponseDto"
+                  "$ref": "#/components/schemas/ActivityResponseDto"
                 }
               }
             },
@@ -135,18 +137,20 @@
         "operationId": "getActivityLikeStatus",
         "parameters": [
           {
-            "name": "assetId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "albumId",
             "required": true,
             "in": "query",
             "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -156,7 +160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LikeStatusReponseDto"
+                  "$ref": "#/components/schemas/ActivityLikeStatusResponseDto"
                 }
               }
             },
@@ -185,7 +189,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ActivityFavoriteDto"
+                "$ref": "#/components/schemas/ActivityLikeDto"
               }
             }
           },
@@ -196,7 +200,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ActivityLikeStatusResponseDto"
                 }
               }
             },
@@ -221,21 +225,23 @@
     },
     "/activity/statistics": {
       "get": {
-        "operationId": "getStatistics",
+        "operationId": "getActivityStatistics",
         "parameters": [
-          {
-            "name": "assetId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "albumId",
             "required": true,
             "in": "query",
             "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -245,7 +251,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StatisticsResponseDto"
+                  "$ref": "#/components/schemas/ActivityStatisticsResponseDto"
                 }
               }
             },
@@ -5782,9 +5788,11 @@
       "ActivityCommentDto": {
         "properties": {
           "albumId": {
+            "format": "uuid",
             "type": "string"
           },
           "assetId": {
+            "format": "uuid",
             "type": "string"
           },
           "comment": {
@@ -5797,25 +5805,38 @@
         ],
         "type": "object"
       },
-      "ActivityFavoriteDto": {
+      "ActivityLikeDto": {
         "properties": {
           "albumId": {
+            "format": "uuid",
             "type": "string"
           },
           "assetId": {
+            "format": "uuid",
             "type": "string"
           },
-          "favorite": {
+          "value": {
             "type": "boolean"
           }
         },
         "required": [
           "albumId",
-          "favorite"
+          "value"
         ],
         "type": "object"
       },
-      "ActivityReponseDto": {
+      "ActivityLikeStatusResponseDto": {
+        "properties": {
+          "value": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      "ActivityResponseDto": {
         "properties": {
           "assetId": {
             "nullable": true,
@@ -5845,10 +5866,21 @@
         },
         "required": [
           "id",
-          "assetId",
           "createdAt",
           "type",
-          "user"
+          "user",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "ActivityStatisticsResponseDto": {
+        "properties": {
+          "comments": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "comments"
         ],
         "type": "object"
       },
@@ -7410,17 +7442,6 @@
         ],
         "type": "string"
       },
-      "LikeStatusReponseDto": {
-        "properties": {
-          "value": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "value"
-        ],
-        "type": "object"
-      },
       "LoginCredentialDto": {
         "properties": {
           "email": {
@@ -8402,17 +8423,6 @@
             "type": "array"
           }
         },
-        "type": "object"
-      },
-      "StatisticsResponseDto": {
-        "properties": {
-          "comments": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "comments"
-        ],
         "type": "object"
       },
       "SystemConfigDto": {

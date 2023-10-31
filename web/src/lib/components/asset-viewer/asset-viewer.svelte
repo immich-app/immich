@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import {
-    ActivityReponseDto,
+    ActivityResponseDto,
     AlbumResponseDto,
     api,
     AssetJobName,
@@ -59,7 +59,7 @@
   export let user: UserResponseDto | null = null;
   export let album: AlbumResponseDto | null = null;
 
-  let reactions: ActivityReponseDto[] = [];
+  let reactions: ActivityResponseDto[] = [];
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -106,7 +106,7 @@
           activityFavoriteDto: { favorite: !isLiked, albumId: album.id, assetId: asset.id },
         });
         if (data) {
-          reactions.push(data as ActivityReponseDto);
+          reactions.push(data as ActivityResponseDto);
           reactions = reactions;
           isLiked = true;
         } else {
