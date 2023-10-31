@@ -122,7 +122,7 @@
 <div
   bind:this={element}
   transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-  class="relative h-full select-none place-content-center place-items-center"
+  class="flex h-full select-none place-content-center place-items-center"
 >
   {#await loadAssetData({ loadOriginal: false })}
     <LoadingSpinner />

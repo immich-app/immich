@@ -86,7 +86,7 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
-  $: console.log(numberOfComments);
+
   $: {
     if (asset.stackCount && asset.stack) {
       $stackAssetsStore = asset.stack;
