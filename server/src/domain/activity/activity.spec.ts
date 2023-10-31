@@ -2,8 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { authStub, IAccessRepositoryMock, newAccessRepositoryMock } from '@test';
 import { activityStub } from '@test/fixtures/activity.stub';
 import { newActivityRepositoryMock } from '@test/repositories/activity.repository.mock';
-import { mapActivity } from '.';
 import { IActivityRepository } from '../repositories';
+import { ReactionType } from './activity.dto';
 import { ActivityService } from './activity.service';
 
 describe(ActivityService.name, () => {
@@ -24,7 +24,6 @@ describe(ActivityService.name, () => {
 
   describe('getStatistics', () => {
     it('should get the comment count', async () => {
-      activityMock.get.mockResolvedValue(activityStub.oneComment);
       activityMock.getStatistics.mockResolvedValue(1);
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       await expect(
@@ -36,50 +35,89 @@ describe(ActivityService.name, () => {
     });
   });
 
-  describe('getLikeStatus', () => {
-    it('should get the like for an user for a specific album and asset', async () => {
-      activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.liked]);
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+  describe('addComment', () => {
+    it('should require access to the album', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       await expect(
-        sut.getLikeStatus(authStub.admin, {
+        sut.create(authStub.admin, {
+          albumId: 'album-id',
           assetId: 'asset-id',
-          albumId: activityStub.oneComment.albumId,
+          type: ReactionType.COMMENT,
+          comment: 'comment',
         }),
-      );
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
-    describe('createLike', () => {
-      it('should get the favorite for an user for a specific album and asset', async () => {
-        activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.liked]);
-        accessMock.album.hasOwnerAccess.mockResolvedValue(true);
-        await expect(
-          sut.createLike(authStub.admin, {
-            assetId: 'asset-id',
-            albumId: activityStub.oneComment.albumId,
-          }),
-        );
+
+    it('should create a comment', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      activityMock.create.mockResolvedValue(activityStub.oneComment);
+
+      await sut.create(authStub.admin, {
+        albumId: 'album-id',
+        assetId: 'asset-id',
+        type: ReactionType.COMMENT,
+        comment: 'comment',
+      });
+
+      expect(activityMock.create).toHaveBeenCalledWith({
+        userId: 'admin_id',
+        albumId: 'album-id',
+        assetId: 'asset-id',
+        comment: 'comment',
+        isLiked: false,
       });
     });
 
-    describe('addComment', () => {
-      it("should add a user's comment for a specific album and asset", async () => {
-        accessMock.album.hasOwnerAccess.mockResolvedValue(false);
-        await expect(
-          sut.addComment(authStub.admin, {
-            comment: 'comment',
-            assetId: 'asset-id',
-            albumId: activityStub.oneComment.albumId,
-          }),
-        ).rejects.toBeInstanceOf(BadRequestException);
+    it('should create a like', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      activityMock.create.mockResolvedValue(activityStub.liked);
+      activityMock.search.mockResolvedValue([]);
+
+      await sut.create(authStub.admin, {
+        albumId: 'album-id',
+        assetId: 'asset-id',
+        type: ReactionType.LIKE,
+      });
+
+      expect(activityMock.create).toHaveBeenCalledWith({
+        userId: 'admin_id',
+        albumId: 'album-id',
+        assetId: 'asset-id',
+        isLiked: true,
       });
     });
 
-    describe('deleteComment', () => {
-      it("should delete a user's comment for a specific album and asset", async () => {
-        accessMock.album.hasOwnerAccess.mockResolvedValue(false);
-        await expect(sut.deleteComment(authStub.admin, activityStub.oneComment.id)).rejects.toBeInstanceOf(
-          BadRequestException,
-        );
+    it('should skip if like exists', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      activityMock.search.mockResolvedValue([activityStub.liked]);
+
+      await sut.create(authStub.admin, {
+        albumId: 'album-id',
+        assetId: 'asset-id',
+        type: ReactionType.LIKE,
       });
+
+      expect(activityMock.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('delete', () => {
+    it('should require access', async () => {
+      accessMock.activity.hasOwnerAccess.mockResolvedValue(false);
+      await expect(sut.delete(authStub.admin, activityStub.oneComment.id)).rejects.toBeInstanceOf(BadRequestException);
+      expect(activityMock.delete).not.toHaveBeenCalled();
+    });
+
+    it('should let the activity owner delete a comment', async () => {
+      accessMock.activity.hasOwnerAccess.mockResolvedValue(true);
+      await sut.delete(authStub.admin, 'activity-id');
+      expect(activityMock.delete).toHaveBeenCalledWith('activity-id');
+    });
+
+    it('should let the album owner delete a comment', async () => {
+      accessMock.activity.hasAlbumOwnerAccess.mockResolvedValue(true);
+      await sut.delete(authStub.admin, 'activity-id');
+      expect(activityMock.delete).toHaveBeenCalledWith('activity-id');
     });
   });
 });
