@@ -297,9 +297,9 @@ class ExifBottomSheet extends HookConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              subtitle: Text(
+              subtitle: exifInfo.f != null || exifInfo.exposureSeconds != null || exifInfo.mm != null || exifInfo.iso != null ? Text(
                 "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
-              ),
+              ) : null,
             ),
         ],
       );
