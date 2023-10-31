@@ -67,6 +67,10 @@ describe(MetadataService.name, () => {
     );
   });
 
+  afterEach(async () => {
+    await sut.teardown();
+  });
+
   it('should be defined', () => {
     expect(sut).toBeDefined();
   });
