@@ -95,7 +95,7 @@ export class AlbumService {
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     for (const userId of dto.sharedWithUserIds || []) {
-      const exists = await this.userRepository.get(userId);
+      const exists = await this.userRepository.get(userId, {});
       if (!exists) {
         throw new BadRequestException('User not found');
       }
@@ -238,7 +238,7 @@ export class AlbumService {
         throw new BadRequestException('User already added');
       }
 
-      const user = await this.userRepository.get(userId);
+      const user = await this.userRepository.get(userId, {});
       if (!user) {
         throw new BadRequestException('User not found');
       }

@@ -343,7 +343,7 @@ export class LibraryService {
       return false;
     }
 
-    const user = await this.userRepository.get(library.ownerId);
+    const user = await this.userRepository.get(library.ownerId, {});
     if (!user?.externalPath) {
       this.logger.warn('User has no external path set, cannot refresh library');
       return false;
