@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { authStub, IAccessRepositoryMock, newAccessRepositoryMock } from '@test';
 import { activityStub } from '@test/fixtures/activity.stub';
 import { newActivityRepositoryMock } from '@test/repositories/activity.repository.mock';
+import { mapActivity } from '.';
 import { IActivityRepository } from '../repositories';
 import { ActivityService } from './activity.service';
 
@@ -35,8 +36,8 @@ describe(ActivityService.name, () => {
     });
   });
 
-  describe('getFavorite', () => {
-    it('should get the favorite for an user for a specific album and asset', async () => {
+  describe('getLikeStatus', () => {
+    it('should get the like for an user for a specific album and asset', async () => {
       activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.liked]);
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       await expect(
@@ -44,15 +45,14 @@ describe(ActivityService.name, () => {
           assetId: 'asset-id',
           albumId: activityStub.oneComment.albumId,
         }),
-      ).resolves.toEqual({ value: true });
+      );
     });
-    describe('changeFavorite', () => {
+    describe('createLike', () => {
       it('should get the favorite for an user for a specific album and asset', async () => {
         activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.liked]);
         accessMock.album.hasOwnerAccess.mockResolvedValue(true);
         await expect(
-          sut.updateLikeStatus(authStub.admin, {
-            value: false,
+          sut.createLike(authStub.admin, {
             assetId: 'asset-id',
             albumId: activityStub.oneComment.albumId,
           }),

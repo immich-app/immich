@@ -10,11 +10,12 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addComment**](ActivityApi.md#addcomment) | **POST** /activity/comment | 
+[**createLike**](ActivityApi.md#createlike) | **PUT** /activity/like | 
 [**deleteComment**](ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
+[**deleteLike**](ActivityApi.md#deletelike) | **DELETE** /activity/like | 
 [**getActivities**](ActivityApi.md#getactivities) | **GET** /activity | 
 [**getActivityLikeStatus**](ActivityApi.md#getactivitylikestatus) | **GET** /activity/like | 
 [**getActivityStatistics**](ActivityApi.md#getactivitystatistics) | **GET** /activity/statistics | 
-[**updateActivityLikeStatus**](ActivityApi.md#updateactivitylikestatus) | **PUT** /activity/like | 
 
 
 # **addComment**
@@ -56,6 +57,61 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **activityCommentDto** | [**ActivityCommentDto**](ActivityCommentDto.md)|  | 
+
+### Return type
+
+[**ActivityResponseDto**](ActivityResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createLike**
+> ActivityResponseDto createLike(activityDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = ActivityApi();
+final activityDto = ActivityDto(); // ActivityDto | 
+
+try {
+    final result = api_instance.createLike(activityDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling ActivityApi->createLike: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **activityDto** | [**ActivityDto**](ActivityDto.md)|  | 
 
 ### Return type
 
@@ -126,6 +182,60 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **deleteLike**
+> deleteLike(activityDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = ActivityApi();
+final activityDto = ActivityDto(); // ActivityDto | 
+
+try {
+    api_instance.deleteLike(activityDto);
+} catch (e) {
+    print('Exception when calling ActivityApi->deleteLike: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **activityDto** | [**ActivityDto**](ActivityDto.md)|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getActivities**
 > List<ActivityResponseDto> getActivities(albumId, assetId)
 
@@ -184,7 +294,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getActivityLikeStatus**
-> ActivityLikeStatusResponseDto getActivityLikeStatus(albumId, assetId)
+> Object getActivityLikeStatus(albumId, assetId)
 
 
 
@@ -227,7 +337,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ActivityLikeStatusResponseDto**](ActivityLikeStatusResponseDto.md)
+[**Object**](Object.md)
 
 ### Authorization
 
@@ -293,61 +403,6 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **updateActivityLikeStatus**
-> Object updateActivityLikeStatus(activityLikeDto)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = ActivityApi();
-final activityLikeDto = ActivityLikeDto(); // ActivityLikeDto | 
-
-try {
-    final result = api_instance.updateActivityLikeStatus(activityLikeDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling ActivityApi->updateActivityLikeStatus: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **activityLikeDto** | [**ActivityLikeDto**](ActivityLikeDto.md)|  | 
-
-### Return type
-
-[**Object**](Object.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

@@ -1,6 +1,6 @@
 import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { ValidateUUID } from '../domain.util';
 import { UserDto, mapSimpleUser } from '../user/response-dto';
 
@@ -33,12 +33,6 @@ export class ActivityDto {
 
   @ValidateUUID({ optional: true })
   assetId?: string;
-}
-
-export class ActivityLikeDto extends ActivityDto {
-  @IsBoolean()
-  @IsNotEmpty()
-  value!: boolean;
 }
 
 export class ActivityCommentDto extends ActivityDto {

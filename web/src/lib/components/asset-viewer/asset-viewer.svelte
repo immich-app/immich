@@ -102,16 +102,21 @@
   const handleFavorite = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.updateActivityLikeStatus({
-          activityLikeDto: { value: !isLiked, albumId: album.id, assetId: asset.id },
-        });
-        if (data) {
+        if (isLiked) {
+          const { data } = await api.activityApi.deleteLike({
+            activityDto: { albumId: album.id, assetId: asset.id },
+          });
+
+          reactions = reactions.filter((obj) => (obj.user && user && obj.user.id !== user.id) || obj.comment);
+          isLiked = false;
+        } else {
+          const { data } = await api.activityApi.createLike({
+            activityDto: { albumId: album.id, assetId: asset.id },
+          });
+
           reactions.push(data as ActivityResponseDto);
           reactions = reactions;
           isLiked = true;
-        } else {
-          reactions = reactions.filter((obj) => (obj.user && user && obj.user.id !== user.id) || obj.comment);
-          isLiked = false;
         }
       } catch (error) {
         handleError(error, "Can't change favorite for asset");
@@ -123,7 +128,9 @@
     if (album) {
       try {
         const { data } = await api.activityApi.getActivityLikeStatus({ assetId: asset.id, albumId: album.id });
-        isLiked = data.value;
+        if (data) {
+          isLiked = true;
+        }
       } catch (error) {
         handleError(error, "Can't get Favorite");
       }

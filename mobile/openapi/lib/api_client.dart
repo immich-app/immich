@@ -191,10 +191,8 @@ class ApiClient {
           return APIKeyUpdateDto.fromJson(value);
         case 'ActivityCommentDto':
           return ActivityCommentDto.fromJson(value);
-        case 'ActivityLikeDto':
-          return ActivityLikeDto.fromJson(value);
-        case 'ActivityLikeStatusResponseDto':
-          return ActivityLikeStatusResponseDto.fromJson(value);
+        case 'ActivityDto':
+          return ActivityDto.fromJson(value);
         case 'ActivityResponseDto':
           return ActivityResponseDto.fromJson(value);
         case 'ActivityStatisticsResponseDto':

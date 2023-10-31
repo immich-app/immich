@@ -5,8 +5,6 @@ import { IAccessRepository, IActivityRepository } from '../repositories';
 import {
   ActivityCommentDto,
   ActivityDto,
-  ActivityLikeDto,
-  ActivityLikeStatusResponseDto,
   ActivityResponseDto,
   ActivityStatisticsResponseDto,
   mapActivity,
@@ -38,7 +36,7 @@ export class ActivityService {
     return { comments: await this.repository.getStatistics(dto.assetId, dto.albumId) };
   }
 
-  async getLikeStatus(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityLikeStatusResponseDto> {
+  async getLikeStatus(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityResponseDto | null> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
     const [reaction] = await this.repository.search({
       albumId: dto.albumId,
@@ -46,10 +44,38 @@ export class ActivityService {
       assetId: dto.assetId,
       isLiked: true,
     });
-    return { value: !!reaction };
+    if (reaction) {
+      return mapActivity(reaction);
+    }
+    return null;
   }
 
-  async updateLikeStatus(authUser: AuthUserDto, dto: ActivityLikeDto): Promise<ActivityResponseDto | void> {
+  async createLike(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityResponseDto> {
+    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
+
+    const options = {
+      userId: authUser.id,
+      albumId: dto.albumId,
+      assetId: dto.assetId,
+      isLiked: true,
+    };
+
+    const [reaction] = await this.repository.search(options);
+    if (reaction) {
+      return mapActivity(reaction);
+    } else {
+      return await this.repository
+        .update({
+          assetId: dto.assetId,
+          userId: authUser.id,
+          albumId: dto.albumId,
+          isLiked: true,
+        })
+        .then(mapActivity);
+    }
+  }
+
+  async deleteLike(authUser: AuthUserDto, dto: ActivityDto): Promise<void> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
 
     const options = {
@@ -62,17 +88,8 @@ export class ActivityService {
     const [reaction] = await this.repository.search(options);
     if (reaction) {
       await this.repository.delete(reaction.id);
-      return;
-    } else {
-      return await this.repository
-        .update({
-          assetId: dto.assetId,
-          userId: authUser.id,
-          albumId: dto.albumId,
-          isLiked: true,
-        })
-        .then(mapActivity);
     }
+    return;
   }
 
   async addComment(authUser: AuthUserDto, dto: ActivityCommentDto): Promise<ActivityResponseDto> {

@@ -144,8 +144,7 @@ export class AccessCore {
       case Permission.ACTIVITY_DELETE:
         return (
           (await this.repository.activity.hasOwnerAccess(authUser.id, id)) ||
-          // TODO this won't work because id is the activity id, not album id
-          (await this.repository.album.hasOwnerAccess(authUser.id, id))
+          (await this.repository.activity.hasAlbumOwnerAccess(authUser.id, id))
         );
 
       case Permission.ASSET_READ:

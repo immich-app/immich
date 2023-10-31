@@ -133,6 +133,39 @@
       }
     },
     "/activity/like": {
+      "delete": {
+        "operationId": "deleteLike",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      },
       "get": {
         "operationId": "getActivityLikeStatus",
         "parameters": [
@@ -160,7 +193,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ActivityLikeStatusResponseDto"
+                  "type": "object"
                 }
               }
             },
@@ -183,13 +216,13 @@
         ]
       },
       "put": {
-        "operationId": "updateActivityLikeStatus",
+        "operationId": "createLike",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ActivityLikeDto"
+                "$ref": "#/components/schemas/ActivityDto"
               }
             }
           },
@@ -200,7 +233,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ActivityResponseDto"
                 }
               }
             },
@@ -5805,7 +5838,7 @@
         ],
         "type": "object"
       },
-      "ActivityLikeDto": {
+      "ActivityDto": {
         "properties": {
           "albumId": {
             "format": "uuid",
@@ -5814,25 +5847,10 @@
           "assetId": {
             "format": "uuid",
             "type": "string"
-          },
-          "value": {
-            "type": "boolean"
           }
         },
         "required": [
-          "albumId",
-          "value"
-        ],
-        "type": "object"
-      },
-      "ActivityLikeStatusResponseDto": {
-        "properties": {
-          "value": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "value"
+          "albumId"
         ],
         "type": "object"
       },

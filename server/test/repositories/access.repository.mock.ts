@@ -18,6 +18,7 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
   return {
     activity: {
       hasOwnerAccess: jest.fn(),
+      hasAlbumOwnerAccess: jest.fn(),
     },
     asset: {
       hasOwnerAccess: jest.fn(),

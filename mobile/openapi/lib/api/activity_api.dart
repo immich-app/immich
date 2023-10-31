@@ -63,6 +63,53 @@ class ActivityApi {
     return null;
   }
 
+  /// Performs an HTTP 'PUT /activity/like' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [ActivityDto] activityDto (required):
+  Future<Response> createLikeWithHttpInfo(ActivityDto activityDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/activity/like';
+
+    // ignore: prefer_final_locals
+    Object? postBody = activityDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [ActivityDto] activityDto (required):
+  Future<ActivityResponseDto?> createLike(ActivityDto activityDto,) async {
+    final response = await createLikeWithHttpInfo(activityDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityResponseDto',) as ActivityResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'DELETE /activity/comment/{id}' operation and returns the [Response].
   /// Parameters:
   ///
@@ -98,6 +145,45 @@ class ActivityApi {
   /// * [String] id (required):
   Future<void> deleteComment(String id,) async {
     final response = await deleteCommentWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'DELETE /activity/like' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [ActivityDto] activityDto (required):
+  Future<Response> deleteLikeWithHttpInfo(ActivityDto activityDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/activity/like';
+
+    // ignore: prefer_final_locals
+    Object? postBody = activityDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [ActivityDto] activityDto (required):
+  Future<void> deleteLike(ActivityDto activityDto,) async {
+    final response = await deleteLikeWithHttpInfo(activityDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -203,7 +289,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  Future<ActivityLikeStatusResponseDto?> getActivityLikeStatus(String albumId, { String? assetId, }) async {
+  Future<Object?> getActivityLikeStatus(String albumId, { String? assetId, }) async {
     final response = await getActivityLikeStatusWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -212,7 +298,7 @@ class ActivityApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityLikeStatusResponseDto',) as ActivityLikeStatusResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
     
     }
     return null;
@@ -269,53 +355,6 @@ class ActivityApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityStatisticsResponseDto',) as ActivityStatisticsResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'PUT /activity/like' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [ActivityLikeDto] activityLikeDto (required):
-  Future<Response> updateActivityLikeStatusWithHttpInfo(ActivityLikeDto activityLikeDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/activity/like';
-
-    // ignore: prefer_final_locals
-    Object? postBody = activityLikeDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [ActivityLikeDto] activityLikeDto (required):
-  Future<Object?> updateActivityLikeStatus(ActivityLikeDto activityLikeDto,) async {
-    final response = await updateActivityLikeStatusWithHttpInfo(activityLikeDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
     
     }
     return null;

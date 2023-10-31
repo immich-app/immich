@@ -6,12 +6,9 @@ import { UseValidation } from '../app.utils';
 
 import {
   ActivityDto,
-  ActivityLikeStatusResponseDto,
   ActivityResponseDto,
   ActivityService,
   ActivityCommentDto as CommentDto,
-  ActivityLikeDto as LikeDto,
-  ActivityLikeStatusResponseDto as LikeResponseDto,
   ActivityResponseDto as ResponseDto,
   ActivityStatisticsResponseDto as StatsResponseDto,
 } from '@app/domain/activity';
@@ -35,16 +32,21 @@ export class ActivityController {
   }
 
   @Get('like')
-  getActivityLikeStatus(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<LikeResponseDto> {
+  getActivityLikeStatus(
+    @AuthUser() authUser: AuthUserDto,
+    @Query() dto: ActivityDto,
+  ): Promise<ActivityResponseDto | null> {
     return this.service.getLikeStatus(authUser, dto);
   }
 
   @Put('like')
-  updateActivityLikeStatus(
-    @AuthUser() authUser: AuthUserDto,
-    @Body() dto: LikeDto,
-  ): Promise<ActivityResponseDto | void> {
-    return this.service.updateLikeStatus(authUser, dto);
+  createLike(@AuthUser() authUser: AuthUserDto, @Body() dto: ActivityDto): Promise<ActivityResponseDto> {
+    return this.service.createLike(authUser, dto);
+  }
+
+  @Delete('like')
+  deleteLike(@AuthUser() authUser: AuthUserDto, @Body() dto: ActivityDto): Promise<void> {
+    return this.service.deleteLike(authUser, dto);
   }
 
   @Post('comment')

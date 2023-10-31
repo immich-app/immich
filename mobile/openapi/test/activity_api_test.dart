@@ -22,8 +22,18 @@ void main() {
       // TODO
     });
 
+    //Future<ActivityResponseDto> createLike(ActivityDto activityDto) async
+    test('test createLike', () async {
+      // TODO
+    });
+
     //Future deleteComment(String id) async
     test('test deleteComment', () async {
+      // TODO
+    });
+
+    //Future deleteLike(ActivityDto activityDto) async
+    test('test deleteLike', () async {
       // TODO
     });
 
@@ -32,18 +42,13 @@ void main() {
       // TODO
     });
 
-    //Future<ActivityLikeStatusResponseDto> getActivityLikeStatus(String albumId, { String assetId }) async
+    //Future<Object> getActivityLikeStatus(String albumId, { String assetId }) async
     test('test getActivityLikeStatus', () async {
       // TODO
     });
 
     //Future<ActivityStatisticsResponseDto> getActivityStatistics(String albumId, { String assetId }) async
     test('test getActivityStatistics', () async {
-      // TODO
-    });
-
-    //Future<Object> updateActivityLikeStatus(ActivityLikeDto activityLikeDto) async
-    test('test updateActivityLikeStatus', () async {
       // TODO
     });
 
