@@ -33,14 +33,14 @@ export const load = (async ({ params, locals: { api, user } }) => {
       }
       if (a.name === '') {
         return 1;
-      } else if (b.name === '') {
+      }
+      if (b.name === '') {
         return -1;
       }
       if (b.appears !== a.appears) {
         return b.appears - a.appears;
-      } else {
-        return a.name.localeCompare(b.name);
       }
+      return a.name.localeCompare(b.name);
     });
 
     return {
