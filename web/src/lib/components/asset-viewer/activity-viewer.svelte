@@ -154,7 +154,7 @@
       </div>
     </div>
     {#if innerHeight}
-      <div class="overflow-y-auto relative" style="height: {divHeight}px;padding-bottom: {chatHeight}px">
+      <div class="overflow-y-auto relative w-full" style="height: {divHeight}px;padding-bottom: {chatHeight}px">
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.type === 'comment'}
             <div class="flex dark:bg-slate-500 bg-gray-200 p-2 mx-2 mt-2 rounded-3xl gap-2 justify-start">
@@ -162,7 +162,7 @@
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
-              <div class="w-full leading-4 flex items-center">{reaction.comment}</div>
+              <div class="w-full leading-4 overflow-hidden self-center break-words">{reaction.comment}</div>
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
                   <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
