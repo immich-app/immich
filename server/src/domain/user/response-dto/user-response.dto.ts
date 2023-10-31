@@ -32,13 +32,9 @@ export const mapSimpleUser = (entity: UserEntity): UserDto => {
 
 export function mapUser(entity: UserEntity): UserResponseDto {
   return {
-    id: entity.id,
-    email: entity.email,
-    firstName: entity.firstName,
-    lastName: entity.lastName,
+    ...mapSimpleUser(entity),
     storageLabel: entity.storageLabel,
     externalPath: entity.externalPath,
-    profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
     createdAt: entity.createdAt,

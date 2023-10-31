@@ -18,7 +18,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
-    activity: [],
   }),
   sharedWithUser: Object.freeze<AlbumEntity>({
     id: 'album-2',
@@ -34,7 +33,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [userStub.user1],
-    activity: [],
   }),
   sharedWithMultiple: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -50,7 +48,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [userStub.user1, userStub.user2],
-    activity: [],
   }),
   sharedWithAdmin: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -66,7 +63,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [userStub.admin],
-    activity: [],
   }),
   oneAsset: Object.freeze<AlbumEntity>({
     id: 'album-4',
@@ -82,7 +78,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
-    activity: [],
   }),
   twoAssets: Object.freeze<AlbumEntity>({
     id: 'album-4a',
@@ -98,7 +93,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
-    activity: [],
   }),
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -114,7 +108,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
-    activity: [],
   }),
   emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -130,7 +123,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
-    activity: [],
   }),
   oneAssetInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -146,7 +138,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
-    activity: [],
   }),
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -162,6 +153,5 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
-    activity: [],
   }),
 };

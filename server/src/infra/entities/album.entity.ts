@@ -57,7 +57,4 @@ export class AlbumEntity {
 
   @OneToMany(() => SharedLinkEntity, (link) => link.album)
   sharedLinks!: SharedLinkEntity[];
-
-  @OneToMany(() => ActivityEntity, (activity) => activity.asset)
-  activity!: ActivityEntity[];
 }
