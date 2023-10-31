@@ -23,7 +23,7 @@ export class ActivityEntity {
   createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date | null;
+  updatedAt!: Date;
 
   @Column()
   albumId!: string;
