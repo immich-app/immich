@@ -176,7 +176,7 @@ export class PersonRepository implements IPersonRepository {
 
     return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
       albumId: albumCount['album_id'],
-      albumName: albumCount['album_name'],
+      albumName: albumCount['album_albumName'],
       assetCount: Number(albumCount['asset_count']),
     }));
   }
