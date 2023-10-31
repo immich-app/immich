@@ -33,7 +33,7 @@ export class JobRepository implements IJobRepository {
   }
 
   validateCronExpression(expression: string) {
-    if (validateCronExpression(expression)) {
+    if (!validateCronExpression(expression)) {
       throw new Error(`Invalid cron expression ${expression}`);
     }
   }
