@@ -29,29 +29,24 @@
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetStore } from '$lib/stores/assets.store';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { assetViewingStore, SlideshowState } from '$lib/stores/asset-viewing.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { featureFlags } from '$lib/stores/server-config.store';
   import {
-    mdiChevronLeft,
     mdiHeartOutline,
     mdiHeart,
     mdiCommentOutline,
+    mdiChevronLeft,
     mdiChevronRight,
-    mdiClose,
     mdiImageBrokenVariant,
-    mdiPause,
-    mdiPlay,
-    mdiShuffle,
-    mdiShuffleDisabled,
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import ActivityViewer from './activity-viewer.svelte';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import SlideshowBar from './slideshow-bar.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -66,7 +61,13 @@
 
   let reactions: ActivityResponseDto[] = [];
 
-  const { slideshowShuffle, slideshowState, setAssetId } = assetViewingStore;
+  const { setAssetId } = assetViewingStore;
+  const {
+    restartProgress: restartSlideshowProgress,
+    stopProgress: stopSlideshowProgress,
+    slideshowShuffle,
+    slideshowState,
+  } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -308,7 +309,7 @@
     slideshowHistory.queue(asset.id);
 
     setAssetId(asset.id);
-    progressBar.restart(true);
+    $restartSlideshowProgress = true;
   };
 
   const navigateAssetForward = async (e?: Event) => {
@@ -316,10 +317,10 @@
       return slideshowHistory.next() || navigateAssetRandom();
     }
 
-    if ($slideshowState === SlideshowState.PlaySlideshow && assetStore && progressBar) {
+    if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext = await assetStore.getNextAssetId(asset.id);
       if (hasNext) {
-        progressBar.restart(true);
+        $restartSlideshowProgress = true;
       } else {
         await handleStopSlideshow();
       }
@@ -335,8 +336,8 @@
       return;
     }
 
-    if ($slideshowState === SlideshowState.PlaySlideshow && progressBar) {
-      progressBar.restart(true);
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      $restartSlideshowProgress = true;
     }
 
     e?.stopPropagation();
@@ -485,17 +486,15 @@
    */
 
   let assetViewerHtmlElement: HTMLElement;
-  let progressBar: ProgressBar;
-  let progressBarStatus: ProgressBarStatus;
 
   const slideshowHistory = new SlideshowHistory((assetId: string) => {
     setAssetId(assetId);
-    progressBar.restart(true);
+    $restartSlideshowProgress = true;
   });
 
   const handleVideoStarted = () => {
     if ($slideshowState === SlideshowState.PlaySlideshow) {
-      progressBar.restart(false);
+      $stopSlideshowProgress = true;
     }
   };
 
@@ -522,7 +521,7 @@
     } catch (error) {
       console.error('Error exiting fullscreen', error);
     } finally {
-      progressBar.restart(false);
+      $stopSlideshowProgress = true;
       $slideshowState = SlideshowState.None;
     }
   };
@@ -601,37 +600,11 @@
   <!-- Asset Viewer -->
   <div class="z-[1000] relative col-start-1 col-span-4 row-start-1 row-span-full" bind:this={assetViewerHtmlElement}>
     {#if $slideshowState != SlideshowState.None}
-      <!-- Slideshow actions bar -->
       <div class="z-[1000] absolute w-full flex">
-        <div class="m-4 flex gap-2">
-          <CircleIconButton
-            icon={mdiClose}
-            on:click={() => ($slideshowState = SlideshowState.StopSlideshow)}
-            title="Exit Slideshow"
-          />
-          {#if $slideshowShuffle}
-            <CircleIconButton icon={mdiShuffle} on:click={() => ($slideshowShuffle = false)} title="Shuffle" />
-          {:else}
-            <CircleIconButton
-              icon={mdiShuffleDisabled}
-              on:click={() => ($slideshowShuffle = true)}
-              title="No shuffle"
-            />
-          {/if}
-          <CircleIconButton
-            icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
-            on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
-            title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
-          />
-          <CircleIconButton icon={mdiChevronLeft} on:click={navigateAssetBackward} title="Previous" />
-          <CircleIconButton icon={mdiChevronRight} on:click={navigateAssetForward} title="Next" />
-        </div>
-        <ProgressBar
-          autoplay
-          bind:this={progressBar}
-          bind:status={progressBarStatus}
-          on:done={navigateAssetForward}
-          duration={5000}
+        <SlideshowBar
+          on:prev={navigateAssetBackward}
+          on:next={navigateAssetForward}
+          on:close={() => ($slideshowState = SlideshowState.StopSlideshow)}
         />
       </div>
     {/if}

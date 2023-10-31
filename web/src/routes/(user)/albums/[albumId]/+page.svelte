@@ -28,7 +28,8 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { SlideshowState, assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
@@ -52,7 +53,8 @@
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer, setAssetId, slideshowState, slideshowShuffle } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
+  let { slideshowState, slideshowShuffle } = slideshowStore;
 
   let album = data.album;
   $: album = data.album;
