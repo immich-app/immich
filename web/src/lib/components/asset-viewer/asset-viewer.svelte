@@ -86,7 +86,7 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
-
+  $:console.log(numberOfComments)
   $: {
     if (asset.stackCount && asset.stack) {
       $stackAssetsStore = asset.stack;
@@ -605,7 +605,7 @@
         {#if isShared}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <div
-              class="py-3 px-4 m-1 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-gray bg-opacity-75"
+              class="{(numberOfComments || isShowActivity) ? 'w-32' : 'w-64'} h-14 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
             >
               <button on:click={handleFavorite}>
                 <div class="items-center justify-center">
@@ -613,7 +613,7 @@
                 </div>
               </button>
               <button on:click={handleOpenActivity}>
-                <div class="flex gap-1 items-center justify-center">
+                <div class="flex gap-2 items-center justify-center">
                   <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={24} />
                   {#if numberOfComments}
                     <div class="text-xl">{numberOfComments}</div>
@@ -704,8 +704,8 @@
         albumId={album.id}
         assetId={asset.id}
         bind:reactions
-        on:addComment={() => (numberOfComments ? numberOfComments++ : '')}
-        on:deleteComment={() => (numberOfComments ? numberOfComments-- : '')}
+        on:addComment={() => (numberOfComments++)}
+        on:deleteComment={() => (numberOfComments--)}
         on:deleteLike={() => (isLiked = null)}
         on:close={() => (isShowActivity = false)}
       />
