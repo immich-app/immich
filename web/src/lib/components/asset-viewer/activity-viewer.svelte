@@ -5,12 +5,25 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ActivityResponseDto, api, AssetTypeEnum, ReactionType, type UserResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
-  import { isTenMinutesApart, timeSince } from '$lib/utils/timesince';
+  import { isTenMinutesApart } from '$lib/utils/timesince';
   import { clickOutside } from '$lib/utils/click-outside';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { getAssetType } from '$lib/utils/asset-utils';
+  import * as luxon from 'luxon';
+
+  const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
+
+  const timeSince = (dateTime: luxon.DateTime) => {
+    const diff = dateTime.diffNow().shiftTo(...units);
+    const unit = units.find((unit) => diff.get(unit) !== 0) || 'second';
+
+    const relativeFormatter = new Intl.RelativeTimeFormat('en', {
+      numeric: 'auto',
+    });
+    return relativeFormatter.format(Math.trunc(diff.as(unit)), unit);
+  };
 
   export let reactions: ActivityResponseDto[];
   export let user: UserResponseDto;
@@ -177,7 +190,7 @@
                   class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                   title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
                 >
-                  {timeSince(new Date(reaction.createdAt))}
+                  {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
                 </div>
               {/if}
             {:else if reaction.type === 'like'}
@@ -218,7 +231,7 @@
                     class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                     title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
                   >
-                    {timeSince(new Date(reaction.createdAt))}
+                    {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
                   </div>
                 {/if}
               </div>

@@ -22,6 +22,51 @@ describe(ActivityService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('getAll', () => {
+    it('should get all', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      activityMock.search.mockResolvedValue([]);
+
+      await expect(sut.getAll(authStub.admin, { assetId: 'asset-id', albumId: 'album-id' })).resolves.toEqual([]);
+
+      expect(activityMock.search).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        albumId: 'album-id',
+        isLiked: undefined,
+      });
+    });
+
+    it('should filter by type=like', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      activityMock.search.mockResolvedValue([]);
+
+      await expect(
+        sut.getAll(authStub.admin, { assetId: 'asset-id', albumId: 'album-id', type: ReactionType.LIKE }),
+      ).resolves.toEqual([]);
+
+      expect(activityMock.search).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        albumId: 'album-id',
+        isLiked: true,
+      });
+    });
+
+    it('should filter by type=comment', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      activityMock.search.mockResolvedValue([]);
+
+      await expect(
+        sut.getAll(authStub.admin, { assetId: 'asset-id', albumId: 'album-id', type: ReactionType.COMMENT }),
+      ).resolves.toEqual([]);
+
+      expect(activityMock.search).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        albumId: 'album-id',
+        isLiked: false,
+      });
+    });
+  });
+
   describe('getStatistics', () => {
     it('should get the comment count', async () => {
       activityMock.getStatistics.mockResolvedValue(1);
