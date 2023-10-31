@@ -1,5 +1,5 @@
 import {
-  AlbumAssetCount,
+  AlbumInfoAssetCount,
   AssetFaceId,
   IPersonRepository,
   PersonNameSearchOptions,
@@ -161,11 +161,12 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
-  async getAlbums(personId: string): Promise<AlbumAssetCount[]> {
+  async getAlbums(personId: string): Promise<AlbumInfoAssetCount[]> {
     const countByAlbums = await this.albumRepository
     .createQueryBuilder('album')
     .select('album.id')
     .addSelect('album.albumName')
+    .addSelect('album.albumThumbnailAssetId')
     .addSelect('COUNT(asset.id)', 'asset_count')    
     .innerJoin('album.assets', 'asset')
     .innerJoin('asset.faces', 'face')
@@ -174,9 +175,10 @@ export class PersonRepository implements IPersonRepository {
     .orderBy('face.personId, album.id')
     .getRawMany();
 
-    return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
+    return countByAlbums.map<AlbumInfoAssetCount>((albumCount) => ({
       albumId: albumCount['album_id'],
       albumName: albumCount['album_albumName'],
+      albumThumbnailAssetId: albumCount['album_albumThumbnailAssetId'],
       assetCount: Number(albumCount['asset_count']),
     }));
   }

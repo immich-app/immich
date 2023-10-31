@@ -297,6 +297,12 @@ export interface AlbumsForPersonResponseDto {
     'albumName': string;
     /**
      * 
+     * @type {string}
+     * @memberof AlbumsForPersonResponseDto
+     */
+    'albumThumbnailAssetId': string;
+    /**
+     * 
      * @type {number}
      * @memberof AlbumsForPersonResponseDto
      */

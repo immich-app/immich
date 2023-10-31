@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // String albumThumbnailAssetId
+    test('to test the property `albumThumbnailAssetId`', () async {
+      // TODO
+    });
+
     // int assetCount
     test('to test the property `assetCount`', () async {
       // TODO

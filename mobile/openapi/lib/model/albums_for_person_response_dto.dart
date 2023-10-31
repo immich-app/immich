@@ -15,6 +15,7 @@ class AlbumsForPersonResponseDto {
   AlbumsForPersonResponseDto({
     required this.albumId,
     required this.albumName,
+    required this.albumThumbnailAssetId,
     required this.assetCount,
   });
 
@@ -22,12 +23,15 @@ class AlbumsForPersonResponseDto {
 
   String albumName;
 
+  String albumThumbnailAssetId;
+
   int assetCount;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumsForPersonResponseDto &&
      other.albumId == albumId &&
      other.albumName == albumName &&
+     other.albumThumbnailAssetId == albumThumbnailAssetId &&
      other.assetCount == assetCount;
 
   @override
@@ -35,15 +39,17 @@ class AlbumsForPersonResponseDto {
     // ignore: unnecessary_parenthesis
     (albumId.hashCode) +
     (albumName.hashCode) +
+    (albumThumbnailAssetId.hashCode) +
     (assetCount.hashCode);
 
   @override
-  String toString() => 'AlbumsForPersonResponseDto[albumId=$albumId, albumName=$albumName, assetCount=$assetCount]';
+  String toString() => 'AlbumsForPersonResponseDto[albumId=$albumId, albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumId'] = this.albumId;
       json[r'albumName'] = this.albumName;
+      json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
       json[r'assetCount'] = this.assetCount;
     return json;
   }
@@ -58,6 +64,7 @@ class AlbumsForPersonResponseDto {
       return AlbumsForPersonResponseDto(
         albumId: mapValueOfType<String>(json, r'albumId')!,
         albumName: mapValueOfType<String>(json, r'albumName')!,
+        albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId')!,
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
       );
     }
@@ -108,6 +115,7 @@ class AlbumsForPersonResponseDto {
   static const requiredKeys = <String>{
     'albumId',
     'albumName',
+    'albumThumbnailAssetId',
     'assetCount',
   };
 }
