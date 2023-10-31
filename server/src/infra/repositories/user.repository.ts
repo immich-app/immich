@@ -1,5 +1,5 @@
-import { IUserRepository, UserListFilter, UserStatsQueryResponse } from '@app/domain';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { IUserRepository, UserFindOptions, UserListFilter, UserStatsQueryResponse } from '@app/domain';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { UserEntity } from '../entities';
@@ -8,8 +8,12 @@ import { UserEntity } from '../entities';
 export class UserRepository implements IUserRepository {
   constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {}
 
-  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { id: userId }, withDeleted: withDeleted });
+  async get(userId: string, options: UserFindOptions): Promise<UserEntity | null> {
+    options = options || {};
+    return this.userRepository.findOne({
+      where: { id: userId },
+      withDeleted: options.withDeleted,
+    });
   }
 
   async getAdmin(): Promise<UserEntity | null> {
@@ -51,19 +55,13 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  async create(user: Partial<UserEntity>): Promise<UserEntity> {
-    return this.userRepository.save(user);
+  create(user: Partial<UserEntity>): Promise<UserEntity> {
+    return this.save(user);
   }
 
-  async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
-    user.id = id;
-
-    await this.userRepository.save(user);
-    const updatedUser = await this.get(id);
-    if (!updatedUser) {
-      throw new InternalServerErrorException('Cannot reload user after update');
-    }
-    return updatedUser;
+  // TODO change to (user: Partial<UserEntity>)
+  update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
+    return this.save({ ...user, id });
   }
 
   async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
@@ -100,5 +98,10 @@ export class UserRepository implements IUserRepository {
     }
 
     return stats;
+  }
+
+  private async save(user: Partial<UserEntity>) {
+    const { id } = await this.userRepository.save(user);
+    return this.userRepository.findOneByOrFail({ id });
   }
 }

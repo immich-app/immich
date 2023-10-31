@@ -122,33 +122,4 @@ export class UserCore {
       throw new InternalServerErrorException('Failed to register new user');
     }
   }
-
-  async restoreUser(authUser: AuthUserDto, userToRestore: UserEntity): Promise<UserEntity> {
-    if (!authUser.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-    try {
-      return this.userRepository.restore(userToRestore);
-    } catch (e) {
-      Logger.error(e, 'Failed to restore deleted user');
-      throw new InternalServerErrorException('Failed to restore deleted user');
-    }
-  }
-
-  async deleteUser(authUser: AuthUserDto, userToDelete: UserEntity): Promise<UserEntity> {
-    if (!authUser.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-
-    if (userToDelete.isAdmin) {
-      throw new ForbiddenException('Cannot delete admin user');
-    }
-
-    try {
-      return this.userRepository.delete(userToDelete);
-    } catch (e) {
-      Logger.error(e, 'Failed to delete user');
-      throw new InternalServerErrorException('Failed to delete user');
-    }
-  }
 }

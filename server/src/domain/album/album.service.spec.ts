@@ -174,7 +174,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: '123',
       });
 
-      expect(userMock.get).toHaveBeenCalledWith('user-id');
+      expect(userMock.get).toHaveBeenCalledWith('user-id', {});
     });
 
     it('should require valid userIds', async () => {
@@ -185,7 +185,7 @@ describe(AlbumService.name, () => {
           sharedWithUserIds: ['user-3'],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
-      expect(userMock.get).toHaveBeenCalledWith('user-3');
+      expect(userMock.get).toHaveBeenCalledWith('user-3', {});
       expect(albumMock.create).not.toHaveBeenCalled();
     });
   });
