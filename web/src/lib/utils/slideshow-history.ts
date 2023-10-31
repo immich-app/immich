@@ -1,40 +1,40 @@
 export class SlideshowHistory {
-  private slideshowHistory: string[] = [];
-  private slideshowHistoryIndex = 0;
+  private history: string[] = [];
+  private index = 0;
 
-  constructor(private onNavigate: (assetId: string) => void) {}
+  constructor(private onChange: (assetId: string) => void) {}
 
-  reset(assetId: string) {
-    this.slideshowHistory = [assetId];
-    this.slideshowHistoryIndex = 0;
+  reset() {
+    this.history = [];
+    this.index = 0;
   }
 
-  append(assetId: string) {
-    this.slideshowHistory.push(assetId);
+  queue(assetId: string) {
+    this.history.push(assetId);
 
     // If we were at the end of the slideshow history, move the index to the new end
-    if (this.slideshowHistoryIndex === this.slideshowHistory.length - 2) {
-      this.slideshowHistoryIndex++;
+    if (this.index === this.history.length - 2) {
+      this.index++;
     }
   }
 
-  navigateForward(): boolean {
-    if (this.slideshowHistoryIndex === this.slideshowHistory.length - 1) {
+  next(): boolean {
+    if (this.index === this.history.length - 1) {
       return false;
     }
 
-    this.slideshowHistoryIndex++;
-    this.onNavigate(this.slideshowHistory[this.slideshowHistoryIndex]);
+    this.index++;
+    this.onChange(this.history[this.index]);
     return true;
   }
 
-  navigateBackward(): boolean {
-    if (this.slideshowHistoryIndex === 0) {
+  previous(): boolean {
+    if (this.index === 0) {
       return false;
     }
 
-    this.slideshowHistoryIndex--;
-    this.onNavigate(this.slideshowHistory[this.slideshowHistoryIndex]);
+    this.index--;
+    this.onChange(this.history[this.index]);
     return true;
   }
 }

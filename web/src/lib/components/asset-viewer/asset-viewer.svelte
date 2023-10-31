@@ -171,7 +171,8 @@
 
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
-        slideshowHistory.reset(asset.id);
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset.id);
         handlePlaySlideshow();
       } else if (value === SlideshowState.StopSlideshow) {
         handleStopSlideshow();
@@ -180,7 +181,8 @@
 
     shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
       if (value) {
-        slideshowHistory.reset(asset.id);
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset.id);
       }
     });
 
@@ -303,7 +305,7 @@
       return;
     }
 
-    slideshowHistory.append(asset.id);
+    slideshowHistory.queue(asset.id);
 
     setAssetId(asset.id);
     progressBar.restart(true);
@@ -311,7 +313,7 @@
 
   const navigateAssetForward = async (e?: Event) => {
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      return slideshowHistory.navigateForward() || navigateAssetRandom();
+      return slideshowHistory.next() || navigateAssetRandom();
     }
 
     if ($slideshowState === SlideshowState.PlaySlideshow && assetStore && progressBar) {
@@ -329,7 +331,7 @@
 
   const navigateAssetBackward = (e?: Event) => {
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
-      slideshowHistory.navigateBackward();
+      slideshowHistory.previous();
       return;
     }
 
