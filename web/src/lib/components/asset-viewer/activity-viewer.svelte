@@ -28,7 +28,6 @@
 
   $: {
     if (innerHeight && activityHeight) {
-      console.log(activityHeight);
       divHeight = innerHeight - activityHeight;
     }
   }
