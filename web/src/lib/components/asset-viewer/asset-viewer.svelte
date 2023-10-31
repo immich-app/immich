@@ -86,7 +86,7 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
-  $:console.log(numberOfComments)
+  $: console.log(numberOfComments);
   $: {
     if (asset.stackCount && asset.stack) {
       $stackAssetsStore = asset.stack;
@@ -605,7 +605,9 @@
         {#if isShared}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <div
-              class="{(numberOfComments || isShowActivity) ? 'w-32' : 'w-64'} h-14 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
+              class="{numberOfComments || isShowActivity
+                ? 'w-32'
+                : 'w-64'} h-14 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
             >
               <button on:click={handleFavorite}>
                 <div class="items-center justify-center">
@@ -618,7 +620,7 @@
                   {#if numberOfComments}
                     <div class="text-xl">{numberOfComments}</div>
                   {:else if !isShowActivity && !$isShowDetail}
-                    <div class="text-xl">Say something</div>
+                    <div class="text-lg">Say something</div>
                   {/if}
                 </div>
               </button>
@@ -704,8 +706,8 @@
         albumId={album.id}
         assetId={asset.id}
         bind:reactions
-        on:addComment={() => (numberOfComments++)}
-        on:deleteComment={() => (numberOfComments--)}
+        on:addComment={() => numberOfComments++}
+        on:deleteComment={() => numberOfComments--}
         on:deleteLike={() => (isLiked = null)}
         on:close={() => (isShowActivity = false)}
       />
