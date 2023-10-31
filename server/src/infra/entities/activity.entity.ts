@@ -22,7 +22,7 @@ export class ActivityEntity {
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', default: null })
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date | null;
 
   @Column()
@@ -46,6 +46,6 @@ export class ActivityEntity {
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   user!: UserEntity;
 
-  @ManyToOne(() => AlbumEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
-  album!: AlbumEntity | null;
+  @ManyToOne(() => AlbumEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  album!: AlbumEntity;
 }

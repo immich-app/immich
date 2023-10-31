@@ -33,42 +33,12 @@ export class ActivityRepository implements IActivityRepository {
     });
   }
 
-  get(id: string): Promise<ActivityEntity | null> {
-    return this.repository.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        user: true,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
+  create(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {
+    return this.save(entity);
   }
 
-  async create(activity: Partial<ActivityEntity>): Promise<ActivityEntity> {
-    const reaction = await this.repository.save(activity);
-    return this.repository.findOneOrFail({
-      where: {
-        id: reaction.id,
-      },
-      relations: {
-        user: true,
-      },
-    });
-  }
-
-  async update(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {
-    const { id } = await this.repository.save(entity);
-    return this.repository.findOneOrFail({
-      where: {
-        id,
-      },
-      relations: {
-        user: true,
-      },
-    });
+  update(entity: Partial<ActivityEntity>): Promise<ActivityEntity> {
+    return this.save(entity);
   }
 
   async delete(id: string): Promise<void> {
@@ -78,6 +48,18 @@ export class ActivityRepository implements IActivityRepository {
   getStatistics(assetId: string, albumId: string): Promise<number> {
     return this.repository.count({
       where: { assetId, albumId, isLiked: false },
+      relations: {
+        user: true,
+      },
+    });
+  }
+
+  private async save(entity: Partial<ActivityEntity>) {
+    const { id } = await this.repository.save(entity);
+    return this.repository.findOneOrFail({
+      where: {
+        id,
+      },
       relations: {
         user: true,
       },

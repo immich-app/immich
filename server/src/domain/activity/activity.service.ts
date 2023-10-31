@@ -1,19 +1,21 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ActivityEntity } from '@app/infra/entities';
+import { Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { IAccessRepository, IActivityRepository } from '../repositories';
 import {
-  ActivityCommentDto,
+  ActivityCreateDto,
   ActivityDto,
   ActivityResponseDto,
   ActivityStatisticsResponseDto,
+  MaybeDuplicate,
+  ReactionType,
   mapActivity,
 } from './activity.dto';
 
 @Injectable()
 export class ActivityService {
   private access: AccessCore;
-  private logger = new Logger(ActivityService.name);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -24,9 +26,6 @@ export class ActivityService {
 
   async getAll(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityResponseDto[]> {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, dto.albumId);
-    if (dto.assetId) {
-      await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.assetId);
-    }
     const activities = await this.repository.search({ albumId: dto.albumId, assetId: dto.assetId });
     return activities.map(mapActivity);
   }
@@ -36,75 +35,39 @@ export class ActivityService {
     return { comments: await this.repository.getStatistics(dto.assetId, dto.albumId) };
   }
 
-  async getLikeStatus(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityResponseDto | null> {
-    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
-    const [reaction] = await this.repository.search({
-      albumId: dto.albumId,
-      userId: authUser.id,
-      assetId: dto.assetId,
-      isLiked: true,
-    });
-    if (reaction) {
-      return mapActivity(reaction);
-    }
-    return null;
-  }
-
-  async createLike(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityResponseDto> {
+  async create(authUser: AuthUserDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
 
-    const options = {
+    const common = {
+      assetId: dto.assetId,
       userId: authUser.id,
       albumId: dto.albumId,
-      assetId: dto.assetId,
-      isLiked: true,
     };
 
-    const [reaction] = await this.repository.search(options);
-    if (reaction) {
-      return mapActivity(reaction);
-    } else {
-      return await this.repository
-        .update({
-          assetId: dto.assetId,
-          userId: authUser.id,
-          albumId: dto.albumId,
-          isLiked: true,
-        })
-        .then(mapActivity);
+    let activity: ActivityEntity | null = null;
+    let duplicate = false;
+
+    if (dto.type === 'like') {
+      delete dto.comment;
+      [activity] = await this.repository.search({
+        ...common,
+        isLiked: true,
+      });
+      duplicate = !!activity;
     }
-  }
 
-  async deleteLike(authUser: AuthUserDto, dto: ActivityDto): Promise<void> {
-    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
-
-    const options = {
-      userId: authUser.id,
-      albumId: dto.albumId,
-      assetId: dto.assetId,
-      isLiked: true,
-    };
-
-    const [reaction] = await this.repository.search(options);
-    if (reaction) {
-      await this.repository.delete(reaction.id);
-    }
-    return;
-  }
-
-  async addComment(authUser: AuthUserDto, dto: ActivityCommentDto): Promise<ActivityResponseDto> {
-    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
-    return this.repository
-      .create({
-        assetId: dto.assetId,
-        userId: authUser.id,
-        albumId: dto.albumId,
+    if (!activity) {
+      activity = await this.repository.create({
+        ...common,
+        isLiked: dto.type === ReactionType.LIKE,
         comment: dto.comment,
-      })
-      .then(mapActivity);
+      });
+    }
+
+    return { duplicate, value: mapActivity(activity) };
   }
 
-  async deleteComment(authUser: AuthUserDto, id: string): Promise<void> {
+  async delete(authUser: AuthUserDto, id: string): Promise<void> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_DELETE, id);
     await this.repository.delete(id);
   }

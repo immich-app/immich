@@ -22,6 +22,14 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ReactionType"
+            }
           }
         ],
         "responses": {
@@ -53,17 +61,15 @@
         "tags": [
           "Activity"
         ]
-      }
-    },
-    "/activity/comment": {
+      },
       "post": {
-        "operationId": "addComment",
+        "operationId": "createActivity",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ActivityCommentDto"
+                "$ref": "#/components/schemas/ActivityCreateDto"
               }
             }
           },
@@ -71,165 +77,6 @@
         },
         "responses": {
           "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Activity"
-        ]
-      }
-    },
-    "/activity/comment/{id}": {
-      "delete": {
-        "operationId": "deleteComment",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Activity"
-        ]
-      }
-    },
-    "/activity/like": {
-      "delete": {
-        "operationId": "deleteLike",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActivityDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Activity"
-        ]
-      },
-      "get": {
-        "operationId": "getActivityLikeStatus",
-        "parameters": [
-          {
-            "name": "albumId",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "assetId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Activity"
-        ]
-      },
-      "put": {
-        "operationId": "createLike",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActivityDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -288,6 +135,41 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
+    "/activity/{id}": {
+      "delete": {
+        "operationId": "deleteActivity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
             "description": ""
           }
         },
@@ -5818,7 +5700,7 @@
         ],
         "type": "object"
       },
-      "ActivityCommentDto": {
+      "ActivityCreateDto": {
         "properties": {
           "albumId": {
             "format": "uuid",
@@ -5830,27 +5712,14 @@
           },
           "comment": {
             "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ReactionType"
           }
         },
         "required": [
           "albumId",
-          "comment"
-        ],
-        "type": "object"
-      },
-      "ActivityDto": {
-        "properties": {
-          "albumId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "assetId": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "albumId"
+          "type"
         ],
         "type": "object"
       },
@@ -7821,6 +7690,13 @@
           "isPaused"
         ],
         "type": "object"
+      },
+      "ReactionType": {
+        "enum": [
+          "comment",
+          "like"
+        ],
+        "type": "string"
       },
       "RecognitionConfig": {
         "properties": {

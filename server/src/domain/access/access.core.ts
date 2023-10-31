@@ -136,11 +136,14 @@ export class AccessCore {
 
   private async hasOtherAccess(authUser: AuthUserDto, permission: Permission, id: string) {
     switch (permission) {
+      // uses album id
       case Permission.ACTIVITY_CREATE:
         return (
           (await this.repository.album.hasOwnerAccess(authUser.id, id)) ||
           (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
         );
+
+      // uses activity id
       case Permission.ACTIVITY_DELETE:
         return (
           (await this.repository.activity.hasOwnerAccess(authUser.id, id)) ||

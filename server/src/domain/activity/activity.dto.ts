@@ -1,13 +1,15 @@
 import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
-import { ValidateUUID } from '../domain.util';
+import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { Optional, ValidateUUID } from '../domain.util';
 import { UserDto, mapSimpleUser } from '../user/response-dto';
 
 export enum ReactionType {
   COMMENT = 'comment',
   LIKE = 'like',
 }
+
+export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
 
 export class ActivityResponseDto {
   id!: string;
@@ -23,10 +25,6 @@ export class ActivityStatisticsResponseDto {
   comments!: number;
 }
 
-export class ActivityLikeStatusResponseDto {
-  value!: boolean;
-}
-
 export class ActivityDto {
   @ValidateUUID()
   albumId!: string;
@@ -35,10 +33,24 @@ export class ActivityDto {
   assetId?: string;
 }
 
-export class ActivityCommentDto extends ActivityDto {
-  @IsString()
+export class ActivitySearchDto extends ActivityDto {
+  @IsEnum(ReactionType)
+  @Optional()
+  @ApiProperty({ enumName: 'ReactionType', enum: ReactionType })
+  type?: ReactionType;
+}
+
+const isComment = (dto: ActivityCreateDto) => dto.type === 'comment';
+
+export class ActivityCreateDto extends ActivityDto {
+  @IsEnum(ReactionType)
+  @ApiProperty({ enumName: 'ReactionType', enum: ReactionType })
+  type!: ReactionType;
+
+  @ValidateIf(isComment)
   @IsNotEmpty()
-  comment!: string;
+  @IsString()
+  comment?: string;
 }
 
 export function mapActivity(activity: ActivityEntity): ActivityResponseDto {
