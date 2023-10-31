@@ -128,6 +128,8 @@ doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
 doc/SystemConfigJobDto.md
+doc/SystemConfigLibraryDto.md
+doc/SystemConfigLibraryScanDto.md
 doc/SystemConfigMachineLearningDto.md
 doc/SystemConfigMapDto.md
 doc/SystemConfigNewVersionCheckDto.md
@@ -296,6 +298,8 @@ lib/model/smart_info_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
+lib/model/system_config_library_dto.dart
+lib/model/system_config_library_scan_dto.dart
 lib/model/system_config_machine_learning_dto.dart
 lib/model/system_config_map_dto.dart
 lib/model/system_config_new_version_check_dto.dart
@@ -451,6 +455,8 @@ test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
 test/system_config_job_dto_test.dart
+test/system_config_library_dto_test.dart
+test/system_config_library_scan_dto_test.dart
 test/system_config_machine_learning_dto_test.dart
 test/system_config_map_dto_test.dart
 test/system_config_new_version_check_dto_test.dart

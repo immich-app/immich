@@ -7,7 +7,7 @@ import { basename, parse } from 'path';
 import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { usePagination } from '../domain.util';
+import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
 import {
@@ -17,9 +17,11 @@ import {
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
   WithProperty,
 } from '../repositories';
+import { SystemConfigCore } from '../system-config';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -33,10 +35,12 @@ import {
 export class LibraryService {
   readonly logger = new Logger(LibraryService.name);
   private access: AccessCore;
+  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
@@ -44,6 +48,26 @@ export class LibraryService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.configCore.addValidator((config) => {
+      if (!validateCronExpression(config.library.scan.cronExpression)) {
+        throw new Error(`Invalid cron expression ${config.library.scan.cronExpression}`);
+      }
+    });
+  }
+
+  async init() {
+    const config = await this.configCore.getConfig();
+    this.jobRepository.addCronJob(
+      'libraryScan',
+      config.library.scan.cronExpression,
+      () => this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }),
+      config.library.scan.enabled,
+    );
+
+    this.configCore.config$.subscribe((config) => {
+      this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
+    });
   }
 
   async getStatistics(authUser: AuthUserDto, id: string): Promise<LibraryStatsResponseDto> {

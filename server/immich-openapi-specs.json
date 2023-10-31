@@ -8061,6 +8061,9 @@
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
+          "library": {
+            "$ref": "#/components/schemas/SystemConfigLibraryDto"
+          },
           "machineLearning": {
             "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
@@ -8104,7 +8107,8 @@
           "job",
           "thumbnail",
           "trash",
-          "theme"
+          "theme",
+          "library"
         ],
         "type": "object"
       },
@@ -8235,6 +8239,32 @@
           "recognizeFaces",
           "sidecar",
           "library"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLibraryDto": {
+        "properties": {
+          "scan": {
+            "$ref": "#/components/schemas/SystemConfigLibraryScanDto"
+          }
+        },
+        "required": [
+          "scan"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLibraryScanDto": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "cronExpression"
         ],
         "type": "object"
       },

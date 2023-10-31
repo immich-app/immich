@@ -156,6 +156,8 @@ part 'model/smart_info_response_dto.dart';
 part 'model/system_config_dto.dart';
 part 'model/system_config_f_fmpeg_dto.dart';
 part 'model/system_config_job_dto.dart';
+part 'model/system_config_library_dto.dart';
+part 'model/system_config_library_scan_dto.dart';
 part 'model/system_config_machine_learning_dto.dart';
 part 'model/system_config_map_dto.dart';
 part 'model/system_config_new_version_check_dto.dart';

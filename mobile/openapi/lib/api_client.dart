@@ -403,6 +403,10 @@ class ApiClient {
           return SystemConfigFFmpegDto.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
+        case 'SystemConfigLibraryDto':
+          return SystemConfigLibraryDto.fromJson(value);
+        case 'SystemConfigLibraryScanDto':
+          return SystemConfigLibraryScanDto.fromJson(value);
         case 'SystemConfigMachineLearningDto':
           return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigMapDto':

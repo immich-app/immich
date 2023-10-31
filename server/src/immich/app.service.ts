@@ -1,4 +1,4 @@
-import { JobService, ONE_HOUR, SearchService, ServerInfoService, StorageService } from '@app/domain';
+import { JobService, LibraryService, ONE_HOUR, SearchService, ServerInfoService, StorageService } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 
@@ -8,6 +8,7 @@ export class AppService {
 
   constructor(
     private jobService: JobService,
+    private libraryService: LibraryService,
     private searchService: SearchService,
     private storageService: StorageService,
     private serverService: ServerInfoService,
@@ -28,6 +29,7 @@ export class AppService {
     await this.searchService.init();
     await this.serverService.handleVersionCheck();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
+    await this.libraryService.init();
   }
 
   async destroy() {
