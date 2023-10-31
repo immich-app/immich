@@ -603,20 +603,22 @@
           />
         {/if}
         {#if isShared}
-          <div class="z-[9999] absolute bottom-0 right-0 mb-[30px] mr-[30px] justify-self-end">
+          <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <div
-              class="w-32 h-14 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
+              class="py-3 px-4 m-1 flex text-white items-center justify-center rounded-full gap-4 bg-immich-dark-gray bg-opacity-75"
             >
               <button on:click={handleFavorite}>
-                <div class="h-8 items-center justify-center">
-                  <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={30} />
+                <div class="items-center justify-center">
+                  <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={24} />
                 </div>
               </button>
               <button on:click={handleOpenActivity}>
-                <div class="flex h-8 gap-1 items-center justify-center">
-                  <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={30} />
+                <div class="flex gap-1 items-center justify-center">
+                  <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={24} />
                   {#if numberOfComments}
-                    <div class="text-2xl">{numberOfComments}</div>
+                    <div class="text-xl">{numberOfComments}</div>
+                  {:else if !isShowActivity && !$isShowDetail}
+                    <div class="text-xl">Say something</div>
                   {/if}
                 </div>
               </button>
