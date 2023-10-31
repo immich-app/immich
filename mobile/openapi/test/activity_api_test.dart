@@ -42,7 +42,7 @@ void main() {
       // TODO
     });
 
-    //Future<ActivityLikeStatusResponseDto> updateActivityLikeStatus(ActivityLikeDto activityLikeDto) async
+    //Future<Object> updateActivityLikeStatus(ActivityLikeDto activityLikeDto) async
     test('test updateActivityLikeStatus', () async {
       // TODO
     });

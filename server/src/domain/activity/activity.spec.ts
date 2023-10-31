@@ -1,22 +1,20 @@
 import { BadRequestException } from '@nestjs/common';
-import { authStub, IAccessRepositoryMock, newAccessRepositoryMock, newAlbumRepositoryMock } from '@test';
+import { authStub, IAccessRepositoryMock, newAccessRepositoryMock } from '@test';
 import { activityStub } from '@test/fixtures/activity.stub';
 import { newActivityRepositoryMock } from '@test/repositories/activity.repository.mock';
-import { IActivityRepository, IAlbumRepository } from '../repositories';
+import { IActivityRepository } from '../repositories';
 import { ActivityService } from './activity.service';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;
   let accessMock: IAccessRepositoryMock;
   let activityMock: jest.Mocked<IActivityRepository>;
-  let albumMock: jest.Mocked<IAlbumRepository>;
 
   beforeEach(async () => {
     accessMock = newAccessRepositoryMock();
     activityMock = newActivityRepositoryMock();
-    albumMock = newAlbumRepositoryMock();
 
-    sut = new ActivityService(accessMock, activityMock, albumMock);
+    sut = new ActivityService(accessMock, activityMock);
   });
 
   it('should work', () => {
@@ -39,7 +37,7 @@ describe(ActivityService.name, () => {
 
   describe('getFavorite', () => {
     it('should get the favorite for an user for a specific album and asset', async () => {
-      activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.favorite]);
+      activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.liked]);
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       await expect(
         sut.getLikeStatus(authStub.admin, {
@@ -50,11 +48,11 @@ describe(ActivityService.name, () => {
     });
     describe('changeFavorite', () => {
       it('should get the favorite for an user for a specific album and asset', async () => {
-        activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.favorite]);
+        activityMock.search.mockResolvedValue([activityStub.oneComment, activityStub.liked]);
         accessMock.album.hasOwnerAccess.mockResolvedValue(true);
         await expect(
           sut.updateLikeStatus(authStub.admin, {
-            favorite: false,
+            value: false,
             assetId: 'asset-id',
             albumId: activityStub.oneComment.albumId,
           }),

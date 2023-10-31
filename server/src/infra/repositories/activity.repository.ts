@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { ActivityEntity } from '../entities/activity.entity';
 
 export interface ActivitySearch {
-  id?: string;
   albumId?: string;
   assetId?: string;
   userId?: string;

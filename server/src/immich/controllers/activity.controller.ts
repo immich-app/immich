@@ -6,6 +6,8 @@ import { UseValidation } from '../app.utils';
 
 import {
   ActivityDto,
+  ActivityLikeStatusResponseDto,
+  ActivityResponseDto,
   ActivityService,
   ActivityCommentDto as CommentDto,
   ActivityLikeDto as LikeDto,
@@ -27,7 +29,7 @@ export class ActivityController {
     return this.service.getStatistics(authUser, dto);
   }
 
-  @Get('')
+  @Get()
   getActivities(@AuthUser() authUser: AuthUserDto, @Query() dto: ActivityDto): Promise<ResponseDto[]> {
     return this.service.getAll(authUser, dto);
   }
@@ -38,7 +40,10 @@ export class ActivityController {
   }
 
   @Put('like')
-  updateActivityLikeStatus(@AuthUser() authUser: AuthUserDto, @Body() dto: LikeDto): Promise<LikeResponseDto> {
+  updateActivityLikeStatus(
+    @AuthUser() authUser: AuthUserDto,
+    @Body() dto: LikeDto,
+  ): Promise<ActivityResponseDto | void> {
     return this.service.updateLikeStatus(authUser, dto);
   }
 

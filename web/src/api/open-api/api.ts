@@ -5312,7 +5312,7 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateActivityLikeStatus(activityLikeDto: ActivityLikeDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityLikeStatusResponseDto>> {
+        async updateActivityLikeStatus(activityLikeDto: ActivityLikeDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.updateActivityLikeStatus(activityLikeDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -5377,7 +5377,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateActivityLikeStatus(requestParameters: ActivityApiUpdateActivityLikeStatusRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityLikeStatusResponseDto> {
+        updateActivityLikeStatus(requestParameters: ActivityApiUpdateActivityLikeStatusRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
             return localVarFp.updateActivityLikeStatus(requestParameters.activityLikeDto, options).then((request) => request(axios, basePath));
         },
     };

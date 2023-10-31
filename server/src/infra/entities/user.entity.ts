@@ -64,6 +64,6 @@ export class UserEntity {
   @OneToMany(() => AssetEntity, (asset) => asset.owner)
   assets!: AssetEntity[];
 
-  @OneToMany(() => ActivityEntity, (assetFace) => assetFace.user)
+  @OneToMany(() => ActivityEntity, (activity) => activity.user)
   activity!: ActivityEntity[];
 }

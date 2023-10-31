@@ -18,7 +18,7 @@ export const activityStub = {
     createdAt: new Date(),
     updatedAt: new Date(),
   }),
-  favorite: Object.freeze<ActivityEntity>({
+  liked: Object.freeze<ActivityEntity>({
     id: 'activity-2',
     comment: null,
     isLiked: true,

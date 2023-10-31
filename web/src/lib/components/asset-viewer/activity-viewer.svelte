@@ -17,7 +17,15 @@
   export let albumOwnerId: string;
 
   let textArea: HTMLTextAreaElement;
+  let innerHeight: number;
+  let divHeight: number;
   let previousAssetId: string | null;
+
+  $: {
+    if (innerHeight) {
+      divHeight = innerHeight - 64;
+    }
+  }
 
   $: {
     if (previousAssetId != assetId) {
@@ -106,9 +114,9 @@
   };
 </script>
 
-<div class="relative overflow-x-hidden">
-  <div class=" dark:bg-immich-dark-bg dark:text-immich-dark-fg w-full h-full overflow-x-hidden">
-    <div class="fixed z-[1000] w-[359px] h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white">
+<div class="overflow-y-hidden relative h-full" bind:offsetHeight={innerHeight}>
+  <div class="dark:bg-immich-dark-bg dark:text-immich-dark-fg w-full h-full">
+    <div class="flex w-full h-fit dark:bg-immich-dark-bg dark:text-immich-dark-fg p-2 bg-white">
       <div class="flex place-items-center gap-2">
         <button
           class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
@@ -120,64 +128,66 @@
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Activity</p>
       </div>
     </div>
-    <div class="mt-[64px] mb-[72px]">
-      {#each reactions as reaction, index (reaction.id)}
-        {#if reaction.user && reaction.createdAt}
-          {#if reaction.type === 'comment'}
-            <div class="flex dark:bg-slate-500 bg-gray-200 p-2 m-2 rounded-3xl gap-2 justify-start">
-              <div>
-                <UserAvatar user={reaction.user} size="sm" />
-              </div>
+    {#if innerHeight}
+      <div class="overflow-y-auto pb-[72px]" style="height: {divHeight}px;">
+        {#each reactions as reaction, index (reaction.id)}
+          {#if reaction.user && reaction.createdAt}
+            {#if reaction.type === 'comment'}
+              <div class="flex dark:bg-slate-500 bg-gray-200 p-2 m-2 rounded-3xl gap-2 justify-start">
+                <div>
+                  <UserAvatar user={reaction.user} size="sm" />
+                </div>
 
-              <div class="w-full leading-4 flex items-center">{reaction.comment}</div>
-              {#if (user && reaction.user && reaction.user.id === user.id) || albumOwnerId === user.id}
-                <div class="flex items-start w-fit pt-[5px]">
-                  <button on:click={() => (!showDeleteComment[index] ? showOptionsMenu(index) : '')}>
-                    <Icon path={mdiDotsVertical} />
-                  </button>
+                <div class="w-full leading-4 flex items-center">{reaction.comment}</div>
+                {#if (user && reaction.user && reaction.user.id === user.id) || albumOwnerId === user.id}
+                  <div class="flex items-start w-fit pt-[5px]">
+                    <button on:click={() => (!showDeleteComment[index] ? showOptionsMenu(index) : '')}>
+                      <Icon path={mdiDotsVertical} />
+                    </button>
+                  </div>
+                {/if}
+                <div>
+                  {#if showDeleteComment[index]}
+                    <button
+                      class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
+                      use:clickOutside
+                      on:outclick={() => (showDeleteComment[index] = false)}
+                      on:click={() => handleDeleteComment(reaction.id, index)}
+                    >
+                      Delete Comment
+                    </button>
+                  {/if}
+                </div>
+              </div>
+              {#if (index > 0 && index != reactions.length - 1 && reactions[index].createdAt !== null && reactions[index + 1].createdAt !== null && isTenMinutesApart(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === 0 || index === reactions.length - 1}
+                <div
+                  class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                  title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
+                >
+                  {timeSince(new Date(reaction.createdAt))}
                 </div>
               {/if}
-              <div>
-                {#if showDeleteComment[index]}
-                  <button
-                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
-                    use:clickOutside
-                    on:outclick={() => (showDeleteComment[index] = false)}
-                    on:click={() => handleDeleteComment(reaction.id, index)}
-                  >
-                    Delete Comment
-                  </button>
-                {/if}
-              </div>
-            </div>
-            {#if (index > 0 && index != reactions.length - 1 && reactions[index].createdAt !== null && reactions[index + 1].createdAt !== null && isTenMinutesApart(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === 0 || index === reactions.length - 1}
+            {:else if reaction.type === 'like'}
               <div
-                class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
-                title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
+                class="flex p-2 m-2 rounded-full gap-2 items-center text-sm"
+                title={new Date(reaction.createdAt).toLocaleDateString()}
               >
-                {timeSince(new Date(reaction.createdAt))}
+                <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
+
+                <div>
+                  {`${reaction.user.firstName} ${reaction.user.lastName} liked this asset `}&bull;{` ${timeSince(
+                    new Date(reaction.createdAt),
+                  )}`}
+                </div>
               </div>
             {/if}
-          {:else if reaction.type === 'like'}
-            <div
-              class="flex p-2 m-2 rounded-full gap-2 items-center text-sm"
-              title={new Date(reaction.createdAt).toLocaleDateString()}
-            >
-              <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
-
-              <div>
-                {`${reaction.user.firstName} ${reaction.user.lastName} liked this asset `}&bull;{` ${timeSince(
-                  new Date(reaction.createdAt),
-                )}`}
-              </div>
-            </div>
           {/if}
-        {/if}
-      {/each}
-    </div>
+        {/each}
+      </div>
+    {/if}
   </div>
 
-  <div class="fixed bottom-0 w-[359px] overflow-x-hidden">
+  <div class="absolute w-full bottom-0">
     <div class="flex items-center justify-center p-2">
       <div class="flex p-2 bg-slate-400 h-fit dark:bg-gray-900 rounded-3xl gap-2 w-full text-white">
         <div>
@@ -201,7 +211,7 @@
               </div>
             </div>
           {:else if message}
-            <div class="flex items-end w-fit ml-0">
+            <div class="flex items-end w-fit ml-0 text-immich-primary dark:text-white">
               <CircleIconButton size="15" icon={mdiSend} />
             </div>
           {/if}

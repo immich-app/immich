@@ -298,7 +298,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updateActivityLikeStatus**
-> ActivityLikeStatusResponseDto updateActivityLikeStatus(activityLikeDto)
+> Object updateActivityLikeStatus(activityLikeDto)
 
 
 
@@ -339,7 +339,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ActivityLikeStatusResponseDto**](ActivityLikeStatusResponseDto.md)
+[**Object**](Object.md)
 
 ### Authorization
 

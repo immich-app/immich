@@ -103,7 +103,7 @@
     if (album) {
       try {
         const { data } = await api.activityApi.updateActivityLikeStatus({
-          activityFavoriteDto: { favorite: !isLiked, albumId: album.id, assetId: asset.id },
+          activityLikeDto: { value: !isLiked, albumId: album.id, assetId: asset.id },
         });
         if (data) {
           reactions.push(data as ActivityResponseDto);
@@ -133,7 +133,7 @@
   const getNumberOfComments = async () => {
     if (album) {
       try {
-        const { data } = await api.activityApi.getStatistics({ assetId: asset.id, albumId: album.id });
+        const { data } = await api.activityApi.getActivityStatistics({ assetId: asset.id, albumId: album.id });
         numberOfComments = data.comments;
       } catch (error) {
         handleError(error, "Can't get number of comments");

@@ -306,7 +306,7 @@ class ActivityApi {
   /// Parameters:
   ///
   /// * [ActivityLikeDto] activityLikeDto (required):
-  Future<ActivityLikeStatusResponseDto?> updateActivityLikeStatus(ActivityLikeDto activityLikeDto,) async {
+  Future<Object?> updateActivityLikeStatus(ActivityLikeDto activityLikeDto,) async {
     final response = await updateActivityLikeStatusWithHttpInfo(activityLikeDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -315,7 +315,7 @@ class ActivityApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityLikeStatusResponseDto',) as ActivityLikeStatusResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
     
     }
     return null;

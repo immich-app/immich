@@ -44,32 +44,35 @@ export class ActivityService {
       albumId: dto.albumId,
       userId: authUser.id,
       assetId: dto.assetId,
+      isLiked: true,
     });
     return { value: !!reaction };
   }
 
-  async updateLikeStatus(authUser: AuthUserDto, dto: ActivityLikeDto): Promise<ActivityLikeStatusResponseDto> {
+  async updateLikeStatus(authUser: AuthUserDto, dto: ActivityLikeDto): Promise<ActivityResponseDto | void> {
     await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
 
     const options = {
       userId: authUser.id,
       albumId: dto.albumId,
       assetId: dto.assetId,
+      isLiked: true,
     };
 
     const [reaction] = await this.repository.search(options);
     if (reaction) {
       await this.repository.delete(reaction.id);
+      return;
     } else {
-      await this.repository.update({
-        assetId: dto.assetId,
-        userId: authUser.id,
-        albumId: dto.albumId,
-        isLiked: true,
-      });
+      return await this.repository
+        .update({
+          assetId: dto.assetId,
+          userId: authUser.id,
+          albumId: dto.albumId,
+          isLiked: true,
+        })
+        .then(mapActivity);
     }
-
-    return { value: !reaction };
   }
 
   async addComment(authUser: AuthUserDto, dto: ActivityCommentDto): Promise<ActivityResponseDto> {

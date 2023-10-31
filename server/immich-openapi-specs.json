@@ -200,7 +200,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ActivityLikeStatusResponseDto"
+                  "type": "object"
                 }
               }
             },

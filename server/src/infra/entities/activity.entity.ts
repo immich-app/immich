@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AlbumEntity } from '.';
+import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 import { UserEntity } from './user.entity';
 
