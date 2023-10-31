@@ -48,7 +48,7 @@ class ActivityApi {
   /// Parameters:
   ///
   /// * [ActivityCommentDto] activityCommentDto (required):
-  Future<ActivityReponseDto?> addComment(ActivityCommentDto activityCommentDto,) async {
+  Future<ActivityResponseDto?> addComment(ActivityCommentDto activityCommentDto,) async {
     final response = await addCommentWithHttpInfo(activityCommentDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -57,7 +57,7 @@ class ActivityApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityReponseDto',) as ActivityReponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityResponseDto',) as ActivityResponseDto;
     
     }
     return null;
@@ -120,10 +120,10 @@ class ActivityApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
 
@@ -144,7 +144,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  Future<List<ActivityReponseDto>?> getActivities(String albumId, { String? assetId, }) async {
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, }) async {
     final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -154,8 +154,8 @@ class ActivityApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<ActivityReponseDto>') as List)
-        .cast<ActivityReponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<ActivityResponseDto>') as List)
+        .cast<ActivityResponseDto>()
         .toList();
 
     }
@@ -179,10 +179,10 @@ class ActivityApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
 
@@ -203,7 +203,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  Future<LikeStatusReponseDto?> getActivityLikeStatus(String albumId, { String? assetId, }) async {
+  Future<ActivityLikeStatusResponseDto?> getActivityLikeStatus(String albumId, { String? assetId, }) async {
     final response = await getActivityLikeStatusWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -212,7 +212,7 @@ class ActivityApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LikeStatusReponseDto',) as LikeStatusReponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityLikeStatusResponseDto',) as ActivityLikeStatusResponseDto;
     
     }
     return null;
@@ -224,7 +224,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  Future<Response> getStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
+  Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity/statistics';
 
@@ -235,10 +235,10 @@ class ActivityApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
 
     const contentTypes = <String>[];
 
@@ -259,8 +259,8 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  Future<StatisticsResponseDto?> getStatistics(String albumId, { String? assetId, }) async {
-    final response = await getStatisticsWithHttpInfo(albumId,  assetId: assetId, );
+  Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, }) async {
+    final response = await getActivityStatisticsWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -268,7 +268,7 @@ class ActivityApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StatisticsResponseDto',) as StatisticsResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityStatisticsResponseDto',) as ActivityStatisticsResponseDto;
     
     }
     return null;
@@ -277,13 +277,13 @@ class ActivityApi {
   /// Performs an HTTP 'PUT /activity/like' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [ActivityFavoriteDto] activityFavoriteDto (required):
-  Future<Response> updateActivityLikeStatusWithHttpInfo(ActivityFavoriteDto activityFavoriteDto,) async {
+  /// * [ActivityLikeDto] activityLikeDto (required):
+  Future<Response> updateActivityLikeStatusWithHttpInfo(ActivityLikeDto activityLikeDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/activity/like';
 
     // ignore: prefer_final_locals
-    Object? postBody = activityFavoriteDto;
+    Object? postBody = activityLikeDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -305,9 +305,9 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [ActivityFavoriteDto] activityFavoriteDto (required):
-  Future<Object?> updateActivityLikeStatus(ActivityFavoriteDto activityFavoriteDto,) async {
-    final response = await updateActivityLikeStatusWithHttpInfo(activityFavoriteDto,);
+  /// * [ActivityLikeDto] activityLikeDto (required):
+  Future<ActivityLikeStatusResponseDto?> updateActivityLikeStatus(ActivityLikeDto activityLikeDto,) async {
+    final response = await updateActivityLikeStatusWithHttpInfo(activityLikeDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -315,7 +315,7 @@ class ActivityApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityLikeStatusResponseDto',) as ActivityLikeStatusResponseDto;
     
     }
     return null;

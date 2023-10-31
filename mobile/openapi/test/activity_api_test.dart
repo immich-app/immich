@@ -17,7 +17,7 @@ void main() {
   // final instance = ActivityApi();
 
   group('tests for ActivityApi', () {
-    //Future<ActivityReponseDto> addComment(ActivityCommentDto activityCommentDto) async
+    //Future<ActivityResponseDto> addComment(ActivityCommentDto activityCommentDto) async
     test('test addComment', () async {
       // TODO
     });
@@ -27,22 +27,22 @@ void main() {
       // TODO
     });
 
-    //Future<List<ActivityReponseDto>> getActivities(String albumId, { String assetId }) async
+    //Future<List<ActivityResponseDto>> getActivities(String albumId, { String assetId }) async
     test('test getActivities', () async {
       // TODO
     });
 
-    //Future<LikeStatusReponseDto> getActivityLikeStatus(String albumId, { String assetId }) async
+    //Future<ActivityLikeStatusResponseDto> getActivityLikeStatus(String albumId, { String assetId }) async
     test('test getActivityLikeStatus', () async {
       // TODO
     });
 
-    //Future<StatisticsResponseDto> getStatistics(String albumId, { String assetId }) async
-    test('test getStatistics', () async {
+    //Future<ActivityStatisticsResponseDto> getActivityStatistics(String albumId, { String assetId }) async
+    test('test getActivityStatistics', () async {
       // TODO
     });
 
-    //Future<Object> updateActivityLikeStatus(ActivityFavoriteDto activityFavoriteDto) async
+    //Future<ActivityLikeStatusResponseDto> updateActivityLikeStatus(ActivityLikeDto activityLikeDto) async
     test('test updateActivityLikeStatus', () async {
       // TODO
     });

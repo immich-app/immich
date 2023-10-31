@@ -191,10 +191,14 @@ class ApiClient {
           return APIKeyUpdateDto.fromJson(value);
         case 'ActivityCommentDto':
           return ActivityCommentDto.fromJson(value);
-        case 'ActivityFavoriteDto':
-          return ActivityFavoriteDto.fromJson(value);
-        case 'ActivityReponseDto':
-          return ActivityReponseDto.fromJson(value);
+        case 'ActivityLikeDto':
+          return ActivityLikeDto.fromJson(value);
+        case 'ActivityLikeStatusResponseDto':
+          return ActivityLikeStatusResponseDto.fromJson(value);
+        case 'ActivityResponseDto':
+          return ActivityResponseDto.fromJson(value);
+        case 'ActivityStatisticsResponseDto':
+          return ActivityStatisticsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
         case 'AdminSignupResponseDto':
@@ -315,8 +319,6 @@ class ApiClient {
           return LibraryStatsResponseDto.fromJson(value);
         case 'LibraryType':
           return LibraryTypeTypeTransformer().decode(value);
-        case 'LikeStatusReponseDto':
-          return LikeStatusReponseDto.fromJson(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
@@ -405,8 +407,6 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
-        case 'StatisticsResponseDto':
-          return StatisticsResponseDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':

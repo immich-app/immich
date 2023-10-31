@@ -81,7 +81,7 @@ Class | Method | HTTP request | Description
 *ActivityApi* | [**deleteComment**](doc//ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
 *ActivityApi* | [**getActivities**](doc//ActivityApi.md#getactivities) | **GET** /activity | 
 *ActivityApi* | [**getActivityLikeStatus**](doc//ActivityApi.md#getactivitylikestatus) | **GET** /activity/like | 
-*ActivityApi* | [**getStatistics**](doc//ActivityApi.md#getstatistics) | **GET** /activity/statistics | 
+*ActivityApi* | [**getActivityStatistics**](doc//ActivityApi.md#getactivitystatistics) | **GET** /activity/statistics | 
 *ActivityApi* | [**updateActivityLikeStatus**](doc//ActivityApi.md#updateactivitylikestatus) | **PUT** /activity/like | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
@@ -211,8 +211,10 @@ Class | Method | HTTP request | Description
  - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
  - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
  - [ActivityCommentDto](doc//ActivityCommentDto.md)
- - [ActivityFavoriteDto](doc//ActivityFavoriteDto.md)
- - [ActivityReponseDto](doc//ActivityReponseDto.md)
+ - [ActivityLikeDto](doc//ActivityLikeDto.md)
+ - [ActivityLikeStatusResponseDto](doc//ActivityLikeStatusResponseDto.md)
+ - [ActivityResponseDto](doc//ActivityResponseDto.md)
+ - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
@@ -273,7 +275,6 @@ Class | Method | HTTP request | Description
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LibraryType](doc//LibraryType.md)
- - [LikeStatusReponseDto](doc//LikeStatusReponseDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
@@ -318,7 +319,6 @@ Class | Method | HTTP request | Description
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
- - [StatisticsResponseDto](doc//StatisticsResponseDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
