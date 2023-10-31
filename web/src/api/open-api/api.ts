@@ -102,47 +102,36 @@ export interface APIKeyUpdateDto {
 /**
  * 
  * @export
- * @interface ActivityCommentDto
+ * @interface ActivityCreateDto
  */
-export interface ActivityCommentDto {
+export interface ActivityCreateDto {
     /**
      * 
      * @type {string}
-     * @memberof ActivityCommentDto
+     * @memberof ActivityCreateDto
      */
     'albumId': string;
     /**
      * 
      * @type {string}
-     * @memberof ActivityCommentDto
+     * @memberof ActivityCreateDto
      */
     'assetId'?: string;
     /**
      * 
      * @type {string}
-     * @memberof ActivityCommentDto
+     * @memberof ActivityCreateDto
      */
-    'comment': string;
-}
-/**
- * 
- * @export
- * @interface ActivityDto
- */
-export interface ActivityDto {
+    'comment'?: string;
     /**
      * 
-     * @type {string}
-     * @memberof ActivityDto
+     * @type {ReactionType}
+     * @memberof ActivityCreateDto
      */
-    'albumId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ActivityDto
-     */
-    'assetId'?: string;
+    'type': ReactionType;
 }
+
+
 /**
  * 
  * @export
@@ -2601,6 +2590,20 @@ export interface QueueStatusDto {
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const ReactionType = {
+    Comment: 'comment',
+    Like: 'like'
+} as const;
+
+export type ReactionType = typeof ReactionType[keyof typeof ReactionType];
+
+
+/**
+ * 
+ * @export
  * @interface RecognitionConfig
  */
 export interface RecognitionConfig {
@@ -4946,14 +4949,14 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
     return {
         /**
          * 
-         * @param {ActivityCommentDto} activityCommentDto 
+         * @param {ActivityCreateDto} activityCreateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addComment: async (activityCommentDto: ActivityCommentDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'activityCommentDto' is not null or undefined
-            assertParamExists('addComment', 'activityCommentDto', activityCommentDto)
-            const localVarPath = `/activity/comment`;
+        createActivity: async (activityCreateDto: ActivityCreateDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'activityCreateDto' is not null or undefined
+            assertParamExists('createActivity', 'activityCreateDto', activityCreateDto)
+            const localVarPath = `/activity`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -4981,51 +4984,7 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(activityCommentDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {ActivityDto} activityDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createLike: async (activityDto: ActivityDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'activityDto' is not null or undefined
-            assertParamExists('createLike', 'activityDto', activityDto)
-            const localVarPath = `/activity/like`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(activityDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(activityCreateDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -5038,10 +4997,10 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteComment: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        deleteActivity: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteComment', 'id', id)
-            const localVarPath = `/activity/comment/{id}`
+            assertParamExists('deleteActivity', 'id', id)
+            const localVarPath = `/activity/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5076,56 +5035,13 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {ActivityDto} activityDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteLike: async (activityDto: ActivityDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'activityDto' is not null or undefined
-            assertParamExists('deleteLike', 'activityDto', activityDto)
-            const localVarPath = `/activity/like`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(activityDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {string} albumId 
          * @param {string} [assetId] 
+         * @param {ReactionType} [type] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivities: async (albumId: string, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getActivities: async (albumId: string, assetId?: string, type?: ReactionType, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getActivities', 'albumId', albumId)
             const localVarPath = `/activity`;
@@ -5157,54 +5073,8 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
                 localVarQueryParameter['assetId'] = assetId;
             }
 
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {string} albumId 
-         * @param {string} [assetId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActivityLikeStatus: async (albumId: string, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('getActivityLikeStatus', 'albumId', albumId)
-            const localVarPath = `/activity/like`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (albumId !== undefined) {
-                localVarQueryParameter['albumId'] = albumId;
-            }
-
-            if (assetId !== undefined) {
-                localVarQueryParameter['assetId'] = assetId;
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
             }
 
 
@@ -5280,22 +5150,12 @@ export const ActivityApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {ActivityCommentDto} activityCommentDto 
+         * @param {ActivityCreateDto} activityCreateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addComment(activityCommentDto: ActivityCommentDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addComment(activityCommentDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {ActivityDto} activityDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async createLike(activityDto: ActivityDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createLike(activityDto, options);
+        async createActivity(activityCreateDto: ActivityCreateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createActivity(activityCreateDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5304,40 +5164,20 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteComment(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteComment(id, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {ActivityDto} activityDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deleteLike(activityDto: ActivityDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteLike(activityDto, options);
+        async deleteActivity(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteActivity(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
          * @param {string} albumId 
          * @param {string} [assetId] 
+         * @param {ReactionType} [type] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivities(albumId: string, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {string} albumId 
-         * @param {string} [assetId] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getActivityLikeStatus(albumId: string, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivityLikeStatus(albumId, assetId, options);
+        async getActivities(albumId: string, assetId?: string, type?: ReactionType, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, type, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5363,39 +5203,21 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
     return {
         /**
          * 
-         * @param {ActivityApiAddCommentRequest} requestParameters Request parameters.
+         * @param {ActivityApiCreateActivityRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addComment(requestParameters: ActivityApiAddCommentRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityResponseDto> {
-            return localVarFp.addComment(requestParameters.activityCommentDto, options).then((request) => request(axios, basePath));
+        createActivity(requestParameters: ActivityApiCreateActivityRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityResponseDto> {
+            return localVarFp.createActivity(requestParameters.activityCreateDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {ActivityApiCreateLikeRequest} requestParameters Request parameters.
+         * @param {ActivityApiDeleteActivityRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createLike(requestParameters: ActivityApiCreateLikeRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityResponseDto> {
-            return localVarFp.createLike(requestParameters.activityDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {ActivityApiDeleteCommentRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteComment(requestParameters: ActivityApiDeleteCommentRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteComment(requestParameters.id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {ActivityApiDeleteLikeRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteLike(requestParameters: ActivityApiDeleteLikeRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteLike(requestParameters.activityDto, options).then((request) => request(axios, basePath));
+        deleteActivity(requestParameters: ActivityApiDeleteActivityRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteActivity(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5404,16 +5226,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityResponseDto>> {
-            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {ActivityApiGetActivityLikeStatusRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActivityLikeStatus(requestParameters: ActivityApiGetActivityLikeStatusRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
-            return localVarFp.getActivityLikeStatus(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(axios, basePath));
+            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5428,59 +5241,31 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
 };
 
 /**
- * Request parameters for addComment operation in ActivityApi.
+ * Request parameters for createActivity operation in ActivityApi.
  * @export
- * @interface ActivityApiAddCommentRequest
+ * @interface ActivityApiCreateActivityRequest
  */
-export interface ActivityApiAddCommentRequest {
+export interface ActivityApiCreateActivityRequest {
     /**
      * 
-     * @type {ActivityCommentDto}
-     * @memberof ActivityApiAddComment
+     * @type {ActivityCreateDto}
+     * @memberof ActivityApiCreateActivity
      */
-    readonly activityCommentDto: ActivityCommentDto
+    readonly activityCreateDto: ActivityCreateDto
 }
 
 /**
- * Request parameters for createLike operation in ActivityApi.
+ * Request parameters for deleteActivity operation in ActivityApi.
  * @export
- * @interface ActivityApiCreateLikeRequest
+ * @interface ActivityApiDeleteActivityRequest
  */
-export interface ActivityApiCreateLikeRequest {
-    /**
-     * 
-     * @type {ActivityDto}
-     * @memberof ActivityApiCreateLike
-     */
-    readonly activityDto: ActivityDto
-}
-
-/**
- * Request parameters for deleteComment operation in ActivityApi.
- * @export
- * @interface ActivityApiDeleteCommentRequest
- */
-export interface ActivityApiDeleteCommentRequest {
+export interface ActivityApiDeleteActivityRequest {
     /**
      * 
      * @type {string}
-     * @memberof ActivityApiDeleteComment
+     * @memberof ActivityApiDeleteActivity
      */
     readonly id: string
-}
-
-/**
- * Request parameters for deleteLike operation in ActivityApi.
- * @export
- * @interface ActivityApiDeleteLikeRequest
- */
-export interface ActivityApiDeleteLikeRequest {
-    /**
-     * 
-     * @type {ActivityDto}
-     * @memberof ActivityApiDeleteLike
-     */
-    readonly activityDto: ActivityDto
 }
 
 /**
@@ -5502,27 +5287,13 @@ export interface ActivityApiGetActivitiesRequest {
      * @memberof ActivityApiGetActivities
      */
     readonly assetId?: string
-}
-
-/**
- * Request parameters for getActivityLikeStatus operation in ActivityApi.
- * @export
- * @interface ActivityApiGetActivityLikeStatusRequest
- */
-export interface ActivityApiGetActivityLikeStatusRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof ActivityApiGetActivityLikeStatus
-     */
-    readonly albumId: string
 
     /**
      * 
-     * @type {string}
-     * @memberof ActivityApiGetActivityLikeStatus
+     * @type {ReactionType}
+     * @memberof ActivityApiGetActivities
      */
-    readonly assetId?: string
+    readonly type?: ReactionType
 }
 
 /**
@@ -5555,46 +5326,24 @@ export interface ActivityApiGetActivityStatisticsRequest {
 export class ActivityApi extends BaseAPI {
     /**
      * 
-     * @param {ActivityApiAddCommentRequest} requestParameters Request parameters.
+     * @param {ActivityApiCreateActivityRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ActivityApi
      */
-    public addComment(requestParameters: ActivityApiAddCommentRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).addComment(requestParameters.activityCommentDto, options).then((request) => request(this.axios, this.basePath));
+    public createActivity(requestParameters: ActivityApiCreateActivityRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).createActivity(requestParameters.activityCreateDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {ActivityApiCreateLikeRequest} requestParameters Request parameters.
+     * @param {ActivityApiDeleteActivityRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ActivityApi
      */
-    public createLike(requestParameters: ActivityApiCreateLikeRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).createLike(requestParameters.activityDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {ActivityApiDeleteCommentRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ActivityApi
-     */
-    public deleteComment(requestParameters: ActivityApiDeleteCommentRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).deleteComment(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {ActivityApiDeleteLikeRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ActivityApi
-     */
-    public deleteLike(requestParameters: ActivityApiDeleteLikeRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).deleteLike(requestParameters.activityDto, options).then((request) => request(this.axios, this.basePath));
+    public deleteActivity(requestParameters: ActivityApiDeleteActivityRequest, options?: AxiosRequestConfig) {
+        return ActivityApiFp(this.configuration).deleteActivity(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5605,18 +5354,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {ActivityApiGetActivityLikeStatusRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ActivityApi
-     */
-    public getActivityLikeStatus(requestParameters: ActivityApiGetActivityLikeStatusRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivityLikeStatus(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

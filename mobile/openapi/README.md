@@ -77,12 +77,9 @@ Class | Method | HTTP request | Description
 *APIKeyApi* | [**getKey**](doc//APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
 *APIKeyApi* | [**getKeys**](doc//APIKeyApi.md#getkeys) | **GET** /api-key | 
 *APIKeyApi* | [**updateKey**](doc//APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
-*ActivityApi* | [**addComment**](doc//ActivityApi.md#addcomment) | **POST** /activity/comment | 
-*ActivityApi* | [**createLike**](doc//ActivityApi.md#createlike) | **PUT** /activity/like | 
-*ActivityApi* | [**deleteComment**](doc//ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
-*ActivityApi* | [**deleteLike**](doc//ActivityApi.md#deletelike) | **DELETE** /activity/like | 
+*ActivityApi* | [**createActivity**](doc//ActivityApi.md#createactivity) | **POST** /activity | 
+*ActivityApi* | [**deleteActivity**](doc//ActivityApi.md#deleteactivity) | **DELETE** /activity/{id} | 
 *ActivityApi* | [**getActivities**](doc//ActivityApi.md#getactivities) | **GET** /activity | 
-*ActivityApi* | [**getActivityLikeStatus**](doc//ActivityApi.md#getactivitylikestatus) | **GET** /activity/like | 
 *ActivityApi* | [**getActivityStatistics**](doc//ActivityApi.md#getactivitystatistics) | **GET** /activity/statistics | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
@@ -211,8 +208,7 @@ Class | Method | HTTP request | Description
  - [APIKeyCreateResponseDto](doc//APIKeyCreateResponseDto.md)
  - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
  - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
- - [ActivityCommentDto](doc//ActivityCommentDto.md)
- - [ActivityDto](doc//ActivityDto.md)
+ - [ActivityCreateDto](doc//ActivityCreateDto.md)
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
@@ -295,6 +291,7 @@ Class | Method | HTTP request | Description
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
+ - [ReactionType](doc//ReactionType.md)
  - [RecognitionConfig](doc//RecognitionConfig.md)
  - [ScanLibraryDto](doc//ScanLibraryDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)

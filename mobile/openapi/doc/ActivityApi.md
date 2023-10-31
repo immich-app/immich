@@ -9,17 +9,14 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addComment**](ActivityApi.md#addcomment) | **POST** /activity/comment | 
-[**createLike**](ActivityApi.md#createlike) | **PUT** /activity/like | 
-[**deleteComment**](ActivityApi.md#deletecomment) | **DELETE** /activity/comment/{id} | 
-[**deleteLike**](ActivityApi.md#deletelike) | **DELETE** /activity/like | 
+[**createActivity**](ActivityApi.md#createactivity) | **POST** /activity | 
+[**deleteActivity**](ActivityApi.md#deleteactivity) | **DELETE** /activity/{id} | 
 [**getActivities**](ActivityApi.md#getactivities) | **GET** /activity | 
-[**getActivityLikeStatus**](ActivityApi.md#getactivitylikestatus) | **GET** /activity/like | 
 [**getActivityStatistics**](ActivityApi.md#getactivitystatistics) | **GET** /activity/statistics | 
 
 
-# **addComment**
-> ActivityResponseDto addComment(activityCommentDto)
+# **createActivity**
+> ActivityResponseDto createActivity(activityCreateDto)
 
 
 
@@ -42,13 +39,13 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = ActivityApi();
-final activityCommentDto = ActivityCommentDto(); // ActivityCommentDto | 
+final activityCreateDto = ActivityCreateDto(); // ActivityCreateDto | 
 
 try {
-    final result = api_instance.addComment(activityCommentDto);
+    final result = api_instance.createActivity(activityCreateDto);
     print(result);
 } catch (e) {
-    print('Exception when calling ActivityApi->addComment: $e\n');
+    print('Exception when calling ActivityApi->createActivity: $e\n');
 }
 ```
 
@@ -56,7 +53,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **activityCommentDto** | [**ActivityCommentDto**](ActivityCommentDto.md)|  | 
+ **activityCreateDto** | [**ActivityCreateDto**](ActivityCreateDto.md)|  | 
 
 ### Return type
 
@@ -73,63 +70,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **createLike**
-> ActivityResponseDto createLike(activityDto)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = ActivityApi();
-final activityDto = ActivityDto(); // ActivityDto | 
-
-try {
-    final result = api_instance.createLike(activityDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling ActivityApi->createLike: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **activityDto** | [**ActivityDto**](ActivityDto.md)|  | 
-
-### Return type
-
-[**ActivityResponseDto**](ActivityResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **deleteComment**
-> deleteComment(id)
+# **deleteActivity**
+> deleteActivity(id)
 
 
 
@@ -155,9 +97,9 @@ final api_instance = ActivityApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    api_instance.deleteComment(id);
+    api_instance.deleteActivity(id);
 } catch (e) {
-    print('Exception when calling ActivityApi->deleteComment: $e\n');
+    print('Exception when calling ActivityApi->deleteActivity: $e\n');
 }
 ```
 
@@ -182,62 +124,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **deleteLike**
-> deleteLike(activityDto)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = ActivityApi();
-final activityDto = ActivityDto(); // ActivityDto | 
-
-try {
-    api_instance.deleteLike(activityDto);
-} catch (e) {
-    print('Exception when calling ActivityApi->deleteLike: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **activityDto** | [**ActivityDto**](ActivityDto.md)|  | 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: Not defined
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **getActivities**
-> List<ActivityResponseDto> getActivities(albumId, assetId)
+> List<ActivityResponseDto> getActivities(albumId, assetId, type)
 
 
 
@@ -262,9 +150,10 @@ import 'package:openapi/api.dart';
 final api_instance = ActivityApi();
 final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final type = ; // ReactionType | 
 
 try {
-    final result = api_instance.getActivities(albumId, assetId);
+    final result = api_instance.getActivities(albumId, assetId, type);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getActivities: $e\n');
@@ -277,67 +166,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albumId** | **String**|  | 
  **assetId** | **String**|  | [optional] 
+ **type** | [**ReactionType**](.md)|  | [optional] 
 
 ### Return type
 
 [**List<ActivityResponseDto>**](ActivityResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getActivityLikeStatus**
-> Object getActivityLikeStatus(albumId, assetId)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = ActivityApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-
-try {
-    final result = api_instance.getActivityLikeStatus(albumId, assetId);
-    print(result);
-} catch (e) {
-    print('Exception when calling ActivityApi->getActivityLikeStatus: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
- **assetId** | **String**|  | [optional] 
-
-### Return type
-
-[**Object**](Object.md)
 
 ### Authorization
 

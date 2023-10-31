@@ -16,16 +16,16 @@ class ActivityApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /activity/comment' operation and returns the [Response].
+  /// Performs an HTTP 'POST /activity' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [ActivityCommentDto] activityCommentDto (required):
-  Future<Response> addCommentWithHttpInfo(ActivityCommentDto activityCommentDto,) async {
+  /// * [ActivityCreateDto] activityCreateDto (required):
+  Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/comment';
+    final path = r'/activity';
 
     // ignore: prefer_final_locals
-    Object? postBody = activityCommentDto;
+    Object? postBody = activityCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -47,9 +47,9 @@ class ActivityApi {
 
   /// Parameters:
   ///
-  /// * [ActivityCommentDto] activityCommentDto (required):
-  Future<ActivityResponseDto?> addComment(ActivityCommentDto activityCommentDto,) async {
-    final response = await addCommentWithHttpInfo(activityCommentDto,);
+  /// * [ActivityCreateDto] activityCreateDto (required):
+  Future<ActivityResponseDto?> createActivity(ActivityCreateDto activityCreateDto,) async {
+    final response = await createActivityWithHttpInfo(activityCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -63,60 +63,13 @@ class ActivityApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /activity/like' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [ActivityDto] activityDto (required):
-  Future<Response> createLikeWithHttpInfo(ActivityDto activityDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/activity/like';
-
-    // ignore: prefer_final_locals
-    Object? postBody = activityDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [ActivityDto] activityDto (required):
-  Future<ActivityResponseDto?> createLike(ActivityDto activityDto,) async {
-    final response = await createLikeWithHttpInfo(activityDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityResponseDto',) as ActivityResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'DELETE /activity/comment/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /activity/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteCommentWithHttpInfo(String id,) async {
+  Future<Response> deleteActivityWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activity/comment/{id}'
+    final path = r'/activity/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -143,47 +96,8 @@ class ActivityApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteComment(String id,) async {
-    final response = await deleteCommentWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Performs an HTTP 'DELETE /activity/like' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [ActivityDto] activityDto (required):
-  Future<Response> deleteLikeWithHttpInfo(ActivityDto activityDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/activity/like';
-
-    // ignore: prefer_final_locals
-    Object? postBody = activityDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [ActivityDto] activityDto (required):
-  Future<void> deleteLike(ActivityDto activityDto,) async {
-    final response = await deleteLikeWithHttpInfo(activityDto,);
+  Future<void> deleteActivity(String id,) async {
+    final response = await deleteActivityWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -195,7 +109,9 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, }) async {
+  ///
+  /// * [ReactionType] type:
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionType? type, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity';
 
@@ -210,6 +126,9 @@ class ActivityApi {
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
 
     const contentTypes = <String>[];
 
@@ -230,8 +149,10 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, );
+  ///
+  /// * [ReactionType] type:
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionType? type, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -244,62 +165,6 @@ class ActivityApi {
         .cast<ActivityResponseDto>()
         .toList();
 
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'GET /activity/like' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] albumId (required):
-  ///
-  /// * [String] assetId:
-  Future<Response> getActivityLikeStatusWithHttpInfo(String albumId, { String? assetId, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/activity/like';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
-    if (assetId != null) {
-      queryParams.addAll(_queryParams('', 'assetId', assetId));
-    }
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] albumId (required):
-  ///
-  /// * [String] assetId:
-  Future<Object?> getActivityLikeStatus(String albumId, { String? assetId, }) async {
-    final response = await getActivityLikeStatusWithHttpInfo(albumId,  assetId: assetId, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
-    
     }
     return null;
   }

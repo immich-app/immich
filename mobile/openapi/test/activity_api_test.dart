@@ -17,33 +17,18 @@ void main() {
   // final instance = ActivityApi();
 
   group('tests for ActivityApi', () {
-    //Future<ActivityResponseDto> addComment(ActivityCommentDto activityCommentDto) async
-    test('test addComment', () async {
+    //Future<ActivityResponseDto> createActivity(ActivityCreateDto activityCreateDto) async
+    test('test createActivity', () async {
       // TODO
     });
 
-    //Future<ActivityResponseDto> createLike(ActivityDto activityDto) async
-    test('test createLike', () async {
+    //Future deleteActivity(String id) async
+    test('test deleteActivity', () async {
       // TODO
     });
 
-    //Future deleteComment(String id) async
-    test('test deleteComment', () async {
-      // TODO
-    });
-
-    //Future deleteLike(ActivityDto activityDto) async
-    test('test deleteLike', () async {
-      // TODO
-    });
-
-    //Future<List<ActivityResponseDto>> getActivities(String albumId, { String assetId }) async
+    //Future<List<ActivityResponseDto>> getActivities(String albumId, { String assetId, ReactionType type }) async
     test('test getActivities', () async {
-      // TODO
-    });
-
-    //Future<Object> getActivityLikeStatus(String albumId, { String assetId }) async
-    test('test getActivityLikeStatus', () async {
       // TODO
     });
 
