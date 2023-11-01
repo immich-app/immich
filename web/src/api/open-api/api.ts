@@ -4257,10 +4257,10 @@ export interface UpdateTagDto {
 export interface UpdateUserDto {
     /**
      * 
-     * @type {string}
+     * @type {UserAvatarColor}
      * @memberof UpdateUserDto
      */
-    'avatarColor'?: UpdateUserDtoAvatarColorEnum;
+    'avatarColor'?: UserAvatarColor;
     /**
      * 
      * @type {string}
@@ -4311,12 +4311,6 @@ export interface UpdateUserDto {
     'password'?: string;
     /**
      * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
-    'profileImagePath'?: string;
-    /**
-     * 
      * @type {boolean}
      * @memberof UpdateUserDto
      */
@@ -4329,20 +4323,6 @@ export interface UpdateUserDto {
     'storageLabel'?: string;
 }
 
-export const UpdateUserDtoAvatarColorEnum = {
-    Primary: 'primary',
-    Pink: 'pink',
-    Red: 'red',
-    Yellow: 'yellow',
-    Blue: 'blue',
-    Green: 'green',
-    Purple: 'purple',
-    Orange: 'orange',
-    Gray: 'gray',
-    Amber: 'amber'
-} as const;
-
-export type UpdateUserDtoAvatarColorEnum = typeof UpdateUserDtoAvatarColorEnum[keyof typeof UpdateUserDtoAvatarColorEnum];
 
 /**
  * 
@@ -4387,6 +4367,28 @@ export interface UsageByUserDto {
      */
     'videos': number;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const UserAvatarColor = {
+    Primary: 'primary',
+    Pink: 'pink',
+    Red: 'red',
+    Yellow: 'yellow',
+    Blue: 'blue',
+    Green: 'green',
+    Purple: 'purple',
+    Orange: 'orange',
+    Gray: 'gray',
+    Amber: 'amber'
+} as const;
+
+export type UserAvatarColor = typeof UserAvatarColor[keyof typeof UserAvatarColor];
+
+
 /**
  * 
  * @export

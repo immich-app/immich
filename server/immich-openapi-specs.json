@@ -5444,7 +5444,7 @@
         "operationId": "deleteProfileImage",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -8978,19 +8978,7 @@
       "UpdateUserDto": {
         "properties": {
           "avatarColor": {
-            "enum": [
-              "primary",
-              "pink",
-              "red",
-              "yellow",
-              "blue",
-              "green",
-              "purple",
-              "orange",
-              "gray",
-              "amber"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/UserAvatarColor"
           },
           "email": {
             "type": "string"
@@ -9015,9 +9003,6 @@
             "type": "boolean"
           },
           "password": {
-            "type": "string"
-          },
-          "profileImagePath": {
             "type": "string"
           },
           "shouldChangePassword": {
@@ -9063,6 +9048,21 @@
           "usage"
         ],
         "type": "object"
+      },
+      "UserAvatarColor": {
+        "enum": [
+          "primary",
+          "pink",
+          "red",
+          "yellow",
+          "blue",
+          "green",
+          "purple",
+          "orange",
+          "gray",
+          "amber"
+        ],
+        "type": "string"
       },
       "UserDto": {
         "properties": {

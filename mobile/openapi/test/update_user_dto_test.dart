@@ -16,7 +16,7 @@ void main() {
   // final instance = UpdateUserDto();
 
   group('test UpdateUserDto', () {
-    // String avatarColor
+    // UserAvatarColor avatarColor
     test('to test the property `avatarColor`', () async {
       // TODO
     });
@@ -58,11 +58,6 @@ void main() {
 
     // String password
     test('to test the property `password`', () async {
-      // TODO
-    });
-
-    // String profileImagePath
-    test('to test the property `profileImagePath`', () async {
       // TODO
     });
 

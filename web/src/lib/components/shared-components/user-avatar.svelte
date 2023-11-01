@@ -46,7 +46,7 @@
     lg: 'w-12 h-12',
     xl: 'w-20 h-20',
     xxl: 'w-24 h-24',
-    xxxl: 'w-24 h-24',
+    xxxl: 'w-28 h-28',
   };
 
   // Get color based on the user UUID.

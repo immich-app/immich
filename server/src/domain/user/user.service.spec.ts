@@ -339,7 +339,7 @@ describe(UserService.name, () => {
       await expect(sut.createProfileImage(userStub.admin, file)).rejects.toThrowError(InternalServerErrorException);
     });
 
-    it('should delete previous profile image', async () => {
+    it('should delete the previous profile image', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
       userMock.get.mockResolvedValue(userStub.profilePath);
       const files = [userStub.profilePath.profileImagePath];
@@ -349,7 +349,7 @@ describe(UserService.name, () => {
       await expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
     });
 
-    it('should not delete profile image if it has not been set', async () => {
+    it('should not delete the profile image if it has not been set', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
       userMock.get.mockResolvedValue(userStub.admin);
       userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });

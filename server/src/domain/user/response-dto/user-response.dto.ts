@@ -1,17 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
-
-export enum UserAvatarColor {
-  PRIMARY = 'primary',
-  PINK = 'pink',
-  RED = 'red',
-  YELLOW = 'yellow',
-  BLUE = 'blue',
-  GREEN = 'green',
-  PURPLE = 'purple',
-  ORANGE = 'orange',
-  GRAY = 'gray',
-  AMBER = 'amber',
-}
+import { UserAvatarColor, UserEntity } from '@app/infra/entities';
 
 export const getRandomAvatarColor = (): UserAvatarColor => {
   const values = Object.values(UserAvatarColor);

@@ -348,6 +348,7 @@ Class | Method | HTTP request | Description
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
+ - [UserAvatarColor](doc//UserAvatarColor.md)
  - [UserDto](doc//UserDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)

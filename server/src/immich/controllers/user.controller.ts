@@ -13,6 +13,8 @@ import {
   Delete,
   Get,
   Header,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -55,6 +57,7 @@ export class UserController {
   }
 
   @Delete('profile-image')
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteProfileImage(@AuthUser() authUser: AuthUserDto): Promise<void> {
     return this.service.deleteProfileImage(authUser);
   }

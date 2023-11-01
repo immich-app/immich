@@ -1,4 +1,3 @@
-import { UserAvatarColor } from '@app/domain/user/response-dto/user-response.dto';
 import {
   Column,
   CreateDateColumn,
@@ -10,6 +9,19 @@ import {
 } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { TagEntity } from './tag.entity';
+
+export enum UserAvatarColor {
+  PRIMARY = 'primary',
+  PINK = 'pink',
+  RED = 'red',
+  YELLOW = 'yellow',
+  BLUE = 'blue',
+  GREEN = 'green',
+  PURPLE = 'purple',
+  ORANGE = 'orange',
+  GRAY = 'gray',
+  AMBER = 'amber',
+}
 
 @Entity('users')
 export class UserEntity {

@@ -22,12 +22,17 @@ class UpdateUserDto {
     this.lastName,
     this.memoriesEnabled,
     this.password,
-    this.profileImagePath,
     this.shouldChangePassword,
     this.storageLabel,
   });
 
-  UpdateUserDtoAvatarColorEnum? avatarColor;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  UserAvatarColor? avatarColor;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -93,14 +98,6 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? profileImagePath;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   bool? shouldChangePassword;
 
   ///
@@ -122,7 +119,6 @@ class UpdateUserDto {
      other.lastName == lastName &&
      other.memoriesEnabled == memoriesEnabled &&
      other.password == password &&
-     other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
      other.storageLabel == storageLabel;
 
@@ -138,12 +134,11 @@ class UpdateUserDto {
     (lastName == null ? 0 : lastName!.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
-    (profileImagePath == null ? 0 : profileImagePath!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, password=$password, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, password=$password, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -188,11 +183,6 @@ class UpdateUserDto {
     } else {
     //  json[r'password'] = null;
     }
-    if (this.profileImagePath != null) {
-      json[r'profileImagePath'] = this.profileImagePath;
-    } else {
-    //  json[r'profileImagePath'] = null;
-    }
     if (this.shouldChangePassword != null) {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
@@ -214,7 +204,7 @@ class UpdateUserDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateUserDto(
-        avatarColor: UpdateUserDtoAvatarColorEnum.fromJson(json[r'avatarColor']),
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
         externalPath: mapValueOfType<String>(json, r'externalPath'),
         firstName: mapValueOfType<String>(json, r'firstName'),
@@ -223,7 +213,6 @@ class UpdateUserDto {
         lastName: mapValueOfType<String>(json, r'lastName'),
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         password: mapValueOfType<String>(json, r'password'),
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
       );
@@ -276,102 +265,4 @@ class UpdateUserDto {
     'id',
   };
 }
-
-
-class UpdateUserDtoAvatarColorEnum {
-  /// Instantiate a new enum with the provided [value].
-  const UpdateUserDtoAvatarColorEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const primary = UpdateUserDtoAvatarColorEnum._(r'primary');
-  static const pink = UpdateUserDtoAvatarColorEnum._(r'pink');
-  static const red = UpdateUserDtoAvatarColorEnum._(r'red');
-  static const yellow = UpdateUserDtoAvatarColorEnum._(r'yellow');
-  static const blue = UpdateUserDtoAvatarColorEnum._(r'blue');
-  static const green = UpdateUserDtoAvatarColorEnum._(r'green');
-  static const purple = UpdateUserDtoAvatarColorEnum._(r'purple');
-  static const orange = UpdateUserDtoAvatarColorEnum._(r'orange');
-  static const gray = UpdateUserDtoAvatarColorEnum._(r'gray');
-  static const amber = UpdateUserDtoAvatarColorEnum._(r'amber');
-
-  /// List of all possible values in this [enum][UpdateUserDtoAvatarColorEnum].
-  static const values = <UpdateUserDtoAvatarColorEnum>[
-    primary,
-    pink,
-    red,
-    yellow,
-    blue,
-    green,
-    purple,
-    orange,
-    gray,
-    amber,
-  ];
-
-  static UpdateUserDtoAvatarColorEnum? fromJson(dynamic value) => UpdateUserDtoAvatarColorEnumTypeTransformer().decode(value);
-
-  static List<UpdateUserDtoAvatarColorEnum>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UpdateUserDtoAvatarColorEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UpdateUserDtoAvatarColorEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [UpdateUserDtoAvatarColorEnum] to String,
-/// and [decode] dynamic data back to [UpdateUserDtoAvatarColorEnum].
-class UpdateUserDtoAvatarColorEnumTypeTransformer {
-  factory UpdateUserDtoAvatarColorEnumTypeTransformer() => _instance ??= const UpdateUserDtoAvatarColorEnumTypeTransformer._();
-
-  const UpdateUserDtoAvatarColorEnumTypeTransformer._();
-
-  String encode(UpdateUserDtoAvatarColorEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a UpdateUserDtoAvatarColorEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  UpdateUserDtoAvatarColorEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'primary': return UpdateUserDtoAvatarColorEnum.primary;
-        case r'pink': return UpdateUserDtoAvatarColorEnum.pink;
-        case r'red': return UpdateUserDtoAvatarColorEnum.red;
-        case r'yellow': return UpdateUserDtoAvatarColorEnum.yellow;
-        case r'blue': return UpdateUserDtoAvatarColorEnum.blue;
-        case r'green': return UpdateUserDtoAvatarColorEnum.green;
-        case r'purple': return UpdateUserDtoAvatarColorEnum.purple;
-        case r'orange': return UpdateUserDtoAvatarColorEnum.orange;
-        case r'gray': return UpdateUserDtoAvatarColorEnum.gray;
-        case r'amber': return UpdateUserDtoAvatarColorEnum.amber;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [UpdateUserDtoAvatarColorEnumTypeTransformer] instance.
-  static UpdateUserDtoAvatarColorEnumTypeTransformer? _instance;
-}
-
 
