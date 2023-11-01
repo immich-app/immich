@@ -5750,6 +5750,10 @@
           "albumName": {
             "type": "string"
           },
+          "albumThumbnailAssetId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "assetCount": {
             "type": "integer"
           }
@@ -5757,6 +5761,7 @@
         "required": [
           "albumId",
           "albumName",
+          "albumThumbnailAssetId",
           "assetCount"
         ],
         "type": "object"
