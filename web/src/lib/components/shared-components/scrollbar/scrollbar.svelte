@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import type { AssetStore } from '$lib/stores/assets.store';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { createEventDispatcher } from 'svelte';
@@ -96,6 +97,19 @@
       {@const date = fromLocalDateTime(segment.timeGroup)}
       {@const year = date.year}
       {@const label = `${date.toLocaleString({ month: 'short' })} ${year}`}
+      {@const lastGroupYear = fromLocalDateTime(segments[index - 1]?.timeGroup).year}
+
+      <!-- Check if the next three segmens are different years then don't render
+      to avoid overlapse -->
+      {@const canRenderYear = segments.slice(index + 1, index + 3).reduce((_, curr) => {
+        const nextGroupYear = fromLocalDateTime(curr.timeGroup).year;
+
+        if (nextGroupYear !== year || curr.height < 1) {
+          return false;
+        }
+
+        return true;
+      }, true)}
 
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
@@ -105,10 +119,10 @@
         aria-label={segment.timeGroup + ' ' + segment.count}
         on:mousemove={() => (hoverLabel = label)}
       >
-        {#if new Date(segments[index - 1]?.timeGroup).getFullYear() !== year}
+        {#if lastGroupYear !== year && canRenderYear}
           <div
             aria-label={segment.timeGroup + ' ' + segment.count}
-            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg"
+            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg font-mono"
           >
             {year}
           </div>
