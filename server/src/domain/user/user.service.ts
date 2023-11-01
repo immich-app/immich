@@ -60,8 +60,6 @@ export class UserService {
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {
     await this.findOrFail(dto.id, {});
-    if (dto.profileImagePath === '') {
-    }
     return this.userCore.updateUser(authUser, dto.id, dto).then(mapUser);
   }
 

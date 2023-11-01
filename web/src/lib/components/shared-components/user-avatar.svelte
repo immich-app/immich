@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-  export type Size = 'full' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
+  export type Size = 'full' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
 </script>
 
 <script lang="ts">
@@ -46,6 +46,7 @@
     lg: 'w-12 h-12',
     xl: 'w-20 h-20',
     xxl: 'w-24 h-24',
+    xxxl: 'w-24 h-24',
   };
 
   // Get color based on the user UUID.
@@ -86,7 +87,8 @@
       class:text-xs={size === 'sm'}
       class:text-lg={size === 'lg'}
       class:text-xl={size === 'xl'}
-      class:text-3xl={size === 'xxl'}
+      class:text-2xl={size === 'xxl'}
+      class:text-3xl={size === 'xxxl'}
       class:font-medium={!autoColor}
       class:font-semibold={autoColor}
     >

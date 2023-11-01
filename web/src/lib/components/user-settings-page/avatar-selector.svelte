@@ -39,7 +39,7 @@
           {#each colors as color}
             <div>
               <button on:click={() => dispatch('choose', color)}>
-                <UserAvatar {user} {color} size="xxl" showProfileImage={false} />
+                <UserAvatar {user} {color} size="xxxl" showProfileImage={false} />
               </button>
             </div>
           {/each}
