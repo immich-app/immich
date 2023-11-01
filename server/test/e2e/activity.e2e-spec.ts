@@ -134,6 +134,29 @@ describe(`${ActivityController.name} (e2e)`, () => {
       expect(body[0]).toEqual(reaction);
     });
 
+    it('should filter by userId', async () => {
+      const [reaction] = await Promise.all([
+        api.activityApi.create(server, admin.accessToken, { albumId: album.id, type: ReactionType.LIKE }),
+      ]);
+
+      const response1 = await request(server)
+        .get('/activity')
+        .query({ albumId: album.id, userId: uuidStub.notFound })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(response1.status).toEqual(200);
+      expect(response1.body.length).toBe(0);
+
+      const response2 = await request(server)
+        .get('/activity')
+        .query({ albumId: album.id, userId: admin.userId })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(response2.status).toEqual(200);
+      expect(response2.body.length).toBe(1);
+      expect(response2.body[0]).toEqual(reaction);
+    });
+
     it('should filter by assetId', async () => {
       const [reaction] = await Promise.all([
         api.activityApi.create(server, admin.accessToken, {
