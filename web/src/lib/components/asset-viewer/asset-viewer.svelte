@@ -654,7 +654,7 @@
             on:onVideoStarted={handleVideoStarted}
           />
         {/if}
-        {#if isShared}
+        {#if $slideshowState === SlideshowState.None && isShared}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <div
               class="w-full h-14 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
