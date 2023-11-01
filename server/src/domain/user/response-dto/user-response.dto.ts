@@ -13,6 +13,12 @@ export enum UserAvatarColor {
   AMBER = 'amber',
 }
 
+export const getRandomAvatarColor = (): UserAvatarColor => {
+  const values = Object.values(UserAvatarColor);
+  const randomIndex = Math.floor(Math.random() * values.length);
+  return values[randomIndex] as UserAvatarColor;
+}
+
 export class UserDto {
   id!: string;
   firstName!: string;
