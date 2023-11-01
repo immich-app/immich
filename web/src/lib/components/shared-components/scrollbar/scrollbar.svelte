@@ -99,7 +99,7 @@
       {@const label = `${date.toLocaleString({ month: 'short' })} ${year}`}
       {@const lastGroupYear = fromLocalDateTime(segments[index - 1]?.timeGroup).year}
 
-      <!-- Check if the next three segmens are different years then don't render
+      <!-- Check if the next three segments are different years then don't render
       to avoid overlapse -->
       {@const canRenderYear = segments.slice(index + 1, index + 3).reduce((_, curr) => {
         const nextGroupYear = fromLocalDateTime(curr.timeGroup).year;
