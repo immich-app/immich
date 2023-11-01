@@ -60,7 +60,7 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <div class="relative w-24 h-24 self-center md:self-start">
+        <div class="relative self-center md:self-start">
           {#key editingUser}
             <UserAvatar user={editingUser} size="xxl" showProfileImage={forceShowColor} />
           {/key}
