@@ -189,6 +189,12 @@ class ApiClient {
           return APIKeyResponseDto.fromJson(value);
         case 'APIKeyUpdateDto':
           return APIKeyUpdateDto.fromJson(value);
+        case 'ActivityCreateDto':
+          return ActivityCreateDto.fromJson(value);
+        case 'ActivityResponseDto':
+          return ActivityResponseDto.fromJson(value);
+        case 'ActivityStatisticsResponseDto':
+          return ActivityStatisticsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
         case 'AdminSignupResponseDto':
@@ -349,6 +355,8 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'ReactionType':
+          return ReactionTypeTypeTransformer().decode(value);
         case 'RecognitionConfig':
           return RecognitionConfig.fromJson(value);
         case 'ScanLibraryDto':
@@ -459,6 +467,8 @@ class ApiClient {
           return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
+        case 'UserDto':
+          return UserDto.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':

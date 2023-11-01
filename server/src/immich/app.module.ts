@@ -13,6 +13,7 @@ import { FileUploadInterceptor } from './app.interceptor';
 import { AppService } from './app.service';
 import {
   APIKeyController,
+  ActivityController,
   AlbumController,
   AppController,
   AssetController,
@@ -39,6 +40,7 @@ import {
     TypeOrmModule.forFeature([AssetEntity]),
   ],
   controllers: [
+    ActivityController,
     AssetController,
     AssetControllerV1,
     AppController,

@@ -8,6 +8,10 @@ doc/APIKeyCreateDto.md
 doc/APIKeyCreateResponseDto.md
 doc/APIKeyResponseDto.md
 doc/APIKeyUpdateDto.md
+doc/ActivityApi.md
+doc/ActivityCreateDto.md
+doc/ActivityResponseDto.md
+doc/ActivityStatisticsResponseDto.md
 doc/AddUsersDto.md
 doc/AdminSignupResponseDto.md
 doc/AlbumApi.md
@@ -97,6 +101,7 @@ doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
+doc/ReactionType.md
 doc/RecognitionConfig.md
 doc/ScanLibraryDto.md
 doc/SearchAlbumResponseDto.md
@@ -158,11 +163,13 @@ doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
 doc/UserApi.md
+doc/UserDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
 doc/VideoCodec.md
 git_push.sh
 lib/api.dart
+lib/api/activity_api.dart
 lib/api/album_api.dart
 lib/api/api_key_api.dart
 lib/api/asset_api.dart
@@ -187,6 +194,9 @@ lib/auth/authentication.dart
 lib/auth/http_basic_auth.dart
 lib/auth/http_bearer_auth.dart
 lib/auth/oauth.dart
+lib/model/activity_create_dto.dart
+lib/model/activity_response_dto.dart
+lib/model/activity_statistics_response_dto.dart
 lib/model/add_users_dto.dart
 lib/model/admin_signup_response_dto.dart
 lib/model/album_count_response_dto.dart
@@ -271,6 +281,7 @@ lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
+lib/model/reaction_type.dart
 lib/model/recognition_config.dart
 lib/model/scan_library_dto.dart
 lib/model/search_album_response_dto.dart
@@ -326,10 +337,15 @@ lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
+lib/model/user_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 lib/model/video_codec.dart
 pubspec.yaml
+test/activity_api_test.dart
+test/activity_create_dto_test.dart
+test/activity_response_dto_test.dart
+test/activity_statistics_response_dto_test.dart
 test/add_users_dto_test.dart
 test/admin_signup_response_dto_test.dart
 test/album_api_test.dart
@@ -424,6 +440,7 @@ test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
+test/reaction_type_test.dart
 test/recognition_config_test.dart
 test/scan_library_dto_test.dart
 test/search_album_response_dto_test.dart
@@ -485,6 +502,7 @@ test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart
 test/user_api_test.dart
+test/user_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
 test/video_codec_test.dart

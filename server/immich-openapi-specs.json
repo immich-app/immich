@@ -1,6 +1,194 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/activity": {
+      "get": {
+        "operationId": "getActivities",
+        "parameters": [
+          {
+            "name": "albumId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ReactionType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      },
+      "post": {
+        "operationId": "createActivity",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
+    "/activity/statistics": {
+      "get": {
+        "operationId": "getActivityStatistics",
+        "parameters": [
+          {
+            "name": "albumId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
+    "/activity/{id}": {
+      "delete": {
+        "operationId": "deleteActivity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
     "/album": {
       "get": {
         "operationId": "getAllAlbums",
@@ -5512,6 +5700,77 @@
         ],
         "type": "object"
       },
+      "ActivityCreateDto": {
+        "properties": {
+          "albumId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ReactionType"
+          }
+        },
+        "required": [
+          "albumId",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ActivityResponseDto": {
+        "properties": {
+          "assetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "comment": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "comment",
+              "like"
+            ],
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserDto"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "type",
+          "user",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "ActivityStatisticsResponseDto": {
+        "properties": {
+          "comments": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "comments"
+        ],
+        "type": "object"
+      },
       "AddUsersDto": {
         "properties": {
           "sharedUserIds": {
@@ -7432,6 +7691,13 @@
         ],
         "type": "object"
       },
+      "ReactionType": {
+        "enum": [
+          "comment",
+          "like"
+        ],
+        "type": "string"
+      },
       "RecognitionConfig": {
         "properties": {
           "enabled": {
@@ -8757,6 +9023,33 @@
         ],
         "type": "object"
       },
+      "UserDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "profileImagePath"
+        ],
+        "type": "object"
+      },
       "UserResponseDto": {
         "properties": {
           "createdAt": {
@@ -8810,12 +9103,12 @@
         },
         "required": [
           "id",
-          "email",
           "firstName",
           "lastName",
+          "email",
+          "profileImagePath",
           "storageLabel",
           "externalPath",
-          "profileImagePath",
           "shouldChangePassword",
           "isAdmin",
           "createdAt",

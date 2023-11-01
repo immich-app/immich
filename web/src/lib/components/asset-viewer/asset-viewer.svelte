@@ -1,6 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
+  import {
+    ActivityResponseDto,
+    AlbumResponseDto,
+    api,
+    AssetJobName,
+    AssetResponseDto,
+    AssetTypeEnum,
+    ReactionType,
+    SharedLinkResponseDto,
+    UserResponseDto,
+  } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
@@ -14,7 +24,7 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, downloadFile, getAssetType } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
@@ -23,10 +33,21 @@
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
+  import {
+    mdiChevronLeft,
+    mdiHeartOutline,
+    mdiHeart,
+    mdiCommentOutline,
+    mdiChevronRight,
+    mdiClose,
+    mdiImageBrokenVariant,
+    mdiPause,
+    mdiPlay,
+  } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
+  import ActivityViewer from './activity-viewer.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -35,6 +56,11 @@
   $: isTrashEnabled = $featureFlags.trash;
   export let force = false;
   export let withStacked = false;
+  export let isShared = true;
+  export let user: UserResponseDto | null = null;
+  export let album: AlbumResponseDto | null = null;
+
+  let reactions: ActivityResponseDto[] = [];
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -57,6 +83,9 @@
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
   let previewStackedAsset: AssetResponseDto | undefined;
+  let isShowActivity = false;
+  let isLiked: ActivityResponseDto | null = null;
+  let numberOfComments: number;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -71,6 +100,62 @@
     }
   }
 
+  const handleFavorite = async () => {
+    if (album) {
+      try {
+        if (isLiked) {
+          const activityId = isLiked.id;
+          await api.activityApi.deleteActivity({ id: activityId });
+          reactions = reactions.filter((reaction) => reaction.id !== activityId);
+          isLiked = null;
+        } else {
+          const { data } = await api.activityApi.createActivity({
+            activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
+          });
+
+          isLiked = data;
+          reactions = [...reactions, isLiked];
+        }
+      } catch (error) {
+        handleError(error, "Can't change favorite for asset");
+      }
+    }
+  };
+
+  const getFavorite = async () => {
+    if (album) {
+      try {
+        const { data } = await api.activityApi.getActivities({
+          assetId: asset.id,
+          albumId: album.id,
+          type: ReactionType.Like,
+        });
+        if (data.length > 0) {
+          isLiked = data[0];
+        }
+      } catch (error) {
+        handleError(error, "Can't get Favorite");
+      }
+    }
+  };
+
+  const getNumberOfComments = async () => {
+    if (album) {
+      try {
+        const { data } = await api.activityApi.getActivityStatistics({ assetId: asset.id, albumId: album.id });
+        numberOfComments = data.comments;
+      } catch (error) {
+        handleError(error, "Can't get number of comments");
+      }
+    }
+  };
+
+  $: {
+    if (isShared && asset.id) {
+      getFavorite();
+      getNumberOfComments();
+    }
+  }
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
@@ -116,6 +201,13 @@
     }
   };
 
+  const handleOpenActivity = () => {
+    if ($isShowDetail) {
+      $isShowDetail = false;
+    }
+    isShowActivity = !isShowActivity;
+  };
+
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
@@ -157,6 +249,7 @@
         toggleFavorite();
         return;
       case 'i':
+        isShowActivity = false;
         $isShowDetail = !$isShowDetail;
         return;
     }
@@ -193,6 +286,9 @@
   };
 
   const showDetailInfoHandler = () => {
+    if (isShowActivity) {
+      isShowActivity = false;
+    }
     $isShowDetail = !$isShowDetail;
   };
 
@@ -314,17 +410,6 @@
       });
     } catch (error) {
       await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
-    }
-  };
-
-  const getAssetType = () => {
-    switch (asset.type) {
-      case 'IMAGE':
-        return 'Photo';
-      case 'VIDEO':
-        return 'Video';
-      default:
-        return 'Asset';
     }
   };
 
@@ -471,7 +556,7 @@
     </div>
   {/if}
   <!-- Asset Viewer -->
-  <div class="col-span-4 col-start-1 row-span-full row-start-1">
+  <div class="relative col-span-4 col-start-1 row-span-full row-start-1">
     {#if previewStackedAsset}
       {#key previewStackedAsset.id}
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
@@ -516,6 +601,29 @@
             on:onVideoEnded={handleVideoEnded}
             on:onVideoStarted={handleVideoStarted}
           />
+        {/if}
+        {#if isShared}
+          <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
+            <div
+              class="w-full h-14 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
+            >
+              <button on:click={handleFavorite}>
+                <div class="items-center justify-center">
+                  <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={24} />
+                </div>
+              </button>
+              <button on:click={handleOpenActivity}>
+                <div class="flex gap-2 items-center justify-center">
+                  <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={24} />
+                  {#if numberOfComments}
+                    <div class="text-xl">{numberOfComments}</div>
+                  {:else if !isShowActivity && !$isShowDetail}
+                    <div class="text-lg">Say something</div>
+                  {/if}
+                </div>
+              </button>
+            </div>
+          </div>
         {/if}
       {/key}
     {/if}
@@ -582,6 +690,28 @@
     </div>
   {/if}
 
+  {#if isShared && album && isShowActivity && user}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="activity-panel"
+      class="z-[1002] row-start-1 row-span-5 w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+      translate="yes"
+    >
+      <ActivityViewer
+        {user}
+        assetType={asset.type}
+        albumOwnerId={album.ownerId}
+        albumId={album.id}
+        assetId={asset.id}
+        bind:reactions
+        on:addComment={() => numberOfComments++}
+        on:deleteComment={() => numberOfComments--}
+        on:deleteLike={() => (isLiked = null)}
+        on:close={() => (isShowActivity = false)}
+      />
+    </div>
+  {/if}
+
   {#if isShowAlbumPicker}
     <AlbumSelectionModal
       shared={addToSharedAlbum}
@@ -594,15 +724,15 @@
 
   {#if isShowDeleteConfirmation}
     <ConfirmDialogue
-      title="Delete {getAssetType()}"
+      title="Delete {getAssetType(asset.type)}"
       confirmText="Delete"
       on:confirm={deleteAsset}
       on:cancel={() => (isShowDeleteConfirmation = false)}
     >
       <svelte:fragment slot="prompt">
         <p>
-          Are you sure you want to delete this {getAssetType().toLowerCase()}? This will also remove it from its
-          album(s).
+          Are you sure you want to delete this {getAssetType(asset.type).toLowerCase()}? This will also remove it from
+          its album(s).
         </p>
         <p><b>You cannot undo this action!</b></p>
       </svelte:fragment>

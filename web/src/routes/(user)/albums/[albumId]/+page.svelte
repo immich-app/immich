@@ -424,11 +424,19 @@
   class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
 >
   {#if viewMode === ViewMode.SELECT_ASSETS}
-    <AssetGrid assetStore={timelineStore} assetInteractionStore={timelineInteractionStore} isSelectionMode={true} />
+    <AssetGrid
+      user={data.user}
+      assetStore={timelineStore}
+      assetInteractionStore={timelineInteractionStore}
+      isSelectionMode={true}
+    />
   {:else}
     <AssetGrid
+      {album}
+      user={data.user}
       {assetStore}
       {assetInteractionStore}
+      isShared={album.sharedUsers.length > 0}
       isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
       singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
       on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}

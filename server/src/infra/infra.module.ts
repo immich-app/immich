@@ -1,5 +1,6 @@
 import {
   IAccessRepository,
+  IActivityRepository,
   IAlbumRepository,
   IAssetRepository,
   IAuditRepository,
@@ -35,6 +36,7 @@ import { bullConfig, bullQueues } from './infra.config';
 import {
   APIKeyRepository,
   AccessRepository,
+  ActivityRepository,
   AlbumRepository,
   AssetRepository,
   AuditRepository,
@@ -60,6 +62,7 @@ import {
 } from './repositories';
 
 const providers: Provider[] = [
+  { provide: IActivityRepository, useClass: ActivityRepository },
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
