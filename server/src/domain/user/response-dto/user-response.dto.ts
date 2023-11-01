@@ -1,11 +1,25 @@
 import { UserEntity } from '@app/infra/entities';
 
+export enum UserAvatarColor {
+  PRIMARY = 'primary',
+  PINK = 'pink',
+  RED = 'red',
+  YELLOW = 'yellow',
+  BLUE = 'blue',
+  GREEN = 'green',
+  PURPLE = 'purple',
+  ORANGE = 'orange',
+  GRAY = 'gray',
+  AMBER = 'amber',
+}
+
 export class UserDto {
   id!: string;
   firstName!: string;
   lastName!: string;
   email!: string;
   profileImagePath!: string;
+  avatarColor!: UserAvatarColor;
 }
 
 export class UserResponseDto extends UserDto {
@@ -27,6 +41,7 @@ export const mapSimpleUser = (entity: UserEntity): UserDto => {
     firstName: entity.firstName,
     lastName: entity.lastName,
     profileImagePath: entity.profileImagePath,
+    avatarColor: entity.avatarColor,
   };
 };
 

@@ -4260,6 +4260,12 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
+    'avatarColor'?: UpdateUserDtoAvatarColorEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
     'email'?: string;
     /**
      * 
@@ -4305,6 +4311,12 @@ export interface UpdateUserDto {
     'password'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'profileImagePath'?: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof UpdateUserDto
      */
@@ -4316,6 +4328,22 @@ export interface UpdateUserDto {
      */
     'storageLabel'?: string;
 }
+
+export const UpdateUserDtoAvatarColorEnum = {
+    Primary: 'primary',
+    Pink: 'pink',
+    Red: 'red',
+    Yellow: 'yellow',
+    Blue: 'blue',
+    Green: 'green',
+    Purple: 'purple',
+    Orange: 'orange',
+    Gray: 'gray',
+    Amber: 'amber'
+} as const;
+
+export type UpdateUserDtoAvatarColorEnum = typeof UpdateUserDtoAvatarColorEnum[keyof typeof UpdateUserDtoAvatarColorEnum];
+
 /**
  * 
  * @export
@@ -4370,6 +4398,12 @@ export interface UserDto {
      * @type {string}
      * @memberof UserDto
      */
+    'avatarColor': UserDtoAvatarColorEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
     'email': string;
     /**
      * 
@@ -4396,12 +4430,34 @@ export interface UserDto {
      */
     'profileImagePath': string;
 }
+
+export const UserDtoAvatarColorEnum = {
+    Primary: 'primary',
+    Pink: 'pink',
+    Red: 'red',
+    Yellow: 'yellow',
+    Blue: 'blue',
+    Green: 'green',
+    Purple: 'purple',
+    Orange: 'orange',
+    Gray: 'gray',
+    Amber: 'amber'
+} as const;
+
+export type UserDtoAvatarColorEnum = typeof UserDtoAvatarColorEnum[keyof typeof UserDtoAvatarColorEnum];
+
 /**
  * 
  * @export
  * @interface UserResponseDto
  */
 export interface UserResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'avatarColor': UserResponseDtoAvatarColorEnum;
     /**
      * 
      * @type {string}
@@ -4487,6 +4543,22 @@ export interface UserResponseDto {
      */
     'updatedAt': string;
 }
+
+export const UserResponseDtoAvatarColorEnum = {
+    Primary: 'primary',
+    Pink: 'pink',
+    Red: 'red',
+    Yellow: 'yellow',
+    Blue: 'blue',
+    Green: 'green',
+    Purple: 'purple',
+    Orange: 'orange',
+    Gray: 'gray',
+    Amber: 'amber'
+} as const;
+
+export type UserResponseDtoAvatarColorEnum = typeof UserResponseDtoAvatarColorEnum[keyof typeof UserResponseDtoAvatarColorEnum];
+
 /**
  * 
  * @export
@@ -16147,6 +16219,44 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteProfileImage: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/user/profile-image`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -16472,6 +16582,15 @@ export const UserApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteProfileImage(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteProfileImage(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -16566,6 +16685,14 @@ export const UserApiFactory = function (configuration?: Configuration, basePath?
          */
         createUser(requestParameters: UserApiCreateUserRequest, options?: AxiosRequestConfig): AxiosPromise<UserResponseDto> {
             return localVarFp.createUser(requestParameters.createUserDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteProfileImage(options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteProfileImage(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -16771,6 +16898,16 @@ export class UserApi extends BaseAPI {
      */
     public createUser(requestParameters: UserApiCreateUserRequest, options?: AxiosRequestConfig) {
         return UserApiFp(this.configuration).createUser(requestParameters.createUserDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public deleteProfileImage(options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).deleteProfileImage(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

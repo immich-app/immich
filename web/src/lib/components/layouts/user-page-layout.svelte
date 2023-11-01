@@ -18,7 +18,7 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar {user} {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
+    <NavigationBar bind:user {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
   {/if}
 
   <slot name="header" />

@@ -60,6 +60,8 @@ export class UserService {
 
   async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {
     await this.findOrFail(dto.id, {});
+    if (dto.profileImagePath === '') {
+    }
     return this.userCore.updateUser(authUser, dto.id, dto).then(mapUser);
   }
 
@@ -93,8 +95,23 @@ export class UserService {
     authUser: AuthUserDto,
     fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
+    const user = await this.findOrFail(authUser.id, { withDeleted: true });
     const updatedUser = await this.userRepository.update(authUser.id, { profileImagePath: fileInfo.path });
+    if (user.profileImagePath !== '') {
+      const files = [user.profileImagePath];
+      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    }
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
+  }
+
+  async deleteProfileImage(authUser: AuthUserDto): Promise<void> {
+    const user = await this.findOrFail(authUser.id, { withDeleted: true });
+    if (user.profileImagePath !== '') {
+      await this.userRepository.update(authUser.id, { profileImagePath: '' });
+      const files = [user.profileImagePath];
+      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    }
+    return;
   }
 
   async getProfileImage(id: string): Promise<ImmichReadStream> {

@@ -124,7 +124,9 @@
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
-            <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {#key user}
+              <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {/key}
           </button>
 
           {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}

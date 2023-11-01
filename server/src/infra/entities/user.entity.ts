@@ -1,3 +1,4 @@
+import { UserAvatarColor } from '@app/domain/user/response-dto/user-response.dto';
 import {
   Column,
   CreateDateColumn,
@@ -17,6 +18,9 @@ export class UserEntity {
 
   @Column({ default: '' })
   firstName!: string;
+
+  @Column({ type: 'varchar', default: UserAvatarColor.PRIMARY })
+  avatarColor!: UserAvatarColor;
 
   @Column({ default: '' })
   lastName!: string;

@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { authStub, newPartnerRepositoryMock, partnerStub } from '@test';
-import { UserResponseDto } from '../index';
+import { UserAvatarColor, UserResponseDto } from '../index';
 import { IPartnerRepository, PartnerDirection } from '../repositories';
 import { PartnerService } from './partner.service';
 
@@ -20,6 +20,7 @@ const responseDto = {
     updatedAt: new Date('2021-01-01'),
     externalPath: null,
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   },
   user1: <UserResponseDto>{
     email: 'immich@test.com',
@@ -36,6 +37,7 @@ const responseDto = {
     updatedAt: new Date('2021-01-01'),
     externalPath: null,
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   },
 };
 

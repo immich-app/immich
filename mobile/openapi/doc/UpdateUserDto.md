@@ -8,6 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**avatarColor** | **String** |  | [optional] 
 **email** | **String** |  | [optional] 
 **externalPath** | **String** |  | [optional] 
 **firstName** | **String** |  | [optional] 
@@ -16,6 +17,7 @@ Name | Type | Description | Notes
 **lastName** | **String** |  | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 
 **password** | **String** |  | [optional] 
+**profileImagePath** | **String** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 
 

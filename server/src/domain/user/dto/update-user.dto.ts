@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { UserAvatarColor } from '..';
 import { Optional, toEmail, toSanitized } from '../../domain.util';
 
 export class UpdateUserDto {
@@ -49,4 +50,13 @@ export class UpdateUserDto {
   @Optional()
   @IsBoolean()
   memoriesEnabled?: boolean;
+
+  @Optional()
+  @IsString()
+  @IsNotEmpty()
+  avatarColor?: UserAvatarColor;
+
+  @Optional()
+  @IsString()
+  profileImagePath?: string;
 }

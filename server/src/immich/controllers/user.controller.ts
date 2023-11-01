@@ -54,6 +54,11 @@ export class UserController {
     return this.service.create(createUserDto);
   }
 
+  @Delete('profile-image')
+  deleteProfileImage(@AuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.deleteProfileImage(authUser);
+  }
+
   @AdminRoute()
   @Delete(':id')
   deleteUser(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
