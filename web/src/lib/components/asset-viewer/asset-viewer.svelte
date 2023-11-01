@@ -693,8 +693,8 @@
   {#if isShared && album && isShowActivity && user}
     <div
       transition:fly={{ duration: 150 }}
-      id="detail-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      id="activity-panel"
+      class="z-[1002] row-start-1 row-span-5 w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
       translate="yes"
     >
       <ActivityViewer

@@ -154,15 +154,18 @@
       </div>
     </div>
     {#if innerHeight}
-      <div class="overflow-y-auto relative w-full" style="height: {divHeight}px;padding-bottom: {chatHeight}px">
+      <div
+        class="overflow-y-auto immich-scrollbar relative w-full"
+        style="height: {divHeight}px;padding-bottom: {chatHeight}px"
+      >
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.type === 'comment'}
-            <div class="flex dark:bg-slate-500 bg-gray-200 p-2 mx-2 mt-2 rounded-3xl gap-2 justify-start">
+            <div class="flex dark:bg-gray-800 bg-gray-200 p-3 mx-2 mt-3 rounded-lg gap-4 justify-start">
               <div>
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
-              <div class="w-full leading-4 overflow-hidden self-center break-words">{reaction.comment}</div>
+              <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
                   <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
@@ -173,12 +176,12 @@
               <div>
                 {#if showDeleteReaction[index]}
                   <button
-                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
+                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-2 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-300 transition-colors"
                     use:clickOutside
                     on:outclick={() => (showDeleteReaction[index] = false)}
                     on:click={() => handleDeleteReaction(reaction, index)}
                   >
-                    Delete Comment
+                    Delete
                   </button>
                 {/if}
               </div>
@@ -240,20 +243,20 @@
   </div>
 
   <div class="absolute w-full bottom-0">
-    <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
-      <div class="flex p-2 bg-slate-400 h-fit dark:bg-gray-900 rounded-3xl gap-2 w-full text-white">
+    <div class="flex items-center justify-center p-2 mr-2" bind:clientHeight={chatHeight}>
+      <div class="flex p-2 gap-4 h-fit bg-gray-200 text-immich-dark-gray rounded-3xl w-full">
         <div>
           <UserAvatar {user} size="md" showTitle={false} />
         </div>
         <form class="flex w-full max-h-56 gap-1" on:submit|preventDefault={() => handleSendComment()}>
-          <div class="flex w-full items-center">
+          <div class="flex w-full items-center gap-4">
             <textarea
               bind:this={textArea}
               bind:value={message}
               placeholder="Say something"
               on:input={autoGrow}
               on:keypress={handleEnter}
-              class="h-[18px] w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-slate-400 dark:bg-gray-900 text-white"
+              class="h-[18px] w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
             />
           </div>
           {#if isSendingMessage}
@@ -275,7 +278,7 @@
 
 <style>
   ::placeholder {
-    color: white;
+    color: rgb(60, 60, 60);
     opacity: 0.6;
   }
 
