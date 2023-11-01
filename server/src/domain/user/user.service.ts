@@ -93,10 +93,10 @@ export class UserService {
     authUser: AuthUserDto,
     fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
-    const user = await this.findOrFail(authUser.id, { withDeleted: false });
+    const { profileImagePath: oldpath } = await this.findOrFail(authUser.id, { withDeleted: false });
     const updatedUser = await this.userRepository.update(authUser.id, { profileImagePath: fileInfo.path });
-    if (user.profileImagePath !== '') {
-      const files = [user.profileImagePath];
+    if (oldpath !== '') {
+      const files = [oldpath];
       await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
     }
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
