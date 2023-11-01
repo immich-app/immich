@@ -107,4 +107,3 @@ npm run build
 ```bash title="Run the command"
 node bin/index.js upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api --recursive your/asset/directory
 ```
-
