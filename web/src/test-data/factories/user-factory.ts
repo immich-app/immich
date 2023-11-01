@@ -1,4 +1,4 @@
-import { UpdateUserDtoAvatarColorEnum, type UserResponseDto } from '@api';
+import { UserDtoAvatarColorEnum, type UserResponseDto } from '@api';
 import { faker } from '@faker-js/faker';
 import { Sync } from 'factory.ts';
 
@@ -17,5 +17,5 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   updatedAt: Sync.each(() => faker.date.past().toISOString()),
   memoriesEnabled: true,
   oauthId: '',
-  avatarColor: UpdateUserDtoAvatarColorEnum.Primary,
+  avatarColor: UserDtoAvatarColorEnum.Primary,
 });

@@ -4,7 +4,7 @@
 
 <script lang="ts">
   import { imageLoad } from '$lib/utils/image-load';
-  import { UpdateUserDtoAvatarColorEnum, api } from '@api';
+  import { UserDtoAvatarColorEnum, api } from '@api';
 
   interface User {
     id: string;
@@ -12,11 +12,11 @@
     lastName: string;
     email: string;
     profileImagePath: string;
-    avatarColor: UpdateUserDtoAvatarColorEnum;
+    avatarColor: UserDtoAvatarColorEnum;
   }
 
   export let user: User;
-  export let color: UpdateUserDtoAvatarColorEnum = user.avatarColor;
+  export let color: UserDtoAvatarColorEnum = user.avatarColor;
   export let size: Size = 'full';
   export let rounded = true;
   export let interactive = false;
@@ -26,7 +26,7 @@
 
   let showFallback = true;
 
-  const colorClasses: Record<UpdateUserDtoAvatarColorEnum, string> = {
+  const colorClasses: Record<UserDtoAvatarColorEnum, string> = {
     primary: 'bg-immich-primary dark:bg-immich-dark-primary text-immich-dark-fg dark:text-immich-fg',
     pink: 'bg-pink-400 text-immich-bg',
     red: 'bg-red-500 text-immich-bg',
@@ -52,7 +52,7 @@
   // Get color based on the user UUID.
   function getUserColor() {
     const seed = parseInt(user.id.split('-')[0], 16);
-    const colors = Object.keys(colorClasses).filter((color) => color !== 'primary') as UpdateUserDtoAvatarColorEnum[];
+    const colors = Object.keys(colorClasses).filter((color) => color !== 'primary') as UserDtoAvatarColorEnum[];
     const randomIndex = seed % colors.length;
     return colors[randomIndex];
   }

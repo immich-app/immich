@@ -3,7 +3,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { api, UpdateUserDtoAvatarColorEnum, UserResponseDto } from '@api';
+  import { api, UserDtoAvatarColorEnum, UserResponseDto } from '@api';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
@@ -20,7 +20,7 @@
 
   let isShowSelectAvatar = false;
 
-  const handleChooseAvatarColor = (color: UpdateUserDtoAvatarColorEnum) => {
+  const handleChooseAvatarColor = (color: UserDtoAvatarColorEnum) => {
     editingUser.avatarColor = color;
     forceShowColor = false;
     isShowSelectAvatar = false;
