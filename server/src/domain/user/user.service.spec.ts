@@ -312,6 +312,7 @@ describe(UserService.name, () => {
 
       expect(userMock.getAdmin).toBeCalled();
       expect(userMock.create).toBeCalledWith({
+        avatarColor: expect.anything(),
         email: userStub.user1.email,
         firstName: userStub.user1.firstName,
         lastName: userStub.user1.lastName,

@@ -105,7 +105,7 @@ export class UserCore {
       if (payload.storageLabel) {
         payload.storageLabel = sanitize(payload.storageLabel);
       }
-      payload.avatarColor = getRandomAvatarColor()
+      payload.avatarColor = getRandomAvatarColor();
       const userEntity = await this.userRepository.create(payload);
       await this.libraryRepository.create({
         owner: { id: userEntity.id } as UserEntity,
