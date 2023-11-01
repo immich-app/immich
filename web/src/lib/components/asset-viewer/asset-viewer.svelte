@@ -123,9 +123,10 @@
   };
 
   const getFavorite = async () => {
-    if (album) {
+    if (album && user) {
       try {
         const { data } = await api.activityApi.getActivities({
+          userId: user.id,
           assetId: asset.id,
           albumId: album.id,
           type: ReactionType.Like,

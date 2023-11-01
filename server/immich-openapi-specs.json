@@ -30,6 +30,15 @@
             "schema": {
               "$ref": "#/components/schemas/ReactionType"
             }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "responses": {

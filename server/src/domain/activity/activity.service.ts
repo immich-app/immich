@@ -28,6 +28,7 @@ export class ActivityService {
   async getAll(authUser: AuthUserDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, dto.albumId);
     const activities = await this.repository.search({
+      userId: dto.userId,
       albumId: dto.albumId,
       assetId: dto.assetId,
       isLiked: dto.type && dto.type === ReactionType.LIKE,

@@ -38,6 +38,9 @@ export class ActivitySearchDto extends ActivityDto {
   @Optional()
   @ApiProperty({ enumName: 'ReactionType', enum: ReactionType })
   type?: ReactionType;
+
+  @ValidateUUID({ optional: true })
+  userId?: string;
 }
 
 const isComment = (dto: ActivityCreateDto) => dto.type === 'comment';
