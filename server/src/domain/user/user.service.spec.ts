@@ -327,13 +327,12 @@ describe(UserService.name, () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
       userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
-      await sut.createProfileImage(userStub.admin, file);
-
-      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, { profileImagePath: file.path });
+      await expect(sut.createProfileImage(userStub.admin, file)).rejects.toThrowError(BadRequestException);
     });
 
     it('should throw an error if the user profile could not be updated with the new image', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
+      userMock.get.mockResolvedValue(userStub.profilePath);
       userMock.update.mockRejectedValue(new InternalServerErrorException('mocked error'));
 
       await expect(sut.createProfileImage(userStub.admin, file)).rejects.toThrowError(InternalServerErrorException);
