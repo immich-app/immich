@@ -52,7 +52,7 @@
     <div class="flex flex-row gap-4">
       {#each partners as partner (partner.id)}
         <div class="flex gap-4 rounded-lg px-5 py-4 transition-all">
-          <UserAvatar user={partner} size="md" autoColor />
+          <UserAvatar user={partner} size="md" />
           <div class="text-left">
             <p class="text-immich-fg dark:text-immich-dark-fg">
               {partner.firstName}

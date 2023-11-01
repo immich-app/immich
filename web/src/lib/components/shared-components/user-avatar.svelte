@@ -21,7 +21,6 @@
   export let rounded = true;
   export let interactive = false;
   export let showTitle = true;
-  export let autoColor = false;
   export let showProfileImage = true;
 
   let showFallback = true;
@@ -49,15 +48,7 @@
     xxxl: 'w-28 h-28',
   };
 
-  // Get color based on the user UUID.
-  function getUserColor() {
-    const seed = parseInt(user.id.split('-')[0], 16);
-    const colors = Object.keys(colorClasses).filter((color) => color !== 'primary') as UserDtoAvatarColorEnum[];
-    const randomIndex = seed % colors.length;
-    return colors[randomIndex];
-  }
-
-  $: colorClass = colorClasses[autoColor ? getUserColor() : color];
+  $: colorClass = colorClasses[color];
   $: sizeClass = sizeClasses[size];
   $: title = `${user.firstName} ${user.lastName} (${user.email})`;
   $: interactiveClass = interactive
@@ -83,14 +74,12 @@
   {/if}
   {#if showFallback}
     <span
-      class="flex h-full w-full select-none items-center justify-center"
+      class="flex h-full w-full select-none items-center justify-center font-medium"
       class:text-xs={size === 'sm'}
       class:text-lg={size === 'lg'}
       class:text-xl={size === 'xl'}
       class:text-2xl={size === 'xxl'}
       class:text-3xl={size === 'xxxl'}
-      class:font-medium={!autoColor}
-      class:font-semibold={autoColor}
     >
       {((user.firstName[0] || '') + (user.lastName[0] || '')).toUpperCase()}
     </span>
