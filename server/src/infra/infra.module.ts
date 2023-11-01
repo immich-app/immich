@@ -29,6 +29,7 @@ import {
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
@@ -87,12 +88,14 @@ const providers: Provider[] = [
   { provide: IMediaRepository, useClass: MediaRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
+  SchedulerRegistry,
 ];
 
 const imports = [
   ConfigModule.forRoot(immichAppConfig),
   TypeOrmModule.forRoot(databaseConfig),
   TypeOrmModule.forFeature(databaseEntities),
+  ScheduleModule,
 ];
 
 const moduleExports = [...providers];
