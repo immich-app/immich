@@ -12,7 +12,7 @@
   import { fly } from 'svelte/transition';
 
   export let inputType: SettingInputFieldType;
-  export let value: string | number;
+  export let value: string | number | undefined = undefined;
   export let min = Number.MIN_SAFE_INTEGER.toString();
   export let max = Number.MAX_SAFE_INTEGER.toString();
   export let step = '1';
@@ -48,9 +48,7 @@
   </div>
 
   {#if desc}
-    <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
-      {desc}
-    </p>
+    <p class="text-sm dark:text-immich-dark-fg pb-2" id="{label}-desc">{desc}</p>
   {:else}
     <slot name="desc" />
   {/if}

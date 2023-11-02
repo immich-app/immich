@@ -1,11 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { api } from '@api';
+  import { UserResponseDto, api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import { memoryStore } from '$lib/stores/memory.store';
   import { goto } from '$app/navigation';
   import { fade } from 'svelte/transition';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
+
+  export let user: UserResponseDto;
 
   $: shouldRender = $memoryStore?.length > 0;
 
@@ -14,6 +16,7 @@
     const { data } = await api.assetApi.getMemoryLane({
       month: localTime.getMonth() + 1,
       day: localTime.getDate(),
+      days: user.memoriesDuration,
     });
     $memoryStore = data;
   });

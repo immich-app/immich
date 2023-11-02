@@ -57,6 +57,9 @@ export class UserEntity {
   @Column({ default: true })
   memoriesEnabled!: boolean;
 
+  @Column({ default: 3 })
+  memoriesDuration!: number;
+
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];
 

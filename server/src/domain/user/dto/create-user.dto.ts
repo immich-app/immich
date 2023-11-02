@@ -1,5 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 import { Optional, toEmail, toSanitized } from '../../domain.util';
 
 export class CreateUserDto {
@@ -31,6 +32,12 @@ export class CreateUserDto {
   @Optional()
   @IsBoolean()
   memoriesEnabled?: boolean;
+
+  @Optional()
+  @IsInt()
+  @Min(0)
+  @ApiProperty({ type: 'integer' })
+  memoriesDuration?: number;
 }
 
 export class CreateAdminDto {

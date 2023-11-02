@@ -157,9 +157,21 @@ export class AssetService {
 
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const currentYear = new Date().getFullYear();
-    const assets = await this.assetRepository.getByDayOfYear(authUser.id, dto);
+    const { day, month, days } = dto;
 
-    return _.chain(assets)
+    const target = DateTime.fromObject({ day, month }, { zone: 'UTC' });
+    const dates = [];
+    for (let i = 0; i < (days ?? 1); i++) {
+      dates.push(target.plus({ days: i }));
+    }
+
+    const groups = await Promise.all(
+      dates.map((date) => this.assetRepository.getByDayOfYear(authUser.id, { day: date.day, month: date.month })),
+    );
+
+    const flattened = groups.reduce((previous, current) => [...previous, ...current], []);
+
+    return _.chain(flattened)
       .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
       .map((asset) => {
         const years = currentYear - asset.localDateTime.getFullYear();

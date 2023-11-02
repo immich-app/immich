@@ -1626,6 +1626,14 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -6746,6 +6754,9 @@
           "lastName": {
             "type": "string"
           },
+          "memoriesDuration": {
+            "type": "integer"
+          },
           "memoriesEnabled": {
             "type": "boolean"
           },
@@ -8982,6 +8993,9 @@
           "lastName": {
             "type": "string"
           },
+          "memoriesDuration": {
+            "type": "integer"
+          },
           "memoriesEnabled": {
             "type": "boolean"
           },
@@ -9089,6 +9103,9 @@
           "lastName": {
             "type": "string"
           },
+          "memoriesDuration": {
+            "type": "integer"
+          },
           "memoriesEnabled": {
             "type": "boolean"
           },
@@ -9111,11 +9128,6 @@
           }
         },
         "required": [
-          "id",
-          "firstName",
-          "lastName",
-          "email",
-          "profileImagePath",
           "storageLabel",
           "externalPath",
           "shouldChangePassword",
@@ -9123,7 +9135,12 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId"
+          "oauthId",
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "profileImagePath"
         ],
         "type": "object"
       },

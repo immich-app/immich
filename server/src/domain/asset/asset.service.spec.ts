@@ -309,7 +309,7 @@ describe(AssetService.name, () => {
     it('should set the title correctly', async () => {
       assetMock.getByDayOfYear.mockResolvedValue([assetStub.image, assetStub.imageFrom2015]);
 
-      await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
+      await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1, days: 1 })).resolves.toEqual([
         { title: '1 year since...', assets: [mapAsset(assetStub.image)] },
         { title: '9 years since...', assets: [mapAsset(assetStub.imageFrom2015)] },
       ]);

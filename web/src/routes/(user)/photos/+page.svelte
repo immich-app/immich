@@ -80,7 +80,7 @@
     withStacked
   >
     {#if data.user.memoriesEnabled}
-      <MemoryLane />
+      <MemoryLane user={data.user} />
     {/if}
     <EmptyPlaceholder
       text="CLICK TO UPLOAD YOUR FIRST PHOTO"

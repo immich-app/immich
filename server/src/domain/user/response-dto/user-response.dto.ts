@@ -1,4 +1,5 @@
 import { UserEntity } from '@app/infra/entities';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserDto {
   id!: string;
@@ -18,6 +19,8 @@ export class UserResponseDto extends UserDto {
   updatedAt!: Date;
   oauthId!: string;
   memoriesEnabled?: boolean;
+  @ApiProperty({ type: 'integer' })
+  memoriesDuration?: number;
 }
 
 export const mapSimpleUser = (entity: UserEntity): UserDto => {
@@ -42,5 +45,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
     memoriesEnabled: entity.memoriesEnabled,
+    memoriesDuration: entity.memoriesDuration,
   };
 }

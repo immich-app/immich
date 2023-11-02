@@ -6,6 +6,7 @@
   import { api, UserResponseDto } from '@api';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
+  import SettingInputField, { SettingInputFieldType } from '../admin-page/settings/setting-input-field.svelte';
   import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
   import Button from '../elements/buttons/button.svelte';
 
@@ -17,6 +18,7 @@
         updateUserDto: {
           id: user.id,
           memoriesEnabled: user.memoriesEnabled,
+          memoriesDuration: user.memoriesDuration,
         },
       });
 
@@ -32,12 +34,19 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
-        <div class="ml-4">
+      <div class="ml-4 mt-4">
+        <div class="ml-4 flex flex-col gap-4">
           <SettingSwitch
             title="Time-based memories"
             subtitle="Photos from previous years"
             bind:checked={user.memoriesEnabled}
+          />
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label="Duration"
+            desc="Memories will be displayed for this many days before being removed."
+            bind:value={user.memoriesDuration}
+            required={true}
           />
         </div>
         <div class="flex justify-end">
