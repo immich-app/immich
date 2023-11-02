@@ -96,19 +96,6 @@
       {@const date = fromLocalDateTime(segment.timeGroup)}
       {@const year = date.year}
       {@const label = `${date.toLocaleString({ month: 'short' })} ${year}`}
-      {@const lastGroupYear = fromLocalDateTime(segments[index - 1]?.timeGroup).year}
-
-      <!-- Check if the next three segments are different years then don't render
-      to avoid overlapse -->
-      {@const canRenderYear = segments.slice(index + 1, index + 3).reduce((_, curr) => {
-        const nextGroupYear = fromLocalDateTime(curr.timeGroup).year;
-
-        if (nextGroupYear !== year || curr.height < 1) {
-          return false;
-        }
-
-        return true;
-      }, true)}
 
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
@@ -118,10 +105,10 @@
         aria-label={segment.timeGroup + ' ' + segment.count}
         on:mousemove={() => (hoverLabel = label)}
       >
-        {#if lastGroupYear !== year && canRenderYear}
+        {#if new Date(segments[index - 1]?.timeGroup).getFullYear() !== year}
           <div
             aria-label={segment.timeGroup + ' ' + segment.count}
-            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg font-mono"
+            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg"
           >
             {year}
           </div>
