@@ -33,15 +33,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
-  import {
-    mdiHeartOutline,
-    mdiHeart,
-    mdiCommentOutline,
-    mdiChevronLeft,
-    mdiChevronRight,
-    mdiImageBrokenVariant,
-  } from '@mdi/js';
+  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';

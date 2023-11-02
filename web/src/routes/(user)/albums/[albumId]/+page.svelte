@@ -45,8 +45,6 @@
     mdiDotsVertical,
     mdiArrowLeft,
     mdiFileImagePlusOutline,
-    mdiShareVariantOutline,
-    mdiDeleteOutline,
     mdiFolderDownloadOutline,
     mdiLink,
   } from '@mdi/js';
