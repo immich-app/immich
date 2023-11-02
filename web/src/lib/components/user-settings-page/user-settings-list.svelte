@@ -11,6 +11,7 @@
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
   import SidebarSettings from './sidebar-settings.svelte';
+  import AppearanceSettings from './appearance-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
 
@@ -66,4 +67,8 @@
 
 <SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
   <SidebarSettings />
+</SettingAccordion>
+
+<SettingAccordion title="Appearance" subtitle="Manage the appearance of Immich">
+  <AppearanceSettings />
 </SettingAccordion>
