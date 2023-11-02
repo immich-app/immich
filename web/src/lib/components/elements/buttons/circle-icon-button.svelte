@@ -10,6 +10,7 @@
   export let isOpacity = false;
   export let forceDark = false;
   export let hideMobile = false;
+  export let iconColor = 'currentColor';
 </script>
 
 <button
@@ -23,7 +24,7 @@
   {hideMobile && 'hidden sm:flex'}"
   on:click
 >
-  <Icon path={icon} {size} />
+  <Icon path={icon} {size} color={iconColor} />
   <slot />
 </button>
 

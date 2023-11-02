@@ -106,12 +106,12 @@
 
   const handleAddComment = () => {
     numberOfComments++;
-    updateNumberOfComments(true);
+    updateNumberOfComments(1);
   };
 
   const handleRemoveComment = () => {
     numberOfComments--;
-    updateNumberOfComments(false);
+    updateNumberOfComments(-1);
   };
 
   const handleFavorite = async () => {

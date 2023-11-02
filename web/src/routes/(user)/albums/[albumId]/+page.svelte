@@ -468,7 +468,7 @@
         <ControlAppBar on:close-button-click={handleCloseSelectAssets}>
           <svelte:fragment slot="leading">
             <p class="text-lg dark:text-immich-dark-fg">
-              {#if $timelineSelected.size == 0}
+              {#if $timelineSelected.size === 0}
                 Add to album
               {:else}
                 {$timelineSelected.size.toLocaleString($locale)} selected
@@ -523,7 +523,7 @@
             <!-- ALBUM TITLE -->
             <section class="pt-24">
               <input
-                on:keydown={(e) => e.key == 'Enter' && titleInput.blur()}
+                on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
                 on:blur={handleUpdateName}
                 class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
                   ? 'hover:border-gray-400'
@@ -617,7 +617,7 @@
         </AssetGrid>
       {/if}
       {#if album.sharedUsers.length > 0 && !$showAssetViewer}
-        <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
+        <div class="absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
           <ActivityStatus
             {isLiked}
             numberOfComments={$numberOfComments}
@@ -642,8 +642,8 @@
             albumOwnerId={album.ownerId}
             albumId={album.id}
             bind:reactions
-            on:addComment={() => updateNumberOfComments(true)}
-            on:deleteComment={() => updateNumberOfComments(false)}
+            on:addComment={() => updateNumberOfComments(1)}
+            on:deleteComment={() => updateNumberOfComments(-1)}
             on:deleteLike={() => (isLiked = null)}
             on:close={() => (isShowActivity = false)}
           />

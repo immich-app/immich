@@ -6,7 +6,6 @@ export const setNumberOfComments = (number: number) => {
   numberOfComments.set(number);
 };
 
-export const updateNumberOfComments = (addOrRemove: boolean) => {
-  const delta = addOrRemove ? 1 : -1;
-  numberOfComments.update((n) => (n ? n + delta : undefined));
+export const updateNumberOfComments = (addOrRemove: 1 | -1) => {
+  numberOfComments.update((n) => (n ? n + addOrRemove : undefined));
 };

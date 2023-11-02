@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -37,7 +37,7 @@
   let activityHeight: number;
   let chatHeight: number;
   let divHeight: number;
-  let previousAssetId: string | null;
+  let previousAssetId: string | undefined = assetId;
   let message = '';
   let isSendingMessage = false;
 
@@ -54,10 +54,11 @@
     if (assetId && previousAssetId != assetId) {
       getReactions();
       previousAssetId = assetId;
-    } else if (assetId === undefined) {
-      getReactions();
     }
   }
+  onMount(async () => {
+    await getReactions();
+  });
 
   const getReactions = async () => {
     try {
@@ -290,8 +291,8 @@
               </div>
             </div>
           {:else if message}
-            <div class="flex items-end w-fit ml-0 text-immich-primary dark:text-white">
-              <CircleIconButton size="15" icon={mdiSend} />
+            <div class="flex items-end w-fit ml-0">
+              <CircleIconButton size="15" icon={mdiSend} iconColor={'dark'} hoverColor={'rgb(173,203,250)'} />
             </div>
           {/if}
         </form>
