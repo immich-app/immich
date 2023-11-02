@@ -385,8 +385,8 @@
   };
 </script>
 
-<div class="relative">
-  <div class="flex">
+<div class="flex w-auto">
+  <div class="relative w-auto shrink">
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
@@ -498,7 +498,7 @@
     {/if}
 
     <main
-      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40 w-full"
+      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
     >
       {#if viewMode === ViewMode.SELECT_ASSETS}
         <AssetGrid
@@ -628,29 +628,28 @@
         </div>
       {/if}
     </main>
-
-    {#if album.sharedUsers.length > 0 && album && isShowActivity && user && !$showAssetViewer}
-      <div class="flex">
-        <div
-          transition:fly={{ duration: 150 }}
-          id="activity-panel"
-          class="z-[1002] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
-          translate="yes"
-        >
-          <ActivityViewer
-            {user}
-            albumOwnerId={album.ownerId}
-            albumId={album.id}
-            bind:reactions
-            on:addComment={() => updateNumberOfComments(1)}
-            on:deleteComment={() => updateNumberOfComments(-1)}
-            on:deleteLike={() => (isLiked = null)}
-            on:close={() => (isShowActivity = false)}
-          />
-        </div>
-      </div>
-    {/if}
   </div>
+  {#if album.sharedUsers.length > 0 && album && isShowActivity && user && !$showAssetViewer}
+    <div class="flex">
+      <div
+        transition:fly={{ duration: 150 }}
+        id="activity-panel"
+        class="z-[1002] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+        translate="yes"
+      >
+        <ActivityViewer
+          {user}
+          albumOwnerId={album.ownerId}
+          albumId={album.id}
+          bind:reactions
+          on:addComment={() => updateNumberOfComments(1)}
+          on:deleteComment={() => updateNumberOfComments(-1)}
+          on:deleteLike={() => (isLiked = null)}
+          on:close={() => (isShowActivity = false)}
+        />
+      </div>
+    </div>
+  {/if}
 </div>
 {#if viewMode === ViewMode.SELECT_USERS}
   <UserSelectionModal
