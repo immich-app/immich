@@ -47,6 +47,8 @@
     mdiFileImagePlusOutline,
     mdiFolderDownloadOutline,
     mdiLink,
+    mdiShareVariantOutline,
+    mdiDeleteOutline,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -385,8 +387,8 @@
   };
 </script>
 
-<div class="flex w-auto">
-  <div class="relative w-auto shrink">
+<div class="flex w-full">
+  <div class="relative w-full shrink">
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
         <CreateSharedLink />
@@ -420,18 +422,16 @@
             />
 
             {#if isOwned}
-              <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
-                <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
-                  {#if viewMode === ViewMode.ALBUM_OPTIONS}
-                    <ContextMenu {...contextMenuPosition}>
-                      {#if album.assetCount !== 0}
-                        <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
-                      {/if}
-                      <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
-                    </ContextMenu>
-                  {/if}
-                </CircleIconButton>
-              </div>
+              <CircleIconButton
+                title="Share"
+                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                icon={mdiShareVariantOutline}
+              />
+              <CircleIconButton
+                title="Delete album"
+                on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
+                icon={mdiDeleteOutline}
+              />
             {/if}
 
             {#if album.assetCount > 0}
