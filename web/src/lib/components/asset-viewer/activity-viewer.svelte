@@ -15,6 +15,14 @@
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
+  const shouldGroup = (currentDate: string, nextDate: string): boolean => {
+    return (
+      luxon.DateTime.fromISO(currentDate).toRelative({ unit: 'hours' }) ===
+        luxon.DateTime.fromISO(nextDate).toRelative({ unit: 'hours' }) ||
+      luxon.DateTime.fromISO(currentDate).toRelative() === luxon.DateTime.fromISO(nextDate).toRelative()
+    );
+  };
+
   const timeSince = (dateTime: luxon.DateTime) => {
     const diff = dateTime.diffNow().shiftTo(...units);
     const unit = units.find((unit) => diff.get(unit) !== 0) || 'second';
@@ -200,7 +208,8 @@
                 {/if}
               </div>
             </div>
-            {#if (index != reactions.length - 1 && isTenMinutesApart(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
+
+            {#if (index != reactions.length - 1 && !shouldGroup(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
               <div
                 class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
