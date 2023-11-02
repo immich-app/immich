@@ -1,5 +1,4 @@
 <script lang="ts">
-  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import type { AssetStore } from '$lib/stores/assets.store';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { createEventDispatcher } from 'svelte';
