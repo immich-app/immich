@@ -1,5 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import EditDescriptionModal from '$lib/components/album-page/edit-description-modal.svelte';
   import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
@@ -39,7 +40,8 @@
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import ImageThumbnail from '../../../../lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+
   import {
     mdiPlus,
     mdiDotsVertical,
@@ -77,8 +79,11 @@
   let isCreatingSharedAlbum = false;
   let currentAlbumName = '';
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
+  const queryParams = new URLSearchParams($page.url.search);
+  const personId = queryParams.get('personId');
+  const options = personId ? { albumId: album.id, personId } : { albumId: album.id };
 
-  const assetStore = new AssetStore({ albumId: album.id });
+  const assetStore = new AssetStore(options);
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -311,6 +316,10 @@
       handleError(error, 'Error updating album description');
     }
   };
+
+  const handleFiterByPeople = (personId: string): void => {
+    window.location.replace(`${$page.url.pathname}?personId=${personId}`);
+  };
 </script>
 
 <header>
@@ -513,21 +522,25 @@
             </button>
           {/if}
           {#if albumPeoples.length}
-            <div class="personWrapper">
+            <div class="personsWrapper">
               {#each albumPeoples as people}
-                <a href="/people/{people.id}">
-                  <button>
+                <div class="personFilterWrapper">
+                  <a href="/people/{people.id}">
                     <ImageThumbnail
                       circle
                       shadow
                       url={api.getPeopleThumbnailUrl(people.id)}
                       altText={people.name}
-                      title={`${people.name || '<Un named>'} (${people.appears})`}
+                      title={people.name
+                        ? `${people.name}\n in ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`
+                        : `in ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
                       widthStyle="3.375rem"
                       heightStyle="3.375rem"
                     />
-                  </button></a
-                >
+                  </a>
+                  <button class="personNameFilter" on:click={() => handleFiterByPeople(people.id)}>{people.name}</button
+                  >
+                </div>
               {/each}
             </div>
           {/if}
@@ -598,10 +611,26 @@
 {/if}
 
 <style>
-  .personWrapper {
+  .personsWrapper {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+
+  .personFilterWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 4.5rem;
+  }
+
+  .personNameFilter {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: small;
+    max-width: 100%;
   }
 </style>
