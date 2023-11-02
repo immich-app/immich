@@ -27,9 +27,9 @@
 
   export let reactions: ActivityResponseDto[];
   export let user: UserResponseDto;
-  export let assetId: string;
+  export let assetId: string | undefined = undefined;
   export let albumId: string;
-  export let assetType: AssetTypeEnum;
+  export let assetType: AssetTypeEnum | undefined = undefined;
   export let albumOwnerId: string;
 
   let textArea: HTMLTextAreaElement;
@@ -51,9 +51,11 @@
   }
 
   $: {
-    if (previousAssetId != assetId) {
+    if (assetId && previousAssetId != assetId) {
       getReactions();
       previousAssetId = assetId;
+    } else if (assetId === undefined) {
+      getReactions();
     }
   }
 
@@ -161,11 +163,22 @@
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.type === 'comment'}
             <div class="flex dark:bg-gray-800 bg-gray-200 p-3 mx-2 mt-3 rounded-lg gap-4 justify-start">
-              <div>
+              <div class="flex items-center">
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
               <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
+              {#if assetId === undefined && reaction.assetId}
+                <div>
+                  <img
+                    class="rounded-lg"
+                    width="100"
+                    height="100"
+                    src={api.getAssetFileUrl(reaction.assetId, false, true)}
+                    alt=""
+                  />
+                </div>
+              {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
                   <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
@@ -196,17 +209,28 @@
             {/if}
           {:else if reaction.type === 'like'}
             <div class="relative">
-              <div class="flex p-2 mx-2 mt-2 rounded-full gap-2 items-center text-sm">
+              <div class="flex p-3 mx-2 mt-3 rounded-full gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
                 <div
                   class="w-full"
                   title={`${reaction.user.firstName} ${reaction.user.lastName} (${reaction.user.email})`}
                 >
-                  {`${reaction.user.firstName} ${reaction.user.lastName} liked this ${getAssetType(
-                    assetType,
-                  ).toLowerCase()}`}
+                  {`${reaction.user.firstName} ${reaction.user.lastName} liked ${
+                    assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'
+                  }`}
                 </div>
+                {#if assetId === undefined && reaction.assetId}
+                  <div>
+                    <img
+                      class="rounded-lg"
+                      width="100"
+                      height="100"
+                      src={api.getAssetFileUrl(reaction.assetId, false, true)}
+                      alt=""
+                    />
+                  </div>
+                {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
                   <div class="flex items-start w-fit" title="Delete like">
                     <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>

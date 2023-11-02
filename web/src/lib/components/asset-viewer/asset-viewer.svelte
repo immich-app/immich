@@ -33,21 +33,13 @@
   import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import {
-    mdiChevronLeft,
-    mdiHeartOutline,
-    mdiHeart,
-    mdiCommentOutline,
-    mdiChevronRight,
-    mdiClose,
-    mdiImageBrokenVariant,
-    mdiPause,
-    mdiPlay,
-  } from '@mdi/js';
+  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import ActivityViewer from './activity-viewer.svelte';
+  import ActivityStatus from './activity-status.svelte';
+  import { updateNumberOfComments } from '$lib/stores/activity.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -99,6 +91,16 @@
       $stackAssetsStore = [];
     }
   }
+
+  const handleAddComment = () => {
+    numberOfComments++;
+    updateNumberOfComments(true);
+  };
+
+  const handleRemoveComment = () => {
+    numberOfComments--;
+    updateNumberOfComments(false);
+  };
 
   const handleFavorite = async () => {
     if (album) {
@@ -603,27 +605,15 @@
             on:onVideoStarted={handleVideoStarted}
           />
         {/if}
-        {#if isShared}
+        {#if isShared && !isSlideshowMode}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
-            <div
-              class="w-full h-14 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
-            >
-              <button on:click={handleFavorite}>
-                <div class="items-center justify-center">
-                  <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={24} />
-                </div>
-              </button>
-              <button on:click={handleOpenActivity}>
-                <div class="flex gap-2 items-center justify-center">
-                  <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={24} />
-                  {#if numberOfComments}
-                    <div class="text-xl">{numberOfComments}</div>
-                  {:else if !isShowActivity && !$isShowDetail}
-                    <div class="text-lg">Say something</div>
-                  {/if}
-                </div>
-              </button>
-            </div>
+            <ActivityStatus
+              {isLiked}
+              {numberOfComments}
+              {isShowActivity}
+              on:favorite={handleFavorite}
+              on:openActivityTab={handleOpenActivity}
+            />
           </div>
         {/if}
       {/key}
@@ -695,7 +685,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
       translate="yes"
     >
       <ActivityViewer
@@ -705,8 +695,8 @@
         albumId={album.id}
         assetId={asset.id}
         bind:reactions
-        on:addComment={() => numberOfComments++}
-        on:deleteComment={() => numberOfComments--}
+        on:addComment={handleAddComment}
+        on:deleteComment={handleRemoveComment}
         on:deleteLike={() => (isLiked = null)}
         on:close={() => (isShowActivity = false)}
       />
