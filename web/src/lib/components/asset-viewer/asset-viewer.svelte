@@ -29,25 +29,24 @@
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetStore } from '$lib/stores/assets.store';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { featureFlags } from '$lib/stores/server-config.store';
   import {
-    mdiChevronLeft,
     mdiHeartOutline,
     mdiHeart,
     mdiCommentOutline,
+    mdiChevronLeft,
     mdiChevronRight,
-    mdiClose,
     mdiImageBrokenVariant,
-    mdiPause,
-    mdiPlay,
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
   import ActivityViewer from './activity-viewer.svelte';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import SlideshowBar from './slideshow-bar.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -61,6 +60,14 @@
   export let album: AlbumResponseDto | null = null;
 
   let reactions: ActivityResponseDto[] = [];
+
+  const { setAssetId } = assetViewingStore;
+  const {
+    restartProgress: restartSlideshowProgress,
+    stopProgress: stopSlideshowProgress,
+    slideshowShuffle,
+    slideshowState,
+  } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -82,6 +89,8 @@
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
+  let slideshowStateUnsubscribe: () => void;
+  let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
@@ -162,6 +171,23 @@
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
 
+    slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
+      if (value === SlideshowState.PlaySlideshow) {
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset.id);
+        handlePlaySlideshow();
+      } else if (value === SlideshowState.StopSlideshow) {
+        handleStopSlideshow();
+      }
+    });
+
+    shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
+      if (value) {
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset.id);
+      }
+    });
+
     if (!sharedLink) {
       await getAllAlbums();
     }
@@ -184,6 +210,14 @@
   onDestroy(() => {
     if (browser) {
       document.removeEventListener('keydown', onKeyboardPress);
+    }
+
+    if (slideshowStateUnsubscribe) {
+      slideshowStateUnsubscribe();
+    }
+
+    if (shuffleSlideshowUnsubscribe) {
+      shuffleSlideshowUnsubscribe();
     }
   });
 
@@ -263,11 +297,31 @@
 
   const closeViewer = () => dispatch('close');
 
+  const navigateAssetRandom = async () => {
+    if (!assetStore) {
+      return;
+    }
+
+    const asset = await assetStore.getRandomAsset();
+    if (!asset) {
+      return;
+    }
+
+    slideshowHistory.queue(asset.id);
+
+    setAssetId(asset.id);
+    $restartSlideshowProgress = true;
+  };
+
   const navigateAssetForward = async (e?: Event) => {
-    if (isSlideshowMode && assetStore && progressBar) {
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
+      return slideshowHistory.next() || navigateAssetRandom();
+    }
+
+    if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext = await assetStore.getNextAssetId(asset.id);
       if (hasNext) {
-        progressBar.restart(true);
+        $restartSlideshowProgress = true;
       } else {
         await handleStopSlideshow();
       }
@@ -278,8 +332,13 @@
   };
 
   const navigateAssetBackward = (e?: Event) => {
-    if (isSlideshowMode && progressBar) {
-      progressBar.restart(true);
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
+      slideshowHistory.previous();
+      return;
+    }
+
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      $restartSlideshowProgress = true;
     }
 
     e?.stopPropagation();
@@ -427,19 +486,21 @@
    * Slide show mode
    */
 
-  let isSlideshowMode = false;
   let assetViewerHtmlElement: HTMLElement;
-  let progressBar: ProgressBar;
-  let progressBarStatus: ProgressBarStatus;
+
+  const slideshowHistory = new SlideshowHistory((assetId: string) => {
+    setAssetId(assetId);
+    $restartSlideshowProgress = true;
+  });
 
   const handleVideoStarted = () => {
-    if (isSlideshowMode) {
-      progressBar.restart(false);
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      $stopSlideshowProgress = true;
     }
   };
 
   const handleVideoEnded = async () => {
-    if (isSlideshowMode) {
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
       await navigateAssetForward();
     }
   };
@@ -449,19 +510,20 @@
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
       console.error('Error entering fullscreen', error);
-    } finally {
-      isSlideshowMode = true;
+      $slideshowState = SlideshowState.StopSlideshow;
     }
   };
 
   const handleStopSlideshow = async () => {
     try {
-      await document.exitFullscreen();
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
     } catch (error) {
       console.error('Error exiting fullscreen', error);
     } finally {
-      isSlideshowMode = false;
-      progressBar.restart(false);
+      $stopSlideshowProgress = true;
+      $slideshowState = SlideshowState.None;
     }
   };
 
@@ -498,31 +560,10 @@
 <section
   id="immich-asset-viewer"
   class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
-  bind:this={assetViewerHtmlElement}
 >
-  <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
-    {#if isSlideshowMode}
-      <!-- SlideShowController -->
-      <div class="flex">
-        <div class="m-4 flex gap-2">
-          <CircleIconButton icon={mdiClose} on:click={handleStopSlideshow} title="Exit Slideshow" />
-          <CircleIconButton
-            icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
-            on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
-            title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
-          />
-          <CircleIconButton icon={mdiChevronLeft} on:click={navigateAssetBackward} title="Previous" />
-          <CircleIconButton icon={mdiChevronRight} on:click={navigateAssetForward} title="Next" />
-        </div>
-        <ProgressBar
-          autoplay
-          bind:this={progressBar}
-          bind:status={progressBarStatus}
-          on:done={navigateAssetForward}
-          duration={5000}
-        />
-      </div>
-    {:else}
+  <!-- Top navigation bar -->
+  {#if $slideshowState === SlideshowState.None}
+    <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
         isMotionPhotoPlaying={shouldPlayMotionPhoto}
@@ -545,19 +586,30 @@
         on:toggleArchive={toggleArchive}
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={handlePlaySlideshow}
+        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         on:unstack={handleUnstack}
       />
-    {/if}
-  </div>
+    </div>
+  {/if}
 
-  {#if !isSlideshowMode && showNavigation}
-    <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
+  {#if $slideshowState === SlideshowState.None && showNavigation}
+    <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
     </div>
   {/if}
+
   <!-- Asset Viewer -->
-  <div class="relative col-span-4 col-start-1 row-span-full row-start-1">
+  <div class="z-[1000] relative col-start-1 col-span-4 row-start-1 row-span-full" bind:this={assetViewerHtmlElement}>
+    {#if $slideshowState != SlideshowState.None}
+      <div class="z-[1000] absolute w-full flex">
+        <SlideshowBar
+          on:prev={navigateAssetBackward}
+          on:next={navigateAssetForward}
+          on:close={() => ($slideshowState = SlideshowState.StopSlideshow)}
+        />
+      </div>
+    {/if}
+
     {#if previewStackedAsset}
       {#key previewStackedAsset.id}
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
@@ -603,7 +655,7 @@
             on:onVideoStarted={handleVideoStarted}
           />
         {/if}
-        {#if isShared}
+        {#if $slideshowState === SlideshowState.None && isShared}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <div
               class="w-full h-14 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
@@ -665,19 +717,17 @@
     {/if}
   </div>
 
-  <!-- Stack & Stack Controller -->
-
-  {#if !isSlideshowMode && showNavigation}
-    <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
+  {#if $slideshowState === SlideshowState.None && showNavigation}
+    <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
     </div>
   {/if}
 
-  {#if !isSlideshowMode && $isShowDetail}
+  {#if $slideshowState === SlideshowState.None && $isShowDetail}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel
