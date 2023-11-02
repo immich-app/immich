@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // int memoriesDuration
+    test('to test the property `memoriesDuration`', () async {
+      // TODO
+    });
+
     // bool memoriesEnabled
     test('to test the property `memoriesEnabled`', () async {
       // TODO

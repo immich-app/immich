@@ -21,6 +21,7 @@ class UserResponseDto {
     required this.id,
     required this.isAdmin,
     required this.lastName,
+    this.memoriesDuration,
     this.memoriesEnabled,
     required this.oauthId,
     required this.profileImagePath,
@@ -51,6 +52,14 @@ class UserResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  int? memoriesDuration;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? memoriesEnabled;
 
   String oauthId;
@@ -73,6 +82,7 @@ class UserResponseDto {
      other.id == id &&
      other.isAdmin == isAdmin &&
      other.lastName == lastName &&
+     other.memoriesDuration == memoriesDuration &&
      other.memoriesEnabled == memoriesEnabled &&
      other.oauthId == oauthId &&
      other.profileImagePath == profileImagePath &&
@@ -91,6 +101,7 @@ class UserResponseDto {
     (id.hashCode) +
     (isAdmin.hashCode) +
     (lastName.hashCode) +
+    (memoriesDuration == null ? 0 : memoriesDuration!.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
@@ -99,7 +110,7 @@ class UserResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesDuration=$memoriesDuration, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -119,6 +130,11 @@ class UserResponseDto {
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
       json[r'lastName'] = this.lastName;
+    if (this.memoriesDuration != null) {
+      json[r'memoriesDuration'] = this.memoriesDuration;
+    } else {
+    //  json[r'memoriesDuration'] = null;
+    }
     if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
     } else {
@@ -152,6 +168,7 @@ class UserResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
+        memoriesDuration: mapValueOfType<int>(json, r'memoriesDuration'),
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,

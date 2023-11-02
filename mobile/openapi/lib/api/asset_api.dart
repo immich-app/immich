@@ -970,7 +970,9 @@ class AssetApi {
   /// * [int] day (required):
   ///
   /// * [int] month (required):
-  Future<Response> getMemoryLaneWithHttpInfo(int day, int month,) async {
+  ///
+  /// * [int] days:
+  Future<Response> getMemoryLaneWithHttpInfo(int day, int month, { int? days, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/memory-lane';
 
@@ -983,6 +985,9 @@ class AssetApi {
 
       queryParams.addAll(_queryParams('', 'day', day));
       queryParams.addAll(_queryParams('', 'month', month));
+    if (days != null) {
+      queryParams.addAll(_queryParams('', 'days', days));
+    }
 
     const contentTypes = <String>[];
 
@@ -1003,8 +1008,10 @@ class AssetApi {
   /// * [int] day (required):
   ///
   /// * [int] month (required):
-  Future<List<MemoryLaneResponseDto>?> getMemoryLane(int day, int month,) async {
-    final response = await getMemoryLaneWithHttpInfo(day, month,);
+  ///
+  /// * [int] days:
+  Future<List<MemoryLaneResponseDto>?> getMemoryLane(int day, int month, { int? days, }) async {
+    final response = await getMemoryLaneWithHttpInfo(day, month,  days: days, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

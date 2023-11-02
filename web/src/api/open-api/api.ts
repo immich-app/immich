@@ -1386,6 +1386,12 @@ export interface CreateUserDto {
     'lastName': string;
     /**
      * 
+     * @type {number}
+     * @memberof CreateUserDto
+     */
+    'memoriesDuration'?: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof CreateUserDto
      */
@@ -4293,6 +4299,12 @@ export interface UpdateUserDto {
     'lastName'?: string;
     /**
      * 
+     * @type {number}
+     * @memberof UpdateUserDto
+     */
+    'memoriesDuration'?: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof UpdateUserDto
      */
@@ -4450,6 +4462,12 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'lastName': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof UserResponseDto
+     */
+    'memoriesDuration'?: number;
     /**
      * 
      * @type {boolean}
@@ -7236,10 +7254,11 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * 
          * @param {number} day 
          * @param {number} month 
+         * @param {number} [days] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMemoryLane: async (day: number, month: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getMemoryLane: async (day: number, month: number, days?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'day' is not null or undefined
             assertParamExists('getMemoryLane', 'day', day)
             // verify required parameter 'month' is not null or undefined
@@ -7271,6 +7290,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (month !== undefined) {
                 localVarQueryParameter['month'] = month;
+            }
+
+            if (days !== undefined) {
+                localVarQueryParameter['days'] = days;
             }
 
 
@@ -8190,11 +8213,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * 
          * @param {number} day 
          * @param {number} month 
+         * @param {number} [days] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMemoryLane(day: number, month: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MemoryLaneResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMemoryLane(day, month, options);
+        async getMemoryLane(day: number, month: number, days?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MemoryLaneResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMemoryLane(day, month, days, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8510,7 +8534,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getMemoryLane(requestParameters: AssetApiGetMemoryLaneRequest, options?: AxiosRequestConfig): AxiosPromise<Array<MemoryLaneResponseDto>> {
-            return localVarFp.getMemoryLane(requestParameters.day, requestParameters.month, options).then((request) => request(axios, basePath));
+            return localVarFp.getMemoryLane(requestParameters.day, requestParameters.month, requestParameters.days, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8993,6 +9017,13 @@ export interface AssetApiGetMemoryLaneRequest {
      * @memberof AssetApiGetMemoryLane
      */
     readonly month: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetApiGetMemoryLane
+     */
+    readonly days?: number
 }
 
 /**
@@ -9539,7 +9570,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getMemoryLane(requestParameters: AssetApiGetMemoryLaneRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getMemoryLane(requestParameters.day, requestParameters.month, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getMemoryLane(requestParameters.day, requestParameters.month, requestParameters.days, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

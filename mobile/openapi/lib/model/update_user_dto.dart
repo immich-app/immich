@@ -19,6 +19,7 @@ class UpdateUserDto {
     required this.id,
     this.isAdmin,
     this.lastName,
+    this.memoriesDuration,
     this.memoriesEnabled,
     this.password,
     this.shouldChangePassword,
@@ -73,6 +74,14 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  int? memoriesDuration;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? memoriesEnabled;
 
   ///
@@ -107,6 +116,7 @@ class UpdateUserDto {
      other.id == id &&
      other.isAdmin == isAdmin &&
      other.lastName == lastName &&
+     other.memoriesDuration == memoriesDuration &&
      other.memoriesEnabled == memoriesEnabled &&
      other.password == password &&
      other.shouldChangePassword == shouldChangePassword &&
@@ -121,13 +131,14 @@ class UpdateUserDto {
     (id.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
     (lastName == null ? 0 : lastName!.hashCode) +
+    (memoriesDuration == null ? 0 : memoriesDuration!.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, password=$password, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UpdateUserDto[email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesDuration=$memoriesDuration, memoriesEnabled=$memoriesEnabled, password=$password, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -156,6 +167,11 @@ class UpdateUserDto {
       json[r'lastName'] = this.lastName;
     } else {
     //  json[r'lastName'] = null;
+    }
+    if (this.memoriesDuration != null) {
+      json[r'memoriesDuration'] = this.memoriesDuration;
+    } else {
+    //  json[r'memoriesDuration'] = null;
     }
     if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
@@ -194,6 +210,7 @@ class UpdateUserDto {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         lastName: mapValueOfType<String>(json, r'lastName'),
+        memoriesDuration: mapValueOfType<int>(json, r'memoriesDuration'),
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         password: mapValueOfType<String>(json, r'password'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
