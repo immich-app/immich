@@ -1,13 +1,24 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { colorTheme } from '$lib/stores/preferences.store';
   import IconButton from '../elements/buttons/icon-button.svelte';
+
+  import { appearanceSettings } from '../../stores/preferences.store';
 
   const toggleTheme = () => {
     $colorTheme = $colorTheme === 'dark' ? 'light' : 'dark';
   };
 
-  $: {
+  function checkSystemTheme() {
+    if($appearanceSettings.autoTheme) {
+      const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      $colorTheme = darkModeMediaQuery.matches ? 'dark' : 'light';
+      changeTheme()
+    }
+  };
+
+  function changeTheme() {
     if (browser) {
       if ($colorTheme === 'light') {
         document.documentElement.classList.remove('dark');
@@ -15,7 +26,21 @@
         document.documentElement.classList.add('dark');
       }
     }
+  };
+
+  $: {
+    const theme = $colorTheme;
+    changeTheme();
   }
+
+  $: {
+    const autoTheme = $appearanceSettings.autoTheme;
+    checkSystemTheme();
+  }
+
+  onMount(() => {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkSystemTheme);
+  });
 </script>
 
 <IconButton on:click={toggleTheme} title="Toggle theme">
