@@ -29,6 +29,7 @@
   import { AppRoute, dateFormats } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { downloadArchive } from '$lib/utils/asset-utils';
@@ -57,7 +58,8 @@
 
   export let data: PageData;
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
+  let { slideshowState, slideshowShuffle } = slideshowStore;
 
   let album = data.album;
   $: album = data.album;
@@ -173,6 +175,14 @@
       getNumberOfComments();
     }
   });
+
+  const handleStartSlideshow = async () => {
+    const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
+    if (asset) {
+      setAssetId(asset.id);
+      $slideshowState = SlideshowState.PlaySlideshow;
+    }
+  };
 
   const handleEscape = () => {
     if (viewMode === ViewMode.SELECT_USERS) {
@@ -412,16 +422,18 @@
             />
 
             {#if isOwned}
-              <CircleIconButton
-                title="Share"
-                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-                icon={mdiShareVariantOutline}
-              />
-              <CircleIconButton
-                title="Delete album"
-                on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
-                icon={mdiDeleteOutline}
-              />
+              <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
+                <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
+                  {#if viewMode === ViewMode.ALBUM_OPTIONS}
+                    <ContextMenu {...contextMenuPosition}>
+                      {#if album.assetCount !== 0}
+                        <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
+                      {/if}
+                      <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
+                    </ContextMenu>
+                  {/if}
+                </CircleIconButton>
+              </div>
             {/if}
 
             {#if album.assetCount > 0}
