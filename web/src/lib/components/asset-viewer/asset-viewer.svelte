@@ -142,6 +142,8 @@
         });
         if (data.length > 0) {
           isLiked = data[0];
+        } else {
+          isLiked = null;
         }
       } catch (error) {
         handleError(error, "Can't get Favorite");
