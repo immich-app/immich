@@ -82,7 +82,7 @@
   let isCreatingSharedAlbum = false;
   let currentAlbumName = '';
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
-  let isShowActivity = true;
+  let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
   let user = data.user;
