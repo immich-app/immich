@@ -57,6 +57,14 @@ export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings-1', 
   sharing: true,
 });
 
+export interface AppearanceSettings {
+  autoTheme: boolean;
+}
+
+export const appearanceSettings = persisted<AppearanceSettings>('appearance-settings-1', {
+  autoTheme: false,
+});
+
 export enum AlbumViewMode {
   Cover = 'Cover',
   List = 'List',
