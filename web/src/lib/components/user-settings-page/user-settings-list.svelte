@@ -35,6 +35,10 @@
   <UserAPIKeyList bind:keys />
 </SettingAccordion>
 
+<SettingAccordion title="Appearance" subtitle="Manage the appearance of Immich">
+  <AppearanceSettings />
+</SettingAccordion>
+
 <SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
   <DeviceList bind:devices />
 </SettingAccordion>
@@ -67,8 +71,4 @@
 
 <SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
   <SidebarSettings />
-</SettingAccordion>
-
-<SettingAccordion title="Appearance" subtitle="Manage the appearance of Immich">
-  <AppearanceSettings />
 </SettingAccordion>
