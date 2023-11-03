@@ -206,31 +206,25 @@ class AlbumViewerAppbar extends HookConsumerWidget
             ).tr(),
             onTap: () => onShareAssetsTo(),
           ),
-          if (album.ownerId == userId)
-          ListTile(
+          album.ownerId == userId ? ListTile(
             leading: const Icon(Icons.delete_sweep_rounded),
             title: const Text(
               'album_viewer_appbar_share_remove',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
             onTap: () => onRemoveFromAlbumPressed(),
-          )
-          else
-          const SizedBox(),
+          ) : const SizedBox(),
         ];
       } else {
         return [
-        if (album.ownerId == userId)
-          ListTile(
+          album.ownerId == userId ? ListTile(
             leading: const Icon(Icons.delete_forever_rounded),
             title: const Text(
               'album_viewer_appbar_share_delete',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
             onTap: () => onDeleteAlbumPressed(),
-          )
-          else
-          ListTile(
+          ) : ListTile(
             leading: const Icon(Icons.person_remove_rounded),
             title: const Text(
               'album_viewer_appbar_share_leave',
