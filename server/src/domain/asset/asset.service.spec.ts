@@ -331,17 +331,17 @@ describe(AssetService.name, () => {
     });
   });
 
-  describe('getByTimeBucket', () => {
+  describe('getTimeBucket', () => {
     it('should return the assets for a album time bucket if user has album.read', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
-      assetMock.getByTimeBucket.mockResolvedValue([assetStub.image]);
+      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
 
       await expect(
-        sut.getByTimeBucket(authStub.admin, { size: TimeBucketSize.DAY, timeBucket: 'bucket', albumId: 'album-id' }),
+        sut.getTimeBucket(authStub.admin, { size: TimeBucketSize.DAY, timeBucket: 'bucket', albumId: 'album-id' }),
       ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
 
       expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-id');
-      expect(assetMock.getByTimeBucket).toBeCalledWith('bucket', {
+      expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
         albumId: 'album-id',
@@ -349,17 +349,17 @@ describe(AssetService.name, () => {
     });
 
     it('should return the assets for a archive time bucket if user has archive.read', async () => {
-      assetMock.getByTimeBucket.mockResolvedValue([assetStub.image]);
+      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
 
       await expect(
-        sut.getByTimeBucket(authStub.admin, {
+        sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
           isArchived: true,
           userId: authStub.admin.id,
         }),
       ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
-      expect(assetMock.getByTimeBucket).toBeCalledWith('bucket', {
+      expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
         isArchived: true,
@@ -368,16 +368,16 @@ describe(AssetService.name, () => {
     });
 
     it('should return the assets for a library time bucket if user has library.read', async () => {
-      assetMock.getByTimeBucket.mockResolvedValue([assetStub.image]);
+      assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
 
       await expect(
-        sut.getByTimeBucket(authStub.admin, {
+        sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
           userId: authStub.admin.id,
         }),
       ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
-      expect(assetMock.getByTimeBucket).toBeCalledWith('bucket', {
+      expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
         userId: authStub.admin.id,

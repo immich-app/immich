@@ -58,10 +58,10 @@ final api_instance = APIKeyApi();
 final aPIKeyCreateDto = APIKeyCreateDto(); // APIKeyCreateDto | 
 
 try {
-    final result = api_instance.createKey(aPIKeyCreateDto);
+    final result = api_instance.createApiKey(aPIKeyCreateDto);
     print(result);
 } catch (e) {
-    print('Exception when calling APIKeyApi->createKey: $e\n');
+    print('Exception when calling APIKeyApi->createApiKey: $e\n');
 }
 
 ```
@@ -72,11 +72,11 @@ All URIs are relative to */api*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*APIKeyApi* | [**createKey**](doc//APIKeyApi.md#createkey) | **POST** /api-key | 
-*APIKeyApi* | [**deleteKey**](doc//APIKeyApi.md#deletekey) | **DELETE** /api-key/{id} | 
-*APIKeyApi* | [**getKey**](doc//APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
-*APIKeyApi* | [**getKeys**](doc//APIKeyApi.md#getkeys) | **GET** /api-key | 
-*APIKeyApi* | [**updateKey**](doc//APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
+*APIKeyApi* | [**createApiKey**](doc//APIKeyApi.md#createapikey) | **POST** /api-key | 
+*APIKeyApi* | [**deleteApiKey**](doc//APIKeyApi.md#deleteapikey) | **DELETE** /api-key/{id} | 
+*APIKeyApi* | [**getApiKey**](doc//APIKeyApi.md#getapikey) | **GET** /api-key/{id} | 
+*APIKeyApi* | [**getApiKeys**](doc//APIKeyApi.md#getapikeys) | **GET** /api-key | 
+*APIKeyApi* | [**updateApiKey**](doc//APIKeyApi.md#updateapikey) | **PUT** /api-key/{id} | 
 *ActivityApi* | [**createActivity**](doc//ActivityApi.md#createactivity) | **POST** /activity | 
 *ActivityApi* | [**deleteActivity**](doc//ActivityApi.md#deleteactivity) | **DELETE** /activity/{id} | 
 *ActivityApi* | [**getActivities**](doc//ActivityApi.md#getactivities) | **GET** /activity | 
@@ -91,7 +91,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
-*AssetApi* | [**bulkUploadCheck**](doc//AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
+*AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
 *AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
@@ -100,15 +100,15 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
-*AssetApi* | [**getAssetStats**](doc//AssetApi.md#getassetstats) | **GET** /asset/statistics | 
+*AssetApi* | [**getAssetStatistics**](doc//AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-*AssetApi* | [**getByTimeBucket**](doc//AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
+*AssetApi* | [**getTimeBucket**](doc//AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**importFile**](doc//AssetApi.md#importfile) | **POST** /asset/import | 
@@ -125,30 +125,30 @@ Class | Method | HTTP request | Description
 *AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 *AuditApi* | [**getAuditFiles**](doc//AuditApi.md#getauditfiles) | **GET** /audit/file-report | 
 *AuditApi* | [**getFileChecksums**](doc//AuditApi.md#getfilechecksums) | **POST** /audit/file-report/checksum | 
-*AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**getAuthDevices**](doc//AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**logoutAuthDevice**](doc//AuthenticationApi.md#logoutauthdevice) | **DELETE** /auth/devices/{id} | 
 *AuthenticationApi* | [**logoutAuthDevices**](doc//AuthenticationApi.md#logoutauthdevices) | **DELETE** /auth/devices | 
+*AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
 *LibraryApi* | [**deleteLibrary**](doc//LibraryApi.md#deletelibrary) | **DELETE** /library/{id} | 
-*LibraryApi* | [**getAllForUser**](doc//LibraryApi.md#getallforuser) | **GET** /library | 
+*LibraryApi* | [**getLibraries**](doc//LibraryApi.md#getlibraries) | **GET** /library | 
 *LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 *LibraryApi* | [**getLibraryStatistics**](doc//LibraryApi.md#getlibrarystatistics) | **GET** /library/{id}/statistics | 
 *LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
-*OAuthApi* | [**authorizeOAuth**](doc//OAuthApi.md#authorizeoauth) | **POST** /oauth/authorize | 
-*OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
-*OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
-*OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
-*OAuthApi* | [**mobileRedirect**](doc//OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
-*OAuthApi* | [**unlink**](doc//OAuthApi.md#unlink) | **POST** /oauth/unlink | 
+*OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
+*OAuthApi* | [**generateOAuthConfig**](doc//OAuthApi.md#generateoauthconfig) | **POST** /oauth/config | 
+*OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
+*OAuthApi* | [**redirectOAuthToMobile**](doc//OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
+*OAuthApi* | [**startOAuth**](doc//OAuthApi.md#startoauth) | **POST** /oauth/authorize | 
+*OAuthApi* | [**unlinkOAuthAccount**](doc//OAuthApi.md#unlinkoauthaccount) | **POST** /oauth/unlink | 
 *PartnerApi* | [**createPartner**](doc//PartnerApi.md#createpartner) | **POST** /partner/{id} | 
 *PartnerApi* | [**getPartners**](doc//PartnerApi.md#getpartners) | **GET** /partner | 
 *PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
@@ -166,8 +166,8 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerConfig**](doc//ServerInfoApi.md#getserverconfig) | **GET** /server-info/config | 
 *ServerInfoApi* | [**getServerFeatures**](doc//ServerInfoApi.md#getserverfeatures) | **GET** /server-info/features | 
 *ServerInfoApi* | [**getServerInfo**](doc//ServerInfoApi.md#getserverinfo) | **GET** /server-info | 
+*ServerInfoApi* | [**getServerStatistics**](doc//ServerInfoApi.md#getserverstatistics) | **GET** /server-info/statistics | 
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
-*ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
 *ServerInfoApi* | [**getTheme**](doc//ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
@@ -180,7 +180,7 @@ Class | Method | HTTP request | Description
 *SharedLinkApi* | [**removeSharedLinkAssets**](doc//SharedLinkApi.md#removesharedlinkassets) | **DELETE** /shared-link/{id}/assets | 
 *SharedLinkApi* | [**updateSharedLink**](doc//SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-link/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
-*SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
+*SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 

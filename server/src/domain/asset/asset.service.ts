@@ -199,7 +199,7 @@ export class AssetService {
     dto: TimeBucketAssetDto,
   ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    const assets = await this.assetRepository.getByTimeBucket(dto.timeBucket, dto);
+    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, dto);
     if (authUser.isShowMetadata) {
       return assets.map((asset) => mapAsset(asset, { withStack: true }));
     } else {
