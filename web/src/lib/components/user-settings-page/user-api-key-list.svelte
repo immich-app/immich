@@ -25,14 +25,14 @@
   };
 
   async function refreshKeys() {
-    const { data } = await api.keyApi.getKeys();
+    const { data } = await api.keyApi.getApiKeys();
     keys = data;
   }
 
   const handleCreate = async (event: CustomEvent<APIKeyResponseDto>) => {
     try {
       const dto = event.detail;
-      const { data } = await api.keyApi.createKey({ aPIKeyCreateDto: dto });
+      const { data } = await api.keyApi.createApiKey({ aPIKeyCreateDto: dto });
       secret = data.secret;
     } catch (error) {
       handleError(error, 'Unable to create a new API Key');
@@ -50,7 +50,7 @@
     const dto = event.detail;
 
     try {
-      await api.keyApi.updateKey({ id: editKey.id, aPIKeyUpdateDto: { name: dto.name } });
+      await api.keyApi.updateApiKey({ id: editKey.id, aPIKeyUpdateDto: { name: dto.name } });
       notificationController.show({
         message: `Saved API Key`,
         type: NotificationType.Info,
@@ -69,7 +69,7 @@
     }
 
     try {
-      await api.keyApi.deleteKey({ id: deleteKey.id });
+      await api.keyApi.deleteApiKey({ id: deleteKey.id });
       notificationController.show({
         message: `Removed API Key: ${deleteKey.name}`,
         type: NotificationType.Info,

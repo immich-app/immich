@@ -36,23 +36,19 @@ export const oauth = {
   authorize: async (location: Location) => {
     try {
       const redirectUri = location.href.split('?')[0];
-      const { data } = await api.oauthApi.authorizeOAuth({ oAuthConfigDto: { redirectUri } });
+      const { data } = await api.oauthApi.startOAuth({ oAuthConfigDto: { redirectUri } });
       goto(data.url);
     } catch (error) {
       handleError(error, 'Unable to login with OAuth');
     }
   },
-  getConfig: (location: Location) => {
-    const redirectUri = location.href.split('?')[0];
-    return api.oauthApi.generateConfig({ oAuthConfigDto: { redirectUri } });
-  },
   login: (location: Location) => {
-    return api.oauthApi.callback({ oAuthCallbackDto: { url: location.href } });
+    return api.oauthApi.finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
   link: (location: Location): AxiosPromise<UserResponseDto> => {
-    return api.oauthApi.link({ oAuthCallbackDto: { url: location.href } });
+    return api.oauthApi.linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {
-    return api.oauthApi.unlink();
+    return api.oauthApi.unlinkOAuthAccount();
   },
 };

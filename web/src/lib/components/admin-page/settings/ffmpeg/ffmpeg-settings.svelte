@@ -32,7 +32,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.ffmpeg),
-      api.systemConfigApi.getDefaults().then((res) => res.data.ffmpeg),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.ffmpeg),
     ]);
   }
 
@@ -76,7 +76,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     ffmpegConfig = { ...configs.ffmpeg };
     defaultConfig = { ...configs.ffmpeg };

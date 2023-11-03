@@ -194,7 +194,7 @@ export class AssetService {
     return this.assetRepository.getTimeBuckets(dto);
   }
 
-  async getByTimeBucket(
+  async getTimeBucket(
     authUser: AuthUserDto,
     dto: TimeBucketAssetDto,
   ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {

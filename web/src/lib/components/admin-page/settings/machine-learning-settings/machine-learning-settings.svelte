@@ -22,7 +22,7 @@
   async function refreshConfig() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.machineLearning),
-      api.systemConfigApi.getDefaults().then((res) => res.data.machineLearning),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.machineLearning),
     ]);
   }
 
