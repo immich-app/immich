@@ -81,11 +81,11 @@
     }
   }
 
-  // function onViewAssets(assetIds: string[], activeAssetIndex: number) {
-  //   assetViewingStore.setAssetId(assetIds[activeAssetIndex]);
-  //   viewingAssets = assetIds;
-  //   viewingAssetCursor = activeAssetIndex;
-  // }
+  function onViewAssets(assetIds: string[]) {
+    assetViewingStore.setAssetId(assetIds[0]);
+    viewingAssets = assetIds;
+    viewingAssetCursor = 0;
+  }
 
   function navigateNext() {
     if (viewingAssetCursor < viewingAssets.length - 1) {
@@ -103,7 +103,7 @@
 {#if $featureFlags.loaded && $featureFlags.map}
   <UserPageLayout user={data.user} title={data.meta.title}>
     <div class="isolate h-full w-full">
-      <Map bind:mapMarkers bind:showSettingsModal />
+      <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
     </div></UserPageLayout
   >
   <Portal target="body">
@@ -114,6 +114,7 @@
         on:next={navigateNext}
         on:previous={navigatePrevious}
         on:close={() => assetViewingStore.showAssetViewer(false)}
+        isShared={false}
       />
     {/if}
   </Portal>

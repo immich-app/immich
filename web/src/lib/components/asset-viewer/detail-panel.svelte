@@ -287,7 +287,21 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} />
+    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+      <svelte:fragment slot="popup" let:marker>
+        {@const { lat, lon } = marker}
+        <div class="flex flex-col items-center gap-1">
+          <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+          <a
+            href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+            target="_blank"
+            class="font-medium text-immich-primary"
+          >
+            Open in OpenStreetMap
+          </a>
+        </div>
+      </svelte:fragment>
+    </Map>
   </div>
 {/if}
 

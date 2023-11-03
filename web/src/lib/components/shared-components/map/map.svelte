@@ -7,27 +7,90 @@
     ControlButton,
     Control,
     ControlGroup,
+    Map,
+    FullscreenControl,
+    GeolocateControl,
+    NavigationControl,
+    ScaleControl,
+    Popup,
   } from 'svelte-maplibre';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { MapMarkerResponseDto, api } from '@api';
-  import type { LngLatLike, StyleSpecification } from 'maplibre-gl';
+  import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
+  import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiCog } from '@mdi/js';
+  import { createEventDispatcher } from 'svelte';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
   export let zoom: number | undefined = undefined;
   export let center: LngLatLike | undefined = undefined;
+  export let simplified = false;
 
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({ theme: $mapSettings.allowDarkMode ? 'dark' : 'light' });
     return data as StyleSpecification;
   })();
+
+  const dispatch = createEventDispatcher<{ selected: string[] }>();
+
+  function handleAssetClick(assetId: string, map: Map | null) {
+    if (!map) {
+      return;
+    }
+    dispatch('selected', [assetId]);
+  }
+
+  function handleClusterClick(clusterId: number, map: Map | null) {
+    if (!map) {
+      return;
+    }
+
+    const mapSource = map?.getSource('geojson') as GeoJSONSource;
+    mapSource.getClusterLeaves(clusterId, 10000, 0, (error, leaves) => {
+      if (error) {
+        return;
+      }
+
+      if (leaves) {
+        const ids = leaves.map((leaf) => leaf.properties?.id);
+        dispatch('selected', ids);
+      }
+    });
+  }
+
+  type FeaturePoint = Feature<Point, { id: string }>;
+
+  const asFeature = (marker: MapMarkerResponseDto): FeaturePoint => {
+    return {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [marker.lon, marker.lat] },
+      properties: {
+        id: marker.id,
+      },
+    };
+  };
+
+  const asMarker = (feature: Feature<Geometry, GeoJsonProperties>): MapMarkerResponseDto => {
+    const featurePoint = feature as FeaturePoint;
+    return {
+      lat: featurePoint.geometry.coordinates[0],
+      lon: featurePoint.geometry.coordinates[1],
+      id: featurePoint.properties.id,
+    };
+  };
 </script>
 
 {#await style then style}
-  <MapLibre {style} class="h-full" {center} {zoom} standardControls attributionControl={false}>
-    <AttributionControl compact={false} customAttribution={'Thanks to Cofractal for providing their tile servers!'} />
+  <MapLibre {style} class="h-full" {center} {zoom} attributionControl={false} let:map>
+    <NavigationControl position="top-left" showCompass={!simplified} />
+    {#if !simplified}
+      <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} />
+      <FullscreenControl position="top-left" />
+      <ScaleControl />
+      <AttributionControl compact={false} customAttribution={'Thanks to Cofractal for providing their tile servers!'} />
+    {/if}
     {#if showSettingsModal !== undefined}
       <Control>
         <ControlGroup>
@@ -39,38 +102,43 @@
       data={{
         type: 'FeatureCollection',
         features: mapMarkers.map((marker) => {
-          return {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [marker.lon, marker.lat] },
-            properties: {
-              id: marker.id,
-            },
-          };
+          return asFeature(marker);
         }),
       }}
+      id="geojson"
       cluster={{ maxZoom: 14, radius: 500 }}
     >
-      <MarkerLayer applyToClusters interactive let:feature>
+      <MarkerLayer
+        applyToClusters
+        asButton
+        let:feature
+        on:click={(event) => {
+          handleClusterClick(event.detail.feature.properties.cluster_id, map);
+        }}
+      >
         <div class="rounded-full w-[40px] h-[40px] bg-blue-200 flex justify-center items-center">
           {feature.properties?.point_count}
         </div>
       </MarkerLayer>
-      <MarkerLayer applyToClusters={false} let:feature>
+      <MarkerLayer
+        applyToClusters={false}
+        asButton
+        let:feature
+        on:click={(event) => {
+          $$slots.popup || handleAssetClick(event.detail.feature.properties.id, map);
+        }}
+      >
         <img
           src={api.getAssetFileUrl(feature.properties?.id)}
           class="rounded-full w-[60px] h-[60px]"
           alt={`Image with id ${feature.properties?.id}`}
         />
+        {#if $$slots.popup}
+          <Popup openOn="click" closeOnClickOutside>
+            <slot name="popup" marker={asMarker(feature)} />
+          </Popup>
+        {/if}
       </MarkerLayer>
     </GeoJSON>
-    <!-- {#each mapMarkers as { id, lat, lon }}
-    <Marker
-      lngLat={{ lng: lon, lat }}
-      class="w-[60px] h-[60px] flex justify-center items-center"
-      on:click={() => assetViewingStore.setAssetId(id)}
-    >
-      <img src={api.getAssetFileUrl(id)} class="rounded-full w-[60px] h-[60px]" />
-    </Marker>
-  {/each} -->
   </MapLibre>
 {/await}
