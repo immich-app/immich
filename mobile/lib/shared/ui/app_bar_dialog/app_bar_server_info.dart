@@ -182,19 +182,36 @@ class AppBarServerInfo extends HookConsumerWidget {
                     child: Container(
                       width: 200,
                       padding: const EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        getServerUrl() ?? '--',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context)
-                              .textTheme
-                              .labelSmall
-                              ?.color
-                              ?.withOpacity(0.5),
-                          fontWeight: FontWeight.bold,
-                          overflow: TextOverflow.ellipsis,
+                      child: Tooltip(
+                        verticalOffset: 0,
+                        decoration: BoxDecoration(
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        textAlign: TextAlign.end,
+                        textStyle: TextStyle(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.black
+                              : Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        message: getServerUrl() ?? '--',
+                        preferBelow: false,
+                        triggerMode: TooltipTriggerMode.tap,
+                        child: Text(
+                          getServerUrl() ?? '--',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.color
+                                ?.withOpacity(0.5),
+                            fontWeight: FontWeight.bold,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          textAlign: TextAlign.end,
+                        ),
                       ),
                     ),
                   ),
