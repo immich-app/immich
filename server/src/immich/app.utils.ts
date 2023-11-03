@@ -82,7 +82,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
       }
 
       if (operation.operationId) {
-        console.log(`${routeToErrorMessage(operation.operationId).padEnd(40)} (${operation.operationId})`);
+        // console.log(`${routeToErrorMessage(operation.operationId).padEnd(40)} (${operation.operationId})`);
       }
 
       if (operation.description === '') {
