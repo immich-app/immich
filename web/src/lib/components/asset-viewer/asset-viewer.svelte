@@ -545,11 +545,10 @@
       await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
       for (const child of $stackAssetsStore) {
         child.stackParentId = null;
+        child.stackCount = 0;
+        child.stack = [];
         assetStore?.addAsset(child);
       }
-      asset.stackCount = 0;
-      asset.stack = [];
-      assetStore?.updateAsset(asset, true);
 
       dispatch('unstack');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
