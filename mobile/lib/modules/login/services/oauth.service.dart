@@ -30,7 +30,7 @@ class OAuthService {
       );
 
       return await _apiService.oAuthApi.finishOAuth(
-        OAuthCallbackDto
+        OAuthCallbackDto(
           url: result,
         ),
       );
