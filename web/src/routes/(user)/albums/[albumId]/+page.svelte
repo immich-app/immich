@@ -86,6 +86,8 @@
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
   let user = data.user;
+  // little hack to make the asset grid shrink
+  let reRenderAssetGrid = false;
 
   const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
@@ -118,6 +120,11 @@
       isCreatingSharedAlbum = true;
     }
   });
+
+  const handleCloseActivityTab = () => {
+    reRenderAssetGrid = !reRenderAssetGrid;
+    isShowActivity = false;
+  };
 
   const handleFavorite = async () => {
     try {
@@ -503,7 +510,7 @@
     <main
       class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
     >
-      {#key isShowActivity}
+      {#key reRenderAssetGrid}
         {#if viewMode === ViewMode.SELECT_ASSETS}
           <AssetGrid
             user={data.user}
@@ -650,7 +657,7 @@
           on:addComment={() => updateNumberOfComments(1)}
           on:deleteComment={() => updateNumberOfComments(-1)}
           on:deleteLike={() => (isLiked = null)}
-          on:close={() => (isShowActivity = false)}
+          on:close={handleCloseActivityTab}
         />
       </div>
     </div>
