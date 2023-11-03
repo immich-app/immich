@@ -86,8 +86,6 @@
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
   let user = data.user;
-  // little hack to make the asset grid shrink
-  let reRenderAssetGrid = false;
 
   const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
@@ -120,11 +118,6 @@
       isCreatingSharedAlbum = true;
     }
   });
-
-  const handleCloseActivityTab = () => {
-    reRenderAssetGrid = !reRenderAssetGrid;
-    isShowActivity = false;
-  };
 
   const handleFavorite = async () => {
     try {
@@ -172,7 +165,7 @@
     }
   };
 
-  const handleOpenActivity = () => {
+  const handleOpenAndCloseActivityTab = () => {
     isShowActivity = !isShowActivity;
   };
 
@@ -510,124 +503,123 @@
     <main
       class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
     >
-      {#key reRenderAssetGrid}
-        {#if viewMode === ViewMode.SELECT_ASSETS}
-          <AssetGrid
-            user={data.user}
-            assetStore={timelineStore}
-            assetInteractionStore={timelineInteractionStore}
-            isSelectionMode={true}
-          />
-        {:else}
-          <AssetGrid
-            {album}
-            user={data.user}
-            {assetStore}
-            {assetInteractionStore}
-            isShared={album.sharedUsers.length > 0}
-            isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
-            singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
-            on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
-            on:escape={handleEscape}
-          >
-            {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
-              <!-- ALBUM TITLE -->
-              <section class="pt-24">
-                <input
-                  on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
-                  on:blur={handleUpdateName}
-                  class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
-                    ? 'hover:border-gray-400'
-                    : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
-                  type="text"
-                  bind:value={album.albumName}
-                  disabled={!isOwned}
-                  bind:this={titleInput}
-                  title="Edit Title"
-                />
+      {#if viewMode === ViewMode.SELECT_ASSETS}
+        <AssetGrid
+          user={data.user}
+          assetStore={timelineStore}
+          assetInteractionStore={timelineInteractionStore}
+          isSelectionMode={true}
+        />
+      {:else}
+        <AssetGrid
+          {album}
+          user={data.user}
+          {assetStore}
+          {assetInteractionStore}
+          isShared={album.sharedUsers.length > 0}
+          isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
+          singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
+          on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
+          on:escape={handleEscape}
+        >
+          {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
+            <!-- ALBUM TITLE -->
+            <section class="pt-24">
+              <input
+                on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
+                on:blur={handleUpdateName}
+                class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
+                  ? 'hover:border-gray-400'
+                  : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
+                type="text"
+                bind:value={album.albumName}
+                disabled={!isOwned}
+                bind:this={titleInput}
+                title="Edit Title"
+              />
 
-                <!-- ALBUM SUMMARY -->
-                {#if album.assetCount > 0}
-                  <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
-                    <p class="">{getDateRange()}</p>
-                    <p>·</p>
-                    <p>{album.assetCount} items</p>
-                  </span>
-                {/if}
+              <!-- ALBUM SUMMARY -->
+              {#if album.assetCount > 0}
+                <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
+                  <p class="">{getDateRange()}</p>
+                  <p>·</p>
+                  <p>{album.assetCount} items</p>
+                </span>
+              {/if}
 
-                <!-- ALBUM SHARING -->
-                {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
-                  <div class="my-6 flex gap-x-1">
-                    <!-- link -->
-                    {#if album.hasSharedLink && isOwned}
-                      <CircleIconButton
-                        backgroundColor="#d3d3d3"
-                        forceDark
-                        size="20"
-                        icon={mdiLink}
-                        on:click={() => (viewMode = ViewMode.LINK_SHARING)}
-                      />
-                    {/if}
+              <!-- ALBUM SHARING -->
+              {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                <div class="my-6 flex gap-x-1">
+                  <!-- link -->
+                  {#if album.hasSharedLink && isOwned}
+                    <CircleIconButton
+                      backgroundColor="#d3d3d3"
+                      forceDark
+                      size="20"
+                      icon={mdiLink}
+                      on:click={() => (viewMode = ViewMode.LINK_SHARING)}
+                    />
+                  {/if}
 
-                    <!-- owner -->
+                  <!-- owner -->
+                  <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <UserAvatar user={album.owner} size="md" autoColor />
+                  </button>
+
+                  <!-- users -->
+                  {#each album.sharedUsers as user (user.id)}
                     <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                      <UserAvatar user={album.owner} size="md" autoColor />
+                      <UserAvatar {user} size="md" autoColor />
                     </button>
+                  {/each}
 
-                    <!-- users -->
-                    {#each album.sharedUsers as user (user.id)}
-                      <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                        <UserAvatar {user} size="md" autoColor />
-                      </button>
-                    {/each}
-
-                    {#if isOwned}
-                      <CircleIconButton
-                        backgroundColor="#d3d3d3"
-                        forceDark
-                        size="20"
-                        icon={mdiPlus}
-                        on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-                        title="Add more users"
-                      />
-                    {/if}
-                  </div>
-                {/if}
-
-                <!-- ALBUM DESCRIPTION -->
-                {#if isOwned || album.description}
-                  <button
-                    class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
-                    on:click={() => (isEditingDescription = true)}
-                    class:hover:border-gray-400={isOwned}
-                    disabled={!isOwned}
-                    title="Edit description"
-                  >
-                    {album.description || 'Add description'}
-                  </button>
-                {/if}
-              </section>
-            {/if}
-
-            {#if album.assetCount === 0}
-              <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
-                <div class="w-[300px]">
-                  <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
-                  <button
-                    on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-                    class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-                  >
-                    <span class="text-text-immich-primary dark:text-immich-dark-primary"
-                      ><Icon path={mdiPlus} size="24" />
-                    </span>
-                    <span class="text-lg">Select photos</span>
-                  </button>
+                  {#if isOwned}
+                    <CircleIconButton
+                      backgroundColor="#d3d3d3"
+                      forceDark
+                      size="20"
+                      icon={mdiPlus}
+                      on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                      title="Add more users"
+                    />
+                  {/if}
                 </div>
-              </section>
-            {/if}
-          </AssetGrid>
-        {/if}
-      {/key}
+              {/if}
+
+              <!-- ALBUM DESCRIPTION -->
+              {#if isOwned || album.description}
+                <button
+                  class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
+                  on:click={() => (isEditingDescription = true)}
+                  class:hover:border-gray-400={isOwned}
+                  disabled={!isOwned}
+                  title="Edit description"
+                >
+                  {album.description || 'Add description'}
+                </button>
+              {/if}
+            </section>
+          {/if}
+
+          {#if album.assetCount === 0}
+            <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
+              <div class="w-[300px]">
+                <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+                <button
+                  on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                  class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                >
+                  <span class="text-text-immich-primary dark:text-immich-dark-primary"
+                    ><Icon path={mdiPlus} size="24" />
+                  </span>
+                  <span class="text-lg">Select photos</span>
+                </button>
+              </div>
+            </section>
+          {/if}
+        </AssetGrid>
+      {/if}
+
       {#if album.sharedUsers.length > 0 && !$showAssetViewer}
         <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
           <ActivityStatus
@@ -635,7 +627,7 @@
             numberOfComments={$numberOfComments}
             {isShowActivity}
             on:favorite={handleFavorite}
-            on:openActivityTab={handleOpenActivity}
+            on:openActivityTab={handleOpenAndCloseActivityTab}
           />
         </div>
       {/if}
@@ -657,7 +649,7 @@
           on:addComment={() => updateNumberOfComments(1)}
           on:deleteComment={() => updateNumberOfComments(-1)}
           on:deleteLike={() => (isLiked = null)}
-          on:close={handleCloseActivityTab}
+          on:close={handleOpenAndCloseActivityTab}
         />
       </div>
     </div>
