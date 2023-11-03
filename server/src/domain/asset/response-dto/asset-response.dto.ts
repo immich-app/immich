@@ -98,7 +98,14 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     tags: entity.tags?.map(mapTag),
     people: entity.faces
       ?.map(mapFace)
-      .filter((person): person is PersonResponseDto => person !== null && !person.isHidden),
+      .filter((person): person is PersonResponseDto => person !== null && !person.isHidden)
+      .reduce((people, person) => {
+        const existingPerson = people.find((p) => p.id === person.id);
+        if (!existingPerson) {
+          people.push(person);
+        }
+        return people;
+      }, [] as PersonResponseDto[]),
     checksum: entity.checksum.toString('base64'),
     stackParentId: entity.stackParentId,
     stack: withStack ? entity.stack?.map((a) => mapAsset(a, { stripMetadata })) ?? undefined : undefined,
