@@ -32,7 +32,7 @@
   export let showDownloadButton: boolean;
   export let showDetailButton: boolean;
   export let showSlideshow = false;
-  export let hasStackChildern = false;
+  export let hasStackChildren = false;
 
   $: isOwner = asset.ownerId === $page.data.user?.id;
 
@@ -176,7 +176,7 @@
               />
               <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
 
-              {#if hasStackChildern}
+              {#if hasStackChildren}
                 <MenuOption on:click={() => onMenuClick('unstack')} text="Un-Stack" />
               {/if}
 

@@ -317,7 +317,7 @@ export class AssetStore {
     return bucket.assets[Math.floor(Math.random() * bucket.assets.length)] || null;
   }
 
-  updateAsset(_asset: AssetResponseDto) {
+  updateAsset(_asset: AssetResponseDto, recalculate = false) {
     const asset = this.assets.find((asset) => asset.id === _asset.id);
     if (!asset) {
       return;
@@ -325,7 +325,7 @@ export class AssetStore {
 
     Object.assign(asset, _asset);
 
-    this.emit(false);
+    this.emit(recalculate);
   }
 
   removeAssets(ids: string[]) {
