@@ -50,7 +50,7 @@
   $: isTrashEnabled = $featureFlags.trash;
   export let force = false;
   export let withStacked = false;
-  export let isShared = true;
+  export let isShared = false;
   export let user: UserResponseDto | null = null;
   export let album: AlbumResponseDto | null = null;
 
