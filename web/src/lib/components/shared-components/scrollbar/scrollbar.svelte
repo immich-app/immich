@@ -27,18 +27,21 @@
     public height;
     public timeGroup;
 
-    constructor({count = 0, height = 0, timeGroup = ""}) {
+    constructor({ count = 0, height = 0, timeGroup = '' }) {
       this.count = count;
       this.height = height;
       this.timeGroup = timeGroup;
     }
   }
 
-  $: segments = $assetStore.buckets.map((bucket) => (new Segment({
-    count: bucket.assets.length,
-    height: toScrollY(bucket.bucketHeight),
-    timeGroup: bucket.bucketDate,
-  })));
+  $: segments = $assetStore.buckets.map(
+    (bucket) =>
+      new Segment({
+        count: bucket.assets.length,
+        height: toScrollY(bucket.bucketHeight),
+        timeGroup: bucket.bucketDate,
+      }),
+  );
 
   const dispatch = createEventDispatcher<{ scrollTimeline: number }>();
   const scrollTimeline = () => dispatch('scrollTimeline', toTimelineY(hoverY));
