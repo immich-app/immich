@@ -629,7 +629,7 @@
         {/if}
       {/key}
       {#if album.sharedUsers.length > 0 && !$showAssetViewer}
-        <div class="absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
+        <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
           <ActivityStatus
             {isLiked}
             numberOfComments={$numberOfComments}
