@@ -415,3 +415,9 @@ export class AssetStore {
     this.store$.update(() => this);
   }
 }
+
+export const shouldLoopVideo = writable<boolean>();
+
+export const changeShouldLoopVideo = (value: boolean) => {
+  shouldLoopVideo.set(value);
+};

@@ -67,3 +67,5 @@ export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settin
   sortDesc: true,
   view: AlbumViewMode.Cover,
 });
+
+export const loopVideoSetting = persisted<boolean>('loop-video', false, {});

@@ -1,6 +1,10 @@
 <script>
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiCheck } from '@mdi/js';
+
   export let text = '';
   export let subtitle = '';
+  export let checked = false;
 </script>
 
 <button
@@ -9,7 +13,16 @@
   role="menuitem"
 >
   {#if text}
-    {text}
+    <div class="flex">
+      <div class="w-full">
+        {text}
+      </div>
+      {#if checked}
+        <div>
+          <Icon path={mdiCheck} />
+        </div>
+      {/if}
+    </div>
   {:else}
     <slot />
   {/if}

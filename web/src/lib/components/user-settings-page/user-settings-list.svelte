@@ -13,6 +13,7 @@
   import SidebarSettings from './sidebar-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import AssetSettings from './asset-settings.svelte';
 
   export let user: UserResponseDto;
 
@@ -66,4 +67,8 @@
 
 <SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
   <SidebarSettings />
+</SettingAccordion>
+
+<SettingAccordion title="Viewing experience" subtitle="Manage the browsing experience">
+  <AssetSettings />
 </SettingAccordion>

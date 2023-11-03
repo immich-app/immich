@@ -5,6 +5,7 @@
   import { videoViewerVolume } from '$lib/stores/preferences.store';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import { shouldLoopVideo } from '$lib/stores/assets.store';
 
   export let assetId: string;
 
@@ -31,6 +32,7 @@
     autoplay
     playsinline
     controls
+    loop={$shouldLoopVideo}
     class="h-full object-contain"
     on:canplay={handleCanPlay}
     on:ended={() => dispatch('onVideoEnded')}

@@ -23,12 +23,12 @@
   import { ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import { isShowDetail } from '$lib/stores/preferences.store';
+  import { isShowDetail, loopVideoSetting } from '$lib/stores/preferences.store';
   import { addAssetsToAlbum, downloadFile, getAssetType } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
-  import type { AssetStore } from '$lib/stores/assets.store';
+  import { changeShouldLoopVideo, type AssetStore, shouldLoopVideo } from '$lib/stores/assets.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
@@ -95,6 +95,8 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let numberOfComments: number;
+
+  $: asset.id && asset.type === AssetTypeEnum.Video && changeShouldLoopVideo($loopVideoSetting);
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -590,6 +592,7 @@
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         on:unstack={handleUnstack}
+        on:loopVideo={() => changeShouldLoopVideo(!$shouldLoopVideo)}
       />
     </div>
   {/if}

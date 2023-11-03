@@ -23,6 +23,7 @@
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { shouldLoopVideo } from '$lib/stores/assets.store';
 
   export let asset: AssetResponseDto;
   export let showCopyButton: boolean;
@@ -36,7 +37,14 @@
 
   $: isOwner = asset.ownerId === $page.data.user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'unstack';
+  type MenuItemEvent =
+    | 'addToAlbum'
+    | 'addToSharedAlbum'
+    | 'asProfileImage'
+    | 'runJob'
+    | 'playSlideShow'
+    | 'unstack'
+    | 'loopVideo';
 
   const dispatch = createEventDispatcher<{
     goBack: void;
@@ -53,6 +61,7 @@
     runJob: AssetJobName;
     playSlideShow: void;
     unstack: void;
+    loopVideo: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -168,7 +177,9 @@
             {/if}
             <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
             <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
-
+            {#if asset.type === AssetTypeEnum.Video}
+              <MenuOption on:click={() => onMenuClick('loopVideo')} text="Loop video" checked={$shouldLoopVideo} />
+            {/if}
             {#if isOwner}
               <MenuOption
                 on:click={() => dispatch('toggleArchive')}
