@@ -10,8 +10,9 @@
   } from 'svelte-maplibre';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { MapMarkerResponseDto, api } from '@api';
-  import Cog from 'svelte-material-icons/Cog.svelte';
   import type { LngLatLike, StyleSpecification } from 'maplibre-gl';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiCog } from '@mdi/js';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -30,7 +31,7 @@
     {#if showSettingsModal !== undefined}
       <Control>
         <ControlGroup>
-          <ControlButton on:click={() => (showSettingsModal = true)}><Cog size="100%" /></ControlButton>
+          <ControlButton on:click={() => (showSettingsModal = true)}><Icon path={mdiCog} size="100%" /></ControlButton>
         </ControlGroup>
       </Control>
     {/if}
