@@ -194,6 +194,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 Navigator.of(context).pop();
                 launchUrl(
                   Uri.parse('https://immich.app'),
+                  mode: LaunchMode.externalApplication,
                 );
               },
               child: Text(
@@ -213,6 +214,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 Navigator.of(context).pop();
                 launchUrl(
                   Uri.parse('https://github.com/immich-app/immich'),
+                  mode: LaunchMode.externalApplication,
                 );
               },
               child: Text(

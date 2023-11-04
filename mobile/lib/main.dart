@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
@@ -77,6 +78,8 @@ Future<void> initApp() async {
     log.severe('Catch all error: ${error.toString()} - $error', error, stack);
     return true;
   };
+
+  initializeTimeZones();
 }
 
 Future<Isar> loadDb() async {

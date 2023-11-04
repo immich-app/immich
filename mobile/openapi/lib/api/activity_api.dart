@@ -111,7 +111,9 @@ class ActivityApi {
   /// * [String] assetId:
   ///
   /// * [ReactionType] type:
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionType? type, }) async {
+  ///
+  /// * [String] userId:
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionType? type, String? userId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity';
 
@@ -128,6 +130,9 @@ class ActivityApi {
     }
     if (type != null) {
       queryParams.addAll(_queryParams('', 'type', type));
+    }
+    if (userId != null) {
+      queryParams.addAll(_queryParams('', 'userId', userId));
     }
 
     const contentTypes = <String>[];
@@ -151,8 +156,10 @@ class ActivityApi {
   /// * [String] assetId:
   ///
   /// * [ReactionType] type:
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionType? type, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, type: type, );
+  ///
+  /// * [String] userId:
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionType? type, String? userId, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, type: type, userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

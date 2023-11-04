@@ -30,6 +30,15 @@
             "schema": {
               "$ref": "#/components/schemas/ReactionType"
             }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -5635,7 +5644,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.83.0",
+    "version": "1.84.0",
     "contact": {}
   },
   "tags": [],
