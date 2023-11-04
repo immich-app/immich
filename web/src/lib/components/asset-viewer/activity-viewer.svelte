@@ -16,10 +16,12 @@
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
   const shouldGroup = (currentDate: string, nextDate: string): boolean => {
+    const currentDateTime = luxon.DateTime.fromISO(currentDate);
+    const nextDateTime = luxon.DateTime.fromISO(nextDate);
+
     return (
-      luxon.DateTime.fromISO(currentDate).toRelative({ unit: 'hours' }) ===
-        luxon.DateTime.fromISO(nextDate).toRelative({ unit: 'hours' }) ||
-      luxon.DateTime.fromISO(currentDate).toRelative() === luxon.DateTime.fromISO(nextDate).toRelative()
+      currentDateTime.toRelative({ unit: 'hours' }) === nextDateTime.toRelative({ unit: 'hours' }) ||
+      currentDateTime.toRelative() === nextDateTime.toRelative()
     );
   };
 
