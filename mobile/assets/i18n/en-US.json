@@ -373,5 +373,6 @@
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
   "app_bar_signout_dialog_title": "Sign out",
   "app_bar_signout_dialog_content": "Are you sure you wanna sign out?",
-  "app_bar_signout_dialog_ok": "Yes"
+  "app_bar_signout_dialog_ok": "Yes",
+  "shared_album_activities_input_hint": "Say Something"
 }

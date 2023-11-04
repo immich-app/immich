@@ -49,6 +49,7 @@ class GalleryViewerPage extends HookConsumerWidget {
   final int heroOffset;
   final bool showStack;
   final bool isOwner;
+  final String? sharedAlbumId;
 
   GalleryViewerPage({
     super.key,
@@ -58,6 +59,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     this.heroOffset = 0,
     this.showStack = false,
     this.isOwner = true,
+    this.sharedAlbumId,
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
@@ -327,6 +329,19 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    handleActivities() {
+      if (sharedAlbumId != null) {
+        AutoRouter.of(context).push(
+          ActivitiesRoute(
+            albumId: sharedAlbumId!,
+            assetId: asset().remoteId,
+            withAssetThumbs: false,
+            isOwner: isOwner,
+          ),
+        );
+      }
+    }
+
     buildAppBar() {
       return IgnorePointer(
         ignoring: !ref.watch(showControlsProvider),
@@ -355,6 +370,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
               }),
               onAddToAlbumPressed: () => addToAlbum(asset()),
+              shareAlbumId: sharedAlbumId,
+              onActivitiesPressed: handleActivities,
             ),
           ),
         ),
