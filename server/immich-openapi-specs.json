@@ -5449,29 +5449,6 @@
       }
     },
     "/user/profile-image": {
-      "delete": {
-        "operationId": "deleteProfileImage",
-        "parameters": [],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      },
       "post": {
         "operationId": "createProfileImage",
         "parameters": [],
@@ -8986,9 +8963,6 @@
       },
       "UpdateUserDto": {
         "properties": {
-          "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor"
-          },
           "email": {
             "type": "string"
           },
@@ -9058,38 +9032,8 @@
         ],
         "type": "object"
       },
-      "UserAvatarColor": {
-        "enum": [
-          "primary",
-          "pink",
-          "red",
-          "yellow",
-          "blue",
-          "green",
-          "purple",
-          "orange",
-          "gray",
-          "amber"
-        ],
-        "type": "string"
-      },
       "UserDto": {
         "properties": {
-          "avatarColor": {
-            "enum": [
-              "primary",
-              "pink",
-              "red",
-              "yellow",
-              "blue",
-              "green",
-              "purple",
-              "orange",
-              "gray",
-              "amber"
-            ],
-            "type": "string"
-          },
           "email": {
             "type": "string"
           },
@@ -9111,28 +9055,12 @@
           "firstName",
           "lastName",
           "email",
-          "profileImagePath",
-          "avatarColor"
+          "profileImagePath"
         ],
         "type": "object"
       },
       "UserResponseDto": {
         "properties": {
-          "avatarColor": {
-            "enum": [
-              "primary",
-              "pink",
-              "red",
-              "yellow",
-              "blue",
-              "green",
-              "purple",
-              "orange",
-              "gray",
-              "amber"
-            ],
-            "type": "string"
-          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -9188,7 +9116,6 @@
           "lastName",
           "email",
           "profileImagePath",
-          "avatarColor",
           "storageLabel",
           "externalPath",
           "shouldChangePassword",
