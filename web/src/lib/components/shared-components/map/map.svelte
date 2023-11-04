@@ -89,7 +89,7 @@
       <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} />
       <FullscreenControl position="top-left" />
       <ScaleControl />
-      <AttributionControl compact={false} customAttribution={'Thanks to Cofractal for providing their tile servers!'} />
+      <AttributionControl compact={false} />
     {/if}
     {#if showSettingsModal !== undefined}
       <Control>
