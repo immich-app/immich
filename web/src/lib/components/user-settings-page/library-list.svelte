@@ -82,7 +82,7 @@
   };
 
   async function readLibraryList() {
-    const { data } = await api.libraryApi.getAllForUser();
+    const { data } = await api.libraryApi.getLibraries();
     libraries = data;
 
     dropdownOpen.length = libraries.length;

@@ -65,7 +65,7 @@ class LoginForm extends HookConsumerWidget {
         isLoadingServer.value = true;
         final endpoint = await apiService.resolveAndSetEndpoint(serverUrl);
 
-        final loginConfig = await apiService.oAuthApi.generateConfig(
+        final loginConfig = await apiService.oAuthApi.generateOAuthConfig(
           OAuthConfigDto(redirectUri: serverUrl),
         );
 

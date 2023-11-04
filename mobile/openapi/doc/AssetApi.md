@@ -9,7 +9,7 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**bulkUploadCheck**](AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
+[**checkBulkUpload**](AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAssets**](AssetApi.md#deleteassets) | **DELETE** /asset | 
 [**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
@@ -18,15 +18,15 @@ Method | HTTP request | Description
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
-[**getAssetStats**](AssetApi.md#getassetstats) | **GET** /asset/statistics | 
+[**getAssetStatistics**](AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
-[**getByTimeBucket**](AssetApi.md#getbytimebucket) | **GET** /asset/time-bucket | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
+[**getTimeBucket**](AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**importFile**](AssetApi.md#importfile) | **POST** /asset/import | 
@@ -41,8 +41,8 @@ Method | HTTP request | Description
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
 
-# **bulkUploadCheck**
-> AssetBulkUploadCheckResponseDto bulkUploadCheck(assetBulkUploadCheckDto)
+# **checkBulkUpload**
+> AssetBulkUploadCheckResponseDto checkBulkUpload(assetBulkUploadCheckDto)
 
 
 
@@ -70,10 +70,10 @@ final api_instance = AssetApi();
 final assetBulkUploadCheckDto = AssetBulkUploadCheckDto(); // AssetBulkUploadCheckDto | 
 
 try {
-    final result = api_instance.bulkUploadCheck(assetBulkUploadCheckDto);
+    final result = api_instance.checkBulkUpload(assetBulkUploadCheckDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->bulkUploadCheck: $e\n');
+    print('Exception when calling AssetApi->checkBulkUpload: $e\n');
 }
 ```
 
@@ -550,8 +550,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getAssetStats**
-> AssetStatsResponseDto getAssetStats(isArchived, isFavorite, isTrashed)
+# **getAssetStatistics**
+> AssetStatsResponseDto getAssetStatistics(isArchived, isFavorite, isTrashed)
 
 
 
@@ -579,10 +579,10 @@ final isFavorite = true; // bool |
 final isTrashed = true; // bool | 
 
 try {
-    final result = api_instance.getAssetStats(isArchived, isFavorite, isTrashed);
+    final result = api_instance.getAssetStatistics(isArchived, isFavorite, isTrashed);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->getAssetStats: $e\n');
+    print('Exception when calling AssetApi->getAssetStatistics: $e\n');
 }
 ```
 
@@ -665,79 +665,6 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: Not defined
  - **Accept**: image/jpeg, image/webp
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getByTimeBucket**
-> List<AssetResponseDto> getByTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final size = ; // TimeBucketSize | 
-final timeBucket = timeBucket_example; // String | 
-final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final personId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final isArchived = true; // bool | 
-final isFavorite = true; // bool | 
-final isTrashed = true; // bool | 
-final withStacked = true; // bool | 
-final key = key_example; // String | 
-
-try {
-    final result = api_instance.getByTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getByTimeBucket: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **size** | [**TimeBucketSize**](.md)|  | 
- **timeBucket** | **String**|  | 
- **userId** | **String**|  | [optional] 
- **albumId** | **String**|  | [optional] 
- **personId** | **String**|  | [optional] 
- **isArchived** | **bool**|  | [optional] 
- **isFavorite** | **bool**|  | [optional] 
- **isTrashed** | **bool**|  | [optional] 
- **withStacked** | **bool**|  | [optional] 
- **key** | **String**|  | [optional] 
-
-### Return type
-
-[**List<AssetResponseDto>**](AssetResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1057,6 +984,79 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **count** | **num**|  | [optional] 
+
+### Return type
+
+[**List<AssetResponseDto>**](AssetResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getTimeBucket**
+> List<AssetResponseDto> getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final size = ; // TimeBucketSize | 
+final timeBucket = timeBucket_example; // String | 
+final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final personId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final isArchived = true; // bool | 
+final isFavorite = true; // bool | 
+final isTrashed = true; // bool | 
+final withStacked = true; // bool | 
+final key = key_example; // String | 
+
+try {
+    final result = api_instance.getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getTimeBucket: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **size** | [**TimeBucketSize**](.md)|  | 
+ **timeBucket** | **String**|  | 
+ **userId** | **String**|  | [optional] 
+ **albumId** | **String**|  | [optional] 
+ **personId** | **String**|  | [optional] 
+ **isArchived** | **bool**|  | [optional] 
+ **isFavorite** | **bool**|  | [optional] 
+ **isTrashed** | **bool**|  | [optional] 
+ **withStacked** | **bool**|  | [optional] 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 

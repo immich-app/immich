@@ -678,7 +678,7 @@
     },
     "/api-key": {
       "get": {
-        "operationId": "getKeys",
+        "operationId": "getApiKeys",
         "parameters": [],
         "responses": {
           "200": {
@@ -711,7 +711,7 @@
         ]
       },
       "post": {
-        "operationId": "createKey",
+        "operationId": "createApiKey",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -753,7 +753,7 @@
     },
     "/api-key/{id}": {
       "delete": {
-        "operationId": "deleteKey",
+        "operationId": "deleteApiKey",
         "parameters": [
           {
             "name": "id",
@@ -786,7 +786,7 @@
         ]
       },
       "get": {
-        "operationId": "getKey",
+        "operationId": "getApiKey",
         "parameters": [
           {
             "name": "id",
@@ -826,7 +826,7 @@
         ]
       },
       "put": {
-        "operationId": "updateKey",
+        "operationId": "updateApiKey",
         "parameters": [
           {
             "name": "id",
@@ -1084,7 +1084,7 @@
     "/asset/bulk-upload-check": {
       "post": {
         "description": "Checks if assets exist by checksums",
-        "operationId": "bulkUploadCheck",
+        "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -1855,7 +1855,7 @@
     },
     "/asset/statistics": {
       "get": {
-        "operationId": "getAssetStats",
+        "operationId": "getAssetStatistics",
         "parameters": [
           {
             "name": "isArchived",
@@ -1977,7 +1977,7 @@
     },
     "/asset/time-bucket": {
       "get": {
-        "operationId": "getByTimeBucket",
+        "operationId": "getTimeBucket",
         "parameters": [
           {
             "name": "size",
@@ -2596,7 +2596,7 @@
     },
     "/auth/admin-sign-up": {
       "post": {
-        "operationId": "adminSignUp",
+        "operationId": "signUpAdmin",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -2943,7 +2943,7 @@
     },
     "/library": {
       "get": {
-        "operationId": "getAllForUser",
+        "operationId": "getLibraries",
         "parameters": [],
         "responses": {
           "200": {
@@ -3265,7 +3265,7 @@
     },
     "/oauth/authorize": {
       "post": {
-        "operationId": "authorizeOAuth",
+        "operationId": "startOAuth",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3296,7 +3296,7 @@
     },
     "/oauth/callback": {
       "post": {
-        "operationId": "callback",
+        "operationId": "finishOAuth",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3329,7 +3329,7 @@
       "post": {
         "deprecated": true,
         "description": "@deprecated use feature flags and /oauth/authorize",
-        "operationId": "generateConfig",
+        "operationId": "generateOAuthConfig",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3360,7 +3360,7 @@
     },
     "/oauth/link": {
       "post": {
-        "operationId": "link",
+        "operationId": "linkOAuthAccount",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3402,7 +3402,7 @@
     },
     "/oauth/mobile-redirect": {
       "get": {
-        "operationId": "mobileRedirect",
+        "operationId": "redirectOAuthToMobile",
         "parameters": [],
         "responses": {
           "200": {
@@ -3416,7 +3416,7 @@
     },
     "/oauth/unlink": {
       "post": {
-        "operationId": "unlink",
+        "operationId": "unlinkOAuthAccount",
         "parameters": [],
         "responses": {
           "201": {
@@ -4307,9 +4307,9 @@
         ]
       }
     },
-    "/server-info/stats": {
+    "/server-info/statistics": {
       "get": {
-        "operationId": "getStats",
+        "operationId": "getServerStatistics",
         "parameters": [],
         "responses": {
           "200": {
@@ -4837,7 +4837,7 @@
     },
     "/system-config/defaults": {
       "get": {
-        "operationId": "getDefaults",
+        "operationId": "getConfigDefaults",
         "parameters": [],
         "responses": {
           "200": {

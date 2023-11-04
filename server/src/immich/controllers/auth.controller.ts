@@ -43,7 +43,7 @@ export class AuthController {
   @PublicRoute()
   @Post('admin-sign-up')
   @ApiBadRequestResponse({ description: 'The server already has an admin' })
-  adminSignUp(@Body() signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
+  signUpAdmin(@Body() signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
     return this.service.adminSignUp(signUpCredential);
   }
 

@@ -20,7 +20,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.passwordLogin),
-      api.systemConfigApi.getDefaults().then((res) => res.data.passwordLogin),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.passwordLogin),
     ]);
   }
 
@@ -77,7 +77,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     passwordLoginConfig = { ...configs.passwordLogin };
     defaultConfig = { ...configs.passwordLogin };

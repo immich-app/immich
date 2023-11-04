@@ -19,8 +19,8 @@ void main() {
   group('tests for AssetApi', () {
     // Checks if assets exist by checksums
     //
-    //Future<AssetBulkUploadCheckResponseDto> bulkUploadCheck(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
-    test('test bulkUploadCheck', () async {
+    //Future<AssetBulkUploadCheckResponseDto> checkBulkUpload(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
+    test('test checkBulkUpload', () async {
       // TODO
     });
 
@@ -70,18 +70,13 @@ void main() {
       // TODO
     });
 
-    //Future<AssetStatsResponseDto> getAssetStats({ bool isArchived, bool isFavorite, bool isTrashed }) async
-    test('test getAssetStats', () async {
+    //Future<AssetStatsResponseDto> getAssetStatistics({ bool isArchived, bool isFavorite, bool isTrashed }) async
+    test('test getAssetStatistics', () async {
       // TODO
     });
 
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
-      // TODO
-    });
-
-    //Future<List<AssetResponseDto>> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, String key }) async
-    test('test getByTimeBucket', () async {
       // TODO
     });
 
@@ -112,6 +107,11 @@ void main() {
 
     //Future<List<AssetResponseDto>> getRandom({ num count }) async
     test('test getRandom', () async {
+      // TODO
+    });
+
+    //Future<List<AssetResponseDto>> getTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, String key }) async
+    test('test getTimeBucket', () async {
       // TODO
     });
 

@@ -196,7 +196,7 @@ export class AssetStore {
 
       bucket.cancelToken = new AbortController();
 
-      const { data: assets } = await api.assetApi.getByTimeBucket(
+      const { data: assets } = await api.assetApi.getTimeBucket(
         {
           ...this.options,
           timeBucket: bucketDate,
@@ -206,7 +206,7 @@ export class AssetStore {
       );
 
       if (this.albumId) {
-        const { data: albumAssets } = await api.assetApi.getByTimeBucket(
+        const { data: albumAssets } = await api.assetApi.getTimeBucket(
           {
             albumId: this.albumId,
             timeBucket: bucketDate,
