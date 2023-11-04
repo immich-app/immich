@@ -1,7 +1,6 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import UserSettingsList from '$lib/components/user-settings-page/user-settings-list.svelte';
-  import type { UserResponseDto } from '@api';
   import type { PageData } from './$types';
 
   export let data: PageData;
