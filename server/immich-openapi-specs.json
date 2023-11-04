@@ -948,7 +948,24 @@
             }
           },
           {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
             "name": "updatedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "updatedBefore",
             "required": false,
             "in": "query",
             "schema": {

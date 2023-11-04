@@ -6699,12 +6699,14 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
          * @param {number} [skip] 
+         * @param {number} [take] 
          * @param {string} [updatedAfter] 
+         * @param {string} [updatedBefore] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, take?: number, updatedAfter?: string, updatedBefore?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6742,10 +6744,20 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['skip'] = skip;
             }
 
+            if (take !== undefined) {
+                localVarQueryParameter['take'] = take;
+            }
+
             if (updatedAfter !== undefined) {
                 localVarQueryParameter['updatedAfter'] = (updatedAfter as any instanceof Date) ?
                     (updatedAfter as any).toISOString() :
                     updatedAfter;
+            }
+
+            if (updatedBefore !== undefined) {
+                localVarQueryParameter['updatedBefore'] = (updatedBefore as any instanceof Date) ?
+                    (updatedBefore as any).toISOString() :
+                    updatedBefore;
             }
 
             if (ifNoneMatch != null) {
@@ -8072,13 +8084,15 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
          * @param {number} [skip] 
+         * @param {number} [take] 
          * @param {string} [updatedAfter] 
+         * @param {string} [updatedBefore] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, updatedAfter?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, skip, updatedAfter, ifNoneMatch, options);
+        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, take?: number, updatedAfter?: string, updatedBefore?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, skip, take, updatedAfter, updatedBefore, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8423,7 +8437,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.take, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * Get a single asset\'s information
@@ -8751,10 +8765,24 @@ export interface AssetApiGetAllAssetsRequest {
 
     /**
      * 
+     * @type {number}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly take?: number
+
+    /**
+     * 
      * @type {string}
      * @memberof AssetApiGetAllAssets
      */
     readonly updatedAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly updatedBefore?: string
 
     /**
      * ETag of data already cached on the client
@@ -9432,7 +9460,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.updatedAfter, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.take, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
