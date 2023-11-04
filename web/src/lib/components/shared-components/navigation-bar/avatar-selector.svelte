@@ -1,10 +1,10 @@
 <script lang="ts">
   import { mdiClose } from '@mdi/js';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
   import { UserDtoAvatarColorEnum, UserResponseDto } from '@api';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import FullScreenModal from '../full-screen-modal.svelte';
+  import UserAvatar from '../user-avatar.svelte';
 
   export let user: UserResponseDto;
 

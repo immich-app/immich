@@ -7,9 +7,9 @@
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
   import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
-  import AvatarSelector from '$lib/components/user-settings-page/avatar-selector.svelte';
   import { notificationController, NotificationType } from '../notification/notification';
   import { handleError } from '$lib/utils/handle-error';
+  import AvatarSelector from './avatar-selector.svelte';
 
   export let user: UserResponseDto;
 

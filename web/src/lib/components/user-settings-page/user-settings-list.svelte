@@ -27,7 +27,7 @@
 </script>
 
 <SettingAccordion title="Account" subtitle="Manage your account">
-  <UserProfileSettings bind:user />
+  <UserProfileSettings {user} />
 </SettingAccordion>
 
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">
