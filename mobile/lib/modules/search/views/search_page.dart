@@ -172,7 +172,7 @@ class SearchPage extends HookConsumerWidget {
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.star_outline,
+                    Icons.favorite_border_rounded,
                     color: categoryIconColor,
                   ),
                   title:
