@@ -240,9 +240,13 @@ class ActivitiesPage extends HookConsumerWidget {
                           )
                         : ListTile(
                             minVerticalPadding: 15,
-                            leading: Icon(
-                              Icons.favorite_rounded,
-                              color: Colors.red[700],
+                            leading: Container(
+                              width: 44,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.favorite_rounded,
+                                color: Colors.red[700],
+                              ),
                             ),
                             title: buildTitleWithTimestamp(activity),
                             trailing: buildAssetThumbnail(activity),
