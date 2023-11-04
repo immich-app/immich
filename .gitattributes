@@ -5,6 +5,8 @@ mobile/openapi/**/*.dart linguist-generated=true
 mobile/openapi/.openapi-generator/FILES -diff -merge
 mobile/openapi/.openapi-generator/FILES linguist-generated=true
 
+mobile/lib/**/*.g.dart -diff -merge
+mobile/lib/**/*.g.dart linguist-generated=true
 
 cli/src/api/open-api/**/*.md -diff -merge
 cli/src/api/open-api/**/*.md linguist-generated=true
