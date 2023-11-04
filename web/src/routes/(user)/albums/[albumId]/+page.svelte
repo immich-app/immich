@@ -86,8 +86,8 @@
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
   let user = data.user;
-  let GlobalWidth: number;
-  let AssetGridWidth: number;
+  let globalWidth: number;
+  let assetGridWidth: number;
 
   const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
@@ -102,9 +102,9 @@
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
   $: {
     if (isShowActivity) {
-      AssetGridWidth = GlobalWidth - (GlobalWidth < 768 ? 360 : 460);
+      assetGridWidth = globalWidth - (globalWidth < 768 ? 360 : 460);
     } else {
-      AssetGridWidth = GlobalWidth;
+      assetGridWidth = globalWidth;
     }
   }
 
@@ -396,7 +396,7 @@
   };
 </script>
 
-<div class="flex overflow-hidden" bind:clientWidth={GlobalWidth}>
+<div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
   <div class="relative w-full shrink">
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
@@ -511,7 +511,7 @@
 
     <main
       class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
-      style={`width:${AssetGridWidth}px`}
+      style={`width:${assetGridWidth}px`}
     >
       {#if viewMode === ViewMode.SELECT_ASSETS}
         <AssetGrid
