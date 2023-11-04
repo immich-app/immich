@@ -7,7 +7,7 @@ part 'people.provider.g.dart';
 
 @riverpod
 Future<RenderList> personAssets(PersonAssetsRef ref, String personId) async {
-  final PersonService personService = ref.watch(personServiceProvider);
+  final PersonService personService = ref.read(personServiceProvider);
 
   final assets = await personService.getPersonAssets(personId);
 
@@ -22,7 +22,7 @@ Future<RenderList> personAssets(PersonAssetsRef ref, String personId) async {
 Future<List<PersonResponseDto>> getCuratedPeople(
   GetCuratedPeopleRef ref,
 ) async {
-  final PersonService personService = ref.watch(personServiceProvider);
+  final PersonService personService = ref.read(personServiceProvider);
 
   final curatedPeople = await personService.getCuratedPeople();
 
@@ -35,7 +35,7 @@ void updatePersonName(
   String id,
   String personName,
 ) async {
-  final PersonService personService = ref.watch(personServiceProvider);
+  final PersonService personService = ref.read(personServiceProvider);
 
   final person = await personService.updateName(id, personName);
 

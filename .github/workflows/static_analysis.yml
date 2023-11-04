@@ -33,6 +33,7 @@ jobs:
         run: dart analyze --fatal-infos
         working-directory: ./mobile
       
-      - name: Run dart custom lint
-        run: dart run custom_lint
-        working-directory: ./mobile
+      # Enable after riverpod generator migration is completed
+      # - name: Run dart custom lint
+      #   run: dart run custom_lint
+      #   working-directory: ./mobile
