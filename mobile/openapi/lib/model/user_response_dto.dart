@@ -13,7 +13,6 @@ part of openapi.api;
 class UserResponseDto {
   /// Returns a new [UserResponseDto] instance.
   UserResponseDto({
-    required this.avatarColor,
     required this.createdAt,
     required this.deletedAt,
     required this.email,
@@ -29,8 +28,6 @@ class UserResponseDto {
     required this.storageLabel,
     required this.updatedAt,
   });
-
-  UserResponseDtoAvatarColorEnum avatarColor;
 
   DateTime createdAt;
 
@@ -68,7 +65,6 @@ class UserResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-     other.avatarColor == avatarColor &&
      other.createdAt == createdAt &&
      other.deletedAt == deletedAt &&
      other.email == email &&
@@ -87,7 +83,6 @@ class UserResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatarColor.hashCode) +
     (createdAt.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
@@ -104,11 +99,10 @@ class UserResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'avatarColor'] = this.avatarColor;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
@@ -150,7 +144,6 @@ class UserResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserResponseDto(
-        avatarColor: UserResponseDtoAvatarColorEnum.fromJson(json[r'avatarColor'])!,
         createdAt: mapDateTime(json, r'createdAt', '')!,
         deletedAt: mapDateTime(json, r'deletedAt', ''),
         email: mapValueOfType<String>(json, r'email')!,
@@ -212,7 +205,6 @@ class UserResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'avatarColor',
     'createdAt',
     'deletedAt',
     'email',
@@ -228,102 +220,4 @@ class UserResponseDto {
     'updatedAt',
   };
 }
-
-
-class UserResponseDtoAvatarColorEnum {
-  /// Instantiate a new enum with the provided [value].
-  const UserResponseDtoAvatarColorEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const primary = UserResponseDtoAvatarColorEnum._(r'primary');
-  static const pink = UserResponseDtoAvatarColorEnum._(r'pink');
-  static const red = UserResponseDtoAvatarColorEnum._(r'red');
-  static const yellow = UserResponseDtoAvatarColorEnum._(r'yellow');
-  static const blue = UserResponseDtoAvatarColorEnum._(r'blue');
-  static const green = UserResponseDtoAvatarColorEnum._(r'green');
-  static const purple = UserResponseDtoAvatarColorEnum._(r'purple');
-  static const orange = UserResponseDtoAvatarColorEnum._(r'orange');
-  static const gray = UserResponseDtoAvatarColorEnum._(r'gray');
-  static const amber = UserResponseDtoAvatarColorEnum._(r'amber');
-
-  /// List of all possible values in this [enum][UserResponseDtoAvatarColorEnum].
-  static const values = <UserResponseDtoAvatarColorEnum>[
-    primary,
-    pink,
-    red,
-    yellow,
-    blue,
-    green,
-    purple,
-    orange,
-    gray,
-    amber,
-  ];
-
-  static UserResponseDtoAvatarColorEnum? fromJson(dynamic value) => UserResponseDtoAvatarColorEnumTypeTransformer().decode(value);
-
-  static List<UserResponseDtoAvatarColorEnum>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UserResponseDtoAvatarColorEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UserResponseDtoAvatarColorEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [UserResponseDtoAvatarColorEnum] to String,
-/// and [decode] dynamic data back to [UserResponseDtoAvatarColorEnum].
-class UserResponseDtoAvatarColorEnumTypeTransformer {
-  factory UserResponseDtoAvatarColorEnumTypeTransformer() => _instance ??= const UserResponseDtoAvatarColorEnumTypeTransformer._();
-
-  const UserResponseDtoAvatarColorEnumTypeTransformer._();
-
-  String encode(UserResponseDtoAvatarColorEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a UserResponseDtoAvatarColorEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  UserResponseDtoAvatarColorEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'primary': return UserResponseDtoAvatarColorEnum.primary;
-        case r'pink': return UserResponseDtoAvatarColorEnum.pink;
-        case r'red': return UserResponseDtoAvatarColorEnum.red;
-        case r'yellow': return UserResponseDtoAvatarColorEnum.yellow;
-        case r'blue': return UserResponseDtoAvatarColorEnum.blue;
-        case r'green': return UserResponseDtoAvatarColorEnum.green;
-        case r'purple': return UserResponseDtoAvatarColorEnum.purple;
-        case r'orange': return UserResponseDtoAvatarColorEnum.orange;
-        case r'gray': return UserResponseDtoAvatarColorEnum.gray;
-        case r'amber': return UserResponseDtoAvatarColorEnum.amber;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [UserResponseDtoAvatarColorEnumTypeTransformer] instance.
-  static UserResponseDtoAvatarColorEnumTypeTransformer? _instance;
-}
-
 

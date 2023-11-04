@@ -16,11 +16,6 @@ void main() {
   // final instance = UserResponseDto();
 
   group('test UserResponseDto', () {
-    // String avatarColor
-    test('to test the property `avatarColor`', () async {
-      // TODO
-    });
-
     // DateTime createdAt
     test('to test the property `createdAt`', () async {
       // TODO

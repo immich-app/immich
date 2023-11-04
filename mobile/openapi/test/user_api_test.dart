@@ -27,11 +27,6 @@ void main() {
       // TODO
     });
 
-    //Future deleteProfileImage() async
-    test('test deleteProfileImage', () async {
-      // TODO
-    });
-
     //Future<UserResponseDto> deleteUser(String id) async
     test('test deleteUser', () async {
       // TODO
