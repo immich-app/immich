@@ -261,6 +261,9 @@ export class AssetStore {
       isMismatched(this.options.isArchived, asset.isArchived) ||
       isMismatched(this.options.isFavorite, asset.isFavorite)
     ) {
+      // If asset is already in the bucket we don't need to recalculate
+      // asset store containers
+      this.updateAsset(asset);
       return;
     }
 
@@ -290,6 +293,11 @@ export class AssetStore {
       const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
       return bDate.diff(aDate).milliseconds;
     });
+
+    // If we added an asset to the store, we need to recalculate
+    // asset store containers
+    this.assets.push(asset);
+    this.updateAsset(asset, true);
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
