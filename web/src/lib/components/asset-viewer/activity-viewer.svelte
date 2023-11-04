@@ -19,10 +19,7 @@
     const currentDateTime = luxon.DateTime.fromISO(currentDate);
     const nextDateTime = luxon.DateTime.fromISO(nextDate);
 
-    return (
-      currentDateTime.toRelative({ unit: 'hours' }) === nextDateTime.toRelative({ unit: 'hours' }) ||
-      currentDateTime.toRelative() === nextDateTime.toRelative()
-    );
+    return currentDateTime.hasSame(nextDateTime, 'hour') || currentDateTime.toRelative() === nextDateTime.toRelative();
   };
 
   const timeSince = (dateTime: luxon.DateTime) => {
