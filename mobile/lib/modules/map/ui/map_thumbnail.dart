@@ -3,6 +3,7 @@ import 'package:flutter_map/plugin_api.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // A non-interactive thumbnail of a map in the given coordinates with optional markers
 class MapThumbnail extends HookConsumerWidget {
@@ -44,8 +45,11 @@ class MapThumbnail extends HookConsumerWidget {
                 animationConfig: const ScaleRAWA(),
                 attributions: [
                   TextSourceAttribution(
-                    'Thanks to Cofractal for the tile servers',
-                    onTap: () => {},
+                    'OpenStreetMap contributors',
+                    onTap: () => launchUrl(
+                      Uri.parse('https://openstreetmap.org/copyright'),
+                      mode: LaunchMode.externalApplication,
+                    ),
                   ),
                 ],
               ),

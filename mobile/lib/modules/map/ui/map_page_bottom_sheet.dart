@@ -325,7 +325,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                 child: Padding(
                   padding: const EdgeInsets.all(3),
                   child: Text(
-                    'Thanks to Cofractal for the tile servers',
+                    'OpenStreetMap contributors',
                     style: TextStyle(
                       fontSize: 6,
                       color: !widget.isDarkTheme
