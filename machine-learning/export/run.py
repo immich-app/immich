@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from huggingface_hub import create_repo, login, upload_folder
-from models import mclip, openclip
+from models import mclip, openclip, tfclip
 from rich.progress import Progress
 
 models = [
@@ -37,9 +37,10 @@ models = [
     "M-CLIP/XLM-Roberta-Large-Vit-B-32",
     "M-CLIP/XLM-Roberta-Large-Vit-B-16Plus",
     "M-CLIP/XLM-Roberta-Large-Vit-L-14",
+    "openai/clip-vit-base-patch32",
 ]
 
-login(token=os.environ["HF_AUTH_TOKEN"])
+# login(token=os.environ["HF_AUTH_TOKEN"])
 
 with Progress() as progress:
     task1 = progress.add_task("[green]Exporting models...", total=len(models))
@@ -65,6 +66,8 @@ with Progress() as progress:
                 textual_dir = tmpdir / model_name / "textual"
                 if model.startswith("M-CLIP"):
                     mclip.to_onnx(model, visual_dir, textual_dir)
+                elif "/" in model:
+                    tfclip.to_tflite(model, visual_dir.as_posix(), textual_dir.as_posix())
                 else:
                     name, _, pretrained = model_name.partition("__")
                     openclip.to_onnx(openclip.OpenCLIPModelConfig(name, pretrained), visual_dir, textual_dir)
