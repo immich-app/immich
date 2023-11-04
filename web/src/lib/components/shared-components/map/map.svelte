@@ -129,7 +129,7 @@
         }}
       >
         <img
-          src={api.getAssetFileUrl(feature.properties?.id)}
+          src={api.getAssetThumbnailUrl(feature.properties?.id)}
           class="rounded-full w-[60px] h-[60px]"
           alt={`Image with id ${feature.properties?.id}`}
         />
