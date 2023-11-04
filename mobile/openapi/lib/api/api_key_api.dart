@@ -20,7 +20,7 @@ class APIKeyApi {
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
-  Future<Response> createKeyWithHttpInfo(APIKeyCreateDto aPIKeyCreateDto,) async {
+  Future<Response> createApiKeyWithHttpInfo(APIKeyCreateDto aPIKeyCreateDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/api-key';
 
@@ -48,8 +48,8 @@ class APIKeyApi {
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
-  Future<APIKeyCreateResponseDto?> createKey(APIKeyCreateDto aPIKeyCreateDto,) async {
-    final response = await createKeyWithHttpInfo(aPIKeyCreateDto,);
+  Future<APIKeyCreateResponseDto?> createApiKey(APIKeyCreateDto aPIKeyCreateDto,) async {
+    final response = await createApiKeyWithHttpInfo(aPIKeyCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -67,7 +67,7 @@ class APIKeyApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteKeyWithHttpInfo(String id,) async {
+  Future<Response> deleteApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/api-key/{id}'
       .replaceAll('{id}', id);
@@ -96,8 +96,8 @@ class APIKeyApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteKey(String id,) async {
-    final response = await deleteKeyWithHttpInfo(id,);
+  Future<void> deleteApiKey(String id,) async {
+    final response = await deleteApiKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -107,7 +107,7 @@ class APIKeyApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getKeyWithHttpInfo(String id,) async {
+  Future<Response> getApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/api-key/{id}'
       .replaceAll('{id}', id);
@@ -136,8 +136,8 @@ class APIKeyApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<APIKeyResponseDto?> getKey(String id,) async {
-    final response = await getKeyWithHttpInfo(id,);
+  Future<APIKeyResponseDto?> getApiKey(String id,) async {
+    final response = await getApiKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -152,7 +152,7 @@ class APIKeyApi {
   }
 
   /// Performs an HTTP 'GET /api-key' operation and returns the [Response].
-  Future<Response> getKeysWithHttpInfo() async {
+  Future<Response> getApiKeysWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/api-key';
 
@@ -177,8 +177,8 @@ class APIKeyApi {
     );
   }
 
-  Future<List<APIKeyResponseDto>?> getKeys() async {
-    final response = await getKeysWithHttpInfo();
+  Future<List<APIKeyResponseDto>?> getApiKeys() async {
+    final response = await getApiKeysWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -201,7 +201,7 @@ class APIKeyApi {
   /// * [String] id (required):
   ///
   /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  Future<Response> updateKeyWithHttpInfo(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
+  Future<Response> updateApiKeyWithHttpInfo(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/api-key/{id}'
       .replaceAll('{id}', id);
@@ -232,8 +232,8 @@ class APIKeyApi {
   /// * [String] id (required):
   ///
   /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  Future<APIKeyResponseDto?> updateKey(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
-    final response = await updateKeyWithHttpInfo(id, aPIKeyUpdateDto,);
+  Future<APIKeyResponseDto?> updateApiKey(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
+    final response = await updateApiKeyWithHttpInfo(id, aPIKeyUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

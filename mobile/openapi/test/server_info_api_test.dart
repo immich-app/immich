@@ -32,13 +32,13 @@ void main() {
       // TODO
     });
 
-    //Future<ServerVersionResponseDto> getServerVersion() async
-    test('test getServerVersion', () async {
+    //Future<ServerStatsResponseDto> getServerStatistics() async
+    test('test getServerStatistics', () async {
       // TODO
     });
 
-    //Future<ServerStatsResponseDto> getStats() async
-    test('test getStats', () async {
+    //Future<ServerVersionResponseDto> getServerVersion() async
+    test('test getServerVersion', () async {
       // TODO
     });
 

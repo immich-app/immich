@@ -27,8 +27,8 @@ void main() {
       // TODO
     });
 
-    //Future<List<LibraryResponseDto>> getAllForUser() async
-    test('test getAllForUser', () async {
+    //Future<List<LibraryResponseDto>> getLibraries() async
+    test('test getLibraries', () async {
       // TODO
     });
 

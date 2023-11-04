@@ -66,7 +66,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
       state = state.copyWith(
         isVersionMismatch: true,
         versionMismatchErrorMessage:
-            "Server is out of date in major version. Some functionalities might not work correctly. Download and rebuild server",
+            "Server is out of date. Please update to the latest major version.",
       );
 
       return;
@@ -76,7 +76,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
       state = state.copyWith(
         isVersionMismatch: true,
         versionMismatchErrorMessage:
-            "Server is out of date in minor version. Some functionalities might not work correctly. Consider download and rebuild server",
+            "Server is out of date. Consider updating to the latest minor version.",
       );
 
       return;

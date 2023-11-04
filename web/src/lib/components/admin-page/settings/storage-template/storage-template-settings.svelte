@@ -26,7 +26,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig, templateOptions] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.storageTemplate),
-      api.systemConfigApi.getDefaults().then((res) => res.data.storageTemplate),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.storageTemplate),
       api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data),
     ]);
 
@@ -119,7 +119,7 @@
   }
 
   async function resetToDefault() {
-    const { data: defaultConfig } = await api.systemConfigApi.getDefaults();
+    const { data: defaultConfig } = await api.systemConfigApi.getConfigDefaults();
 
     storageConfig.template = defaultConfig.storageTemplate.template;
 

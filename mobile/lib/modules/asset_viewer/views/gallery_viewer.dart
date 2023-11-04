@@ -443,7 +443,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
-                  border: index == stackIndex.value
+                  border: (stackIndex.value == -1 && index == 0) ||
+                          index == stackIndex.value
                       ? Border.all(
                           color: Colors.white,
                           width: 2,

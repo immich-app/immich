@@ -29,7 +29,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.oauth),
-      api.systemConfigApi.getDefaults().then((res) => res.data.oauth),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.oauth),
     ]);
   }
 
@@ -90,7 +90,7 @@
   }
 
   async function resetToDefault() {
-    const { data: defaultConfig } = await api.systemConfigApi.getDefaults();
+    const { data: defaultConfig } = await api.systemConfigApi.getConfigDefaults();
 
     oauthConfig = { ...defaultConfig.oauth };
 

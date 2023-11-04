@@ -11,7 +11,7 @@
 
   onMount(async () => {
     setIntervalHandler = setInterval(async () => {
-      const { data: stats } = await api.serverInfoApi.getStats();
+      const { data: stats } = await api.serverInfoApi.getServerStatistics();
       data.stats = stats;
     }, 5000);
   });

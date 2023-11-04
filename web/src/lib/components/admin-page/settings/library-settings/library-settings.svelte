@@ -28,7 +28,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.library),
-      api.systemConfigApi.getDefaults().then((res) => res.data.library),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.library),
     ]);
   }
 
@@ -68,7 +68,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     libraryConfig = { ...configs.library };
     defaultConfig = { ...configs.library };

@@ -26,7 +26,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     findLivePhotoMatch: jest.fn(),
     getMapMarkers: jest.fn(),
     getStatistics: jest.fn(),
-    getByTimeBucket: jest.fn(),
+    getTimeBucket: jest.fn(),
     getTimeBuckets: jest.fn(),
     restoreAll: jest.fn(),
     softDeleteAll: jest.fn(),

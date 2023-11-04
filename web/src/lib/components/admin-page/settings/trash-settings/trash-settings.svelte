@@ -20,7 +20,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.trash),
-      api.systemConfigApi.getDefaults().then((res) => res.data.trash),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.trash),
     ]);
   }
 
@@ -53,7 +53,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     trashConfig = { ...configs.trash };
     defaultConfig = { ...configs.trash };
