@@ -141,7 +141,7 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel {user} on:logout={logOut} />
+            <AccountInfoPanel bind:user on:logout={logOut} />
           {/if}
         </div>
       </section>

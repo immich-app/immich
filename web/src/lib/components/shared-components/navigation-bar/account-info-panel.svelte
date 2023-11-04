@@ -1,16 +1,49 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { AppRoute } from '$lib/constants';
-  import type { UserResponseDto } from '@api';
+  import { api, UserDtoAvatarColorEnum, type UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
-  import { mdiCog, mdiLogout } from '@mdi/js';
+  import { mdiCog, mdiLogout, mdiPencil } from '@mdi/js';
+  import AvatarSelector from '$lib/components/user-settings-page/avatar-selector.svelte';
+  import { notificationController, NotificationType } from '../notification/notification';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let user: UserResponseDto;
 
+  let isShowSelectAvatar = false;
+
   const dispatch = createEventDispatcher();
+
+  const handleSaveProfile = async (color: UserDtoAvatarColorEnum) => {
+    try {
+      if (user.profileImagePath !== '') {
+        await api.userApi.deleteProfileImage();
+      }
+
+      const { data } = await api.userApi.updateUser({
+        updateUserDto: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarColor: color,
+        },
+      });
+
+      user = data;
+      isShowSelectAvatar = false;
+
+      notificationController.show({
+        message: 'Saved profile',
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to save profile');
+    }
+  };
 </script>
 
 <div
@@ -22,8 +55,22 @@
   <div
     class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
-    <UserAvatar size="xl" {user} />
+    <div class="relative">
+      {#key user}
+        <UserAvatar {user} size="xl" />
 
+        <div
+          class="absolute z-10 bottom-0 right-0 rounded-full w-6 h-6 border dark:border-immich-dark-primary bg-immich-primary"
+        >
+          <button
+            class="flex items-center justify-center w-full h-full text-white"
+            on:click={() => (isShowSelectAvatar = true)}
+          >
+            <Icon path={mdiPencil} />
+          </button>
+        </div>
+      {/key}
+    </div>
     <div>
       <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">
         {user.firstName}
@@ -52,3 +99,10 @@
     >
   </div>
 </div>
+{#if isShowSelectAvatar}
+  <AvatarSelector
+    {user}
+    on:close={() => (isShowSelectAvatar = false)}
+    on:choose={({ detail: color }) => handleSaveProfile(color)}
+  />
+{/if}

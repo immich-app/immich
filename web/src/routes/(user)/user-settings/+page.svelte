@@ -12,7 +12,7 @@
 <UserPageLayout {user} title={data.meta.title}>
   <section class="mx-4 flex place-content-center">
     <div class="w-full max-w-3xl">
-      <UserSettingsList bind:user keys={data.keys} devices={data.devices} partners={data.partners} />
+      <UserSettingsList {user} keys={data.keys} devices={data.devices} partners={data.partners} />
     </div>
   </section>
 </UserPageLayout>
