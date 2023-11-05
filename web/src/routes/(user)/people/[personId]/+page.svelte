@@ -73,7 +73,6 @@
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
   $: albums = data.albums;
-  $: console.log('albums', albums);
 
   /**
    * Save the word used to search people name: for example,
