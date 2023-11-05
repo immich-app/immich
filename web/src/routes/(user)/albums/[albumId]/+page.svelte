@@ -540,7 +540,7 @@
                     </a>
                     <button
                       class="personNameFilter"
-                      title={`▼ ${people.name}`}
+                      title={`🔎 ${people.name}`}
                       on:click={() => handleFiterByPeople(people.id)}>{people.name}</button
                     >
                   </div>
