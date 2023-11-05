@@ -3,7 +3,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { ActivityResponseDto, api, AssetTypeEnum, ReactionType, type UserResponseDto } from '@api';
+  import { ActivityResponseDto, api, AssetTypeEnum, ReactionType, ThumbnailFormat, type UserResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -177,13 +177,11 @@
 
               <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
-                <div>
+                <div class="aspect-square w-[75px] h-[75px]">
                   <img
-                    class="rounded-lg"
-                    width="100"
-                    height="100"
-                    src={api.getAssetFileUrl(reaction.assetId, false, true)}
-                    alt=""
+                    class="rounded-lg w-[75px] h-[75px] object-cover"
+                    src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                    alt="comment-thumbnail"
                   />
                 </div>
               {/if}
@@ -197,12 +195,12 @@
               <div>
                 {#if showDeleteReaction[index]}
                   <button
-                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-2 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-300 transition-colors"
+                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
                     use:clickOutside
                     on:outclick={() => (showDeleteReaction[index] = false)}
                     on:click={() => handleDeleteReaction(reaction, index)}
                   >
-                    Delete
+                    Remove
                   </button>
                 {/if}
               </div>
@@ -230,13 +228,11 @@
                   }`}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
-                  <div>
+                  <div class="aspect-square w-[75px] h-[75px]">
                     <img
-                      class="rounded-lg"
-                      width="100"
-                      height="100"
-                      src={api.getAssetFileUrl(reaction.assetId, false, true)}
-                      alt=""
+                      class="rounded-lg w-[75px] h-[75px] object-cover"
+                      src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                      alt="like-thumbnail"
                     />
                   </div>
                 {/if}
@@ -250,12 +246,12 @@
                 <div>
                   {#if showDeleteReaction[index]}
                     <button
-                      class="absolute top-2 right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
+                      class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
                       use:clickOutside
                       on:outclick={() => (showDeleteReaction[index] = false)}
                       on:click={() => handleDeleteReaction(reaction, index)}
                     >
-                      Delete Like
+                      Remove
                     </button>
                   {/if}
                 </div>
