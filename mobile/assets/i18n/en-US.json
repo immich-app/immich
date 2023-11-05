@@ -164,6 +164,7 @@
   "delete_dialog_alert": "These items will be permanently deleted from Immich and from your device",
   "delete_dialog_cancel": "Cancel",
   "delete_dialog_ok": "Delete",
+  "delete_dialog_ok_force": "Delete Anyway",
   "delete_dialog_title": "Delete Permanently",
   "delete_shared_link_dialog_content": "Are you sure you want to delete this shared link?",
   "delete_shared_link_dialog_title": "Delete Shared Link",
