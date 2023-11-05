@@ -217,7 +217,7 @@ export class PersonService {
     }
 
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.resizePath) {
+    if (!asset || !asset.resizePath || asset.faces?.length > 0) {
       return false;
     }
 
