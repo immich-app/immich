@@ -28,6 +28,12 @@ export interface AlbumAssets {
   assetIds: string[];
 }
 
+export interface AlbumPersonInfo{
+  personId: string;
+  personName: string;
+  albumsCount: number;
+}
+
 export interface IAlbumRepository {
   getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null>;
   getByIds(ids: string[]): Promise<AlbumEntity[]>;
@@ -50,4 +56,5 @@ export interface IAlbumRepository {
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   delete(album: AlbumEntity): Promise<void>;
   updateThumbnails(): Promise<number | undefined>;
+  getPeople(albumId: string): Promise<AlbumPersonInfo[]>;
 }

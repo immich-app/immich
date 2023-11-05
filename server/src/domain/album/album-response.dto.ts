@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { UserResponseDto, mapUser } from '../user';
 import { ValidateUUID } from '../domain.util';
-import { AlbumInfoAssetCount } from '../repositories/album.repository';
+import { AlbumInfoAssetCount, AlbumPersonInfo } from '../repositories/album.repository';
 
 
 export class AlbumResponseDto {
@@ -35,6 +35,23 @@ export class AlbumsForPersonResponseDto {
   albumThumbnailAssetId!: string;
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
+}
+
+export class PeopleForAlbumResponseDto {
+  @ValidateUUID()
+  personId!: string;
+  @ApiProperty({ type: 'string' })
+  personName!: string;
+  @ApiProperty({ type: 'integer' })
+  albumCount!: number;
+}
+
+export function mapPeopleInfo(entity: AlbumPersonInfo): PeopleForAlbumResponseDto {
+  return {
+    personId: entity.personId,
+    personName: entity.personName,
+    albumCount: entity.albumsCount,
+  };
 }
 
 export function mapAlbumCount(entity: AlbumInfoAssetCount): AlbumsForPersonResponseDto {

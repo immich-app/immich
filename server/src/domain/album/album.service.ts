@@ -15,9 +15,11 @@ import {
 import {
   AlbumCountResponseDto,
   AlbumResponseDto,
+  PeopleForAlbumResponseDto,
   mapAlbum,
   mapAlbumWithAssets,
   mapAlbumWithoutAssets,
+  mapPeopleInfo,
 } from './album-response.dto';
 import { AddUsersDto, AlbumInfoDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
 
@@ -289,5 +291,11 @@ export class AlbumService {
       throw new BadRequestException('Album not found');
     }
     return album;
+  }
+
+  async getPeople(authUser: AuthUserDto, id: string): Promise<PeopleForAlbumResponseDto[]> {
+    await this.access.requirePermission(authUser, Permission.ALBUM_SHARE, id);
+    const people = await this.albumRepository.getPeople(id);
+    return people.map((person) => mapPeopleInfo(person));
   }
 }

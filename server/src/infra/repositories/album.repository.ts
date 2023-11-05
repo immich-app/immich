@@ -1,12 +1,13 @@
-import { AlbumAsset, AlbumAssetCount, AlbumAssets, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
+import { AlbumAsset, AlbumAssetCount, AlbumAssets, AlbumInfoOptions, AlbumPersonInfo, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 import { dataSource } from '../database.config';
-import { AlbumEntity, AssetEntity } from '../entities';
+import { AlbumEntity, AssetEntity, PersonEntity } from '../entities';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
+
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
@@ -80,6 +81,34 @@ export class AlbumRepository implements IAlbumRepository {
       assetCount: Number(albumCount['asset_count']),
     }));
   }
+
+  async getPeople(albumId: string): Promise<AlbumPersonInfo[]>{
+       const people = await this.repository
+      .createQueryBuilder('album')
+      .select('face.personId', 'personId')
+      .innerJoin('album.assets', 'asset')
+      .innerJoin('asset.faces', 'face')
+      .where("album.id = '" + albumId + "'" );
+
+      const peopleByAlbum = await this.repository
+      .createQueryBuilder('album')
+      .select('person.id')
+      .addSelect('person.name')
+      .addSelect('COUNT(DISTINCT album.id)', 'album_count')    
+      .innerJoin('album.assets', 'asset')
+      .innerJoin('asset.faces', 'face')
+      .innerJoin('face.person', 'person')
+      .where("face.personId in (" + people.getSql() + ")")
+      .groupBy('person.id, person.name')
+      .getRawMany();
+
+      return peopleByAlbum.map<AlbumPersonInfo>((info) => ({
+        personId: info['person_id'],
+        personName: info['person_name'],
+        albumsCount: Number(info['album_count']),
+      }));
+  }
+
 
   /**
    * Returns the album IDs that have an invalid thumbnail, when:

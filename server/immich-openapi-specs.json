@@ -384,6 +384,51 @@
         ]
       }
     },
+    "/album/{id}/people": {
+      "get": {
+        "operationId": "getAlbumPeople",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PeopleForAlbumResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Album"
+        ]
+      }
+    },
     "/album/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
@@ -7399,6 +7444,26 @@
           "profile"
         ],
         "type": "string"
+      },
+      "PeopleForAlbumResponseDto": {
+        "properties": {
+          "albumCount": {
+            "type": "integer"
+          },
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "personName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "personId",
+          "personName",
+          "albumCount"
+        ],
+        "type": "object"
       },
       "PeopleResponseDto": {
         "properties": {

@@ -9,6 +9,7 @@ import {
   BulkIdsDto,
   CreateAlbumDto as CreateDto,
   GetAlbumsDto,
+  PeopleForAlbumResponseDto,
   UpdateAlbumDto as UpdateDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
@@ -92,4 +93,13 @@ export class AlbumController {
   ) {
     return this.service.removeUser(authUser, id, userId);
   }
+
+  @Get(':id/people')
+  getAlbumPeople(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto
+  ): Promise<PeopleForAlbumResponseDto[]> {
+    return this.service.getPeople(authUser, id);
+  }
+
 }
