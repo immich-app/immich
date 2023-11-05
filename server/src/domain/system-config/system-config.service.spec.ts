@@ -61,6 +61,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: true,
     url: 'http://immich-machine-learning:3003',
+    urls: ['http://immich-machine-learning:3003'],
     classification: {
       enabled: true,
       modelName: 'microsoft/resnet-50',

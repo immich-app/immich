@@ -1,6 +1,16 @@
 import { ClassificationConfig, CLIPConfig, RecognitionConfig } from '@app/domain';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsObject, IsUrl, ValidateIf, ValidateNested, IsArray, ArrayMinSize, ArrayMaxSize, ArrayUnique } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  ArrayUnique,
+  IsArray,
+  IsBoolean,
+  IsObject,
+  IsUrl,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
 
 export class SystemConfigMachineLearningDto {
   @IsBoolean()
