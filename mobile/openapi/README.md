@@ -83,6 +83,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**deleteAlbum**](doc\/AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
 *AlbumApi* | [**getAlbumCount**](doc\/AlbumApi.md#getalbumcount) | **GET** /album/count | 
 *AlbumApi* | [**getAlbumInfo**](doc\/AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
+*AlbumApi* | [**getAlbumPeople**](doc\/AlbumApi.md#getalbumpeople) | **GET** /album/{id}/people | 
 *AlbumApi* | [**getAllAlbums**](doc\/AlbumApi.md#getallalbums) | **GET** /album | 
 *AlbumApi* | [**removeAssetFromAlbum**](doc\/AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc\/AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
@@ -280,6 +281,7 @@ Class | Method | HTTP request | Description
  - [OAuthConfigResponseDto](doc\/OAuthConfigResponseDto.md)
  - [PathEntityType](doc\/PathEntityType.md)
  - [PathType](doc\/PathType.md)
+ - [PeopleForAlbumResponseDto](doc\/PeopleForAlbumResponseDto.md)
  - [PeopleResponseDto](doc\/PeopleResponseDto.md)
  - [PeopleUpdateDto](doc\/PeopleUpdateDto.md)
  - [PeopleUpdateItem](doc\/PeopleUpdateItem.md)

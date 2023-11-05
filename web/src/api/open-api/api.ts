@@ -2349,6 +2349,31 @@ export type PathType = typeof PathType[keyof typeof PathType];
 /**
  * 
  * @export
+ * @interface PeopleForAlbumResponseDto
+ */
+export interface PeopleForAlbumResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof PeopleForAlbumResponseDto
+     */
+    'albumCount': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof PeopleForAlbumResponseDto
+     */
+    'personId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PeopleForAlbumResponseDto
+     */
+    'personName': string;
+}
+/**
+ * 
+ * @export
  * @interface PeopleResponseDto
  */
 export interface PeopleResponseDto {
@@ -5121,6 +5146,48 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAlbumPeople: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getAlbumPeople', 'id', id)
+            const localVarPath = `/album/{id}/people`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {boolean} [shared] 
          * @param {string} [assetId] Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
          * @param {*} [options] Override http request option.
@@ -5385,6 +5452,16 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAlbumPeople(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PeopleForAlbumResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumPeople(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {boolean} [shared] 
          * @param {string} [assetId] Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
          * @param {*} [options] Override http request option.
@@ -5489,6 +5566,15 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          */
         getAlbumInfo(requestParameters: AlbumApiGetAlbumInfoRequest, options?: AxiosRequestConfig): AxiosPromise<AlbumResponseDto> {
             return localVarFp.getAlbumInfo(requestParameters.id, requestParameters.withoutAssets, requestParameters.key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AlbumApiGetAlbumPeopleRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAlbumPeople(requestParameters: AlbumApiGetAlbumPeopleRequest, options?: AxiosRequestConfig): AxiosPromise<Array<PeopleForAlbumResponseDto>> {
+            return localVarFp.getAlbumPeople(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5632,6 +5718,20 @@ export interface AlbumApiGetAlbumInfoRequest {
      * @memberof AlbumApiGetAlbumInfo
      */
     readonly key?: string
+}
+
+/**
+ * Request parameters for getAlbumPeople operation in AlbumApi.
+ * @export
+ * @interface AlbumApiGetAlbumPeopleRequest
+ */
+export interface AlbumApiGetAlbumPeopleRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AlbumApiGetAlbumPeople
+     */
+    readonly id: string
 }
 
 /**
@@ -5788,6 +5888,17 @@ export class AlbumApi extends BaseAPI {
      */
     public getAlbumInfo(requestParameters: AlbumApiGetAlbumInfoRequest, options?: AxiosRequestConfig) {
         return AlbumApiFp(this.configuration).getAlbumInfo(requestParameters.id, requestParameters.withoutAssets, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AlbumApiGetAlbumPeopleRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AlbumApi
+     */
+    public getAlbumPeople(requestParameters: AlbumApiGetAlbumPeopleRequest, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).getAlbumPeople(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

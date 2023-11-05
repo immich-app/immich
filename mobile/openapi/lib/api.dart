@@ -123,6 +123,7 @@ part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_config_response_dto.dart';
 part 'model/path_entity_type.dart';
 part 'model/path_type.dart';
+part 'model/people_for_album_response_dto.dart';
 part 'model/people_response_dto.dart';
 part 'model/people_update_dto.dart';
 part 'model/people_update_item.dart';

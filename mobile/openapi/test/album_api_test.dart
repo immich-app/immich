@@ -47,6 +47,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<PeopleForAlbumResponseDto>> getAlbumPeople(String id) async
+    test('test getAlbumPeople', () async {
+      // TODO
+    });
+
     //Future<List<AlbumResponseDto>> getAllAlbums({ bool shared, String assetId }) async
     test('test getAllAlbums', () async {
       // TODO
