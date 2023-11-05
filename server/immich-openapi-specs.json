@@ -8254,11 +8254,18 @@
           },
           "url": {
             "type": "string"
+          },
+          "urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
           "enabled",
           "url",
+          "urls",
           "classification",
           "clip",
           "facialRecognition"

@@ -60,6 +60,7 @@ export const defaults = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
+    urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
     classification: {
       enabled: true,
       modelName: 'microsoft/resnet-50',

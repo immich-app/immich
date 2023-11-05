@@ -47,6 +47,7 @@ export enum SystemConfigKey {
 
   MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
   MACHINE_LEARNING_URL = 'machineLearning.url',
+  MACHINE_LEARNING_URLS = 'machineLearning.urls',
 
   MACHINE_LEARNING_CLASSIFICATION_ENABLED = 'machineLearning.classification.enabled',
   MACHINE_LEARNING_CLASSIFICATION_MODEL_NAME = 'machineLearning.classification.modelName',
@@ -172,6 +173,7 @@ export interface SystemConfig {
   machineLearning: {
     enabled: boolean;
     url: string;
+    urls: Array<string>;
     classification: {
       enabled: boolean;
       modelName: string;

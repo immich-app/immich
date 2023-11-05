@@ -12,6 +12,9 @@
   import SettingSwitch from '../setting-switch.svelte';
   import SettingAccordion from '../setting-accordion.svelte';
   import SettingSelect from '../setting-select.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiCheckCircleOutline, mdiTrashCanOutline } from '@mdi/js';
 
   export let machineLearningConfig: SystemConfigMachineLearningDto; // this is the config that is being edited
   export let disabled = false;
@@ -46,13 +49,55 @@
       notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to save settings');
+
+      return false;
     }
+
+    return true;
   }
 
   async function resetToDefault() {
     machineLearningConfig = { ...defaultConfig };
     notificationController.show({ message: 'Reset settings to defaults', type: NotificationType.Info });
   }
+
+  let newMlURL: string;
+
+  const addURL = async () => {
+    if (!newMlURL.startsWith('https://') && !newMlURL.startsWith('http://')) {
+      newMlURL = 'http://' + newMlURL;
+    }
+
+    machineLearningConfig.urls.push(newMlURL);
+
+    var success = await saveSetting();
+    if (!success) {
+      machineLearningConfig.urls.pop();
+    }
+
+    newMlURL = '';
+  };
+
+  const handleDelete = async (url: string) => {
+    let _urls = [...machineLearningConfig.urls];
+    machineLearningConfig.urls = machineLearningConfig.urls.filter((it) => it != url);
+
+    var success = await saveSetting();
+    if (!success) {
+      newMlURL = '';
+      machineLearningConfig.urls = _urls;
+    }
+  };
+
+  const setPrimary = async (url: string) => {
+    let _url = machineLearningConfig.url;
+    machineLearningConfig.url = url;
+
+    var success = await saveSetting();
+    if (!success) {
+      machineLearningConfig.url = _url;
+    }
+  };
 </script>
 
 <div class="mt-2">
@@ -69,15 +114,53 @@
 
           <hr />
 
-          <SettingInputField
-            inputType={SettingInputFieldType.TEXT}
-            label="URL"
-            desc="URL of the machine learning server"
-            bind:value={machineLearningConfig.url}
-            required={true}
-            disabled={disabled || !machineLearningConfig.enabled}
-            isEdited={machineLearningConfig.url !== savedConfig.url}
-          />
+          <table class="w-full text-left">
+            <thead
+              class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+            >
+              <tr class="flex w-full place-items-center">
+                <th class="w-2/3 text-center text-sm font-medium">URL</th>
+                <th class="w-1/3 text-center text-sm font-medium">Action</th>
+              </tr>
+            </thead>
+            <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+              {#each machineLearningConfig.urls as url, index}
+                <tr
+                  class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                    url == machineLearningConfig.url
+                      ? 'bg-immich-primary/50'
+                      : index % 2 == 0
+                      ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                      : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+                  }`}
+                >
+                  <td class="w-2/3 text-ellipsis px-4 text-sm">{url}</td>
+
+                  <td class="w-1/3 text-ellipsis px-4 text-sm">
+                    <button
+                      disabled={url == machineLearningConfig.url}
+                      on:click={() => setPrimary(url)}
+                      class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 disabled:bg-immich-primary/50 dark:disabled:bg-immich-dark-primary/50"
+                    >
+                      <Icon path={mdiCheckCircleOutline} size="16" />
+                    </button>
+                    <button
+                      disabled={url == machineLearningConfig.url}
+                      on:click={() => handleDelete(url)}
+                      class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 disabled:bg-immich-primary/50 dark:disabled:bg-immich-dark-primary/50"
+                    >
+                      <Icon path={mdiTrashCanOutline} size="16" />
+                    </button>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+
+          <div class="flex flex-row gap-2">
+            <input bind:value={newMlURL} class="immich-form-input w-full pb-2" placeholder="Machine learning URL" />
+            <Button on:click={() => addURL()} size="sm">Add</Button>
+          </div>
         </div>
 
         <SettingAccordion title="Image Tagging" subtitle="Tag and classify images with object labels">

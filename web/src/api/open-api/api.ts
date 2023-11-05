@@ -3570,6 +3570,13 @@ export interface SystemConfigMachineLearningDto {
      * @memberof SystemConfigMachineLearningDto
      */
     'url': string;
+
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof SystemConfigMachineLearningDto
+     */
+    'urls': Array<string>;
 }
 /**
  * 
