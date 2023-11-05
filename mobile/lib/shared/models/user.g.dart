@@ -17,53 +17,59 @@ const UserSchema = CollectionSchema(
   name: r'User',
   id: -7838171048429979076,
   properties: {
-    r'email': PropertySchema(
+    r'avatarColor': PropertySchema(
       id: 0,
+      name: r'avatarColor',
+      type: IsarType.string,
+      enumMap: _UseravatarColorEnumValueMap,
+    ),
+    r'email': PropertySchema(
+      id: 1,
       name: r'email',
       type: IsarType.string,
     ),
     r'firstName': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'firstName',
       type: IsarType.string,
     ),
     r'id': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'id',
       type: IsarType.string,
     ),
     r'isAdmin': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isAdmin',
       type: IsarType.bool,
     ),
     r'isPartnerSharedBy': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'isPartnerSharedBy',
       type: IsarType.bool,
     ),
     r'isPartnerSharedWith': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'isPartnerSharedWith',
       type: IsarType.bool,
     ),
     r'lastName': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'lastName',
       type: IsarType.string,
     ),
     r'memoryEnabled': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'memoryEnabled',
       type: IsarType.bool,
     ),
     r'profileImagePath': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'profileImagePath',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -117,6 +123,7 @@ int _userEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.avatarColor.name.length * 3;
   bytesCount += 3 + object.email.length * 3;
   bytesCount += 3 + object.firstName.length * 3;
   bytesCount += 3 + object.id.length * 3;
@@ -131,16 +138,17 @@ void _userSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.email);
-  writer.writeString(offsets[1], object.firstName);
-  writer.writeString(offsets[2], object.id);
-  writer.writeBool(offsets[3], object.isAdmin);
-  writer.writeBool(offsets[4], object.isPartnerSharedBy);
-  writer.writeBool(offsets[5], object.isPartnerSharedWith);
-  writer.writeString(offsets[6], object.lastName);
-  writer.writeBool(offsets[7], object.memoryEnabled);
-  writer.writeString(offsets[8], object.profileImagePath);
-  writer.writeDateTime(offsets[9], object.updatedAt);
+  writer.writeString(offsets[0], object.avatarColor.name);
+  writer.writeString(offsets[1], object.email);
+  writer.writeString(offsets[2], object.firstName);
+  writer.writeString(offsets[3], object.id);
+  writer.writeBool(offsets[4], object.isAdmin);
+  writer.writeBool(offsets[5], object.isPartnerSharedBy);
+  writer.writeBool(offsets[6], object.isPartnerSharedWith);
+  writer.writeString(offsets[7], object.lastName);
+  writer.writeBool(offsets[8], object.memoryEnabled);
+  writer.writeString(offsets[9], object.profileImagePath);
+  writer.writeDateTime(offsets[10], object.updatedAt);
 }
 
 User _userDeserialize(
@@ -150,16 +158,19 @@ User _userDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = User(
-    email: reader.readString(offsets[0]),
-    firstName: reader.readString(offsets[1]),
-    id: reader.readString(offsets[2]),
-    isAdmin: reader.readBool(offsets[3]),
-    isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
-    isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
-    lastName: reader.readString(offsets[6]),
-    memoryEnabled: reader.readBoolOrNull(offsets[7]),
-    profileImagePath: reader.readStringOrNull(offsets[8]) ?? '',
-    updatedAt: reader.readDateTime(offsets[9]),
+    avatarColor:
+        _UseravatarColorValueEnumMap[reader.readStringOrNull(offsets[0])] ??
+            AvatarColorEnum.primary,
+    email: reader.readString(offsets[1]),
+    firstName: reader.readString(offsets[2]),
+    id: reader.readString(offsets[3]),
+    isAdmin: reader.readBool(offsets[4]),
+    isPartnerSharedBy: reader.readBoolOrNull(offsets[5]) ?? false,
+    isPartnerSharedWith: reader.readBoolOrNull(offsets[6]) ?? false,
+    lastName: reader.readString(offsets[7]),
+    memoryEnabled: reader.readBoolOrNull(offsets[8]),
+    profileImagePath: reader.readStringOrNull(offsets[9]) ?? '',
+    updatedAt: reader.readDateTime(offsets[10]),
   );
   return object;
 }
@@ -172,29 +183,57 @@ P _userDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (_UseravatarColorValueEnumMap[reader.readStringOrNull(offset)] ??
+          AvatarColorEnum.primary) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
+      return (reader.readBool(offset)) as P;
     case 5:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 7:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 9:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 10:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _UseravatarColorEnumValueMap = {
+  r'primary': r'primary',
+  r'pink': r'pink',
+  r'red': r'red',
+  r'yellow': r'yellow',
+  r'blue': r'blue',
+  r'green': r'green',
+  r'purple': r'purple',
+  r'orange': r'orange',
+  r'gray': r'gray',
+  r'amber': r'amber',
+};
+const _UseravatarColorValueEnumMap = {
+  r'primary': AvatarColorEnum.primary,
+  r'pink': AvatarColorEnum.pink,
+  r'red': AvatarColorEnum.red,
+  r'yellow': AvatarColorEnum.yellow,
+  r'blue': AvatarColorEnum.blue,
+  r'green': AvatarColorEnum.green,
+  r'purple': AvatarColorEnum.purple,
+  r'orange': AvatarColorEnum.orange,
+  r'gray': AvatarColorEnum.gray,
+  r'amber': AvatarColorEnum.amber,
+};
 
 Id _userGetId(User object) {
   return object.isarId;
@@ -383,6 +422,136 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
 }
 
 extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorEqualTo(
+    AvatarColorEnum value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'avatarColor',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorGreaterThan(
+    AvatarColorEnum value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'avatarColor',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorLessThan(
+    AvatarColorEnum value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'avatarColor',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorBetween(
+    AvatarColorEnum lower,
+    AvatarColorEnum upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'avatarColor',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'avatarColor',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'avatarColor',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'avatarColor',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'avatarColor',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'avatarColor',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'avatarColor',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> emailEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1305,6 +1474,18 @@ extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
 }
 
 extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
+  QueryBuilder<User, User, QAfterSortBy> sortByAvatarColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByAvatarColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'email', Sort.asc);
@@ -1427,6 +1608,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
 }
 
 extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
+  QueryBuilder<User, User, QAfterSortBy> thenByAvatarColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByAvatarColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> thenByEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'email', Sort.asc);
@@ -1561,6 +1754,13 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
 }
 
 extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
+  QueryBuilder<User, User, QDistinct> distinctByAvatarColor(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'avatarColor', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByEmail(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1632,6 +1832,12 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');
+    });
+  }
+
+  QueryBuilder<User, AvatarColorEnum, QQueryOperations> avatarColorProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'avatarColor');
     });
   }
 

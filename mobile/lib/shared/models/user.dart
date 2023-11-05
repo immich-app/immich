@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
@@ -17,6 +19,7 @@ class User {
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
     this.profileImagePath = '',
+    this.avatarColor = AvatarColorEnum.primary,
     this.memoryEnabled = true,
   });
 
@@ -32,7 +35,8 @@ class User {
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
-        memoryEnabled = dto.memoriesEnabled;
+        memoryEnabled = dto.memoriesEnabled,
+        avatarColor = dto.avatarColor.toAvatarColor();
 
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
@@ -44,6 +48,8 @@ class User {
   bool isPartnerSharedWith;
   bool isAdmin;
   String profileImagePath;
+  @Enumerated(EnumType.name)
+  AvatarColorEnum avatarColor;
   bool? memoryEnabled;
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
@@ -55,6 +61,7 @@ class User {
     if (other is! User) return false;
     return id == other.id &&
         updatedAt.isAtSameMomentAs(other.updatedAt) &&
+        avatarColor == other.avatarColor &&
         email == other.email &&
         firstName == other.firstName &&
         lastName == other.lastName &&
@@ -76,6 +83,75 @@ class User {
       isPartnerSharedBy.hashCode ^
       isPartnerSharedWith.hashCode ^
       profileImagePath.hashCode ^
+      avatarColor.hashCode ^
       isAdmin.hashCode ^
       memoryEnabled.hashCode;
+}
+
+enum AvatarColorEnum {
+  primary,
+  pink,
+  red,
+  yellow,
+  blue,
+  green,
+  purple,
+  orange,
+  gray,
+  amber,
+}
+
+extension AvatarColorEnumHelper on UserResponseDtoAvatarColorEnum {
+  AvatarColorEnum toAvatarColor() {
+    switch (this) {
+      case UserResponseDtoAvatarColorEnum.primary:
+        return AvatarColorEnum.primary;
+      case UserResponseDtoAvatarColorEnum.pink:
+        return AvatarColorEnum.pink;
+      case UserResponseDtoAvatarColorEnum.red:
+        return AvatarColorEnum.red;
+      case UserResponseDtoAvatarColorEnum.yellow:
+        return AvatarColorEnum.yellow;
+      case UserResponseDtoAvatarColorEnum.blue:
+        return AvatarColorEnum.blue;
+      case UserResponseDtoAvatarColorEnum.green:
+        return AvatarColorEnum.green;
+      case UserResponseDtoAvatarColorEnum.purple:
+        return AvatarColorEnum.purple;
+      case UserResponseDtoAvatarColorEnum.orange:
+        return AvatarColorEnum.orange;
+      case UserResponseDtoAvatarColorEnum.gray:
+        return AvatarColorEnum.gray;
+      case UserResponseDtoAvatarColorEnum.amber:
+        return AvatarColorEnum.amber;
+    }
+    return AvatarColorEnum.primary;
+  }
+}
+
+extension AvatarColorToColorHelper on AvatarColorEnum {
+  Color toColor([bool isDarkTheme = false]) {
+    switch (this) {
+      case AvatarColorEnum.primary:
+        return isDarkTheme ? const Color(0xFFABCBFA) : const Color(0xFF4250AF);
+      case AvatarColorEnum.pink:
+        return const Color.fromARGB(255, 244, 114, 182);
+      case AvatarColorEnum.red:
+        return const Color.fromARGB(255, 239, 68, 68);
+      case AvatarColorEnum.yellow:
+        return const Color.fromARGB(255, 234, 179, 8);
+      case AvatarColorEnum.blue:
+        return const Color.fromARGB(255, 59, 130, 246);
+      case AvatarColorEnum.green:
+        return const Color.fromARGB(255, 22, 163, 74);
+      case AvatarColorEnum.purple:
+        return const Color.fromARGB(255, 147, 51, 234);
+      case AvatarColorEnum.orange:
+        return const Color.fromARGB(255, 234, 88, 12);
+      case AvatarColorEnum.gray:
+        return const Color.fromARGB(255, 75, 85, 99);
+      case AvatarColorEnum.amber:
+        return const Color.fromARGB(255, 217, 119, 6);
+    }
+  }
 }

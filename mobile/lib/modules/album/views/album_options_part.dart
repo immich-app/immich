@@ -115,12 +115,8 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
     buildOwnerInfo() {
       return ListTile(
-        leading: owner != null
-            ? UserCircleAvatar(
-                user: owner,
-                useRandomBackgroundColor: true,
-              )
-            : const SizedBox(),
+        leading:
+            owner != null ? UserCircleAvatar(user: owner) : const SizedBox(),
         title: Text(
           album.owner.value?.firstName ?? "",
           style: const TextStyle(
@@ -149,7 +145,6 @@ class AlbumOptionsPage extends HookConsumerWidget {
           return ListTile(
             leading: UserCircleAvatar(
               user: user,
-              useRandomBackgroundColor: true,
               radius: 22,
             ),
             title: Text(

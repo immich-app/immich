@@ -4,8 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
-import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
@@ -26,7 +24,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final bool isEnableAutoBackup =
         backupState.backgroundBackup || backupState.autoBackup;
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
-    AuthenticationState authState = ref.watch(authenticationProvider);
     final user = Store.tryGet(StoreKey.currentUser);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     const widgetSize = 30.0;
@@ -55,7 +52,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           alignment: Alignment.bottomRight,
           isLabelVisible: serverInfoState.isVersionMismatch,
           offset: const Offset(2, 2),
-          child: authState.profileImagePath.isEmpty || user == null
+          child: user == null
               ? const Icon(
                   Icons.face_outlined,
                   size: widgetSize,
