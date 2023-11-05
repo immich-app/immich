@@ -1,6 +1,203 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/activity": {
+      "get": {
+        "operationId": "getActivities",
+        "parameters": [
+          {
+            "name": "albumId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ReactionType"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      },
+      "post": {
+        "operationId": "createActivity",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
+    "/activity/statistics": {
+      "get": {
+        "operationId": "getActivityStatistics",
+        "parameters": [
+          {
+            "name": "albumId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
+    "/activity/{id}": {
+      "delete": {
+        "operationId": "deleteActivity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Activity"
+        ]
+      }
+    },
     "/album": {
       "get": {
         "operationId": "getAllAlbums",
@@ -481,7 +678,7 @@
     },
     "/api-key": {
       "get": {
-        "operationId": "getKeys",
+        "operationId": "getApiKeys",
         "parameters": [],
         "responses": {
           "200": {
@@ -514,7 +711,7 @@
         ]
       },
       "post": {
-        "operationId": "createKey",
+        "operationId": "createApiKey",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -556,7 +753,7 @@
     },
     "/api-key/{id}": {
       "delete": {
-        "operationId": "deleteKey",
+        "operationId": "deleteApiKey",
         "parameters": [
           {
             "name": "id",
@@ -589,7 +786,7 @@
         ]
       },
       "get": {
-        "operationId": "getKey",
+        "operationId": "getApiKey",
         "parameters": [
           {
             "name": "id",
@@ -629,7 +826,7 @@
         ]
       },
       "put": {
-        "operationId": "updateKey",
+        "operationId": "updateApiKey",
         "parameters": [
           {
             "name": "id",
@@ -887,7 +1084,7 @@
     "/asset/bulk-upload-check": {
       "post": {
         "description": "Checks if assets exist by checksums",
-        "operationId": "bulkUploadCheck",
+        "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -1658,7 +1855,7 @@
     },
     "/asset/statistics": {
       "get": {
-        "operationId": "getAssetStats",
+        "operationId": "getAssetStatistics",
         "parameters": [
           {
             "name": "isArchived",
@@ -1780,7 +1977,7 @@
     },
     "/asset/time-bucket": {
       "get": {
-        "operationId": "getByTimeBucket",
+        "operationId": "getTimeBucket",
         "parameters": [
           {
             "name": "size",
@@ -2399,7 +2596,7 @@
     },
     "/auth/admin-sign-up": {
       "post": {
-        "operationId": "adminSignUp",
+        "operationId": "signUpAdmin",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -2746,7 +2943,7 @@
     },
     "/library": {
       "get": {
-        "operationId": "getAllForUser",
+        "operationId": "getLibraries",
         "parameters": [],
         "responses": {
           "200": {
@@ -3068,7 +3265,7 @@
     },
     "/oauth/authorize": {
       "post": {
-        "operationId": "authorizeOAuth",
+        "operationId": "startOAuth",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3099,7 +3296,7 @@
     },
     "/oauth/callback": {
       "post": {
-        "operationId": "callback",
+        "operationId": "finishOAuth",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3132,7 +3329,7 @@
       "post": {
         "deprecated": true,
         "description": "@deprecated use feature flags and /oauth/authorize",
-        "operationId": "generateConfig",
+        "operationId": "generateOAuthConfig",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3163,7 +3360,7 @@
     },
     "/oauth/link": {
       "post": {
-        "operationId": "link",
+        "operationId": "linkOAuthAccount",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -3205,7 +3402,7 @@
     },
     "/oauth/mobile-redirect": {
       "get": {
-        "operationId": "mobileRedirect",
+        "operationId": "redirectOAuthToMobile",
         "parameters": [],
         "responses": {
           "200": {
@@ -3219,7 +3416,7 @@
     },
     "/oauth/unlink": {
       "post": {
-        "operationId": "unlink",
+        "operationId": "unlinkOAuthAccount",
         "parameters": [],
         "responses": {
           "201": {
@@ -4110,9 +4307,9 @@
         ]
       }
     },
-    "/server-info/stats": {
+    "/server-info/statistics": {
       "get": {
-        "operationId": "getStats",
+        "operationId": "getServerStatistics",
         "parameters": [],
         "responses": {
           "200": {
@@ -4640,7 +4837,7 @@
     },
     "/system-config/defaults": {
       "get": {
-        "operationId": "getDefaults",
+        "operationId": "getConfigDefaults",
         "parameters": [],
         "responses": {
           "200": {
@@ -5424,7 +5621,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.83.0",
+    "version": "1.84.0",
     "contact": {}
   },
   "tags": [],
@@ -5509,6 +5706,77 @@
         },
         "required": [
           "name"
+        ],
+        "type": "object"
+      },
+      "ActivityCreateDto": {
+        "properties": {
+          "albumId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ReactionType"
+          }
+        },
+        "required": [
+          "albumId",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ActivityResponseDto": {
+        "properties": {
+          "assetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "comment": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "comment",
+              "like"
+            ],
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserDto"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "type",
+          "user",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "ActivityStatisticsResponseDto": {
+        "properties": {
+          "comments": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "comments"
         ],
         "type": "object"
       },
@@ -7432,6 +7700,13 @@
         ],
         "type": "object"
       },
+      "ReactionType": {
+        "enum": [
+          "comment",
+          "like"
+        ],
+        "type": "string"
+      },
       "RecognitionConfig": {
         "properties": {
           "enabled": {
@@ -8061,6 +8336,9 @@
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
+          "library": {
+            "$ref": "#/components/schemas/SystemConfigLibraryDto"
+          },
           "machineLearning": {
             "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
@@ -8104,7 +8382,8 @@
           "job",
           "thumbnail",
           "trash",
-          "theme"
+          "theme",
+          "library"
         ],
         "type": "object"
       },
@@ -8235,6 +8514,32 @@
           "recognizeFaces",
           "sidecar",
           "library"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLibraryDto": {
+        "properties": {
+          "scan": {
+            "$ref": "#/components/schemas/SystemConfigLibraryScanDto"
+          }
+        },
+        "required": [
+          "scan"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLibraryScanDto": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "cronExpression"
         ],
         "type": "object"
       },
@@ -8734,6 +9039,33 @@
         ],
         "type": "object"
       },
+      "UserDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "profileImagePath"
+        ],
+        "type": "object"
+      },
       "UserResponseDto": {
         "properties": {
           "createdAt": {
@@ -8787,12 +9119,12 @@
         },
         "required": [
           "id",
-          "email",
           "firstName",
           "lastName",
+          "email",
+          "profileImagePath",
           "storageLabel",
           "externalPath",
-          "profileImagePath",
           "shouldChangePassword",
           "isAdmin",
           "createdAt",

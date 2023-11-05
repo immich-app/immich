@@ -13,6 +13,7 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import * as _ from 'lodash';
@@ -120,6 +121,12 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   theme: {
     customCss: '',
+  },
+  library: {
+    scan: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_MIDNIGHT,
+    },
   },
 });
 

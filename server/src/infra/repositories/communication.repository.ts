@@ -10,7 +10,7 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
 
   constructor(private authService: AuthService) {}
 
-  @WebSocketServer() server!: Server;
+  @WebSocketServer() server?: Server;
 
   addEventListener(event: 'connect', callback: Callback) {
     this.onConnectCallbacks.push(callback);
@@ -37,10 +37,10 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
   }
 
   send(event: CommunicationEvent, userId: string, data: any) {
-    this.server.to(userId).emit(event, data);
+    this.server?.to(userId).emit(event, data);
   }
 
   broadcast(event: CommunicationEvent, data: any) {
-    this.server.emit(event, data);
+    this.server?.emit(event, data);
   }
 }

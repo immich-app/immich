@@ -22,8 +22,8 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { AdminRoute, AuthUser, Authenticated } from '../app.guard';
-import { FileUploadInterceptor, Route } from '../app.interceptor';
 import { UseValidation, asStreamableFile } from '../app.utils';
+import { FileUploadInterceptor, Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('User')

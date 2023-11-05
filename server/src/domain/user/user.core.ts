@@ -1,5 +1,5 @@
 import { LibraryType, UserEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import path from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
@@ -61,26 +61,21 @@ export class UserCore {
       }
     }
 
-    try {
-      if (dto.password) {
-        dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
-      }
-
-      if (dto.storageLabel === '') {
-        dto.storageLabel = null;
-      }
-
-      if (dto.externalPath === '') {
-        dto.externalPath = null;
-      } else if (dto.externalPath) {
-        dto.externalPath = path.normalize(dto.externalPath);
-      }
-
-      return this.userRepository.update(id, dto);
-    } catch (e) {
-      Logger.error(e, 'Failed to update user info');
-      throw new InternalServerErrorException('Failed to update user info');
+    if (dto.password) {
+      dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
     }
+
+    if (dto.storageLabel === '') {
+      dto.storageLabel = null;
+    }
+
+    if (dto.externalPath === '') {
+      dto.externalPath = null;
+    } else if (dto.externalPath) {
+      dto.externalPath = path.normalize(dto.externalPath);
+    }
+
+    return this.userRepository.update(id, dto);
   }
 
   async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
@@ -96,30 +91,25 @@ export class UserCore {
       }
     }
 
-    try {
-      const payload: Partial<UserEntity> = { ...dto };
-      if (payload.password) {
-        payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
-      }
-      if (payload.storageLabel) {
-        payload.storageLabel = sanitize(payload.storageLabel);
-      }
-
-      const userEntity = await this.userRepository.create(payload);
-      await this.libraryRepository.create({
-        owner: { id: userEntity.id } as UserEntity,
-        name: 'Default Library',
-        assets: [],
-        type: LibraryType.UPLOAD,
-        importPaths: [],
-        exclusionPatterns: [],
-        isVisible: true,
-      });
-
-      return userEntity;
-    } catch (e) {
-      Logger.error(e, 'Create new user');
-      throw new InternalServerErrorException('Failed to register new user');
+    const payload: Partial<UserEntity> = { ...dto };
+    if (payload.password) {
+      payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
     }
+    if (payload.storageLabel) {
+      payload.storageLabel = sanitize(payload.storageLabel);
+    }
+
+    const userEntity = await this.userRepository.create(payload);
+    await this.libraryRepository.create({
+      owner: { id: userEntity.id } as UserEntity,
+      name: 'Default Library',
+      assets: [],
+      type: LibraryType.UPLOAD,
+      importPaths: [],
+      exclusionPatterns: [],
+      isVisible: true,
+    });
+
+    return userEntity;
   }
 }

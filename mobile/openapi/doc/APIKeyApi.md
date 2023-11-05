@@ -9,15 +9,15 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**createKey**](APIKeyApi.md#createkey) | **POST** /api-key | 
-[**deleteKey**](APIKeyApi.md#deletekey) | **DELETE** /api-key/{id} | 
-[**getKey**](APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
-[**getKeys**](APIKeyApi.md#getkeys) | **GET** /api-key | 
-[**updateKey**](APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
+[**createApiKey**](APIKeyApi.md#createapikey) | **POST** /api-key | 
+[**deleteApiKey**](APIKeyApi.md#deleteapikey) | **DELETE** /api-key/{id} | 
+[**getApiKey**](APIKeyApi.md#getapikey) | **GET** /api-key/{id} | 
+[**getApiKeys**](APIKeyApi.md#getapikeys) | **GET** /api-key | 
+[**updateApiKey**](APIKeyApi.md#updateapikey) | **PUT** /api-key/{id} | 
 
 
-# **createKey**
-> APIKeyCreateResponseDto createKey(aPIKeyCreateDto)
+# **createApiKey**
+> APIKeyCreateResponseDto createApiKey(aPIKeyCreateDto)
 
 
 
@@ -43,10 +43,10 @@ final api_instance = APIKeyApi();
 final aPIKeyCreateDto = APIKeyCreateDto(); // APIKeyCreateDto | 
 
 try {
-    final result = api_instance.createKey(aPIKeyCreateDto);
+    final result = api_instance.createApiKey(aPIKeyCreateDto);
     print(result);
 } catch (e) {
-    print('Exception when calling APIKeyApi->createKey: $e\n');
+    print('Exception when calling APIKeyApi->createApiKey: $e\n');
 }
 ```
 
@@ -71,8 +71,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **deleteKey**
-> deleteKey(id)
+# **deleteApiKey**
+> deleteApiKey(id)
 
 
 
@@ -98,9 +98,9 @@ final api_instance = APIKeyApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    api_instance.deleteKey(id);
+    api_instance.deleteApiKey(id);
 } catch (e) {
-    print('Exception when calling APIKeyApi->deleteKey: $e\n');
+    print('Exception when calling APIKeyApi->deleteApiKey: $e\n');
 }
 ```
 
@@ -125,8 +125,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getKey**
-> APIKeyResponseDto getKey(id)
+# **getApiKey**
+> APIKeyResponseDto getApiKey(id)
 
 
 
@@ -152,10 +152,10 @@ final api_instance = APIKeyApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getKey(id);
+    final result = api_instance.getApiKey(id);
     print(result);
 } catch (e) {
-    print('Exception when calling APIKeyApi->getKey: $e\n');
+    print('Exception when calling APIKeyApi->getApiKey: $e\n');
 }
 ```
 
@@ -180,8 +180,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getKeys**
-> List<APIKeyResponseDto> getKeys()
+# **getApiKeys**
+> List<APIKeyResponseDto> getApiKeys()
 
 
 
@@ -206,10 +206,10 @@ import 'package:openapi/api.dart';
 final api_instance = APIKeyApi();
 
 try {
-    final result = api_instance.getKeys();
+    final result = api_instance.getApiKeys();
     print(result);
 } catch (e) {
-    print('Exception when calling APIKeyApi->getKeys: $e\n');
+    print('Exception when calling APIKeyApi->getApiKeys: $e\n');
 }
 ```
 
@@ -231,8 +231,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **updateKey**
-> APIKeyResponseDto updateKey(id, aPIKeyUpdateDto)
+# **updateApiKey**
+> APIKeyResponseDto updateApiKey(id, aPIKeyUpdateDto)
 
 
 
@@ -259,10 +259,10 @@ final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final aPIKeyUpdateDto = APIKeyUpdateDto(); // APIKeyUpdateDto | 
 
 try {
-    final result = api_instance.updateKey(id, aPIKeyUpdateDto);
+    final result = api_instance.updateApiKey(id, aPIKeyUpdateDto);
     print(result);
 } catch (e) {
-    print('Exception when calling APIKeyApi->updateKey: $e\n');
+    print('Exception when calling APIKeyApi->updateApiKey: $e\n');
 }
 ```
 

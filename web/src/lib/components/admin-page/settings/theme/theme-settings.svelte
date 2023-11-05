@@ -19,7 +19,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.theme),
-      api.systemConfigApi.getDefaults().then((res) => res.data.theme),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.theme),
     ]);
   }
 
@@ -56,7 +56,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     themeConfig = { ...configs.theme };
     defaultConfig = { ...configs.theme };

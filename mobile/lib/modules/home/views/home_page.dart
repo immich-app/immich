@@ -169,9 +169,10 @@ class HomePage extends HookConsumerWidget {
         processing.value = true;
         selectionEnabledHook.value = false;
         try {
-          ref
-              .read(manualUploadProvider.notifier)
-              .uploadAssets(context, selection.value);
+          ref.read(manualUploadProvider.notifier).uploadAssets(
+                context,
+                selection.value.where((a) => a.storage == AssetState.local),
+              );
         } finally {
           processing.value = false;
         }

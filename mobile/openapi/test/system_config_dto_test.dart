@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigLibraryDto library_
+    test('to test the property `library_`', () async {
+      // TODO
+    });
+
     // SystemConfigMachineLearningDto machineLearning
     test('to test the property `machineLearning`', () async {
       // TODO

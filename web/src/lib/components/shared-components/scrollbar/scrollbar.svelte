@@ -21,11 +21,27 @@
 
   $: hoverY = height - windowHeight + clientY;
   $: scrollY = toScrollY(timelineY);
-  $: segments = $assetStore.buckets.map((bucket) => ({
-    count: bucket.assets.length,
-    height: toScrollY(bucket.bucketHeight),
-    timeGroup: bucket.bucketDate,
-  }));
+
+  class Segment {
+    public count;
+    public height;
+    public timeGroup;
+
+    constructor({ count = 0, height = 0, timeGroup = '' }) {
+      this.count = count;
+      this.height = height;
+      this.timeGroup = timeGroup;
+    }
+  }
+
+  $: segments = $assetStore.buckets.map(
+    (bucket) =>
+      new Segment({
+        count: bucket.assets.length,
+        height: toScrollY(bucket.bucketHeight),
+        timeGroup: bucket.bucketDate,
+      }),
+  );
 
   const dispatch = createEventDispatcher<{ scrollTimeline: number }>();
   const scrollTimeline = () => dispatch('scrollTimeline', toTimelineY(hoverY));
@@ -50,6 +66,23 @@
       scrollTimeline();
       isAnimating = false;
     });
+  };
+
+  const prevYearSegmentHeight = (segments: Segment[], index: number) => {
+    var prevYear = null;
+    var height = 0;
+    for (var i = index; i >= 0; i--) {
+      const curr = segments[i];
+      const currYear = fromLocalDateTime(curr.timeGroup).year;
+      if (prevYear && prevYear != currYear) {
+        break;
+      }
+
+      height += curr.height;
+      prevYear = currYear;
+    }
+
+    return height;
   };
 </script>
 
@@ -96,6 +129,7 @@
       {@const date = fromLocalDateTime(segment.timeGroup)}
       {@const year = date.year}
       {@const label = `${date.toLocaleString({ month: 'short' })} ${year}`}
+      {@const lastGroupYear = fromLocalDateTime(segments[index - 1]?.timeGroup).year}
 
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
@@ -105,10 +139,10 @@
         aria-label={segment.timeGroup + ' ' + segment.count}
         on:mousemove={() => (hoverLabel = label)}
       >
-        {#if new Date(segments[index - 1]?.timeGroup).getFullYear() !== year}
+        {#if lastGroupYear !== year && (index == 0 || prevYearSegmentHeight(segments, index - 1) > 16)}
           <div
             aria-label={segment.timeGroup + ' ' + segment.count}
-            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg"
+            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg font-mono"
           >
             {year}
           </div>

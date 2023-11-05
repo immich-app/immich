@@ -493,7 +493,7 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
-  getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncated = dateTrunc(options);
     return (
       this.getBuilder(options)

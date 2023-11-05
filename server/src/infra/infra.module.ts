@@ -1,5 +1,6 @@
 import {
   IAccessRepository,
+  IActivityRepository,
   IAlbumRepository,
   IAssetRepository,
   IAuditRepository,
@@ -28,6 +29,7 @@ import {
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
@@ -35,6 +37,7 @@ import { bullConfig, bullQueues } from './infra.config';
 import {
   APIKeyRepository,
   AccessRepository,
+  ActivityRepository,
   AlbumRepository,
   AssetRepository,
   AuditRepository,
@@ -60,6 +63,7 @@ import {
 } from './repositories';
 
 const providers: Provider[] = [
+  { provide: IActivityRepository, useClass: ActivityRepository },
   { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
@@ -84,12 +88,14 @@ const providers: Provider[] = [
   { provide: IMediaRepository, useClass: MediaRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
+  SchedulerRegistry,
 ];
 
 const imports = [
   ConfigModule.forRoot(immichAppConfig),
   TypeOrmModule.forRoot(databaseConfig),
   TypeOrmModule.forFeature(databaseEntities),
+  ScheduleModule,
 ];
 
 const moduleExports = [...providers];

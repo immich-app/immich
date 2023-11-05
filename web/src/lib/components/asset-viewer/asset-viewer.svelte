@@ -1,6 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
+  import {
+    ActivityResponseDto,
+    AlbumResponseDto,
+    api,
+    AssetJobName,
+    AssetResponseDto,
+    AssetTypeEnum,
+    ReactionType,
+    SharedLinkResponseDto,
+    UserResponseDto,
+  } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
@@ -14,19 +24,29 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, downloadFile, getAssetType } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetStore } from '$lib/stores/assets.store';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiImageBrokenVariant, mdiPause, mdiPlay } from '@mdi/js';
+  import {
+    mdiHeartOutline,
+    mdiHeart,
+    mdiCommentOutline,
+    mdiChevronLeft,
+    mdiChevronRight,
+    mdiImageBrokenVariant,
+  } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
+  import ActivityViewer from './activity-viewer.svelte';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import SlideshowBar from './slideshow-bar.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -35,6 +55,19 @@
   $: isTrashEnabled = $featureFlags.trash;
   export let force = false;
   export let withStacked = false;
+  export let isShared = true;
+  export let user: UserResponseDto | null = null;
+  export let album: AlbumResponseDto | null = null;
+
+  let reactions: ActivityResponseDto[] = [];
+
+  const { setAssetId } = assetViewingStore;
+  const {
+    restartProgress: restartSlideshowProgress,
+    stopProgress: stopSlideshowProgress,
+    slideshowShuffle,
+    slideshowState,
+  } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -56,7 +89,12 @@
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
+  let slideshowStateUnsubscribe: () => void;
+  let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined;
+  let isShowActivity = false;
+  let isLiked: ActivityResponseDto | null = null;
+  let numberOfComments: number;
 
   $: {
     if (asset.stackCount && asset.stack) {
@@ -71,10 +109,86 @@
     }
   }
 
+  const handleFavorite = async () => {
+    if (album) {
+      try {
+        if (isLiked) {
+          const activityId = isLiked.id;
+          await api.activityApi.deleteActivity({ id: activityId });
+          reactions = reactions.filter((reaction) => reaction.id !== activityId);
+          isLiked = null;
+        } else {
+          const { data } = await api.activityApi.createActivity({
+            activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
+          });
+
+          isLiked = data;
+          reactions = [...reactions, isLiked];
+        }
+      } catch (error) {
+        handleError(error, "Can't change favorite for asset");
+      }
+    }
+  };
+
+  const getFavorite = async () => {
+    if (album && user) {
+      try {
+        const { data } = await api.activityApi.getActivities({
+          userId: user.id,
+          assetId: asset.id,
+          albumId: album.id,
+          type: ReactionType.Like,
+        });
+        if (data.length > 0) {
+          isLiked = data[0];
+        } else {
+          isLiked = null;
+        }
+      } catch (error) {
+        handleError(error, "Can't get Favorite");
+      }
+    }
+  };
+
+  const getNumberOfComments = async () => {
+    if (album) {
+      try {
+        const { data } = await api.activityApi.getActivityStatistics({ assetId: asset.id, albumId: album.id });
+        numberOfComments = data.comments;
+      } catch (error) {
+        handleError(error, "Can't get number of comments");
+      }
+    }
+  };
+
+  $: {
+    if (isShared && asset.id) {
+      getFavorite();
+      getNumberOfComments();
+    }
+  }
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
+
+    slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
+      if (value === SlideshowState.PlaySlideshow) {
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset.id);
+        handlePlaySlideshow();
+      } else if (value === SlideshowState.StopSlideshow) {
+        handleStopSlideshow();
+      }
+    });
+
+    shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
+      if (value) {
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset.id);
+      }
+    });
 
     if (!sharedLink) {
       await getAllAlbums();
@@ -99,6 +213,14 @@
     if (browser) {
       document.removeEventListener('keydown', onKeyboardPress);
     }
+
+    if (slideshowStateUnsubscribe) {
+      slideshowStateUnsubscribe();
+    }
+
+    if (shuffleSlideshowUnsubscribe) {
+      shuffleSlideshowUnsubscribe();
+    }
   });
 
   $: asset.id && !sharedLink && getAllAlbums(); // Update the album information when the asset ID changes
@@ -114,6 +236,13 @@
     } catch (e) {
       console.error('Error getting album that asset belong to', e);
     }
+  };
+
+  const handleOpenActivity = () => {
+    if ($isShowDetail) {
+      $isShowDetail = false;
+    }
+    isShowActivity = !isShowActivity;
   };
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
@@ -157,6 +286,7 @@
         toggleFavorite();
         return;
       case 'i':
+        isShowActivity = false;
         $isShowDetail = !$isShowDetail;
         return;
     }
@@ -169,11 +299,31 @@
 
   const closeViewer = () => dispatch('close');
 
+  const navigateAssetRandom = async () => {
+    if (!assetStore) {
+      return;
+    }
+
+    const asset = await assetStore.getRandomAsset();
+    if (!asset) {
+      return;
+    }
+
+    slideshowHistory.queue(asset.id);
+
+    setAssetId(asset.id);
+    $restartSlideshowProgress = true;
+  };
+
   const navigateAssetForward = async (e?: Event) => {
-    if (isSlideshowMode && assetStore && progressBar) {
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
+      return slideshowHistory.next() || navigateAssetRandom();
+    }
+
+    if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext = await assetStore.getNextAssetId(asset.id);
       if (hasNext) {
-        progressBar.restart(true);
+        $restartSlideshowProgress = true;
       } else {
         await handleStopSlideshow();
       }
@@ -184,8 +334,13 @@
   };
 
   const navigateAssetBackward = (e?: Event) => {
-    if (isSlideshowMode && progressBar) {
-      progressBar.restart(true);
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
+      slideshowHistory.previous();
+      return;
+    }
+
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      $restartSlideshowProgress = true;
     }
 
     e?.stopPropagation();
@@ -193,6 +348,9 @@
   };
 
   const showDetailInfoHandler = () => {
+    if (isShowActivity) {
+      isShowActivity = false;
+    }
     $isShowDetail = !$isShowDetail;
   };
 
@@ -317,17 +475,6 @@
     }
   };
 
-  const getAssetType = () => {
-    switch (asset.type) {
-      case 'IMAGE':
-        return 'Photo';
-      case 'VIDEO':
-        return 'Video';
-      default:
-        return 'Asset';
-    }
-  };
-
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
@@ -341,19 +488,21 @@
    * Slide show mode
    */
 
-  let isSlideshowMode = false;
   let assetViewerHtmlElement: HTMLElement;
-  let progressBar: ProgressBar;
-  let progressBarStatus: ProgressBarStatus;
+
+  const slideshowHistory = new SlideshowHistory((assetId: string) => {
+    setAssetId(assetId);
+    $restartSlideshowProgress = true;
+  });
 
   const handleVideoStarted = () => {
-    if (isSlideshowMode) {
-      progressBar.restart(false);
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      $stopSlideshowProgress = true;
     }
   };
 
   const handleVideoEnded = async () => {
-    if (isSlideshowMode) {
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
       await navigateAssetForward();
     }
   };
@@ -363,19 +512,20 @@
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
       console.error('Error entering fullscreen', error);
-    } finally {
-      isSlideshowMode = true;
+      $slideshowState = SlideshowState.StopSlideshow;
     }
   };
 
   const handleStopSlideshow = async () => {
     try {
-      await document.exitFullscreen();
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
     } catch (error) {
       console.error('Error exiting fullscreen', error);
     } finally {
-      isSlideshowMode = false;
-      progressBar.restart(false);
+      $stopSlideshowProgress = true;
+      $slideshowState = SlideshowState.None;
     }
   };
 
@@ -395,11 +545,10 @@
       await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
       for (const child of $stackAssetsStore) {
         child.stackParentId = null;
+        child.stackCount = 0;
+        child.stack = [];
         assetStore?.addAsset(child);
       }
-      asset.stackCount = 0;
-      asset.stack = [];
-      assetStore?.updateAsset(asset);
 
       dispatch('unstack');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
@@ -412,31 +561,10 @@
 <section
   id="immich-asset-viewer"
   class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
-  bind:this={assetViewerHtmlElement}
 >
-  <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
-    {#if isSlideshowMode}
-      <!-- SlideShowController -->
-      <div class="flex">
-        <div class="m-4 flex gap-2">
-          <CircleIconButton icon={mdiClose} on:click={handleStopSlideshow} title="Exit Slideshow" />
-          <CircleIconButton
-            icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
-            on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
-            title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
-          />
-          <CircleIconButton icon={mdiChevronLeft} on:click={navigateAssetBackward} title="Previous" />
-          <CircleIconButton icon={mdiChevronRight} on:click={navigateAssetForward} title="Next" />
-        </div>
-        <ProgressBar
-          autoplay
-          bind:this={progressBar}
-          bind:status={progressBarStatus}
-          on:done={navigateAssetForward}
-          duration={5000}
-        />
-      </div>
-    {:else}
+  <!-- Top navigation bar -->
+  {#if $slideshowState === SlideshowState.None}
+    <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
         isMotionPhotoPlaying={shouldPlayMotionPhoto}
@@ -446,7 +574,7 @@
         showDownloadButton={shouldShowDownloadButton}
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
-        hasStackChildern={$stackAssetsStore.length > 0}
+        hasStackChildren={$stackAssetsStore.length > 0}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -459,19 +587,30 @@
         on:toggleArchive={toggleArchive}
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={handlePlaySlideshow}
+        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         on:unstack={handleUnstack}
       />
-    {/if}
-  </div>
+    </div>
+  {/if}
 
-  {#if !isSlideshowMode && showNavigation}
-    <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
+  {#if $slideshowState === SlideshowState.None && showNavigation}
+    <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
       <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
     </div>
   {/if}
+
   <!-- Asset Viewer -->
-  <div class="col-span-4 col-start-1 row-span-full row-start-1">
+  <div class="z-[1000] relative col-start-1 col-span-4 row-start-1 row-span-full" bind:this={assetViewerHtmlElement}>
+    {#if $slideshowState != SlideshowState.None}
+      <div class="z-[1000] absolute w-full flex">
+        <SlideshowBar
+          on:prev={navigateAssetBackward}
+          on:next={navigateAssetForward}
+          on:close={() => ($slideshowState = SlideshowState.StopSlideshow)}
+        />
+      </div>
+    {/if}
+
     {#if previewStackedAsset}
       {#key previewStackedAsset.id}
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
@@ -517,6 +656,29 @@
             on:onVideoStarted={handleVideoStarted}
           />
         {/if}
+        {#if $slideshowState === SlideshowState.None && isShared}
+          <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
+            <div
+              class="w-full h-14 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
+            >
+              <button on:click={handleFavorite}>
+                <div class="items-center justify-center">
+                  <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={24} />
+                </div>
+              </button>
+              <button on:click={handleOpenActivity}>
+                <div class="flex gap-2 items-center justify-center">
+                  <Icon path={mdiCommentOutline} class="scale-x-[-1]" size={24} />
+                  {#if numberOfComments}
+                    <div class="text-xl">{numberOfComments}</div>
+                  {:else if !isShowActivity && !$isShowDetail}
+                    <div class="text-lg">Say something</div>
+                  {/if}
+                </div>
+              </button>
+            </div>
+          </div>
+        {/if}
       {/key}
     {/if}
 
@@ -556,19 +718,17 @@
     {/if}
   </div>
 
-  <!-- Stack & Stack Controller -->
-
-  {#if !isSlideshowMode && showNavigation}
-    <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
+  {#if $slideshowState === SlideshowState.None && showNavigation}
+    <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
       <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
     </div>
   {/if}
 
-  {#if !isSlideshowMode && $isShowDetail}
+  {#if $slideshowState === SlideshowState.None && $isShowDetail}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel
@@ -578,6 +738,28 @@
         on:close-viewer={handleCloseViewer}
         on:description-focus-in={disableKeyDownEvent}
         on:description-focus-out={enableKeyDownEvent}
+      />
+    </div>
+  {/if}
+
+  {#if isShared && album && isShowActivity && user}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="activity-panel"
+      class="z-[1002] row-start-1 row-span-5 w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+      translate="yes"
+    >
+      <ActivityViewer
+        {user}
+        assetType={asset.type}
+        albumOwnerId={album.ownerId}
+        albumId={album.id}
+        assetId={asset.id}
+        bind:reactions
+        on:addComment={() => numberOfComments++}
+        on:deleteComment={() => numberOfComments--}
+        on:deleteLike={() => (isLiked = null)}
+        on:close={() => (isShowActivity = false)}
       />
     </div>
   {/if}
@@ -594,15 +776,15 @@
 
   {#if isShowDeleteConfirmation}
     <ConfirmDialogue
-      title="Delete {getAssetType()}"
+      title="Delete {getAssetType(asset.type)}"
       confirmText="Delete"
       on:confirm={deleteAsset}
       on:cancel={() => (isShowDeleteConfirmation = false)}
     >
       <svelte:fragment slot="prompt">
         <p>
-          Are you sure you want to delete this {getAssetType().toLowerCase()}? This will also remove it from its
-          album(s).
+          Are you sure you want to delete this {getAssetType(asset.type).toLowerCase()}? This will also remove it from
+          its album(s).
         </p>
         <p><b>You cannot undo this action!</b></p>
       </svelte:fragment>

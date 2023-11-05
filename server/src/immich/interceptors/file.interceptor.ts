@@ -7,7 +7,7 @@ import { createHash } from 'crypto';
 import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
 import { Observable } from 'rxjs';
-import { AuthRequest } from './app.guard';
+import { AuthRequest } from '../app.guard';
 
 export enum Route {
   ASSET = 'asset',
