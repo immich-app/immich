@@ -10,10 +10,6 @@ export const load = (async ({ params, locals: { api, user } }) => {
   try {
     const { data: album } = await api.albumApi.getAlbumInfo({ id: params.albumId });
 
-    const { data: aaa } = await api.albumApi.getAlbumPeople({ id: params.albumId });
-    console.log("!!!!!!!!!!!!!!!!!!!!", aaa);
-
-
     let albumPeoples: any[] = [];
     if (album.assets.length) {
       for await (const asset of album.assets) {

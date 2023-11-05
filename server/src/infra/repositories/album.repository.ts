@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 import { dataSource } from '../database.config';
-import { AlbumEntity, AssetEntity, PersonEntity } from '../entities';
+import { AlbumEntity, AssetEntity } from '../entities';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
