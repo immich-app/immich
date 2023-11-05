@@ -169,9 +169,10 @@ class ActivitiesPage extends HookConsumerWidget {
             ),
             suffixIconColor: liked ? Colors.red[700] : null,
             hintText: 'shared_album_activities_input_hint'.tr(),
-            hintStyle: const TextStyle(
+            hintStyle: TextStyle(
               fontWeight: FontWeight.normal,
               fontSize: 14,
+              color: Colors.grey[600],
             ),
           ),
           onEditingComplete: () async {
