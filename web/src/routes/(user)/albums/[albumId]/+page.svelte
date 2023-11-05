@@ -538,8 +538,10 @@
                         heightStyle="3.375rem"
                       />
                     </a>
-                    <button class="personNameFilter" on:click={() => handleFiterByPeople(people.id)}
-                      >{people.name}</button
+                    <button
+                      class="personNameFilter"
+                      title={`▼ ${people.name}`}
+                      on:click={() => handleFiterByPeople(people.id)}>{people.name}</button
                     >
                   </div>
                 {/each}
@@ -643,7 +645,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 4.5rem;
+    width: 4rem;
   }
 
   .personNameFilter {
