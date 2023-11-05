@@ -29,7 +29,7 @@
     heightStyle="2rem"
   />
   <form
-    class="ml-4 flex w-full justify-between gap-16"
+    class="ml-4 flex w-full justify-between gap-8"
     autocomplete="off"
     on:submit|preventDefault={() => dispatch('change', name)}
   >
