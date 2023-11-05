@@ -153,7 +153,6 @@ export class JobService {
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
     await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
     await this.jobRepository.queue({ name: JobName.CLEAN_OLD_AUDIT_LOGS });
-    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } });
   }
 
   /**

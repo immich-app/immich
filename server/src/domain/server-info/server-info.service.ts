@@ -92,7 +92,7 @@ export class ServerInfoService {
     };
   }
 
-  async getStats(): Promise<ServerStatsResponseDto> {
+  async getStatistics(): Promise<ServerStatsResponseDto> {
     const userStats: UserStatsQueryResponse[] = await this.userRepository.getUserStats();
     const serverStats = new ServerStatsResponseDto();
 

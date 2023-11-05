@@ -22,8 +22,8 @@ void main() {
       // TODO
     });
 
-    //Future<SystemConfigDto> getDefaults() async
-    test('test getDefaults', () async {
+    //Future<SystemConfigDto> getConfigDefaults() async
+    test('test getConfigDefaults', () async {
       // TODO
     });
 

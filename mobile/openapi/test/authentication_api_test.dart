@@ -17,11 +17,6 @@ void main() {
   // final instance = AuthenticationApi();
 
   group('tests for AuthenticationApi', () {
-    //Future<AdminSignupResponseDto> adminSignUp(SignUpDto signUpDto) async
-    test('test adminSignUp', () async {
-      // TODO
-    });
-
     //Future<UserResponseDto> changePassword(ChangePasswordDto changePasswordDto) async
     test('test changePassword', () async {
       // TODO
@@ -49,6 +44,11 @@ void main() {
 
     //Future logoutAuthDevices() async
     test('test logoutAuthDevices', () async {
+      // TODO
+    });
+
+    //Future<AdminSignupResponseDto> signUpAdmin(SignUpDto signUpDto) async
+    test('test signUpAdmin', () async {
       // TODO
     });
 

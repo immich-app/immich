@@ -103,9 +103,9 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     });
   });
 
-  describe('GET /server-info/stats', () => {
+  describe('GET /server-info/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/server-info/stats');
+      const { status, body } = await request(server).get('/server-info/statistics');
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
@@ -115,7 +115,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       await api.userApi.create(server, accessToken, { ...loginDto, firstName: 'test', lastName: 'test' });
       const { accessToken: userAccessToken } = await api.authApi.login(server, loginDto);
       const { status, body } = await request(server)
-        .get('/server-info/stats')
+        .get('/server-info/statistics')
         .set('Authorization', `Bearer ${userAccessToken}`);
       expect(status).toBe(403);
       expect(body).toEqual(errorStub.forbidden);
@@ -123,7 +123,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
 
     it('should return the server stats', async () => {
       const { status, body } = await request(server)
-        .get('/server-info/stats')
+        .get('/server-info/statistics')
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({

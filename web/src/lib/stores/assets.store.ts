@@ -196,7 +196,7 @@ export class AssetStore {
 
       bucket.cancelToken = new AbortController();
 
-      const { data: assets } = await api.assetApi.getByTimeBucket(
+      const { data: assets } = await api.assetApi.getTimeBucket(
         {
           ...this.options,
           timeBucket: bucketDate,
@@ -206,7 +206,7 @@ export class AssetStore {
       );
 
       if (this.albumId) {
-        const { data: albumAssets } = await api.assetApi.getByTimeBucket(
+        const { data: albumAssets } = await api.assetApi.getTimeBucket(
           {
             albumId: this.albumId,
             timeBucket: bucketDate,
@@ -261,6 +261,9 @@ export class AssetStore {
       isMismatched(this.options.isArchived, asset.isArchived) ||
       isMismatched(this.options.isFavorite, asset.isFavorite)
     ) {
+      // If asset is already in the bucket we don't need to recalculate
+      // asset store containers
+      this.updateAsset(asset);
       return;
     }
 
@@ -290,6 +293,11 @@ export class AssetStore {
       const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
       return bDate.diff(aDate).milliseconds;
     });
+
+    // If we added an asset to the store, we need to recalculate
+    // asset store containers
+    this.assets.push(asset);
+    this.updateAsset(asset, true);
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
@@ -304,7 +312,20 @@ export class AssetStore {
     return this.assetToBucket[assetId]?.bucketIndex ?? null;
   }
 
-  updateAsset(_asset: AssetResponseDto) {
+  async getRandomAsset(): Promise<AssetResponseDto | null> {
+    const bucket = this.buckets[Math.floor(Math.random() * this.buckets.length)] || null;
+    if (!bucket) {
+      return null;
+    }
+
+    if (bucket.assets.length === 0) {
+      await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+    }
+
+    return bucket.assets[Math.floor(Math.random() * bucket.assets.length)] || null;
+  }
+
+  updateAsset(_asset: AssetResponseDto, recalculate = false) {
     const asset = this.assets.find((asset) => asset.id === _asset.id);
     if (!asset) {
       return;
@@ -312,7 +333,7 @@ export class AssetStore {
 
     Object.assign(asset, _asset);
 
-    this.emit(false);
+    this.emit(recalculate);
   }
 
   removeAssets(ids: string[]) {

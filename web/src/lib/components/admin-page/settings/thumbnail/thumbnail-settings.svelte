@@ -20,7 +20,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.thumbnail),
-      api.systemConfigApi.getDefaults().then((res) => res.data.thumbnail),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.thumbnail),
     ]);
   }
 
@@ -37,7 +37,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     thumbnailConfig = { ...configs.thumbnail };
     defaultConfig = { ...configs.thumbnail };

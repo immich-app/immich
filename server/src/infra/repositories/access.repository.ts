@@ -2,6 +2,7 @@ import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
+  ActivityEntity,
   AlbumEntity,
   AssetEntity,
   LibraryEntity,
@@ -13,6 +14,7 @@ import {
 
 export class AccessRepository implements IAccessRepository {
   constructor(
+    @InjectRepository(ActivityEntity) private activityRepository: Repository<ActivityEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
     @InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>,
@@ -22,6 +24,26 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(UserTokenEntity) private tokenRepository: Repository<UserTokenEntity>,
   ) {}
 
+  activity = {
+    hasOwnerAccess: (userId: string, activityId: string): Promise<boolean> => {
+      return this.activityRepository.exist({
+        where: {
+          id: activityId,
+          userId,
+        },
+      });
+    },
+    hasAlbumOwnerAccess: (userId: string, activityId: string): Promise<boolean> => {
+      return this.activityRepository.exist({
+        where: {
+          id: activityId,
+          album: {
+            ownerId: userId,
+          },
+        },
+      });
+    },
+  };
   library = {
     hasOwnerAccess: (userId: string, libraryId: string): Promise<boolean> => {
       return this.libraryRepository.exist({

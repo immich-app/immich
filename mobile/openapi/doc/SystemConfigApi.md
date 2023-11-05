@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getConfig**](SystemConfigApi.md#getconfig) | **GET** /system-config | 
-[**getDefaults**](SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
+[**getConfigDefaults**](SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
 [**getStorageTemplateOptions**](SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 [**updateConfig**](SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 
@@ -66,8 +66,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getDefaults**
-> SystemConfigDto getDefaults()
+# **getConfigDefaults**
+> SystemConfigDto getConfigDefaults()
 
 
 
@@ -92,10 +92,10 @@ import 'package:openapi/api.dart';
 final api_instance = SystemConfigApi();
 
 try {
-    final result = api_instance.getDefaults();
+    final result = api_instance.getConfigDefaults();
     print(result);
 } catch (e) {
-    print('Exception when calling SystemConfigApi->getDefaults: $e\n');
+    print('Exception when calling SystemConfigApi->getConfigDefaults: $e\n');
 }
 ```
 

@@ -9,57 +9,16 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**authorizeOAuth**](OAuthApi.md#authorizeoauth) | **POST** /oauth/authorize | 
-[**callback**](OAuthApi.md#callback) | **POST** /oauth/callback | 
-[**generateConfig**](OAuthApi.md#generateconfig) | **POST** /oauth/config | 
-[**link**](OAuthApi.md#link) | **POST** /oauth/link | 
-[**mobileRedirect**](OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
-[**unlink**](OAuthApi.md#unlink) | **POST** /oauth/unlink | 
+[**finishOAuth**](OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
+[**generateOAuthConfig**](OAuthApi.md#generateoauthconfig) | **POST** /oauth/config | 
+[**linkOAuthAccount**](OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
+[**redirectOAuthToMobile**](OAuthApi.md#redirectoauthtomobile) | **GET** /oauth/mobile-redirect | 
+[**startOAuth**](OAuthApi.md#startoauth) | **POST** /oauth/authorize | 
+[**unlinkOAuthAccount**](OAuthApi.md#unlinkoauthaccount) | **POST** /oauth/unlink | 
 
 
-# **authorizeOAuth**
-> OAuthAuthorizeResponseDto authorizeOAuth(oAuthConfigDto)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-
-final api_instance = OAuthApi();
-final oAuthConfigDto = OAuthConfigDto(); // OAuthConfigDto | 
-
-try {
-    final result = api_instance.authorizeOAuth(oAuthConfigDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling OAuthApi->authorizeOAuth: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **oAuthConfigDto** | [**OAuthConfigDto**](OAuthConfigDto.md)|  | 
-
-### Return type
-
-[**OAuthAuthorizeResponseDto**](OAuthAuthorizeResponseDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **callback**
-> LoginResponseDto callback(oAuthCallbackDto)
+# **finishOAuth**
+> LoginResponseDto finishOAuth(oAuthCallbackDto)
 
 
 
@@ -71,10 +30,10 @@ final api_instance = OAuthApi();
 final oAuthCallbackDto = OAuthCallbackDto(); // OAuthCallbackDto | 
 
 try {
-    final result = api_instance.callback(oAuthCallbackDto);
+    final result = api_instance.finishOAuth(oAuthCallbackDto);
     print(result);
 } catch (e) {
-    print('Exception when calling OAuthApi->callback: $e\n');
+    print('Exception when calling OAuthApi->finishOAuth: $e\n');
 }
 ```
 
@@ -99,8 +58,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **generateConfig**
-> OAuthConfigResponseDto generateConfig(oAuthConfigDto)
+# **generateOAuthConfig**
+> OAuthConfigResponseDto generateOAuthConfig(oAuthConfigDto)
 
 
 
@@ -114,10 +73,10 @@ final api_instance = OAuthApi();
 final oAuthConfigDto = OAuthConfigDto(); // OAuthConfigDto | 
 
 try {
-    final result = api_instance.generateConfig(oAuthConfigDto);
+    final result = api_instance.generateOAuthConfig(oAuthConfigDto);
     print(result);
 } catch (e) {
-    print('Exception when calling OAuthApi->generateConfig: $e\n');
+    print('Exception when calling OAuthApi->generateOAuthConfig: $e\n');
 }
 ```
 
@@ -142,8 +101,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **link**
-> UserResponseDto link(oAuthCallbackDto)
+# **linkOAuthAccount**
+> UserResponseDto linkOAuthAccount(oAuthCallbackDto)
 
 
 
@@ -169,10 +128,10 @@ final api_instance = OAuthApi();
 final oAuthCallbackDto = OAuthCallbackDto(); // OAuthCallbackDto | 
 
 try {
-    final result = api_instance.link(oAuthCallbackDto);
+    final result = api_instance.linkOAuthAccount(oAuthCallbackDto);
     print(result);
 } catch (e) {
-    print('Exception when calling OAuthApi->link: $e\n');
+    print('Exception when calling OAuthApi->linkOAuthAccount: $e\n');
 }
 ```
 
@@ -197,8 +156,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **mobileRedirect**
-> mobileRedirect()
+# **redirectOAuthToMobile**
+> redirectOAuthToMobile()
 
 
 
@@ -209,9 +168,9 @@ import 'package:openapi/api.dart';
 final api_instance = OAuthApi();
 
 try {
-    api_instance.mobileRedirect();
+    api_instance.redirectOAuthToMobile();
 } catch (e) {
-    print('Exception when calling OAuthApi->mobileRedirect: $e\n');
+    print('Exception when calling OAuthApi->redirectOAuthToMobile: $e\n');
 }
 ```
 
@@ -233,8 +192,49 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **unlink**
-> UserResponseDto unlink()
+# **startOAuth**
+> OAuthAuthorizeResponseDto startOAuth(oAuthConfigDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = OAuthApi();
+final oAuthConfigDto = OAuthConfigDto(); // OAuthConfigDto | 
+
+try {
+    final result = api_instance.startOAuth(oAuthConfigDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling OAuthApi->startOAuth: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **oAuthConfigDto** | [**OAuthConfigDto**](OAuthConfigDto.md)|  | 
+
+### Return type
+
+[**OAuthAuthorizeResponseDto**](OAuthAuthorizeResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **unlinkOAuthAccount**
+> UserResponseDto unlinkOAuthAccount()
 
 
 
@@ -259,10 +259,10 @@ import 'package:openapi/api.dart';
 final api_instance = OAuthApi();
 
 try {
-    final result = api_instance.unlink();
+    final result = api_instance.unlinkOAuthAccount();
     print(result);
 } catch (e) {
-    print('Exception when calling OAuthApi->unlink: $e\n');
+    print('Exception when calling OAuthApi->unlinkOAuthAccount: $e\n');
 }
 ```
 

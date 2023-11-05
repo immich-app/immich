@@ -1,3 +1,4 @@
+import { ActivityEntity } from './activity.entity';
 import { AlbumEntity } from './album.entity';
 import { APIKeyEntity } from './api-key.entity';
 import { AssetFaceEntity } from './asset-face.entity';
@@ -15,6 +16,7 @@ import { TagEntity } from './tag.entity';
 import { UserTokenEntity } from './user-token.entity';
 import { UserEntity } from './user.entity';
 
+export * from './activity.entity';
 export * from './album.entity';
 export * from './api-key.entity';
 export * from './asset-face.entity';
@@ -33,6 +35,7 @@ export * from './user-token.entity';
 export * from './user.entity';
 
 export const databaseEntities = [
+  ActivityEntity,
   AlbumEntity,
   APIKeyEntity,
   AssetEntity,

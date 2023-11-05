@@ -2,17 +2,17 @@ import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import { AssetEntity } from '@app/infra/entities';
 import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetRepository, IAssetRepository } from './api-v1/asset/asset-repository';
 import { AssetController as AssetControllerV1 } from './api-v1/asset/asset.controller';
 import { AssetService } from './api-v1/asset/asset.service';
 import { AppGuard } from './app.guard';
-import { FileUploadInterceptor } from './app.interceptor';
 import { AppService } from './app.service';
 import {
   APIKeyController,
+  ActivityController,
   AlbumController,
   AppController,
   AssetController,
@@ -30,6 +30,7 @@ import {
   TagController,
   UserController,
 } from './controllers';
+import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import {
     TypeOrmModule.forFeature([AssetEntity]),
   ],
   controllers: [
+    ActivityController,
     AssetController,
     AssetControllerV1,
     AppController,
@@ -59,10 +61,9 @@ import {
     PersonController,
   ],
   providers: [
-    //
-    { provide: APP_GUARD, useExisting: AppGuard },
+    { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
+    { provide: APP_GUARD, useClass: AppGuard },
     { provide: IAssetRepository, useClass: AssetRepository },
-    AppGuard,
     AppService,
     AssetService,
     FileUploadInterceptor,

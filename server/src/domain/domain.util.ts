@@ -1,6 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf, ValidationOptions } from 'class-validator';
+import { CronJob } from 'cron';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 
@@ -16,6 +17,16 @@ export function ValidateUUID({ optional, each }: Options = { optional: false, ea
     optional ? Optional() : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
+}
+
+export function validateCronExpression(expression: string) {
+  try {
+    new CronJob(expression, () => {});
+  } catch (error) {
+    return false;
+  }
+
+  return true;
 }
 
 interface IValue {

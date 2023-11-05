@@ -31,7 +31,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     const widgetSize = 30.0;
 
-    buildProfilePhoto() {
+    buildProfileIndicator() {
       return InkWell(
         onTap: () => showDialog(
           context: context,
@@ -39,37 +39,33 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           builder: (ctx) => const ImmichAppBarDialog(),
         ),
         borderRadius: BorderRadius.circular(12),
-        child: authState.profileImagePath.isEmpty || user == null
-            ? const Icon(
-                Icons.face_outlined,
-                size: widgetSize,
-              )
-            : UserCircleAvatar(
-                radius: 15,
-                size: 27,
-                user: user,
-              ),
-      );
-    }
-
-    buildProfileIndicator() {
-      return Badge(
-        label: Container(
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(widgetSize / 2),
+        child: Badge(
+          label: Container(
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(widgetSize / 2),
+            ),
+            child: const Icon(
+              Icons.info,
+              color: Color.fromARGB(255, 243, 188, 106),
+              size: widgetSize / 2,
+            ),
           ),
-          child: const Icon(
-            Icons.info,
-            color: Color.fromARGB(255, 243, 188, 106),
-            size: widgetSize / 2,
-          ),
+          backgroundColor: Colors.transparent,
+          alignment: Alignment.bottomRight,
+          isLabelVisible: serverInfoState.isVersionMismatch,
+          offset: const Offset(2, 2),
+          child: authState.profileImagePath.isEmpty || user == null
+              ? const Icon(
+                  Icons.face_outlined,
+                  size: widgetSize,
+                )
+              : UserCircleAvatar(
+                  radius: 15,
+                  size: 27,
+                  user: user,
+                ),
         ),
-        backgroundColor: Colors.transparent,
-        alignment: Alignment.bottomRight,
-        isLabelVisible: serverInfoState.isVersionMismatch,
-        offset: const Offset(2, 2),
-        child: buildProfilePhoto(),
       );
     }
 

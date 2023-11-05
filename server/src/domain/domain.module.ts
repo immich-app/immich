@@ -1,4 +1,5 @@
 import { DynamicModule, Global, Module, ModuleMetadata, OnApplicationShutdown, Provider } from '@nestjs/common';
+import { ActivityService } from './activity';
 import { AlbumService } from './album';
 import { APIKeyService } from './api-key';
 import { AssetService } from './asset';
@@ -21,6 +22,7 @@ import { TagService } from './tag';
 import { UserService } from './user';
 
 const providers: Provider[] = [
+  ActivityService,
   AlbumService,
   APIKeyService,
   AssetService,

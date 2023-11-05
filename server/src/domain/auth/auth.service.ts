@@ -315,13 +315,8 @@ export class AuthService {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
     const params = client.callbackParams(url);
-    try {
-      const tokens = await client.callback(redirectUri, params, { state: params.state });
-      return client.userinfo<OAuthProfile>(tokens.access_token || '');
-    } catch (error: Error | any) {
-      this.logger.error(`Unable to complete OAuth login: ${error}`, error?.stack);
-      throw new InternalServerErrorException(`Unable to complete OAuth login: ${error}`, { cause: error });
-    }
+    const tokens = await client.callback(redirectUri, params, { state: params.state });
+    return client.userinfo<OAuthProfile>(tokens.access_token || '');
   }
 
   private async getOAuthClient(config: SystemConfig) {
