@@ -1,8 +1,8 @@
 import { AssetCreate } from '@app/domain';
 import { AssetEntity } from '@app/infra/entities';
+import OptionalBetween from '@app/infra/utils/optional-between.util';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, FindOperator, LessThan, MoreThan } from 'typeorm';
 import { In } from 'typeorm/find-options/operator/In';
 import { Repository } from 'typeorm/repository/Repository';
 import { AssetSearchDto } from './dto/asset-search.dto';
@@ -129,7 +129,7 @@ export class AssetRepository implements IAssetRepository {
         isVisible: true,
         isFavorite: dto.isFavorite,
         isArchived: dto.isArchived,
-        updatedAt: this.dateFilter(dto.updatedAfter, dto.updatedBefore),
+        updatedAt: OptionalBetween(dto.updatedAfter, dto.updatedBefore),
       },
       relations: {
         exifInfo: true,
@@ -143,12 +143,6 @@ export class AssetRepository implements IAssetRepository {
       },
       withDeleted: true,
     });
-  }
-
-  private dateFilter(after?: Date, before?: Date): FindOperator<Date> | undefined {
-    if (before && after) return Between(after, before);
-    if (before) return LessThan(before);
-    if (after) return MoreThan(after);
   }
 
   get(id: string): Promise<AssetEntity | null> {
