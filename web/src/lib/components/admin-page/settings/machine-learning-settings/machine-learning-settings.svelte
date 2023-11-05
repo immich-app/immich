@@ -70,7 +70,7 @@
 
     machineLearningConfig.urls.push(newLearningURL);
 
-    var success = await saveSetting();
+    const success = await saveSetting();
     if (!success) {
       machineLearningConfig.urls.pop();
     }
@@ -79,10 +79,10 @@
   };
 
   const handleDelete = async (url: string) => {
-    let _urls = [...machineLearningConfig.urls];
+    const _urls = [...machineLearningConfig.urls];
     machineLearningConfig.urls = machineLearningConfig.urls.filter((it) => it != url);
 
-    var success = await saveSetting();
+    const success = await saveSetting();
     if (!success) {
       newLearningURL = '';
       machineLearningConfig.urls = _urls;
@@ -90,10 +90,10 @@
   };
 
   const setPrimary = async (url: string) => {
-    let _url = machineLearningConfig.url;
+    const _url = machineLearningConfig.url;
     machineLearningConfig.url = url;
 
-    var success = await saveSetting();
+    const success = await saveSetting();
     if (!success) {
       machineLearningConfig.url = _url;
     }
