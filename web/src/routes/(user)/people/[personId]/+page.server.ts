@@ -10,8 +10,7 @@ export const load = (async ({ locals, parent, params }) => {
 
   const { data: person } = await locals.api.personApi.getPerson({ id: params.personId });
   const { data: statistics } = await locals.api.personApi.getPersonStatistics({ id: params.personId });
-  // const { data: albums } = await locals.api.personApi.getPersonAlbums({ id: params.personId });
-  const { data: albums } = await locals.api.albumApi.getAllAlbums();
+  const { data: albums } = await locals.api.personApi.getPersonAlbums({ id: params.personId });
 
   return {
     user,
