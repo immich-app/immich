@@ -18,6 +18,7 @@ class SystemConfigMachineLearningDto {
     required this.enabled,
     required this.facialRecognition,
     required this.url,
+    this.urls = const [],
   });
 
   ClassificationConfig classification;
@@ -30,13 +31,16 @@ class SystemConfigMachineLearningDto {
 
   String url;
 
+  List<String> urls;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMachineLearningDto &&
      other.classification == classification &&
      other.clip == clip &&
      other.enabled == enabled &&
      other.facialRecognition == facialRecognition &&
-     other.url == url;
+     other.url == url &&
+     other.urls == urls;
 
   @override
   int get hashCode =>
@@ -45,10 +49,11 @@ class SystemConfigMachineLearningDto {
     (clip.hashCode) +
     (enabled.hashCode) +
     (facialRecognition.hashCode) +
-    (url.hashCode);
+    (url.hashCode) +
+    (urls.hashCode);
 
   @override
-  String toString() => 'SystemConfigMachineLearningDto[classification=$classification, clip=$clip, enabled=$enabled, facialRecognition=$facialRecognition, url=$url]';
+  String toString() => 'SystemConfigMachineLearningDto[classification=$classification, clip=$clip, enabled=$enabled, facialRecognition=$facialRecognition, url=$url, urls=$urls]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -57,6 +62,7 @@ class SystemConfigMachineLearningDto {
       json[r'enabled'] = this.enabled;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'url'] = this.url;
+      json[r'urls'] = this.urls;
     return json;
   }
 
@@ -73,6 +79,9 @@ class SystemConfigMachineLearningDto {
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         facialRecognition: RecognitionConfig.fromJson(json[r'facialRecognition'])!,
         url: mapValueOfType<String>(json, r'url')!,
+        urls: json[r'urls'] is List
+            ? (json[r'urls'] as List).cast<String>()
+            : const [],
       );
     }
     return null;
@@ -125,6 +134,7 @@ class SystemConfigMachineLearningDto {
     'enabled',
     'facialRecognition',
     'url',
+    'urls',
   };
 }
 

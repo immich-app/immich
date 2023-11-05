@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // List<String> urls (default value: const [])
+    test('to test the property `urls`', () async {
+      // TODO
+    });
+
 
   });
 

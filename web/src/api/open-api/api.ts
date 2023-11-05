@@ -3719,7 +3719,6 @@ export interface SystemConfigMachineLearningDto {
      * @memberof SystemConfigMachineLearningDto
      */
     'url': string;
-
     /**
      * 
      * @type {Array<string>}
