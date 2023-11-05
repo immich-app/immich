@@ -321,6 +321,10 @@
   const handleFiterByPeople = (personId: string): void => {
     window.location.replace(`${$page.url.pathname}?personId=${personId}`);
   };
+
+  const handleResetFilter = (): void => {
+    window.location.replace($page.url.pathname);
+  };
 </script>
 
 <header>
@@ -526,44 +530,53 @@
             {#if namedPeoples.length}
               <div class="personsWrapper">
                 {#each namedPeoples as people}
-                  <div class="personFilterWrapper">
-                    <a href="/people/{people.id}">
-                      <ImageThumbnail
-                        circle
-                        shadow
-                        url={api.getPeopleThumbnailUrl(people.id)}
-                        altText={people.name}
-                        title={`${people.name}\nin ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
-                        widthStyle="3.375rem"
-                        heightStyle="3.375rem"
-                      />
-                    </a>
-                    <button
-                      class="personNameFilter"
-                      title={`🔎 ${people.name}`}
-                      on:click={() => handleFiterByPeople(people.id)}>{people.name}</button
-                    >
-                  </div>
+                  {#if !personId || personId === people.id}
+                    <div class="personFilterWrapper">
+                      <a href="/people/{people.id}">
+                        <ImageThumbnail
+                          circle
+                          shadow
+                          url={api.getPeopleThumbnailUrl(people.id)}
+                          altText={people.name}
+                          title={`${people.name}\nin ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
+                          widthStyle="3.375rem"
+                          heightStyle="3.375rem"
+                        />
+                      </a>
+                      <button
+                        class="personNameFilter"
+                        title={`🔎 ${people.name}`}
+                        on:click={() => handleFiterByPeople(people.id)}>{people.name}</button
+                      >
+                    </div>
+                  {/if}
                 {/each}
               </div>
             {/if}
             {#if namedPeoples.length}
               <div class="personsWrapper">
                 {#each unNamedPeoples as people}
-                  <div class="personFilterWrapper">
-                    <a href="/people/{people.id}">
-                      <ImageThumbnail
-                        circle
-                        shadow
-                        url={api.getPeopleThumbnailUrl(people.id)}
-                        altText={people.name}
-                        title={`in ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
-                        widthStyle="3.375rem"
-                        heightStyle="3.375rem"
-                      />
-                    </a>
-                  </div>
+                  {#if !personId || personId === people.id}
+                    <div class="personFilterWrapper">
+                      <a href="/people/{people.id}">
+                        <ImageThumbnail
+                          circle
+                          shadow
+                          url={api.getPeopleThumbnailUrl(people.id)}
+                          altText={people.name}
+                          title={`in ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
+                          widthStyle="3.375rem"
+                          heightStyle="3.375rem"
+                        />
+                      </a>
+                    </div>
+                  {/if}
                 {/each}
+              </div>
+            {/if}
+            {#if personId}
+              <div>
+                <Button type="reset" size="sm" rounded="3xl" on:click={handleResetFilter}>Clear Filter</Button>
               </div>
             {/if}
           </div>
