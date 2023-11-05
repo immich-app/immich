@@ -149,7 +149,6 @@ class NotificationSetting extends HookConsumerWidget {
             max: 5.0,
             divisions: 5,
             label: formattedValue,
-            activeColor: Theme.of(context).primaryColor,
           ),
         ),
       ],

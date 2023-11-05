@@ -127,9 +127,9 @@ class LoginForm extends HookConsumerWidget {
     );
 
     populateTestLoginInfo() {
-      usernameController.text = 'testuser@email.com';
-      passwordController.text = 'password';
-      serverEndpointController.text = 'http://10.1.15.216:2283/api';
+      usernameController.text = 'demo@immich.app';
+      passwordController.text = 'demo';
+      serverEndpointController.text = 'https://demo.immich.app';
     }
 
     login() async {
@@ -303,7 +303,10 @@ class LoginForm extends HookConsumerWidget {
           children: [
             Text(
               serverEndpointController.text,
-              style: Theme.of(context).textTheme.displaySmall,
+              style: Theme.of(context)
+                  .textTheme
+                  .displaySmall
+                  ?.copyWith(color: Theme.of(context).primaryColor),
               textAlign: TextAlign.center,
             ),
             if (isPasswordLoginEnable.value) ...[

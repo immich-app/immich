@@ -18,7 +18,6 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
     AuthenticationState authState = ref.watch(authenticationProvider);
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final user = Store.tryGet(StoreKey.currentUser);
 
     buildUserProfileImage() {
@@ -91,9 +90,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Theme.of(context).scaffoldBackgroundColor
-              : const Color.fromARGB(255, 225, 229, 240),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(10),
             topRight: Radius.circular(10),
@@ -111,7 +108,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
                   bottom: -5,
                   right: -8,
                   child: Material(
-                    color: isDarkMode ? Colors.blueGrey[800] : Colors.white,
+                    color: Theme.of(context).colorScheme.primaryContainer,
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),

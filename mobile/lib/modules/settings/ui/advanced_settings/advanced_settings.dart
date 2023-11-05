@@ -86,7 +86,6 @@ class AdvancedSettings extends HookConsumerWidget {
             min: 1.0,
             divisions: 7,
             label: logLevel,
-            activeColor: Theme.of(context).primaryColor,
           ),
         ),
         SettingsSwitchListTile(

@@ -39,9 +39,7 @@ class AppBarServerInfo extends HookConsumerWidget {
       padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Theme.of(context).scaffoldBackgroundColor
-              : const Color.fromARGB(255, 225, 229, 240),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10),
@@ -139,7 +137,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         serverInfoState.serverVersion.major > 0
                             ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
-                            : "?",
+                            : "--",
                         style: TextStyle(
                           fontSize: 11,
                           color: Theme.of(context)
@@ -190,9 +188,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         textStyle: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.black
-                              : Colors.white,
+                          color: Theme.of(context).colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                         message: getServerUrl() ?? '--',

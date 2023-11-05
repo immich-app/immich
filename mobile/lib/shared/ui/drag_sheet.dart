@@ -9,7 +9,7 @@ class CustomDraggingHandle extends StatelessWidget {
       height: 5,
       width: 30,
       decoration: BoxDecoration(
-        color: Colors.grey[500],
+        color: Theme.of(context).dividerColor,
         borderRadius: BorderRadius.circular(16),
       ),
     );

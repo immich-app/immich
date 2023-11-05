@@ -53,9 +53,12 @@ class GroupDividerTitle extends ConsumerWidget {
                     Icons.check_circle_rounded,
                     color: Theme.of(context).primaryColor,
                   )
-                : const Icon(
+                : Icon(
                     Icons.check_circle_outline_rounded,
-                    color: Colors.grey,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onBackground
+                        .withAlpha(100),
                   ),
           ),
         ],

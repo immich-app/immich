@@ -42,7 +42,6 @@ class ControlBottomAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     var hasRemote =
         selectionAssetState.hasRemote || selectionAssetState.hasMerged;
     var hasLocal = selectionAssetState.hasLocal;
@@ -128,8 +127,6 @@ class ControlBottomAppBar extends ConsumerWidget {
         ScrollController scrollController,
       ) {
         return Card(
-          color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
-          surfaceTintColor: Colors.transparent,
           elevation: 18.0,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(

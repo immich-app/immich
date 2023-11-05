@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
@@ -20,259 +19,157 @@ final immichThemeProvider = StateProvider<ThemeMode>((ref) {
   }
 });
 
-ThemeData base = ThemeData(
-  chipTheme: const ChipThemeData(
-    side: BorderSide.none,
-  ),
-  sliderTheme: const SliderThemeData(
-    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7),
-    trackHeight: 2.0,
-  ),
-);
-
-ThemeData immichLightTheme = ThemeData(
-  useMaterial3: true,
+ColorScheme _lightColorScheme = const ColorScheme(
   brightness: Brightness.light,
-  primarySwatch: Colors.indigo,
-  primaryColor: Colors.indigo,
-  hintColor: Colors.indigo,
-  focusColor: Colors.indigo,
-  splashColor: Colors.indigo.withOpacity(0.15),
-  fontFamily: 'WorkSans',
-  scaffoldBackgroundColor: immichBackgroundColor,
-  snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
-      color: Colors.indigo,
-      fontWeight: FontWeight.bold,
-    ),
-    backgroundColor: Colors.white,
-  ),
-  appBarTheme: AppBarTheme(
-    titleTextStyle: const TextStyle(
-      fontFamily: 'WorkSans',
-      color: Colors.indigo,
-      fontWeight: FontWeight.bold,
-      fontSize: 18,
-    ),
-    backgroundColor: immichBackgroundColor,
-    foregroundColor: Colors.indigo,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    centerTitle: true,
-  ),
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    type: BottomNavigationBarType.fixed,
-    backgroundColor: immichBackgroundColor,
-    selectedItemColor: Colors.indigo,
-  ),
-  cardTheme: const CardTheme(
-    surfaceTintColor: Colors.transparent,
-  ),
-  drawerTheme: DrawerThemeData(
-    backgroundColor: immichBackgroundColor,
-  ),
-  textTheme: const TextTheme(
-    displayLarge: TextStyle(
-      fontSize: 26,
-      fontWeight: FontWeight.bold,
-      color: Colors.indigo,
-    ),
-    displayMedium: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.bold,
-      color: Colors.black87,
-    ),
-    displaySmall: TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.bold,
-      color: Colors.indigo,
-    ),
-    titleSmall: TextStyle(
-      fontSize: 16.0,
-      fontWeight: FontWeight.bold,
-    ),
-    titleMedium: TextStyle(
-      fontSize: 18.0,
-      fontWeight: FontWeight.bold,
-    ),
-    titleLarge: TextStyle(
-      fontSize: 26.0,
-      fontWeight: FontWeight.bold,
-    ),
-  ),
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.indigo,
-      foregroundColor: Colors.white,
-    ),
-  ),
-  chipTheme: base.chipTheme,
-  sliderTheme: base.sliderTheme,
-  popupMenuTheme: const PopupMenuThemeData(
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(10)),
-    ),
-    surfaceTintColor: Colors.transparent,
-    color: Colors.white,
-  ),
-  navigationBarTheme: NavigationBarThemeData(
-    indicatorColor: Colors.indigo.withOpacity(0.15),
-    iconTheme: MaterialStatePropertyAll(
-      IconThemeData(color: Colors.grey[700]),
-    ),
-    backgroundColor: immichBackgroundColor,
-    surfaceTintColor: Colors.transparent,
-    labelTextStyle: MaterialStatePropertyAll(
-      TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[700],
-      ),
-    ),
-  ),
-  dialogTheme: const DialogTheme(
-    surfaceTintColor: Colors.transparent,
-  ),
-  inputDecorationTheme: const InputDecorationTheme(
-    focusedBorder: OutlineInputBorder(
-      borderSide: BorderSide(
-        color: Colors.indigo,
-      ),
-    ),
-    labelStyle: TextStyle(
-      color: Colors.indigo,
-    ),
-    hintStyle: TextStyle(
-      fontSize: 14.0,
-      fontWeight: FontWeight.normal,
-    ),
-  ),
-  textSelectionTheme: const TextSelectionThemeData(
-    cursorColor: Colors.indigo,
-  ),
+  primary: Color(0xff4755b5),
+  onPrimary: Color(0xffffffff),
+  primaryContainer: Color(0xffdfe0ff),
+  onPrimaryContainer: Color(0xff000d60),
+  secondary: Color(0xff5b5d72),
+  onSecondary: Color(0xffffffff),
+  secondaryContainer: Color(0xFFD6D8FF),
+  onSecondaryContainer: Color(0xff181a2c),
+  tertiary: Color(0xff77536c),
+  onTertiary: Color(0xffffffff),
+  tertiaryContainer: Color(0xffffd7f0),
+  onTertiaryContainer: Color(0xff2d1127),
+  error: Color(0xffba1a1a),
+  onError: Color(0xffffffff),
+  errorContainer: Color(0xffffdad6),
+  onErrorContainer: Color(0xff410002),
+  background: Color(0xfff9f6fc),
+  onBackground: Color(0xff1b1b1f),
+  surface: Color(0xfff9f6fc),
+  onSurface: Color(0xff1b1b1f),
+  surfaceVariant: Color(0xffdeddea),
+  onSurfaceVariant: Color(0xff46464f),
+  outline: Color(0xff777680),
+  outlineVariant: Color(0xffc7c5d0),
+  shadow: Color(0xff000000),
+  scrim: Color(0xff000000),
+  inverseSurface: Color(0xff303137),
+  onInverseSurface: Color(0xfff3f0f4),
+  inversePrimary: Color(0xffbcc3ff),
+  surfaceTint: Color(0xff4755b5),
 );
 
-ThemeData immichDarkTheme = ThemeData(
-  useMaterial3: true,
+ColorScheme _darkColorScheme = const ColorScheme(
   brightness: Brightness.dark,
-  primarySwatch: Colors.indigo,
-  primaryColor: immichDarkThemePrimaryColor,
-  scaffoldBackgroundColor: immichDarkBackgroundColor,
-  hintColor: Colors.grey[600],
-  fontFamily: 'WorkSans',
-  snackBarTheme: SnackBarThemeData(
-    contentTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
-      color: immichDarkThemePrimaryColor,
-      fontWeight: FontWeight.bold,
-    ),
-    backgroundColor: Colors.grey[900],
-  ),
-  textButtonTheme: TextButtonThemeData(
-    style: TextButton.styleFrom(
-      foregroundColor: immichDarkThemePrimaryColor,
-    ),
-  ),
-  appBarTheme: AppBarTheme(
-    titleTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
-      color: immichDarkThemePrimaryColor,
-      fontWeight: FontWeight.bold,
-      fontSize: 18,
-    ),
-    backgroundColor: const Color.fromARGB(255, 32, 33, 35),
-    foregroundColor: immichDarkThemePrimaryColor,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    centerTitle: true,
-  ),
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    type: BottomNavigationBarType.fixed,
-    backgroundColor: const Color.fromARGB(255, 35, 36, 37),
-    selectedItemColor: immichDarkThemePrimaryColor,
-  ),
-  drawerTheme: DrawerThemeData(
-    backgroundColor: immichDarkBackgroundColor,
-    scrimColor: Colors.white.withOpacity(0.1),
-  ),
-  textTheme: TextTheme(
-    displayLarge: const TextStyle(
-      fontSize: 26,
-      fontWeight: FontWeight.bold,
-      color: Color.fromARGB(255, 255, 255, 255),
-    ),
-    displayMedium: const TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.bold,
-      color: Color.fromARGB(255, 255, 255, 255),
-    ),
-    displaySmall: TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.bold,
-      color: immichDarkThemePrimaryColor,
-    ),
-    titleSmall: const TextStyle(
-      fontSize: 16.0,
-      fontWeight: FontWeight.bold,
-    ),
-    titleMedium: const TextStyle(
-      fontSize: 18.0,
-      fontWeight: FontWeight.bold,
-    ),
-    titleLarge: const TextStyle(
-      fontSize: 26.0,
-      fontWeight: FontWeight.bold,
-    ),
-  ),
-  cardColor: Colors.grey[900],
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ElevatedButton.styleFrom(
-      foregroundColor: Colors.black87,
-      backgroundColor: immichDarkThemePrimaryColor,
-    ),
-  ),
-  chipTheme: base.chipTheme,
-  sliderTheme: base.sliderTheme,
-  popupMenuTheme: const PopupMenuThemeData(
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(10)),
-    ),
-    surfaceTintColor: Colors.transparent,
-  ),
-  navigationBarTheme: NavigationBarThemeData(
-    indicatorColor: immichDarkThemePrimaryColor.withOpacity(0.4),
-    iconTheme: MaterialStatePropertyAll(
-      IconThemeData(color: Colors.grey[500]),
-    ),
-    backgroundColor: Colors.grey[900],
-    surfaceTintColor: Colors.transparent,
-    labelTextStyle: MaterialStatePropertyAll(
-      TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[500],
-      ),
-    ),
-  ),
-  dialogTheme: const DialogTheme(
-    surfaceTintColor: Colors.transparent,
-  ),
-  inputDecorationTheme: InputDecorationTheme(
-    focusedBorder: OutlineInputBorder(
-      borderSide: BorderSide(
-        color: immichDarkThemePrimaryColor,
-      ),
-    ),
-    labelStyle: TextStyle(
-      color: immichDarkThemePrimaryColor,
-    ),
-    hintStyle: const TextStyle(
-      fontSize: 14.0,
-      fontWeight: FontWeight.normal,
-    ),
-  ),
-  textSelectionTheme: TextSelectionThemeData(
-    cursorColor: immichDarkThemePrimaryColor,
-  ),
+  primary: Color(0xffa4c8ff),
+  onPrimary: Color(0xff00315e),
+  primaryContainer: Color(0xFF182C40),
+  onPrimaryContainer: Color(0xffd4e3ff),
+  secondary: Color(0xffbcc7dc),
+  onSecondary: Color(0xff37474f),
+  secondaryContainer: Color(0xff3d4758),
+  onSecondaryContainer: Color(0xffd8e3f8),
+  tertiary: Color(0xffdabde2),
+  onTertiary: Color(0xff3d2946),
+  tertiaryContainer: Color(0xff543f5e),
+  onTertiaryContainer: Color(0xfff6d9ff),
+  error: Color(0xffffb4ab),
+  onError: Color(0xff690005),
+  errorContainer: Color(0xff93000a),
+  onErrorContainer: Color(0xffffb4ab),
+  background: Color(0xff101214),
+  onBackground: Color(0xffe2e2e5),
+  surface: Color(0xff101214),
+  onSurface: Color(0xffe2e2e5),
+  surfaceVariant: Color(0xff363c42),
+  onSurfaceVariant: Color(0xffc1c7ce),
+  outline: Color(0xff8b9198),
+  outlineVariant: Color(0xff41474d),
+  shadow: Color(0xff000000),
+  scrim: Color(0xff000000),
+  inverseSurface: Color(0xffeeeef1),
+  onInverseSurface: Color(0xff2e3133),
+  inversePrimary: Color(0xff1c5fa5),
+  surfaceTint: Color(0xff90caf9),
 );
+
+ThemeData getThemeForScheme(ColorScheme scheme) {
+  return ThemeData(
+    useMaterial3: true,
+    brightness: scheme.brightness,
+    colorScheme: scheme,
+    primaryColor: scheme.primary,
+    scaffoldBackgroundColor: scheme.background,
+    fontFamily: 'WorkSans',
+    appBarTheme: AppBarTheme(
+      iconTheme: IconThemeData(color: scheme.primary),
+      titleTextStyle: TextStyle(
+        fontSize: 18.0,
+        fontWeight: FontWeight.bold,
+        color: scheme.primary,
+      ),
+    ),
+    cardTheme: const CardTheme(elevation: 2.0),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        visualDensity: VisualDensity.standard,
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 11,
+        ),
+        shadowColor: scheme.shadow,
+        foregroundColor: scheme.onPrimary,
+        backgroundColor: scheme.primary,
+      ),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      iconTheme: MaterialStateProperty.resolveWith<IconThemeData?>((states) {
+        if (states.contains(MaterialState.selected)) {
+          return IconThemeData(color: scheme.primary);
+        }
+        return null;
+      }),
+    ),
+    textTheme: TextTheme(
+      displayLarge: TextStyle(
+        fontSize: 26,
+        fontWeight: FontWeight.bold,
+        color: scheme.primary,
+      ),
+      displayMedium: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+      ),
+      displaySmall: const TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+      ),
+      titleSmall: const TextStyle(
+        fontSize: 16.0,
+        fontWeight: FontWeight.bold,
+      ),
+      titleMedium: const TextStyle(
+        fontSize: 18.0,
+        fontWeight: FontWeight.bold,
+      ),
+      titleLarge: TextStyle(
+        fontSize: 26.0,
+        fontWeight: FontWeight.bold,
+        color: scheme.primary,
+      ),
+    ),
+    chipTheme: const ChipThemeData(
+      side: BorderSide.none,
+    ),
+    sliderTheme: const SliderThemeData(
+      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7),
+      trackHeight: 2.0,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      labelStyle: TextStyle(
+        color: scheme.primary,
+      ),
+      hintStyle: const TextStyle(
+        fontSize: 14.0,
+        fontWeight: FontWeight.normal,
+      ),
+    ),
+  );
+}
+
+ThemeData immichLightTheme = getThemeForScheme(_lightColorScheme);
+ThemeData immichDarkTheme = getThemeForScheme(_darkColorScheme);

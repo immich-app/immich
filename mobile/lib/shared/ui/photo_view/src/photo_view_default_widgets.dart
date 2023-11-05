@@ -13,7 +13,7 @@ class PhotoViewDefaultError extends StatelessWidget {
       child: Center(
         child: Icon(
           Icons.broken_image,
-          color: Colors.grey[400],
+          color: Theme.of(context).primaryColor,
           size: 40.0,
         ),
       ),

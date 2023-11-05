@@ -23,29 +23,31 @@ class SettingsSwitchListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
-      selectedTileColor: enabled ? null : Theme.of(context).disabledColor,
       value: valueNotifier.value,
-      onChanged: (bool value) {
-        if (enabled) {
-          valueNotifier.value = value;
-          appSettingService.setSetting(settingsEnum, value);
-        }
-        if (onChanged != null) {
-          onChanged!(value);
-        }
-      },
-      activeColor: enabled
-          ? Theme.of(context).primaryColor
-          : Theme.of(context).disabledColor,
+      onChanged: enabled
+          ? (bool value) {
+              valueNotifier.value = value;
+              appSettingService.setSetting(settingsEnum, value);
+              if (onChanged != null) {
+                onChanged!(value);
+              }
+            }
+          : null,
       dense: true,
       title: Text(
         title,
-        style: Theme.of(context)
-            .textTheme
-            .labelLarge
-            ?.copyWith(fontWeight: FontWeight.bold),
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: enabled
+                  ? null
+                  : Theme.of(context).colorScheme.onSurface.withAlpha(100),
+            ),
       ),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
+      subtitle: subtitle != null
+          ? Text(
+              subtitle!,
+            )
+          : null,
     );
   }
 }

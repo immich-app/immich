@@ -43,9 +43,6 @@ class ThumbnailImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final assetContainerColor =
-        isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
     final isFromDto = asset.id == Isar.autoIncrement;
 
@@ -54,11 +51,13 @@ class ThumbnailImage extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: assetContainerColor,
+            color: Theme.of(context).colorScheme.surfaceVariant,
           ),
           child: Icon(
             Icons.check_circle_rounded,
-            color: Theme.of(context).primaryColor,
+            color: onDeselect == null
+                ? Theme.of(context).colorScheme.primary.withAlpha(120)
+                : Theme.of(context).colorScheme.primary,
           ),
         );
       } else {
@@ -132,9 +131,10 @@ class ThumbnailImage extends StatelessWidget {
     }
 
     Widget buildImage() {
-      final image = SizedBox(
+      final image = Container(
         width: 300,
         height: 300,
+        color: Theme.of(context).colorScheme.surfaceVariant,
         child: Hero(
           tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
@@ -153,9 +153,9 @@ class ThumbnailImage extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             width: 0,
-            color: onDeselect == null ? Colors.grey : assetContainerColor,
+            color: Theme.of(context).colorScheme.surfaceVariant,
           ),
-          color: onDeselect == null ? Colors.grey : assetContainerColor,
+          color: Theme.of(context).colorScheme.surfaceVariant,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -197,14 +197,14 @@ class ThumbnailImage extends StatelessWidget {
       },
       child: Stack(
         children: [
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.decelerate,
             decoration: BoxDecoration(
               border: multiselectEnabled && isSelected
                   ? Border.all(
-                      color: onDeselect == null
-                          ? Colors.grey
-                          : assetContainerColor,
-                      width: 8,
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      width: 12,
                     )
                   : const Border(),
             ),

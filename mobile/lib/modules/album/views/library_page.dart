@@ -21,7 +21,6 @@ class LibraryPage extends HookConsumerWidget {
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider);
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     var settings = ref.watch(appSettingsServiceProvider);
 
     useEffect(
@@ -138,51 +137,55 @@ class LibraryPage extends HookConsumerWidget {
     }
 
     Widget buildCreateAlbumButton() {
-      return GestureDetector(
-        onTap: () {
-          AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: false));
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          var cardSize = constraints.maxWidth;
+
+          return GestureDetector(
+            onTap: () {
+              AutoRouter.of(context)
+                  .push(CreateAlbumRoute(isSharedAlbum: false));
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: cardSize,
+                    width: cardSize,
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.add_rounded,
+                          size: 28,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 8.0,
+                      bottom: 16,
+                      left: 8.0,
+                    ),
+                    child: const Text(
+                      'library_page_new_album',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ).tr(),
+                  ),
+                ],
+              ),
+            ),
+          );
         },
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: isDarkMode
-                          ? const Color.fromARGB(255, 53, 53, 53)
-                          : const Color.fromARGB(255, 203, 203, 203),
-                    ),
-                    color: isDarkMode ? Colors.grey[900] : Colors.grey[50],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.add_rounded,
-                      size: 28,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  top: 8.0,
-                  bottom: 16,
-                ),
-                child: const Text(
-                  'library_page_new_album',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ).tr(),
-              ),
-            ],
-          ),
-        ),
       );
     }
 
@@ -192,30 +195,19 @@ class LibraryPage extends HookConsumerWidget {
       Function() onClick,
     ) {
       return Expanded(
-        child: OutlinedButton.icon(
+        child: ElevatedButton.icon(
           onPressed: onClick,
           label: Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Text(
               label,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13.0,
-                color: isDarkMode ? Colors.white : Colors.grey[800],
+            ),
+          ),
+          style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                alignment: Alignment.centerLeft,
               ),
-            ),
-          ),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
-            side: BorderSide(
-              color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
-            ),
-            alignment: Alignment.centerLeft,
-          ),
           icon: Icon(
             icon,
-            color: Theme.of(context).primaryColor,
           ),
         ),
       );
@@ -293,7 +285,6 @@ class LibraryPage extends HookConsumerWidget {
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 250,
-                mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
                 childAspectRatio: .7,
               ),

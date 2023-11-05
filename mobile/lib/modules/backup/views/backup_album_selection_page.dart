@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_list_tile.dart';
@@ -148,13 +147,12 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                 album.name,
                 style: TextStyle(
                   fontSize: 10,
-                  color: isDarkTheme ? Colors.black : immichBackgroundColor,
+                  color: Theme.of(context).colorScheme.surface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               backgroundColor: Colors.red[300],
-              deleteIconColor:
-                  isDarkTheme ? Colors.black : immichBackgroundColor,
+              deleteIconColor: Theme.of(context).colorScheme.surface,
               deleteIcon: const Icon(
                 Icons.cancel_rounded,
                 size: 15,

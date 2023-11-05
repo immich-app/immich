@@ -221,11 +221,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).textTheme.displayLarge?.color,
-        ),
+        style: Theme.of(context).textTheme.titleLarge,
       ),
     );
   }
@@ -243,7 +239,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
               bottom: widget.margin,
               right: i + 1 == num ? 0.0 : widget.margin,
             ),
-            color: Colors.grey,
+            color: Theme.of(context).colorScheme.surfaceVariant,
           ),
       ],
     );
@@ -328,8 +324,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
     return Text(
       DateFormat.yMMMM().format(date),
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.onPrimary,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -372,7 +368,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,
-            backgroundColor: Theme.of(context).hintColor,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
             labelTextBuilder: _labelBuilder,
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),

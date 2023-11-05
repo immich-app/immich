@@ -24,7 +24,7 @@ class TabControllerPage extends HookConsumerWidget {
         children: [
           icon,
           Positioned(
-            right: -14,
+            right: -16,
             child: SizedBox(
               height: 12,
               width: 12,
@@ -114,9 +114,8 @@ class TabControllerPage extends HookConsumerWidget {
               Icons.photo_library_outlined,
             ),
             selectedIcon: buildIcon(
-              Icon(
+              const Icon(
                 Icons.photo_library,
-                color: Theme.of(context).primaryColor,
               ),
             ),
           ),
@@ -125,9 +124,8 @@ class TabControllerPage extends HookConsumerWidget {
             icon: const Icon(
               Icons.search_rounded,
             ),
-            selectedIcon: Icon(
+            selectedIcon: const Icon(
               Icons.search,
-              color: Theme.of(context).primaryColor,
             ),
           ),
           NavigationDestination(
@@ -135,9 +133,8 @@ class TabControllerPage extends HookConsumerWidget {
             icon: const Icon(
               Icons.group_outlined,
             ),
-            selectedIcon: Icon(
+            selectedIcon: const Icon(
               Icons.group,
-              color: Theme.of(context).primaryColor,
             ),
           ),
           NavigationDestination(
@@ -146,9 +143,8 @@ class TabControllerPage extends HookConsumerWidget {
               Icons.photo_album_outlined,
             ),
             selectedIcon: buildIcon(
-              Icon(
+              const Icon(
                 Icons.photo_album_rounded,
-                color: Theme.of(context).primaryColor,
               ),
             ),
           ),

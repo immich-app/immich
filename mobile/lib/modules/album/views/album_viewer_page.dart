@@ -151,7 +151,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                 titleFocusNode: titleFocusNode,
               )
             : Padding(
-                padding: const EdgeInsets.only(left: 8.0),
+                padding: const EdgeInsets.only(left: 8.0, bottom: 20.0),
                 child: Text(
                   album.name,
                   style: const TextStyle(

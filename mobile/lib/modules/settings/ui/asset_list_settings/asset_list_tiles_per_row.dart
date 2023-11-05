@@ -51,7 +51,6 @@ class TilesPerRow extends HookConsumerWidget {
           max: 6,
           divisions: 4,
           label: "${itemsValue.value.toInt()}",
-          activeColor: Theme.of(context).primaryColor,
         ),
       ],
     );

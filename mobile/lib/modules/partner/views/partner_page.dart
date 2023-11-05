@@ -118,6 +118,7 @@ class PartnerPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -126,12 +127,15 @@ class PartnerPage extends HookConsumerWidget {
                       style: TextStyle(fontSize: 14),
                     ).tr(),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: availableUsers.whenOrNull(
-                      data: (data) => addNewUsersHandler,
+                  Align(
+                    alignment: Alignment.center,
+                    child: ElevatedButton.icon(
+                      onPressed: availableUsers.whenOrNull(
+                        data: (data) => addNewUsersHandler,
+                      ),
+                      icon: const Icon(Icons.person_add),
+                      label: const Text("partner_page_add_partner").tr(),
                     ),
-                    icon: const Icon(Icons.person_add),
-                    label: const Text("partner_page_add_partner").tr(),
                   ),
                 ],
               ),

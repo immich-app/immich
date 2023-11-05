@@ -120,6 +120,7 @@ class MapPageState extends ConsumerState<MapPage> {
     final selectedAssets = useState(<Asset>{});
     final showLoadingIndicator = useState(false);
     final refetchMarkers = useState(true);
+    final themeData = isDarkTheme ? immichDarkTheme : immichLightTheme;
 
     if (refetchMarkers.value) {
       mapMarkerData.value = ref.watch(mapMarkersProvider).when(
@@ -189,7 +190,7 @@ class MapPageState extends ConsumerState<MapPage> {
           showDialog(
             context: context,
             builder: (context) => Theme(
-              data: isDarkTheme ? immichDarkTheme : immichLightTheme,
+              data: themeData,
               child: LocationServiceDisabledDialog(),
             ),
           );
@@ -203,7 +204,7 @@ class MapPageState extends ConsumerState<MapPage> {
           shouldRequestPermission = await showDialog(
             context: context,
             builder: (context) => Theme(
-              data: isDarkTheme ? immichDarkTheme : immichLightTheme,
+              data: themeData,
               child: LocationPermissionDisabledDialog(),
             ),
           );
@@ -438,7 +439,7 @@ class MapPageState extends ConsumerState<MapPage> {
       ),
       child: Theme(
         // Override app theme based on map theme
-        data: isDarkTheme ? immichDarkTheme : immichLightTheme,
+        data: themeData,
         child: Scaffold(
           appBar: MapAppBar(
             isDarkTheme: isDarkTheme,

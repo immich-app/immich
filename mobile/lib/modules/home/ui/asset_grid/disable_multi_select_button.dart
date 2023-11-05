@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class DisableMultiSelectButton extends ConsumerWidget {
+class DisableMultiSelectButton extends StatelessWidget {
   const DisableMultiSelectButton({
     Key? key,
     required this.onPressed,
@@ -12,25 +11,29 @@ class DisableMultiSelectButton extends ConsumerWidget {
   final int selectedItemCount;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: ElevatedButton.icon(
-            onPressed: () {
-              onPressed();
-            },
-            icon: const Icon(Icons.close_rounded),
-            label: Text(
-              '$selectedItemCount',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
-              ),
+      padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.surface,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          onPressed: () {
+            onPressed();
+          },
+          icon: const Icon(Icons.close_rounded),
+          label: Text(
+            '$selectedItemCount',
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
             ),
           ),
         ),
+      ),
     );
   }
 }

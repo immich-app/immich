@@ -23,7 +23,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     final theme = Theme.of(context);
-    bool isDarkTheme = theme.brightness == Brightness.dark;
     bool isHorizontal = MediaQuery.of(context).size.width > 600;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
@@ -135,11 +134,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(
-            color: isDarkTheme
-                ? Theme.of(context).scaffoldBackgroundColor
-                : const Color.fromARGB(255, 225, 229, 240),
-          ),
+          decoration:
+              BoxDecoration(color: Theme.of(context).colorScheme.surface),
           child: ListTile(
             minLeadingWidth: 50,
             leading: Icon(
@@ -161,7 +157,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     child: LinearProgressIndicator(
                       minHeight: 5.0,
                       value: backupState.serverInfo.diskUsagePercentage / 100.0,
-                      backgroundColor: Colors.grey,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.onSurface.withAlpha(50),
                       color: theme.primaryColor,
                     ),
                   ),

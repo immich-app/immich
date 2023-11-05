@@ -33,7 +33,6 @@ class StorageIndicator extends HookConsumerWidget {
     );
 
     return SwitchListTile.adaptive(
-      activeColor: Theme.of(context).primaryColor,
       title: Text(
         "theme_setting_asset_list_storage_indicator_title",
         style: Theme.of(context)

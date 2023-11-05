@@ -24,7 +24,6 @@ class ThemeSetting extends HookConsumerWidget {
     );
 
     return ExpansionTile(
-      textColor: Theme.of(context).primaryColor,
       title: const Text(
         'theme_setting_theme_title',
         style: TextStyle(
@@ -39,7 +38,6 @@ class ThemeSetting extends HookConsumerWidget {
       ).tr(),
       children: [
         SwitchListTile.adaptive(
-          activeColor: Theme.of(context).primaryColor,
           title: Text(
             'theme_setting_system_theme_switch',
             style: Theme.of(context)
@@ -77,7 +75,6 @@ class ThemeSetting extends HookConsumerWidget {
         ),
         if (currentTheme.value != ThemeMode.system)
           SwitchListTile.adaptive(
-            activeColor: Theme.of(context).primaryColor,
             title: Text(
               'theme_setting_dark_mode_switch',
               style: Theme.of(context)

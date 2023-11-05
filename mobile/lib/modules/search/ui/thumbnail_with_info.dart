@@ -22,8 +22,6 @@ class ThumbnailWithInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    var textAndIconColor = isDarkMode ? Colors.grey[100] : Colors.grey[700];
     return GestureDetector(
       onTap: () {
         onTap();
@@ -34,7 +32,7 @@ class ThumbnailWithInfo extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
-              color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+              color: Theme.of(context).colorScheme.surfaceVariant,
             ),
             child: imageUrl != null
                 ? ClipRRect(
@@ -43,6 +41,17 @@ class ThumbnailWithInfo extends StatelessWidget {
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
+                      placeholder: (context, url) {
+                        return SizedBox.square(
+                          dimension: 250,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color:
+                                  Theme.of(context).colorScheme.surfaceVariant,
+                            ),
+                          ),
+                        );
+                      },
                       imageUrl: imageUrl!,
                       httpHeaders: {
                         "Authorization":
@@ -55,7 +64,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                 : Center(
                     child: Icon(
                       noImageIcon ?? Icons.not_listed_location,
-                      color: textAndIconColor,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
           ),
@@ -67,10 +76,10 @@ class ThumbnailWithInfo extends StatelessWidget {
                 begin: FractionalOffset.topCenter,
                 end: FractionalOffset.bottomCenter,
                 colors: [
-                  Colors.grey.withOpacity(0.0),
+                  Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.0),
                   textInfo == ''
-                      ? Colors.black.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.5),
+                      ? Theme.of(context).colorScheme.surface.withOpacity(0.1)
+                      : Theme.of(context).colorScheme.surface.withOpacity(0.6),
                 ],
                 stops: const [0.0, 1.0],
               ),

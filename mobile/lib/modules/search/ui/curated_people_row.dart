@@ -30,8 +30,8 @@ class CuratedPeopleRow extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: SizedBox(
-            width: imageSize,
-            height: imageSize,
+            width: 120,
+            height: 120,
             child: ThumbnailWithInfo(
               textInfo: '',
               onTap: () {},

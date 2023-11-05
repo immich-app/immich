@@ -6,6 +6,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 /// Build the Scroll Thumb and label using the current configuration
 typedef ScrollThumbBuilder = Widget Function(
   Color backgroundColor,
+  Color foregroundColor,
   Animation<double> thumbAnimation,
   Animation<double> labelAnimation,
   double height, {
@@ -32,6 +33,9 @@ class DraggableScrollbar extends StatefulWidget {
 
   /// The background color of the label and thumb
   final Color backgroundColor;
+
+  /// The foreground color of the arrows in the thumb
+  final Color foregroundColor;
 
   /// The amount of padding that should surround the thumb
   final EdgeInsetsGeometry? padding;
@@ -66,6 +70,7 @@ class DraggableScrollbar extends StatefulWidget {
     required this.scrollStateListener,
     this.heightScrollThumb = 48.0,
     this.backgroundColor = Colors.white,
+    this.foregroundColor = Colors.white,
     this.padding,
     this.scrollbarAnimationDuration = const Duration(milliseconds: 300),
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),
@@ -85,6 +90,7 @@ class DraggableScrollbar extends StatefulWidget {
   static buildScrollThumbAndLabel({
     required Widget scrollThumb,
     required Color backgroundColor,
+    required Color foregroundColor,
     required Animation<double>? thumbAnimation,
     required Animation<double>? labelAnimation,
     required Text? labelText,
@@ -123,6 +129,7 @@ class DraggableScrollbar extends StatefulWidget {
   ) {
     return (
       Color backgroundColor,
+      Color foregroundColor,
       Animation<double> thumbAnimation,
       Animation<double> labelAnimation,
       double height, {
@@ -131,7 +138,7 @@ class DraggableScrollbar extends StatefulWidget {
     }) {
       final scrollThumb = CustomPaint(
         key: scrollThumbKey,
-        foregroundPainter: ArrowCustomPainter(Colors.white),
+        foregroundPainter: ArrowCustomPainter(foregroundColor),
         child: Material(
           elevation: 4.0,
           color: backgroundColor,
@@ -150,6 +157,7 @@ class DraggableScrollbar extends StatefulWidget {
       return buildScrollThumbAndLabel(
         scrollThumb: scrollThumb,
         backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor,
         thumbAnimation: thumbAnimation,
         labelAnimation: labelAnimation,
         labelText: labelText,
@@ -286,6 +294,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
                     padding: widget.padding,
                     child: widget.scrollThumbBuilder(
                       widget.backgroundColor,
+                      widget.foregroundColor,
                       _thumbAnimation,
                       _labelAnimation,
                       widget.heightScrollThumb,

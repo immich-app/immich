@@ -21,39 +21,48 @@ class AlbumThumbnailListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var cardSize = 68.0;
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     buildEmptyThumbnail() {
-      return Container(
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-        ),
-        child: SizedBox(
-          height: cardSize,
-          width: cardSize,
-          child: const Center(
-            child: Icon(Icons.no_photography),
+      return SizedBox(
+        height: cardSize,
+        width: cardSize,
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Center(
+            child: Icon(
+              Icons.no_photography,
+              size: cardSize * .15,
+            ),
           ),
         ),
       );
     }
 
     buildAlbumThumbnail() {
-      return CachedNetworkImage(
-        width: cardSize,
-        height: cardSize,
-        fit: BoxFit.cover,
-        fadeInDuration: const Duration(milliseconds: 200),
-        imageUrl: getAlbumThumbnailUrl(
-          album,
-          type: ThumbnailFormat.JPEG,
+      return Card(
+        clipBehavior: Clip.hardEdge,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
-        httpHeaders: {
-          "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
-        },
-        cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
-        errorWidget: (context, url, error) =>
-            const Icon(Icons.image_not_supported_outlined),
+        child: CachedNetworkImage(
+          width: cardSize,
+          height: cardSize,
+          fit: BoxFit.cover,
+          fadeInDuration: const Duration(milliseconds: 200),
+          imageUrl: getAlbumThumbnailUrl(
+            album,
+            type: ThumbnailFormat.JPEG,
+          ),
+          httpHeaders: {
+            "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
+          },
+          cacheKey:
+              getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
+          errorWidget: (context, url, error) =>
+              const Icon(Icons.image_not_supported_outlined),
+        ),
       );
     }
 

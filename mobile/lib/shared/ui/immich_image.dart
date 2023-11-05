@@ -32,8 +32,8 @@ class ImmichImage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (this.asset == null) {
       return Container(
-        decoration: const BoxDecoration(
-          color: Colors.grey,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceVariant,
         ),
         child: SizedBox(
           width: width,
@@ -60,10 +60,12 @@ class ImmichImage extends StatelessWidget {
           return Stack(
             children: [
               if (useGrayBoxPlaceholder)
-                const SizedBox.square(
+                SizedBox.square(
                   dimension: 250,
                   child: DecoratedBox(
-                    decoration: BoxDecoration(color: Colors.grey),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                    ),
                   ),
                 ),
               if (useProgressIndicator)
@@ -109,10 +111,12 @@ class ImmichImage extends StatelessWidget {
         return Stack(
           children: [
             if (useGrayBoxPlaceholder)
-              const SizedBox.square(
+              SizedBox.square(
                 dimension: 250,
                 child: DecoratedBox(
-                  decoration: BoxDecoration(color: Colors.grey),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceVariant,
+                  ),
                 ),
               ),
             if (useProgressIndicator)

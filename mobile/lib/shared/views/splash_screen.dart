@@ -79,8 +79,9 @@ class SplashScreenPage extends HookConsumerWidget {
       [],
     );
 
-    return const Scaffold(
-      body: Center(
+    return Scaffold(
+      appBar: AppBar(),
+      body: const Center(
         child: Image(
           image: AssetImage('assets/immich-logo-no-outline.png'),
           width: 80,

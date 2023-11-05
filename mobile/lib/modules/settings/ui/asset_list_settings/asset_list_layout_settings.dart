@@ -50,7 +50,6 @@ class LayoutSettings extends HookConsumerWidget {
     return Column(
       children: [
         SwitchListTile.adaptive(
-          activeColor: Theme.of(context).primaryColor,
           title: Text(
             "asset_list_layout_settings_dynamic_layout_title",
             style: Theme.of(context)
@@ -75,7 +74,6 @@ class LayoutSettings extends HookConsumerWidget {
           ).tr(),
         ),
         RadioListTile(
-          activeColor: Theme.of(context).primaryColor,
           title: Text(
             "asset_list_layout_settings_group_by_month_day",
             style: Theme.of(context).textTheme.labelLarge,
@@ -86,7 +84,6 @@ class LayoutSettings extends HookConsumerWidget {
           controlAffinity: ListTileControlAffinity.trailing,
         ),
         RadioListTile(
-          activeColor: Theme.of(context).primaryColor,
           title: Text(
             "asset_list_layout_settings_group_by_month",
             style: Theme.of(context).textTheme.labelLarge,
@@ -97,7 +94,6 @@ class LayoutSettings extends HookConsumerWidget {
           controlAffinity: ListTileControlAffinity.trailing,
         ),
         RadioListTile(
-          activeColor: Theme.of(context).primaryColor,
           title: Text(
             "asset_list_layout_settings_group_automatically",
             style: Theme.of(context).textTheme.labelLarge,

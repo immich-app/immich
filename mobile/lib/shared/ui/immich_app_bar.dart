@@ -28,7 +28,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     AuthenticationState authState = ref.watch(authenticationProvider);
     final user = Store.tryGet(StoreKey.currentUser);
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     const widgetSize = 30.0;
 
     buildProfileIndicator() {
@@ -69,9 +68,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       );
     }
 
-    getBackupBadgeIcon() {
-      final iconColor = isDarkMode ? Colors.white : Colors.black;
-
+    Widget? getBackupBadgeIcon() {
       if (isEnableAutoBackup) {
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
           return Container(
@@ -79,7 +76,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               strokeCap: StrokeCap.round,
-              valueColor: AlwaysStoppedAnimation<Color>(iconColor),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           );
         } else if (backupState.backupProgress !=
@@ -88,7 +85,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           return Icon(
             Icons.check_outlined,
             size: 9,
-            color: iconColor,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           );
         }
       }
@@ -97,14 +94,14 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
         return Icon(
           Icons.cloud_off_rounded,
           size: 9,
-          color: iconColor,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         );
       }
+      return null;
     }
 
     buildBackupIndicator() {
       final indicatorIcon = getBackupBadgeIcon();
-      final badgeBackground = isDarkMode ? Colors.blueGrey[800] : Colors.white;
 
       return InkWell(
         onTap: () => AutoRouter.of(context).push(const BackupControllerRoute()),
@@ -114,11 +111,11 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             width: widgetSize / 2,
             height: widgetSize / 2,
             decoration: BoxDecoration(
-              color: badgeBackground,
               border: Border.all(
-                color: isDarkMode ? Colors.black : Colors.grey,
+                color: Theme.of(context).colorScheme.surface,
               ),
               borderRadius: BorderRadius.circular(widgetSize / 2),
+              color: Theme.of(context).colorScheme.surfaceVariant,
             ),
             child: indicatorIcon,
           ),
@@ -126,10 +123,9 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           alignment: Alignment.bottomRight,
           isLabelVisible: indicatorIcon != null,
           offset: const Offset(2, 2),
-          child: Icon(
+          child: const Icon(
             Icons.backup_rounded,
             size: widgetSize,
-            color: Theme.of(context).primaryColor,
           ),
         ),
       );
@@ -158,12 +154,13 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
               Container(
                 margin: const EdgeInsets.only(left: 10),
-                child: const Text(
+                child: Text(
                   'IMMICH',
                   style: TextStyle(
                     fontFamily: 'SnowburstOne',
                     fontWeight: FontWeight.bold,
                     fontSize: 24,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),

@@ -134,13 +134,12 @@ class SharingPage extends HookConsumerWidget {
                   Icons.photo_album_outlined,
                   size: 20,
                 ),
+                style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                      alignment: Alignment.centerLeft,
+                    ),
                 label: const Text(
                   "sharing_silver_appbar_create_shared_album",
                   maxLines: 1,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
                 ).tr(),
               ),
             ),
@@ -153,12 +152,11 @@ class SharingPage extends HookConsumerWidget {
                   Icons.link,
                   size: 20,
                 ),
+                style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+                      alignment: Alignment.centerLeft,
+                    ),
                 label: const Text(
                   "sharing_silver_appbar_shared_links",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
                   maxLines: 1,
                 ).tr(),
               ),
@@ -198,7 +196,10 @@ class SharingPage extends HookConsumerWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'sharing_page_empty_list',
-                      style: Theme.of(context).textTheme.displaySmall,
+                      style: Theme.of(context)
+                          .textTheme
+                          .displaySmall
+                          ?.copyWith(color: Theme.of(context).primaryColor),
                     ).tr(),
                   ),
                   Padding(
