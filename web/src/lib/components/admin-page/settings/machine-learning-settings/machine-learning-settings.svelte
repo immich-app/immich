@@ -61,21 +61,21 @@
     notificationController.show({ message: 'Reset settings to defaults', type: NotificationType.Info });
   }
 
-  let newMlURL: string;
+  let newLearningURL: string;
 
   const addURL = async () => {
-    if (!newMlURL.startsWith('https://') && !newMlURL.startsWith('http://')) {
-      newMlURL = 'http://' + newMlURL;
+    if (!newLearningURL.startsWith('https://') && !newLearningURL.startsWith('http://')) {
+      newLearningURL = 'http://' + newLearningURL;
     }
 
-    machineLearningConfig.urls.push(newMlURL);
+    machineLearningConfig.urls.push(newLearningURL);
 
     var success = await saveSetting();
     if (!success) {
       machineLearningConfig.urls.pop();
     }
 
-    newMlURL = '';
+    newLearningURL = '';
   };
 
   const handleDelete = async (url: string) => {
@@ -84,7 +84,7 @@
 
     var success = await saveSetting();
     if (!success) {
-      newMlURL = '';
+      newLearningURL = '';
       machineLearningConfig.urls = _urls;
     }
   };
@@ -138,16 +138,16 @@
 
                   <td class="w-1/3 text-ellipsis px-4 text-sm">
                     <button
-                      disabled={url == machineLearningConfig.url}
                       on:click={() => setPrimary(url)}
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 disabled:bg-immich-primary/50 dark:disabled:bg-immich-dark-primary/50"
+                      disabled={url == machineLearningConfig.url}
                     >
                       <Icon path={mdiCheckCircleOutline} size="16" />
                     </button>
                     <button
-                      disabled={url == machineLearningConfig.url}
                       on:click={() => handleDelete(url)}
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700 disabled:bg-immich-primary/50 dark:disabled:bg-immich-dark-primary/50"
+                      disabled={url == machineLearningConfig.url}
                     >
                       <Icon path={mdiTrashCanOutline} size="16" />
                     </button>
@@ -158,7 +158,11 @@
           </table>
 
           <div class="flex flex-row gap-2">
-            <input bind:value={newMlURL} class="immich-form-input w-full pb-2" placeholder="Machine learning URL" />
+            <input
+              bind:value={newLearningURL}
+              class="immich-form-input w-full pb-2"
+              placeholder="Machine learning URL"
+            />
             <Button on:click={() => addURL()} size="sm">Add</Button>
           </div>
         </div>
