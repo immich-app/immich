@@ -40,7 +40,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
             autoBackup: Store.get(StoreKey.autoBackup, false),
-            backgroundBackup: false,
+            backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
             backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
             backupRequireCharging:
                 Store.get(StoreKey.backupRequireCharging, false),
@@ -171,6 +171,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           state.backupRequireCharging,
         );
         await Store.put(StoreKey.backupTriggerDelay, state.backupTriggerDelay);
+        await Store.put(StoreKey.backgroundBackup, state.backgroundBackup);
       } else {
         state = state.copyWith(
           backgroundBackup: wasEnabled,
@@ -383,6 +384,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final isEnabled = await _backgroundService.isBackgroundBackupEnabled();
 
     state = state.copyWith(backgroundBackup: isEnabled);
+    if (isEnabled != Store.get(StoreKey.backgroundBackup, !isEnabled)) {
+      Store.put(StoreKey.backgroundBackup, isEnabled);
+    }
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
