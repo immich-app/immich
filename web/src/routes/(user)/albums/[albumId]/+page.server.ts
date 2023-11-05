@@ -26,27 +26,21 @@ export const load = (async ({ params, locals: { api, user } }) => {
         }
       }
     }
+    let namedPeoples: any[] = [],
+      unNamedPeoples: any[] = [];
 
-    albumPeoples.sort((a, b) => {
-      if (a.name === '' && b.name === '') {
-        return b.appears - a.appears;
-      }
-      if (a.name === '') {
-        return 1;
-      }
-      if (b.name === '') {
-        return -1;
-      }
-      if (b.appears !== a.appears) {
-        return b.appears - a.appears;
-      }
-      return a.name.localeCompare(b.name);
-    });
+    for (const p of albumPeoples) {
+      p.name.length ? namedPeoples.push(p) : unNamedPeoples.push(p);
+    }
+
+    namedPeoples.sort((a, b) => b.appears - a.appears || a.name.localeCompare(b.name));
+    unNamedPeoples.sort((a, b) => b.appears - a.appears);
 
     return {
       album,
       user,
-      albumPeoples,
+      namedPeoples,
+      unNamedPeoples,
       meta: {
         title: album.albumName,
       },

@@ -59,7 +59,8 @@
 
   let album = data.album;
   $: album = data.album;
-  $: albumPeoples = data.albumPeoples;
+  $: namedPeoples = data.namedPeoples;
+  $: unNamedPeoples = data.unNamedPeoples;
 
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
@@ -521,29 +522,49 @@
               {album.description || 'Add description'}
             </button>
           {/if}
-          {#if albumPeoples.length}
-            <div class="personsWrapper">
-              {#each albumPeoples as people}
-                <div class="personFilterWrapper">
-                  <a href="/people/{people.id}">
-                    <ImageThumbnail
-                      circle
-                      shadow
-                      url={api.getPeopleThumbnailUrl(people.id)}
-                      altText={people.name}
-                      title={people.name
-                        ? `${people.name}\n in ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`
-                        : `in ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
-                      widthStyle="3.375rem"
-                      heightStyle="3.375rem"
-                    />
-                  </a>
-                  <button class="personNameFilter" on:click={() => handleFiterByPeople(people.id)}>{people.name}</button
-                  >
-                </div>
-              {/each}
-            </div>
-          {/if}
+          <div class="namedUnNamedWrapper">
+            {#if namedPeoples.length}
+              <div class="personsWrapper">
+                {#each namedPeoples as people}
+                  <div class="personFilterWrapper">
+                    <a href="/people/{people.id}">
+                      <ImageThumbnail
+                        circle
+                        shadow
+                        url={api.getPeopleThumbnailUrl(people.id)}
+                        altText={people.name}
+                        title={`${people.name}\nin ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
+                        widthStyle="3.375rem"
+                        heightStyle="3.375rem"
+                      />
+                    </a>
+                    <button class="personNameFilter" on:click={() => handleFiterByPeople(people.id)}
+                      >{people.name}</button
+                    >
+                  </div>
+                {/each}
+              </div>
+            {/if}
+            {#if namedPeoples.length}
+              <div class="personsWrapper">
+                {#each unNamedPeoples as people}
+                  <div class="personFilterWrapper">
+                    <a href="/people/{people.id}">
+                      <ImageThumbnail
+                        circle
+                        shadow
+                        url={api.getPeopleThumbnailUrl(people.id)}
+                        altText={people.name}
+                        title={`in ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
+                        widthStyle="3.375rem"
+                        heightStyle="3.375rem"
+                      />
+                    </a>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
         </section>
       {/if}
 
@@ -632,5 +653,10 @@
     cursor: pointer;
     font-size: small;
     max-width: 100%;
+  }
+  .namedUnNamedWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 </style>
