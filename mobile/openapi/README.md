@@ -87,6 +87,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
 *AlbumApi* | [**getAlbumCount**](doc//AlbumApi.md#getalbumcount) | **GET** /album/count | 
 *AlbumApi* | [**getAlbumInfo**](doc//AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
+*AlbumApi* | [**getAlbumPeople**](doc//AlbumApi.md#getalbumpeople) | **GET** /album/{id}/people | 
 *AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /album | 
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
@@ -154,6 +155,7 @@ Class | Method | HTTP request | Description
 *PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
 *PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
 *PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
+*PersonApi* | [**getPersonAlbums**](doc//PersonApi.md#getpersonalbums) | **GET** /person/{id}/albums | 
 *PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
 *PersonApi* | [**getPersonStatistics**](doc//PersonApi.md#getpersonstatistics) | **GET** /person/{id}/statistics | 
 *PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
@@ -215,6 +217,7 @@ Class | Method | HTTP request | Description
  - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
+ - [AlbumsForPersonResponseDto](doc//AlbumsForPersonResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
  - [AssetBulkDeleteDto](doc//AssetBulkDeleteDto.md)
  - [AssetBulkUpdateDto](doc//AssetBulkUpdateDto.md)
@@ -284,6 +287,7 @@ Class | Method | HTTP request | Description
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
  - [PathEntityType](doc//PathEntityType.md)
  - [PathType](doc//PathType.md)
+ - [PeopleForAlbumResponseDto](doc//PeopleForAlbumResponseDto.md)
  - [PeopleResponseDto](doc//PeopleResponseDto.md)
  - [PeopleUpdateDto](doc//PeopleUpdateDto.md)
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)

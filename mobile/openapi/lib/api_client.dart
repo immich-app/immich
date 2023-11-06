@@ -203,6 +203,8 @@ class ApiClient {
           return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
+        case 'AlbumsForPersonResponseDto':
+          return AlbumsForPersonResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
         case 'AssetBulkDeleteDto':
@@ -341,6 +343,8 @@ class ApiClient {
           return PathEntityTypeTypeTransformer().decode(value);
         case 'PathType':
           return PathTypeTypeTransformer().decode(value);
+        case 'PeopleForAlbumResponseDto':
+          return PeopleForAlbumResponseDto.fromJson(value);
         case 'PeopleResponseDto':
           return PeopleResponseDto.fromJson(value);
         case 'PeopleUpdateDto':
