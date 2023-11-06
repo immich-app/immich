@@ -530,23 +530,25 @@
             {#if namedPeoples.length}
               <div class="personsWrapper">
                 {#each namedPeoples as people}
-                  {#if !personId || personId === people.id}
+                  {#if !personId || personId === people.personId}
                     <div class="personFilterWrapper">
-                      <a href="/people/{people.id}">
+                      <a href="/people/{people.personId}">
                         <ImageThumbnail
                           circle
                           shadow
-                          url={api.getPeopleThumbnailUrl(people.id)}
-                          altText={people.name}
-                          title={`${people.name}\nin ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
+                          url={api.getPeopleThumbnailUrl(people.personId)}
+                          altText={people.personName}
+                          title={`${people.personName}\nin ${people.albumCount} ${
+                            people.albumCount > 1 ? 'albums' : 'album'
+                          }`}
                           widthStyle="3.375rem"
                           heightStyle="3.375rem"
                         />
                       </a>
                       <button
                         class="personNameFilter"
-                        title={`🔎 ${people.name}`}
-                        on:click={() => handleFiterByPeople(people.id)}>{people.name}</button
+                        title={`🔎 ${people.personName}`}
+                        on:click={() => handleFiterByPeople(people.personId)}>{people.personName}</button
                       >
                     </div>
                   {/if}
@@ -556,15 +558,15 @@
             {#if namedPeoples.length}
               <div class="personsWrapper">
                 {#each unNamedPeoples as people}
-                  {#if !personId || personId === people.id}
+                  {#if !personId || personId === people.personId}
                     <div class="personFilterWrapper">
-                      <a href="/people/{people.id}">
+                      <a href="/people/{people.personId}">
                         <ImageThumbnail
                           circle
                           shadow
-                          url={api.getPeopleThumbnailUrl(people.id)}
-                          altText={people.name}
-                          title={`in ${people.appears} ${people.appears > 1 ? 'albums' : 'album'}`}
+                          url={api.getPeopleThumbnailUrl(people.personId)}
+                          altText={people.personName}
+                          title={`in ${people.albumCount} ${people.albumCount > 1 ? 'albums' : 'album'}`}
                           widthStyle="3.375rem"
                           heightStyle="3.375rem"
                         />
