@@ -38,6 +38,13 @@ class ActivitiesPage extends HookConsumerWidget {
     final listViewScrollController = useScrollController();
     final currentUser = Store.tryGet(StoreKey.currentUser);
 
+    useEffect(
+      () {
+        inputFocusNode.requestFocus();
+        return null;
+      },
+      [],
+    );
     buildTitleWithTimestamp(Activity activity, {bool leftAlign = true}) {
       final textColor = Theme.of(context).brightness == Brightness.dark
           ? Colors.white
