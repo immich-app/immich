@@ -4,7 +4,6 @@ export interface IAccessRepository {
   activity: {
     hasOwnerAccess(userId: string, activityId: string): Promise<boolean>;
     hasAlbumOwnerAccess(userId: string, activityId: string): Promise<boolean>;
-    hasAlbumUpdate(userId: string, activityId: string): Promise<boolean>;
   };
   asset: {
     hasOwnerAccess(userId: string, assetId: string): Promise<boolean>;
@@ -21,6 +20,7 @@ export interface IAccessRepository {
     hasOwnerAccess(userId: string, albumId: string): Promise<boolean>;
     hasSharedAlbumAccess(userId: string, albumId: string): Promise<boolean>;
     hasSharedLinkAccess(sharedLinkId: string, albumId: string): Promise<boolean>;
+    hasActivityAccess(userId: string, albumId: string): Promise<boolean>;
   };
 
   library: {

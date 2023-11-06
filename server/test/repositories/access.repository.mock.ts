@@ -31,6 +31,7 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
       hasOwnerAccess: jest.fn(),
       hasSharedAlbumAccess: jest.fn(),
       hasSharedLinkAccess: jest.fn(),
+      hasActivityAccess: jest.fn(),
     },
 
     authDevice: {

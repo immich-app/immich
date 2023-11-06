@@ -43,17 +43,6 @@ export class AccessRepository implements IAccessRepository {
         },
       });
     },
-    hasAlbumUpdate: (userId: string, activityId: string): Promise<boolean> => {
-      return this.activityRepository.exist({
-        where: {
-          id: activityId,
-          userId,
-          album: {
-            isActivityEnabled: true,
-          },
-        },
-      });
-    },
   };
   library = {
     hasOwnerAccess: (userId: string, libraryId: string): Promise<boolean> => {
@@ -227,6 +216,14 @@ export class AccessRepository implements IAccessRepository {
         where: {
           id: sharedLinkId,
           albumId,
+        },
+      });
+    },
+    hasActivityAccess: (_: string, albumId: string): Promise<boolean> => {
+      return this.albumRepository.exist({
+        where: {
+          id: albumId,
+          isActivityEnabled: true,
         },
       });
     },

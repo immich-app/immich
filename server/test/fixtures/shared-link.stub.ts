@@ -100,6 +100,7 @@ const albumResponse: AlbumResponseDto = {
   hasSharedLink: false,
   assets: [],
   assetCount: 1,
+  isActivityEnabled: true,
 };
 
 export const sharedLinkStub = {
@@ -179,6 +180,7 @@ export const sharedLinkStub = {
       albumThumbnailAssetId: null,
       sharedUsers: [],
       sharedLinks: [],
+      isActivityEnabled: true,
       assets: [
         {
           id: 'id_1',
