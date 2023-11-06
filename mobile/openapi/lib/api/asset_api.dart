@@ -309,19 +309,23 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [int] skip:
+  ///
+  /// * [int] take:
+  ///
   /// * [String] userId:
   ///
   /// * [bool] isFavorite:
   ///
   /// * [bool] isArchived:
   ///
-  /// * [num] skip:
-  ///
   /// * [DateTime] updatedAfter:
+  ///
+  /// * [DateTime] updatedBefore:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<Response> getAllAssetsWithHttpInfo({ String? userId, bool? isFavorite, bool? isArchived, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
+  Future<Response> getAllAssetsWithHttpInfo({ int? skip, int? take, String? userId, bool? isFavorite, bool? isArchived, DateTime? updatedAfter, DateTime? updatedBefore, String? ifNoneMatch, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -332,6 +336,12 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+    if (take != null) {
+      queryParams.addAll(_queryParams('', 'take', take));
+    }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
     }
@@ -341,11 +351,11 @@ class AssetApi {
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
     }
-    if (skip != null) {
-      queryParams.addAll(_queryParams('', 'skip', skip));
-    }
     if (updatedAfter != null) {
       queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
+    }
+    if (updatedBefore != null) {
+      queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
     }
 
     if (ifNoneMatch != null) {
@@ -370,20 +380,24 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [int] skip:
+  ///
+  /// * [int] take:
+  ///
   /// * [String] userId:
   ///
   /// * [bool] isFavorite:
   ///
   /// * [bool] isArchived:
   ///
-  /// * [num] skip:
-  ///
   /// * [DateTime] updatedAfter:
+  ///
+  /// * [DateTime] updatedBefore:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<List<AssetResponseDto>?> getAllAssets({ String? userId, bool? isFavorite, bool? isArchived, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
-    final response = await getAllAssetsWithHttpInfo( userId: userId, isFavorite: isFavorite, isArchived: isArchived, skip: skip, updatedAfter: updatedAfter, ifNoneMatch: ifNoneMatch, );
+  Future<List<AssetResponseDto>?> getAllAssets({ int? skip, int? take, String? userId, bool? isFavorite, bool? isArchived, DateTime? updatedAfter, DateTime? updatedBefore, String? ifNoneMatch, }) async {
+    final response = await getAllAssetsWithHttpInfo( skip: skip, take: take, userId: userId, isFavorite: isFavorite, isArchived: isArchived, updatedAfter: updatedAfter, updatedBefore: updatedBefore, ifNoneMatch: ifNoneMatch, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
