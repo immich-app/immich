@@ -6695,18 +6695,18 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {number} [skip] 
+         * @param {number} [take] 
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
-         * @param {number} [skip] 
-         * @param {number} [take] 
          * @param {string} [updatedAfter] 
          * @param {string} [updatedBefore] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, take?: number, updatedAfter?: string, updatedBefore?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (skip?: number, take?: number, userId?: string, isFavorite?: boolean, isArchived?: boolean, updatedAfter?: string, updatedBefore?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6728,6 +6728,14 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
+            if (skip !== undefined) {
+                localVarQueryParameter['skip'] = skip;
+            }
+
+            if (take !== undefined) {
+                localVarQueryParameter['take'] = take;
+            }
+
             if (userId !== undefined) {
                 localVarQueryParameter['userId'] = userId;
             }
@@ -6738,14 +6746,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isArchived !== undefined) {
                 localVarQueryParameter['isArchived'] = isArchived;
-            }
-
-            if (skip !== undefined) {
-                localVarQueryParameter['skip'] = skip;
-            }
-
-            if (take !== undefined) {
-                localVarQueryParameter['take'] = take;
             }
 
             if (updatedAfter !== undefined) {
@@ -8080,19 +8080,19 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {number} [skip] 
+         * @param {number} [take] 
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
-         * @param {number} [skip] 
-         * @param {number} [take] 
          * @param {string} [updatedAfter] 
          * @param {string} [updatedBefore] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, take?: number, updatedAfter?: string, updatedBefore?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, skip, take, updatedAfter, updatedBefore, ifNoneMatch, options);
+        async getAllAssets(skip?: number, take?: number, userId?: string, isFavorite?: boolean, isArchived?: boolean, updatedAfter?: string, updatedBefore?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(skip, take, userId, isFavorite, isArchived, updatedAfter, updatedBefore, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8437,7 +8437,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.take, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllAssets(requestParameters.skip, requestParameters.take, requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * Get a single asset\'s information
@@ -8737,6 +8737,20 @@ export interface AssetApiDownloadFileRequest {
 export interface AssetApiGetAllAssetsRequest {
     /**
      * 
+     * @type {number}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly skip?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly take?: number
+
+    /**
+     * 
      * @type {string}
      * @memberof AssetApiGetAllAssets
      */
@@ -8755,20 +8769,6 @@ export interface AssetApiGetAllAssetsRequest {
      * @memberof AssetApiGetAllAssets
      */
     readonly isArchived?: boolean
-
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetApiGetAllAssets
-     */
-    readonly skip?: number
-
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetApiGetAllAssets
-     */
-    readonly take?: number
 
     /**
      * 
@@ -9460,7 +9460,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.take, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAllAssets(requestParameters.skip, requestParameters.take, requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

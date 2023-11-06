@@ -19,11 +19,13 @@ export class AssetSearchDto {
   @Optional()
   @IsInt()
   @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
   skip?: number;
 
   @Optional()
   @IsInt()
   @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
   take?: number;
 
   @Optional()
