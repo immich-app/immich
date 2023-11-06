@@ -27,7 +27,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, PersonResponseDto, api } from '@api';
+  import { AssetResponseDto, PersonResponseDto, ThumbnailFormat, api } from '@api';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -72,6 +72,7 @@
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
+  $: albums = data.albums;
 
   /**
    * Save the word used to search people name: for example,
@@ -412,13 +413,13 @@
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Face information block -->
         <div
-          role="button"
-          class="relative w-fit p-4 sm:px-6"
+          style="display: flex;"
+          class="relative w-fit p-4 sm:px-6;"
           use:clickOutside
           on:outclick={handleCancelEditName}
           on:escape={handleCancelEditName}
         >
-          <section class="flex w-64 sm:w-96 place-items-center border-black">
+          <section class="flex w-64 sm:w-96 place-items-center border-black;">
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
@@ -428,7 +429,7 @@
                 on:input={searchPeople}
               />
             {:else}
-              <div class="relative">
+              <div class="relative" role="button">
                 <button
                   class="flex items-center justify-center"
                   title="Edit name"
@@ -446,7 +447,7 @@
                     class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
                   >
                     {#if data.person.name}
-                      <p class="w-40 sm:w-72 font-medium truncate">{data.person.name}</p>
+                      <p class="w-40 sm:w-52 font-medium truncate">{data.person.name}</p>
                       <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
                         {`${numberOfAssets} asset${numberOfAssets > 1 ? 's' : ''}`}
                       </p>
@@ -459,6 +460,23 @@
               </div>
             {/if}
           </section>
+          <div style="display: flex; ">
+            {#if albums.length}
+              <div class="appersIn">Appears in:</div>
+              {#each albums as album}
+                <div class="marginRight">
+                  <img
+                    class="h-[70px] w-[70px] rounded object-cover"
+                    src={album.albumThumbnailAssetId &&
+                      api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
+                    draggable="false"
+                    alt={album.albumName}
+                    title={`${album.albumName} \n${album.assetCount} occurrence${album.assetCount > 1 ? 's' : ''}`}
+                  />
+                </div>
+              {/each}
+            {/if}
+          </div>
           {#if isEditingName}
             <div class="absolute z-[999] w-64 sm:w-96">
               {#if isSearchingPeople}
@@ -496,3 +514,15 @@
     </AssetGrid>
   {/key}
 </main>
+
+<style>
+  .marginRight {
+    margin-right: 1.5rem;
+  }
+  .appersIn {
+    margin-right: 1.5rem;
+    margin-left: 1rem;
+    align-items: center;
+    display: flex;
+  }
+</style>
