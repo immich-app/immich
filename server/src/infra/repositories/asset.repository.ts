@@ -320,6 +320,7 @@ export class AssetRepository implements IAssetRepository {
       case WithoutProperty.FACES:
         relations = {
           faces: true,
+          jobStatus: true,
         };
         where = {
           resizePath: Not(IsNull()),
@@ -327,6 +328,13 @@ export class AssetRepository implements IAssetRepository {
           faces: {
             assetId: IsNull(),
             personId: IsNull(),
+          },
+          // TODO: Add tests to ensure that this captures all three cases:
+          // 1. jobStatus null.
+          // 2. facesRecognizedAt null.
+          // 3. facesRecognizedAt not null.
+          jobStatus: {
+            facesRecognizedAt: IsNull(),
           },
         };
         break;
