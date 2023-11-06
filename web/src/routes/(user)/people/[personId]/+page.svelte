@@ -412,7 +412,6 @@
     >
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Face information block -->
-        <!-- pointer-events-none -->
         <div
           style="display: flex;"
           class="relative w-fit p-4 sm:px-6;"
@@ -420,9 +419,7 @@
           on:outclick={handleCancelEditName}
           on:escape={handleCancelEditName}
         >
-          <section
-            class="flex sm:w-76 place-items-center border-black;"
-          >
+          <section class="flex sm:w-76 place-items-center border-black;">
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
@@ -432,7 +429,7 @@
                 on:input={searchPeople}
               />
             {:else}
-              <div class="relative" role='button'>
+              <div class="relative" role="button">
                 <button
                   class="flex items-center justify-center"
                   title="Edit name"
@@ -468,16 +465,14 @@
               <div class="appersIn">Appears in:</div>
               {#each albums as album}
                 <div class="marginRight">
-                  <div>
-                    <img
-                      class="h-[70px] w-[70px] rounded object-cover"
-                      src={album.albumThumbnailAssetId &&
-                        api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
-                      draggable="false"
-                      alt={album.albumName}
-                      title={`${album.albumName} \n${album.assetCount} occurrence${album.assetCount > 1 ? 's' : ''}`}
-                    />
-                  </div>
+                  <img
+                    class="h-[70px] w-[70px] rounded object-cover"
+                    src={album.albumThumbnailAssetId &&
+                      api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
+                    draggable="false"
+                    alt={album.albumName}
+                    title={`${album.albumName} \n${album.assetCount} occurrence${album.assetCount > 1 ? 's' : ''}`}
+                  />
                 </div>
               {/each}
             {/if}
