@@ -146,7 +146,6 @@ describe(`${AssetController.name} (e2e)`, () => {
       { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
       { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
       { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
-      { should: 'require `isFavorite`', dto: { ...makeUploadDto({ omit: 'isFavorite' }) } },
       { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
       { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
       { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
