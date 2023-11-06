@@ -6655,8 +6655,7 @@
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
-          "fileModifiedAt",
-          "isFavorite"
+          "fileModifiedAt"
         ],
         "type": "object"
       },
@@ -7143,8 +7142,7 @@
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
-          "fileModifiedAt",
-          "isFavorite"
+          "fileModifiedAt"
         ],
         "type": "object"
       },
