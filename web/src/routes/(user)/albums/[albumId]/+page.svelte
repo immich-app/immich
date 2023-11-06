@@ -752,18 +752,18 @@
 
           <div class=" items-center justify-center p-4">
             <div class="py-2">
-              <h2 class="text-gray">Sharing</h2>
+              <h2 class="text-gray text-sm mb-3">SHARING</h2>
               <div class="p-2">
                 <SettingSwitch
-                  title="Activity"
-                  subtitle="Let users react"
+                  title="Comments & likes"
+                  subtitle="Let others respond"
                   checked={album.isActivityEnabled}
                   on:toggle={handleToggleEnableActivity}
                 />
               </div>
             </div>
             <div class="py-2">
-              <div>People</div>
+              <div class="text-gray text-sm mb-3">PEOPLE</div>
               <div class="p-2">
                 <button class="flex items-center gap-2" on:click={() => (viewMode = ViewMode.SELECT_USERS)}>
                   <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
@@ -771,7 +771,7 @@
                   </div>
                   <div>Invite People</div>
                 </button>
-                <div class="flex items-center gap-2 py-2">
+                <div class="flex items-center gap-2 py-2 mt-2">
                   <div>
                     <UserAvatar {user} size="md" />
                   </div>
