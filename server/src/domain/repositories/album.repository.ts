@@ -7,6 +7,13 @@ export interface AlbumAssetCount {
   assetCount: number;
 }
 
+export interface AlbumInfoAssetCount {
+  albumId: string;
+  albumName: string;
+  albumThumbnailAssetId: string;
+  assetCount: number;
+}
+
 export interface AlbumInfoOptions {
   withAssets: boolean;
 }
@@ -19,6 +26,12 @@ export interface AlbumAsset {
 export interface AlbumAssets {
   albumId: string;
   assetIds: string[];
+}
+
+export interface AlbumPersonInfo{
+  personId: string;
+  personName: string;
+  albumsCount: number;
 }
 
 export interface IAlbumRepository {
@@ -43,4 +56,5 @@ export interface IAlbumRepository {
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   delete(album: AlbumEntity): Promise<void>;
   updateThumbnails(): Promise<number | undefined>;
+  getPeople(albumId: string): Promise<AlbumPersonInfo[]>;
 }
