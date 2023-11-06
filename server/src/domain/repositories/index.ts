@@ -1,4 +1,5 @@
 export * from './access.repository';
+export * from './activity.repository';
 export * from './album.repository';
 export * from './api-key.repository';
 export * from './asset.repository';
@@ -14,6 +15,7 @@ export * from './move.repository';
 export * from './partner.repository';
 export * from './person.repository';
 export * from './search.repository';
+export * from './server-info.repository';
 export * from './shared-link.repository';
 export * from './smart-info.repository';
 export * from './storage.repository';

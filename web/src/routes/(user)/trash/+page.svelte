@@ -15,20 +15,20 @@
   } from '$lib/components/shared-components/notification/notification';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { api, TimeBucketSize } from '@api';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import HistoryOutline from 'svelte-material-icons/History.svelte';
+  import { api } from '@api';
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
 
   export let data: PageData;
 
   $: $featureFlags.trash || goto(AppRoute.PHOTOS);
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, isTrashed: true });
+  const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
   let isShowEmptyConfirmation = false;
@@ -74,20 +74,20 @@
     <div class="flex place-items-center gap-2" slot="buttons">
       <LinkButton on:click={handleRestoreTrash}>
         <div class="flex place-items-center gap-2 text-sm">
-          <HistoryOutline size="18" />
+          <Icon path={mdiHistory} size="18" />
           Restore All
         </div>
       </LinkButton>
       <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
         <div class="flex place-items-center gap-2 text-sm">
-          <DeleteOutline size="18" />
+          <Icon path={mdiDeleteOutline} size="18" />
           Empty Trash
         </div>
       </LinkButton>
     </div>
 
     <AssetGrid forceDelete {assetStore} {assetInteractionStore}>
-      <p class="font-medium text-gray-500/60 dark:text-gray-300/60 py-4">
+      <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
       </p>
       <EmptyPlaceholder

@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import Cake from 'svelte-material-icons/Cake.svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import { mdiCake } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let birthDate: string;
 
@@ -22,7 +23,7 @@
     <div
       class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <Cake size="4em" />
+      <Icon path={mdiCake} size="4em" />
       <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Set date of birth</h1>
 
       <p class="text-sm dark:text-immich-dark-fg">

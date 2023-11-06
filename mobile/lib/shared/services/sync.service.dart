@@ -173,7 +173,14 @@ class SyncService {
   /// Deletes remote-only assets, updates merged assets to be local-only
   Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
     return _db.writeTxn(() async {
-      await _db.assets.remote(idsToDelete).filter().localIdIsNull().deleteAll();
+      final idsToRemove = await _db.assets
+          .remote(idsToDelete)
+          .filter()
+          .localIdIsNull()
+          .idProperty()
+          .findAll();
+      await _db.assets.deleteAll(idsToRemove);
+      await _db.exifInfos.deleteAll(idsToRemove);
       final onlyLocal = await _db.assets.remote(idsToDelete).findAll();
       if (onlyLocal.isNotEmpty) {
         for (final Asset a in onlyLocal) {
@@ -190,7 +197,7 @@ class SyncService {
     User user,
     FutureOr<List<Asset>?> Function(User user) loadAssets,
   ) async {
-    final DateTime now = DateTime.now();
+    final DateTime now = DateTime.now().toUtc();
     final List<Asset>? remote = await loadAssets(user);
     if (remote == null) {
       return false;
@@ -203,6 +210,10 @@ class SyncService {
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
 
     remote.sort(Asset.compareByChecksum);
+
+    // filter our duplicates that might be introduced by the chunked retrieval
+    remote.uniqueConsecutive(compare: Asset.compareByChecksum);
+
     final (toAdd, toUpdate, toRemove) = _diffAssets(remote, inDb, remote: true);
     if (toAdd.isEmpty && toUpdate.isEmpty && toRemove.isEmpty) {
       await _updateUserAssetsETag(user, now);
@@ -752,6 +763,12 @@ class SyncService {
   final List<Asset> toAdd = [];
   final List<Asset> toUpdate = [];
   final List<Asset> toRemove = [];
+  if (assets.isEmpty || inDb.isEmpty) {
+    // fast path for trivial cases: halfes memory usage during initial sync
+    return assets.isEmpty
+        ? (toAdd, toUpdate, inDb) // remove all from DB
+        : (assets, toUpdate, toRemove); // add all assets
+  }
   diffSortedListsSync(
     inDb,
     assets,

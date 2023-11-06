@@ -3,7 +3,7 @@ import {
   IMMICH_API_KEY_HEADER,
   IMMICH_API_KEY_NAME,
   ImmichReadStream,
-  SERVER_VERSION,
+  serverVersion,
 } from '@app/domain';
 import { INestApplication, StreamableFile } from '@nestjs/common';
 import {
@@ -47,6 +47,9 @@ function sortKeys<T>(obj: T): T {
   return result as T;
 }
 
+export const routeToErrorMessage = (methodName: string) =>
+  'Failed to ' + methodName.replace(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
+
 const patchOpenAPI = (document: OpenAPIObject) => {
   document.paths = sortKeys(document.paths);
   if (document.components?.schemas) {
@@ -78,6 +81,10 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         delete operation.summary;
       }
 
+      if (operation.operationId) {
+        // console.log(`${routeToErrorMessage(operation.operationId).padEnd(40)} (${operation.operationId})`);
+      }
+
       if (operation.description === '') {
         delete operation.description;
       }
@@ -91,7 +98,7 @@ export const useSwagger = (app: INestApplication, isDev: boolean) => {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
-    .setVersion(SERVER_VERSION)
+    .setVersion(serverVersion.toString())
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',

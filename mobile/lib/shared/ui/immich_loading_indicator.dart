@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 class ImmichLoadingIndicator extends StatelessWidget {
+  final double? borderRadius;
+
   const ImmichLoadingIndicator({
     Key? key,
+    this.borderRadius,
   }) : super(key: key);
 
   @override
@@ -12,7 +15,7 @@ class ImmichLoadingIndicator extends StatelessWidget {
       width: 60,
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor.withAlpha(200),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(borderRadius ?? 10),
       ),
       padding: const EdgeInsets.all(15),
       child: const CircularProgressIndicator(

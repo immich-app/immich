@@ -10,15 +10,13 @@
   import { AppRoute } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { TimeBucketSize } from '@api';
   import { onDestroy } from 'svelte';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
   import type { PageData } from './$types';
+  import { mdiPlus, mdiArrowLeft } from '@mdi/js';
 
   export let data: PageData;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, userId: data.partner.id, isArchived: false });
+  const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -31,14 +29,14 @@
   {#if $isMultiSelectState}
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={assetInteractionStore.clearMultiselect}>
       <CreateSharedLink />
-      <AssetSelectContextMenu icon={Plus} title="Add">
+      <AssetSelectContextMenu icon={mdiPlus} title="Add">
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
       <DownloadAction />
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
+    <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
       <svelte:fragment slot="leading">
         <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
           {data.partner.firstName}

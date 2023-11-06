@@ -1,8 +1,8 @@
 import {
   AudioCodec,
-  CQMode,
   CitiesFile,
   Colorspace,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -13,6 +13,7 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import * as _ from 'lodash';
@@ -67,7 +68,7 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     clip: {
       enabled: true,
-      modelName: 'ViT-B-32::openai',
+      modelName: 'ViT-B-32__openai',
     },
     facialRecognition: {
       enabled: true,
@@ -110,12 +111,21 @@ export const defaults = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
+  newVersionCheck: {
+    enabled: true,
+  },
   trash: {
     enabled: true,
     days: 30,
   },
   theme: {
     customCss: '',
+  },
+  library: {
+    scan: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_MIDNIGHT,
+    },
   },
 });
 

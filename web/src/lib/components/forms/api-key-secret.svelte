@@ -1,9 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import KeyVariant from 'svelte-material-icons/KeyVariant.svelte';
   import { copyToClipboard } from '@api';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import { mdiKeyVariant } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let secret = '';
 
@@ -24,7 +25,7 @@
     <div
       class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <KeyVariant size="4em" />
+      <Icon path={mdiKeyVariant} size="4em" />
       <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">API Key</h1>
 
       <p class="text-sm dark:text-immich-dark-fg">

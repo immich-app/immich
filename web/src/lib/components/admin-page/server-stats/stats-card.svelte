@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type Icon from 'svelte-material-icons/AbTesting.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
 
-  export let logo: typeof Icon;
+  export let icon: string;
   export let title: string;
   export let value: number;
   export let unit: string | undefined = undefined;
@@ -17,7 +17,7 @@
 
 <div class="flex h-[140px] w-[250px] flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
   <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
-    <svelte:component this={logo} size="40" />
+    <Icon path={icon} size="40" />
     <p>{title}</p>
   </div>
 

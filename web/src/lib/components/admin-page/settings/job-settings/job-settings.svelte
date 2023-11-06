@@ -22,7 +22,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.job),
-      api.systemConfigApi.getDefaults().then((res) => res.data.job),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.job),
     ]);
   }
 
@@ -59,7 +59,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     jobConfig = { ...configs.job };
     defaultConfig = { ...configs.job };

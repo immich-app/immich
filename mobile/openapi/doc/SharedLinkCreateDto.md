@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **assetIds** | **List<String>** |  | [optional] [default to const []]
 **description** | **String** |  | [optional] 
 **expiresAt** | [**DateTime**](DateTime.md) |  | [optional] 
+**password** | **String** |  | [optional] 
 **showMetadata** | **bool** |  | [optional] [default to true]
 **type** | [**SharedLinkType**](SharedLinkType.md) |  | 
 

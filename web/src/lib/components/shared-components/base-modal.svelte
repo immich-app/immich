@@ -1,14 +1,15 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import Close from 'svelte-material-icons/Close.svelte';
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { mdiClose } from '@mdi/js';
 
   const dispatch = createEventDispatcher();
   export let zIndex = 9999;
+  export let ignoreClickOutside = false;
 
   onMount(() => {
     if (browser) {
@@ -35,9 +36,9 @@
 >
   <div
     use:clickOutside
-    on:outclick={() => dispatch('close')}
+    on:outclick={() => !ignoreClickOutside && dispatch('close')}
     on:escape={() => dispatch('escape')}
-    class="max-h-[600px] min-h-[200px] w-[450px] rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+    class="max-h-[800px] min-h-[200px] w-[450px] overflow-y-auto rounded-lg bg-immich-bg shadow-md dark:bg-immich-dark-gray dark:text-immich-dark-fg immich-scrollbar"
   >
     <div class="flex place-items-center justify-between px-5 py-3">
       <div>
@@ -46,11 +47,17 @@
         </slot>
       </div>
 
-      <CircleIconButton on:click={() => dispatch('close')} logo={Close} size={'20'} />
+      <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} size={'20'} />
     </div>
 
-    <div class="">
+    <div>
       <slot />
     </div>
+
+    {#if $$slots['sticky-bottom']}
+      <div class="sticky bottom-0 bg-immich-bg px-5 pb-5 pt-3 dark:bg-immich-dark-gray">
+        <slot name="sticky-bottom" />
+      </div>
+    {/if}
   </div>
 </div>

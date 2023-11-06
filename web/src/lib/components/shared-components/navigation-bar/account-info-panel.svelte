@@ -3,10 +3,10 @@
   import { AppRoute } from '$lib/constants';
   import type { UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import Cog from 'svelte-material-icons/Cog.svelte';
-  import Logout from 'svelte-material-icons/Logout.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
+  import { mdiCog, mdiLogout } from '@mdi/js';
 
   export let user: UserResponseDto;
 
@@ -35,7 +35,7 @@
     <a href={AppRoute.USER_SETTINGS} on:click={() => dispatch('close')}>
       <Button color="dark-gray" size="sm" shadow={false} border>
         <div class="flex place-content-center place-items-center gap-2 px-2">
-          <Cog size="18" />
+          <Icon path={mdiCog} size="18" />
           Account Settings
         </div>
       </Button>
@@ -47,7 +47,7 @@
       class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
       on:click={() => dispatch('logout')}
     >
-      <Logout size={24} />
+      <Icon path={mdiLogout} size={24} />
       Sign Out</button
     >
   </div>

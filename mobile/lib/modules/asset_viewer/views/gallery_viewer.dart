@@ -48,6 +48,8 @@ class GalleryViewerPage extends HookConsumerWidget {
   final int initialIndex;
   final int heroOffset;
   final bool showStack;
+  final bool isOwner;
+  final String? sharedAlbumId;
 
   GalleryViewerPage({
     super.key,
@@ -56,6 +58,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     required this.totalAssets,
     this.heroOffset = 0,
     this.showStack = false,
+    this.isOwner = true,
+    this.sharedAlbumId,
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
@@ -83,12 +87,12 @@ class GalleryViewerPage extends HookConsumerWidget {
         navStack.length > 2 &&
         navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
     final stackIndex = useState(-1);
-    final stack = showStack && currentAsset.stackCount > 0
+    final stack = showStack && currentAsset.stackChildrenCount > 0
         ? ref.watch(assetStackStateProvider(currentAsset))
         : <Asset>[];
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
-    final isFromResponse = currentAsset.id == Isar.autoIncrement;
+    final isFromDto = currentAsset.id == Isar.autoIncrement;
 
     Asset asset() => stackIndex.value == -1
         ? currentAsset
@@ -325,6 +329,19 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    handleActivities() {
+      if (sharedAlbumId != null) {
+        AutoRouter.of(context).push(
+          ActivitiesRoute(
+            albumId: sharedAlbumId!,
+            assetId: asset().remoteId,
+            withAssetThumbs: false,
+            isOwner: isOwner,
+          ),
+        );
+      }
+    }
+
     buildAppBar() {
       return IgnorePointer(
         ignoring: !ref.watch(showControlsProvider),
@@ -334,6 +351,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           child: Container(
             color: Colors.black.withOpacity(0.4),
             child: TopControlAppBar(
+              isOwner: isOwner,
               isPlayingMotionVideo: isPlayingMotionVideo.value,
               asset: asset(),
               onMoreInfoPressed: showInfo,
@@ -352,6 +370,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
               }),
               onAddToAlbumPressed: () => addToAlbum(asset()),
+              shareAlbumId: sharedAlbumId,
+              onActivitiesPressed: handleActivities,
             ),
           ),
         ),
@@ -440,7 +460,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
-                  border: index == stackIndex.value
+                  border: (stackIndex.value == -1 && index == 0) ||
+                          index == stackIndex.value
                       ? Border.all(
                           color: Colors.white,
                           width: 2,
@@ -573,35 +594,50 @@ class GalleryViewerPage extends HookConsumerWidget {
           label: 'control_bottom_app_bar_share'.tr(),
           tooltip: 'control_bottom_app_bar_share'.tr(),
         ),
-        asset().isArchived
-            ? BottomNavigationBarItem(
-                icon: const Icon(Icons.unarchive_rounded),
-                label: 'control_bottom_app_bar_unarchive'.tr(),
-                tooltip: 'control_bottom_app_bar_unarchive'.tr(),
-              )
-            : BottomNavigationBarItem(
-                icon: const Icon(Icons.archive_outlined),
-                label: 'control_bottom_app_bar_archive'.tr(),
-                tooltip: 'control_bottom_app_bar_archive'.tr(),
-              ),
-        if (stack.isNotEmpty)
+        if (isOwner)
+          asset().isArchived
+              ? BottomNavigationBarItem(
+                  icon: const Icon(Icons.unarchive_rounded),
+                  label: 'control_bottom_app_bar_unarchive'.tr(),
+                  tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+                )
+              : BottomNavigationBarItem(
+                  icon: const Icon(Icons.archive_outlined),
+                  label: 'control_bottom_app_bar_archive'.tr(),
+                  tooltip: 'control_bottom_app_bar_archive'.tr(),
+                ),
+        if (isOwner && stack.isNotEmpty)
           BottomNavigationBarItem(
             icon: const Icon(Icons.burst_mode_outlined),
             label: 'control_bottom_app_bar_stack'.tr(),
             tooltip: 'control_bottom_app_bar_stack'.tr(),
           ),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.delete_outline),
-          label: 'control_bottom_app_bar_delete'.tr(),
-          tooltip: 'control_bottom_app_bar_delete'.tr(),
-        ),
+        if (isOwner)
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.delete_outline),
+            label: 'control_bottom_app_bar_delete'.tr(),
+            tooltip: 'control_bottom_app_bar_delete'.tr(),
+          ),
+        if (!isOwner)
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.download_outlined),
+            label: 'download'.tr(),
+            tooltip: 'download'.tr(),
+          ),
       ];
 
       List<Function(int)> actionslist = [
         (_) => shareAsset(),
-        (_) => handleArchive(asset()),
-        if (stack.isNotEmpty) (_) => showStackActionItems(),
-        (_) => handleDelete(asset()),
+        if (isOwner) (_) => handleArchive(asset()),
+        if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
+        if (isOwner) (_) => handleDelete(asset()),
+        if (!isOwner)
+          (_) => asset().isLocal
+              ? null
+              : ref.watch(imageViewerStateProvider.notifier).downloadAsset(
+                    asset(),
+                    context,
+                  ),
       ];
 
       return IgnorePointer(
@@ -755,7 +791,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     },
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: isFromResponse
+                      tag: isFromDto
                           ? '${a.remoteId}-$heroOffset'
                           : a.id + heroOffset,
                     ),
@@ -774,7 +810,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: isFromResponse
+                      tag: isFromDto
                           ? '${a.remoteId}-$heroOffset'
                           : a.id + heroOffset,
                     ),

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/activities/views/activities_page.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/views/album_options_part.dart';
 import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
@@ -133,10 +134,7 @@ part 'router.gr.dart';
         DuplicateGuard,
       ],
     ),
-    CustomRoute(
-      page: AppLogPage,
-      transitionsBuilder: TransitionsBuilders.slideBottom,
-    ),
+    AutoRoute(page: AppLogPage, guards: [DuplicateGuard]),
     AutoRoute(
       page: AppLogDetailPage,
     ),
@@ -163,6 +161,12 @@ part 'router.gr.dart';
     AutoRoute(page: TrashPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: SharedLinkPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: SharedLinkEditPage, guards: [AuthGuard, DuplicateGuard]),
+    CustomRoute(
+      page: ActivitiesPage,
+      guards: [AuthGuard, DuplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+      durationInMilliseconds: 200,
+    ),
   ],
 )
 class AppRouter extends _$AppRouter {

@@ -1,8 +1,8 @@
 import {
   AudioCodec,
-  CQMode,
   CitiesFile,
   Colorspace,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -15,7 +15,7 @@ import { BadRequestException } from '@nestjs/common';
 import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { JobName, QueueName } from '../job';
 import { ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
-import { SystemConfigValidator, defaults } from './system-config.core';
+import { defaults, SystemConfigValidator } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
 const updates: SystemConfigEntity[] = [
@@ -68,7 +68,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     clip: {
       enabled: true,
-      modelName: 'ViT-B-32::openai',
+      modelName: 'ViT-B-32__openai',
     },
     facialRecognition: {
       enabled: true,
@@ -111,12 +111,21 @@ const updatedConfig = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
+  newVersionCheck: {
+    enabled: true,
+  },
   trash: {
     enabled: true,
     days: 10,
   },
   theme: {
     customCss: '',
+  },
+  library: {
+    scan: {
+      enabled: true,
+      cronExpression: '0 0 * * *',
+    },
   },
 });
 
@@ -293,6 +302,12 @@ describe(SystemConfigService.name, () => {
       expect(changeMock).toHaveBeenCalledWith(defaults);
 
       subscription.unsubscribe();
+    });
+  });
+
+  describe('getTheme', () => {
+    it('should return the default theme', async () => {
+      await expect(sut.getTheme()).resolves.toEqual(defaults.theme);
     });
   });
 });

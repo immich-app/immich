@@ -67,6 +67,10 @@ describe(MetadataService.name, () => {
     );
   });
 
+  afterEach(async () => {
+    await sut.teardown();
+  });
+
   it('should be defined', () => {
     expect(sut).toBeDefined();
   });
@@ -277,7 +281,7 @@ describe(MetadataService.name, () => {
         id: assetStub.withLocation.id,
         duration: null,
         fileCreatedAt: assetStub.withLocation.createdAt,
-        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
+        localDateTime: new Date('2023-02-22T05:06:29.716Z'),
       });
     });
 

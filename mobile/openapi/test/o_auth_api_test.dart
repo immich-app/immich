@@ -17,35 +17,35 @@ void main() {
   // final instance = OAuthApi();
 
   group('tests for OAuthApi', () {
-    //Future<OAuthAuthorizeResponseDto> authorizeOAuth(OAuthConfigDto oAuthConfigDto) async
-    test('test authorizeOAuth', () async {
-      // TODO
-    });
-
-    //Future<LoginResponseDto> callback(OAuthCallbackDto oAuthCallbackDto) async
-    test('test callback', () async {
+    //Future<LoginResponseDto> finishOAuth(OAuthCallbackDto oAuthCallbackDto) async
+    test('test finishOAuth', () async {
       // TODO
     });
 
     // @deprecated use feature flags and /oauth/authorize
     //
-    //Future<OAuthConfigResponseDto> generateConfig(OAuthConfigDto oAuthConfigDto) async
-    test('test generateConfig', () async {
+    //Future<OAuthConfigResponseDto> generateOAuthConfig(OAuthConfigDto oAuthConfigDto) async
+    test('test generateOAuthConfig', () async {
       // TODO
     });
 
-    //Future<UserResponseDto> link(OAuthCallbackDto oAuthCallbackDto) async
-    test('test link', () async {
+    //Future<UserResponseDto> linkOAuthAccount(OAuthCallbackDto oAuthCallbackDto) async
+    test('test linkOAuthAccount', () async {
       // TODO
     });
 
-    //Future mobileRedirect() async
-    test('test mobileRedirect', () async {
+    //Future redirectOAuthToMobile() async
+    test('test redirectOAuthToMobile', () async {
       // TODO
     });
 
-    //Future<UserResponseDto> unlink() async
-    test('test unlink', () async {
+    //Future<OAuthAuthorizeResponseDto> startOAuth(OAuthConfigDto oAuthConfigDto) async
+    test('test startOAuth', () async {
+      // TODO
+    });
+
+    //Future<UserResponseDto> unlinkOAuthAccount() async
+    test('test unlinkOAuthAccount', () async {
       // TODO
     });
 

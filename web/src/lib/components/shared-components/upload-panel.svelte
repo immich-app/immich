@@ -2,14 +2,12 @@
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
   import { uploadAssetsStore } from '$lib/stores/upload';
-  import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
-  import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
-  import Cancel from 'svelte-material-icons/Cancel.svelte';
-  import Cog from 'svelte-material-icons/Cog.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { mdiCog, mdiWindowMinimize, mdiCancel, mdiCloudUploadOutline } from '@mdi/js';
 
   let showDetail = false;
   let showOptions = false;
@@ -75,14 +73,14 @@
             <div class="flex flex-row">
               <CircleIconButton
                 title="Toggle settings"
-                logo={Cog}
+                icon={mdiCog}
                 size="14"
                 padding="1"
                 on:click={() => (showOptions = !showOptions)}
               />
               <CircleIconButton
                 title="Minimize"
-                logo={WindowMinimize}
+                icon={mdiWindowMinimize}
                 size="14"
                 padding="1"
                 on:click={() => (showDetail = false)}
@@ -91,7 +89,7 @@
             {#if $hasError}
               <CircleIconButton
                 title="Dismiss all errors"
-                logo={Cancel}
+                icon={mdiCancel}
                 size="14"
                 padding="1"
                 on:click={() => uploadAssetsStore.dismissErrors()}
@@ -148,7 +146,7 @@
           class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-200 p-5 text-sm text-immich-primary shadow-lg dark:bg-gray-600 dark:text-immich-gray"
         >
           <div class="animate-pulse">
-            <CloudUploadOutline size="30" />
+            <Icon path={mdiCloudUploadOutline} size="30" />
           </div>
         </button>
       </div>

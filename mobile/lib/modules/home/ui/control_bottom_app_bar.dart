@@ -100,7 +100,7 @@ class ControlBottomAppBar extends ConsumerWidget {
             label: "control_bottom_app_bar_stack".tr(),
             onPressed: enabled ? onStack : null,
           ),
-        if (!hasRemote)
+        if (hasLocal)
           ControlBoxButton(
             iconData: Icons.backup_outlined,
             label: "Upload",

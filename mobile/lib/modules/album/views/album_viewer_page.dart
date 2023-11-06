@@ -164,8 +164,13 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget buildAlbumDateRange(Album album) {
-      final DateTime startDate = album.assets.first.fileCreatedAt;
-      final DateTime endDate = album.assets.last.fileCreatedAt; //Need default.
+      final DateTime? startDate = album.startDate;
+      final DateTime? endDate = album.endDate;
+
+      if (startDate == null || endDate == null) {
+        return const SizedBox();
+      }
+
       final String startDateText = (startDate.year == endDate.year
               ? DateFormat.MMMd()
               : DateFormat.yMMMd())
@@ -227,6 +232,18 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
+    onActivitiesPressed(Album album) {
+      if (album.remoteId != null) {
+        AutoRouter.of(context).push(
+          ActivitiesRoute(
+            albumId: album.remoteId!,
+            appBarTitle: album.name,
+            isOwner: userId == album.ownerId,
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       appBar: album.when(
         data: (data) => AlbumViewerAppbar(
@@ -237,6 +254,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           selectionDisabled: disableSelection,
           onAddPhotos: onAddPhotosPressed,
           onAddUsers: onAddUsersPressed,
+          onActivities: onActivitiesPressed,
         ),
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
@@ -260,6 +278,8 @@ class AlbumViewerPage extends HookConsumerWidget {
                   if (data.isRemote) buildControlButton(data),
                 ],
               ),
+              isOwner: userId == data.ownerId,
+              sharedAlbumId: data.remoteId,
             ),
           ),
         ),

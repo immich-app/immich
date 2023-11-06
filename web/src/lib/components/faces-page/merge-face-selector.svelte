@@ -6,15 +6,15 @@
   import { fly } from 'svelte/transition';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import Merge from 'svelte-material-icons/Merge.svelte';
-  import CallMerge from 'svelte-material-icons/CallMerge.svelte';
   import { flip } from 'svelte/animate';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
-  import SwapHorizontal from 'svelte-material-icons/SwapHorizontal.svelte';
+  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -70,8 +70,6 @@
         message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
         type: NotificationType.Info,
       });
-      people = people.filter((person) => !results.some((result) => result.id === person.id && result.success === true));
-      await invalidateAll();
       dispatch('merge');
     } catch (error) {
       handleError(error, 'Cannot merge faces');
@@ -104,7 +102,7 @@
           isShowConfirmation = true;
         }}
       >
-        <Merge size={18} />
+        <Icon path={mdiMerge} size={18} />
         <span class="ml-2"> Merge</span></Button
       >
     </svelte:fragment>
@@ -122,14 +120,18 @@
           {/each}
 
           {#if hasSelection}
-            <span class="grid grid-cols-1"
-              ><CallMerge size={48} class="rotate-90 dark:text-white" />
-              {#if selectedPeople.length === 1}
-                <button class="flex justify-center" on:click={handleSwapPeople}
-                  ><SwapHorizontal size={24} class="dark:text-white" />
-                </button>
-              {/if}
-            </span>
+            <div class="relative h-full">
+              <div class="flex flex-col h-full justify-between">
+                <div class="flex h-full items-center justify-center">
+                  <Icon path={mdiCallMerge} size={48} class="rotate-90 dark:text-white" />
+                </div>
+                {#if selectedPeople.length === 1}
+                  <div class="absolute bottom-2">
+                    <CircleIconButton icon={mdiSwapHorizontal} size="24" on:click={handleSwapPeople} />
+                  </div>
+                {/if}
+              </div>
+            </div>
           {/if}
           <FaceThumbnail {person} border circle selectable={false} thumbnailSize={180} />
         </div>

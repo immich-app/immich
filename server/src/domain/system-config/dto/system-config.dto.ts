@@ -3,8 +3,10 @@ import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
+import { SystemConfigLibraryDto } from './system-config-library.dto';
 import { SystemConfigMachineLearningDto } from './system-config-machine-learning.dto';
 import { SystemConfigMapDto } from './system-config-map.dto';
+import { SystemConfigNewVersionCheckDto } from './system-config-new-version-check.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
 import { SystemConfigReverseGeocodingDto } from './system-config-reverse-geocoding.dto';
@@ -28,6 +30,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   map!: SystemConfigMapDto;
+
+  @Type(() => SystemConfigNewVersionCheckDto)
+  @ValidateNested()
+  @IsObject()
+  newVersionCheck!: SystemConfigNewVersionCheckDto;
 
   @Type(() => SystemConfigOAuthDto)
   @ValidateNested()
@@ -68,6 +75,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   theme!: SystemConfigThemeDto;
+
+  @Type(() => SystemConfigLibraryDto)
+  @ValidateNested()
+  @IsObject()
+  library!: SystemConfigLibraryDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

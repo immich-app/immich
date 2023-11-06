@@ -1,6 +1,5 @@
 <script lang="ts">
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
   import { api, copyToClipboard, SharedLinkResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
@@ -13,6 +12,7 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { AppRoute } from '$lib/constants';
+  import { mdiArrowLeft } from '@mdi/js';
 
   let sharedLinks: SharedLinkResponseDto[] = [];
   let editSharedLink: SharedLinkResponseDto | null = null;
@@ -53,7 +53,7 @@
   };
 </script>
 
-<ControlAppBar backIcon={ArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
+<ControlAppBar backIcon={mdiArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
   <svelte:fragment slot="leading">Shared links</svelte:fragment>
 </ControlAppBar>
 

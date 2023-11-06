@@ -94,7 +94,7 @@ class AssetNotifier extends StateNotifier<bool> {
 
   Future<bool> deleteAssets(
     Iterable<Asset> deleteAssets, {
-    bool? force = false,
+    bool force = false,
   }) async {
     _deleteInProgress = true;
     state = true;
@@ -102,25 +102,69 @@ class AssetNotifier extends StateNotifier<bool> {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
       final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
       if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
-        List<Asset>? assetsToUpdate;
-        // Local only assets are permanently deleted for now. So always remove them from db
-        final dbIds = deleteAssets
-            .where((a) => a.isLocal && !a.isRemote)
-            .map((e) => e.id)
-            .toList();
-        if (force == null || !force) {
-          assetsToUpdate = remoteDeleted.map((e) {
-            e.isTrashed = true;
-            return e;
-          }).toList();
-        } else {
-          // Add all remote assets to be deleted from isar as since they are permanently deleted
-          dbIds.addAll(remoteDeleted.map((e) => e.id));
-        }
-        await _db.writeTxn(() async {
-          if (assetsToUpdate != null) {
-            await _db.assets.putAll(assetsToUpdate);
+        final dbIds = <int>[];
+        final dbUpdates = <Asset>[];
+
+        // Local assets are removed
+        if (localDeleted.isNotEmpty) {
+          // Permanently remove local only assets from isar
+          dbIds.addAll(
+            deleteAssets
+                .where((a) => a.storage == AssetState.local)
+                .map((e) => e.id),
+          );
+
+          if (remoteDeleted.any((e) => e.isLocal)) {
+            // Force delete: Add all local assets including merged assets
+            if (force) {
+              dbIds.addAll(remoteDeleted.map((e) => e.id));
+              // Soft delete: Remove local Id from asset and trash it
+            } else {
+              dbUpdates.addAll(
+                remoteDeleted.map((e) {
+                  e.localId = null;
+                  e.isTrashed = true;
+                  return e;
+                }),
+              );
+            }
           }
+        }
+
+        // Handle remote deletion
+        if (remoteDeleted.isNotEmpty) {
+          if (force) {
+            // Remove remote only assets
+            dbIds.addAll(
+              deleteAssets
+                  .where((a) => a.storage == AssetState.remote)
+                  .map((e) => e.id),
+            );
+            // Local assets are not removed and there are merged assets
+            final hasLocal = remoteDeleted.any((e) => e.isLocal);
+            if (localDeleted.isEmpty && hasLocal) {
+              // Remove remote Id from local assets
+              dbUpdates.addAll(
+                remoteDeleted.map((e) {
+                  e.remoteId = null;
+                  // Remove from trashed if remote asset is removed
+                  e.isTrashed = false;
+                  return e;
+                }),
+              );
+            }
+          } else {
+            dbUpdates.addAll(
+              remoteDeleted.map((e) {
+                e.isTrashed = true;
+                return e;
+              }),
+            );
+          }
+        }
+
+        await _db.writeTxn(() async {
+          await _db.assets.putAll(dbUpdates);
           await _db.exifInfos.deleteAll(dbIds);
           await _db.assets.deleteAll(dbIds);
         });

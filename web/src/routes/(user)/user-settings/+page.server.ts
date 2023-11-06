@@ -8,7 +8,7 @@ export const load = (async ({ parent, locals }) => {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }
 
-  const { data: keys } = await locals.api.keyApi.getKeys();
+  const { data: keys } = await locals.api.keyApi.getApiKeys();
   const { data: devices } = await locals.api.authenticationApi.getAuthDevices();
   const { data: partners } = await locals.api.partnerApi.getPartners({ direction: 'shared-by' });
 

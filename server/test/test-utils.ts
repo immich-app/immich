@@ -49,6 +49,10 @@ export const testApp = {
       .overrideProvider(IJobRepository)
       .useValue({
         addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
+        addCronJob: jest.fn(),
+        updateCronJob: jest.fn(),
+        deleteCronJob: jest.fn(),
+        validateCronExpression: jest.fn(),
         queue: (item: JobItem) => jobs && _handler(item),
         resume: jest.fn(),
         empty: jest.fn(),

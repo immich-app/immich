@@ -139,10 +139,10 @@ describe(`${PersonController.name}`, () => {
 
     it('should not accept invalid birth dates', async () => {
       for (const { birthDate, response } of [
-        { birthDate: false, response: ['id must be a UUID'] },
+        { birthDate: false, response: 'Not found or no person.write access' },
         { birthDate: 'false', response: ['birthDate must be a Date instance'] },
-        { birthDate: '123567', response: ['id must be a UUID'] },
-        { birthDate: 123456, response: ['id must be a UUID'] },
+        { birthDate: '123567', response: 'Not found or no person.write access' },
+        { birthDate: 123567, response: 'Not found or no person.write access' },
       ]) {
         const { status, body } = await request(server)
           .put(`/person/${uuidStub.notFound}`)

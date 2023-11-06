@@ -5,10 +5,8 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { locale } from '$lib/stores/preferences.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { TimeBucketSize, type AlbumResponseDto, type SharedLinkResponseDto } from '@api';
+  import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@api';
   import { onDestroy, onMount } from 'svelte';
-  import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-  import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
   import { dateFormats } from '../../constants';
   import { createAssetInteractionStore } from '../../stores/asset-interaction.store';
   import { AssetStore } from '../../stores/assets.store';
@@ -21,14 +19,16 @@
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
 
   export let sharedLink: SharedLinkResponseDto;
+  export let user: UserResponseDto | undefined = undefined;
 
   const album = sharedLink.album as AlbumResponseDto;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore({ size: TimeBucketSize.Month, albumId: album.id });
+  const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -122,12 +122,12 @@
           <CircleIconButton
             title="Add Photos"
             on:click={() => openFileUploadDialog(album.id)}
-            logo={FileImagePlusOutline}
+            icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton title="Download" on:click={() => downloadAlbum()} logo={FolderDownloadOutline} />
+          <CircleIconButton title="Download" on:click={() => downloadAlbum()} icon={mdiFolderDownloadOutline} />
         {/if}
 
         <ThemeButton />
@@ -139,7 +139,7 @@
 <main
   class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
 >
-  <AssetGrid {assetStore} {assetInteractionStore}>
+  <AssetGrid {album} {user} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
       <p

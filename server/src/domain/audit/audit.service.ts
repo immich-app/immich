@@ -125,7 +125,12 @@ export class AuditService {
     const fullPath = (filename: string) => resolve(filename);
     const hasFile = (items: Set<string>, filename: string) => items.has(filename) || items.has(fullPath(filename));
     const crawl = async (folder: StorageFolder) =>
-      new Set(await this.storageRepository.crawl({ pathsToCrawl: [StorageCore.getBaseFolder(folder)] }));
+      new Set(
+        await this.storageRepository.crawl({
+          includeHidden: true,
+          pathsToCrawl: [StorageCore.getBaseFolder(folder)],
+        }),
+      );
 
     const uploadFiles = await crawl(StorageFolder.UPLOAD);
     const libraryFiles = await crawl(StorageFolder.LIBRARY);

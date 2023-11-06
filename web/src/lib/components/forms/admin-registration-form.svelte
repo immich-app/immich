@@ -30,7 +30,7 @@
       const firstName = form.get('firstName');
       const lastName = form.get('lastName');
 
-      const { status } = await api.authenticationApi.adminSignUp({
+      const { status } = await api.authenticationApi.signUpAdmin({
         signUpDto: {
           email: String(email),
           password: String(password),

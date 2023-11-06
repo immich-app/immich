@@ -17,13 +17,12 @@ import {
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
-import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../app.interceptor';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
+import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
@@ -32,7 +31,6 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
@@ -190,19 +188,6 @@ export class AssetController {
   }
 
   /**
-   * Check duplicated asset before uploading - for Web upload used
-   */
-  @SharedLinkRoute()
-  @Post('/check')
-  @HttpCode(HttpStatus.OK)
-  checkDuplicateAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: CheckDuplicateAssetDto,
-  ): Promise<CheckDuplicateAssetResponseDto> {
-    return this.assetService.checkDuplicatedAsset(authUser, dto);
-  }
-
-  /**
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
   @Post('/exist')
@@ -219,7 +204,7 @@ export class AssetController {
    */
   @Post('/bulk-upload-check')
   @HttpCode(HttpStatus.OK)
-  bulkUploadCheck(
+  checkBulkUpload(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
   ): Promise<AssetBulkUploadCheckResponseDto> {

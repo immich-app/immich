@@ -9,56 +9,15 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**adminSignUp**](AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 [**changePassword**](AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 [**getAuthDevices**](AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 
 [**login**](AuthenticationApi.md#login) | **POST** /auth/login | 
 [**logout**](AuthenticationApi.md#logout) | **POST** /auth/logout | 
 [**logoutAuthDevice**](AuthenticationApi.md#logoutauthdevice) | **DELETE** /auth/devices/{id} | 
 [**logoutAuthDevices**](AuthenticationApi.md#logoutauthdevices) | **DELETE** /auth/devices | 
+[**signUpAdmin**](AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 [**validateAccessToken**](AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 
-
-# **adminSignUp**
-> AdminSignupResponseDto adminSignUp(signUpDto)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-
-final api_instance = AuthenticationApi();
-final signUpDto = SignUpDto(); // SignUpDto | 
-
-try {
-    final result = api_instance.adminSignUp(signUpDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling AuthenticationApi->adminSignUp: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **signUpDto** | [**SignUpDto**](SignUpDto.md)|  | 
-
-### Return type
-
-[**AdminSignupResponseDto**](AdminSignupResponseDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **changePassword**
 > UserResponseDto changePassword(changePasswordDto)
@@ -359,6 +318,47 @@ void (empty response body)
 
  - **Content-Type**: Not defined
  - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **signUpAdmin**
+> AdminSignupResponseDto signUpAdmin(signUpDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+
+final api_instance = AuthenticationApi();
+final signUpDto = SignUpDto(); // SignUpDto | 
+
+try {
+    final result = api_instance.signUpAdmin(signUpDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AuthenticationApi->signUpAdmin: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **signUpDto** | [**SignUpDto**](SignUpDto.md)|  | 
+
+### Return type
+
+[**AdminSignupResponseDto**](AdminSignupResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

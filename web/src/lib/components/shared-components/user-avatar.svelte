@@ -5,9 +5,17 @@
 
 <script lang="ts">
   import { imageLoad } from '$lib/utils/image-load';
-  import { api, UserResponseDto } from '@api';
+  import { api } from '@api';
 
-  export let user: UserResponseDto;
+  interface User {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    profileImagePath: string;
+  }
+
+  export let user: User;
   export let color: Color = 'primary';
   export let size: Size = 'full';
   export let rounded = true;

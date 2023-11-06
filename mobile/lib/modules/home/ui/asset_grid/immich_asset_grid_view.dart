@@ -38,6 +38,8 @@ class ImmichAssetGridView extends StatefulWidget {
   final bool shrinkWrap;
   final bool showDragScroll;
   final bool showStack;
+  final bool isOwner;
+  final String? sharedAlbumId;
 
   const ImmichAssetGridView({
     super.key,
@@ -58,6 +60,8 @@ class ImmichAssetGridView extends StatefulWidget {
     this.shrinkWrap = false,
     this.showDragScroll = true,
     this.showStack = false,
+    this.isOwner = true,
+    this.sharedAlbumId,
   });
 
   @override
@@ -139,6 +143,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         showStorageIndicator: widget.showStorageIndicator,
         heroOffset: widget.heroOffset,
         showStack: widget.showStack,
+        isOwner: widget.isOwner,
+        sharedAlbumId: widget.sharedAlbumId,
       ),
     );
   }

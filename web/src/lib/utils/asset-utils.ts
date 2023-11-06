@@ -1,6 +1,6 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
-import { api, BulkIdResponseDto, AssetResponseDto, DownloadResponseDto, DownloadInfoDto } from '@api';
+import { api, BulkIdResponseDto, AssetResponseDto, DownloadResponseDto, DownloadInfoDto, AssetTypeEnum } from '@api';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
@@ -192,3 +192,14 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
 
   return supportedImageExtensions.has(imgExtension);
 }
+
+export const getAssetType = (type: AssetTypeEnum) => {
+  switch (type) {
+    case 'IMAGE':
+      return 'Photo';
+    case 'VIDEO':
+      return 'Video';
+    default:
+      return 'Asset';
+  }
+};

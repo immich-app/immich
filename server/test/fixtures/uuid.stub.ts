@@ -1,4 +1,5 @@
 export const uuidStub = {
   invalid: 'invalid-uuid',
-  notFound: '00000000-0000-0000-0000-000000000000',
+  // valid uuid v4
+  notFound: '00000000-0000-4000-a000-000000000000',
 };

@@ -17,7 +17,7 @@ class OAuthService {
     // Resolve API server endpoint from user provided serverUrl
     await _apiService.resolveAndSetEndpoint(serverUrl);
 
-    return await _apiService.oAuthApi.generateConfig(
+    return await _apiService.oAuthApi.generateOAuthConfig(
       OAuthConfigDto(redirectUri: '$callbackUrlScheme:/'),
     );
   }
@@ -29,7 +29,7 @@ class OAuthService {
         callbackUrlScheme: callbackUrlScheme,
       );
 
-      return await _apiService.oAuthApi.callback(
+      return await _apiService.oAuthApi.finishOAuth(
         OAuthCallbackDto(
           url: result,
         ),

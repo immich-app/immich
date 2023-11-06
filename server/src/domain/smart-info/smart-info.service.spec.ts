@@ -193,7 +193,7 @@ describe(SmartInfoService.name, () => {
       expect(machineMock.encodeImage).toHaveBeenCalledWith(
         'http://immich-machine-learning:3003',
         { imagePath: 'path/to/resize.ext' },
-        { enabled: true, modelName: 'ViT-B-32::openai' },
+        { enabled: true, modelName: 'ViT-B-32__openai' },
       );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',

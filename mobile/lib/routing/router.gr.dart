@@ -72,6 +72,8 @@ class _$AppRouter extends RootStackRouter {
           totalAssets: args.totalAssets,
           heroOffset: args.heroOffset,
           showStack: args.showStack,
+          isOwner: args.isOwner,
+          sharedAlbumId: args.sharedAlbumId,
         ),
       );
     },
@@ -230,12 +232,9 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     AppLogRoute.name: (routeData) {
-      return CustomPage<dynamic>(
+      return MaterialPageX<dynamic>(
         routeData: routeData,
         child: const AppLogPage(),
-        transitionsBuilder: TransitionsBuilders.slideBottom,
-        opaque: true,
-        barrierDismissible: false,
       );
     },
     AppLogDetailRoute.name: (routeData) {
@@ -337,6 +336,24 @@ class _$AppRouter extends RootStackRouter {
           assetsList: args.assetsList,
           albumId: args.albumId,
         ),
+      );
+    },
+    ActivitiesRoute.name: (routeData) {
+      final args = routeData.argsAs<ActivitiesRouteArgs>();
+      return CustomPage<dynamic>(
+        routeData: routeData,
+        child: ActivitiesPage(
+          args.albumId,
+          appBarTitle: args.appBarTitle,
+          assetId: args.assetId,
+          withAssetThumbs: args.withAssetThumbs,
+          isOwner: args.isOwner,
+          key: args.key,
+        ),
+        transitionsBuilder: TransitionsBuilders.slideLeft,
+        durationInMilliseconds: 200,
+        opaque: true,
+        barrierDismissible: false,
       );
     },
     HomeRoute.name: (routeData) {
@@ -582,6 +599,7 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AppLogRoute.name,
           path: '/app-log-page',
+          guards: [duplicateGuard],
         ),
         RouteConfig(
           AppLogDetailRoute.name,
@@ -675,6 +693,14 @@ class _$AppRouter extends RootStackRouter {
             duplicateGuard,
           ],
         ),
+        RouteConfig(
+          ActivitiesRoute.name,
+          path: '/activities-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
       ];
 }
 
@@ -749,6 +775,8 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
     required int totalAssets,
     int heroOffset = 0,
     bool showStack = false,
+    bool isOwner = true,
+    String? sharedAlbumId,
   }) : super(
           GalleryViewerRoute.name,
           path: '/gallery-viewer-page',
@@ -759,6 +787,8 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
             totalAssets: totalAssets,
             heroOffset: heroOffset,
             showStack: showStack,
+            isOwner: isOwner,
+            sharedAlbumId: sharedAlbumId,
           ),
         );
 
@@ -773,6 +803,8 @@ class GalleryViewerRouteArgs {
     required this.totalAssets,
     this.heroOffset = 0,
     this.showStack = false,
+    this.isOwner = true,
+    this.sharedAlbumId,
   });
 
   final Key? key;
@@ -787,9 +819,13 @@ class GalleryViewerRouteArgs {
 
   final bool showStack;
 
+  final bool isOwner;
+
+  final String? sharedAlbumId;
+
   @override
   String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets, heroOffset: $heroOffset, showStack: $showStack}';
+    return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets, heroOffset: $heroOffset, showStack: $showStack, isOwner: $isOwner, sharedAlbumId: $sharedAlbumId}';
   }
 }
 
@@ -1520,6 +1556,60 @@ class SharedLinkEditRouteArgs {
   @override
   String toString() {
     return 'SharedLinkEditRouteArgs{key: $key, existingLink: $existingLink, assetsList: $assetsList, albumId: $albumId}';
+  }
+}
+
+/// generated route for
+/// [ActivitiesPage]
+class ActivitiesRoute extends PageRouteInfo<ActivitiesRouteArgs> {
+  ActivitiesRoute({
+    required String albumId,
+    String appBarTitle = "",
+    String? assetId,
+    bool withAssetThumbs = true,
+    bool isOwner = false,
+    Key? key,
+  }) : super(
+          ActivitiesRoute.name,
+          path: '/activities-page',
+          args: ActivitiesRouteArgs(
+            albumId: albumId,
+            appBarTitle: appBarTitle,
+            assetId: assetId,
+            withAssetThumbs: withAssetThumbs,
+            isOwner: isOwner,
+            key: key,
+          ),
+        );
+
+  static const String name = 'ActivitiesRoute';
+}
+
+class ActivitiesRouteArgs {
+  const ActivitiesRouteArgs({
+    required this.albumId,
+    this.appBarTitle = "",
+    this.assetId,
+    this.withAssetThumbs = true,
+    this.isOwner = false,
+    this.key,
+  });
+
+  final String albumId;
+
+  final String appBarTitle;
+
+  final String? assetId;
+
+  final bool withAssetThumbs;
+
+  final bool isOwner;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ActivitiesRouteArgs{albumId: $albumId, appBarTitle: $appBarTitle, assetId: $assetId, withAssetThumbs: $withAssetThumbs, isOwner: $isOwner, key: $key}';
   }
 }
 

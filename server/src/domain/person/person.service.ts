@@ -33,6 +33,7 @@ import {
   PeopleUpdateDto,
   PersonResponseDto,
   PersonSearchDto,
+  PersonStatisticsResponseDto,
   PersonUpdateDto,
   mapPerson,
 } from './person.dto';
@@ -82,6 +83,11 @@ export class PersonService {
   async getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
     return this.findOrFail(id).then(mapPerson);
+  }
+
+  async getStatistics(authUser: AuthUserDto, id: string): Promise<PersonStatisticsResponseDto> {
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    return this.repository.getStatistics(id);
   }
 
   async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
@@ -210,8 +216,14 @@ export class PersonService {
       return true;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.resizePath) {
+    const relations = {
+      exifInfo: true,
+      faces: {
+        person: true,
+      },
+    };
+    const [asset] = await this.assetRepository.getByIds([id], relations);
+    if (!asset || !asset.resizePath || asset.faces?.length > 0) {
       return false;
     }
 
@@ -345,7 +357,7 @@ export class PersonService {
     } as const;
 
     await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);
-    await this.repository.update({ id: personId, thumbnailPath });
+    await this.repository.update({ id: person.id, thumbnailPath });
 
     return true;
   }

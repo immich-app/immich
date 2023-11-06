@@ -90,4 +90,9 @@ export class SearchPeopleDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
+
+  @IsBoolean()
+  @Transform(toBoolean)
+  @Optional()
+  withHidden?: boolean;
 }

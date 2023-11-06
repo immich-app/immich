@@ -1,6 +1,7 @@
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
 String getThumbnailUrl(
@@ -35,8 +36,10 @@ String getAlbumThumbnailUrl(
   if (album.thumbnail.value?.remoteId == null) {
     return '';
   }
-  return getThumbnailUrlForRemoteId(album.thumbnail.value!.remoteId!,
-      type: type,);
+  return getThumbnailUrlForRemoteId(
+    album.thumbnail.value!.remoteId!,
+    type: type,
+  );
 }
 
 String getAlbumThumbNailCacheKey(
@@ -57,7 +60,9 @@ String getImageUrl(final Asset asset) {
 }
 
 String getImageCacheKey(final Asset asset) {
-  return '${asset.id}_fullStage';
+  // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
+  final isFromDto = asset.id == Isar.autoIncrement;
+  return '${isFromDto ? asset.remoteId : asset.id}_fullStage';
 }
 
 String getThumbnailUrlForRemoteId(

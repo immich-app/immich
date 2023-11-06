@@ -85,7 +85,7 @@ There is an automatic job that's run once a day and refreshes all modified files
 
 Let's show a concrete example where we add an existing gallery to Immich. Here, we have the following folders we want to add:
 
-- `/home/user/old-pics`: a folder contining childhood photos.
+- `/home/user/old-pics`: a folder containing childhood photos.
 - `/mnt/nas/christmas-trip`: photos from a christmas trip. The subfolder `/mnt/nas/christmas-trip/Raw` contains the raw files directly from the DSLR. We don't want to import the raw files to Immich
 - `/mnt/media/videos`: Videos from the same christmas trip.
 

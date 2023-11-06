@@ -6,6 +6,7 @@ import {
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
+  ServerThemeDto,
   ServerVersionResponseDto,
 } from '@app/domain';
 import { Controller, Get } from '@nestjs/common';
@@ -44,15 +45,21 @@ export class ServerInfoController {
   }
 
   @PublicRoute()
+  @Get('theme')
+  getTheme(): Promise<ServerThemeDto> {
+    return this.service.getTheme();
+  }
+
+  @PublicRoute()
   @Get('config')
   getServerConfig(): Promise<ServerConfigDto> {
     return this.service.getConfig();
   }
 
   @AdminRoute()
-  @Get('stats')
-  getStats(): Promise<ServerStatsResponseDto> {
-    return this.service.getStats();
+  @Get('statistics')
+  getServerStatistics(): Promise<ServerStatsResponseDto> {
+    return this.service.getStatistics();
   }
 
   @PublicRoute()

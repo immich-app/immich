@@ -10,9 +10,8 @@ RUN poetry config installer.max-workers 10 && \
 RUN python -m venv /opt/venv
 ENV VIRTUAL_ENV="/opt/venv" PATH="/opt/venv/bin:${PATH}"
 
-COPY poetry.lock pyproject.toml requirements.txt ./
+COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --only main
-RUN pip install --no-deps -r requirements.txt
 
 FROM python:3.11-slim-bookworm
 

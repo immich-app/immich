@@ -36,6 +36,15 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
   const hasSharedLink = entity.sharedLinks?.length > 0;
   const hasSharedUser = sharedUsers.length > 0;
 
+  let startDate = assets.at(0)?.fileCreatedAt || undefined;
+  let endDate = assets.at(-1)?.fileCreatedAt || undefined;
+  // Swap dates if start date is greater than end date.
+  if (startDate && endDate && startDate > endDate) {
+    const temp = startDate;
+    startDate = endDate;
+    endDate = temp;
+  }
+
   return {
     albumName: entity.albumName,
     description: entity.description,
@@ -48,8 +57,8 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
     sharedUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
-    startDate: assets.at(0)?.fileCreatedAt || undefined,
-    endDate: assets.at(-1)?.fileCreatedAt || undefined,
+    startDate,
+    endDate,
     assets: (withAssets ? assets : []).map((asset) => mapAsset(asset)),
     assetCount: entity.assets?.length || 0,
   };
