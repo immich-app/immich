@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/utils/datetime_extensions.dart';
@@ -102,32 +103,6 @@ class ActivitiesPage extends HookConsumerWidget {
           : null;
     }
 
-    handleActivityLongPress(Activity activity) {
-      showModalBottomSheet(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        isScrollControlled: false,
-        context: context,
-        builder: (context) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 24.0),
-              child: ListTile(
-                leading: const Icon(Icons.delete_sweep_rounded),
-                title: const Text(
-                  'control_bottom_app_bar_delete',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ).tr(),
-                onTap: () async {
-                  Navigator.of(context).pop();
-                  await ref.read(provider.notifier).removeActivity(activity.id);
-                },
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     buildTextField(String? likedId) {
       final liked = likedId != null;
       return Padding(
@@ -190,6 +165,60 @@ class ActivitiesPage extends HookConsumerWidget {
       );
     }
 
+    getDismissibleWidget(
+      Widget widget,
+      Activity activity,
+      bool canDelete,
+    ) {
+      return Dismissible(
+        key: Key(activity.id),
+        dismissThresholds: const {
+          DismissDirection.horizontal: 0.7,
+        },
+        direction: DismissDirection.horizontal,
+        confirmDismiss: (direction) => canDelete
+            ? showDialog(
+                context: context,
+                builder: (context) => ConfirmDialog(
+                  onOk: () {},
+                  title: "shared_album_activity_remove_title",
+                  content: "shared_album_activity_remove_content",
+                  ok: "delete_dialog_ok",
+                ),
+              )
+            : Future.value(false),
+        onDismissed: (direction) async =>
+            await ref.read(provider.notifier).removeActivity(activity.id),
+        background: Container(
+          color: canDelete ? Colors.red[400] : Colors.grey[600],
+          alignment: AlignmentDirectional.centerStart,
+          child: canDelete
+              ? const Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Icon(
+                    Icons.delete_sweep_rounded,
+                    color: Colors.black,
+                  ),
+                )
+              : null,
+        ),
+        secondaryBackground: Container(
+          color: canDelete ? Colors.red[400] : Colors.grey[600],
+          alignment: AlignmentDirectional.centerEnd,
+          child: canDelete
+              ? const Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Icon(
+                    Icons.delete_sweep_rounded,
+                    color: Colors.black,
+                  ),
+                )
+              : null,
+        ),
+        child: widget,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(appBarTitle)),
       body: activities.maybeWhen(
@@ -224,36 +253,38 @@ class ActivitiesPage extends HookConsumerWidget {
                   return Padding(
                     padding: const EdgeInsets.all(5),
                     child: activity.type == ActivityType.comment
-                        ? ListTile(
-                            minVerticalPadding: 15,
-                            leading: UserCircleAvatar(user: activity.user),
-                            title: buildTitleWithTimestamp(
-                              activity,
-                              leftAlign:
-                                  withAssetThumbs && activity.assetId != null,
-                            ),
-                            titleAlignment: ListTileTitleAlignment.top,
-                            trailing: buildAssetThumbnail(activity),
-                            subtitle: Text(activity.comment!),
-                            onLongPress: canDelete
-                                ? () => handleActivityLongPress(activity)
-                                : null,
-                          )
-                        : ListTile(
-                            minVerticalPadding: 15,
-                            leading: Container(
-                              width: 44,
-                              alignment: Alignment.center,
-                              child: Icon(
-                                Icons.favorite_rounded,
-                                color: Colors.red[700],
+                        ? getDismissibleWidget(
+                            ListTile(
+                              minVerticalPadding: 15,
+                              leading: UserCircleAvatar(user: activity.user),
+                              title: buildTitleWithTimestamp(
+                                activity,
+                                leftAlign:
+                                    withAssetThumbs && activity.assetId != null,
                               ),
+                              titleAlignment: ListTileTitleAlignment.top,
+                              trailing: buildAssetThumbnail(activity),
+                              subtitle: Text(activity.comment!),
                             ),
-                            title: buildTitleWithTimestamp(activity),
-                            trailing: buildAssetThumbnail(activity),
-                            onLongPress: canDelete
-                                ? () => handleActivityLongPress(activity)
-                                : null,
+                            activity,
+                            canDelete,
+                          )
+                        : getDismissibleWidget(
+                            ListTile(
+                              minVerticalPadding: 15,
+                              leading: Container(
+                                width: 44,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.favorite_rounded,
+                                  color: Colors.red[700],
+                                ),
+                              ),
+                              title: buildTitleWithTimestamp(activity),
+                              trailing: buildAssetThumbnail(activity),
+                            ),
+                            activity,
+                            canDelete,
                           ),
                   );
                 },
