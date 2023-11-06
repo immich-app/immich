@@ -124,7 +124,7 @@ class ImmichImage extends StatelessWidget {
       ),
       fit: fit,
       duration: const Duration(milliseconds: 300),
-      syncDuration: const Duration(milliseconds: 300),
+      syncDuration: const Duration(milliseconds: 0),
       placeholder: placeholderWidget,
       errorBuilder: (context, error) {
         if (error is HttpExceptionWithStatus &&
