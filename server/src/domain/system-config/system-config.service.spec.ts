@@ -68,7 +68,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     clip: {
       enabled: true,
-      modelName: 'ViT-B-32::openai',
+      modelName: 'ViT-B-32__openai',
     },
     facialRecognition: {
       enabled: true,
@@ -120,6 +120,12 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   theme: {
     customCss: '',
+  },
+  library: {
+    scan: {
+      enabled: true,
+      cronExpression: '0 0 * * *',
+    },
   },
 });
 

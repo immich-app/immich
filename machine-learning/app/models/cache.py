@@ -4,6 +4,8 @@ from aiocache.backends.memory import SimpleMemoryCache
 from aiocache.lock import OptimisticLock
 from aiocache.plugins import BasePlugin, TimingPlugin
 
+from app.models import from_model_type
+
 from ..schemas import ModelType
 from .base import InferenceModel
 
@@ -50,7 +52,7 @@ class ModelCache:
         async with OptimisticLock(self.cache, key) as lock:
             model = await self.cache.get(key)
             if model is None:
-                model = InferenceModel.from_model_type(model_type, model_name, **model_kwargs)
+                model = from_model_type(model_type, model_name, **model_kwargs)
                 await lock.cas(model, ttl=self.ttl)
         return model
 

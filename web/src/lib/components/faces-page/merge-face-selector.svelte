@@ -10,10 +10,11 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -69,8 +70,6 @@
         message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
         type: NotificationType.Info,
       });
-      people = people.filter((person) => !results.some((result) => result.id === person.id && result.success === true));
-      await invalidateAll();
       dispatch('merge');
     } catch (error) {
       handleError(error, 'Cannot merge faces');
@@ -121,14 +120,18 @@
           {/each}
 
           {#if hasSelection}
-            <span class="grid grid-cols-1"
-              ><Icon path={mdiCallMerge} size={48} class="rotate-90 dark:text-white" />
-              {#if selectedPeople.length === 1}
-                <button class="flex justify-center" on:click={handleSwapPeople}
-                  ><Icon path={mdiSwapHorizontal} size={24} class="dark:text-white" />
-                </button>
-              {/if}
-            </span>
+            <div class="relative h-full">
+              <div class="flex flex-col h-full justify-between">
+                <div class="flex h-full items-center justify-center">
+                  <Icon path={mdiCallMerge} size={48} class="rotate-90 dark:text-white" />
+                </div>
+                {#if selectedPeople.length === 1}
+                  <div class="absolute bottom-2">
+                    <CircleIconButton icon={mdiSwapHorizontal} size="24" on:click={handleSwapPeople} />
+                  </div>
+                {/if}
+              </div>
+            </div>
           {/if}
           <FaceThumbnail {person} border circle selectable={false} thumbnailSize={180} />
         </div>

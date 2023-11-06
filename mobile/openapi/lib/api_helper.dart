@@ -97,6 +97,9 @@ String parameterToString(dynamic value) {
   if (value is PathType) {
     return PathTypeTypeTransformer().encode(value).toString();
   }
+  if (value is ReactionType) {
+    return ReactionTypeTypeTransformer().encode(value).toString();
+  }
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
   }

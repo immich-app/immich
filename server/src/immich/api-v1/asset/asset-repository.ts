@@ -109,7 +109,9 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
-        stack: true,
+        stack: {
+          exifInfo: true,
+        },
       },
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,

@@ -94,6 +94,9 @@ export enum SystemConfigKey {
   TRASH_DAYS = 'trash.days',
 
   THEME_CUSTOM_CSS = 'theme.customCss',
+
+  LIBRARY_SCAN_ENABLED = 'library.scan.enabled',
+  LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
 }
 
 export enum TranscodePolicy {
@@ -119,6 +122,7 @@ export enum TranscodeHWAccel {
   NVENC = 'nvenc',
   QSV = 'qsv',
   VAAPI = 'vaapi',
+  RKMPP = 'rkmpp',
   DISABLED = 'disabled',
 }
 
@@ -230,5 +234,11 @@ export interface SystemConfig {
   };
   theme: {
     customCss: string;
+  };
+  library: {
+    scan: {
+      enabled: boolean;
+      cronExpression: string;
+    };
   };
 }

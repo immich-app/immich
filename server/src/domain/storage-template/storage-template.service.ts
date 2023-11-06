@@ -75,7 +75,7 @@ export class StorageTemplateService {
   async handleMigrationSingle({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
 
-    const user = await this.userRepository.get(asset.ownerId);
+    const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
     await this.moveAsset(asset, { storageLabel, filename });

@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import { locale, sidebarSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { AssetApiGetAssetStatsRequest, api } from '@api';
+  import { AssetApiGetAssetStatisticsRequest, api } from '@api';
   import {
     mdiAccount,
     mdiAccountMultiple,
@@ -23,8 +23,8 @@
   import SideBarButton from './side-bar-button.svelte';
   import SideBarSection from './side-bar-section.svelte';
 
-  const getStats = async (dto: AssetApiGetAssetStatsRequest) => {
-    const { data: stats } = await api.assetApi.getAssetStats(dto);
+  const getStats = async (dto: AssetApiGetAssetStatisticsRequest) => {
+    const { data: stats } = await api.assetApi.getAssetStatistics(dto);
     return stats;
   };
 

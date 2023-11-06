@@ -52,11 +52,6 @@ void main() {
       // TODO
     });
 
-    //Future<UserCountResponseDto> getUserCount({ bool admin }) async
-    test('test getUserCount', () async {
-      // TODO
-    });
-
     //Future<UserResponseDto> restoreUser(String id) async
     test('test restoreUser', () async {
       // TODO

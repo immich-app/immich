@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
@@ -9,8 +8,8 @@ import 'package:immich_mobile/modules/login/models/authentication_state.model.da
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
-class ProfileDrawerHeader extends HookConsumerWidget {
-  const ProfileDrawerHeader({
+class AppBarProfileInfoBox extends HookConsumerWidget {
+  const AppBarProfileInfoBox({
     Key? key,
   }) : super(key: key);
 
@@ -23,30 +22,24 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     final user = Store.tryGet(StoreKey.currentUser);
 
     buildUserProfileImage() {
+      const immichImage = CircleAvatar(
+        radius: 20,
+        backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+        backgroundColor: Colors.transparent,
+      );
+
       if (authState.profileImagePath.isEmpty || user == null) {
-        return const CircleAvatar(
-          radius: 35,
-          backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
-          backgroundColor: Colors.transparent,
-        );
+        return immichImage;
       }
 
-      var userImage = UserCircleAvatar(
-        radius: 35,
-        size: 66,
+      final userImage = UserCircleAvatar(
+        radius: 20,
+        size: 40,
         user: user,
       );
 
       if (uploadProfileImageStatus == UploadProfileStatus.idle) {
-        if (authState.profileImagePath.isNotEmpty) {
-          return userImage;
-        } else {
-          return const CircleAvatar(
-            radius: 33,
-            backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
-            backgroundColor: Colors.transparent,
-          );
-        }
+        return authState.profileImagePath.isNotEmpty ? userImage : immichImage;
       }
 
       if (uploadProfileImageStatus == UploadProfileStatus.success) {
@@ -54,18 +47,18 @@ class ProfileDrawerHeader extends HookConsumerWidget {
       }
 
       if (uploadProfileImageStatus == UploadProfileStatus.failure) {
-        return const CircleAvatar(
-          radius: 35,
-          backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
-          backgroundColor: Colors.transparent,
-        );
+        return immichImage;
       }
 
       if (uploadProfileImageStatus == UploadProfileStatus.loading) {
-        return const ImmichLoadingIndicator();
+        return const SizedBox(
+          height: 40,
+          width: 40,
+          child: ImmichLoadingIndicator(borderRadius: 20),
+        );
       }
 
-      return const SizedBox();
+      return immichImage;
     }
 
     pickUserProfileImage() async {
@@ -80,54 +73,45 @@ class ProfileDrawerHeader extends HookConsumerWidget {
             await ref.watch(uploadProfileImageProvider.notifier).upload(image);
 
         if (success) {
+          final profileImagePath =
+              ref.read(uploadProfileImageProvider).profileImagePath;
           ref.watch(authenticationProvider.notifier).updateUserProfileImagePath(
-                ref.read(uploadProfileImageProvider).profileImagePath,
+                profileImagePath,
               );
+          if (user != null) {
+            user.profileImagePath = profileImagePath;
+            Store.put(StoreKey.currentUser, user);
+          }
         }
       }
     }
 
-    useEffect(
-      () {
-        // buildUserProfileImage();
-        return null;
-      },
-      [],
-    );
-
-    return DrawerHeader(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDarkMode
-              ? [
-                  const Color.fromARGB(255, 22, 25, 48),
-                  const Color.fromARGB(255, 13, 13, 13),
-                  const Color.fromARGB(255, 0, 0, 0),
-                ]
-              : [
-                  const Color.fromARGB(255, 216, 219, 238),
-                  const Color.fromARGB(255, 242, 242, 242),
-                  Colors.white,
-                ],
-          begin: Alignment.centerRight,
-          end: Alignment.centerLeft,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Theme.of(context).scaffoldBackgroundColor
+              : const Color.fromARGB(255, 225, 229, 240),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(
+        child: ListTile(
+          minLeadingWidth: 50,
+          leading: GestureDetector(
             onTap: pickUserProfileImage,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
                 buildUserProfileImage(),
                 Positioned(
-                  bottom: 0,
-                  right: -5,
+                  bottom: -5,
+                  right: -8,
                   child: Material(
-                    color: isDarkMode ? Colors.grey[700] : Colors.grey[100],
+                    color: isDarkMode ? Colors.blueGrey[800] : Colors.white,
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),
@@ -135,7 +119,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(5.0),
                       child: Icon(
-                        Icons.edit,
+                        Icons.camera_alt_outlined,
                         color: Theme.of(context).primaryColor,
                         size: 14,
                       ),
@@ -145,19 +129,21 @@ class ProfileDrawerHeader extends HookConsumerWidget {
               ],
             ),
           ),
-          Text(
+          title: Text(
             "${authState.firstName} ${authState.lastName}",
             style: TextStyle(
               color: Theme.of(context).primaryColor,
               fontWeight: FontWeight.bold,
-              fontSize: 24,
+              fontSize: 16,
             ),
           ),
-          Text(
+          subtitle: Text(
             authState.userEmail,
-            style: Theme.of(context).textTheme.labelMedium,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontSize: 12,
+                ),
           ),
-        ],
+        ),
       ),
     );
   }

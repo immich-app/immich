@@ -70,16 +70,18 @@ export class MediaRepository implements IMediaRepository {
   transcode(input: string, output: string | Writable, options: TranscodeOptions): Promise<void> {
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
-        ffmpeg(input, { niceness: 10 })
-          .inputOptions(options.inputOptions)
-          .outputOptions(options.outputOptions)
-          .output(output)
-          .on('error', (err, stdout, stderr) => {
-            this.logger.error(stderr);
-            reject(err);
-          })
-          .on('end', resolve)
-          .run();
+        const oldLdLibraryPath = process.env.LD_LIBRARY_PATH;
+        if (options.ldLibraryPath) {
+          // fluent ffmpeg does not allow to set environment variables, so we do it manually
+          process.env.LD_LIBRARY_PATH = this.chainPath(oldLdLibraryPath || '', options.ldLibraryPath);
+        }
+        try {
+          this.configureFfmpegCall(input, output, options).on('error', reject).on('end', resolve).run();
+        } finally {
+          if (options.ldLibraryPath) {
+            process.env.LD_LIBRARY_PATH = oldLdLibraryPath;
+          }
+        }
       });
     }
 
@@ -90,29 +92,18 @@ export class MediaRepository implements IMediaRepository {
     // two-pass allows for precise control of bitrate at the cost of running twice
     // recommended for vp9 for better quality and compression
     return new Promise((resolve, reject) => {
-      ffmpeg(input, { niceness: 10 })
-        .inputOptions(options.inputOptions)
-        .outputOptions(options.outputOptions)
+      // first pass output is not saved as only the .log file is needed
+      this.configureFfmpegCall(input, '/dev/null', options)
         .addOptions('-pass', '1')
         .addOptions('-passlogfile', output)
         .addOptions('-f null')
-        .output('/dev/null') // first pass output is not saved as only the .log file is needed
-        .on('error', (err, stdout, stderr) => {
-          this.logger.error(stderr);
-          reject(err);
-        })
+        .on('error', reject)
         .on('end', () => {
           // second pass
-          ffmpeg(input, { niceness: 10 })
-            .inputOptions(options.inputOptions)
-            .outputOptions(options.outputOptions)
+          this.configureFfmpegCall(input, output, options)
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
-            .output(output)
-            .on('error', (err, stdout, stderr) => {
-              this.logger.error(stderr);
-              reject(err);
-            })
+            .on('error', reject)
             .on('end', () => fs.unlink(`${output}-0.log`))
             .on('end', () => fs.rm(`${output}-0.log.mbtree`, { force: true }))
             .on('end', resolve)
@@ -120,6 +111,20 @@ export class MediaRepository implements IMediaRepository {
         })
         .run();
     });
+  }
+
+  configureFfmpegCall(input: string, output: string | Writable, options: TranscodeOptions) {
+    return ffmpeg(input, { niceness: 10 })
+      .setFfmpegPath(options.ffmpegPath || 'ffmpeg')
+      .inputOptions(options.inputOptions)
+      .outputOptions(options.outputOptions)
+      .output(output)
+      .on('error', (err, stdout, stderr) => this.logger.error(stderr || err));
+  }
+
+  chainPath(existing: string, path: string) {
+    const sep = existing.endsWith(':') ? '' : ':';
+    return `${existing}${sep}${path}`;
   }
 
   async generateThumbhash(imagePath: string): Promise<Buffer> {

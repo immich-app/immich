@@ -11,7 +11,9 @@ import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
+import { AccessCore, Permission } from '../access';
 import {
+  IAccessRepository,
   ICryptoRepository,
   IKeyRepository,
   ILibraryRepository,
@@ -21,7 +23,7 @@ import {
   IUserTokenRepository,
 } from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { UserCore, UserResponseDto } from '../user';
+import { UserCore, UserResponseDto, mapUser } from '../user';
 import {
   AuthType,
   IMMICH_ACCESS_COOKIE,
@@ -61,19 +63,22 @@ interface OAuthProfile extends UserinfoResponse {
 
 @Injectable()
 export class AuthService {
-  private userCore: UserCore;
+  private access: AccessCore;
   private configCore: SystemConfigCore;
   private logger = new Logger(AuthService.name);
+  private userCore: UserCore;
 
   constructor(
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(IUserRepository) userRepository: IUserRepository,
-    @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(IUserTokenRepository) private userTokenRepository: IUserTokenRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
   ) {
+    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
 
@@ -86,7 +91,7 @@ export class AuthService {
       throw new UnauthorizedException('Password login has been disabled');
     }
 
-    let user = await this.userCore.getByEmail(dto.email, true);
+    let user = await this.userRepository.getByEmail(dto.email, true);
     if (user) {
       const isAuthenticated = this.validatePassword(dto.password, user);
       if (!isAuthenticated) {
@@ -104,7 +109,7 @@ export class AuthService {
 
   async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (authUser.accessTokenId) {
-      await this.userTokenRepository.delete(authUser.id, authUser.accessTokenId);
+      await this.userTokenRepository.delete(authUser.accessTokenId);
     }
 
     return {
@@ -115,7 +120,7 @@ export class AuthService {
 
   async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
     const { password, newPassword } = dto;
-    const user = await this.userCore.getByEmail(authUser.email, true);
+    const user = await this.userRepository.getByEmail(authUser.email, true);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -129,7 +134,7 @@ export class AuthService {
   }
 
   async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {
-    const adminUser = await this.userCore.getAdmin();
+    const adminUser = await this.userRepository.getAdmin();
 
     if (adminUser) {
       throw new BadRequestException('The server already has an admin');
@@ -175,8 +180,9 @@ export class AuthService {
     return userTokens.map((userToken) => mapUserToken(userToken, authUser.accessTokenId));
   }
 
-  async logoutDevice(authUser: AuthUserDto, deviceId: string): Promise<void> {
-    await this.userTokenRepository.delete(authUser.id, deviceId);
+  async logoutDevice(authUser: AuthUserDto, id: string): Promise<void> {
+    await this.access.requirePermission(authUser, Permission.AUTH_DEVICE_DELETE, id);
+    await this.userTokenRepository.delete(id);
   }
 
   async logoutDevices(authUser: AuthUserDto): Promise<void> {
@@ -185,7 +191,7 @@ export class AuthService {
       if (device.id === authUser.accessTokenId) {
         continue;
       }
-      await this.userTokenRepository.delete(authUser.id, device.id);
+      await this.userTokenRepository.delete(device.id);
     }
   }
 
@@ -237,13 +243,13 @@ export class AuthService {
     const config = await this.configCore.getConfig();
     const profile = await this.getOAuthProfile(config, dto.url);
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
-    let user = await this.userCore.getByOAuthId(profile.sub);
+    let user = await this.userRepository.getByOAuthId(profile.sub);
 
     // link existing user
     if (!user) {
-      const emailUser = await this.userCore.getByEmail(profile.email);
+      const emailUser = await this.userRepository.getByEmail(profile.email);
       if (emailUser) {
-        user = await this.userCore.updateUser(emailUser, emailUser.id, { oauthId: profile.sub });
+        user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
       }
     }
 
@@ -279,16 +285,16 @@ export class AuthService {
   async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
     const config = await this.configCore.getConfig();
     const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
-    const duplicate = await this.userCore.getByOAuthId(oauthId);
+    const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
-    return this.userCore.updateUser(user, user.id, { oauthId });
+    return mapUser(await this.userRepository.update(user.id, { oauthId }));
   }
 
   async unlink(user: AuthUserDto): Promise<UserResponseDto> {
-    return this.userCore.updateUser(user, user.id, { oauthId: '' });
+    return mapUser(await this.userRepository.update(user.id, { oauthId: '' }));
   }
 
   private async getLogoutEndpoint(authType: AuthType): Promise<string> {
@@ -309,13 +315,8 @@ export class AuthService {
     const redirectUri = this.normalize(config, url.split('?')[0]);
     const client = await this.getOAuthClient(config);
     const params = client.callbackParams(url);
-    try {
-      const tokens = await client.callback(redirectUri, params, { state: params.state });
-      return client.userinfo<OAuthProfile>(tokens.access_token || '');
-    } catch (error: Error | any) {
-      this.logger.error(`Unable to complete OAuth login: ${error}`, error?.stack);
-      throw new InternalServerErrorException(`Unable to complete OAuth login: ${error}`, { cause: error });
-    }
+    const tokens = await client.callback(redirectUri, params, { state: params.state });
+    return client.userinfo<OAuthProfile>(tokens.access_token || '');
   }
 
   private async getOAuthClient(config: SystemConfig) {
@@ -339,8 +340,8 @@ export class AuthService {
       }
 
       return new issuer.Client(metadata);
-    } catch (error: Error | any) {
-      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack);
+    } catch (error: any | AggregateError) {
+      this.logger.error(`Error in OAuth discovery: ${error}`, error?.stack, error?.errors);
       throw new InternalServerErrorException(`Error in OAuth discovery: ${error}`, { cause: error });
     }
   }

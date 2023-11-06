@@ -47,6 +47,9 @@ function sortKeys<T>(obj: T): T {
   return result as T;
 }
 
+export const routeToErrorMessage = (methodName: string) =>
+  'Failed to ' + methodName.replace(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
+
 const patchOpenAPI = (document: OpenAPIObject) => {
   document.paths = sortKeys(document.paths);
   if (document.components?.schemas) {
@@ -76,6 +79,10 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
       if (operation.summary === '') {
         delete operation.summary;
+      }
+
+      if (operation.operationId) {
+        // console.log(`${routeToErrorMessage(operation.operationId).padEnd(40)} (${operation.operationId})`);
       }
 
       if (operation.description === '') {

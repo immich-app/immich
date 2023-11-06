@@ -22,7 +22,9 @@
     OBJECTS = 'smartInfo.objects',
   }
 
-  const MAX_ITEMS = 12;
+  let MAX_ITEMS: number;
+  let innerWidth: number;
+  let screenSize: number;
   const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
     const targetField = items.find((item) => item.fieldName === field);
     return targetField?.items || [];
@@ -32,7 +34,15 @@
   $: places = getFieldItems(data.items, Field.CITY);
   $: people = data.response.people.slice(0, MAX_ITEMS);
   $: hasPeople = data.response.total > 0;
+  $: {
+    if (innerWidth && screenSize) {
+      // Set the number of faces according to the screen size and the div size
+      MAX_ITEMS = screenSize < 768 ? Math.floor(innerWidth / 96) : Math.floor(innerWidth / 112);
+    }
+  }
 </script>
+
+<svelte:window bind:innerWidth={screenSize} />
 
 <UserPageLayout user={data.user} title={data.meta.title}>
   {#if hasPeople}
@@ -45,19 +55,21 @@
           draggable="false">View All</a
         >
       </div>
-      <div class="flex flex-row flex-wrap gap-4">
-        {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-24 text-center">
-            <ImageThumbnail
-              circle
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              widthStyle="100%"
-            />
-            <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
-          </a>
-        {/each}
+      <div class="flex flex-row {MAX_ITEMS < 5 ? 'justify-center' : ''} flex-wrap gap-4" bind:offsetWidth={innerWidth}>
+        {#if MAX_ITEMS}
+          {#each people as person (person.id)}
+            <a href="/people/{person.id}" class="w-20 md:w-24 text-center">
+              <ImageThumbnail
+                circle
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
+            </a>
+          {/each}
+        {/if}
       </div>
     </div>
   {/if}

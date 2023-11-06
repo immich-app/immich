@@ -13,10 +13,14 @@ export interface UserStatsQueryResponse {
   usage: number;
 }
 
+export interface UserFindOptions {
+  withDeleted?: boolean;
+}
+
 export const IUserRepository = 'IUserRepository';
 
 export interface IUserRepository {
-  get(id: string, withDeleted?: boolean): Promise<UserEntity | null>;
+  get(id: string, options: UserFindOptions): Promise<UserEntity | null>;
   getAdmin(): Promise<UserEntity | null>;
   hasAdmin(): Promise<boolean>;
   getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null>;

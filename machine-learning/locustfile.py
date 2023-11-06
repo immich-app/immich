@@ -1,11 +1,12 @@
-from io import BytesIO
 import json
+from argparse import ArgumentParser
+from io import BytesIO
 from typing import Any
 
 from locust import HttpUser, events, task
 from locust.env import Environment
 from PIL import Image
-from argparse import ArgumentParser
+
 byte_image = BytesIO()
 
 
@@ -14,11 +15,21 @@ def _(parser: ArgumentParser) -> None:
     parser.add_argument("--tag-model", type=str, default="microsoft/resnet-50")
     parser.add_argument("--clip-model", type=str, default="ViT-B-32::openai")
     parser.add_argument("--face-model", type=str, default="buffalo_l")
-    parser.add_argument("--tag-min-score", type=int, default=0.0, 
-                        help="Returns all tags at or above this score. The default returns all tags.")
-    parser.add_argument("--face-min-score", type=int, default=0.034, 
-                        help=("Returns all faces at or above this score. The default returns 1 face per request; "
-                              "setting this to 0 blows up the number of faces to the thousands."))
+    parser.add_argument(
+        "--tag-min-score",
+        type=int,
+        default=0.0,
+        help="Returns all tags at or above this score. The default returns all tags.",
+    )
+    parser.add_argument(
+        "--face-min-score",
+        type=int,
+        default=0.034,
+        help=(
+            "Returns all faces at or above this score. The default returns 1 face per request; "
+            "setting this to 0 blows up the number of faces to the thousands."
+        ),
+    )
     parser.add_argument("--image-size", type=int, default=1000)
 
 
@@ -62,7 +73,7 @@ class CLIPTextFormDataLoadTest(InferenceLoadTest):
             ("modelName", self.environment.parsed_options.clip_model),
             ("modelType", "clip"),
             ("options", json.dumps({"mode": "text"})),
-            ("text", "test search query")
+            ("text", "test search query"),
         ]
         self.client.post("/predict", data=data)
 
@@ -88,5 +99,5 @@ class RecognitionFormDataLoadTest(InferenceLoadTest):
             ("options", json.dumps({"minScore": self.environment.parsed_options.face_min_score})),
         ]
         files = {"image": self.data}
-            
+
         self.client.post("/predict", data=data, files=files)

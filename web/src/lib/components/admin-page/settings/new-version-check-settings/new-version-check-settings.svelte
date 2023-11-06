@@ -18,7 +18,7 @@
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data.newVersionCheck),
-      api.systemConfigApi.getDefaults().then((res) => res.data.newVersionCheck),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data.newVersionCheck),
     ]);
   }
 
@@ -55,7 +55,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     newVersionCheckConfig = { ...configs.newVersionCheck };
     defaultConfig = { ...configs.newVersionCheck };

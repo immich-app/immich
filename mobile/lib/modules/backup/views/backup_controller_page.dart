@@ -174,46 +174,6 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildStorageInformation() {
-      return ListTile(
-        leading: Icon(
-          Icons.storage_rounded,
-          color: Theme.of(context).primaryColor,
-        ),
-        title: const Text(
-          "backup_controller_page_server_storage",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        ).tr(),
-        isThreeLine: true,
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: LinearProgressIndicator(
-                  minHeight: 10.0,
-                  value: backupState.serverInfo.diskUsagePercentage / 100.0,
-                  backgroundColor: Colors.grey,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: const Text('backup_controller_page_storage_format').tr(
-                  args: [
-                    backupState.serverInfo.diskUse,
-                    backupState.serverInfo.diskSize,
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     ListTile buildAutoBackupController() {
       final isAutoBackup = backupState.autoBackup;
       final backUpOption = isAutoBackup
@@ -774,7 +734,6 @@ class BackupControllerPage extends HookConsumerWidget {
             if (showBackupFix) const Divider(),
             if (showBackupFix) buildCheckCorruptBackups(),
             const Divider(),
-            buildStorageInformation(),
             const Divider(),
             const CurrentUploadingAssetInfoBox(),
             if (!hasExclusiveAccess) buildBackgroundBackupInfo(),

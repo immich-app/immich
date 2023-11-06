@@ -9,7 +9,8 @@ from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop
 from insightface.utils.storage import BASE_REPO_URL, download_file
 
-from ..schemas import ModelType
+from app.schemas import ModelType, ndarray_f32
+
 from .base import InferenceModel
 
 
@@ -68,7 +69,7 @@ class FaceRecognizer(InferenceModel):
         )
         self.rec_model.prepare(ctx_id=0)
 
-    def _predict(self, image: np.ndarray[int, np.dtype[Any]] | bytes) -> list[dict[str, Any]]:
+    def _predict(self, image: ndarray_f32 | bytes) -> list[dict[str, Any]]:
         if isinstance(image, bytes):
             image = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)
         bboxes, kpss = self.det_model.detect(image)

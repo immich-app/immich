@@ -109,11 +109,10 @@ export class PersonRepository implements IPersonRepository {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
-      .where('person.ownerId = :userId', { userId })
-      .andWhere('LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere', {
-        nameStart: `${personName.toLowerCase()}%`,
-        nameAnywhere: `% ${personName.toLowerCase()}%`,
-      })
+      .where(
+        'person.ownerId = :userId AND (LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere)',
+        { userId, nameStart: `${personName.toLowerCase()}%`, nameAnywhere: `% ${personName.toLowerCase()}%` },
+      )
       .groupBy('person.id')
       .orderBy('COUNT(face.assetId)', 'DESC')
       .limit(20);

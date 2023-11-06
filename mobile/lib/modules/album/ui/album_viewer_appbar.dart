@@ -7,6 +7,8 @@ import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/shared/ui/share_dialog.dart';
+import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -160,40 +162,77 @@ class AlbumViewerAppbar extends HookConsumerWidget
       ImmichLoadingOverlayController.appLoader.hide();
     }
 
-    buildBottomSheetActionButton() {
+    void handleShareAssets(
+      WidgetRef ref,
+      BuildContext context,
+      Set<Asset> selection,
+    ) {
+      showDialog(
+        context: context,
+        builder: (BuildContext buildContext) {
+          ref.watch(shareServiceProvider).shareAssets(selection.toList()).then(
+            (bool status) {
+              if (!status) {
+                ImmichToast.show(
+                  context: context,
+                  msg: 'image_viewer_page_state_provider_share_error'.tr(),
+                  toastType: ToastType.error,
+                  gravity: ToastGravity.BOTTOM,
+                );
+              }
+              Navigator.of(buildContext).pop();
+            },
+          );
+          return const ShareDialog();
+        },
+        barrierDismissible: false,
+      );
+    }
+
+    void onShareAssetsTo() async {
+      ImmichLoadingOverlayController.appLoader.show();
+      handleShareAssets(ref, context, selected);
+      ImmichLoadingOverlayController.appLoader.hide();
+    }
+
+    buildBottomSheetActions() {
       if (selected.isNotEmpty) {
-        if (album.ownerId == userId) {
-          return ListTile(
+        return [
+          ListTile(
+            leading: const Icon(Icons.ios_share_rounded),
+            title: const Text(
+              'album_viewer_appbar_share_to',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ).tr(),
+            onTap: () => onShareAssetsTo(),
+          ),
+          album.ownerId == userId ? ListTile(
             leading: const Icon(Icons.delete_sweep_rounded),
             title: const Text(
               'album_viewer_appbar_share_remove',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
             onTap: () => onRemoveFromAlbumPressed(),
-          );
-        } else {
-          return const SizedBox();
-        }
+          ) : const SizedBox(),
+        ];
       } else {
-        if (album.ownerId == userId) {
-          return ListTile(
+        return [
+          album.ownerId == userId ? ListTile(
             leading: const Icon(Icons.delete_forever_rounded),
             title: const Text(
               'album_viewer_appbar_share_delete',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
             onTap: () => onDeleteAlbumPressed(),
-          );
-        } else {
-          return ListTile(
+          ) : ListTile(
             leading: const Icon(Icons.person_remove_rounded),
             title: const Text(
               'album_viewer_appbar_share_leave',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).tr(),
             onTap: () => onLeaveAlbumPressed(),
-          );
-        }
+          ),
+        ];
       }
     }
 
@@ -257,7 +296,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  buildBottomSheetActionButton(),
+                  ...buildBottomSheetActions(),
                   if (selected.isEmpty && onAddPhotos != null) ...commonActions,
                   if (selected.isEmpty &&
                       onAddPhotos != null &&

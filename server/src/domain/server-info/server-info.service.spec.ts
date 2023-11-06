@@ -220,7 +220,7 @@ describe(ServerInfoService.name, () => {
         },
       ]);
 
-      await expect(sut.getStats()).resolves.toEqual({
+      await expect(sut.getStatistics()).resolves.toEqual({
         photos: 120,
         videos: 31,
         usage: 1123455,

@@ -8,7 +8,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "target": "es2017",
+    "target": "es2021",
     "moduleResolution": "node16",
     "sourceMap": true,
     "outDir": "./dist",
