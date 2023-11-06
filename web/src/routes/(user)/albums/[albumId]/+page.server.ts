@@ -1,6 +1,7 @@
 import { AppRoute } from '$lib/constants';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import type { PeopleForAlbumResponseDto } from '../../../../api';
 
 export const load = (async ({ params, locals: { api, user } }) => {
   if (!user) {
@@ -9,41 +10,23 @@ export const load = (async ({ params, locals: { api, user } }) => {
 
   try {
     const { data: album } = await api.albumApi.getAlbumInfo({ id: params.albumId });
+    const { data: peoples } = await api.albumApi.getAlbumPeople({ id: params.albumId });
 
-    let albumPeoples: any[] = [];
-    if (album.assets.length) {
-      for await (const asset of album.assets) {
-        const { data } = await api.assetApi.getAssetById({ id: asset.id, key: api.getKey() });
-        if (data.people?.length) {
-          for (const people of data.people) {
-            if (!albumPeoples.map((p) => p.id).includes(people.id)) {
-              albumPeoples.push({ ...people, appears: 1 });
-            } else {
-              let existPeopleInd = albumPeoples.findIndex((p) => p.id === people.id);
-              albumPeoples[existPeopleInd].appears = albumPeoples[existPeopleInd].appears + 1;
-            }
-          }
-        }
-      }
+    let namedPeoples: PeopleForAlbumResponseDto[] = [],
+      unNamedPeoples: PeopleForAlbumResponseDto[] = [];
+
+    for (const p of peoples) {
+      p.personName.length ? namedPeoples.push(p) : unNamedPeoples.push(p);
     }
 
-    albumPeoples.sort((a, b) => {
-      if (b.appears !== a.appears) {
-        return b.appears - a.appears;
-      }
-      if (a.name === '') {
-        return 1;
-      } else if (b.name === '') {
-        return -1;
-      } else {
-        return a.name.localeCompare(b.name);
-      }
-    });
+    namedPeoples.sort((a, b) => b.albumCount - a.albumCount || a.personName.localeCompare(b.personName));
+    unNamedPeoples.sort((a, b) => b.albumCount - a.albumCount);
 
     return {
       album,
       user,
-      albumPeoples,
+      namedPeoples,
+      unNamedPeoples,
       meta: {
         title: album.albumName,
       },

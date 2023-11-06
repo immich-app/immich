@@ -1,5 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import EditDescriptionModal from '$lib/components/album-page/edit-description-modal.svelte';
   import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
@@ -39,7 +40,8 @@
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import ImageThumbnail from '../../../../lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+
   import {
     mdiPlus,
     mdiDotsVertical,
@@ -49,6 +51,7 @@
     mdiDeleteOutline,
     mdiFolderDownloadOutline,
     mdiLink,
+    mdiCloseCircle,
   } from '@mdi/js';
 
   export let data: PageData;
@@ -57,8 +60,8 @@
 
   let album = data.album;
   $: album = data.album;
-  $: albumPeoples = data.albumPeoples;
-  $: console.log('albumPeoples', albumPeoples);
+  $: namedPeoples = data.namedPeoples;
+  $: unNamedPeoples = data.unNamedPeoples;
 
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
@@ -78,8 +81,11 @@
   let isCreatingSharedAlbum = false;
   let currentAlbumName = '';
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
+  const queryParams = new URLSearchParams($page.url.search);
+  const personId = queryParams.get('personId');
+  const options = personId ? { albumId: album.id, personId } : { albumId: album.id };
 
-  const assetStore = new AssetStore({ albumId: album.id });
+  const assetStore = new AssetStore(options);
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -312,6 +318,14 @@
       handleError(error, 'Error updating album description');
     }
   };
+
+  const handleFiterByPeople = (personId: string): void => {
+    window.location.replace(`${$page.url.pathname}?personId=${personId}`);
+  };
+
+  const handleResetFilter = (): void => {
+    window.location.replace($page.url.pathname);
+  };
 </script>
 
 <header>
@@ -513,25 +527,61 @@
               {album.description || 'Add description'}
             </button>
           {/if}
-          {#if albumPeoples.length}
-            <div class="personWrapper">
-              {#each albumPeoples as people}
-                <a href="/people/{people.id}">
-                  <button>
-                    <ImageThumbnail
-                      circle
-                      shadow
-                      url={api.getPeopleThumbnailUrl(people.id)}
-                      altText={people.name}
-                      title={people.name}
-                      widthStyle="3.375rem"
-                      heightStyle="3.375rem"
-                    />
-                  </button></a
-                >
-              {/each}
-            </div>
-          {/if}
+          <div class="namedUnNamedWrapper">
+            {#if namedPeoples.length}
+              <div class="personsWrapper">
+                {#each namedPeoples as people}
+                  {#if !personId || personId === people.personId}
+                    <div class={personId ? 'cancelWrapper' : 'personFilterWrapper'}>
+                      <a href="/people/{people.personId}">
+                        <ImageThumbnail
+                          circle
+                          shadow
+                          url={api.getPeopleThumbnailUrl(people.personId)}
+                          altText={people.personName}
+                          title={`${people.personName}\nin ${people.albumCount} ${
+                            people.albumCount > 1 ? 'albums' : 'album'
+                          }`}
+                          widthStyle="3.375rem"
+                          heightStyle="3.375rem"
+                        />
+                      </a>
+                      <button
+                        class={personId ? 'cancelFilterBtn' : 'personNameFilterBtn'}
+                        title={`🔎 ${people.personName}`}
+                        on:click={() => (personId ? handleResetFilter() : handleFiterByPeople(people.personId))}
+                        >{people.personName}
+                        {#if personId}
+                          <Icon path={mdiCloseCircle} size="18" />
+                        {/if}
+                      </button>
+                    </div>
+                  {/if}
+                {/each}
+              </div>
+            {/if}
+            {#if namedPeoples.length}
+              <div class="personsWrapper">
+                {#each unNamedPeoples as people}
+                  {#if !personId || personId === people.personId}
+                    <div class="personFilterWrapper">
+                      <a href="/people/{people.personId}">
+                        <ImageThumbnail
+                          circle
+                          shadow
+                          url={api.getPeopleThumbnailUrl(people.personId)}
+                          altText={people.personName}
+                          title={`in ${people.albumCount} ${people.albumCount > 1 ? 'albums' : 'album'}`}
+                          widthStyle="3.375rem"
+                          heightStyle="3.375rem"
+                        />
+                      </a>
+                    </div>
+                  {/if}
+                {/each}
+              </div>
+            {/if}
+          </div>
         </section>
       {/if}
 
@@ -599,10 +649,41 @@
 {/if}
 
 <style>
-  .personWrapper {
+  .personsWrapper {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+
+  .personFilterWrapper {
+    width: 4rem;
+  }
+
+  .cancelWrapper,
+  .personFilterWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .personNameFilterBtn {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: small;
+    max-width: 100%;
+  }
+
+  .cancelFilterBtn {
+    font-size: small;
+    display: flex;
+    gap: 0.2rem;
+  }
+
+  .namedUnNamedWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 </style>
