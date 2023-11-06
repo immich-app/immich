@@ -67,6 +67,12 @@
   let album = data.album;
   $: album = data.album;
 
+  $: {
+    if (!album.isActivityEnabled && $numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  }
+
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
     LINK_SHARING = 'link-sharing',
@@ -140,7 +146,7 @@
           isActivityEnabled: !album.isActivityEnabled,
         },
       });
-      album.isActivityEnabled = false;
+      album = data;
       notificationController.show({
         type: NotificationType.Info,
         message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
@@ -396,6 +402,7 @@
         },
       });
       currentAlbumName = album.albumName;
+      notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
       handleError(error, 'Unable to update album name');
     }
@@ -653,9 +660,10 @@
         </AssetGrid>
       {/if}
 
-      {#if album.sharedUsers.length > 0 && !$showAssetViewer}
+      {#if album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || ($numberOfComments && $numberOfComments > 0))}
         <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
           <ActivityStatus
+            enableLikeButton={album.isActivityEnabled}
             {isLiked}
             numberOfComments={$numberOfComments}
             {isShowActivity}
@@ -671,7 +679,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[1002] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
         translate="yes"
       >
         <ActivityViewer
@@ -728,7 +736,7 @@
   <FullScreenModal on:clickOutside={() => (viewMode = ViewMode.VIEW)}>
     <div class="flex h-full w-full place-content-center place-items-center overflow-hidden p-2 md:p-0">
       <div
-        class="w-[350px] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+        class="w-[550px] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div class="px-2 pt-2">
           <div class="flex items-center">
@@ -741,14 +749,42 @@
           </div>
 
           <div class=" items-center justify-center p-4">
-            <h2 class="text-gray">Sharing</h2>
-            <div class="px-2">
-              <SettingSwitch
-                title="Activity"
-                subtitle="Let users react"
-                bind:checked={album.isActivityEnabled}
-                on:toggle={handleToggleEnableActivity}
-              />
+            <div class="py-2">
+              <h2 class="text-gray">Sharing</h2>
+              <div class="p-2">
+                <SettingSwitch
+                  title="Activity"
+                  subtitle="Let users react"
+                  checked={album.isActivityEnabled}
+                  on:toggle={handleToggleEnableActivity}
+                />
+              </div>
+            </div>
+            <div class="py-2">
+              <div>People</div>
+              <div class="p-2">
+                <button class="flex items-center gap-2" on:click={() => (viewMode = ViewMode.SELECT_USERS)}>
+                  <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
+                    <div><Icon path={mdiPlus} size="25" /></div>
+                  </div>
+                  <div>Invite People</div>
+                </button>
+                <div class="flex items-center gap-2 py-2">
+                  <div>
+                    <UserAvatar {user} size="md" />
+                  </div>
+                  <div class="w-full">{`${user.firstName} ${user.lastName}`}</div>
+                  <div>Owner</div>
+                </div>
+                {#each album.sharedUsers as user (user.id)}
+                  <div class="flex items-center gap-2 py-2">
+                    <div>
+                      <UserAvatar {user} size="md" />
+                    </div>
+                    <div class="w-full">{`${user.firstName} ${user.lastName}`}</div>
+                  </div>
+                {/each}
+              </div>
             </div>
           </div>
         </div>

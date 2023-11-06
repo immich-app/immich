@@ -49,7 +49,7 @@ export class AccessRepository implements IAccessRepository {
           id: activityId,
           userId,
           album: {
-            isActivityEnabled: true
+            isActivityEnabled: true,
           },
         },
       });

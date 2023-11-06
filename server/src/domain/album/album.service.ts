@@ -125,12 +125,12 @@ export class AlbumService {
         throw new BadRequestException('Invalid album thumbnail');
       }
     }
-
     const updatedAlbum = await this.albumRepository.update({
       id: album.id,
       albumName: dto.albumName,
       description: dto.description,
       albumThumbnailAssetId: dto.albumThumbnailAssetId,
+      isActivityEnabled: dto.isActivityEnabled,
     });
 
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
