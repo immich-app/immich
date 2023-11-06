@@ -466,6 +466,7 @@
               <div class="appersIn">Appears in:</div>
               {#each albums as album}
                 <div class="marginRight">
+                  <a href="/albums/{album.albumId}">
                   <img
                     class="h-[70px] w-[70px] rounded object-cover"
                     src={album.albumThumbnailAssetId &&
@@ -473,7 +474,7 @@
                     draggable="false"
                     alt={album.albumName}
                     title={`${album.albumName} \n${album.assetCount} occurrence${album.assetCount > 1 ? 's' : ''}`}
-                  />
+                  /></a>
                 </div>
               {/each}
             {/if}
