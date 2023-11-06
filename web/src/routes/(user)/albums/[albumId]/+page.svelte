@@ -49,12 +49,15 @@
     mdiLink,
     mdiShareVariantOutline,
     mdiDeleteOutline,
+    mdiClose,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
 
   export let data: PageData;
 
@@ -73,6 +76,7 @@
     ALBUM_OPTIONS = 'album-options',
     VIEW_USERS = 'view-users',
     VIEW = 'view',
+    OPTIONS = 'options',
   }
 
   let backUrl: string = AppRoute.ALBUMS;
@@ -127,6 +131,24 @@
       isCreatingSharedAlbum = true;
     }
   });
+
+  const handleToggleEnableActivity = async () => {
+    try {
+      const { data } = await api.albumApi.updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          isActivityEnabled: !album.isActivityEnabled,
+        },
+      });
+      album.isActivityEnabled = false;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
+      });
+    } catch (error) {
+      handleError(error, "Can't change favorite for asset");
+    }
+  };
 
   const handleFavorite = async () => {
     try {
@@ -455,6 +477,7 @@
                           <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
                         {/if}
                         <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
+                        <MenuOption on:click={() => (viewMode = ViewMode.OPTIONS)} text="Options" />
                       </ContextMenu>
                     {/if}
                   </CircleIconButton>
@@ -653,6 +676,7 @@
       >
         <ActivityViewer
           {user}
+          canComment={album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
           bind:reactions
@@ -698,6 +722,39 @@
       <p>If this album is shared, other users will not be able to access it anymore.</p>
     </svelte:fragment>
   </ConfirmDialogue>
+{/if}
+
+{#if viewMode === ViewMode.OPTIONS}
+  <FullScreenModal on:clickOutside={() => (viewMode = ViewMode.VIEW)}>
+    <div class="flex h-full w-full place-content-center place-items-center overflow-hidden p-2 md:p-0">
+      <div
+        class="w-[350px] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+      >
+        <div class="px-2 pt-2">
+          <div class="flex items-center">
+            <h1 class="px-4 w-full self-center font-medium text-immich-primary dark:text-immich-dark-primary">
+              Options
+            </h1>
+            <div>
+              <CircleIconButton icon={mdiClose} on:click={() => (viewMode = ViewMode.VIEW)} />
+            </div>
+          </div>
+
+          <div class=" items-center justify-center p-4">
+            <h2 class="text-gray">Sharing</h2>
+            <div class="px-2">
+              <SettingSwitch
+                title="Activity"
+                subtitle="Let users react"
+                bind:checked={album.isActivityEnabled}
+                on:toggle={handleToggleEnableActivity}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </FullScreenModal>
 {/if}
 
 {#if isEditingDescription}

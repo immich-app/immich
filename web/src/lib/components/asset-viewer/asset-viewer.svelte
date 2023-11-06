@@ -744,6 +744,7 @@
     >
       <ActivityViewer
         {user}
+        canComment={album.isActivityEnabled}
         assetType={asset.type}
         albumOwnerId={album.ownerId}
         albumId={album.id}

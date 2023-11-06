@@ -140,7 +140,8 @@ export class AccessCore {
       case Permission.ACTIVITY_CREATE:
         return (
           (await this.repository.album.hasOwnerAccess(authUser.id, id)) ||
-          (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
+          (await this.repository.album.hasSharedAlbumAccess(authUser.id, id)) ||
+          (await this.repository.activity.hasAlbumUpdate(authUser.id, id))
         );
 
       // uses activity id

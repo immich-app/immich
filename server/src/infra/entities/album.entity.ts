@@ -56,4 +56,7 @@ export class AlbumEntity {
 
   @OneToMany(() => SharedLinkEntity, (link) => link.album)
   sharedLinks!: SharedLinkEntity[];
+
+  @Column({ default: true })
+  isActivityEnabled!: boolean;
 }
