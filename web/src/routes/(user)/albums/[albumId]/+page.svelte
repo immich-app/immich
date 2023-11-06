@@ -117,6 +117,8 @@
       assetGridWidth = globalWidth;
     }
   }
+  $: showActivityStatus =
+    album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
@@ -152,7 +154,7 @@
         message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
       });
     } catch (error) {
-      handleError(error, "Can't change favorite for asset");
+      handleError(error, `Can't ${!album.isActivityEnabled ? 'enable' : 'disable'} activity`);
     }
   };
 
@@ -660,7 +662,7 @@
         </AssetGrid>
       {/if}
 
-      {#if album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || ($numberOfComments && $numberOfComments > 0))}
+      {#if showActivityStatus}
         <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
           <ActivityStatus
             disabled={!album.isActivityEnabled}

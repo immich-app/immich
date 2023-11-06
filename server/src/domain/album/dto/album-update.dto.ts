@@ -1,6 +1,5 @@
-import { Transform } from 'class-transformer';
 import { IsBoolean, IsString } from 'class-validator';
-import { Optional, ValidateUUID, toBoolean } from '../../domain.util';
+import { Optional, ValidateUUID } from '../../domain.util';
 
 export class UpdateAlbumDto {
   @Optional()
@@ -16,6 +15,5 @@ export class UpdateAlbumDto {
 
   @Optional()
   @IsBoolean()
-  @Transform(toBoolean)
   isActivityEnabled?: boolean;
 }
