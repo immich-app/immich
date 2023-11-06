@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
@@ -26,6 +27,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     required this.titleFocusNode,
     this.onAddPhotos,
     this.onAddUsers,
+    required this.onActivities,
   }) : super(key: key);
 
   final Album album;
@@ -35,11 +37,19 @@ class AlbumViewerAppbar extends HookConsumerWidget
   final FocusNode titleFocusNode;
   final Function(Album album)? onAddPhotos;
   final Function(Album album)? onAddUsers;
+  final Function(Album album) onActivities;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
+    final comments = album.shared
+        ? ref.watch(
+            activityStatisticsStateProvider(
+              (albumId: album.remoteId!, assetId: null),
+            ),
+          )
+        : 0;
 
     deleteAlbum() async {
       ImmichLoadingOverlayController.appLoader.show();
@@ -310,6 +320,33 @@ class AlbumViewerAppbar extends HookConsumerWidget
       );
     }
 
+    Widget buildActivitiesButton() {
+      return IconButton(
+        onPressed: () {
+          onActivities(album);
+        },
+        icon: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.mode_comment_outlined,
+            ),
+            if (comments != 0)
+              Padding(
+                padding: const EdgeInsets.only(left: 5),
+                child: Text(
+                  comments.toString(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
     buildLeadingButton() {
       if (selected.isNotEmpty) {
         return IconButton(
@@ -353,6 +390,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
       title: selected.isNotEmpty ? Text('${selected.length}') : null,
       centerTitle: false,
       actions: [
+        if (album.shared) buildActivitiesButton(),
         if (album.isRemote)
           IconButton(
             splashRadius: 25,

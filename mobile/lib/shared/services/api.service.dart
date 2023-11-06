@@ -22,6 +22,7 @@ class ApiService {
   late PersonApi personApi;
   late AuditApi auditApi;
   late SharedLinkApi sharedLinkApi;
+  late ActivityApi activityApi;
 
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
@@ -47,6 +48,7 @@ class ApiService {
     personApi = PersonApi(_apiClient);
     auditApi = AuditApi(_apiClient);
     sharedLinkApi = SharedLinkApi(_apiClient);
+    activityApi = ActivityApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {

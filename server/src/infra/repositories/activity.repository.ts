@@ -1,7 +1,7 @@
 import { IActivityRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { ActivityEntity } from '../entities/activity.entity';
 
 export interface ActivitySearch {
@@ -9,6 +9,7 @@ export interface ActivitySearch {
   assetId?: string;
   userId?: string;
   isLiked?: boolean;
+  isGlobal?: boolean;
 }
 
 @Injectable()
@@ -16,11 +17,11 @@ export class ActivityRepository implements IActivityRepository {
   constructor(@InjectRepository(ActivityEntity) private repository: Repository<ActivityEntity>) {}
 
   search(options: ActivitySearch): Promise<ActivityEntity[]> {
-    const { userId, assetId, albumId, isLiked } = options;
+    const { userId, assetId, albumId, isLiked, isGlobal } = options;
     return this.repository.find({
       where: {
         userId,
-        assetId,
+        assetId: isGlobal ? IsNull() : assetId,
         albumId,
         isLiked,
       },

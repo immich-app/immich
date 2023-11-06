@@ -21,6 +21,7 @@ class ThumbnailImage extends StatelessWidget {
   final Function? onSelect;
   final Function? onDeselect;
   final int heroOffset;
+  final String? sharedAlbumId;
 
   const ThumbnailImage({
     Key? key,
@@ -31,6 +32,7 @@ class ThumbnailImage extends StatelessWidget {
     this.showStorageIndicator = true,
     this.showStack = false,
     this.isOwner = true,
+    this.sharedAlbumId,
     this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
@@ -184,6 +186,7 @@ class ThumbnailImage extends StatelessWidget {
               heroOffset: heroOffset,
               showStack: showStack,
               isOwner: isOwner,
+              sharedAlbumId: sharedAlbumId,
             ),
           );
         }
