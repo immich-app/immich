@@ -7,7 +7,7 @@
   export let isLiked: ActivityResponseDto | null;
   export let numberOfComments: number | undefined;
   export let isShowActivity: boolean | undefined;
-  export let enableLikeButton: boolean;
+  export let disabled: boolean;
 
   const dispatch = createEventDispatcher();
 </script>
@@ -15,11 +15,7 @@
 <div
   class="w-full h-14 flex p-4 text-white items-center justify-center rounded-full gap-4 bg-immich-dark-bg bg-opacity-60"
 >
-  <button
-    class={!enableLikeButton ? 'cursor-not-allowed' : ''}
-    on:click={() => dispatch('favorite')}
-    disabled={!enableLikeButton}
-  >
+  <button class={disabled ? 'cursor-not-allowed' : ''} on:click={() => dispatch('favorite')} {disabled}>
     <!-- svelte-ignore missing-declaration -->
     <div class="items-center justify-center">
       <Icon path={isLiked ? mdiHeart : mdiHeartOutline} size={24} />

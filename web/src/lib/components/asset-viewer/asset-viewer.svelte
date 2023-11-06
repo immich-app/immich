@@ -670,7 +670,7 @@
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <ActivityStatus
-              enableLikeButton={album?.isActivityEnabled || false}
+              disabled={!album?.isActivityEnabled}
               {isLiked}
               {numberOfComments}
               {isShowActivity}
@@ -751,7 +751,7 @@
     >
       <ActivityViewer
         {user}
-        canComment={album.isActivityEnabled}
+        disabled={!album.isActivityEnabled}
         assetType={asset.type}
         albumOwnerId={album.ownerId}
         albumId={album.id}

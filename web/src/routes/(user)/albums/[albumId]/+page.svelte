@@ -663,7 +663,7 @@
       {#if album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || ($numberOfComments && $numberOfComments > 0))}
         <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
           <ActivityStatus
-            enableLikeButton={album.isActivityEnabled}
+            disabled={!album.isActivityEnabled}
             {isLiked}
             numberOfComments={$numberOfComments}
             {isShowActivity}
@@ -684,7 +684,7 @@
       >
         <ActivityViewer
           {user}
-          canComment={album.isActivityEnabled}
+          disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
           bind:reactions
