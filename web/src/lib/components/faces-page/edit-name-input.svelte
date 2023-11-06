@@ -36,6 +36,7 @@
     <!-- svelte-ignore a11y-autofocus -->
     <input
       autofocus
+      style=" width: 12rem; margin-right: 0.5rem;"
       class="w-full bg-gray-100 dark:bg-gray-700 dark:text-white"
       type="text"
       placeholder="New name or nickname"

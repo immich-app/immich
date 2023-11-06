@@ -419,7 +419,7 @@
           on:outclick={handleCancelEditName}
           on:escape={handleCancelEditName}
         >
-          <section class="flex sm:w-76 place-items-center border-black;">
+          <section class="flex w-64 sm:w-96 place-items-center border-black;">
             {#if isEditingName}
               <EditNameInput
                 person={data.person}
