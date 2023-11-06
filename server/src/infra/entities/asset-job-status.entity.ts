@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 
 @Entity('asset_job_status')
-export class AssetJobStatus {
+export class AssetJobStatusEntity {
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn()
   asset?: AssetEntity;
