@@ -216,7 +216,13 @@ export class PersonService {
       return true;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const relations = {
+      exifInfo: true,
+      faces: {
+        person: true,
+      },
+    };
+    const [asset] = await this.assetRepository.getByIds([id], relations);
     if (!asset || !asset.resizePath || asset.faces?.length > 0) {
       return false;
     }
