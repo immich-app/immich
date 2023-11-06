@@ -36,14 +36,7 @@ class AllPeoplePage extends HookConsumerWidget {
         ),
         data: (people) => ExploreGrid(
           isPeople: true,
-          curatedContent: people
-              .map(
-                (person) => CuratedContent(
-                  label: person.name,
-                  id: person.id,
-                ),
-              )
-              .toList(),
+          curatedContent: people,
         ),
       ),
     );

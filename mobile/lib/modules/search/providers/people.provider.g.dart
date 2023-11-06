@@ -6,7 +6,7 @@ part of 'people.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$personAssetsHash() => r'd2c27a52d23879a25fea58d84618d53daf408aad';
+String _$personAssetsHash() => r'6365a957da89dd7c1c2cf495633f1a5ef57dd69d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -155,12 +155,12 @@ class _PersonAssetsProviderElement
   String get personId => (origin as PersonAssetsProvider).personId;
 }
 
-String _$getCuratedPeopleHash() => r'f6984531318310f8eeedf2563849aec94280aa28';
+String _$getCuratedPeopleHash() => r'290c4374ab205319f42fed6682eebf7db0bac39f';
 
 /// See also [getCuratedPeople].
 @ProviderFor(getCuratedPeople)
 final getCuratedPeopleProvider =
-    AutoDisposeFutureProvider<List<PersonResponseDto>>.internal(
+    AutoDisposeFutureProvider<List<CuratedContent>>.internal(
   getCuratedPeople,
   name: r'getCuratedPeopleProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -171,8 +171,8 @@ final getCuratedPeopleProvider =
 );
 
 typedef GetCuratedPeopleRef
-    = AutoDisposeFutureProviderRef<List<PersonResponseDto>>;
-String _$updatePersonNameHash() => r'61439e7625829f1ca365fb1b75ca3393b503cef9';
+    = AutoDisposeFutureProviderRef<List<CuratedContent>>;
+String _$updatePersonNameHash() => r'8026619b65d713ac6d5cd46b071074a46df99fef';
 
 /// See also [updatePersonName].
 @ProviderFor(updatePersonName)

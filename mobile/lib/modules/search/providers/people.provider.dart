@@ -1,7 +1,7 @@
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/services/person.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:openapi/api.dart';
 
 part 'people.provider.g.dart';
 
@@ -19,14 +19,17 @@ Future<RenderList> personAssets(PersonAssetsRef ref, String personId) async {
 }
 
 @riverpod
-Future<List<PersonResponseDto>> getCuratedPeople(
+Future<List<CuratedContent>> getCuratedPeople(
   GetCuratedPeopleRef ref,
 ) async {
   final PersonService personService = ref.read(personServiceProvider);
 
   final curatedPeople = await personService.getCuratedPeople();
 
-  return curatedPeople ?? [];
+  return curatedPeople
+          ?.map((p) => CuratedContent(id: p.id, label: p.name))
+          .toList() ??
+      [];
 }
 
 @riverpod
