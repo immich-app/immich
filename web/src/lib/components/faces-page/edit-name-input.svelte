@@ -29,14 +29,15 @@
     heightStyle="2rem"
   />
   <form
-    class="ml-4 flex w-full justify-between gap-16"
+    class="ml-4 flex w-full justify-between"
     autocomplete="off"
     on:submit|preventDefault={() => dispatch('change', name)}
   >
     <!-- svelte-ignore a11y-autofocus -->
     <input
       autofocus
-      class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
+      style=" width: 12rem; margin-right: 0.5rem;"
+      class="w-full bg-gray-100 dark:bg-gray-700 dark:text-white"
       type="text"
       placeholder="New name or nickname"
       bind:value={name}
