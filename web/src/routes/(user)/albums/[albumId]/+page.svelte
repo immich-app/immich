@@ -51,6 +51,7 @@
     mdiDeleteOutline,
     mdiFolderDownloadOutline,
     mdiLink,
+    mdiCloseCircle,
   } from '@mdi/js';
 
   export let data: PageData;
@@ -531,7 +532,7 @@
               <div class="personsWrapper">
                 {#each namedPeoples as people}
                   {#if !personId || personId === people.personId}
-                    <div class="personFilterWrapper">
+                    <div class={personId ? 'cancelWrapper' : 'personFilterWrapper'}>
                       <a href="/people/{people.personId}">
                         <ImageThumbnail
                           circle
@@ -546,10 +547,14 @@
                         />
                       </a>
                       <button
-                        class="personNameFilter"
+                        class={personId ? 'cancelFilterBtn' : 'personNameFilterBtn'}
                         title={`🔎 ${people.personName}`}
-                        on:click={() => handleFiterByPeople(people.personId)}>{people.personName}</button
-                      >
+                        on:click={() => (personId ? handleResetFilter() : handleFiterByPeople(people.personId))}
+                        >{people.personName}
+                        {#if personId}
+                          <Icon path={mdiCloseCircle} size="18" />
+                        {/if}
+                      </button>
                     </div>
                   {/if}
                 {/each}
@@ -574,11 +579,6 @@
                     </div>
                   {/if}
                 {/each}
-              </div>
-            {/if}
-            {#if personId}
-              <div>
-                <Button type="reset" size="sm" rounded="3xl" on:click={handleResetFilter}>Clear Filter</Button>
               </div>
             {/if}
           </div>
@@ -657,20 +657,30 @@
   }
 
   .personFilterWrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     width: 4rem;
   }
 
-  .personNameFilter {
+  .cancelWrapper,
+  .personFilterWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .personNameFilterBtn {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    cursor: pointer;
     font-size: small;
     max-width: 100%;
   }
+
+  .cancelFilterBtn {
+    font-size: small;
+    display: flex;
+    gap: 0.2rem;
+  }
+
   .namedUnNamedWrapper {
     display: flex;
     flex-direction: column;
