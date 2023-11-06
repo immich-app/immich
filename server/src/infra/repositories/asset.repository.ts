@@ -334,10 +334,6 @@ export class AssetRepository implements IAssetRepository {
             assetId: IsNull(),
             personId: IsNull(),
           },
-          // TODO: Add tests to ensure that this captures all three cases:
-          // 1. jobStatus null.
-          // 2. facesRecognizedAt null.
-          // 3. facesRecognizedAt not null.
           jobStatus: {
             facesRecognizedAt: IsNull(),
           },
