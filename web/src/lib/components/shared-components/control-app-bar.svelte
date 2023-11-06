@@ -40,7 +40,7 @@
   });
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="fixed top-0 z-[100] w-full bg-transparent">
+<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
   <div
     id="asset-selection-app-bar"
     class={`grid grid-cols-[10%_80%_10%] justify-between md:grid-cols-[20%_60%_20%] lg:grid-cols-3 ${appBarBorder} mx-2 mt-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${

@@ -1,4 +1,4 @@
-import { Colorspace, SystemConfigKey } from '@app/infra/entities';
+import { AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
@@ -445,6 +445,23 @@ describe(PersonService.name, () => {
 
     it('should skip when no resize path', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
+      await sut.handleRecognizeFaces({ id: assetStub.noResizePath.id });
+      expect(machineLearningMock.detectFaces).not.toHaveBeenCalled();
+    });
+
+    it('should skip it the asset has already been processed', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        {
+          ...assetStub.noResizePath,
+          faces: [
+            {
+              id: 'asset-face-1',
+              assetId: assetStub.noResizePath.id,
+              personId: faceStub.face1.personId,
+            } as AssetFaceEntity,
+          ],
+        },
+      ]);
       await sut.handleRecognizeFaces({ id: assetStub.noResizePath.id });
       expect(machineLearningMock.detectFaces).not.toHaveBeenCalled();
     });

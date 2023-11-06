@@ -104,10 +104,9 @@ export class AssetRepository implements IAssetRepository {
       .getMany();
   }
 
-  getByIds(ids: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { id: In(ids) },
-      relations: {
+  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
+    if (!relations) {
+      relations = {
         exifInfo: true,
         smartInfo: true,
         tags: true,
@@ -115,7 +114,11 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
         stack: true,
-      },
+      };
+    }
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations,
       withDeleted: true,
     });
   }

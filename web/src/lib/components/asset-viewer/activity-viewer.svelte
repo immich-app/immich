@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { ActivityResponseDto, api, AssetTypeEnum, ReactionType, type UserResponseDto } from '@api';
+  import { ActivityResponseDto, api, AssetTypeEnum, ReactionType, ThumbnailFormat, type UserResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -14,6 +14,13 @@
   import * as luxon from 'luxon';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
+
+  const shouldGroup = (currentDate: string, nextDate: string): boolean => {
+    const currentDateTime = luxon.DateTime.fromISO(currentDate);
+    const nextDateTime = luxon.DateTime.fromISO(nextDate);
+
+    return currentDateTime.hasSame(nextDateTime, 'hour') || currentDateTime.toRelative() === nextDateTime.toRelative();
+  };
 
   const timeSince = (dateTime: luxon.DateTime) => {
     const diff = dateTime.diffNow().shiftTo(...units);
@@ -27,9 +34,9 @@
 
   export let reactions: ActivityResponseDto[];
   export let user: UserResponseDto;
-  export let assetId: string;
+  export let assetId: string | undefined = undefined;
   export let albumId: string;
-  export let assetType: AssetTypeEnum;
+  export let assetType: AssetTypeEnum | undefined = undefined;
   export let albumOwnerId: string;
 
   let textArea: HTMLTextAreaElement;
@@ -37,7 +44,7 @@
   let activityHeight: number;
   let chatHeight: number;
   let divHeight: number;
-  let previousAssetId: string | null;
+  let previousAssetId: string | undefined = assetId;
   let message = '';
   let isSendingMessage = false;
 
@@ -51,11 +58,14 @@
   }
 
   $: {
-    if (previousAssetId != assetId) {
+    if (assetId && previousAssetId != assetId) {
       getReactions();
       previousAssetId = assetId;
     }
   }
+  onMount(async () => {
+    await getReactions();
+  });
 
   const getReactions = async () => {
     try {
@@ -161,11 +171,20 @@
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.type === 'comment'}
             <div class="flex dark:bg-gray-800 bg-gray-200 p-3 mx-2 mt-3 rounded-lg gap-4 justify-start">
-              <div>
+              <div class="flex items-center">
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
               <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
+              {#if assetId === undefined && reaction.assetId}
+                <div class="aspect-square w-[75px] h-[75px]">
+                  <img
+                    class="rounded-lg w-[75px] h-[75px] object-cover"
+                    src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                    alt="comment-thumbnail"
+                  />
+                </div>
+              {/if}
               {#if reaction.user.id === user.id || albumOwnerId === user.id}
                 <div class="flex items-start w-fit pt-[5px]" title="Delete comment">
                   <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
@@ -176,17 +195,18 @@
               <div>
                 {#if showDeleteReaction[index]}
                   <button
-                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-2 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-300 transition-colors"
+                    class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
                     use:clickOutside
                     on:outclick={() => (showDeleteReaction[index] = false)}
                     on:click={() => handleDeleteReaction(reaction, index)}
                   >
-                    Delete
+                    Remove
                   </button>
                 {/if}
               </div>
             </div>
-            {#if (index != reactions.length - 1 && isTenMinutesApart(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
+
+            {#if (index != reactions.length - 1 && !shouldGroup(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
               <div
                 class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
@@ -196,17 +216,26 @@
             {/if}
           {:else if reaction.type === 'like'}
             <div class="relative">
-              <div class="flex p-2 mx-2 mt-2 rounded-full gap-2 items-center text-sm">
+              <div class="flex p-3 mx-2 mt-3 rounded-full gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
                 <div
                   class="w-full"
                   title={`${reaction.user.firstName} ${reaction.user.lastName} (${reaction.user.email})`}
                 >
-                  {`${reaction.user.firstName} ${reaction.user.lastName} liked this ${getAssetType(
-                    assetType,
-                  ).toLowerCase()}`}
+                  {`${reaction.user.firstName} ${reaction.user.lastName} liked ${
+                    assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'
+                  }`}
                 </div>
+                {#if assetId === undefined && reaction.assetId}
+                  <div class="aspect-square w-[75px] h-[75px]">
+                    <img
+                      class="rounded-lg w-[75px] h-[75px] object-cover"
+                      src={api.getAssetThumbnailUrl(reaction.assetId, ThumbnailFormat.Webp)}
+                      alt="like-thumbnail"
+                    />
+                  </div>
+                {/if}
                 {#if reaction.user.id === user.id || albumOwnerId === user.id}
                   <div class="flex items-start w-fit" title="Delete like">
                     <button on:click={() => (!showDeleteReaction[index] ? showOptionsMenu(index) : '')}>
@@ -217,12 +246,12 @@
                 <div>
                   {#if showDeleteReaction[index]}
                     <button
-                      class="absolute top-2 right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 p-3 text-left text-sm font-medium text-immich-fg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg"
+                      class="absolute right-6 rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover:bg-red-100 transition-colors"
                       use:clickOutside
                       on:outclick={() => (showDeleteReaction[index] = false)}
                       on:click={() => handleDeleteReaction(reaction, index)}
                     >
-                      Delete Like
+                      Remove
                     </button>
                   {/if}
                 </div>
@@ -266,8 +295,8 @@
               </div>
             </div>
           {:else if message}
-            <div class="flex items-end w-fit ml-0 text-immich-primary dark:text-white">
-              <CircleIconButton size="15" icon={mdiSend} />
+            <div class="flex items-end w-fit ml-0">
+              <CircleIconButton size="15" icon={mdiSend} iconColor={'dark'} hoverColor={'rgb(173,203,250)'} />
             </div>
           {/if}
         </form>

@@ -35,7 +35,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { UserResponseDto, api } from '@api';
+  import { ActivityResponseDto, ReactionType, UserResponseDto, api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -45,11 +45,16 @@
     mdiDotsVertical,
     mdiArrowLeft,
     mdiFileImagePlusOutline,
-    mdiShareVariantOutline,
-    mdiDeleteOutline,
     mdiFolderDownloadOutline,
     mdiLink,
+    mdiShareVariantOutline,
+    mdiDeleteOutline,
   } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
+  import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
+  import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
+  import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
 
   export let data: PageData;
 
@@ -77,6 +82,12 @@
   let isCreatingSharedAlbum = false;
   let currentAlbumName = '';
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
+  let isShowActivity = false;
+  let isLiked: ActivityResponseDto | null = null;
+  let reactions: ActivityResponseDto[] = [];
+  let user = data.user;
+  let globalWidth: number;
+  let assetGridWidth: number;
 
   const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
@@ -89,6 +100,13 @@
   $: isOwned = data.user.id == album.ownerId;
   $: isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === data.user.id);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: {
+    if (isShowActivity) {
+      assetGridWidth = globalWidth - (globalWidth < 768 ? 360 : 460);
+    } else {
+      assetGridWidth = globalWidth;
+    }
+  }
 
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
@@ -107,6 +125,63 @@
 
     if (backUrl === AppRoute.SHARING && album.sharedUsers.length === 0) {
       isCreatingSharedAlbum = true;
+    }
+  });
+
+  const handleFavorite = async () => {
+    try {
+      if (isLiked) {
+        const activityId = isLiked.id;
+        await api.activityApi.deleteActivity({ id: activityId });
+        reactions = reactions.filter((reaction) => reaction.id !== activityId);
+        isLiked = null;
+      } else {
+        const { data } = await api.activityApi.createActivity({
+          activityCreateDto: { albumId: album.id, type: ReactionType.Like },
+        });
+
+        isLiked = data;
+        reactions = [...reactions, isLiked];
+      }
+    } catch (error) {
+      handleError(error, "Can't change favorite for asset");
+    }
+  };
+
+  const getFavorite = async () => {
+    if (user) {
+      try {
+        const { data } = await api.activityApi.getActivities({
+          userId: user.id,
+          albumId: album.id,
+          type: ReactionType.Like,
+        });
+        if (data.length > 0) {
+          isLiked = data[0];
+        }
+      } catch (error) {
+        handleError(error, "Can't get Favorite");
+      }
+    }
+  };
+
+  const getNumberOfComments = async () => {
+    try {
+      const { data } = await api.activityApi.getActivityStatistics({ albumId: album.id });
+      setNumberOfComments(data.comments);
+    } catch (error) {
+      handleError(error, "Can't get number of comments");
+    }
+  };
+
+  const handleOpenAndCloseActivityTab = () => {
+    isShowActivity = !isShowActivity;
+  };
+
+  onMount(async () => {
+    if (album.sharedUsers.length > 0) {
+      getFavorite();
+      getNumberOfComments();
     }
   });
 
@@ -321,239 +396,275 @@
   };
 </script>
 
-<header>
-  {#if $isMultiSelectState}
-    <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-      <CreateSharedLink />
-      <SelectAllAssets {assetStore} {assetInteractionStore} />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add">
-        <AddToAlbum />
-        <AddToAlbum shared />
-      </AssetSelectContextMenu>
-      <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-        {#if isAllUserOwned}
-          <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-        {/if}
-        <ArchiveAction menuItem />
-        <DownloadAction menuItem filename="{album.albumName}.zip" />
-        {#if isOwned || isAllUserOwned}
-          <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
-        {/if}
-        {#if isAllUserOwned}
-          <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
-        {/if}
-      </AssetSelectContextMenu>
-    </AssetSelectControlBar>
-  {:else}
-    {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(backUrl)}>
-        <svelte:fragment slot="trailing">
-          <CircleIconButton
-            title="Add Photos"
-            on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-            icon={mdiFileImagePlusOutline}
-          />
-
-          {#if isOwned}
-            <CircleIconButton
-              title="Share"
-              on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-              icon={mdiShareVariantOutline}
-            />
-            <CircleIconButton
-              title="Delete album"
-              on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
-              icon={mdiDeleteOutline}
-            />
+<div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
+  <div class="relative w-full shrink">
+    {#if $isMultiSelectState}
+      <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+        <CreateSharedLink />
+        <SelectAllAssets {assetStore} {assetInteractionStore} />
+        <AssetSelectContextMenu icon={mdiPlus} title="Add">
+          <AddToAlbum />
+          <AddToAlbum shared />
+        </AssetSelectContextMenu>
+        <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+          {#if isAllUserOwned}
+            <FavoriteAction menuItem removeFavorite={isAllFavorite} />
           {/if}
-
-          {#if album.assetCount > 0}
-            <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+          <ArchiveAction menuItem />
+          <DownloadAction menuItem filename="{album.albumName}.zip" />
+          {#if isOwned || isAllUserOwned}
+            <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
+          {/if}
+          {#if isAllUserOwned}
+            <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+          {/if}
+        </AssetSelectContextMenu>
+      </AssetSelectControlBar>
+    {:else}
+      {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
+        <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(backUrl)}>
+          <svelte:fragment slot="trailing">
+            <CircleIconButton
+              title="Add Photos"
+              on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+              icon={mdiFileImagePlusOutline}
+            />
 
             {#if isOwned}
-              <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
-                <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
-                  {#if viewMode === ViewMode.ALBUM_OPTIONS}
-                    <ContextMenu {...contextMenuPosition}>
-                      {#if album.assetCount !== 0}
-                        <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
-                      {/if}
-                      <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
-                    </ContextMenu>
-                  {/if}
-                </CircleIconButton>
-              </div>
+              <CircleIconButton
+                title="Share"
+                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                icon={mdiShareVariantOutline}
+              />
+              <CircleIconButton
+                title="Delete album"
+                on:click={() => (viewMode = ViewMode.CONFIRM_DELETE)}
+                icon={mdiDeleteOutline}
+              />
             {/if}
-          {/if}
 
-          {#if isCreatingSharedAlbum && album.sharedUsers.length === 0}
-            <Button
-              size="sm"
-              rounded="lg"
-              disabled={album.assetCount == 0}
-              on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-            >
-              Share
-            </Button>
-          {/if}
-        </svelte:fragment>
-      </ControlAppBar>
-    {/if}
-
-    {#if viewMode === ViewMode.SELECT_ASSETS}
-      <ControlAppBar on:close-button-click={handleCloseSelectAssets}>
-        <svelte:fragment slot="leading">
-          <p class="text-lg dark:text-immich-dark-fg">
-            {#if $timelineSelected.size == 0}
-              Add to album
-            {:else}
-              {$timelineSelected.size.toLocaleString($locale)} selected
-            {/if}
-          </p>
-        </svelte:fragment>
-
-        <svelte:fragment slot="trailing">
-          <button
-            on:click={handleSelectFromComputer}
-            class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
-          >
-            Select from computer
-          </button>
-          <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}>Done</Button
-          >
-        </svelte:fragment>
-      </ControlAppBar>
-    {/if}
-
-    {#if viewMode === ViewMode.SELECT_THUMBNAIL}
-      <ControlAppBar on:close-button-click={() => (viewMode = ViewMode.VIEW)}>
-        <svelte:fragment slot="leading">Select Album Cover</svelte:fragment>
-      </ControlAppBar>
-    {/if}
-  {/if}
-</header>
-
-<main
-  class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
->
-  {#if viewMode === ViewMode.SELECT_ASSETS}
-    <AssetGrid
-      user={data.user}
-      assetStore={timelineStore}
-      assetInteractionStore={timelineInteractionStore}
-      isSelectionMode={true}
-    />
-  {:else}
-    <AssetGrid
-      {album}
-      user={data.user}
-      {assetStore}
-      {assetInteractionStore}
-      isShared={album.sharedUsers.length > 0}
-      isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
-      singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
-      on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
-      on:escape={handleEscape}
-    >
-      {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
-        <!-- ALBUM TITLE -->
-        <section class="pt-24">
-          <input
-            on:keydown={(e) => e.key == 'Enter' && titleInput.blur()}
-            on:blur={handleUpdateName}
-            class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
-              ? 'hover:border-gray-400'
-              : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
-            type="text"
-            bind:value={album.albumName}
-            disabled={!isOwned}
-            bind:this={titleInput}
-            title="Edit Title"
-          />
-
-          <!-- ALBUM SUMMARY -->
-          {#if album.assetCount > 0}
-            <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
-              <p class="">{getDateRange()}</p>
-              <p>·</p>
-              <p>{album.assetCount} items</p>
-            </span>
-          {/if}
-
-          <!-- ALBUM SHARING -->
-          {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
-            <div class="my-6 flex gap-x-1">
-              <!-- link -->
-              {#if album.hasSharedLink && isOwned}
-                <CircleIconButton
-                  backgroundColor="#d3d3d3"
-                  forceDark
-                  size="20"
-                  icon={mdiLink}
-                  on:click={() => (viewMode = ViewMode.LINK_SHARING)}
-                />
-              {/if}
-
-              <!-- owner -->
-              <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                <UserAvatar user={album.owner} size="md" autoColor />
-              </button>
-
-              <!-- users -->
-              {#each album.sharedUsers as user (user.id)}
-                <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                  <UserAvatar {user} size="md" autoColor />
-                </button>
-              {/each}
+            {#if album.assetCount > 0}
+              <CircleIconButton title="Download" on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
-                <CircleIconButton
-                  backgroundColor="#d3d3d3"
-                  forceDark
-                  size="20"
-                  icon={mdiPlus}
-                  on:click={() => (viewMode = ViewMode.SELECT_USERS)}
-                  title="Add more users"
-                />
+                <div use:clickOutside on:outclick={() => (viewMode = ViewMode.VIEW)}>
+                  <CircleIconButton title="Album options" on:click={handleOpenAlbumOptions} icon={mdiDotsVertical}>
+                    {#if viewMode === ViewMode.ALBUM_OPTIONS}
+                      <ContextMenu {...contextMenuPosition}>
+                        {#if album.assetCount !== 0}
+                          <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
+                        {/if}
+                        <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
+                      </ContextMenu>
+                    {/if}
+                  </CircleIconButton>
+                </div>
               {/if}
-            </div>
-          {/if}
+            {/if}
 
-          <!-- ALBUM DESCRIPTION -->
-          {#if isOwned || album.description}
-            <button
-              class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
-              on:click={() => (isEditingDescription = true)}
-              class:hover:border-gray-400={isOwned}
-              disabled={!isOwned}
-              title="Edit description"
-            >
-              {album.description || 'Add description'}
-            </button>
-          {/if}
-        </section>
+            {#if isCreatingSharedAlbum && album.sharedUsers.length === 0}
+              <Button
+                size="sm"
+                rounded="lg"
+                disabled={album.assetCount == 0}
+                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+              >
+                Share
+              </Button>
+            {/if}
+          </svelte:fragment>
+        </ControlAppBar>
       {/if}
 
-      {#if album.assetCount === 0}
-        <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
-          <div class="w-[300px]">
-            <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+      {#if viewMode === ViewMode.SELECT_ASSETS}
+        <ControlAppBar on:close-button-click={handleCloseSelectAssets}>
+          <svelte:fragment slot="leading">
+            <p class="text-lg dark:text-immich-dark-fg">
+              {#if $timelineSelected.size === 0}
+                Add to album
+              {:else}
+                {$timelineSelected.size.toLocaleString($locale)} selected
+              {/if}
+            </p>
+          </svelte:fragment>
+
+          <svelte:fragment slot="trailing">
             <button
-              on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
-              class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+              on:click={handleSelectFromComputer}
+              class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
-              <span class="text-text-immich-primary dark:text-immich-dark-primary"
-                ><Icon path={mdiPlus} size="24" />
-              </span>
-              <span class="text-lg">Select photos</span>
+              Select from computer
             </button>
-          </div>
-        </section>
+            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
+              >Done</Button
+            >
+          </svelte:fragment>
+        </ControlAppBar>
       {/if}
-    </AssetGrid>
+
+      {#if viewMode === ViewMode.SELECT_THUMBNAIL}
+        <ControlAppBar on:close-button-click={() => (viewMode = ViewMode.VIEW)}>
+          <svelte:fragment slot="leading">Select Album Cover</svelte:fragment>
+        </ControlAppBar>
+      {/if}
+    {/if}
+
+    <main
+      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
+      style={`width:${assetGridWidth}px`}
+    >
+      {#if viewMode === ViewMode.SELECT_ASSETS}
+        <AssetGrid
+          user={data.user}
+          assetStore={timelineStore}
+          assetInteractionStore={timelineInteractionStore}
+          isSelectionMode={true}
+        />
+      {:else}
+        <AssetGrid
+          {album}
+          user={data.user}
+          {assetStore}
+          {assetInteractionStore}
+          isShared={album.sharedUsers.length > 0}
+          isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
+          singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
+          on:select={({ detail: asset }) => handleUpdateThumbnail(asset.id)}
+          on:escape={handleEscape}
+        >
+          {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
+            <!-- ALBUM TITLE -->
+            <section class="pt-24">
+              <input
+                on:keydown={(e) => e.key === 'Enter' && titleInput.blur()}
+                on:blur={handleUpdateName}
+                class="w-[99%] border-b-2 border-transparent text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
+                  ? 'hover:border-gray-400'
+                  : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"
+                type="text"
+                bind:value={album.albumName}
+                disabled={!isOwned}
+                bind:this={titleInput}
+                title="Edit Title"
+              />
+
+              <!-- ALBUM SUMMARY -->
+              {#if album.assetCount > 0}
+                <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
+                  <p class="">{getDateRange()}</p>
+                  <p>·</p>
+                  <p>{album.assetCount} items</p>
+                </span>
+              {/if}
+
+              <!-- ALBUM SHARING -->
+              {#if album.sharedUsers.length > 0 || (album.hasSharedLink && isOwned)}
+                <div class="my-6 flex gap-x-1">
+                  <!-- link -->
+                  {#if album.hasSharedLink && isOwned}
+                    <CircleIconButton
+                      backgroundColor="#d3d3d3"
+                      forceDark
+                      size="20"
+                      icon={mdiLink}
+                      on:click={() => (viewMode = ViewMode.LINK_SHARING)}
+                    />
+                  {/if}
+
+                  <!-- owner -->
+                  <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <UserAvatar user={album.owner} size="md" autoColor />
+                  </button>
+
+                  <!-- users -->
+                  {#each album.sharedUsers as user (user.id)}
+                    <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <UserAvatar {user} size="md" autoColor />
+                    </button>
+                  {/each}
+
+                  {#if isOwned}
+                    <CircleIconButton
+                      backgroundColor="#d3d3d3"
+                      forceDark
+                      size="20"
+                      icon={mdiPlus}
+                      on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                      title="Add more users"
+                    />
+                  {/if}
+                </div>
+              {/if}
+
+              <!-- ALBUM DESCRIPTION -->
+              {#if isOwned || album.description}
+                <button
+                  class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
+                  on:click={() => (isEditingDescription = true)}
+                  class:hover:border-gray-400={isOwned}
+                  disabled={!isOwned}
+                  title="Edit description"
+                >
+                  {album.description || 'Add description'}
+                </button>
+              {/if}
+            </section>
+          {/if}
+
+          {#if album.assetCount === 0}
+            <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
+              <div class="w-[300px]">
+                <p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
+                <button
+                  on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                  class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                >
+                  <span class="text-text-immich-primary dark:text-immich-dark-primary"
+                    ><Icon path={mdiPlus} size="24" />
+                  </span>
+                  <span class="text-lg">Select photos</span>
+                </button>
+              </div>
+            </section>
+          {/if}
+        </AssetGrid>
+      {/if}
+
+      {#if album.sharedUsers.length > 0 && !$showAssetViewer}
+        <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
+          <ActivityStatus
+            {isLiked}
+            numberOfComments={$numberOfComments}
+            {isShowActivity}
+            on:favorite={handleFavorite}
+            on:openActivityTab={handleOpenAndCloseActivityTab}
+          />
+        </div>
+      {/if}
+    </main>
+  </div>
+  {#if album.sharedUsers.length > 0 && album && isShowActivity && user && !$showAssetViewer}
+    <div class="flex">
+      <div
+        transition:fly={{ duration: 150 }}
+        id="activity-panel"
+        class="z-[1002] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+        translate="yes"
+      >
+        <ActivityViewer
+          {user}
+          albumOwnerId={album.ownerId}
+          albumId={album.id}
+          bind:reactions
+          on:addComment={() => updateNumberOfComments(1)}
+          on:deleteComment={() => updateNumberOfComments(-1)}
+          on:deleteLike={() => (isLiked = null)}
+          on:close={handleOpenAndCloseActivityTab}
+        />
+      </div>
+    </div>
   {/if}
-</main>
-
+</div>
 {#if viewMode === ViewMode.SELECT_USERS}
   <UserSelectionModal
     {album}
