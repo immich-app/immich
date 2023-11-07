@@ -38,6 +38,7 @@
   export let albumId: string;
   export let assetType: AssetTypeEnum | undefined = undefined;
   export let albumOwnerId: string;
+  export let disabled: boolean;
 
   let textArea: HTMLTextAreaElement;
   let innerHeight: number;
@@ -280,12 +281,15 @@
         <form class="flex w-full max-h-56 gap-1" on:submit|preventDefault={() => handleSendComment()}>
           <div class="flex w-full items-center gap-4">
             <textarea
+              {disabled}
               bind:this={textArea}
               bind:value={message}
-              placeholder="Say something"
+              placeholder={disabled ? 'Comments are disabled' : 'Say something'}
               on:input={autoGrow}
               on:keypress={handleEnter}
-              class="h-[18px] w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
+              class="h-[18px] {disabled
+                ? 'cursor-not-allowed'
+                : ''} w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
             />
           </div>
           {#if isSendingMessage}

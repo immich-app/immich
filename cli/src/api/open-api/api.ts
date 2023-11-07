@@ -333,6 +333,12 @@ export interface AlbumResponseDto {
     'id': string;
     /**
      * 
+     * @type {boolean}
+     * @memberof AlbumResponseDto
+     */
+    'isActivityEnabled': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof AlbumResponseDto
      */
@@ -4160,6 +4166,12 @@ export interface UpdateAlbumDto {
      * @memberof UpdateAlbumDto
      */
     'description'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateAlbumDto
+     */
+    'isActivityEnabled'?: boolean;
 }
 /**
  * 

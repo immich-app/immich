@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool isActivityEnabled
+    test('to test the property `isActivityEnabled`', () async {
+      // TODO
+    });
+
 
   });
 

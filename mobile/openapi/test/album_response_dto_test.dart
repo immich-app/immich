@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // bool isActivityEnabled
+    test('to test the property `isActivityEnabled`', () async {
+      // TODO
+    });
+
     // DateTime lastModifiedAssetTimestamp
     test('to test the property `lastModifiedAssetTimestamp`', () async {
       // TODO

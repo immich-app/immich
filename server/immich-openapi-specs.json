@@ -5894,6 +5894,9 @@
           "id": {
             "type": "string"
           },
+          "isActivityEnabled": {
+            "type": "boolean"
+          },
           "lastModifiedAssetTimestamp": {
             "format": "date-time",
             "type": "string"
@@ -5935,7 +5938,8 @@
           "sharedUsers",
           "hasSharedLink",
           "assets",
-          "owner"
+          "owner",
+          "isActivityEnabled"
         ],
         "type": "object"
       },
@@ -8910,6 +8914,9 @@
           },
           "description": {
             "type": "string"
+          },
+          "isActivityEnabled": {
+            "type": "boolean"
           }
         },
         "type": "object"
