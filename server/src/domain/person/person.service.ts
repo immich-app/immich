@@ -268,6 +268,11 @@ export class PersonService {
       }
     }
 
+    await this.assetRepository.upsertJobStatus({
+      assetId: asset.id,
+      facesRecognizedAt: new Date(),
+    });
+
     return true;
   }
 
