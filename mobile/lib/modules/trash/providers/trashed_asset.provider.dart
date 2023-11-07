@@ -37,6 +37,7 @@ class TrashNotifier extends StateNotifier<bool> {
           .remoteIdProperty()
           .findAll();
 
+      // TODO: handle local asset removal on emptyTrash
       _ref
           .read(syncServiceProvider)
           .handleRemoteAssetRemoval(idsToRemove.cast<String>().toList());
