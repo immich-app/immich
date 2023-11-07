@@ -34,7 +34,7 @@ function HomepageHeader() {
           </Link>
         </div>
 
-        <img src="/img/immich-screenshots.png" alt="logo" />
+        <img src="/img/immich-screenshots.png" alt="screenshots" width={'85%'} />
 
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-4 gap-1">
           <div className="h-24">
