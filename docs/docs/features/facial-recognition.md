@@ -1,6 +1,7 @@
 # Facial Recognition
 
 ## Overview
+
 Immich recognizes faces in your photos and videos and groups them together. You can then assign names to the faces and search for them.
 
 The list of people is shown in the Explore page.
@@ -16,6 +17,7 @@ The asset detail view will also show the faces that are recognized in the asset.
 <img src={require('./img/facial-recognition-3.png').default} title='Facial Recognition 3' />
 
 ## Actions
+
 Additional actions you can do with a detected person are:
 
 - Change the feature face photo of the person
