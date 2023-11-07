@@ -222,10 +222,13 @@ the `_FILE` variable should be set to the path of a file containing the variable
 |    `DB_USERNAME`    |      `DB_USERNAME_FILE`<sup>\*1</sup>       |
 |    `DB_PASSWORD`    |      `DB_PASSWORD_FILE`<sup>\*1</sup>       |
 |  `REDIS_PASSWORD`   |     `REDIS_PASSWORD_FILE`<sup>\*2</sup>     |
-| `TYPESENSE_API_KEY` |          `TYPESENSE_API_KEY_FILE`           |
+| `TYPESENSE_API_KEY` |   `TYPESENSE_API_KEY_FILE`<sup>\*3</sup>    |
 
 \*1: See the [official documentation](https://github.com/docker-library/docs/tree/master/postgres#docker-secrets) for
 details on how to use Docker Secrets in the Postgres image.
 
 \*2: See [this comment](https://github.com/docker-library/redis/issues/46#issuecomment-335326234) for an example of how
-to use use a Docker secret for the password in the Redis container.
+to use a Docker secret for the password in the Redis container.
+
+\*3: See [this comment](https://github.com/immich-app/immich/pull/4888#issuecomment-1798791176) for an example of how
+to use a Docker secret for the api key in the Typesense container.
