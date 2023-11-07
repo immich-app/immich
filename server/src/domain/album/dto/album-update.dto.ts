@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsBoolean, IsString } from 'class-validator';
 import { Optional, ValidateUUID } from '../../domain.util';
 
 export class UpdateAlbumDto {
@@ -12,4 +12,8 @@ export class UpdateAlbumDto {
 
   @ValidateUUID({ optional: true })
   albumThumbnailAssetId?: string;
+
+  @Optional()
+  @IsBoolean()
+  isActivityEnabled?: boolean;
 }

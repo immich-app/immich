@@ -915,6 +915,22 @@
         "operationId": "getAllAssets",
         "parameters": [
           {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
             "name": "userId",
             "required": false,
             "in": "query",
@@ -940,15 +956,16 @@
             }
           },
           {
-            "name": "skip",
+            "name": "updatedAfter",
             "required": false,
             "in": "query",
             "schema": {
-              "type": "number"
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
-            "name": "updatedAfter",
+            "name": "updatedBefore",
             "required": false,
             "in": "query",
             "schema": {
@@ -5918,6 +5935,9 @@
           "id": {
             "type": "string"
           },
+          "isActivityEnabled": {
+            "type": "boolean"
+          },
           "lastModifiedAssetTimestamp": {
             "format": "date-time",
             "type": "string"
@@ -5959,7 +5979,8 @@
           "sharedUsers",
           "hasSharedLink",
           "assets",
-          "owner"
+          "owner",
+          "isActivityEnabled"
         ],
         "type": "object"
       },
@@ -6696,8 +6717,7 @@
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
-          "fileModifiedAt",
-          "isFavorite"
+          "fileModifiedAt"
         ],
         "type": "object"
       },
@@ -7184,8 +7204,7 @@
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
-          "fileModifiedAt",
-          "isFavorite"
+          "fileModifiedAt"
         ],
         "type": "object"
       },
@@ -8943,6 +8962,9 @@
           },
           "description": {
             "type": "string"
+          },
+          "isActivityEnabled": {
+            "type": "boolean"
           }
         },
         "type": "object"

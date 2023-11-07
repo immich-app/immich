@@ -1,8 +1,8 @@
 import { AssetCreate } from '@app/domain';
 import { AssetEntity } from '@app/infra/entities';
+import OptionalBetween from '@app/infra/utils/optional-between.util';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan } from 'typeorm';
 import { In } from 'typeorm/find-options/operator/In';
 import { Repository } from 'typeorm/repository/Repository';
 import { AssetSearchDto } from './dto/asset-search.dto';
@@ -129,7 +129,7 @@ export class AssetRepository implements IAssetRepository {
         isVisible: true,
         isFavorite: dto.isFavorite,
         isArchived: dto.isArchived,
-        updatedAt: dto.updatedAfter ? MoreThan(dto.updatedAfter) : undefined,
+        updatedAt: OptionalBetween(dto.updatedAfter, dto.updatedBefore),
       },
       relations: {
         exifInfo: true,
@@ -137,6 +137,7 @@ export class AssetRepository implements IAssetRepository {
         stack: true,
       },
       skip: dto.skip || 0,
+      take: dto.take,
       order: {
         fileCreatedAt: 'DESC',
       },

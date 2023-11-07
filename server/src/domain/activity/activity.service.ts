@@ -58,6 +58,7 @@ export class ActivityService {
       delete dto.comment;
       [activity] = await this.repository.search({
         ...common,
+        isGlobal: !dto.assetId,
         isLiked: true,
       });
       duplicate = !!activity;

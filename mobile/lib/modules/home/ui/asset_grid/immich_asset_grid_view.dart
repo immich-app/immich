@@ -39,6 +39,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final bool showDragScroll;
   final bool showStack;
   final bool isOwner;
+  final String? sharedAlbumId;
 
   const ImmichAssetGridView({
     super.key,
@@ -60,6 +61,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.showDragScroll = true,
     this.showStack = false,
     this.isOwner = true,
+    this.sharedAlbumId,
   });
 
   @override
@@ -141,6 +143,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       heroOffset: widget.heroOffset,
       showStack: widget.showStack,
       isOwner: widget.isOwner,
+      sharedAlbumId: widget.sharedAlbumId,
     );
   }
 
