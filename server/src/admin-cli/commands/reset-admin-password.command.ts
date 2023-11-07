@@ -15,12 +15,12 @@ export class ResetAdminPasswordCommand extends CommandRunner {
 
   async run(): Promise<void> {
     const ask = (admin: UserResponseDto) => {
-      const { id, oauthId, email, firstName, lastName } = admin;
+      const { id, oauthId, email, fullName } = admin;
       console.log(`Found Admin:
 - ID=${id}
 - OAuth ID=${oauthId}
 - Email=${email}
-- Name=${firstName} ${lastName}`);
+- Name=${fullName}`);
 
       return this.inquirer.ask<{ password: string }>('prompt-password', undefined).then(({ password }) => password);
     };

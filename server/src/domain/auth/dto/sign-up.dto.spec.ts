@@ -7,23 +7,20 @@ describe('SignUpDto', () => {
     const dto = plainToInstance(SignUpDto, {
       email: '',
       password: '',
-      firstName: '',
-      lastName: '',
+      fullName: '',
     });
     const errors = validateSync(dto);
-    expect(errors).toHaveLength(4);
+    expect(errors).toHaveLength(3);
     expect(errors[0].property).toEqual('email');
     expect(errors[1].property).toEqual('password');
-    expect(errors[2].property).toEqual('firstName');
-    expect(errors[3].property).toEqual('lastName');
+    expect(errors[2].property).toEqual('fullName');
   });
 
   it('should require a valid email', () => {
     const dto = plainToInstance(SignUpDto, {
       email: 'immich.com',
       password: 'password',
-      firstName: 'first name',
-      lastName: 'last name',
+      fullName: 'full name',
     });
     const errors = validateSync(dto);
     expect(errors).toHaveLength(1);
@@ -36,8 +33,7 @@ describe('SignUpDto', () => {
     const dto = plainToInstance(SignUpDto, {
       email: someEmail,
       password: 'password',
-      firstName: 'first name',
-      lastName: 'last name',
+      fullName: 'full name',
     });
     const errors = validateSync(dto);
     expect(errors).toHaveLength(0);
@@ -48,8 +44,7 @@ describe('SignUpDto', () => {
     const dto = plainToInstance(SignUpDto, {
       email: 'TeSt@ImMiCh.com',
       password: 'password',
-      firstName: 'first name',
-      lastName: 'last name',
+      fullName: 'full name',
     });
     const errors = validateSync(dto);
     expect(errors).toHaveLength(0);

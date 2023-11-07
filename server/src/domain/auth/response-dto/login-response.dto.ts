@@ -12,10 +12,7 @@ export class LoginResponseDto {
   userEmail!: string;
 
   @ApiResponseProperty()
-  firstName!: string;
-
-  @ApiResponseProperty()
-  lastName!: string;
+  fullName!: string;
 
   @ApiResponseProperty()
   profileImagePath!: string;
@@ -32,8 +29,7 @@ export function mapLoginResponse(entity: UserEntity, accessToken: string): Login
     accessToken: accessToken,
     userId: entity.id,
     userEmail: entity.email,
-    firstName: entity.firstName,
-    lastName: entity.lastName,
+    fullName: entity.fullName,
     isAdmin: entity.isAdmin,
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,

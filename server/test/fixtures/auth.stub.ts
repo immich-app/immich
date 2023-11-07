@@ -1,8 +1,7 @@
 import { AuthUserDto } from '@app/domain';
 
 export const adminSignupStub = {
-  firstName: 'Immich',
-  lastName: 'Admin',
+  fullName: 'Immich Admin',
   email: 'admin@immich.app',
   password: 'Password123',
 };
@@ -15,8 +14,7 @@ export const userSignupStub = {
 export const signupResponseStub = {
   id: expect.any(String),
   email: 'admin@immich.app',
-  firstName: 'Immich',
-  lastName: 'Admin',
+  fullName: 'Immich Admin',
   createdAt: expect.any(String),
 };
 
@@ -111,9 +109,8 @@ export const loginResponseStub = {
   admin: {
     response: {
       accessToken: expect.any(String),
-      firstName: 'Immich',
+      fullName: 'Immich Admin',
       isAdmin: true,
-      lastName: 'Admin',
       profileImagePath: '',
       shouldChangePassword: true,
       userEmail: 'admin@immich.app',
@@ -125,8 +122,7 @@ export const loginResponseStub = {
       accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'user-id',
       userEmail: 'immich@test.com',
-      firstName: 'immich_first_name',
-      lastName: 'immich_last_name',
+      fullName: 'immich_full_name',
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,
@@ -141,8 +137,7 @@ export const loginResponseStub = {
       accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'user-id',
       userEmail: 'immich@test.com',
-      firstName: 'immich_first_name',
-      lastName: 'immich_last_name',
+      fullName: 'immich_full_name',
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,
@@ -157,8 +152,7 @@ export const loginResponseStub = {
       accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'user-id',
       userEmail: 'immich@test.com',
-      firstName: 'immich_first_name',
-      lastName: 'immich_last_name',
+      fullName: 'immich_full_name',
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,

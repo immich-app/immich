@@ -5821,21 +5821,17 @@
           "email": {
             "type": "string"
           },
-          "firstName": {
+          "fullName": {
             "type": "string"
           },
           "id": {
-            "type": "string"
-          },
-          "lastName": {
             "type": "string"
           }
         },
         "required": [
           "id",
           "email",
-          "firstName",
-          "lastName",
+          "fullName",
           "createdAt"
         ],
         "type": "object"
@@ -6756,10 +6752,7 @@
             "nullable": true,
             "type": "string"
           },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
+          "fullName": {
             "type": "string"
           },
           "memoriesEnabled": {
@@ -6776,8 +6769,7 @@
         "required": [
           "email",
           "password",
-          "firstName",
-          "lastName"
+          "fullName"
         ],
         "type": "object"
       },
@@ -7376,17 +7368,13 @@
             "readOnly": true,
             "type": "string"
           },
-          "firstName": {
+          "fullName": {
             "readOnly": true,
             "type": "string"
           },
           "isAdmin": {
             "readOnly": true,
             "type": "boolean"
-          },
-          "lastName": {
-            "readOnly": true,
-            "type": "string"
           },
           "profileImagePath": {
             "readOnly": true,
@@ -7409,8 +7397,7 @@
           "accessToken",
           "userId",
           "userEmail",
-          "firstName",
-          "lastName",
+          "fullName",
           "profileImagePath",
           "isAdmin",
           "shouldChangePassword"
@@ -8303,12 +8290,8 @@
             "example": "testuser@email.com",
             "type": "string"
           },
-          "firstName": {
+          "fullName": {
             "example": "Admin",
-            "type": "string"
-          },
-          "lastName": {
-            "example": "Doe",
             "type": "string"
           },
           "password": {
@@ -8319,8 +8302,7 @@
         "required": [
           "email",
           "password",
-          "firstName",
-          "lastName"
+          "fullName"
         ],
         "type": "object"
       },
@@ -8984,7 +8966,7 @@
           "externalPath": {
             "type": "string"
           },
-          "firstName": {
+          "fullName": {
             "type": "string"
           },
           "id": {
@@ -8993,9 +8975,6 @@
           },
           "isAdmin": {
             "type": "boolean"
-          },
-          "lastName": {
-            "type": "string"
           },
           "memoriesEnabled": {
             "type": "boolean"
@@ -9024,13 +9003,10 @@
             "format": "int64",
             "type": "integer"
           },
-          "userFirstName": {
+          "userFullName": {
             "type": "string"
           },
           "userId": {
-            "type": "string"
-          },
-          "userLastName": {
             "type": "string"
           },
           "videos": {
@@ -9039,8 +9015,7 @@
         },
         "required": [
           "userId",
-          "userFirstName",
-          "userLastName",
+          "userFullName",
           "photos",
           "videos",
           "usage"
@@ -9052,13 +9027,10 @@
           "email": {
             "type": "string"
           },
-          "firstName": {
+          "fullName": {
             "type": "string"
           },
           "id": {
-            "type": "string"
-          },
-          "lastName": {
             "type": "string"
           },
           "profileImagePath": {
@@ -9067,8 +9039,7 @@
         },
         "required": [
           "id",
-          "firstName",
-          "lastName",
+          "fullName",
           "email",
           "profileImagePath"
         ],
@@ -9092,7 +9063,7 @@
             "nullable": true,
             "type": "string"
           },
-          "firstName": {
+          "fullName": {
             "type": "string"
           },
           "id": {
@@ -9100,9 +9071,6 @@
           },
           "isAdmin": {
             "type": "boolean"
-          },
-          "lastName": {
-            "type": "string"
           },
           "memoriesEnabled": {
             "type": "boolean"
@@ -9127,8 +9095,7 @@
         },
         "required": [
           "id",
-          "firstName",
-          "lastName",
+          "fullName",
           "email",
           "profileImagePath",
           "storageLabel",

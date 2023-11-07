@@ -99,8 +99,7 @@ export class ServerInfoService {
     for (const user of userStats) {
       const usage = new UsageByUserDto();
       usage.userId = user.userId;
-      usage.userFirstName = user.userFirstName;
-      usage.userLastName = user.userLastName;
+      usage.userFullName = user.userFullName;
       usage.photos = user.photos;
       usage.videos = user.videos;
       usage.usage = user.usage;
