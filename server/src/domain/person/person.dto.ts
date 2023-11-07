@@ -73,6 +73,15 @@ export class PersonResponseDto {
   isHidden!: boolean;
 }
 
+export class ExpandedPersonResponseDto extends PersonResponseDto{
+  x1!: number;
+  x2!: number;
+  y1!: number;
+  y2!: number;
+  imageWidth!: number;
+  imageHeight!: number;
+}
+
 export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   assets!: number;
@@ -102,6 +111,36 @@ export function mapFace(face: AssetFaceEntity): PersonResponseDto | null {
   if (face.person) {
     return mapPerson(face.person);
   }
+
+  return null;
+}
+
+export function mapExpandedPerson(face: AssetFaceEntity): ExpandedPersonResponseDto | null {
+  const {
+    boundingBoxX1: x1,
+    boundingBoxX2: x2,
+    boundingBoxY1: y1,
+    boundingBoxY2: y2,
+    imageWidth,
+    imageHeight,
+  } = face;
+  
+  if (face.person) {
+    const personDTO = mapPerson(face.person);
+    return {
+      id: personDTO.id,
+      name: personDTO.name,
+      birthDate: personDTO.birthDate,
+      thumbnailPath: personDTO.thumbnailPath,
+      isHidden: personDTO.isHidden,
+      x1,
+      x2,
+      y1,
+      y2,
+      imageWidth,
+      imageHeight,
+    }
+  } 
 
   return null;
 }

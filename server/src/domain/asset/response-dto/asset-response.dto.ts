@@ -1,6 +1,6 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { PersonResponseDto, mapFace } from '../../person/person.dto';
+import { ExpandedPersonResponseDto, PersonResponseDto, mapExpandedPerson, mapFace } from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
@@ -97,15 +97,15 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: entity.faces
-      ?.map(mapFace)
-      .filter((person): person is PersonResponseDto => person !== null && !person.isHidden)
+      ?.map(mapExpandedPerson)
+      .filter((person): person is ExpandedPersonResponseDto => person !== null && !person.isHidden)
       .reduce((people, person) => {
         const existingPerson = people.find((p) => p.id === person.id);
         if (!existingPerson) {
           people.push(person);
         }
         return people;
-      }, [] as PersonResponseDto[]),
+      }, [] as ExpandedPersonResponseDto[]),
     checksum: entity.checksum.toString('base64'),
     stackParentId: entity.stackParentId,
     stack: withStack ? entity.stack?.map((a) => mapAsset(a, { stripMetadata })) ?? undefined : undefined,
