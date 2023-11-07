@@ -32,4 +32,9 @@ if [ "$REDIS_PASSWORD_FILE" ]; then
 	unset REDIS_PASSWORD_FILE
 fi
 
+if [ "$TYPESENSE_API_KEY_FILE" ]; then
+	export TYPESENSE_API_KEY=$(cat $TYPESENSE_API_KEY_FILE)
+	unset TYPESENSE_API_KEY_FILE
+fi
+
 exec node dist/main $@
