@@ -212,7 +212,6 @@ Class | Method | HTTP request | Description
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
- - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
