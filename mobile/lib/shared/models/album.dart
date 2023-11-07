@@ -22,6 +22,7 @@ class Album {
     this.endDate,
     this.lastModifiedAssetTimestamp,
     required this.shared,
+    required this.activityEnabled,
   });
 
   Id id = Isar.autoIncrement;
@@ -36,6 +37,7 @@ class Album {
   DateTime? endDate;
   DateTime? lastModifiedAssetTimestamp;
   bool shared;
+  bool activityEnabled;
   final IsarLink<User> owner = IsarLink<User>();
   final IsarLink<Asset> thumbnail = IsarLink<Asset>();
   final IsarLinks<User> sharedUsers = IsarLinks<User>();
@@ -105,6 +107,7 @@ class Album {
         modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
         lastModifiedAssetTimestampIsSetAndEqual &&
         shared == other.shared &&
+        activityEnabled == other.activityEnabled &&
         owner.value == other.owner.value &&
         thumbnail.value == other.thumbnail.value &&
         sharedUsers.length == other.sharedUsers.length &&
@@ -122,6 +125,7 @@ class Album {
       modifiedAt.hashCode ^
       lastModifiedAssetTimestamp.hashCode ^
       shared.hashCode ^
+      activityEnabled.hashCode ^
       owner.value.hashCode ^
       thumbnail.value.hashCode ^
       sharedUsers.length.hashCode ^
@@ -133,6 +137,7 @@ class Album {
       createdAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
       modifiedAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
       shared: false,
+      activityEnabled: false,
     );
     a.owner.value = Store.get(StoreKey.currentUser);
     a.localId = ape.id;
@@ -150,6 +155,7 @@ class Album {
       shared: dto.shared,
       startDate: dto.startDate,
       endDate: dto.endDate,
+      activityEnabled: dto.isActivityEnabled,
     );
     a.owner.value = await db.users.getById(dto.ownerId);
     if (dto.albumThumbnailAssetId != null) {

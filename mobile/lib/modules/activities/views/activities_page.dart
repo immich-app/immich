@@ -19,12 +19,14 @@ class ActivitiesPage extends HookConsumerWidget {
   final bool withAssetThumbs;
   final String appBarTitle;
   final bool isOwner;
+  final bool isReadOnly;
   const ActivitiesPage(
     this.albumId, {
     this.appBarTitle = "",
     this.assetId,
     this.withAssetThumbs = true,
     this.isOwner = false,
+    this.isReadOnly = false,
     super.key,
   });
 
@@ -45,6 +47,7 @@ class ActivitiesPage extends HookConsumerWidget {
       },
       [],
     );
+
     buildTitleWithTimestamp(Activity activity, {bool leftAlign = true}) {
       final textColor = Theme.of(context).brightness == Brightness.dark
           ? Colors.white
@@ -116,6 +119,7 @@ class ActivitiesPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(bottom: 10),
         child: TextField(
           controller: inputController,
+          enabled: !isReadOnly,
           focusNode: inputFocusNode,
           textInputAction: TextInputAction.send,
           autofocus: false,
