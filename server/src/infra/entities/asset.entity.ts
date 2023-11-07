@@ -160,7 +160,7 @@ export class AssetEntity {
   @OneToMany(() => AssetEntity, (asset) => asset.stackParent)
   stack?: AssetEntity[];
 
-  @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset)
+  @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
   jobStatus?: AssetJobStatusEntity;
 }
 
