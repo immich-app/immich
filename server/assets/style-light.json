@@ -1,6 +1,7 @@
 {
   "version": 8,
   "name": "Immich Map",
+  "metadata": { "maputnik:renderer": "mbgljs" },
   "sources": {
     "immich-map": {
       "type": "vector",
@@ -13,7 +14,7 @@
     {
       "id": "background",
       "type": "background",
-      "paint": { "background-color": "rgb(239,239,239)" }
+      "paint": { "background-color": "rgba(232, 244, 237, 1)" }
     },
     {
       "id": "park",
@@ -180,7 +181,7 @@
       "source": "immich-map",
       "source-layer": "water",
       "filter": ["all", ["!=", "brunnel", "tunnel"]],
-      "paint": { "fill-color": "rgb(158,189,255)" }
+      "paint": { "fill-color": "rgba(148, 209, 236, 0.66)" }
     },
     {
       "id": "landcover_sand",
@@ -1494,6 +1495,13 @@
       }
     },
     {
+      "id": "boundary_state",
+      "type": "line",
+      "source": "immich-map",
+      "source-layer": "boundary",
+      "paint": { "line-color": "rgba(185, 185, 185, 0.58)" }
+    },
+    {
       "id": "boundary_3",
       "type": "line",
       "source": "immich-map",
@@ -1523,7 +1531,7 @@
       "filter": ["all", ["==", "admin_level", 2], ["!has", "claimed_by"]],
       "layout": { "line-cap": "round", "line-join": "round" },
       "paint": {
-        "line-color": "hsl(248, 1%, 41%)",
+        "line-color": "hsl(240, 50%, 60%)",
         "line-opacity": {
           "base": 1,
           "stops": [
