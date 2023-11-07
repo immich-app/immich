@@ -116,7 +116,9 @@
           handleClusterClick(event.detail.feature.properties.cluster_id, map);
         }}
       >
-        <div class="rounded-full w-[40px] h-[40px] bg-blue-200 flex justify-center items-center">
+        <div
+          class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
+        >
           {feature.properties?.point_count}
         </div>
       </MarkerLayer>
@@ -130,7 +132,7 @@
       >
         <img
           src={api.getAssetThumbnailUrl(feature.properties?.id)}
-          class="rounded-full w-[60px] h-[60px]"
+          class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150"
           alt={`Image with id ${feature.properties?.id}`}
         />
         {#if $$slots.popup}
