@@ -1,19 +1,17 @@
-FROM immich-base-image:dev as base
+FROM ghcr.io/immich-app/base-server-dev:pr-9 as builder
 
 COPY package.json package-lock.json ./
 RUN npm ci
-
-FROM immich-base-image:runtime as dev
-
-COPY --from=base /usr/src/app/node_modules ./node_modules
 COPY . .
 
-FROM dev as prod
+
+FROM builder as prod
 
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
-FROM immich-base-image:runtime
+
+FROM ghcr.io/immich-app/base-server-prod:pr-9
 
 ENV NODE_ENV=production
 
