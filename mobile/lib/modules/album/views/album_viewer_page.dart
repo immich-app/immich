@@ -232,6 +232,18 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
+    onActivitiesPressed(Album album) {
+      if (album.remoteId != null) {
+        AutoRouter.of(context).push(
+          ActivitiesRoute(
+            albumId: album.remoteId!,
+            appBarTitle: album.name,
+            isOwner: userId == album.ownerId,
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       appBar: album.when(
         data: (data) => AlbumViewerAppbar(
@@ -242,6 +254,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           selectionDisabled: disableSelection,
           onAddPhotos: onAddPhotosPressed,
           onAddUsers: onAddUsersPressed,
+          onActivities: onActivitiesPressed,
         ),
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
@@ -266,6 +279,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                 ],
               ),
               isOwner: userId == data.ownerId,
+              sharedAlbumId: data.remoteId,
             ),
           ),
         ),
