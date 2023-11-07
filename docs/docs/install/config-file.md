@@ -17,6 +17,12 @@ The default configuration looks like this:
     "targetAudioCodec": "aac",
     "targetResolution": "720",
     "maxBitrate": "0",
+    "bframes": -1,
+    "refs": 0,
+    "gopSize": 0,
+    "npl": 0,
+    "temporalAQ": false,
+    "cqMode": "auto",
     "twoPass": false,
     "transcode": "required",
     "tonemap": "hable",
@@ -44,7 +50,13 @@ The default configuration looks like this:
     "sidecar": {
       "concurrency": 5
     },
+    "library": {
+      "concurrency": 5
+    },
     "storageTemplateMigration": {
+      "concurrency": 5
+    },
+    "migration": {
       "concurrency": 5
     },
     "thumbnailGeneration": {
@@ -55,16 +67,16 @@ The default configuration looks like this:
     }
   },
   "machineLearning": {
-    "classification": {
-      "minScore": 0.7,
-      "enabled": true,
-      "modelName": "microsoft/resnet-50"
-    },
     "enabled": true,
     "url": "http://immich-machine-learning:3003",
+    "classification": {
+      "enabled": true,
+      "modelName": "microsoft/resnet-50",
+      "minScore": 0.9
+    },
     "clip": {
       "enabled": true,
-      "modelName": "ViT-B-32::openai"
+      "modelName": "ViT-B-32__openai"
     },
     "facialRecognition": {
       "enabled": true,
@@ -73,6 +85,14 @@ The default configuration looks like this:
       "maxDistance": 0.6,
       "minFaces": 1
     }
+  },
+  "map": {
+    "enabled": true,
+    "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+  },
+  "reverseGeocoding": {
+    "enabled": true,
+    "citiesFileOverride": "cities500"
   },
   "oauth": {
     "enabled": false,
@@ -96,8 +116,27 @@ The default configuration looks like this:
   "thumbnail": {
     "webpSize": 250,
     "jpegSize": 1440,
-    "quality": 90,
+    "quality": 80,
     "colorspace": "p3"
+  },
+  "newVersionCheck": {
+    "enabled": true
+  },
+  "trash": {
+    "enabled": true,
+    "days": 30
+  },
+  "theme": {
+    "customCss": ""
+  },
+  "library": {
+    "scan": {
+      "enabled": true,
+      "cronExpression": "0 0 * * *"
+    }
+  },
+  "stylesheets": {
+    "css": ""
   }
 }
 ```
