@@ -1,3 +1,7 @@
+# See:
+# - https://immich.app/docs/developer/setup
+# - https://immich.app/docs/developer/troubleshooting
+
 version: "3.8"
 
 services:
