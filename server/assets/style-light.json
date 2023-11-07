@@ -1881,6 +1881,7 @@
       "source": "immich-map",
       "source-layer": "place",
       "maxzoom": 6,
+      "minzoom": 3.5,
       "filter": ["all", ["==", "class", "state"]],
       "layout": {
         "text-field": "{name_en}",
