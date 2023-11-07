@@ -16,10 +16,7 @@ export class UserEntity {
   id!: string;
 
   @Column({ default: '' })
-  firstName!: string;
-
-  @Column({ default: '' })
-  lastName!: string;
+  fullName!: string;
 
   @Column({ default: false })
   isAdmin!: boolean;
