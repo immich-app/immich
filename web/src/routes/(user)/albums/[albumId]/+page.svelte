@@ -49,15 +49,12 @@
     mdiLink,
     mdiShareVariantOutline,
     mdiDeleteOutline,
-    mdiClose,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
 
   export let data: PageData;
