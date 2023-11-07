@@ -16,6 +16,7 @@ class CreateAlbumDto {
     required this.albumName,
     this.assetIds = const [],
     this.description,
+    this.isPrivate,
     this.sharedWithUserIds = const [],
   });
 
@@ -31,6 +32,14 @@ class CreateAlbumDto {
   ///
   String? description;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isPrivate;
+
   List<String> sharedWithUserIds;
 
   @override
@@ -38,6 +47,7 @@ class CreateAlbumDto {
      other.albumName == albumName &&
      other.assetIds == assetIds &&
      other.description == description &&
+     other.isPrivate == isPrivate &&
      other.sharedWithUserIds == sharedWithUserIds;
 
   @override
@@ -46,10 +56,11 @@ class CreateAlbumDto {
     (albumName.hashCode) +
     (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
+    (isPrivate == null ? 0 : isPrivate!.hashCode) +
     (sharedWithUserIds.hashCode);
 
   @override
-  String toString() => 'CreateAlbumDto[albumName=$albumName, assetIds=$assetIds, description=$description, sharedWithUserIds=$sharedWithUserIds]';
+  String toString() => 'CreateAlbumDto[albumName=$albumName, assetIds=$assetIds, description=$description, isPrivate=$isPrivate, sharedWithUserIds=$sharedWithUserIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -59,6 +70,11 @@ class CreateAlbumDto {
       json[r'description'] = this.description;
     } else {
     //  json[r'description'] = null;
+    }
+    if (this.isPrivate != null) {
+      json[r'isPrivate'] = this.isPrivate;
+    } else {
+    //  json[r'isPrivate'] = null;
     }
       json[r'sharedWithUserIds'] = this.sharedWithUserIds;
     return json;
@@ -77,6 +93,7 @@ class CreateAlbumDto {
             ? (json[r'assetIds'] as List).cast<String>()
             : const [],
         description: mapValueOfType<String>(json, r'description'),
+        isPrivate: mapValueOfType<bool>(json, r'isPrivate'),
         sharedWithUserIds: json[r'sharedWithUserIds'] is List
             ? (json[r'sharedWithUserIds'] as List).cast<String>()
             : const [],

@@ -31,6 +31,9 @@ export class AlbumEntity {
   @Column({ type: 'text', default: '' })
   description!: string;
 
+  @Column({ default: false })
+  isPrivate!: boolean;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 

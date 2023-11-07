@@ -1,4 +1,4 @@
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from '@app/domain';
+import { CreateUserDto, IMMICH_PRIVATE_ALBUM_ACCESS_COOKIE, UpdateUserDto, UserResponseDto } from '@app/domain';
 import request from 'supertest';
 
 export const userApi = {
@@ -46,5 +46,17 @@ export const userApi = {
     expect(body).toMatchObject({ id, deletedAt: expect.any(String) });
 
     return body as UserResponseDto;
+  },
+  validatePrivateAlbumPassword: async (server: any, accessToken: string, privateAlbumPassword: string) => {
+    const { status, headers } = await request(server)
+      .post('/user/validate-private-album-password')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ password: privateAlbumPassword });
+
+    expect(status).toBe(201);
+    expect(headers['set-cookie']).toHaveLength(1);
+    expect(headers['set-cookie'][0]).toMatch(new RegExp(`${IMMICH_PRIVATE_ALBUM_ACCESS_COOKIE}=.+; Path=/;.*`));
+
+    return decodeURIComponent(headers['set-cookie'][0].split(';')[0].split('=')[1]);
   },
 };

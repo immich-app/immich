@@ -451,4 +451,43 @@ class UserApi {
     }
     return null;
   }
+
+  /// Performs an HTTP 'POST /user/validate-private-album-password' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [ValidatePrivateAlbumPasswordDto] validatePrivateAlbumPasswordDto (required):
+  Future<Response> validatePrivateAlbumPasswordWithHttpInfo(ValidatePrivateAlbumPasswordDto validatePrivateAlbumPasswordDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/user/validate-private-album-password';
+
+    // ignore: prefer_final_locals
+    Object? postBody = validatePrivateAlbumPasswordDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [ValidatePrivateAlbumPasswordDto] validatePrivateAlbumPasswordDto (required):
+  Future<void> validatePrivateAlbumPassword(ValidatePrivateAlbumPasswordDto validatePrivateAlbumPasswordDto,) async {
+    final response = await validatePrivateAlbumPasswordWithHttpInfo(validatePrivateAlbumPasswordDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
 }

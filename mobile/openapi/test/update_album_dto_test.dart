@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // bool isPrivate
+    test('to test the property `isPrivate`', () async {
+      // TODO
+    });
+
 
   });
 

@@ -18,6 +18,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    privateAlbumPassword: '',
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -35,6 +36,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    privateAlbumPassword: 'immich_private_password',
   }),
   user2: Object.freeze<UserEntity>({
     ...authStub.user2,
@@ -52,6 +54,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    privateAlbumPassword: '',
   }),
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -69,6 +72,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    privateAlbumPassword: '',
   }),
   externalPath1: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -86,6 +90,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    privateAlbumPassword: '',
   }),
   externalPath2: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -103,6 +108,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    privateAlbumPassword: '',
   }),
   profilePath: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -120,5 +126,6 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    privateAlbumPassword: '',
   }),
 };

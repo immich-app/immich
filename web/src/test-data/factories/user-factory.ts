@@ -17,4 +17,5 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
   updatedAt: Sync.each(() => faker.date.past().toISOString()),
   memoriesEnabled: true,
   oauthId: '',
+  privateAlbumPassword: '',
 });

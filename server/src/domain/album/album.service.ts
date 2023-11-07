@@ -35,11 +35,17 @@ export class AlbumService {
   }
 
   async getCount(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
-    const [owned, shared, notShared] = await Promise.all([
+    let [owned, shared, notShared] = await Promise.all([
       this.albumRepository.getOwned(authUser.id),
       this.albumRepository.getShared(authUser.id),
       this.albumRepository.getNotShared(authUser.id),
     ]);
+
+    if (!authUser.isShowPrivateAlbum) {
+      owned = owned.filter((album) => !album.isPrivate);
+      shared = shared.filter((album) => !album.isPrivate);
+      notShared = notShared.filter((album) => !album.isPrivate);
+    }
 
     return {
       owned: owned.length,
@@ -48,7 +54,10 @@ export class AlbumService {
     };
   }
 
-  async getAll({ id: ownerId }: AuthUserDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  async getAll(
+    { id: ownerId, isShowPrivateAlbum }: AuthUserDto,
+    { assetId, shared }: GetAlbumsDto,
+  ): Promise<AlbumResponseDto[]> {
     const invalidAlbumIds = await this.albumRepository.getInvalidThumbnail();
     for (const albumId of invalidAlbumIds) {
       const newThumbnail = await this.assetRepository.getFirstAssetForAlbumId(albumId);
@@ -64,6 +73,10 @@ export class AlbumService {
       albums = await this.albumRepository.getNotShared(ownerId);
     } else {
       albums = await this.albumRepository.getOwned(ownerId);
+    }
+
+    if (!isShowPrivateAlbum) {
+      albums = albums.filter((album) => !album.isPrivate);
     }
 
     // Get asset count for each album. Then map the result to an object:
@@ -90,7 +103,13 @@ export class AlbumService {
   async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto) {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
-    return mapAlbum(await this.findOrFail(id, { withAssets: true }), !dto.withoutAssets);
+
+    const album = await this.findOrFail(id, { withAssets: true });
+    if (album.isPrivate && !authUser.isShowPrivateAlbum) {
+      throw new BadRequestException('Album not found');
+    }
+
+    return mapAlbum(album, !dto.withoutAssets);
   }
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
@@ -105,6 +124,7 @@ export class AlbumService {
       ownerId: authUser.id,
       albumName: dto.albumName,
       description: dto.description,
+      isPrivate: dto.isPrivate,
       sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value }) as UserEntity) ?? [],
       assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
       albumThumbnailAssetId: dto.assetIds?.[0] || null,
@@ -129,6 +149,7 @@ export class AlbumService {
       id: album.id,
       albumName: dto.albumName,
       description: dto.description,
+      isPrivate: dto.isPrivate,
       albumThumbnailAssetId: dto.albumThumbnailAssetId,
       isActivityEnabled: dto.isActivityEnabled,
     });

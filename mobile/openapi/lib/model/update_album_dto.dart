@@ -17,6 +17,7 @@ class UpdateAlbumDto {
     this.albumThumbnailAssetId,
     this.description,
     this.isActivityEnabled,
+    this.isPrivate,
   });
 
   ///
@@ -51,12 +52,21 @@ class UpdateAlbumDto {
   ///
   bool? isActivityEnabled;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isPrivate;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
      other.albumName == albumName &&
      other.albumThumbnailAssetId == albumThumbnailAssetId &&
      other.description == description &&
-     other.isActivityEnabled == isActivityEnabled;
+     other.isActivityEnabled == isActivityEnabled &&
+     other.isPrivate == isPrivate;
 
   @override
   int get hashCode =>
@@ -64,10 +74,11 @@ class UpdateAlbumDto {
     (albumName == null ? 0 : albumName!.hashCode) +
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode);
+    (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode) +
+    (isPrivate == null ? 0 : isPrivate!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled]';
+  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, isPrivate=$isPrivate]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +102,11 @@ class UpdateAlbumDto {
     } else {
     //  json[r'isActivityEnabled'] = null;
     }
+    if (this.isPrivate != null) {
+      json[r'isPrivate'] = this.isPrivate;
+    } else {
+    //  json[r'isPrivate'] = null;
+    }
     return json;
   }
 
@@ -106,6 +122,7 @@ class UpdateAlbumDto {
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         description: mapValueOfType<String>(json, r'description'),
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled'),
+        isPrivate: mapValueOfType<bool>(json, r'isPrivate'),
       );
     }
     return null;

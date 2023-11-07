@@ -80,10 +80,12 @@ describe(`${AssetController.name} (e2e)`, () => {
   let sharedLink: SharedLinkResponseDto;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
+  let user1PrivateAlbumToken: string;
   let asset1: AssetEntity;
   let asset2: AssetEntity;
   let asset3: AssetEntity;
   let asset4: AssetEntity;
+  let asset5: AssetEntity;
 
   beforeAll(async () => {
     [server, app] = await testApp.create();
@@ -112,12 +114,22 @@ describe(`${AssetController.name} (e2e)`, () => {
       api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password }),
     ]);
 
-    [asset1, asset2, asset3, asset4] = await Promise.all([
+    await api.userApi.update(server, user1.accessToken, { id: user1.userId, privateAlbumPassword: 'Password123' });
+    user1PrivateAlbumToken = await api.userApi.validatePrivateAlbumPassword(server, user1.accessToken, 'Password123');
+
+    [asset1, asset2, asset3, asset4, asset5] = await Promise.all([
       createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-01')),
       createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-01-02')),
       createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-01')),
       createAsset(assetRepository, user2, defaultLibrary.id, new Date('1970-01-01')),
+      createAsset(assetRepository, user1, defaultLibrary.id, new Date('1970-02-02')),
     ]);
+
+    await api.albumApi.create(server, user1.accessToken, {
+      albumName: 'user1Private',
+      assetIds: [asset5.id],
+      isPrivate: true,
+    });
 
     sharedLink = await api.sharedLinkApi.create(server, user1.accessToken, {
       type: SharedLinkType.INDIVIDUAL,
@@ -411,6 +423,16 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(status).toBe(200);
       expect(body).toEqual({ images: 3, videos: 0, total: 3 });
     });
+
+    it('should return stats of all assets contained in a private album', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/statistics')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .set('x-immich-private-album-token', user1PrivateAlbumToken);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ images: 7, videos: 0, total: 7 });
+    });
   });
 
   describe('GET /asset/random', () => {
@@ -534,6 +556,24 @@ describe(`${AssetController.name} (e2e)`, () => {
         ]),
       );
     });
+
+    it('should get time buckets by day with private album token', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .set('x-immich-private-album-token', user1PrivateAlbumToken)
+        .query({ size: TimeBucketSize.DAY });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          { count: 1, timeBucket: asset1.fileCreatedAt.toISOString() },
+          { count: 1, timeBucket: asset2.fileCreatedAt.toISOString() },
+          { count: 1, timeBucket: asset3.fileCreatedAt.toISOString() },
+          { count: 1, timeBucket: asset5.fileCreatedAt.toISOString() },
+        ]),
+      );
+    });
   });
 
   describe('GET /asset/time-bucket', () => {
@@ -581,6 +621,22 @@ describe(`${AssetController.name} (e2e)`, () => {
         ]),
       );
     });
+
+    it('should return time bucket with private album token', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-bucket')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .set('x-immich-private-album-token', user1PrivateAlbumToken)
+        .query({ size: TimeBucketSize.MONTH, timeBucket: new Date('1970-02-01').toISOString() });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: asset3.id }),
+          expect.objectContaining({ id: asset5.id }),
+        ]),
+      );
+    });
   });
 
   describe('GET /asset/map-marker', () => {
@@ -589,6 +645,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         assetRepository.save({ id: asset1.id, isArchived: true }),
         assetRepository.upsertExif({ assetId: asset1.id, latitude: 0, longitude: 0 }),
         assetRepository.upsertExif({ assetId: asset2.id, latitude: 0, longitude: 0 }),
+        assetRepository.upsertExif({ assetId: asset5.id, latitude: 0, longitude: 0 }),
       ]);
     });
 
@@ -623,6 +680,23 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(status).toBe(200);
       expect(body).toHaveLength(1);
       expect(body).toEqual([expect.objectContaining({ id: asset2.id })]);
+    });
+
+    it('should get all map markers with private album token', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/map-marker')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .set('x-immich-private-album-token', user1PrivateAlbumToken);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(3);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: asset1.id }),
+          expect.objectContaining({ id: asset2.id }),
+          expect.objectContaining({ id: asset5.id }),
+        ]),
+      );
     });
   });
 

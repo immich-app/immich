@@ -185,7 +185,9 @@ export class AssetService {
     const userId = dto.userId || authUser.id;
     await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
-    return assets.map((asset) => mapAsset(asset));
+    return assets
+      .filter((asset) => authUser.isShowPrivateAlbum || !asset.albums?.some((album) => album.isPrivate))
+      .map((asset) => mapAsset(asset));
   }
 
   public async getAssetById(
@@ -310,7 +312,7 @@ export class AssetService {
   }
 
   async getCuratedLocation(authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
-    return this._assetRepository.getLocationsByUserId(authUser.id);
+    return this._assetRepository.getLocationsByUserId(authUser.id, { isShowPrivateAlbum: authUser.isShowPrivateAlbum });
   }
 
   async getCuratedObject(authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {

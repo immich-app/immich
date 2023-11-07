@@ -219,6 +219,14 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "name": "privateAlbumToken",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -5550,6 +5558,41 @@
         ]
       }
     },
+    "/user/validate-private-album-password": {
+      "post": {
+        "operationId": "validatePrivateAlbumPassword",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidatePrivateAlbumPasswordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/{id}": {
       "delete": {
         "operationId": "deleteUser",
@@ -5897,6 +5940,9 @@
           "isActivityEnabled": {
             "type": "boolean"
           },
+          "isPrivate": {
+            "type": "boolean"
+          },
           "lastModifiedAssetTimestamp": {
             "format": "date-time",
             "type": "string"
@@ -5939,7 +5985,8 @@
           "hasSharedLink",
           "assets",
           "owner",
-          "isActivityEnabled"
+          "isActivityEnabled",
+          "isPrivate"
         ],
         "type": "object"
       },
@@ -6603,6 +6650,9 @@
           },
           "description": {
             "type": "string"
+          },
+          "isPrivate": {
+            "type": "boolean"
           },
           "sharedWithUserIds": {
             "items": {
@@ -8917,6 +8967,9 @@
           },
           "isActivityEnabled": {
             "type": "boolean"
+          },
+          "isPrivate": {
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -9008,6 +9061,9 @@
             "type": "boolean"
           },
           "password": {
+            "type": "string"
+          },
+          "privateAlbumPassword": {
             "type": "string"
           },
           "shouldChangePassword": {
@@ -9117,6 +9173,9 @@
           "oauthId": {
             "type": "string"
           },
+          "privateAlbumPassword": {
+            "type": "string"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -9145,7 +9204,8 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId"
+          "oauthId",
+          "privateAlbumPassword"
         ],
         "type": "object"
       },
@@ -9157,6 +9217,18 @@
         },
         "required": [
           "authStatus"
+        ],
+        "type": "object"
+      },
+      "ValidatePrivateAlbumPasswordDto": {
+        "properties": {
+          "password": {
+            "example": "password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
         ],
         "type": "object"
       },

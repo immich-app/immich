@@ -49,6 +49,8 @@
     mdiLink,
     mdiShareVariantOutline,
     mdiDeleteOutline,
+    mdiLockOpenOutline,
+    mdiLockOutline,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -423,6 +425,25 @@
       handleError(error, 'Error updating album description');
     }
   };
+
+  const handleUpdatePrivate = async (isPrivate: boolean) => {
+    try {
+      await api.albumApi.updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          isPrivate,
+        },
+      });
+
+      album.isPrivate = isPrivate;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Now this album is ${isPrivate ? 'private' : 'public'}`,
+      });
+    } catch (error) {
+      handleError(error, 'Error updating album isPrivate');
+    }
+  };
 </script>
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
@@ -460,6 +481,11 @@
             />
 
             {#if isOwned}
+              <CircleIconButton
+                title={album.isPrivate ? 'Make public' : 'Make private'}
+                on:click={() => handleUpdatePrivate(!album.isPrivate)}
+                icon={album.isPrivate ? mdiLockOutline : mdiLockOpenOutline}
+              />
               <CircleIconButton
                 title="Share"
                 on:click={() => (viewMode = ViewMode.SELECT_USERS)}

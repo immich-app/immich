@@ -473,6 +473,8 @@ class ApiClient {
           return UserResponseDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
+        case 'ValidatePrivateAlbumPasswordDto':
+          return ValidatePrivateAlbumPasswordDto.fromJson(value);
         case 'VideoCodec':
           return VideoCodecTypeTransformer().decode(value);
         default:

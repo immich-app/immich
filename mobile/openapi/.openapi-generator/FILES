@@ -166,6 +166,7 @@ doc/UserApi.md
 doc/UserDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
+doc/ValidatePrivateAlbumPasswordDto.md
 doc/VideoCodec.md
 git_push.sh
 lib/api.dart
@@ -340,6 +341,7 @@ lib/model/usage_by_user_dto.dart
 lib/model/user_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
+lib/model/validate_private_album_password_dto.dart
 lib/model/video_codec.dart
 pubspec.yaml
 test/activity_api_test.dart
@@ -505,4 +507,5 @@ test/user_api_test.dart
 test/user_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart
+test/validate_private_album_password_dto_test.dart
 test/video_codec_test.dart

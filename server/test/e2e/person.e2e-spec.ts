@@ -13,9 +13,11 @@ describe(`${PersonController.name}`, () => {
   let server: any;
   let loginResponse: LoginResponseDto;
   let accessToken: string;
+  let privateAlbumToken: string;
   let personRepository: IPersonRepository;
   let visiblePerson: PersonEntity;
   let hiddenPerson: PersonEntity;
+  let privatePerson: PersonEntity;
 
   beforeAll(async () => {
     [server, app] = await testApp.create();
@@ -32,7 +34,15 @@ describe(`${PersonController.name}`, () => {
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
 
+    await api.userApi.update(server, accessToken, { id: loginResponse.userId, privateAlbumPassword: 'Password123' });
+    privateAlbumToken = await api.userApi.validatePrivateAlbumPassword(
+      server,
+      loginResponse.accessToken,
+      'Password123',
+    );
+
     const faceAsset = await api.assetApi.upload(server, accessToken, 'face_asset');
+    const privateFaceAsset = await api.assetApi.upload(server, accessToken, 'private_face_asset');
     visiblePerson = await personRepository.create({
       ownerId: loginResponse.userId,
       name: 'visible_person',
@@ -47,6 +57,18 @@ describe(`${PersonController.name}`, () => {
       thumbnailPath: '/thumbnail/face_asset',
     });
     await personRepository.createFace({ assetId: faceAsset.id, personId: hiddenPerson.id });
+
+    privatePerson = await personRepository.create({
+      ownerId: loginResponse.userId,
+      name: 'private_person',
+      thumbnailPath: '/thumbnail/face_asset',
+    });
+    await personRepository.createFace({ assetId: privateFaceAsset.id, personId: privatePerson.id });
+    await api.albumApi.create(server, accessToken, {
+      albumName: 'privateAlbum',
+      assetIds: [privateFaceAsset.id],
+      isPrivate: true,
+    });
   });
 
   describe('GET /person', () => {
@@ -84,6 +106,25 @@ describe(`${PersonController.name}`, () => {
         total: 1,
         visible: 1,
         people: [expect.objectContaining({ name: 'visible_person' })],
+      });
+    });
+
+    it('should return all people (including private)', async () => {
+      const { status, body } = await request(server)
+        .get('/person')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('x-immich-private-album-token', privateAlbumToken)
+        .query({ withHidden: true });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        total: 3,
+        visible: 2,
+        people: [
+          expect.objectContaining({ name: 'private_person' }),
+          expect.objectContaining({ name: 'visible_person' }),
+          expect.objectContaining({ name: 'hidden_person' }),
+        ],
       });
     });
   });

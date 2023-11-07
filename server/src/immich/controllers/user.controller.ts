@@ -3,10 +3,12 @@ import {
   CreateUserDto as CreateDto,
   CreateProfileImageDto,
   CreateProfileImageResponseDto,
+  IMMICH_PRIVATE_ALBUM_ACCESS_COOKIE,
   UpdateUserDto as UpdateDto,
   UserResponseDto,
   UserService,
 } from '@app/domain';
+import { ValidatePrivateAlbumPasswordDto } from '@app/domain/user/dto/validate-private-album-password.dto';
 import {
   Body,
   Controller,
@@ -17,10 +19,12 @@ import {
   Post,
   Put,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { AdminRoute, AuthUser, Authenticated } from '../app.guard';
 import { UseValidation, asStreamableFile } from '../app.utils';
 import { FileUploadInterceptor, Route } from '../interceptors';
@@ -87,5 +91,19 @@ export class UserController {
   @Header('Cache-Control', 'private, no-cache, no-transform')
   getProfileImage(@Param() { id }: UUIDParamDto): Promise<any> {
     return this.service.getProfileImage(id).then(asStreamableFile);
+  }
+
+  @Post('validate-private-album-password')
+  async validatePrivateAlbumPassword(
+    @AuthUser() authUser: AuthUserDto,
+    @Body() dto: ValidatePrivateAlbumPasswordDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const token = await this.service.validatePrivateAlbumPassword(authUser, dto);
+    res.cookie(IMMICH_PRIVATE_ALBUM_ACCESS_COOKIE, token, {
+      expires: new Date(Date.now() + 1000 * 60 * 60),
+      httpOnly: false,
+      sameSite: 'lax',
+    });
   }
 }

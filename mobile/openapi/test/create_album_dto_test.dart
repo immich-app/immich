@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool isPrivate
+    test('to test the property `isPrivate`', () async {
+      // TODO
+    });
+
     // List<String> sharedWithUserIds (default value: const [])
     test('to test the property `sharedWithUserIds`', () async {
       // TODO

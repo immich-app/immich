@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // String privateAlbumPassword
+    test('to test the property `privateAlbumPassword`', () async {
+      // TODO
+    });
+
     // String profileImagePath
     test('to test the property `profileImagePath`', () async {
       // TODO

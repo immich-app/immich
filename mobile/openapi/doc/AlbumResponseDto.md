@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **hasSharedLink** | **bool** |  | 
 **id** | **String** |  | 
 **isActivityEnabled** | **bool** |  | 
+**isPrivate** | **bool** |  | 
 **lastModifiedAssetTimestamp** | [**DateTime**](DateTime.md) |  | [optional] 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **ownerId** | **String** |  | 

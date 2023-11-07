@@ -10,6 +10,7 @@ import {
   MonthDay,
   Paginated,
   PaginationOptions,
+  RandomAssetsOptions,
   TimeBucketItem,
   TimeBucketOptions,
   TimeBucketSize,
@@ -114,6 +115,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
         stack: true,
+        albums: true,
       };
     }
     return this.repository.find({
@@ -181,6 +183,7 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        albums: true,
       },
       withDeleted: options.withDeleted ?? !!options.trashedBefore,
       order: {
@@ -397,34 +400,40 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
+    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore, isShowPrivateAlbum } = options;
 
-    const assets = await this.repository.find({
-      select: {
-        id: true,
-        exifInfo: {
-          latitude: true,
-          longitude: true,
-        },
-      },
-      where: {
-        ownerId,
-        isVisible: true,
-        isArchived,
-        exifInfo: {
-          latitude: Not(IsNull()),
-          longitude: Not(IsNull()),
-        },
-        isFavorite,
-        fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
-      },
-      relations: {
-        exifInfo: true,
-      },
-      order: {
-        fileCreatedAt: 'DESC',
-      },
-    });
+    let builder = this.repository
+      .createQueryBuilder('asset')
+      .select('asset.id')
+      .addSelect('exifInfo.latitude')
+      .addSelect('exifInfo.longitude')
+      .leftJoin('asset.exifInfo', 'exifInfo')
+      .where('asset.ownerId = :ownerId', { ownerId })
+      .andWhere('asset.isVisible = true')
+      .andWhere('exifInfo.latitude IS NOT NULL')
+      .andWhere('exifInfo.longitude IS NOT NULL')
+      .orderBy('asset.fileCreatedAt', 'DESC');
+
+    if (!isShowPrivateAlbum) {
+      builder = builder.leftJoin('asset.albums', 'album').andWhere('(album.isPrivate = false OR album.id IS NULL)');
+    }
+
+    if (isArchived != undefined) {
+      builder = builder.andWhere('asset.isArchived = :isArchived', { isArchived });
+    }
+
+    if (isFavorite !== undefined) {
+      builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
+    }
+
+    if (fileCreatedAfter != undefined && fileCreatedBefore != undefined) {
+      builder = builder.andWhere('asset.fileCreatedAt BETWEEN :fileCreatedAfter AND :fileCreatedBefore', {
+        fileCreatedAfter,
+        fileCreatedBefore,
+      });
+    }
+
+    const assets = await builder.getMany();
 
     return assets.map((asset) => ({
       id: asset.id,
@@ -438,15 +447,20 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
-    let builder = await this.repository
+    let builder = this.repository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
-      .where('"ownerId" = :ownerId', { ownerId })
+      .where(`asset.ownerId = :ownerId`, { ownerId })
       .andWhere('asset.isVisible = true')
       .groupBy('asset.type');
 
-    const { isArchived, isFavorite, isTrashed } = options;
+    const { isArchived, isFavorite, isTrashed, isShowPrivateAlbum } = options;
+
+    if (!isShowPrivateAlbum) {
+      builder = builder.leftJoin('asset.albums', 'album').andWhere('(album.isPrivate = false OR album.id IS NULL)');
+    }
+
     if (isArchived !== undefined) {
       builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
     }
@@ -475,14 +489,22 @@ export class AssetRepository implements IAssetRepository {
     return result;
   }
 
-  getRandom(ownerId: string, count: number): Promise<AssetEntity[]> {
+  getRandom(ownerId: string, option: RandomAssetsOptions): Promise<AssetEntity[]> {
     // can't use queryBuilder because of custom OFFSET clause
     return this.repository.query(
-      `SELECT *
-       FROM assets
-       WHERE "ownerId" = $1
+      `SELECT asset.*
+       FROM assets "asset"
+          LEFT JOIN "albums_assets_assets" "album_asset" ON "album_asset"."assetsId" = "asset"."id"
+          LEFT JOIN "albums" "album" ON "album"."id" = "album_asset"."albumsId" AND ("album"."deletedAt" IS NULL)
+       WHERE "asset"."ownerId" = $1
+           AND (
+            CASE
+               WHEN $3 = false THEN "album"."isPrivate" = false OR "album"."id" IS NULL
+            ELSE true
+            END
+           )
        OFFSET FLOOR(RANDOM() * (SELECT GREATEST(COUNT(*) - $2, 0) FROM ASSETS WHERE "ownerId" = $1)) LIMIT $2`,
-      [ownerId, count],
+      [ownerId, option.count, option.isShowPrivateAlbum ?? false],
     );
   }
 
@@ -510,7 +532,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, isTrashed, albumId, personId, userId, withStacked } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId, withStacked, isShowPrivateAlbum } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -521,6 +543,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
+    }
+
+    if (!isShowPrivateAlbum) {
+      builder = builder.leftJoin('asset.albums', 'album').andWhere('(album.isPrivate = false OR album.id IS NULL)');
     }
 
     if (userId) {

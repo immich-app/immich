@@ -20,13 +20,17 @@ export interface AssetOwnerCheck extends AssetCheck {
   ownerId: string;
 }
 
+export interface PrivateAssetOptions {
+  isShowPrivateAlbum?: boolean;
+}
+
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
-  getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
+  getLocationsByUserId(userId: string, options: PrivateAssetOptions): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
@@ -75,18 +79,26 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
-  getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]> {
+  getLocationsByUserId(userId: string, options: PrivateAssetOptions): Promise<CuratedLocationsResponseDto[]> {
     return this.assetRepository.query(
       `
         SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
         FROM assets a
         LEFT JOIN exif e ON a.id = e."assetId"
+        LEFT JOIN "albums_assets_assets" "album_asset" ON "album_asset"."assetsId" = "a"."id"
+        LEFT JOIN "albums" "album" ON "album"."id" = "album_asset"."albumsId" AND ("album"."deletedAt" IS NULL)
         WHERE a."ownerId" = $1
+        AND (
+          CASE
+            WHEN $2 = false THEN "album"."isPrivate" = false OR "album"."id" IS NULL
+          ELSE true
+          END
+        )
         AND a."isVisible" = true
         AND e.city IS NOT NULL
         AND a.type = 'IMAGE';
       `,
-      [userId],
+      [userId, options.isShowPrivateAlbum ?? false],
     );
   }
 
@@ -135,6 +147,7 @@ export class AssetRepository implements IAssetRepository {
         exifInfo: true,
         tags: true,
         stack: true,
+        albums: true,
       },
       skip: dto.skip || 0,
       take: dto.take,

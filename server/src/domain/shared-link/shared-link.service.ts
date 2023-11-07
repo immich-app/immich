@@ -20,7 +20,11 @@ export class SharedLinkService {
   }
 
   getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
-    return this.repository.getAll(authUser.id).then((links) => links.map(mapSharedLink));
+    return this.repository
+      .getAll(authUser.id)
+      .then((links) =>
+        links.filter((link) => authUser.isShowPrivateAlbum || !link.album?.isPrivate).map(mapSharedLink),
+      );
   }
 
   async getMine(authUser: AuthUserDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {

@@ -8,6 +8,7 @@ export interface AssetStatsOptions {
   isFavorite?: boolean;
   isArchived?: boolean;
   isTrashed?: boolean;
+  isShowPrivateAlbum?: boolean;
 }
 
 export interface AssetSearchOptions {
@@ -16,6 +17,11 @@ export interface AssetSearchOptions {
   type?: AssetType;
   order?: 'ASC' | 'DESC';
   withDeleted?: boolean;
+}
+
+export interface RandomAssetsOptions {
+  count: number;
+  isShowPrivateAlbum?: boolean;
 }
 
 export interface LivePhotoSearchOptions {
@@ -28,6 +34,7 @@ export interface LivePhotoSearchOptions {
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
   isFavorite?: boolean;
+  isShowPrivateAlbum?: boolean;
   fileCreatedBefore?: Date;
   fileCreatedAfter?: Date;
 }
@@ -67,6 +74,7 @@ export interface TimeBucketOptions {
   personId?: string;
   userId?: string;
   withStacked?: boolean;
+  isShowPrivateAlbum?: boolean;
 }
 
 export interface TimeBucketItem {
@@ -108,7 +116,7 @@ export interface IAssetRepository {
   getById(id: string): Promise<AssetEntity | null>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
   getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
-  getRandom(userId: string, count: number): Promise<AssetEntity[]>;
+  getRandom(userId: string, option: RandomAssetsOptions): Promise<AssetEntity[]>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]>;

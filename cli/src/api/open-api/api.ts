@@ -339,6 +339,12 @@ export interface AlbumResponseDto {
     'isActivityEnabled': boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof AlbumResponseDto
+     */
+    'isPrivate': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof AlbumResponseDto
      */
@@ -1274,6 +1280,12 @@ export interface CreateAlbumDto {
      * @memberof CreateAlbumDto
      */
     'description'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateAlbumDto
+     */
+    'isPrivate'?: boolean;
     /**
      * 
      * @type {Array<string>}
@@ -4172,6 +4184,12 @@ export interface UpdateAlbumDto {
      * @memberof UpdateAlbumDto
      */
     'isActivityEnabled'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateAlbumDto
+     */
+    'isPrivate'?: boolean;
 }
 /**
  * 
@@ -4315,6 +4333,12 @@ export interface UpdateUserDto {
      * @memberof UpdateUserDto
      */
     'password'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'privateAlbumPassword'?: string;
     /**
      * 
      * @type {boolean}
@@ -4479,6 +4503,12 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
+    'privateAlbumPassword': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
     'profileImagePath': string;
     /**
      * 
@@ -4511,6 +4541,19 @@ export interface ValidateAccessTokenResponseDto {
      * @memberof ValidateAccessTokenResponseDto
      */
     'authStatus': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface ValidatePrivateAlbumPasswordDto
+ */
+export interface ValidatePrivateAlbumPasswordDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof ValidatePrivateAlbumPasswordDto
+     */
+    'password': string;
 }
 /**
  * 
@@ -5720,10 +5763,11 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
          * 
          * @param {boolean} [shared] 
          * @param {string} [assetId] Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+         * @param {string} [privateAlbumToken] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAlbums: async (shared?: boolean, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAlbums: async (shared?: boolean, assetId?: string, privateAlbumToken?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/album`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5751,6 +5795,10 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
 
             if (assetId !== undefined) {
                 localVarQueryParameter['assetId'] = assetId;
+            }
+
+            if (privateAlbumToken !== undefined) {
+                localVarQueryParameter['privateAlbumToken'] = privateAlbumToken;
             }
 
 
@@ -5984,11 +6032,12 @@ export const AlbumApiFp = function(configuration?: Configuration) {
          * 
          * @param {boolean} [shared] 
          * @param {string} [assetId] Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+         * @param {string} [privateAlbumToken] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAlbums(shared?: boolean, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AlbumResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAlbums(shared, assetId, options);
+        async getAllAlbums(shared?: boolean, assetId?: string, privateAlbumToken?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AlbumResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAlbums(shared, assetId, privateAlbumToken, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6094,7 +6143,7 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAllAlbums(requestParameters: AlbumApiGetAllAlbumsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AlbumResponseDto>> {
-            return localVarFp.getAllAlbums(requestParameters.shared, requestParameters.assetId, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllAlbums(requestParameters.shared, requestParameters.assetId, requestParameters.privateAlbumToken, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6250,6 +6299,13 @@ export interface AlbumApiGetAllAlbumsRequest {
      * @memberof AlbumApiGetAllAlbums
      */
     readonly assetId?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AlbumApiGetAllAlbums
+     */
+    readonly privateAlbumToken?: string
 }
 
 /**
@@ -6395,7 +6451,7 @@ export class AlbumApi extends BaseAPI {
      * @memberof AlbumApi
      */
     public getAllAlbums(requestParameters: AlbumApiGetAllAlbumsRequest = {}, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).getAllAlbums(requestParameters.shared, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
+        return AlbumApiFp(this.configuration).getAllAlbums(requestParameters.shared, requestParameters.assetId, requestParameters.privateAlbumToken, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -16491,6 +16547,50 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {ValidatePrivateAlbumPasswordDto} validatePrivateAlbumPasswordDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        validatePrivateAlbumPassword: async (validatePrivateAlbumPasswordDto: ValidatePrivateAlbumPasswordDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'validatePrivateAlbumPasswordDto' is not null or undefined
+            assertParamExists('validatePrivateAlbumPassword', 'validatePrivateAlbumPasswordDto', validatePrivateAlbumPasswordDto)
+            const localVarPath = `/user/validate-private-album-password`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(validatePrivateAlbumPasswordDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -16590,6 +16690,16 @@ export const UserApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.updateUser(updateUserDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * 
+         * @param {ValidatePrivateAlbumPasswordDto} validatePrivateAlbumPasswordDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async validatePrivateAlbumPassword(validatePrivateAlbumPasswordDto: ValidatePrivateAlbumPasswordDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.validatePrivateAlbumPassword(validatePrivateAlbumPasswordDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -16679,6 +16789,15 @@ export const UserApiFactory = function (configuration?: Configuration, basePath?
          */
         updateUser(requestParameters: UserApiUpdateUserRequest, options?: AxiosRequestConfig): AxiosPromise<UserResponseDto> {
             return localVarFp.updateUser(requestParameters.updateUserDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {UserApiValidatePrivateAlbumPasswordRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        validatePrivateAlbumPassword(requestParameters: UserApiValidatePrivateAlbumPasswordRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.validatePrivateAlbumPassword(requestParameters.validatePrivateAlbumPasswordDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -16796,6 +16915,20 @@ export interface UserApiUpdateUserRequest {
 }
 
 /**
+ * Request parameters for validatePrivateAlbumPassword operation in UserApi.
+ * @export
+ * @interface UserApiValidatePrivateAlbumPasswordRequest
+ */
+export interface UserApiValidatePrivateAlbumPasswordRequest {
+    /**
+     * 
+     * @type {ValidatePrivateAlbumPasswordDto}
+     * @memberof UserApiValidatePrivateAlbumPassword
+     */
+    readonly validatePrivateAlbumPasswordDto: ValidatePrivateAlbumPasswordDto
+}
+
+/**
  * UserApi - object-oriented interface
  * @export
  * @class UserApi
@@ -16898,6 +17031,17 @@ export class UserApi extends BaseAPI {
      */
     public updateUser(requestParameters: UserApiUpdateUserRequest, options?: AxiosRequestConfig) {
         return UserApiFp(this.configuration).updateUser(requestParameters.updateUserDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {UserApiValidatePrivateAlbumPasswordRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApi
+     */
+    public validatePrivateAlbumPassword(requestParameters: UserApiValidatePrivateAlbumPasswordRequest, options?: AxiosRequestConfig) {
+        return UserApiFp(this.configuration).validatePrivateAlbumPassword(requestParameters.validatePrivateAlbumPasswordDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

@@ -89,6 +89,7 @@ const assetResponseWithoutMetadata = {
 const albumResponse: AlbumResponseDto = {
   albumName: 'Test Album',
   description: '',
+  isPrivate: false,
   albumThumbnailAssetId: null,
   createdAt: today,
   updatedAt: today,
@@ -173,6 +174,7 @@ export const sharedLinkStub = {
       owner: userStub.admin,
       albumName: 'Test Album',
       description: '',
+      isPrivate: false,
       createdAt: today,
       updatedAt: today,
       deletedAt: null,

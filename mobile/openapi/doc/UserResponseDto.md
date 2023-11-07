@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **lastName** | **String** |  | 
 **memoriesEnabled** | **bool** |  | [optional] 
 **oauthId** | **String** |  | 
+**privateAlbumPassword** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 
 **storageLabel** | **String** |  | 

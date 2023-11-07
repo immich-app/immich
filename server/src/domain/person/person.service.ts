@@ -67,6 +67,7 @@ export class PersonService {
     const people = await this.repository.getAllForUser(authUser.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
+      isShowPrivateAlbum: authUser.isShowPrivateAlbum,
     });
     const persons: PersonResponseDto[] = people
       // with thumbnails

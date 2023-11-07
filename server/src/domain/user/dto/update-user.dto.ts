@@ -49,4 +49,8 @@ export class UpdateUserDto {
   @Optional()
   @IsBoolean()
   memoriesEnabled?: boolean;
+
+  @Optional()
+  @IsString()
+  privateAlbumPassword?: string;
 }

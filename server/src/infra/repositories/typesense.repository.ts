@@ -37,6 +37,7 @@ interface CustomAssetEntity extends AssetEntity {
   geo?: [number, number];
   motion?: boolean;
   people?: string[];
+  isPrivate?: boolean;
 }
 
 const schemaMap: Record<SearchCollection, CollectionCreateSchema> = {
@@ -150,7 +151,11 @@ export class TypesenseRepository implements ISearchRepository {
   async explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]> {
     const common = {
       q: '*',
-      filter_by: [this.buildFilterBy('ownerId', userId, true), this.buildFilterBy('isArchived', false)].join(' && '),
+      filter_by: [
+        this.buildFilterBy('ownerId', userId, true),
+        this.buildFilterBy('isArchived', false),
+        this.buildFilterBy('isPrivate', false),
+      ].join(' && '),
       per_page: 100,
     };
 
@@ -427,7 +432,8 @@ export class TypesenseRepository implements ISearchRepository {
     if (people.length) {
       custom = { ...custom, people };
     }
-    return removeNil({ ...custom, motion: !!asset.livePhotoVideoId });
+    const isPrivate = asset.albums?.some((album) => album.isPrivate) || false;
+    return removeNil({ ...custom, motion: !!asset.livePhotoVideoId, isPrivate });
   }
 
   private patchFace(face: OwnedFaceEntity): OwnedFaceEntity {
@@ -450,6 +456,10 @@ export class TypesenseRepository implements ISearchRepository {
       _filters.push(this.buildFilterBy('id', filters.id, true));
     }
 
+    if (!filters.isShowPrivateAlbum) {
+      _filters.push(this.buildFilterBy('isPrivate', false));
+    }
+
     for (const item of albumSchema.fields || []) {
       const value = filters[item.name as keyof SearchFilter];
       if (item.facet && value !== undefined) {
@@ -470,6 +480,10 @@ export class TypesenseRepository implements ISearchRepository {
 
     if (filters.id) {
       _filters.push(this.buildFilterBy('id', filters.id, true));
+    }
+
+    if (!filters.isShowPrivateAlbum) {
+      _filters.push(this.buildFilterBy('isPrivate', false));
     }
 
     for (const item of assetSchema.fields || []) {

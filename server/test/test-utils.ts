@@ -66,7 +66,7 @@ export const testApp = {
     app = await moduleFixture.createNestApplication().init();
 
     if (jobs) {
-      await app.get(AppService).init();
+      // await app.get(AppService).init();
     }
 
     return [app.getHttpServer(), app];

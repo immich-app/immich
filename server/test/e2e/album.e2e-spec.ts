@@ -11,6 +11,7 @@ import request from 'supertest';
 const user1SharedUser = 'user1SharedUser';
 const user1SharedLink = 'user1SharedLink';
 const user1NotShared = 'user1NotShared';
+const user1Private = 'user1Private';
 const user2SharedUser = 'user2SharedUser';
 const user2SharedLink = 'user2SharedLink';
 const user2NotShared = 'user2NotShared';
@@ -21,6 +22,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
   let user1: LoginResponseDto;
   let user1Asset: AssetFileUploadResponseDto;
   let user1Albums: AlbumResponseDto[];
+  let user1PrivateAlbumToken: string;
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];
 
@@ -58,6 +60,8 @@ describe(`${AlbumController.name} (e2e)`, () => {
     ]);
 
     user1Asset = await api.assetApi.upload(server, user1.accessToken, 'example');
+    await api.userApi.update(server, user1.accessToken, { id: user1.userId, privateAlbumPassword: 'Password123' });
+    user1PrivateAlbumToken = await api.userApi.validatePrivateAlbumPassword(server, user1.accessToken, 'Password123');
 
     const albums = await Promise.all([
       // user 1
@@ -68,6 +72,11 @@ describe(`${AlbumController.name} (e2e)`, () => {
       }),
       api.albumApi.create(server, user1.accessToken, { albumName: user1SharedLink, assetIds: [user1Asset.id] }),
       api.albumApi.create(server, user1.accessToken, { albumName: user1NotShared, assetIds: [user1Asset.id] }),
+      api.albumApi.create(server, user1.accessToken, {
+        albumName: user1Private,
+        assetIds: [user1Asset.id],
+        isPrivate: true,
+      }),
 
       // user 2
       api.albumApi.create(server, user2.accessToken, {
@@ -79,8 +88,8 @@ describe(`${AlbumController.name} (e2e)`, () => {
       api.albumApi.create(server, user2.accessToken, { albumName: user2NotShared }),
     ]);
 
-    user1Albums = albums.slice(0, 3);
-    user2Albums = albums.slice(3);
+    user1Albums = albums.slice(0, 4);
+    user2Albums = albums.slice(4);
 
     await Promise.all([
       // add shared link to user1SharedLink album
@@ -201,6 +210,16 @@ describe(`${AlbumController.name} (e2e)`, () => {
       expect(status).toBe(200);
       expect(body).toHaveLength(4);
     });
+
+    it('should return private albums with private album token', async () => {
+      const { status, body } = await request(server)
+        .get(`/album`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .set('x-immich-private-album-token', user1PrivateAlbumToken);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(4);
+    });
   });
 
   describe('POST /album', () => {
@@ -227,6 +246,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
         isActivityEnabled: true,
+        isPrivate: false,
       });
     });
   });
@@ -245,6 +265,16 @@ describe(`${AlbumController.name} (e2e)`, () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({ owned: 3, shared: 3, notShared: 1 });
+    });
+
+    it('should return private albums with private album token', async () => {
+      const { status, body } = await request(server)
+        .get(`/album/count`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .set('x-immich-private-album-token', user1PrivateAlbumToken);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({ owned: 4, shared: 3, notShared: 2 });
     });
   });
 
@@ -271,6 +301,15 @@ describe(`${AlbumController.name} (e2e)`, () => {
 
       expect(status).toBe(200);
       expect(body).toEqual(user2Albums[0]);
+    });
+
+    it('should throw an error if album is private and no private album token is provided', async () => {
+      const { status, body } = await request(server)
+        .get(`/album/${user1Albums[3].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Album not found'));
     });
   });
 
@@ -368,8 +407,8 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user2.accessToken}`)
         .send({ ids: [user1Asset.id] });
 
-      expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: user1Asset.id, success: false, error: 'no_permission' })]);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Not found or no album.read access'));
     });
 
     it('should not be able to remove foreign asset from foreign album', async () => {

@@ -35,6 +35,7 @@
   import TableHeader from '$lib/components/elements/table-header.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
+  import PrivateAlbumPasswordFormSvelte from '$lib/components/forms/private-album-password-form.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { orderBy } from 'lodash-es';
   import {
@@ -46,7 +47,11 @@
     mdiTrashCanOutline,
     mdiViewGridOutline,
     mdiDeleteOutline,
+    mdiLockOutline,
+    mdiLockOpenOutline,
   } from '@mdi/js';
+  import { api } from '@api';
+  import { handleError } from '$lib/utils/handle-error';
 
   export let data: PageData;
   let shouldShowEditUserForm = false;
@@ -98,6 +103,8 @@
     },
   };
 
+  const PRIVATE_ALBUM_MYSTERIOUS_CODES = '↑↑↓↓←→←→baba';
+
   const handleEdit = (album: AlbumResponseDto) => {
     selectedAlbum = { ...album };
     shouldShowEditUserForm = true;
@@ -116,6 +123,8 @@
 
   let albums = unsortedAlbums;
   let albumToDelete: AlbumResponseDto | null;
+  let mysteriousCodes: string[] = [];
+  let showPrivateAlbumPasswordForm = false;
 
   const chooseAlbumToDelete = (album: AlbumResponseDto) => {
     $contextMenuTargetAlbum = album;
@@ -167,6 +176,7 @@
 
   onMount(() => {
     removeAlbumsIfEmpty();
+    window.addEventListener('keydown', handleKeyDown);
   });
 
   const removeAlbumsIfEmpty = async () => {
@@ -197,6 +207,66 @@
       $albumViewSettings.view = AlbumViewMode.Cover;
     }
   };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        mysteriousCodes.push('↑');
+        break;
+      case 'ArrowDown':
+        mysteriousCodes.push('↓');
+        break;
+      case 'ArrowLeft':
+        mysteriousCodes.push('←');
+        break;
+      case 'ArrowRight':
+        mysteriousCodes.push('→');
+        break;
+      case 'b':
+        mysteriousCodes.push('b');
+        break;
+      case 'a':
+        mysteriousCodes.push('a');
+        break;
+      default:
+        mysteriousCodes = [];
+        break;
+    }
+    if (
+      mysteriousCodes.length >= PRIVATE_ALBUM_MYSTERIOUS_CODES.length &&
+      mysteriousCodes.join('') === PRIVATE_ALBUM_MYSTERIOUS_CODES
+    ) {
+      mysteriousCodes = [];
+      showPrivateAlbumPasswordForm = true;
+    }
+  };
+
+  const handleUpdatePrivate = async (album?: AlbumResponseDto) => {
+    if (!album) {
+      return;
+    }
+
+    const isPrivate = !album.isPrivate;
+    try {
+      await api.albumApi.updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          isPrivate,
+        },
+      });
+
+      $albums[$albums.findIndex((x) => x.id === album.id)].isPrivate = isPrivate;
+      if ($contextMenuTargetAlbum?.id === album.id) {
+        $contextMenuTargetAlbum.isPrivate = isPrivate;
+      }
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Now this album is ${isPrivate ? 'private' : 'public'}`,
+      });
+    } catch (error) {
+      handleError(error, 'Error updating album isPrivate');
+    }
+  };
 </script>
 
 {#if shouldShowEditUserForm}
@@ -205,6 +275,18 @@
       album={selectedAlbum}
       on:edit-success={() => successModifyAlbum()}
       on:cancel={() => (shouldShowEditUserForm = false)}
+    />
+  </FullScreenModal>
+{/if}
+
+{#if showPrivateAlbumPasswordForm}
+  <FullScreenModal on:clickOutside={() => (showPrivateAlbumPasswordForm = false)}>
+    <PrivateAlbumPasswordFormSvelte
+      on:validate-success={() => {
+        showPrivateAlbumPasswordForm = false;
+        location.reload();
+      }}
+      on:cancel={() => (showPrivateAlbumPasswordForm = false)}
     />
   </FullScreenModal>
 {/if}
@@ -271,7 +353,7 @@
             {#each Object.keys(sortByOptions) as key (key)}
               <TableHeader bind:albumViewSettings={$albumViewSettings.sortBy} bind:option={sortByOptions[key]} />
             {/each}
-            <th class="hidden w-2/12 text-center text-sm font-medium lg:block 2xl:w-1/12">Action</th>
+            <th class="hidden w-2/12 text-center text-sm font-medium lg:block 2xl:w-2/12">Action</th>
           </tr>
         </thead>
         <tbody
@@ -295,12 +377,18 @@
               <td class="text-md hidden w-3/12 text-ellipsis text-center sm:block lg:w-2/12"
                 >{dateLocaleString(album.createdAt)}</td
               >
-              <td class="text-md hidden w-2/12 text-ellipsis text-center lg:block 2xl:w-1/12">
+              <td class="text-md hidden w-2/12 text-ellipsis text-center lg:block 2xl:w-2/12">
                 <button
                   on:click|stopPropagation={() => handleEdit(album)}
                   class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                 >
                   <Icon path={mdiPencilOutline} size="16" />
+                </button>
+                <button
+                  on:click|stopPropagation={() => handleUpdatePrivate(album)}
+                  class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
+                >
+                  <Icon path={album.isPrivate ? mdiLockOutline : mdiLockOpenOutline} size="16" />
                 </button>
                 <button
                   on:click|stopPropagation={() => chooseAlbumToDelete(album)}
@@ -328,6 +416,12 @@
 <!-- Context Menu -->
 {#if $isShowContextMenu}
   <ContextMenu {...$contextMenuPosition} on:outclick={closeAlbumContextMenu} on:escape={closeAlbumContextMenu}>
+    <MenuOption on:click={() => handleUpdatePrivate($contextMenuTargetAlbum)}>
+      <span class="flex place-content-center place-items-center gap-2">
+        <Icon path={$contextMenuTargetAlbum?.isPrivate ? mdiLockOutline : mdiLockOpenOutline} size="18" />
+        <p>{$contextMenuTargetAlbum?.isPrivate ? 'Make public' : 'Make private'}</p>
+      </span>
+    </MenuOption>
     <MenuOption on:click={() => setAlbumToDelete()}>
       <span class="flex place-content-center place-items-center gap-2">
         <Icon path={mdiDeleteOutline} size="18" />

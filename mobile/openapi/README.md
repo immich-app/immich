@@ -200,6 +200,7 @@ Class | Method | HTTP request | Description
 *UserApi* | [**getUserById**](doc//UserApi.md#getuserbyid) | **GET** /user/info/{id} | 
 *UserApi* | [**restoreUser**](doc//UserApi.md#restoreuser) | **POST** /user/{id}/restore | 
 *UserApi* | [**updateUser**](doc//UserApi.md#updateuser) | **PUT** /user | 
+*UserApi* | [**validatePrivateAlbumPassword**](doc//UserApi.md#validateprivatealbumpassword) | **POST** /user/validate-private-album-password | 
 
 
 ## Documentation For Models
@@ -350,6 +351,7 @@ Class | Method | HTTP request | Description
  - [UserDto](doc//UserDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
+ - [ValidatePrivateAlbumPasswordDto](doc//ValidatePrivateAlbumPasswordDto.md)
  - [VideoCodec](doc//VideoCodec.md)
 
 

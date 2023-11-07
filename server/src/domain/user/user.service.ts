@@ -1,5 +1,14 @@
+import { ValidatePrivateAlbumPasswordDto } from '@app/domain/user/dto/validate-private-album-password.dto';
 import { UserEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { AuthUserDto } from '../auth';
 import { IEntityJob, JobName } from '../job';
@@ -27,7 +36,7 @@ export class UserService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -103,6 +112,17 @@ export class UserService {
       throw new NotFoundException('User does not have a profile image');
     }
     return this.storageRepository.createReadStream(user.profileImagePath, 'image/jpeg');
+  }
+
+  async validatePrivateAlbumPassword(authUser: AuthUserDto, dto: ValidatePrivateAlbumPasswordDto): Promise<string> {
+    const user = await this.findOrFail(authUser.id, {});
+    if (!user.privateAlbumPassword) {
+      throw new BadRequestException('User does not have a private album password');
+    }
+    if (user.privateAlbumPassword !== dto.password) {
+      throw new UnauthorizedException('Invalid password');
+    }
+    return this.cryptoRepository.hashSha256(`${user.id}-${user.privateAlbumPassword}`);
   }
 
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {

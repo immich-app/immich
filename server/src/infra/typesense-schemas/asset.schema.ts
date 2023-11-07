@@ -1,6 +1,6 @@
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 
-export const assetSchemaVersion = 10;
+export const assetSchemaVersion = 11;
 export const assetSchema: CollectionCreateSchema = {
   name: `assets-v${assetSchemaVersion}`,
   fields: [
@@ -35,6 +35,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'geo', type: 'geopoint', facet: false, optional: true },
     { name: 'motion', type: 'bool', facet: true },
     { name: 'people', type: 'string[]', facet: true, optional: true },
+    { name: 'isPrivate', type: 'bool', facet: false, optional: true },
   ],
   token_separators: ['.', '-', '_'],
   enable_nested_fields: true,

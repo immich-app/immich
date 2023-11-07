@@ -29,6 +29,7 @@ import {
   IMMICH_ACCESS_COOKIE,
   IMMICH_API_KEY_HEADER,
   IMMICH_AUTH_TYPE_COOKIE,
+  IMMICH_PRIVATE_ALBUM_ACCESS_COOKIE,
   LOGIN_URL,
   MOBILE_REDIRECT,
 } from './auth.constant';
@@ -157,15 +158,18 @@ export class AuthService {
     const userToken = (headers['x-immich-user-token'] ||
       params.userToken ||
       this.getBearerToken(headers) ||
-      this.getCookieToken(headers)) as string;
+      this.getCookie(headers, IMMICH_ACCESS_COOKIE)) as string;
     const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
+    const privateAlbumToken = (headers['x-immich-private-album-token'] ||
+      params.privateAlbumToken ||
+      this.getCookie(headers, IMMICH_PRIVATE_ALBUM_ACCESS_COOKIE)) as string;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);
     }
 
     if (userToken) {
-      return this.validateUserToken(userToken);
+      return this.validateUserToken(userToken, privateAlbumToken);
     }
 
     if (apiKey) {
@@ -364,9 +368,9 @@ export class AuthService {
     return null;
   }
 
-  private getCookieToken(headers: IncomingHttpHeaders): string | null {
+  private getCookie(headers: IncomingHttpHeaders, key: string): string | null {
     const cookies = cookieParser.parse(headers.cookie || '');
-    return cookies[IMMICH_ACCESS_COOKIE] || null;
+    return cookies[key] || null;
   }
 
   private async validateSharedLink(key: string | string[]): Promise<AuthUserDto> {
@@ -420,7 +424,7 @@ export class AuthService {
     return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
   }
 
-  private async validateUserToken(tokenValue: string): Promise<AuthUserDto> {
+  private async validateUserToken(tokenValue: string, privateAlbumToken: string | null): Promise<AuthUserDto> {
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
     let token = await this.userTokenRepository.getByToken(hashedToken);
 
@@ -439,6 +443,8 @@ export class AuthService {
         isAllowDownload: true,
         isShowMetadata: true,
         accessTokenId: token.id,
+        isShowPrivateAlbum:
+          this.cryptoRepository.hashSha256(`${token.user.id}-${token.user.privateAlbumPassword}`) === privateAlbumToken,
       };
     }
 

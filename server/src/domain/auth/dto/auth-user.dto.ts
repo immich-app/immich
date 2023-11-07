@@ -9,4 +9,5 @@ export class AuthUserDto {
   isShowMetadata?: boolean;
   accessTokenId?: string;
   externalPath?: string | null;
+  isShowPrivateAlbum?: boolean;
 }

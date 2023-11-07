@@ -337,6 +337,17 @@ describe('AuthService', () => {
         deviceType: 'Mobile',
       });
     });
+
+    it('should show private album if has private token', async () => {
+      userTokenMock.getByToken.mockResolvedValue(userTokenStub.userToken);
+      const headers: IncomingHttpHeaders = {
+        cookie: 'immich_access_token=auth_token;immich_private_album_token=user-id-immich_private_password (hashed)',
+      };
+      await expect(sut.validate(headers, {})).resolves.toEqual({
+        ...userStub.user1,
+        isShowPrivateAlbum: true,
+      });
+    });
   });
 
   describe('validate - api key', () => {

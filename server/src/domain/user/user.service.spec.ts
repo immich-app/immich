@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   authStub,
@@ -366,6 +367,44 @@ describe(UserService.name, () => {
 
       expect(userMock.get).toHaveBeenCalledWith(userStub.profilePath.id, {});
       expect(storageMock.createReadStream).toHaveBeenCalledWith('/path/to/profile.jpg', 'image/jpeg');
+    });
+  });
+
+  describe('validatePrivateAlbumPassword', () => {
+    it('should throw an error if the user does not have a private album password', async () => {
+      userMock.get.mockResolvedValue(userStub.admin);
+
+      await expect(
+        sut.validatePrivateAlbumPassword(userStub.admin, {
+          password: 'password',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(userMock.get).toHaveBeenCalledWith(userStub.admin.id, {});
+    });
+
+    it('should throw an UnauthorizedException if the user password does not match', async () => {
+      userMock.get.mockResolvedValue(userStub.user1);
+
+      await expect(
+        sut.validatePrivateAlbumPassword(userStub.admin, {
+          password: 'password',
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+
+      expect(userMock.get).toHaveBeenCalledWith(userStub.admin.id, {});
+    });
+
+    it('should return the private token if the password matches', async () => {
+      userMock.get.mockResolvedValue(userStub.user1);
+
+      await expect(
+        sut.validatePrivateAlbumPassword(userStub.admin, {
+          password: 'immich_private_password',
+        }),
+      ).resolves.toEqual('user-id-immich_private_password (hashed)');
+
+      expect(userMock.get).toHaveBeenCalledWith(userStub.admin.id, {});
     });
   });
 

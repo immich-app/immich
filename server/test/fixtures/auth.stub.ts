@@ -51,6 +51,7 @@ export const authStub = {
     isShowMetadata: true,
     accessTokenId: 'token-id',
     externalPath: null,
+    isShowPrivateAlbum: false,
   }),
   user2: Object.freeze<AuthUserDto>({
     id: 'user-2',

@@ -192,6 +192,7 @@ part 'model/usage_by_user_dto.dart';
 part 'model/user_dto.dart';
 part 'model/user_response_dto.dart';
 part 'model/validate_access_token_response_dto.dart';
+part 'model/validate_private_album_password_dto.dart';
 part 'model/video_codec.dart';
 
 

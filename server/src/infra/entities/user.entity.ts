@@ -57,6 +57,9 @@ export class UserEntity {
   @Column({ default: true })
   memoriesEnabled!: boolean;
 
+  @Column({ default: '' })
+  privateAlbumPassword!: string;
+
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];
 

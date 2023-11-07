@@ -21,6 +21,7 @@ export interface SearchFilter {
   type?: AssetType;
   isFavorite?: boolean;
   isArchived?: boolean;
+  isShowPrivateAlbum?: boolean;
   city?: string;
   state?: string;
   country?: string;

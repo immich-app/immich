@@ -53,6 +53,21 @@ describe(AlbumService.name, () => {
       expect(albumMock.getShared).toHaveBeenCalledWith(authStub.admin.id);
       expect(albumMock.getNotShared).toHaveBeenCalledWith(authStub.admin.id);
     });
+
+    it('should not return private album count', async () => {
+      albumMock.getOwned.mockResolvedValue([albumStub.private]);
+      albumMock.getShared.mockResolvedValue([albumStub.private]);
+      albumMock.getNotShared.mockResolvedValue([albumStub.private]);
+      await expect(sut.getCount(authStub.admin)).resolves.toEqual({
+        owned: 0,
+        shared: 0,
+        notShared: 0,
+      });
+
+      expect(albumMock.getOwned).toHaveBeenCalledWith(authStub.admin.id);
+      expect(albumMock.getShared).toHaveBeenCalledWith(authStub.admin.id);
+      expect(albumMock.getNotShared).toHaveBeenCalledWith(authStub.admin.id);
+    });
   });
 
   describe('getAll', () => {
@@ -101,6 +116,16 @@ describe(AlbumService.name, () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(albumStub.empty.id);
       expect(albumMock.getNotShared).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not return private albums', async () => {
+      albumMock.getOwned.mockResolvedValue([albumStub.private]);
+      albumMock.getAssetCountForIds.mockResolvedValue([{ albumId: albumStub.private.id, assetCount: 0 }]);
+      albumMock.getInvalidThumbnail.mockResolvedValue([]);
+
+      const result = await sut.getAll(authStub.admin, {});
+      expect(result).toHaveLength(0);
+      expect(albumMock.getOwned).toHaveBeenCalledTimes(1);
     });
   });
 

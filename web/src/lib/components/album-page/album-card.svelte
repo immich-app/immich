@@ -7,7 +7,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import type { OnClick, OnShowContextMenu } from './album-card';
   import { getContextMenuPosition } from '../../utils/context-menu';
-  import { mdiDotsVertical } from '@mdi/js';
+  import { mdiDotsVertical, mdiLockOutline } from '@mdi/js';
 
   export let album: AlbumResponseDto;
   export let isSharingView = false;
@@ -89,6 +89,13 @@
       data-testid="album-image"
       draggable="false"
     />
+    {#if album.isPrivate}
+      <Icon
+        path={mdiLockOutline}
+        size="100"
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-neutral-400 opacity-50"
+      />
+    {/if}
     <div
       class="absolute top-0 h-full w-full rounded-3xl {isSharingView
         ? 'group-hover:bg-yellow-800/25'

@@ -86,6 +86,10 @@ export class PersonRepository implements IPersonRepository {
       queryBuilder.andWhere('person.isHidden = false');
     }
 
+    if (!options?.isShowPrivateAlbum) {
+      queryBuilder.leftJoin('asset.albums', 'album').andWhere('(album.isPrivate = false OR album.id IS NULL)');
+    }
+
     return queryBuilder.getMany();
   }
 

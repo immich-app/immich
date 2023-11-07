@@ -152,7 +152,10 @@ export class AssetService {
   }
 
   getMapMarkers(authUser: AuthUserDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    return this.assetRepository.getMapMarkers(authUser.id, options);
+    return this.assetRepository.getMapMarkers(authUser.id, {
+      ...options,
+      isShowPrivateAlbum: authUser.isShowPrivateAlbum,
+    });
   }
 
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
@@ -191,7 +194,7 @@ export class AssetService {
 
   async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    return this.assetRepository.getTimeBuckets(dto);
+    return this.assetRepository.getTimeBuckets({ ...dto, isShowPrivateAlbum: authUser.isShowPrivateAlbum });
   }
 
   async getTimeBucket(
@@ -199,7 +202,10 @@ export class AssetService {
     dto: TimeBucketAssetDto,
   ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, dto);
+    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, {
+      ...dto,
+      isShowPrivateAlbum: authUser.isShowPrivateAlbum,
+    });
     if (authUser.isShowMetadata) {
       return assets.map((asset) => mapAsset(asset, { withStack: true }));
     } else {
@@ -310,12 +316,18 @@ export class AssetService {
   }
 
   async getStatistics(authUser: AuthUserDto, dto: AssetStatsDto) {
-    const stats = await this.assetRepository.getStatistics(authUser.id, dto);
+    const stats = await this.assetRepository.getStatistics(authUser.id, {
+      ...dto,
+      isShowPrivateAlbum: authUser.isShowPrivateAlbum,
+    });
     return mapStats(stats);
   }
 
   async getRandom(authUser: AuthUserDto, count: number): Promise<AssetResponseDto[]> {
-    const assets = await this.assetRepository.getRandom(authUser.id, count);
+    const assets = await this.assetRepository.getRandom(authUser.id, {
+      count,
+      isShowPrivateAlbum: authUser.isShowPrivateAlbum,
+    });
     return assets.map((a) => mapAsset(a));
   }
 

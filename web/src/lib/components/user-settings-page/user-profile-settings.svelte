@@ -19,6 +19,7 @@
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          privateAlbumPassword: user.privateAlbumPassword,
         },
       });
 
@@ -74,6 +75,13 @@
           label="EXTERNAL PATH"
           disabled={true}
           value={user.externalPath || ''}
+          required={false}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
+          label="PRIVATE ALBUMS PASSWORD"
+          bind:value={user.privateAlbumPassword}
           required={false}
         />
 

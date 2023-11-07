@@ -47,7 +47,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<AlbumResponseDto>> getAllAlbums({ bool shared, String assetId }) async
+    //Future<List<AlbumResponseDto>> getAllAlbums({ bool shared, String assetId, String privateAlbumToken }) async
     test('test getAllAlbums', () async {
       // TODO
     });

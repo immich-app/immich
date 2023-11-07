@@ -13,6 +13,7 @@
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
+  import ExitPrivateModeButton from '$lib/components/shared-components/exit_private_mode_button.svelte';
   import { onMount } from 'svelte';
   import { loadConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -126,4 +127,8 @@
 
 {#if $page.route.id?.includes('(user)')}
   <UploadCover {dropHandler} />
+{/if}
+
+{#if data.privateAlbumToken}
+  <ExitPrivateModeButton />
 {/if}

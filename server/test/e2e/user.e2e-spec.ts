@@ -311,5 +311,20 @@ describe(`${UserController.name}`, () => {
       });
       expect(before.updatedAt).not.toEqual(after.updatedAt);
     });
+
+    it('should update private album password', async () => {
+      const before = await api.userApi.get(server, accessToken, loginResponse.userId);
+      const after = await api.userApi.update(server, accessToken, {
+        id: before.id,
+        privateAlbumPassword: 'newPassword',
+      });
+
+      expect(after).toMatchObject({
+        ...before,
+        updatedAt: expect.anything(),
+        privateAlbumPassword: 'newPassword',
+      });
+      expect(before.updatedAt).not.toEqual(after.updatedAt);
+    });
   });
 });

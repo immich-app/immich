@@ -62,5 +62,10 @@ void main() {
       // TODO
     });
 
+    //Future validatePrivateAlbumPassword(ValidatePrivateAlbumPasswordDto validatePrivateAlbumPasswordDto) async
+    test('test validatePrivateAlbumPassword', () async {
+      // TODO
+    });
+
   });
 }

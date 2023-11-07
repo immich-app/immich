@@ -5,6 +5,7 @@ export const IPersonRepository = 'IPersonRepository';
 export interface PersonSearchOptions {
   minimumFaceCount: number;
   withHidden: boolean;
+  isShowPrivateAlbum?: boolean;
 }
 
 export interface PersonNameSearchOptions {

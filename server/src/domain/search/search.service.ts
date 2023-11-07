@@ -127,7 +127,7 @@ export class SearchService {
     const query = dto.q || dto.query || '*';
     const hasClip = machineLearning.enabled && machineLearning.clip.enabled;
     const strategy = dto.clip && hasClip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
-    const filters = { userId: authUser.id, ...dto };
+    const filters = { userId: authUser.id, isShowPrivateAlbum: authUser.isShowPrivateAlbum, ...dto };
 
     let assets: SearchResult<AssetEntity>;
     switch (strategy) {

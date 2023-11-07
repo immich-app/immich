@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // bool isPrivate
+    test('to test the property `isPrivate`', () async {
+      // TODO
+    });
+
     // DateTime lastModifiedAssetTimestamp
     test('to test the property `lastModifiedAssetTimestamp`', () async {
       // TODO

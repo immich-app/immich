@@ -8,7 +8,9 @@ const LOG_PREFIX = '[hooks.server.ts]';
 export const handle = (async ({ event, resolve }) => {
   const basePath = env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001';
   const accessToken = event.cookies.get('immich_access_token');
-  const api = new ImmichApi({ basePath, accessToken });
+  const privateAlbumToken = event.cookies.get('immich_private_album_token');
+  const headers = privateAlbumToken ? { 'x-immich-private-album-token': privateAlbumToken } : undefined;
+  const api = new ImmichApi({ basePath, accessToken, baseOptions: { headers } });
 
   // API instance that should be used for all server-side requests.
   event.locals.api = api;

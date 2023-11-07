@@ -20,6 +20,7 @@ const responseDto = {
     updatedAt: new Date('2021-01-01'),
     externalPath: null,
     memoriesEnabled: true,
+    privateAlbumPassword: '',
   },
   user1: <UserResponseDto>{
     email: 'immich@test.com',
@@ -36,6 +37,7 @@ const responseDto = {
     updatedAt: new Date('2021-01-01'),
     externalPath: null,
     memoriesEnabled: true,
+    privateAlbumPassword: '',
   },
 };
 

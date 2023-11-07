@@ -23,6 +23,7 @@ class UserResponseDto {
     required this.lastName,
     this.memoriesEnabled,
     required this.oauthId,
+    required this.privateAlbumPassword,
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.storageLabel,
@@ -55,6 +56,8 @@ class UserResponseDto {
 
   String oauthId;
 
+  String privateAlbumPassword;
+
   String profileImagePath;
 
   bool shouldChangePassword;
@@ -75,6 +78,7 @@ class UserResponseDto {
      other.lastName == lastName &&
      other.memoriesEnabled == memoriesEnabled &&
      other.oauthId == oauthId &&
+     other.privateAlbumPassword == privateAlbumPassword &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
      other.storageLabel == storageLabel &&
@@ -93,13 +97,14 @@ class UserResponseDto {
     (lastName.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (oauthId.hashCode) +
+    (privateAlbumPassword.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, privateAlbumPassword=$privateAlbumPassword, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -125,6 +130,7 @@ class UserResponseDto {
     //  json[r'memoriesEnabled'] = null;
     }
       json[r'oauthId'] = this.oauthId;
+      json[r'privateAlbumPassword'] = this.privateAlbumPassword;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     if (this.storageLabel != null) {
@@ -154,6 +160,7 @@ class UserResponseDto {
         lastName: mapValueOfType<String>(json, r'lastName')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
+        privateAlbumPassword: mapValueOfType<String>(json, r'privateAlbumPassword')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
@@ -214,6 +221,7 @@ class UserResponseDto {
     'isAdmin',
     'lastName',
     'oauthId',
+    'privateAlbumPassword',
     'profileImagePath',
     'shouldChangePassword',
     'storageLabel',

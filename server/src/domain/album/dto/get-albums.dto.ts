@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean } from 'class-validator';
-import { Optional, toBoolean, ValidateUUID } from '../../domain.util';
+import { IsBoolean, IsString } from 'class-validator';
+import { Optional, ValidateUUID, toBoolean } from '../../domain.util';
 
 export class GetAlbumsDto {
   @Optional()
@@ -22,4 +22,8 @@ export class GetAlbumsDto {
    */
   @ValidateUUID({ optional: true })
   assetId?: string;
+
+  @Optional()
+  @IsString()
+  privateAlbumToken?: string;
 }

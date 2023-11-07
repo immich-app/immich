@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // String privateAlbumPassword
+    test('to test the property `privateAlbumPassword`', () async {
+      // TODO
+    });
+
     // bool shouldChangePassword
     test('to test the property `shouldChangePassword`', () async {
       // TODO

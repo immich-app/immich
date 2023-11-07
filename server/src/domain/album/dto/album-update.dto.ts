@@ -10,6 +10,10 @@ export class UpdateAlbumDto {
   @IsString()
   description?: string;
 
+  @IsBoolean()
+  @Optional()
+  isPrivate?: boolean;
+
   @ValidateUUID({ optional: true })
   albumThumbnailAssetId?: string;
 
