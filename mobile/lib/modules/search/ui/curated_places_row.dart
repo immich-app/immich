@@ -46,18 +46,21 @@ class CuratedPlacesRow extends CuratedRow {
                   isDarkTheme: Theme.of(context).brightness == Brightness.dark,
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.black,
-                  gradient: LinearGradient(
-                    begin: FractionalOffset.topCenter,
-                    end: FractionalOffset.bottomCenter,
-                    colors: [
-                      Colors.blueGrey.withOpacity(0.0),
-                      Colors.black.withOpacity(0.4),
-                    ],
-                    stops: const [0.0, 1.0],
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.black,
+                    gradient: LinearGradient(
+                      begin: FractionalOffset.topCenter,
+                      end: FractionalOffset.bottomCenter,
+                      colors: [
+                        Colors.blueGrey.withOpacity(0.0),
+                        Colors.black.withOpacity(0.4),
+                      ],
+                      stops: const [0.0, 0.4],
+                    ),
                   ),
                 ),
               ),
