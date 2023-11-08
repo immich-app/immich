@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/activities/views/activities_page.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/views/album_options_part.dart';
 import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
@@ -28,6 +29,9 @@ import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
+import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
+import 'package:immich_mobile/modules/shared_link/views/shared_link_edit_page.dart';
+import 'package:immich_mobile/modules/shared_link/views/shared_link_page.dart';
 import 'package:immich_mobile/modules/trash/views/trash_page.dart';
 import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/all_people_page.dart';
@@ -51,6 +55,7 @@ import 'package:immich_mobile/shared/views/app_log_detail_page.dart';
 import 'package:immich_mobile/shared/views/app_log_page.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
+import 'package:isar/isar.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 part 'router.gr.dart';
@@ -129,10 +134,7 @@ part 'router.gr.dart';
         DuplicateGuard,
       ],
     ),
-    CustomRoute(
-      page: AppLogPage,
-      transitionsBuilder: TransitionsBuilders.slideBottom,
-    ),
+    AutoRoute(page: AppLogPage, guards: [DuplicateGuard]),
     AutoRoute(
       page: AppLogDetailPage,
     ),
@@ -157,6 +159,14 @@ part 'router.gr.dart';
     AutoRoute(page: MapPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AlbumOptionsPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: TrashPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: SharedLinkPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: SharedLinkEditPage, guards: [AuthGuard, DuplicateGuard]),
+    CustomRoute(
+      page: ActivitiesPage,
+      guards: [AuthGuard, DuplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+      durationInMilliseconds: 200,
+    ),
   ],
 )
 class AppRouter extends _$AppRouter {

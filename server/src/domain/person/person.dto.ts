@@ -73,6 +73,11 @@ export class PersonResponseDto {
   isHidden!: boolean;
 }
 
+export class PersonStatisticsResponseDto {
+  @ApiProperty({ type: 'integer' })
+  assets!: number;
+}
+
 export class PeopleResponseDto {
   @ApiProperty({ type: 'integer' })
   total!: number;
@@ -93,6 +98,10 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFace(face: AssetFaceEntity): PersonResponseDto {
-  return mapPerson(face.person);
+export function mapFace(face: AssetFaceEntity): PersonResponseDto | null {
+  if (face.person) {
+    return mapPerson(face.person);
+  }
+
+  return null;
 }

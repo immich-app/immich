@@ -1,43 +1,35 @@
 <script lang="ts">
-  import { getGithubVersion } from '$lib/utils/get-github-version';
-  import { onMount } from 'svelte';
-  import FullScreenModal from './full-screen-modal.svelte';
   import type { ServerVersionResponseDto } from '@api';
+  import { websocketStore } from '$lib/stores/websocket';
   import Button from '../elements/buttons/button.svelte';
-
-  export let serverVersion: ServerVersionResponseDto;
+  import FullScreenModal from './full-screen-modal.svelte';
 
   let showModal = false;
-  let githubVersion: string;
-  $: serverVersionName = semverToName(serverVersion);
 
-  function semverToName({ major, minor, patch }: ServerVersionResponseDto) {
-    return `v${major}.${minor}.${patch}`;
-  }
+  const { onRelease } = websocketStore;
 
-  function onAcknowledge() {
-    // Store server version to prevent the notification
-    // from showing again.
-    localStorage.setItem('appVersion', githubVersion);
+  const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
+
+  $: releaseVersion = $onRelease && semverToName($onRelease.releaseVersion);
+  $: serverVersion = $onRelease && semverToName($onRelease.serverVersion);
+  $: $onRelease?.isAvailable && handleRelease();
+
+  const onAcknowledge = () => {
+    localStorage.setItem('appVersion', releaseVersion);
     showModal = false;
-  }
+  };
 
-  onMount(async () => {
+  const handleRelease = () => {
     try {
-      githubVersion = await getGithubVersion();
-      if (localStorage.getItem('appVersion') === githubVersion) {
-        // Updated version has already been acknowledged.
+      if (localStorage.getItem('appVersion') === releaseVersion) {
         return;
       }
 
-      if (githubVersion !== serverVersionName) {
-        showModal = true;
-      }
+      showModal = true;
     } catch (err) {
-      // Only log any errors that occur.
       console.error('Error [VersionAnnouncementBox]:', err);
     }
-  });
+  };
 </script>
 
 {#if showModal}
@@ -63,9 +55,9 @@
       <div class="mt-4 font-medium">Your friend, Alex</div>
 
       <div class="font-sm mt-8">
-        <code>Server Version: {serverVersionName}</code>
+        <code>Server Version: {serverVersion}</code>
         <br />
-        <code>Latest Version: {githubVersion}</code>
+        <code>Latest Version: {releaseVersion}</code>
       </div>
 
       <div class="mt-8 text-right">

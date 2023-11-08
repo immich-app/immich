@@ -21,6 +21,7 @@ import {
   TimeBucketResponseDto,
   TrashAction,
   UpdateAssetDto as UpdateDto,
+  UpdateStackParentDto,
 } from '@app/domain';
 import {
   Body,
@@ -38,10 +39,11 @@ import {
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile } from '../app.utils';
+import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Asset')
-@Controller('asset')
+@Controller(Route.ASSET)
 @Authenticated()
 @UseValidation()
 export class AssetController {
@@ -85,7 +87,7 @@ export class AssetController {
   }
 
   @Get('statistics')
-  getAssetStats(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
+  getAssetStatistics(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
     return this.service.getStatistics(authUser, dto);
   }
 
@@ -97,8 +99,8 @@ export class AssetController {
 
   @Authenticated({ isShared: true })
   @Get('time-bucket')
-  getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    return this.service.getByTimeBucket(authUser, dto);
+  getTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+    return this.service.getTimeBucket(authUser, dto) as Promise<AssetResponseDto[]>;
   }
 
   @Post('jobs')
@@ -135,6 +137,12 @@ export class AssetController {
   @HttpCode(HttpStatus.NO_CONTENT)
   restoreTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
     return this.service.handleTrashAction(authUser, TrashAction.RESTORE_ALL);
+  }
+
+  @Put('stack/parent')
+  @HttpCode(HttpStatus.OK)
+  updateStackParent(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateStackParentDto): Promise<void> {
+    return this.service.updateStackParent(authUser, dto);
   }
 
   @Put(':id')

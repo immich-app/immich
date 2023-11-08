@@ -3,6 +3,9 @@ import { AuthUserDto } from '../auth';
 import { IAccessRepository } from '../repositories';
 
 export enum Permission {
+  ACTIVITY_CREATE = 'activity.create',
+  ACTIVITY_DELETE = 'activity.delete',
+
   // ASSET_CREATE = 'asset.create',
   ASSET_READ = 'asset.read',
   ASSET_UPDATE = 'asset.update',
@@ -21,6 +24,8 @@ export enum Permission {
   ALBUM_SHARE = 'album.share',
   ALBUM_DOWNLOAD = 'album.download',
 
+  AUTH_DEVICE_DELETE = 'authDevice.delete',
+
   ARCHIVE_READ = 'archive.read',
 
   TIMELINE_READ = 'timeline.read',
@@ -37,8 +42,22 @@ export enum Permission {
   PERSON_MERGE = 'person.merge',
 }
 
+let instance: AccessCore | null;
+
 export class AccessCore {
-  constructor(private repository: IAccessRepository) {}
+  private constructor(private repository: IAccessRepository) {}
+
+  static create(repository: IAccessRepository) {
+    if (!instance) {
+      instance = new AccessCore(repository);
+    }
+
+    return instance;
+  }
+
+  static reset() {
+    instance = null;
+  }
 
   requireUploadAccess(authUser: AuthUserDto | null): AuthUserDto {
     if (!authUser || (authUser.isPublicUser && !authUser.isAllowUpload)) {
@@ -117,6 +136,17 @@ export class AccessCore {
 
   private async hasOtherAccess(authUser: AuthUserDto, permission: Permission, id: string) {
     switch (permission) {
+      // uses album id
+      case Permission.ACTIVITY_CREATE:
+        return await this.repository.activity.hasCreateAccess(authUser.id, id);
+
+      // uses activity id
+      case Permission.ACTIVITY_DELETE:
+        return (
+          (await this.repository.activity.hasOwnerAccess(authUser.id, id)) ||
+          (await this.repository.activity.hasAlbumOwnerAccess(authUser.id, id))
+        );
+
       case Permission.ASSET_READ:
         return (
           (await this.repository.asset.hasOwnerAccess(authUser.id, id)) ||
@@ -181,6 +211,9 @@ export class AccessCore {
 
       case Permission.ARCHIVE_READ:
         return authUser.id === id;
+
+      case Permission.AUTH_DEVICE_DELETE:
+        return this.repository.authDevice.hasOwnerAccess(authUser.id, id);
 
       case Permission.TIMELINE_READ:
         return authUser.id === id || (await this.repository.timeline.hasPartnerAccess(authUser.id, id));

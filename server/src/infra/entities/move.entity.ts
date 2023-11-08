@@ -34,4 +34,8 @@ export enum PersonPathType {
   FACE = 'face',
 }
 
-export type PathType = AssetPathType | PersonPathType;
+export enum UserPathType {
+  PROFILE = 'profile',
+}
+
+export type PathType = AssetPathType | PersonPathType | UserPathType;

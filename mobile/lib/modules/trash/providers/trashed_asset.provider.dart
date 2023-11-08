@@ -2,10 +2,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/trash/services/trash.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
@@ -29,25 +28,19 @@ class TrashNotifier extends StateNotifier<bool> {
       }
       await _trashService.emptyTrash();
 
-      final dbIds = await _db.assets
+      final idsToRemove = await _db.assets
           .where()
           .remoteIdIsNotNull()
           .filter()
           .ownerIdEqualTo(user.isarId)
           .isTrashedEqualTo(true)
-          .idProperty()
+          .remoteIdProperty()
           .findAll();
 
-      await _db.writeTxn(() async {
-        await _db.exifInfos.deleteAll(dbIds);
-        await _db.assets.deleteAll(dbIds);
-      });
-
-      // Refresh assets in background
-      Future.delayed(
-        const Duration(seconds: 4),
-        () async => await _ref.read(assetProvider.notifier).getAllAsset(),
-      );
+      // TODO: handle local asset removal on emptyTrash
+      _ref
+          .read(syncServiceProvider)
+          .handleRemoteAssetRemoval(idsToRemove.cast<String>().toList());
     } catch (error, stack) {
       _log.severe("Cannot empty trash ${error.toString()}", error, stack);
     }
@@ -68,12 +61,6 @@ class TrashNotifier extends StateNotifier<bool> {
         await _db.writeTxn(() async {
           await _db.assets.putAll(updatedAssets);
         });
-
-        // Refresh assets in background
-        Future.delayed(
-          const Duration(seconds: 4),
-          () async => await _ref.read(assetProvider.notifier).getAllAsset(),
-        );
         return true;
       }
     } catch (error, stack) {
@@ -106,12 +93,6 @@ class TrashNotifier extends StateNotifier<bool> {
       await _db.writeTxn(() async {
         await _db.assets.putAll(updatedAssets);
       });
-
-      // Refresh assets in background
-      Future.delayed(
-        const Duration(seconds: 4),
-        () async => await _ref.read(assetProvider.notifier).getAllAsset(),
-      );
     } catch (error, stack) {
       _log.severe("Cannot restore trash ${error.toString()}", error, stack);
     }

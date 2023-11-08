@@ -1,0 +1,150 @@
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
+import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+
+class AppBarProfileInfoBox extends HookConsumerWidget {
+  const AppBarProfileInfoBox({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    AuthenticationState authState = ref.watch(authenticationProvider);
+    final uploadProfileImageStatus =
+        ref.watch(uploadProfileImageProvider).status;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final user = Store.tryGet(StoreKey.currentUser);
+
+    buildUserProfileImage() {
+      const immichImage = CircleAvatar(
+        radius: 20,
+        backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+        backgroundColor: Colors.transparent,
+      );
+
+      if (authState.profileImagePath.isEmpty || user == null) {
+        return immichImage;
+      }
+
+      final userImage = UserCircleAvatar(
+        radius: 20,
+        size: 40,
+        user: user,
+      );
+
+      if (uploadProfileImageStatus == UploadProfileStatus.idle) {
+        return authState.profileImagePath.isNotEmpty ? userImage : immichImage;
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.success) {
+        return userImage;
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.failure) {
+        return immichImage;
+      }
+
+      if (uploadProfileImageStatus == UploadProfileStatus.loading) {
+        return const SizedBox(
+          height: 40,
+          width: 40,
+          child: ImmichLoadingIndicator(borderRadius: 20),
+        );
+      }
+
+      return immichImage;
+    }
+
+    pickUserProfileImage() async {
+      final XFile? image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxHeight: 1024,
+        maxWidth: 1024,
+      );
+
+      if (image != null) {
+        var success =
+            await ref.watch(uploadProfileImageProvider.notifier).upload(image);
+
+        if (success) {
+          final profileImagePath =
+              ref.read(uploadProfileImageProvider).profileImagePath;
+          ref.watch(authenticationProvider.notifier).updateUserProfileImagePath(
+                profileImagePath,
+              );
+          if (user != null) {
+            user.profileImagePath = profileImagePath;
+            Store.put(StoreKey.currentUser, user);
+          }
+        }
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Theme.of(context).scaffoldBackgroundColor
+              : const Color.fromARGB(255, 225, 229, 240),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+          ),
+        ),
+        child: ListTile(
+          minLeadingWidth: 50,
+          leading: GestureDetector(
+            onTap: pickUserProfileImage,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                buildUserProfileImage(),
+                Positioned(
+                  bottom: -5,
+                  right: -8,
+                  child: Material(
+                    color: isDarkMode ? Colors.blueGrey[800] : Colors.white,
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Icon(
+                        Icons.camera_alt_outlined,
+                        color: Theme.of(context).primaryColor,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          title: Text(
+            "${authState.firstName} ${authState.lastName}",
+            style: TextStyle(
+              color: Theme.of(context).primaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Text(
+            authState.userEmail,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontSize: 12,
+                ),
+          ),
+        ),
+      ),
+    );
+  }
+}

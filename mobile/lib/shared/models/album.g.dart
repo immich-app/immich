@@ -17,35 +17,55 @@ const AlbumSchema = CollectionSchema(
   name: r'Album',
   id: -1355968412107120937,
   properties: {
-    r'createdAt': PropertySchema(
+    r'activityEnabled': PropertySchema(
       id: 0,
+      name: r'activityEnabled',
+      type: IsarType.bool,
+    ),
+    r'createdAt': PropertySchema(
+      id: 1,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
+    r'endDate': PropertySchema(
+      id: 2,
+      name: r'endDate',
+      type: IsarType.dateTime,
+    ),
+    r'lastModifiedAssetTimestamp': PropertySchema(
+      id: 3,
+      name: r'lastModifiedAssetTimestamp',
+      type: IsarType.dateTime,
+    ),
     r'localId': PropertySchema(
-      id: 1,
+      id: 4,
       name: r'localId',
       type: IsarType.string,
     ),
     r'modifiedAt': PropertySchema(
-      id: 2,
+      id: 5,
       name: r'modifiedAt',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 3,
+      id: 6,
       name: r'name',
       type: IsarType.string,
     ),
     r'remoteId': PropertySchema(
-      id: 4,
+      id: 7,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'shared': PropertySchema(
-      id: 5,
+      id: 8,
       name: r'shared',
       type: IsarType.bool,
+    ),
+    r'startDate': PropertySchema(
+      id: 9,
+      name: r'startDate',
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _albumEstimateSize,
@@ -142,12 +162,16 @@ void _albumSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeString(offsets[1], object.localId);
-  writer.writeDateTime(offsets[2], object.modifiedAt);
-  writer.writeString(offsets[3], object.name);
-  writer.writeString(offsets[4], object.remoteId);
-  writer.writeBool(offsets[5], object.shared);
+  writer.writeBool(offsets[0], object.activityEnabled);
+  writer.writeDateTime(offsets[1], object.createdAt);
+  writer.writeDateTime(offsets[2], object.endDate);
+  writer.writeDateTime(offsets[3], object.lastModifiedAssetTimestamp);
+  writer.writeString(offsets[4], object.localId);
+  writer.writeDateTime(offsets[5], object.modifiedAt);
+  writer.writeString(offsets[6], object.name);
+  writer.writeString(offsets[7], object.remoteId);
+  writer.writeBool(offsets[8], object.shared);
+  writer.writeDateTime(offsets[9], object.startDate);
 }
 
 Album _albumDeserialize(
@@ -157,12 +181,16 @@ Album _albumDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Album(
-    createdAt: reader.readDateTime(offsets[0]),
-    localId: reader.readStringOrNull(offsets[1]),
-    modifiedAt: reader.readDateTime(offsets[2]),
-    name: reader.readString(offsets[3]),
-    remoteId: reader.readStringOrNull(offsets[4]),
-    shared: reader.readBool(offsets[5]),
+    activityEnabled: reader.readBool(offsets[0]),
+    createdAt: reader.readDateTime(offsets[1]),
+    endDate: reader.readDateTimeOrNull(offsets[2]),
+    lastModifiedAssetTimestamp: reader.readDateTimeOrNull(offsets[3]),
+    localId: reader.readStringOrNull(offsets[4]),
+    modifiedAt: reader.readDateTime(offsets[5]),
+    name: reader.readString(offsets[6]),
+    remoteId: reader.readStringOrNull(offsets[7]),
+    shared: reader.readBool(offsets[8]),
+    startDate: reader.readDateTimeOrNull(offsets[9]),
   );
   object.id = id;
   return object;
@@ -176,17 +204,25 @@ P _albumDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
-    case 2:
       return (reader.readDateTime(offset)) as P;
+    case 2:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
+      return (reader.readDateTime(offset)) as P;
+    case 6:
+      return (reader.readString(offset)) as P;
+    case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
       return (reader.readBool(offset)) as P;
+    case 9:
+      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -415,6 +451,16 @@ extension AlbumQueryWhere on QueryBuilder<Album, Album, QWhereClause> {
 }
 
 extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
+  QueryBuilder<Album, Album, QAfterFilterCondition> activityEnabledEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'activityEnabled',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterFilterCondition> createdAtEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -468,6 +514,75 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'endDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'endDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'endDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> endDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'endDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -512,6 +627,80 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'lastModifiedAssetTimestamp',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'lastModifiedAssetTimestamp',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastModifiedAssetTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastModifiedAssetTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastModifiedAssetTimestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition>
+      lastModifiedAssetTimestampBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastModifiedAssetTimestamp',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1001,6 +1190,75 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
       ));
     });
   }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'startDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'startDate',
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'startDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> startDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'startDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension AlbumQueryObject on QueryBuilder<Album, Album, QFilterCondition> {}
@@ -1146,6 +1404,18 @@ extension AlbumQueryLinks on QueryBuilder<Album, Album, QFilterCondition> {
 }
 
 extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
+  QueryBuilder<Album, Album, QAfterSortBy> sortByActivityEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'activityEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByActivityEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'activityEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1155,6 +1425,31 @@ extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
   QueryBuilder<Album, Album, QAfterSortBy> sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByEndDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByLastModifiedAssetTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy>
+      sortByLastModifiedAssetTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.desc);
     });
   }
 
@@ -1217,9 +1512,33 @@ extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
       return query.addSortBy(r'shared', Sort.desc);
     });
   }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByStartDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.desc);
+    });
+  }
 }
 
 extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
+  QueryBuilder<Album, Album, QAfterSortBy> thenByActivityEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'activityEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByActivityEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'activityEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1232,6 +1551,18 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterSortBy> thenByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByEndDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endDate', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1241,6 +1572,19 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
   QueryBuilder<Album, Album, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByLastModifiedAssetTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy>
+      thenByLastModifiedAssetTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModifiedAssetTimestamp', Sort.desc);
     });
   }
 
@@ -1303,12 +1647,42 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
       return query.addSortBy(r'shared', Sort.desc);
     });
   }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByStartDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startDate', Sort.desc);
+    });
+  }
 }
 
 extension AlbumQueryWhereDistinct on QueryBuilder<Album, Album, QDistinct> {
+  QueryBuilder<Album, Album, QDistinct> distinctByActivityEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'activityEnabled');
+    });
+  }
+
   QueryBuilder<Album, Album, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
+    });
+  }
+
+  QueryBuilder<Album, Album, QDistinct> distinctByEndDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'endDate');
+    });
+  }
+
+  QueryBuilder<Album, Album, QDistinct> distinctByLastModifiedAssetTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastModifiedAssetTimestamp');
     });
   }
 
@@ -1344,6 +1718,12 @@ extension AlbumQueryWhereDistinct on QueryBuilder<Album, Album, QDistinct> {
       return query.addDistinctBy(r'shared');
     });
   }
+
+  QueryBuilder<Album, Album, QDistinct> distinctByStartDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'startDate');
+    });
+  }
 }
 
 extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
@@ -1353,9 +1733,28 @@ extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
     });
   }
 
+  QueryBuilder<Album, bool, QQueryOperations> activityEnabledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'activityEnabled');
+    });
+  }
+
   QueryBuilder<Album, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
+    });
+  }
+
+  QueryBuilder<Album, DateTime?, QQueryOperations> endDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'endDate');
+    });
+  }
+
+  QueryBuilder<Album, DateTime?, QQueryOperations>
+      lastModifiedAssetTimestampProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastModifiedAssetTimestamp');
     });
   }
 
@@ -1386,6 +1785,12 @@ extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
   QueryBuilder<Album, bool, QQueryOperations> sharedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'shared');
+    });
+  }
+
+  QueryBuilder<Album, DateTime?, QQueryOperations> startDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'startDate');
     });
   }
 }

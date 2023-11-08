@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Close from 'svelte-material-icons/Close.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
   import FullScreenModal from './full-screen-modal.svelte';
+  import { mdiClose } from '@mdi/js';
 
   const shortcuts = {
     general: [
@@ -30,7 +30,7 @@
       <div class="relative px-4 pt-4">
         <h1 class="px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">Keyboard Shortcuts</h1>
         <div class="absolute inset-y-0 right-0 px-4 py-4">
-          <CircleIconButton logo={Close} on:click={() => dispatch('close')} />
+          <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
         </div>
       </div>
 

@@ -27,7 +27,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<PersonResponseDto>> searchPerson(String name) async
+    //Future<List<PersonResponseDto>> searchPerson(String name, { bool withHidden }) async
     test('test searchPerson', () async {
       // TODO
     });

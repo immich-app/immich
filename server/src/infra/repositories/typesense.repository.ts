@@ -420,9 +420,10 @@ export class TypesenseRepository implements ISearchRepository {
     if (lat && lng && lat !== 0 && lng !== 0) {
       custom = { ...custom, geo: [lat, lng] };
     }
-
-    const people =
-      asset.faces?.filter((face) => !face.person.isHidden && face.person.name).map((face) => face.person.name) || [];
+    const people = asset.faces
+      ?.filter((face) => !face.person?.isHidden && face.person?.name)
+      .map((face) => face.person?.name)
+      .filter((name) => name !== undefined) as string[];
     if (people.length) {
       custom = { ...custom, people };
     }

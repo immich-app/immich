@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -20,7 +21,6 @@ import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -40,19 +40,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
             autoBackup: Store.get(StoreKey.autoBackup, false),
-            backgroundBackup: false,
+            backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
             backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
             backupRequireCharging:
                 Store.get(StoreKey.backupRequireCharging, false),
             backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
-            serverInfo: ServerInfoResponseDto(
+            serverInfo: const ServerDiskInfo(
               diskAvailable: "0",
-              diskAvailableRaw: 0,
               diskSize: "0",
-              diskSizeRaw: 0,
-              diskUsagePercentage: 0,
               diskUse: "0",
-              diskUseRaw: 0,
+              diskUsagePercentage: 0,
             ),
             availableAlbums: const [],
             selectedBackupAlbums: const {},
@@ -174,6 +171,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           state.backupRequireCharging,
         );
         await Store.put(StoreKey.backupTriggerDelay, state.backupTriggerDelay);
+        await Store.put(StoreKey.backgroundBackup, state.backgroundBackup);
       } else {
         state = state.copyWith(
           backgroundBackup: wasEnabled,
@@ -386,6 +384,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final isEnabled = await _backgroundService.isBackgroundBackupEnabled();
 
     state = state.copyWith(backgroundBackup: isEnabled);
+    if (isEnabled != Store.get(StoreKey.backgroundBackup, !isEnabled)) {
+      Store.put(StoreKey.backgroundBackup, isEnabled);
+    }
 
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();

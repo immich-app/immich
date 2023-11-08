@@ -1,8 +1,8 @@
 import {
   AudioCodec,
-  CQMode,
   CitiesFile,
   Colorspace,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -13,11 +13,11 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
+import { CronExpression } from '@nestjs/schedule';
+import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
-import { DeepPartial } from 'typeorm';
 import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';
@@ -68,7 +68,7 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     clip: {
       enabled: true,
-      modelName: 'ViT-B-32::openai',
+      modelName: 'ViT-B-32__openai',
     },
     facialRecognition: {
       enabled: true,
@@ -111,9 +111,21 @@ export const defaults = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
+  newVersionCheck: {
+    enabled: true,
+  },
   trash: {
     enabled: true,
     days: 30,
+  },
+  theme: {
+    customCss: '',
+  },
+  library: {
+    scan: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_MIDNIGHT,
+    },
   },
 });
 
@@ -140,7 +152,7 @@ let instance: SystemConfigCore | null;
 export class SystemConfigCore {
   private logger = new Logger(SystemConfigCore.name);
   private validators: SystemConfigValidator[] = [];
-  private configCache: SystemConfig | null = null;
+  private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
 
   public config$ = new Subject<SystemConfig>();
 
@@ -218,9 +230,28 @@ export class SystemConfigCore {
     this.validators.push(validator);
   }
 
-  public getConfig(force = false): Promise<SystemConfig> {
+  public async getConfig(force = false): Promise<SystemConfig> {
     const configFilePath = process.env.IMMICH_CONFIG_FILE;
-    return configFilePath ? this.loadFromFile(configFilePath, force) : this.loadFromDatabase();
+    const config = _.cloneDeep(defaults);
+    const overrides = configFilePath ? await this.loadFromFile(configFilePath, force) : await this.repository.load();
+
+    for (const { key, value } of overrides) {
+      // set via dot notation
+      _.set(config, key, value);
+    }
+
+    const errors = await validate(plainToInstance(SystemConfigDto, config), {
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+    });
+    if (errors.length > 0) {
+      this.logger.error('Validation error', errors);
+      if (configFilePath) {
+        throw new Error(`Invalid value(s) in file: ${errors}`);
+      }
+    }
+
+    return config;
   }
 
   public async updateConfig(config: SystemConfig): Promise<SystemConfig> {
@@ -246,7 +277,13 @@ export class SystemConfigCore {
       const defaultValue = _.get(defaults, key);
       const isMissing = !_.has(config, key);
 
-      if (isMissing || item.value === null || item.value === '' || item.value === defaultValue) {
+      if (
+        isMissing ||
+        item.value === null ||
+        item.value === '' ||
+        item.value === defaultValue ||
+        _.isEqual(item.value, defaultValue)
+      ) {
         deletes.push(item);
         continue;
       }
@@ -275,34 +312,25 @@ export class SystemConfigCore {
     this.config$.next(newConfig);
   }
 
-  private async loadFromDatabase() {
-    const config: DeepPartial<SystemConfig> = {};
-    const overrides = await this.repository.load();
-    for (const { key, value } of overrides) {
-      // set via dot notation
-      _.set(config, key, value);
-    }
-
-    return plainToClass(SystemConfigDto, _.defaultsDeep(config, defaults));
-  }
-
   private async loadFromFile(filepath: string, force = false) {
     if (force || !this.configCache) {
       try {
-        const overrides = JSON.parse((await this.repository.readFile(filepath)).toString());
-        const config = plainToClass(SystemConfigDto, _.defaultsDeep(overrides, defaults));
+        const file = JSON.parse((await this.repository.readFile(filepath)).toString());
+        const overrides: SystemConfigEntity<SystemConfigValue>[] = [];
 
-        const errors = await validate(config, {
-          whitelist: true,
-          forbidNonWhitelisted: true,
-          forbidUnknownValues: true,
-        });
-        if (errors.length > 0) {
-          this.logger.error('Validation error', errors);
-          throw new Error(`Invalid value(s) in file: ${errors}`);
+        for (const key of Object.values(SystemConfigKey)) {
+          const value = _.get(file, key);
+          this.unsetDeep(file, key);
+          if (value !== undefined) {
+            overrides.push({ key, value });
+          }
         }
 
-        this.configCache = config;
+        if (!_.isEmpty(file)) {
+          throw new Error(`Unknown keys found: ${file}`);
+        }
+
+        this.configCache = overrides;
       } catch (error: Error | any) {
         this.logger.error(`Unable to load configuration file: ${filepath} due to ${error}`, error?.stack);
         throw new Error('Invalid configuration file');
@@ -310,5 +338,16 @@ export class SystemConfigCore {
     }
 
     return this.configCache;
+  }
+
+  private unsetDeep(object: object, key: string) {
+    _.unset(object, key);
+    const path = key.split('.');
+    while (path.pop()) {
+      if (!_.isEmpty(_.get(object, path))) {
+        return;
+      }
+      _.unset(object, path);
+    }
   }
 }

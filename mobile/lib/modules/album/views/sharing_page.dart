@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/partner/ui/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SharingPage extends HookConsumerWidget {
@@ -147,13 +148,13 @@ class SharingPage extends HookConsumerWidget {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () =>
-                    AutoRouter.of(context).push(const PartnerRoute()),
+                    AutoRouter.of(context).push(const SharedLinkRoute()),
                 icon: const Icon(
-                  Icons.swap_horizontal_circle_outlined,
+                  Icons.link,
                   size: 20,
                 ),
                 label: const Text(
-                  "sharing_silver_appbar_share_partner",
+                  "sharing_silver_appbar_shared_links",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
@@ -163,21 +164,6 @@ class SharingPage extends HookConsumerWidget {
               ),
             ),
           ],
-        ),
-      );
-    }
-
-    AppBar buildAppBar() {
-      return AppBar(
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'IMMICH',
-          style: TextStyle(
-            fontFamily: 'SnowburstOne',
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
         ),
       );
     }
@@ -230,8 +216,21 @@ class SharingPage extends HookConsumerWidget {
       );
     }
 
+    Widget sharePartnerButton() {
+      return InkWell(
+        onTap: () => AutoRouter.of(context).push(const PartnerRoute()),
+        borderRadius: BorderRadius.circular(12),
+        child: const Icon(
+          Icons.swap_horizontal_circle_rounded,
+          size: 25,
+        ),
+      );
+    }
+
     return Scaffold(
-      appBar: buildAppBar(),
+      appBar: ImmichAppBar(
+        action: sharePartnerButton(),
+      ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: buildTopBottons()),

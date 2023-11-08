@@ -1,26 +1,36 @@
 import { LibraryType, UserEntity } from '@app/infra/entities';
-import {
-  BadRequestException,
-  ForbiddenException,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { ReadStream, constants, createReadStream } from 'fs';
-import fs from 'fs/promises';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import path from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository, ILibraryRepository, IUserRepository, UserListFilter } from '../repositories';
+import { ICryptoRepository, ILibraryRepository, IUserRepository } from '../repositories';
 
 const SALT_ROUNDS = 10;
 
+let instance: UserCore | null;
+
 export class UserCore {
-  constructor(
-    private userRepository: IUserRepository,
-    private libraryRepository: ILibraryRepository,
+  private constructor(
     private cryptoRepository: ICryptoRepository,
+    private libraryRepository: ILibraryRepository,
+    private userRepository: IUserRepository,
   ) {}
+
+  static create(
+    cryptoRepository: ICryptoRepository,
+    libraryRepository: ILibraryRepository,
+    userRepository: IUserRepository,
+  ) {
+    if (!instance) {
+      instance = new UserCore(cryptoRepository, libraryRepository, userRepository);
+    }
+
+    return instance;
+  }
+
+  static reset() {
+    instance = null;
+  }
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
     if (!authUser.isAdmin && authUser.id !== id) {
@@ -51,26 +61,21 @@ export class UserCore {
       }
     }
 
-    try {
-      if (dto.password) {
-        dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
-      }
-
-      if (dto.storageLabel === '') {
-        dto.storageLabel = null;
-      }
-
-      if (dto.externalPath === '') {
-        dto.externalPath = null;
-      } else if (dto.externalPath) {
-        dto.externalPath = path.normalize(dto.externalPath);
-      }
-
-      return this.userRepository.update(id, dto);
-    } catch (e) {
-      Logger.error(e, 'Failed to update user info');
-      throw new InternalServerErrorException('Failed to update user info');
+    if (dto.password) {
+      dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
     }
+
+    if (dto.storageLabel === '') {
+      dto.storageLabel = null;
+    }
+
+    if (dto.externalPath === '') {
+      dto.externalPath = null;
+    } else if (dto.externalPath) {
+      dto.externalPath = path.normalize(dto.externalPath);
+    }
+
+    return this.userRepository.update(id, dto);
   }
 
   async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
@@ -86,96 +91,25 @@ export class UserCore {
       }
     }
 
-    try {
-      const payload: Partial<UserEntity> = { ...dto };
-      if (payload.password) {
-        payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
-      }
-      if (payload.storageLabel) {
-        payload.storageLabel = sanitize(payload.storageLabel);
-      }
-
-      const userEntity = await this.userRepository.create(payload);
-      await this.libraryRepository.create({
-        owner: { id: userEntity.id } as UserEntity,
-        name: 'Default Library',
-        assets: [],
-        type: LibraryType.UPLOAD,
-        importPaths: [],
-        exclusionPatterns: [],
-        isVisible: true,
-      });
-
-      return userEntity;
-    } catch (e) {
-      Logger.error(e, 'Create new user');
-      throw new InternalServerErrorException('Failed to register new user');
+    const payload: Partial<UserEntity> = { ...dto };
+    if (payload.password) {
+      payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
     }
-  }
-
-  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
-    return this.userRepository.get(userId, withDeleted);
-  }
-
-  async getAdmin(): Promise<UserEntity | null> {
-    return this.userRepository.getAdmin();
-  }
-
-  async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
-    return this.userRepository.getByEmail(email, withPassword);
-  }
-
-  async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
-    return this.userRepository.getByOAuthId(oauthId);
-  }
-
-  async getUserProfileImage(user: UserEntity): Promise<ReadStream> {
-    if (!user.profileImagePath) {
-      throw new NotFoundException('User does not have a profile image');
-    }
-    await fs.access(user.profileImagePath, constants.R_OK);
-    return createReadStream(user.profileImagePath);
-  }
-
-  async getList(filter?: UserListFilter): Promise<UserEntity[]> {
-    return this.userRepository.getList(filter);
-  }
-
-  async createProfileImage(authUser: AuthUserDto, filePath: string): Promise<UserEntity> {
-    try {
-      return this.userRepository.update(authUser.id, { profileImagePath: filePath });
-    } catch (e) {
-      Logger.error(e, 'Create User Profile Image');
-      throw new InternalServerErrorException('Failed to create new user profile image');
-    }
-  }
-
-  async restoreUser(authUser: AuthUserDto, userToRestore: UserEntity): Promise<UserEntity> {
-    if (!authUser.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-    try {
-      return this.userRepository.restore(userToRestore);
-    } catch (e) {
-      Logger.error(e, 'Failed to restore deleted user');
-      throw new InternalServerErrorException('Failed to restore deleted user');
-    }
-  }
-
-  async deleteUser(authUser: AuthUserDto, userToDelete: UserEntity): Promise<UserEntity> {
-    if (!authUser.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
+    if (payload.storageLabel) {
+      payload.storageLabel = sanitize(payload.storageLabel);
     }
 
-    if (userToDelete.isAdmin) {
-      throw new ForbiddenException('Cannot delete admin user');
-    }
+    const userEntity = await this.userRepository.create(payload);
+    await this.libraryRepository.create({
+      owner: { id: userEntity.id } as UserEntity,
+      name: 'Default Library',
+      assets: [],
+      type: LibraryType.UPLOAD,
+      importPaths: [],
+      exclusionPatterns: [],
+      isVisible: true,
+    });
 
-    try {
-      return this.userRepository.delete(userToDelete);
-    } catch (e) {
-      Logger.error(e, 'Failed to delete user');
-      throw new InternalServerErrorException('Failed to delete user');
-    }
+    return userEntity;
   }
 }

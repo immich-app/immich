@@ -85,7 +85,7 @@ export type JobItem =
   | { name: JobName.ASSET_DELETION; data: IAssetDeletionJob }
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
-  // Library Managment
+  // Library Management
   | { name: JobName.LIBRARY_SCAN_ASSET; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_SCAN; data: ILibraryRefreshJob }
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
@@ -111,6 +111,9 @@ export const IJobRepository = 'IJobRepository';
 
 export interface IJobRepository {
   addHandler(queueName: QueueName, concurrency: number, handler: JobItemHandler): void;
+  addCronJob(name: string, expression: string, onTick: () => void, start?: boolean): void;
+  updateCronJob(name: string, expression?: string, start?: boolean): void;
+  deleteCronJob(name: string): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   pause(name: QueueName): Promise<void>;

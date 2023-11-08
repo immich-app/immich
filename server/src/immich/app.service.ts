@@ -1,6 +1,6 @@
-import { JobService, SearchService, ServerInfoService, StorageService } from '@app/domain';
+import { JobService, LibraryService, ONE_HOUR, SearchService, ServerInfoService, StorageService } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class AppService {
@@ -8,10 +8,16 @@ export class AppService {
 
   constructor(
     private jobService: JobService,
+    private libraryService: LibraryService,
     private searchService: SearchService,
     private storageService: StorageService,
     private serverService: ServerInfoService,
   ) {}
+
+  @Interval(ONE_HOUR.as('milliseconds'))
+  async onVersionCheck() {
+    await this.serverService.handleVersionCheck();
+  }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async onNightlyJob() {
@@ -21,7 +27,9 @@ export class AppService {
   async init() {
     this.storageService.init();
     await this.searchService.init();
+    await this.serverService.handleVersionCheck();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
+    await this.libraryService.init();
   }
 
   async destroy() {

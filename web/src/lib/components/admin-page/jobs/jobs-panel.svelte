@@ -3,26 +3,24 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute } from '$lib/constants';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
   import type { ComponentType } from 'svelte';
-  import type Icon from 'svelte-material-icons/DotsVertical.svelte';
-  import FaceRecognition from 'svelte-material-icons/FaceRecognition.svelte';
-  import FileJpgBox from 'svelte-material-icons/FileJpgBox.svelte';
-  import FileXmlBox from 'svelte-material-icons/FileXmlBox.svelte';
-  import LibraryShelves from 'svelte-material-icons/LibraryShelves.svelte';
-  import FolderMove from 'svelte-material-icons/FolderMove.svelte';
-  import CogIcon from 'svelte-material-icons/Cog.svelte';
-  import Table from 'svelte-material-icons/Table.svelte';
-  import TagMultiple from 'svelte-material-icons/TagMultiple.svelte';
-  import VectorCircle from 'svelte-material-icons/VectorCircle.svelte';
-  import Video from 'svelte-material-icons/Video.svelte';
+  import {
+    mdiFaceRecognition,
+    mdiFileJpgBox,
+    mdiFileXmlBox,
+    mdiFolderMove,
+    mdiLibraryShelves,
+    mdiTable,
+    mdiTagMultiple,
+    mdiVectorCircle,
+    mdiVideo,
+  } from '@mdi/js';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import JobTile from './job-tile.svelte';
   import StorageMigrationDescription from './storage-migration-description.svelte';
-  import Button from '../../elements/buttons/button.svelte';
 
   export let jobs: AllJobStatusResponseDto;
 
@@ -32,7 +30,7 @@
     allText?: string;
     missingText?: string;
     disabled?: boolean;
-    icon: typeof Icon;
+    icon: string;
     allowForceCommand?: boolean;
     component?: ComponentType;
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
@@ -56,17 +54,17 @@
 
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
     [JobName.ThumbnailGeneration]: {
-      icon: FileJpgBox,
+      icon: mdiFileJpgBox,
       title: api.getJobName(JobName.ThumbnailGeneration),
       subtitle: 'Regenerate JPEG and WebP thumbnails',
     },
     [JobName.MetadataExtraction]: {
-      icon: Table,
+      icon: mdiTable,
       title: api.getJobName(JobName.MetadataExtraction),
       subtitle: 'Extract metadata information i.e. GPS, resolution...etc',
     },
     [JobName.Library]: {
-      icon: LibraryShelves,
+      icon: mdiLibraryShelves,
       title: api.getJobName(JobName.Library),
       subtitle: 'Perform library tasks',
       allText: 'ALL',
@@ -74,44 +72,44 @@
     },
     [JobName.Sidecar]: {
       title: api.getJobName(JobName.Sidecar),
-      icon: FileXmlBox,
+      icon: mdiFileXmlBox,
       subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
       allText: 'SYNC',
       missingText: 'DISCOVER',
       disabled: !$featureFlags.sidecar,
     },
     [JobName.ObjectTagging]: {
-      icon: TagMultiple,
+      icon: mdiTagMultiple,
       title: api.getJobName(JobName.ObjectTagging),
       subtitle: 'Run machine learning to tag objects\nNote that some assets may not have any objects detected',
       disabled: !$featureFlags.tagImage,
     },
     [JobName.ClipEncoding]: {
-      icon: VectorCircle,
+      icon: mdiVectorCircle,
       title: api.getJobName(JobName.ClipEncoding),
       subtitle: 'Run machine learning to generate clip embeddings',
       disabled: !$featureFlags.clipEncode,
     },
     [JobName.RecognizeFaces]: {
-      icon: FaceRecognition,
+      icon: mdiFaceRecognition,
       title: api.getJobName(JobName.RecognizeFaces),
       subtitle: 'Run machine learning to recognize faces',
       handleCommand: handleFaceCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.VideoConversion]: {
-      icon: Video,
+      icon: mdiVideo,
       title: api.getJobName(JobName.VideoConversion),
       subtitle: 'Transcode videos not in the desired format',
     },
     [JobName.StorageTemplateMigration]: {
-      icon: FolderMove,
+      icon: mdiFolderMove,
       title: api.getJobName(JobName.StorageTemplateMigration),
       allowForceCommand: false,
       component: StorageMigrationDescription,
     },
     [JobName.Migration]: {
-      icon: FolderMove,
+      icon: mdiFolderMove,
       title: api.getJobName(JobName.Migration),
       subtitle: 'Migrate thumbnails for assets and faces to the latest folder structure',
       allowForceCommand: false,
@@ -149,14 +147,6 @@
 {/if}
 
 <div class="flex flex-col gap-7">
-  <div class="flex justify-end">
-    <a href="{AppRoute.ADMIN_SETTINGS}?open=job-settings">
-      <Button size="sm">
-        <CogIcon size="18" />
-        <span class="pl-2">Manage Concurrency</span>
-      </Button>
-    </a>
-  </div>
   {#each jobList as [jobName, { title, subtitle, disabled, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile

@@ -4,9 +4,11 @@ import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
+import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
+  ExifDuration,
   IAlbumRepository,
   IAssetRepository,
   ICryptoRepository,
@@ -66,6 +68,7 @@ export class MetadataService {
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
   private oldCities?: string;
+  private subscription: Subscription | null = null;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -79,11 +82,14 @@ export class MetadataService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, personRepository);
-    this.configCore.config$.subscribe(() => this.init());
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
   async init(deleteCache = false) {
+    if (!this.subscription) {
+      this.subscription = this.configCore.config$.subscribe(() => this.init());
+    }
+
     const { reverseGeocoding } = await this.configCore.getConfig();
     const { citiesFileOverride } = reverseGeocoding;
 
@@ -107,6 +113,11 @@ export class MetadataService {
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
+  }
+
+  async teardown() {
+    this.subscription?.unsubscribe();
+    await this.repository.teardown();
   }
 
   async handleLivePhotoLinking(job: IEntityJob) {
@@ -289,6 +300,9 @@ export class MetadataService {
       });
       const checksum = this.cryptoRepository.hashSha1(video);
 
+      const motionPath = StorageCore.getAndroidMotionPath(asset);
+      this.storageCore.ensureFolders(motionPath);
+
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
@@ -300,7 +314,7 @@ export class MetadataService {
           localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: this.storageCore.getAndroidMotionPath(asset),
+          originalPath: motionPath,
           originalFileName: asset.originalFileName,
           isVisible: false,
           isReadOnly: false,
@@ -391,7 +405,11 @@ export class MetadataService {
     return bitsPerSample;
   }
 
-  private getDuration(seconds?: number): string {
-    return Duration.fromObject({ seconds }).toFormat('hh:mm:ss.SSS');
+  private getDuration(seconds?: number | ExifDuration): string {
+    let _seconds = seconds as number;
+    if (typeof seconds === 'object') {
+      _seconds = seconds.Value * (seconds?.Scale || 1);
+    }
+    return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
   }
 }

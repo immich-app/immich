@@ -23,7 +23,7 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [AssetBulkUploadCheckDto] assetBulkUploadCheckDto (required):
-  Future<Response> bulkUploadCheckWithHttpInfo(AssetBulkUploadCheckDto assetBulkUploadCheckDto,) async {
+  Future<Response> checkBulkUploadWithHttpInfo(AssetBulkUploadCheckDto assetBulkUploadCheckDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/bulk-upload-check';
 
@@ -53,8 +53,8 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [AssetBulkUploadCheckDto] assetBulkUploadCheckDto (required):
-  Future<AssetBulkUploadCheckResponseDto?> bulkUploadCheck(AssetBulkUploadCheckDto assetBulkUploadCheckDto,) async {
-    final response = await bulkUploadCheckWithHttpInfo(assetBulkUploadCheckDto,);
+  Future<AssetBulkUploadCheckResponseDto?> checkBulkUpload(AssetBulkUploadCheckDto assetBulkUploadCheckDto,) async {
+    final response = await checkBulkUploadWithHttpInfo(assetBulkUploadCheckDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -63,66 +63,6 @@ class AssetApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetBulkUploadCheckResponseDto',) as AssetBulkUploadCheckResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Check duplicated asset before uploading - for Web upload used
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [CheckDuplicateAssetDto] checkDuplicateAssetDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> checkDuplicateAssetWithHttpInfo(CheckDuplicateAssetDto checkDuplicateAssetDto, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/check';
-
-    // ignore: prefer_final_locals
-    Object? postBody = checkDuplicateAssetDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Check duplicated asset before uploading - for Web upload used
-  ///
-  /// Parameters:
-  ///
-  /// * [CheckDuplicateAssetDto] checkDuplicateAssetDto (required):
-  ///
-  /// * [String] key:
-  Future<CheckDuplicateAssetResponseDto?> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String? key, }) async {
-    final response = await checkDuplicateAssetWithHttpInfo(checkDuplicateAssetDto,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'CheckDuplicateAssetResponseDto',) as CheckDuplicateAssetResponseDto;
     
     }
     return null;
@@ -369,19 +309,23 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [int] skip:
+  ///
+  /// * [int] take:
+  ///
   /// * [String] userId:
   ///
   /// * [bool] isFavorite:
   ///
   /// * [bool] isArchived:
   ///
-  /// * [num] skip:
-  ///
   /// * [DateTime] updatedAfter:
+  ///
+  /// * [DateTime] updatedBefore:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<Response> getAllAssetsWithHttpInfo({ String? userId, bool? isFavorite, bool? isArchived, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
+  Future<Response> getAllAssetsWithHttpInfo({ int? skip, int? take, String? userId, bool? isFavorite, bool? isArchived, DateTime? updatedAfter, DateTime? updatedBefore, String? ifNoneMatch, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -392,6 +336,12 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+    if (take != null) {
+      queryParams.addAll(_queryParams('', 'take', take));
+    }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
     }
@@ -401,11 +351,11 @@ class AssetApi {
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
     }
-    if (skip != null) {
-      queryParams.addAll(_queryParams('', 'skip', skip));
-    }
     if (updatedAfter != null) {
       queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
+    }
+    if (updatedBefore != null) {
+      queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
     }
 
     if (ifNoneMatch != null) {
@@ -430,20 +380,24 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [int] skip:
+  ///
+  /// * [int] take:
+  ///
   /// * [String] userId:
   ///
   /// * [bool] isFavorite:
   ///
   /// * [bool] isArchived:
   ///
-  /// * [num] skip:
-  ///
   /// * [DateTime] updatedAfter:
+  ///
+  /// * [DateTime] updatedBefore:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<List<AssetResponseDto>?> getAllAssets({ String? userId, bool? isFavorite, bool? isArchived, num? skip, DateTime? updatedAfter, String? ifNoneMatch, }) async {
-    final response = await getAllAssetsWithHttpInfo( userId: userId, isFavorite: isFavorite, isArchived: isArchived, skip: skip, updatedAfter: updatedAfter, ifNoneMatch: ifNoneMatch, );
+  Future<List<AssetResponseDto>?> getAllAssets({ int? skip, int? take, String? userId, bool? isFavorite, bool? isArchived, DateTime? updatedAfter, DateTime? updatedBefore, String? ifNoneMatch, }) async {
+    final response = await getAllAssetsWithHttpInfo( skip: skip, take: take, userId: userId, isFavorite: isFavorite, isArchived: isArchived, updatedAfter: updatedAfter, updatedBefore: updatedBefore, ifNoneMatch: ifNoneMatch, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -573,7 +527,7 @@ class AssetApi {
   /// * [bool] isFavorite:
   ///
   /// * [bool] isTrashed:
-  Future<Response> getAssetStatsWithHttpInfo({ bool? isArchived, bool? isFavorite, bool? isTrashed, }) async {
+  Future<Response> getAssetStatisticsWithHttpInfo({ bool? isArchived, bool? isFavorite, bool? isTrashed, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/statistics';
 
@@ -615,8 +569,8 @@ class AssetApi {
   /// * [bool] isFavorite:
   ///
   /// * [bool] isTrashed:
-  Future<AssetStatsResponseDto?> getAssetStats({ bool? isArchived, bool? isFavorite, bool? isTrashed, }) async {
-    final response = await getAssetStatsWithHttpInfo( isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, );
+  Future<AssetStatsResponseDto?> getAssetStatistics({ bool? isArchived, bool? isFavorite, bool? isTrashed, }) async {
+    final response = await getAssetStatisticsWithHttpInfo( isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -689,112 +643,6 @@ class AssetApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'GET /asset/time-bucket' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [TimeBucketSize] size (required):
-  ///
-  /// * [String] timeBucket (required):
-  ///
-  /// * [String] userId:
-  ///
-  /// * [String] albumId:
-  ///
-  /// * [String] personId:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [bool] isTrashed:
-  ///
-  /// * [String] key:
-  Future<Response> getByTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/time-bucket';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-      queryParams.addAll(_queryParams('', 'size', size));
-    if (userId != null) {
-      queryParams.addAll(_queryParams('', 'userId', userId));
-    }
-    if (albumId != null) {
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
-    }
-    if (personId != null) {
-      queryParams.addAll(_queryParams('', 'personId', personId));
-    }
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
-    if (isFavorite != null) {
-      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
-    }
-    if (isTrashed != null) {
-      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
-    }
-      queryParams.addAll(_queryParams('', 'timeBucket', timeBucket));
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [TimeBucketSize] size (required):
-  ///
-  /// * [String] timeBucket (required):
-  ///
-  /// * [String] userId:
-  ///
-  /// * [String] albumId:
-  ///
-  /// * [String] personId:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [bool] isTrashed:
-  ///
-  /// * [String] key:
-  Future<List<AssetResponseDto>?> getByTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
-    final response = await getByTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
-        .cast<AssetResponseDto>()
-        .toList();
-
     }
     return null;
   }
@@ -1128,6 +976,119 @@ class AssetApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /asset/time-bucket' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [TimeBucketSize] size (required):
+  ///
+  /// * [String] timeBucket (required):
+  ///
+  /// * [String] userId:
+  ///
+  /// * [String] albumId:
+  ///
+  /// * [String] personId:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [bool] isTrashed:
+  ///
+  /// * [bool] withStacked:
+  ///
+  /// * [String] key:
+  Future<Response> getTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, String? key, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/time-bucket';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'size', size));
+    if (userId != null) {
+      queryParams.addAll(_queryParams('', 'userId', userId));
+    }
+    if (albumId != null) {
+      queryParams.addAll(_queryParams('', 'albumId', albumId));
+    }
+    if (personId != null) {
+      queryParams.addAll(_queryParams('', 'personId', personId));
+    }
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
+    }
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isTrashed != null) {
+      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
+    }
+    if (withStacked != null) {
+      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
+    }
+      queryParams.addAll(_queryParams('', 'timeBucket', timeBucket));
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [TimeBucketSize] size (required):
+  ///
+  /// * [String] timeBucket (required):
+  ///
+  /// * [String] userId:
+  ///
+  /// * [String] albumId:
+  ///
+  /// * [String] personId:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [bool] isTrashed:
+  ///
+  /// * [bool] withStacked:
+  ///
+  /// * [String] key:
+  Future<List<AssetResponseDto>?> getTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, String? key, }) async {
+    final response = await getTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, withStacked: withStacked, key: key, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
+        .cast<AssetResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /asset/time-buckets' operation and returns the [Response].
   /// Parameters:
   ///
@@ -1145,8 +1106,10 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [bool] withStacked:
+  ///
   /// * [String] key:
-  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-buckets';
 
@@ -1175,6 +1138,9 @@ class AssetApi {
     }
     if (isTrashed != null) {
       queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
+    }
+    if (withStacked != null) {
+      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
     }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
@@ -1210,9 +1176,11 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
+  /// * [bool] withStacked:
+  ///
   /// * [String] key:
-  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, }) async {
-    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, );
+  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, String? key, }) async {
+    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, withStacked: withStacked, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1654,6 +1622,45 @@ class AssetApi {
     }
   }
 
+  /// Performs an HTTP 'PUT /asset/stack/parent' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [UpdateStackParentDto] updateStackParentDto (required):
+  Future<Response> updateStackParentWithHttpInfo(UpdateStackParentDto updateStackParentDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/stack/parent';
+
+    // ignore: prefer_final_locals
+    Object? postBody = updateStackParentDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [UpdateStackParentDto] updateStackParentDto (required):
+  Future<void> updateStackParent(UpdateStackParentDto updateStackParentDto,) async {
+    final response = await updateStackParentWithHttpInfo(updateStackParentDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
   /// Parameters:
   ///
@@ -1667,8 +1674,6 @@ class AssetApi {
   ///
   /// * [DateTime] fileModifiedAt (required):
   ///
-  /// * [bool] isFavorite (required):
-  ///
   /// * [String] key:
   ///
   /// * [String] duration:
@@ -1676,6 +1681,8 @@ class AssetApi {
   /// * [bool] isArchived:
   ///
   /// * [bool] isExternal:
+  ///
+  /// * [bool] isFavorite:
   ///
   /// * [bool] isOffline:
   ///
@@ -1688,7 +1695,7 @@ class AssetApi {
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
-  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, String? duration, bool? isArchived, bool? isExternal, bool? isOffline, bool? isReadOnly, bool? isVisible, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
+  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, bool? isArchived, bool? isExternal, bool? isFavorite, bool? isOffline, bool? isReadOnly, bool? isVisible, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1797,8 +1804,6 @@ class AssetApi {
   ///
   /// * [DateTime] fileModifiedAt (required):
   ///
-  /// * [bool] isFavorite (required):
-  ///
   /// * [String] key:
   ///
   /// * [String] duration:
@@ -1806,6 +1811,8 @@ class AssetApi {
   /// * [bool] isArchived:
   ///
   /// * [bool] isExternal:
+  ///
+  /// * [bool] isFavorite:
   ///
   /// * [bool] isOffline:
   ///
@@ -1818,8 +1825,8 @@ class AssetApi {
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
-  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, String? duration, bool? isArchived, bool? isExternal, bool? isOffline, bool? isReadOnly, bool? isVisible, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
-    final response = await uploadFileWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, duration: duration, isArchived: isArchived, isExternal: isExternal, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, libraryId: libraryId, livePhotoData: livePhotoData, sidecarData: sidecarData, );
+  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, bool? isArchived, bool? isExternal, bool? isFavorite, bool? isOffline, bool? isReadOnly, bool? isVisible, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, }) async {
+    final response = await uploadFileWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, duration: duration, isArchived: isArchived, isExternal: isExternal, isFavorite: isFavorite, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, libraryId: libraryId, livePhotoData: livePhotoData, sidecarData: sidecarData, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

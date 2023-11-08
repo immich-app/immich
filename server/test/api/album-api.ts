@@ -1,4 +1,4 @@
-import { AlbumResponseDto, BulkIdResponseDto, BulkIdsDto, CreateAlbumDto } from '@app/domain';
+import { AddUsersDto, AlbumResponseDto, BulkIdResponseDto, BulkIdsDto, CreateAlbumDto } from '@app/domain';
 import request from 'supertest';
 
 export const albumApi = {
@@ -14,5 +14,10 @@ export const albumApi = {
       .send(dto);
     expect(res.status).toEqual(200);
     return res.body as BulkIdResponseDto[];
+  },
+  addUsers: async (server: any, accessToken: string, id: string, dto: AddUsersDto) => {
+    const res = await request(server).put(`/album/${id}/users`).set('Authorization', `Bearer ${accessToken}`).send(dto);
+    expect(res.status).toEqual(200);
+    return res.body as AlbumResponseDto;
   },
 };

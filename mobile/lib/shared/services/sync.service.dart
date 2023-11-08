@@ -153,7 +153,7 @@ class SyncService {
     if (toUpsert == null || toDelete == null) return null;
     try {
       if (toDelete.isNotEmpty) {
-        await _handleRemoteAssetRemoval(toDelete);
+        await handleRemoteAssetRemoval(toDelete);
       }
       if (toUpsert.isNotEmpty) {
         final (_, updated) = await _linkWithExistingFromDb(toUpsert);
@@ -171,13 +171,21 @@ class SyncService {
   }
 
   /// Deletes remote-only assets, updates merged assets to be local-only
-  Future<void> _handleRemoteAssetRemoval(List<String> idsToDelete) {
+  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
     return _db.writeTxn(() async {
-      await _db.assets.remote(idsToDelete).filter().localIdIsNull().deleteAll();
+      final idsToRemove = await _db.assets
+          .remote(idsToDelete)
+          .filter()
+          .localIdIsNull()
+          .idProperty()
+          .findAll();
+      await _db.assets.deleteAll(idsToRemove);
+      await _db.exifInfos.deleteAll(idsToRemove);
       final onlyLocal = await _db.assets.remote(idsToDelete).findAll();
       if (onlyLocal.isNotEmpty) {
         for (final Asset a in onlyLocal) {
           a.remoteId = null;
+          a.isTrashed = false;
         }
         await _db.assets.putAll(onlyLocal);
       }
@@ -189,7 +197,7 @@ class SyncService {
     User user,
     FutureOr<List<Asset>?> Function(User user) loadAssets,
   ) async {
-    final DateTime now = DateTime.now();
+    final DateTime now = DateTime.now().toUtc();
     final List<Asset>? remote = await loadAssets(user);
     if (remote == null) {
       return false;
@@ -202,6 +210,10 @@ class SyncService {
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
 
     remote.sort(Asset.compareByChecksum);
+
+    // filter our duplicates that might be introduced by the chunked retrieval
+    remote.uniqueConsecutive(compare: Asset.compareByChecksum);
+
     final (toAdd, toUpdate, toRemove) = _diffAssets(remote, inDb, remote: true);
     if (toAdd.isEmpty && toUpdate.isEmpty && toRemove.isEmpty) {
       await _updateUserAssetsETag(user, now);
@@ -282,6 +294,9 @@ class SyncService {
     if (!_hasAlbumResponseDtoChanged(dto, album)) {
       return false;
     }
+    // loadDetails (/api/album/:id) will not include lastModifiedAssetTimestamp,
+    // i.e. it will always be null. Save it here.
+    final originalDto = dto;
     dto = await loadDetails(dto);
     if (dto.assetCount != dto.assets.length) {
       return false;
@@ -321,6 +336,7 @@ class SyncService {
     album.name = dto.albumName;
     album.shared = dto.shared;
     album.modifiedAt = dto.updatedAt;
+    album.lastModifiedAssetTimestamp = originalDto.lastModifiedAssetTimestamp;
     if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
       album.thumbnail.value = await _db.assets
           .where()
@@ -747,6 +763,12 @@ class SyncService {
   final List<Asset> toAdd = [];
   final List<Asset> toUpdate = [];
   final List<Asset> toRemove = [];
+  if (assets.isEmpty || inDb.isEmpty) {
+    // fast path for trivial cases: halfes memory usage during initial sync
+    return assets.isEmpty
+        ? (toAdd, toUpdate, inDb) // remove all from DB
+        : (assets, toUpdate, toRemove); // add all assets
+  }
   diffSortedListsSync(
     inDb,
     assets,
@@ -808,5 +830,13 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
       dto.shared != a.shared ||
       dto.sharedUsers.length != a.sharedUsers.length ||
-      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt);
+      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt) ||
+      (dto.lastModifiedAssetTimestamp == null &&
+          a.lastModifiedAssetTimestamp != null) ||
+      (dto.lastModifiedAssetTimestamp != null &&
+          a.lastModifiedAssetTimestamp == null) ||
+      (dto.lastModifiedAssetTimestamp != null &&
+          a.lastModifiedAssetTimestamp != null &&
+          !dto.lastModifiedAssetTimestamp!
+              .isAtSameMomentAs(a.lastModifiedAssetTimestamp!));
 }

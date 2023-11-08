@@ -1,4 +1,11 @@
-import { AssetFaceId, IPersonRepository, PersonSearchOptions, UpdateFacesData } from '@app/domain';
+import {
+  AssetFaceId,
+  IPersonRepository,
+  PersonNameSearchOptions,
+  PersonSearchOptions,
+  PersonStatistics,
+  UpdateFacesData,
+} from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -51,7 +58,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   getAllFaces(): Promise<AssetFaceEntity[]> {
-    return this.assetFaceRepository.find({ relations: { asset: true } });
+    return this.assetFaceRepository.find({ relations: { asset: true }, withDeleted: true });
   }
 
   getAll(): Promise<PersonEntity[]> {
@@ -72,7 +79,7 @@ export class PersonRepository implements IPersonRepository {
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
-      .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
+      .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
       .limit(500);
     if (!options?.withHidden) {
@@ -88,6 +95,7 @@ export class PersonRepository implements IPersonRepository {
       .leftJoin('person.faces', 'face')
       .having('COUNT(face.assetId) = 0')
       .groupBy('person.id')
+      .withDeleted()
       .getMany();
   }
 
@@ -95,14 +103,36 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
-  getByName(userId: string, personName: string): Promise<PersonEntity[]> {
-    return this.personRepository
+  getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
+    const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
-      .where('person.ownerId = :userId', { userId })
-      .andWhere('LOWER(person.name) LIKE :name', { name: `${personName.toLowerCase()}%` })
-      .limit(20)
-      .getMany();
+      .where(
+        'person.ownerId = :userId AND (LOWER(person.name) LIKE :nameStart OR LOWER(person.name) LIKE :nameAnywhere)',
+        { userId, nameStart: `${personName.toLowerCase()}%`, nameAnywhere: `% ${personName.toLowerCase()}%` },
+      )
+      .groupBy('person.id')
+      .orderBy('COUNT(face.assetId)', 'DESC')
+      .limit(20);
+
+    if (!withHidden) {
+      queryBuilder.andWhere('person.isHidden = false');
+    }
+    return queryBuilder.getMany();
+  }
+
+  async getStatistics(personId: string): Promise<PersonStatistics> {
+    return {
+      assets: await this.assetFaceRepository
+        .createQueryBuilder('face')
+        .leftJoin('face.asset', 'asset')
+        .where('face.personId = :personId', { personId })
+        .andWhere('asset.isArchived = false')
+        .andWhere('asset.deletedAt IS NULL')
+        .andWhere('asset.livePhotoVideoId IS NULL')
+        .distinct(true)
+        .getCount(),
+    };
   }
 
   getAssets(personId: string): Promise<AssetEntity[]> {
@@ -142,7 +172,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
-    return this.assetFaceRepository.find({ where: ids, relations: { asset: true } });
+    return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
   }
 
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {

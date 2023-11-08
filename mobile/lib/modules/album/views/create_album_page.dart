@@ -11,6 +11,7 @@ import 'package:immich_mobile/modules/album/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/album/ui/shared_album_thumbnail_image.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 // ignore: must_be_immutable
 class CreateAlbumPage extends HookConsumerWidget {
@@ -31,7 +32,8 @@ class CreateAlbumPage extends HookConsumerWidget {
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
     final selectedAssets = useState<Set<Asset>>(
-        initialAssets != null ? Set.from(initialAssets!) : const {},);
+      initialAssets != null ? Set.from(initialAssets!) : const {},
+    );
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     showSelectUserPage() async {
@@ -59,7 +61,8 @@ class CreateAlbumPage extends HookConsumerWidget {
           await AutoRouter.of(context).push<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: selectedAssets.value,
-          isNewAlbum: true,
+          canDeselect: true,
+          query: getRemoteAssetQuery(ref),
         ),
       );
       if (selectedAsset == null) {

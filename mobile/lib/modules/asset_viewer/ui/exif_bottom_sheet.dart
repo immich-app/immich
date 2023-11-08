@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:timezone/timezone.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
 import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -26,12 +27,36 @@ class ExifBottomSheet extends HookConsumerWidget {
       exifInfo.latitude != 0 &&
       exifInfo.longitude != 0;
 
-  String get formattedDateTime {
-    final fileCreatedAt = asset.fileCreatedAt.toLocal();
-    final date = DateFormat.yMMMEd().format(fileCreatedAt);
-    final time = DateFormat.jm().format(fileCreatedAt);
+  String formatTimeZone(Duration d) =>
+      "GMT${d.isNegative ? '-': '+'}${d.inHours.abs().toString().padLeft(2, '0')}:${d.inMinutes.abs().remainder(60).toString().padLeft(2, '0')}";
 
-    return '$date • $time';
+  String get formattedDateTime {
+    DateTime dt = asset.fileCreatedAt.toLocal();
+    String? timeZone;
+    if (asset.exifInfo?.dateTimeOriginal != null) {
+      dt = asset.exifInfo!.dateTimeOriginal!;
+      if (asset.exifInfo?.timeZone != null) {
+        dt = dt.toUtc();
+        try {
+          final location = getLocation(asset.exifInfo!.timeZone!);
+          dt = TZDateTime.from(dt, location);
+        } on LocationNotFoundException {
+          RegExp re = RegExp(r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$', caseSensitive: false);
+          final m = re.firstMatch(asset.exifInfo!.timeZone!);
+          if (m != null) {
+            final duration = Duration(hours: int.parse(m.group(1) ?? '0'), minutes: int.parse(m.group(2) ?? '0'));
+            dt = dt.add(duration);
+            timeZone = formatTimeZone(duration);
+          }
+        }
+      }
+    }
+
+    final date = DateFormat.yMMMEd().format(dt);
+    final time = DateFormat.jm().format(dt);
+    timeZone ??= formatTimeZone(dt.timeZoneOffset);
+
+    return '$date • $time $timeZone';
   }
 
   Future<Uri?> _createCoordinatesUri(ExifInfo? exifInfo) async {
@@ -297,9 +322,9 @@ class ExifBottomSheet extends HookConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              subtitle: Text(
+              subtitle: exifInfo.f != null || exifInfo.exposureSeconds != null || exifInfo.mm != null || exifInfo.iso != null ? Text(
                 "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
-              ),
+              ) : null,
             ),
         ],
       );
@@ -364,7 +389,18 @@ class ExifBottomSheet extends HookConsumerWidget {
                   children: [
                     buildDragHeader(),
                     buildDate(),
-                    if (asset.isRemote) DescriptionInput(asset: asset),
+                    assetWithExif.when(
+                      data: (data) => DescriptionInput(asset: data),
+                      error: (error, stackTrace) => Icon(
+                        Icons.image_not_supported_outlined,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      loading: () => const SizedBox(
+                        width: 75,
+                        height: 75,
+                        child: CircularProgressIndicator.adaptive(),
+                      ),
+                    ),
                     const SizedBox(height: 8.0),
                     buildLocation(),
                     SizedBox(height: hasCoordinates(exifInfo) ? 16.0 : 0.0),

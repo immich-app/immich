@@ -16,6 +16,7 @@ import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
@@ -69,7 +70,8 @@ class AlbumViewerPage extends HookConsumerWidget {
           await AutoRouter.of(context).push<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: albumInfo.assets,
-          isNewAlbum: false,
+          canDeselect: false,
+          query: getRemoteAssetQuery(ref),
         ),
       );
 
@@ -162,8 +164,13 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     Widget buildAlbumDateRange(Album album) {
-      final DateTime startDate = album.assets.first.fileCreatedAt;
-      final DateTime endDate = album.assets.last.fileCreatedAt; //Need default.
+      final DateTime? startDate = album.startDate;
+      final DateTime? endDate = album.endDate;
+
+      if (startDate == null || endDate == null) {
+        return const SizedBox();
+      }
+
       final String startDateText = (startDate.year == endDate.year
               ? DateFormat.MMMd()
               : DateFormat.yMMMd())
@@ -225,6 +232,19 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
+    onActivitiesPressed(Album album) {
+      if (album.remoteId != null) {
+        AutoRouter.of(context).push(
+          ActivitiesRoute(
+            albumId: album.remoteId!,
+            appBarTitle: album.name,
+            isOwner: userId == album.ownerId,
+            isReadOnly: !album.activityEnabled,
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       appBar: album.when(
         data: (data) => AlbumViewerAppbar(
@@ -235,6 +255,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           selectionDisabled: disableSelection,
           onAddPhotos: onAddPhotosPressed,
           onAddUsers: onAddUsersPressed,
+          onActivities: onActivitiesPressed,
         ),
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
@@ -258,6 +279,9 @@ class AlbumViewerPage extends HookConsumerWidget {
                   if (data.isRemote) buildControlButton(data),
                 ],
               ),
+              isOwner: userId == data.ownerId,
+              sharedAlbumId:
+                  data.shared && data.activityEnabled ? data.remoteId : null,
             ),
           ),
         ),

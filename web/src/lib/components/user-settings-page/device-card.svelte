@@ -3,14 +3,17 @@
   import type { AuthDeviceResponseDto } from '@api';
   import { DateTime, ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
-  import Android from 'svelte-material-icons/Android.svelte';
-  import Apple from 'svelte-material-icons/Apple.svelte';
-  import AppleSafari from 'svelte-material-icons/AppleSafari.svelte';
-  import GoogleChrome from 'svelte-material-icons/GoogleChrome.svelte';
-  import Help from 'svelte-material-icons/Help.svelte';
-  import Linux from 'svelte-material-icons/Linux.svelte';
-  import MicrosoftWindows from 'svelte-material-icons/MicrosoftWindows.svelte';
-  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import {
+    mdiAndroid,
+    mdiApple,
+    mdiAppleSafari,
+    mdiMicrosoftWindows,
+    mdiLinux,
+    mdiGoogleChrome,
+    mdiTrashCanOutline,
+    mdiHelp,
+  } from '@mdi/js';
 
   export let device: AuthDeviceResponseDto;
 
@@ -26,19 +29,19 @@
   <!-- TODO: Device Image -->
   <div class="hidden items-center justify-center pr-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
     {#if device.deviceOS === 'Android'}
-      <Android size="40" />
+      <Icon path={mdiAndroid} size="40" />
     {:else if device.deviceOS === 'iOS' || device.deviceOS === 'Mac OS'}
-      <Apple size="40" />
+      <Icon path={mdiApple} size="40" />
     {:else if device.deviceOS.indexOf('Safari') !== -1}
-      <AppleSafari size="40" />
+      <Icon path={mdiAppleSafari} size="40" />
     {:else if device.deviceOS.indexOf('Windows') !== -1}
-      <MicrosoftWindows size="40" />
+      <Icon path={mdiMicrosoftWindows} size="40" />
     {:else if device.deviceOS === 'Linux'}
-      <Linux size="40" />
+      <Icon path={mdiLinux} size="40" />
     {:else if device.deviceOS === 'Chromium OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium'}
-      <GoogleChrome size="40" />
+      <Icon path={mdiGoogleChrome} size="40" />
     {:else}
-      <Help size="40" />
+      <Icon path={mdiHelp} size="40" />
     {/if}
   </div>
   <div class="flex grow flex-row justify-between gap-1 pl-4 sm:pl-0">
@@ -62,7 +65,7 @@
           class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
           title="Log out"
         >
-          <TrashCanOutline size="16" />
+          <Icon path={mdiTrashCanOutline} size="16" />
         </button>
       </div>
     {/if}

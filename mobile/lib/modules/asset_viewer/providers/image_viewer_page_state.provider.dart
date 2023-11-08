@@ -57,9 +57,19 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
     showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        _shareService
-            .shareAsset(asset)
-            .then((_) => Navigator.of(buildContext).pop());
+        _shareService.shareAsset(asset).then(
+          (bool status) {
+            if (!status) {
+              ImmichToast.show(
+                context: context,
+                msg: 'image_viewer_page_state_provider_share_error'.tr(),
+                toastType: ToastType.error,
+                gravity: ToastGravity.BOTTOM,
+              );
+            }
+            Navigator.of(buildContext).pop();
+          },
+        );
         return const ShareDialog();
       },
       barrierDismissible: false,

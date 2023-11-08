@@ -154,13 +154,13 @@ export class SearchService {
         items: assets.items
           .map((item) => lookup[item.id])
           .filter((item) => !!item)
-          .map(mapAsset),
+          .map((asset) => mapAsset(asset)),
       },
     };
   }
 
-  async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return await this.personRepository.getByName(authUser.id, dto.name);
+  searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return this.personRepository.getByName(authUser.id, dto.name, { withHidden: dto.withHidden });
   }
 
   async handleIndexAlbums() {
@@ -360,13 +360,20 @@ export class SearchService {
   }
 
   private patchFaces(faces: AssetFaceEntity[]): OwnedFaceEntity[] {
-    return faces.map((face) => ({
-      id: this.asKey(face),
-      ownerId: face.asset.ownerId,
-      assetId: face.assetId,
-      personId: face.personId,
-      embedding: face.embedding,
-    }));
+    const results: OwnedFaceEntity[] = [];
+    for (const face of faces) {
+      if (face.personId) {
+        results.push({
+          id: this.asKey(face as AssetFaceId),
+          ownerId: face.asset.ownerId,
+          assetId: face.assetId,
+          personId: face.personId,
+          embedding: face.embedding,
+        });
+      }
+    }
+
+    return results;
   }
 
   private asKey(face: AssetFaceId): string {

@@ -1,10 +1,17 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AlbumResponseDto, api, AssetJobName, AssetResponseDto, AssetTypeEnum, SharedLinkResponseDto } from '@api';
+  import {
+    ActivityResponseDto,
+    AlbumResponseDto,
+    api,
+    AssetJobName,
+    AssetResponseDto,
+    AssetTypeEnum,
+    ReactionType,
+    SharedLinkResponseDto,
+    UserResponseDto,
+  } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-  import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
-  import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
   import { fly } from 'svelte/transition';
   import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
@@ -16,20 +23,25 @@
   import { ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import Pause from 'svelte-material-icons/Pause.svelte';
-  import Play from 'svelte-material-icons/Play.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, downloadFile, getAssetType } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetStore } from '$lib/stores/assets.store';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
-
-  import ProgressBar, { ProgressBarStatus } from '../shared-components/progress-bar/progress-bar.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { mdiChevronLeft, mdiChevronRight, mdiImageBrokenVariant } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import { stackAssetsStore } from '$lib/stores/stacked-asset.store';
+  import ActivityViewer from './activity-viewer.svelte';
+  import ActivityStatus from './activity-status.svelte';
+  import { updateNumberOfComments } from '$lib/stores/activity.store';
+  import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import SlideshowBar from './slideshow-bar.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -37,6 +49,20 @@
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
   export let force = false;
+  export let withStacked = false;
+  export let isShared = false;
+  export let user: UserResponseDto | null = null;
+  export let album: AlbumResponseDto | null = null;
+
+  let reactions: ActivityResponseDto[] = [];
+
+  const { setAssetId } = assetViewingStore;
+  const {
+    restartProgress: restartSlideshowProgress,
+    stopProgress: stopSlideshowProgress,
+    slideshowShuffle,
+    slideshowState,
+  } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
     archived: AssetResponseDto;
@@ -46,6 +72,7 @@
     close: void;
     next: void;
     previous: void;
+    unstack: void;
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
@@ -55,12 +82,124 @@
   let shouldPlayMotionPhoto = false;
   let isShowProfileImageCrop = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  let shouldShowDetailButton = asset.hasMetadata;
   let canCopyImagesToClipboard: boolean;
+  let slideshowStateUnsubscribe: () => void;
+  let shuffleSlideshowUnsubscribe: () => void;
+  let previewStackedAsset: AssetResponseDto | undefined;
+  let isShowActivity = false;
+  let isLiked: ActivityResponseDto | null = null;
+  let numberOfComments: number;
 
+  $: {
+    if (asset.stackCount && asset.stack) {
+      $stackAssetsStore = asset.stack;
+      $stackAssetsStore = [...$stackAssetsStore, asset].sort(
+        (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
+      );
+    }
+
+    if (!$stackAssetsStore.map((a) => a.id).includes(asset.id)) {
+      $stackAssetsStore = [];
+    }
+  }
+
+  $: {
+    if (album && !album.isActivityEnabled && numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  }
+
+  const handleAddComment = () => {
+    numberOfComments++;
+    updateNumberOfComments(1);
+  };
+
+  const handleRemoveComment = () => {
+    numberOfComments--;
+    updateNumberOfComments(-1);
+  };
+
+  const handleFavorite = async () => {
+    if (album && album.isActivityEnabled) {
+      try {
+        if (isLiked) {
+          const activityId = isLiked.id;
+          await api.activityApi.deleteActivity({ id: activityId });
+          reactions = reactions.filter((reaction) => reaction.id !== activityId);
+          isLiked = null;
+        } else {
+          const { data } = await api.activityApi.createActivity({
+            activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
+          });
+
+          isLiked = data;
+          reactions = [...reactions, isLiked];
+        }
+      } catch (error) {
+        handleError(error, "Can't change favorite for asset");
+      }
+    }
+  };
+
+  const getFavorite = async () => {
+    if (album && user) {
+      try {
+        const { data } = await api.activityApi.getActivities({
+          userId: user.id,
+          assetId: asset.id,
+          albumId: album.id,
+          type: ReactionType.Like,
+        });
+        if (data.length > 0) {
+          isLiked = data[0];
+        } else {
+          isLiked = null;
+        }
+      } catch (error) {
+        handleError(error, "Can't get Favorite");
+      }
+    }
+  };
+
+  const getNumberOfComments = async () => {
+    if (album) {
+      try {
+        const { data } = await api.activityApi.getActivityStatistics({ assetId: asset.id, albumId: album.id });
+        numberOfComments = data.comments;
+      } catch (error) {
+        handleError(error, "Can't get number of comments");
+      }
+    }
+  };
+
+  $: {
+    if (isShared && asset.id) {
+      getFavorite();
+      getNumberOfComments();
+    }
+  }
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
+
+    slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
+      if (value === SlideshowState.PlaySlideshow) {
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset.id);
+        handlePlaySlideshow();
+      } else if (value === SlideshowState.StopSlideshow) {
+        handleStopSlideshow();
+      }
+    });
+
+    shuffleSlideshowUnsubscribe = slideshowShuffle.subscribe((value) => {
+      if (value) {
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset.id);
+      }
+    });
 
     if (!sharedLink) {
       await getAllAlbums();
@@ -70,11 +209,28 @@
     // TODO: Move to regular import once the package correctly supports ESM.
     const module = await import('copy-image-clipboard');
     canCopyImagesToClipboard = module.canCopyImagesToClipboard();
+
+    if (asset.stackCount && asset.stack) {
+      $stackAssetsStore = asset.stack;
+      $stackAssetsStore = [...$stackAssetsStore, asset].sort(
+        (a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime(),
+      );
+    } else {
+      $stackAssetsStore = [];
+    }
   });
 
   onDestroy(() => {
     if (browser) {
       document.removeEventListener('keydown', onKeyboardPress);
+    }
+
+    if (slideshowStateUnsubscribe) {
+      slideshowStateUnsubscribe();
+    }
+
+    if (shuffleSlideshowUnsubscribe) {
+      shuffleSlideshowUnsubscribe();
     }
   });
 
@@ -91,6 +247,13 @@
     } catch (e) {
       console.error('Error getting album that asset belong to', e);
     }
+  };
+
+  const handleOpenActivity = () => {
+    if ($isShowDetail) {
+      $isShowDetail = false;
+    }
+    isShowActivity = !isShowActivity;
   };
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
@@ -134,6 +297,7 @@
         toggleFavorite();
         return;
       case 'i':
+        isShowActivity = false;
         $isShowDetail = !$isShowDetail;
         return;
     }
@@ -146,11 +310,31 @@
 
   const closeViewer = () => dispatch('close');
 
+  const navigateAssetRandom = async () => {
+    if (!assetStore) {
+      return;
+    }
+
+    const asset = await assetStore.getRandomAsset();
+    if (!asset) {
+      return;
+    }
+
+    slideshowHistory.queue(asset.id);
+
+    setAssetId(asset.id);
+    $restartSlideshowProgress = true;
+  };
+
   const navigateAssetForward = async (e?: Event) => {
-    if (isSlideshowMode && assetStore && progressBar) {
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
+      return slideshowHistory.next() || navigateAssetRandom();
+    }
+
+    if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
       const hasNext = await assetStore.getNextAssetId(asset.id);
       if (hasNext) {
-        progressBar.restart(true);
+        $restartSlideshowProgress = true;
       } else {
         await handleStopSlideshow();
       }
@@ -161,8 +345,13 @@
   };
 
   const navigateAssetBackward = (e?: Event) => {
-    if (isSlideshowMode && progressBar) {
-      progressBar.restart(true);
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowShuffle) {
+      slideshowHistory.previous();
+      return;
+    }
+
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      $restartSlideshowProgress = true;
     }
 
     e?.stopPropagation();
@@ -170,6 +359,9 @@
   };
 
   const showDetailInfoHandler = () => {
+    if (isShowActivity) {
+      isShowActivity = false;
+    }
     $isShowDetail = !$isShowDetail;
   };
 
@@ -294,17 +486,6 @@
     }
   };
 
-  const getAssetType = () => {
-    switch (asset.type) {
-      case 'IMAGE':
-        return 'Photo';
-      case 'VIDEO':
-        return 'Video';
-      default:
-        return 'Asset';
-    }
-  };
-
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
@@ -318,19 +499,21 @@
    * Slide show mode
    */
 
-  let isSlideshowMode = false;
   let assetViewerHtmlElement: HTMLElement;
-  let progressBar: ProgressBar;
-  let progressBarStatus: ProgressBarStatus;
+
+  const slideshowHistory = new SlideshowHistory((assetId: string) => {
+    setAssetId(assetId);
+    $restartSlideshowProgress = true;
+  });
 
   const handleVideoStarted = () => {
-    if (isSlideshowMode) {
-      progressBar.restart(false);
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      $stopSlideshowProgress = true;
     }
   };
 
   const handleVideoEnded = async () => {
-    if (isSlideshowMode) {
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
       await navigateAssetForward();
     }
   };
@@ -340,19 +523,48 @@
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
       console.error('Error entering fullscreen', error);
-    } finally {
-      isSlideshowMode = true;
+      $slideshowState = SlideshowState.StopSlideshow;
     }
   };
 
   const handleStopSlideshow = async () => {
     try {
-      await document.exitFullscreen();
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
     } catch (error) {
       console.error('Error exiting fullscreen', error);
     } finally {
-      isSlideshowMode = false;
-      progressBar.restart(false);
+      $stopSlideshowProgress = true;
+      $slideshowState = SlideshowState.None;
+    }
+  };
+
+  const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
+    const { isMouseOver } = e.detail;
+
+    if (isMouseOver) {
+      previewStackedAsset = asset;
+    } else {
+      previewStackedAsset = undefined;
+    }
+  };
+
+  const handleUnstack = async () => {
+    try {
+      const ids = $stackAssetsStore.map(({ id }) => id);
+      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, removeParent: true } });
+      for (const child of $stackAssetsStore) {
+        child.stackParentId = null;
+        child.stackCount = 0;
+        child.stack = [];
+        assetStore?.addAsset(child);
+      }
+
+      dispatch('unstack');
+      notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
+    } catch (error) {
+      await handleError(error, `Unable to unstack`);
     }
   };
 </script>
@@ -360,31 +572,10 @@
 <section
   id="immich-asset-viewer"
   class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
-  bind:this={assetViewerHtmlElement}
 >
-  <div class="z-[1000] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
-    {#if isSlideshowMode}
-      <!-- SlideShowController -->
-      <div class="flex">
-        <div class="m-4 flex gap-2">
-          <CircleIconButton logo={Close} on:click={handleStopSlideshow} title="Exit Slideshow" />
-          <CircleIconButton
-            logo={progressBarStatus === ProgressBarStatus.Paused ? Play : Pause}
-            on:click={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar.play() : progressBar.pause())}
-            title={progressBarStatus === ProgressBarStatus.Paused ? 'Play' : 'Pause'}
-          />
-          <CircleIconButton logo={ChevronLeft} on:click={navigateAssetBackward} title="Previous" />
-          <CircleIconButton logo={ChevronRight} on:click={navigateAssetForward} title="Next" />
-        </div>
-        <ProgressBar
-          autoplay
-          bind:this={progressBar}
-          bind:status={progressBarStatus}
-          on:done={navigateAssetForward}
-          duration={5000}
-        />
-      </div>
-    {:else}
+  <!-- Top navigation bar -->
+  {#if $slideshowState === SlideshowState.None}
+    <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
         isMotionPhotoPlaying={shouldPlayMotionPhoto}
@@ -392,7 +583,9 @@
         showZoomButton={asset.type === AssetTypeEnum.Image}
         showMotionPlayButton={!!asset.livePhotoVideoId}
         showDownloadButton={shouldShowDownloadButton}
+        showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
+        hasStackChildren={$stackAssetsStore.length > 0}
         on:goBack={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
@@ -405,63 +598,137 @@
         on:toggleArchive={toggleArchive}
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
-        on:playSlideShow={handlePlaySlideshow}
+        on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
+        on:unstack={handleUnstack}
       />
+    </div>
+  {/if}
+
+  {#if $slideshowState === SlideshowState.None && showNavigation}
+    <div class="z-[1001] column-span-1 col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
+      <NavigationArea on:click={navigateAssetBackward}><Icon path={mdiChevronLeft} size="36" /></NavigationArea>
+    </div>
+  {/if}
+
+  <!-- Asset Viewer -->
+  <div class="z-[1000] relative col-start-1 col-span-4 row-start-1 row-span-full" bind:this={assetViewerHtmlElement}>
+    {#if $slideshowState != SlideshowState.None}
+      <div class="z-[1000] absolute w-full flex">
+        <SlideshowBar
+          on:prev={navigateAssetBackward}
+          on:next={navigateAssetForward}
+          on:close={() => ($slideshowState = SlideshowState.StopSlideshow)}
+        />
+      </div>
+    {/if}
+
+    {#if previewStackedAsset}
+      {#key previewStackedAsset.id}
+        {#if previewStackedAsset.type === AssetTypeEnum.Image}
+          <PhotoViewer asset={previewStackedAsset} on:close={closeViewer} haveFadeTransition={false} />
+        {:else}
+          <VideoViewer
+            assetId={previewStackedAsset.id}
+            on:close={closeViewer}
+            on:onVideoEnded={handleVideoEnded}
+            on:onVideoStarted={handleVideoStarted}
+          />
+        {/if}
+      {/key}
+    {:else}
+      {#key asset.id}
+        {#if !asset.resized}
+          <div class="flex h-full w-full justify-center">
+            <div
+              class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
+            >
+              <Icon path={mdiImageBrokenVariant} size="25%" />
+            </div>
+          </div>
+        {:else if asset.type === AssetTypeEnum.Image}
+          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+            <VideoViewer
+              assetId={asset.livePhotoVideoId}
+              on:close={closeViewer}
+              on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+            />
+          {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
+                .toLowerCase()
+                .endsWith('.insp'))}
+            <PanoramaViewer {asset} />
+          {:else}
+            <PhotoViewer {asset} on:close={closeViewer} />
+          {/if}
+        {:else}
+          <VideoViewer
+            assetId={asset.id}
+            on:close={closeViewer}
+            on:onVideoEnded={handleVideoEnded}
+            on:onVideoStarted={handleVideoStarted}
+          />
+        {/if}
+        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
+          <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
+            <ActivityStatus
+              disabled={!album?.isActivityEnabled}
+              {isLiked}
+              {numberOfComments}
+              {isShowActivity}
+              on:favorite={handleFavorite}
+              on:openActivityTab={handleOpenActivity}
+            />
+          </div>
+        {/if}
+      {/key}
+    {/if}
+
+    {#if $stackAssetsStore.length > 0 && withStacked}
+      <div
+        id="stack-slideshow"
+        class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
+      >
+        <div class="relative whitespace-nowrap transition-all">
+          {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
+            <div
+              class="{stackedAsset.id == asset.id
+                ? '-translate-y-[1px]'
+                : '-translate-y-0'} inline-block px-1 transition-transform"
+            >
+              <Thumbnail
+                class="{stackedAsset.id == asset.id
+                  ? 'bg-transparent border-2 border-white'
+                  : 'bg-gray-700/40'} inline-block hover:bg-transparent"
+                asset={stackedAsset}
+                on:click={() => (asset = stackedAsset)}
+                on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+                readonly
+                thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
+                showStackedIcon={false}
+              />
+
+              {#if stackedAsset.id == asset.id}
+                <div class="w-full flex place-items-center place-content-center">
+                  <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      </div>
     {/if}
   </div>
 
-  {#if !isSlideshowMode && showNavigation}
-    <div class="column-span-1 z-[999] col-start-1 row-span-1 row-start-2 mb-[60px] justify-self-start">
-      <NavigationArea on:click={navigateAssetBackward}><ChevronLeft size="36" /></NavigationArea>
+  {#if $slideshowState === SlideshowState.None && showNavigation}
+    <div class="z-[1001] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
+      <NavigationArea on:click={navigateAssetForward}><Icon path={mdiChevronRight} size="36" /></NavigationArea>
     </div>
   {/if}
 
-  <div class="col-span-4 col-start-1 row-span-full row-start-1">
-    {#key asset.id}
-      {#if !asset.resized}
-        <div class="flex h-full w-full justify-center">
-          <div
-            class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-          >
-            <ImageBrokenVariant size="25%" />
-          </div>
-        </div>
-      {:else if asset.type === AssetTypeEnum.Image}
-        {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-          <VideoViewer
-            assetId={asset.livePhotoVideoId}
-            on:close={closeViewer}
-            on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-          />
-        {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || asset.originalPath
-            .toLowerCase()
-            .endsWith('.insp')}
-          <PanoramaViewer {asset} />
-        {:else}
-          <PhotoViewer {asset} on:close={closeViewer} />
-        {/if}
-      {:else}
-        <VideoViewer
-          assetId={asset.id}
-          on:close={closeViewer}
-          on:onVideoEnded={handleVideoEnded}
-          on:onVideoStarted={handleVideoStarted}
-        />
-      {/if}
-    {/key}
-  </div>
-
-  {#if !isSlideshowMode && showNavigation}
-    <div class="z-[999] col-span-1 col-start-4 row-span-1 row-start-2 mb-[60px] justify-self-end">
-      <NavigationArea on:click={navigateAssetForward}><ChevronRight size="36" /></NavigationArea>
-    </div>
-  {/if}
-
-  {#if !isSlideshowMode && $isShowDetail}
+  {#if $slideshowState === SlideshowState.None && $isShowDetail}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="z-[1002] row-span-full w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <DetailPanel
@@ -471,6 +738,29 @@
         on:close-viewer={handleCloseViewer}
         on:description-focus-in={disableKeyDownEvent}
         on:description-focus-out={enableKeyDownEvent}
+      />
+    </div>
+  {/if}
+
+  {#if isShared && album && isShowActivity && user}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="activity-panel"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+      translate="yes"
+    >
+      <ActivityViewer
+        {user}
+        disabled={!album.isActivityEnabled}
+        assetType={asset.type}
+        albumOwnerId={album.ownerId}
+        albumId={album.id}
+        assetId={asset.id}
+        bind:reactions
+        on:addComment={handleAddComment}
+        on:deleteComment={handleRemoveComment}
+        on:deleteLike={() => (isLiked = null)}
+        on:close={() => (isShowActivity = false)}
       />
     </div>
   {/if}
@@ -487,15 +777,15 @@
 
   {#if isShowDeleteConfirmation}
     <ConfirmDialogue
-      title="Delete {getAssetType()}"
+      title="Delete {getAssetType(asset.type)}"
       confirmText="Delete"
       on:confirm={deleteAsset}
       on:cancel={() => (isShowDeleteConfirmation = false)}
     >
       <svelte:fragment slot="prompt">
         <p>
-          Are you sure you want to delete this {getAssetType().toLowerCase()}? This will also remove it from its
-          album(s).
+          Are you sure you want to delete this {getAssetType(asset.type).toLowerCase()}? This will also remove it from
+          its album(s).
         </p>
         <p><b>You cannot undo this action!</b></p>
       </svelte:fragment>
@@ -514,5 +804,28 @@
 <style>
   #immich-asset-viewer {
     contain: layout;
+  }
+
+  .horizontal-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 10px;
+  }
+
+  /* Track */
+  .horizontal-scrollbar::-webkit-scrollbar-track {
+    background: #000000;
+    border-radius: 16px;
+  }
+
+  /* Handle */
+  .horizontal-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(159, 159, 159, 0.408);
+    border-radius: 16px;
+  }
+
+  /* Handle on hover */
+  .horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #adcbfa;
+    border-radius: 16px;
   }
 </style>

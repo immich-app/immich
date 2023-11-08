@@ -22,7 +22,7 @@
   async function refreshConfig() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data),
-      api.systemConfigApi.getDefaults().then((res) => res.data),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data),
     ]);
   }
 
@@ -65,7 +65,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     config = cloneDeep(configs);
     defaultConfig = cloneDeep(configs);

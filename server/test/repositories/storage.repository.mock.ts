@@ -1,6 +1,10 @@
-import { IStorageRepository } from '@app/domain';
+import { IStorageRepository, StorageCore } from '@app/domain';
 
-export const newStorageRepositoryMock = (): jest.Mocked<IStorageRepository> => {
+export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {
+  if (reset) {
+    StorageCore.reset();
+  }
+
   return {
     createZipStream: jest.fn(),
     createReadStream: jest.fn(),

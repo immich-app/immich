@@ -1,16 +1,14 @@
 import {
-  newAssetRepositoryMock,
-  newMoveRepositoryMock,
-  newPersonRepositoryMock,
+  newCommunicationRepositoryMock,
+  newServerInfoRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
 import { serverVersion } from '../domain.constant';
 import {
-  IAssetRepository,
-  IMoveRepository,
-  IPersonRepository,
+  ICommunicationRepository,
+  IServerInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
@@ -19,22 +17,20 @@ import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
-  let assetMock: jest.Mocked<IAssetRepository>;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
-  let moveMock: jest.Mocked<IMoveRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
+  let serverInfoMock: jest.Mocked<IServerInfoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
-    assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    moveMock = newMoveRepositoryMock();
-    personMock = newPersonRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
+    serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new ServerInfoService(assetMock, configMock, moveMock, personMock, userMock, storageMock);
+    sut = new ServerInfoService(communicationMock, configMock, userMock, serverInfoMock, storageMock);
   });
 
   it('should work', () => {
@@ -224,7 +220,7 @@ describe(ServerInfoService.name, () => {
         },
       ]);
 
-      await expect(sut.getStats()).resolves.toEqual({
+      await expect(sut.getStatistics()).resolves.toEqual({
         photos: 120,
         videos: 31,
         usage: 1123455,

@@ -47,7 +47,7 @@ export class TagService {
   async getAssets(authUser: AuthUserDto, id: string): Promise<AssetResponseDto[]> {
     await this.findOrFail(authUser, id);
     const assets = await this.repository.getAssets(authUser.id, id);
-    return assets.map(mapAsset);
+    return assets.map((asset) => mapAsset(asset));
   }
 
   async addAssets(authUser: AuthUserDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {

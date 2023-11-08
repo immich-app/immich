@@ -29,7 +29,10 @@ const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.MONTH]: 'month',
 };
 
-const TIME_BUCKET_COLUMN = 'localDateTime';
+const dateTrunc = (options: TimeBucketOptions) =>
+  `(date_trunc('${
+    truncateMap[options.size]
+  }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -96,21 +99,26 @@ export class AssetRepository implements IAssetRepository {
           month,
         },
       )
+      .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
       .orderBy('entity.localDateTime', 'DESC')
       .getMany();
   }
 
-  getByIds(ids: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { id: In(ids) },
-      relations: {
+  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
+    if (!relations) {
+      relations = {
         exifInfo: true,
         smartInfo: true,
         tags: true,
         faces: {
           person: true,
         },
-      },
+        stack: true,
+      };
+    }
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations,
       withDeleted: true,
     });
   }
@@ -174,7 +182,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
-      withDeleted: !!options.trashedBefore,
+      withDeleted: options.withDeleted ?? !!options.trashedBefore,
       order: {
         // Ensures correct order when paginating
         createdAt: options.order ?? 'ASC',
@@ -190,6 +198,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
         library: true,
+        stack: true,
       },
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
@@ -478,25 +487,22 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
-    const truncateValue = truncateMap[options.size];
-
+    const truncated = dateTrunc(options);
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`)
-      .orderBy(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
+      .addSelect(truncated, 'timeBucket')
+      .groupBy(truncated)
+      .orderBy(truncated, 'DESC')
       .getRawMany();
   }
 
-  getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
-    const truncateValue = truncateMap[options.size];
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+    const truncated = dateTrunc(options);
     return (
       this.getBuilder(options)
-        .andWhere(`date_trunc('${truncateValue}', "${TIME_BUCKET_COLUMN}" at time zone 'UTC') = :timeBucket`, {
-          timeBucket,
-        })
+        .andWhere(`${truncated} = :timeBucket`, { timeBucket })
         // First sort by the day in localtime (put it in the right bucket)
-        .orderBy(`date_trunc('day', "${TIME_BUCKET_COLUMN}" at time zone 'UTC')`, 'DESC')
+        .orderBy(truncated, 'DESC')
         // and then sort by the actual time
         .addOrderBy('asset.fileCreatedAt', 'DESC')
         .getMany()
@@ -504,12 +510,14 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, isTrashed, albumId, personId, userId } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId, withStacked } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.isVisible = true')
-      .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+      .andWhere('asset.fileCreatedAt < NOW()')
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.stack', 'stack');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
@@ -536,6 +544,10 @@ export class AssetRepository implements IAssetRepository {
         .innerJoin('asset.faces', 'faces')
         .innerJoin('faces.person', 'person')
         .andWhere('person.id = :personId', { personId });
+    }
+
+    if (withStacked) {
+      builder = builder.andWhere('asset.stackParentId IS NULL');
     }
 
     return builder;

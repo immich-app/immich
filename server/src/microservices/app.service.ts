@@ -9,6 +9,7 @@ import {
   MetadataService,
   PersonService,
   SearchService,
+  ServerInfoService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,
@@ -23,19 +24,20 @@ export class AppService {
   private logger = new Logger(AppService.name);
 
   constructor(
-    private jobService: JobService,
+    private auditService: AuditService,
     private assetService: AssetService,
+    private jobService: JobService,
+    private libraryService: LibraryService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
     private personService: PersonService,
     private searchService: SearchService,
+    private serverInfoService: ServerInfoService,
     private smartInfoService: SmartInfoService,
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
-    private auditService: AuditService,
-    private libraryService: LibraryService,
   ) {}
 
   async init() {
@@ -90,17 +92,21 @@ export class AppService {
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
     });
 
-    process.on('uncaughtException', (error: Error | any) => {
+    process.on('uncaughtException', async (error: Error | any) => {
       const isCsvError = error.code === 'CSV_RECORD_INCONSISTENT_FIELDS_LENGTH';
       if (!isCsvError) {
         throw error;
       }
 
       this.logger.warn('Geocoding csv parse error, trying again without cache...');
-      this.metadataService.init(true);
+      await this.metadataService.init(true);
     });
 
     await this.metadataService.init();
     await this.searchService.init();
+  }
+
+  async teardown() {
+    await this.metadataService.teardown();
   }
 }

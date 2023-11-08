@@ -1,21 +1,22 @@
 import { LoginResponseDto } from '@app/domain';
 import { ServerInfoController } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let accessToken: string;
   let loginResponse: LoginResponseDto;
 
   beforeAll(async () => {
-    app = await createTestApp();
-    server = app.getHttpServer();
+    [server] = await testApp.create();
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
@@ -23,11 +24,6 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('GET /server-info', () => {
@@ -107,9 +103,9 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     });
   });
 
-  describe('GET /server-info/stats', () => {
+  describe('GET /server-info/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/server-info/stats');
+      const { status, body } = await request(server).get('/server-info/statistics');
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
@@ -119,7 +115,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       await api.userApi.create(server, accessToken, { ...loginDto, firstName: 'test', lastName: 'test' });
       const { accessToken: userAccessToken } = await api.authApi.login(server, loginDto);
       const { status, body } = await request(server)
-        .get('/server-info/stats')
+        .get('/server-info/statistics')
         .set('Authorization', `Bearer ${userAccessToken}`);
       expect(status).toBe(403);
       expect(body).toEqual(errorStub.forbidden);
@@ -127,7 +123,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
 
     it('should return the server stats', async () => {
       const { status, body } = await request(server)
-        .get('/server-info/stats')
+        .get('/server-info/statistics')
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -156,6 +152,16 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         sidecar: ['.xmp'],
         image: expect.any(Array),
         video: expect.any(Array),
+      });
+    });
+  });
+
+  describe('GET /server-info/theme', () => {
+    it('should respond with the server theme', async () => {
+      const { status, body } = await request(server).get('/server-info/theme');
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        customCss: '',
       });
     });
   });

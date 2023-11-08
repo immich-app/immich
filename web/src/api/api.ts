@@ -19,15 +19,19 @@ import {
   SystemConfigApi,
   UserApi,
   UserApiFp,
+  AuditApi,
+  ActivityApi,
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
 import type { ApiParams } from './types';
 
 export class ImmichApi {
+  public activityApi: ActivityApi;
   public albumApi: AlbumApi;
   public libraryApi: LibraryApi;
   public assetApi: AssetApi;
+  public auditApi: AuditApi;
   public authenticationApi: AuthenticationApi;
   public jobApi: JobApi;
   public keyApi: APIKeyApi;
@@ -50,7 +54,9 @@ export class ImmichApi {
   constructor(params: ConfigurationParameters) {
     this.config = new Configuration(params);
 
+    this.activityApi = new ActivityApi(this.config);
     this.albumApi = new AlbumApi(this.config);
+    this.auditApi = new AuditApi(this.config);
     this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.authenticationApi = new AuthenticationApi(this.config);

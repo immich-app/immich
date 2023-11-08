@@ -16,10 +16,6 @@ sidebar_position: 7
 
 Immich doesn't have two-way synchronization ([yet](https://github.com/immich-app/immich/discussions/1006)), but the [command line tool](/docs/features/bulk-upload.md) can bulk upload items from a directory to Immich.
 
-### Why doesn't Immich watch an existing photo gallery directory?
-
-The initial approach of Immich is to become a backup tool, primarily for mobile device usage. Thus, all the assets must be uploaded from the mobile client. The app was architectured to perform that job well.
-
 ### Why are only photos and not videos being uploaded to Immich?
 
 This often happens when using a reverse proxy or cloudflare tunnel in front of Immich. Make sure to set your reverse proxy to allow large POST requests. In `nginx`, set `client_max_body_size 50000M;` or similar. Cloudflare tunnels are limited to 100 mb file sizes. Also check the disk space of your reverse proxy, in some cases proxies caches requests to disk before passing them on, and if disk space runs out the request fails.

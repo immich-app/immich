@@ -49,10 +49,12 @@ export interface AlbumViewSettings {
 
 export interface SidebarSettings {
   people: boolean;
+  sharing: boolean;
 }
 
-export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings', {
+export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings-1', {
   people: false,
+  sharing: true,
 });
 
 export enum AlbumViewMode {

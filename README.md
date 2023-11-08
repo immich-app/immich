@@ -2,7 +2,7 @@
   <br/>  
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: MIT"></a>
   <a href="https://discord.gg/D8JsnBEuKb">
-    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
+    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord"/>
   </a>
   <br/>  
   <br/>   
@@ -25,6 +25,7 @@
   <a href="README_fr_FR.md">Français</a>
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_ja_JP.md">日本語</a>
+  <a href="README_it_IT.md">Italiano</a>
 </p>
 
 ## Disclaimer
@@ -65,7 +66,7 @@ password: demo
 Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
 
-# Features
+## Features
 
 | Features                                     | Mobile | Web |
 | -------------------------------------------- | ------ | --- |
@@ -95,7 +96,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Offline support                              | Yes    | No  |
 | Read-only gallery                            | Yes    | Yes |
 
-# Support the project
+## Support the project
 
 I've committed to this project, and I will not stop. I will keep updating the docs, adding new features, and fixing bugs. But I can't do it alone. So I need your help to give me additional motivation to keep going.
 
@@ -103,10 +104,15 @@ As our hosts in the [selfhosted.show - In the episode 'The-organization-must-not
 
 If you feel like this is the right cause and the app is something you are seeing yourself using for a long time, please consider supporting the project with the option below.
 
-## Donation
+### Donation
 
 - [Monthly donation](https://github.com/sponsors/alextran1502) via GitHub Sponsors
 - [One-time donation](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
+
+## Contributors
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>

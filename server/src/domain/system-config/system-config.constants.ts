@@ -20,6 +20,10 @@ export const supportedPresetTokens = [
   '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
   '{{y}}/{{y}}-{{MM}}/{{filename}}',
   '{{y}}/{{y}}-{{WW}}/{{filename}}',
+  '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
+  '{{y}}/{{y}}-{{MM}}/{{assetId}}',
+  '{{y}}/{{y}}-{{WW}}/{{assetId}}',
+  '{{album}}/{{filename}}',
 ];
 
 export const INITIAL_SYSTEM_CONFIG = 'INITIAL_SYSTEM_CONFIG';

@@ -4,6 +4,7 @@ import { personStub } from './person.stub';
 
 export const faceStub = {
   face1: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.withName.id,
@@ -17,6 +18,7 @@ export const faceStub = {
     imageWidth: 1024,
   }),
   primaryFace1: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.primaryPerson.id,
@@ -30,6 +32,7 @@ export const faceStub = {
     imageWidth: 1024,
   }),
   mergeFace1: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.mergePerson.id,
@@ -43,6 +46,7 @@ export const faceStub = {
     imageWidth: 1024,
   }),
   mergeFace2: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId',
     assetId: assetStub.image1.id,
     asset: assetStub.image1,
     personId: personStub.mergePerson.id,
@@ -56,6 +60,7 @@ export const faceStub = {
     imageWidth: 1024,
   }),
   start: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.newThumbnail.id,
@@ -69,6 +74,7 @@ export const faceStub = {
     imageWidth: 1000,
   }),
   middle: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.newThumbnail.id,
@@ -82,6 +88,7 @@ export const faceStub = {
     imageWidth: 400,
   }),
   end: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.newThumbnail.id,

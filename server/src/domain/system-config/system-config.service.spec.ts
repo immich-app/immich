@@ -1,8 +1,8 @@
 import {
   AudioCodec,
-  CQMode,
   CitiesFile,
   Colorspace,
+  CQMode,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -15,7 +15,7 @@ import { BadRequestException } from '@nestjs/common';
 import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { JobName, QueueName } from '../job';
 import { ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
-import { SystemConfigValidator, defaults } from './system-config.core';
+import { defaults, SystemConfigValidator } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
 const updates: SystemConfigEntity[] = [
@@ -68,7 +68,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     clip: {
       enabled: true,
-      modelName: 'ViT-B-32::openai',
+      modelName: 'ViT-B-32__openai',
     },
     facialRecognition: {
       enabled: true,
@@ -111,9 +111,21 @@ const updatedConfig = Object.freeze<SystemConfig>({
     quality: 80,
     colorspace: Colorspace.P3,
   },
+  newVersionCheck: {
+    enabled: true,
+  },
   trash: {
     enabled: true,
     days: 10,
+  },
+  theme: {
+    customCss: '',
+  },
+  library: {
+    scan: {
+      enabled: true,
+      cronExpression: '0 0 * * *',
+    },
   },
 });
 
@@ -189,6 +201,15 @@ describe(SystemConfigService.name, () => {
       expect(configMock.readFile).toHaveBeenCalledWith('immich-config.json');
     });
 
+    it('should allow underscores in the machine learning url', async () => {
+      process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
+      const partialConfig = { machineLearning: { url: 'immich_machine_learning' } };
+      configMock.readFile.mockResolvedValue(Buffer.from(JSON.stringify(partialConfig)));
+
+      const config = await sut.getConfig();
+      expect(config.machineLearning.url).toEqual('immich_machine_learning');
+    });
+
     const tests = [
       { should: 'validate numbers', config: { ffmpeg: { crf: 'not-a-number' } } },
       { should: 'validate booleans', config: { oauth: { enabled: 'invalid' } } },
@@ -230,6 +251,10 @@ describe(SystemConfigService.name, () => {
           '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
           '{{y}}/{{y}}-{{MM}}/{{filename}}',
           '{{y}}/{{y}}-{{WW}}/{{filename}}',
+          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
+          '{{y}}/{{y}}-{{MM}}/{{assetId}}',
+          '{{y}}/{{y}}-{{WW}}/{{assetId}}',
+          '{{album}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss'],
         weekOptions: ['W', 'WW'],
@@ -277,6 +302,12 @@ describe(SystemConfigService.name, () => {
       expect(changeMock).toHaveBeenCalledWith(defaults);
 
       subscription.unsubscribe();
+    });
+  });
+
+  describe('getTheme', () => {
+    it('should return the default theme', async () => {
+      await expect(sut.getTheme()).resolves.toEqual(defaults.theme);
     });
   });
 });

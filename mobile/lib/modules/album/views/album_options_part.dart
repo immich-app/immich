@@ -23,6 +23,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final sharedUsers = useState(album.sharedUsers.toList());
     final owner = album.owner.value;
     final userId = ref.watch(authenticationProvider).userId;
+    final activityEnabled = useState(album.activityEnabled);
     final isOwner = owner?.id == userId;
 
     void showErrorMessage() {
@@ -195,6 +196,31 @@ class AlbumOptionsPage extends HookConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (isOwner && album.shared)
+            SwitchListTile.adaptive(
+              value: activityEnabled.value,
+              onChanged: (bool value) async {
+                activityEnabled.value = value;
+                if (await ref
+                    .read(sharedAlbumProvider.notifier)
+                    .setActivityEnabled(album, value)) {
+                  album.activityEnabled = value;
+                }
+              },
+              activeColor: activityEnabled.value
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).disabledColor,
+              dense: true,
+              title: Text(
+                "shared_album_activity_setting_title",
+                style: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ).tr(),
+              subtitle:
+                  const Text("shared_album_activity_setting_subtitle").tr(),
+            ),
           buildSectionTitle("PEOPLE"),
           buildOwnerInfo(),
           buildSharedUsersList(),

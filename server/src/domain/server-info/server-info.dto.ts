@@ -1,5 +1,6 @@
 import { FeatureFlags, IServerVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
+import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
 export class ServerPingResponse {
   @ApiResponseProperty({ type: String, example: 'pong' })
@@ -78,6 +79,8 @@ export class ServerMediaTypesResponseDto {
   image!: string[];
   sidecar!: string[];
 }
+
+export class ServerThemeDto extends SystemConfigThemeDto {}
 
 export class ServerConfigDto {
   oauthButtonText!: string;

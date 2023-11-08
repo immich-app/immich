@@ -1,18 +1,67 @@
 import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AlbumEntity, AssetEntity, LibraryEntity, PartnerEntity, PersonEntity, SharedLinkEntity } from '../entities';
+import {
+  ActivityEntity,
+  AlbumEntity,
+  AssetEntity,
+  LibraryEntity,
+  PartnerEntity,
+  PersonEntity,
+  SharedLinkEntity,
+  UserTokenEntity,
+} from '../entities';
 
 export class AccessRepository implements IAccessRepository {
   constructor(
+    @InjectRepository(ActivityEntity) private activityRepository: Repository<ActivityEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
+    @InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>,
     @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(SharedLinkEntity) private sharedLinkRepository: Repository<SharedLinkEntity>,
-    @InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>,
+    @InjectRepository(UserTokenEntity) private tokenRepository: Repository<UserTokenEntity>,
   ) {}
 
+  activity = {
+    hasOwnerAccess: (userId: string, activityId: string): Promise<boolean> => {
+      return this.activityRepository.exist({
+        where: {
+          id: activityId,
+          userId,
+        },
+      });
+    },
+    hasAlbumOwnerAccess: (userId: string, activityId: string): Promise<boolean> => {
+      return this.activityRepository.exist({
+        where: {
+          id: activityId,
+          album: {
+            ownerId: userId,
+          },
+        },
+      });
+    },
+    hasCreateAccess: (userId: string, albumId: string): Promise<boolean> => {
+      return this.albumRepository.exist({
+        where: [
+          {
+            id: albumId,
+            isActivityEnabled: true,
+            sharedUsers: {
+              id: userId,
+            },
+          },
+          {
+            id: albumId,
+            isActivityEnabled: true,
+            ownerId: userId,
+          },
+        ],
+      });
+    },
+  };
   library = {
     hasOwnerAccess: (userId: string, libraryId: string): Promise<boolean> => {
       return this.libraryRepository.exist({
@@ -144,6 +193,17 @@ export class AccessRepository implements IAccessRepository {
             },
           },
         ],
+      });
+    },
+  };
+
+  authDevice = {
+    hasOwnerAccess: (userId: string, deviceId: string): Promise<boolean> => {
+      return this.tokenRepository.exist({
+        where: {
+          userId,
+          id: deviceId,
+        },
       });
     },
   };

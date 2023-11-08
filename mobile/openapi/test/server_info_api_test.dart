@@ -32,18 +32,23 @@ void main() {
       // TODO
     });
 
+    //Future<ServerStatsResponseDto> getServerStatistics() async
+    test('test getServerStatistics', () async {
+      // TODO
+    });
+
     //Future<ServerVersionResponseDto> getServerVersion() async
     test('test getServerVersion', () async {
       // TODO
     });
 
-    //Future<ServerStatsResponseDto> getStats() async
-    test('test getStats', () async {
+    //Future<ServerMediaTypesResponseDto> getSupportedMediaTypes() async
+    test('test getSupportedMediaTypes', () async {
       // TODO
     });
 
-    //Future<ServerMediaTypesResponseDto> getSupportedMediaTypes() async
-    test('test getSupportedMediaTypes', () async {
+    //Future<ServerThemeDto> getTheme() async
+    test('test getTheme', () async {
       // TODO
     });
 

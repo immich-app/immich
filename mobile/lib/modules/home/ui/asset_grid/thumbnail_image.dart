@@ -5,6 +5,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/utils/storage_indicator.dart';
+import 'package:isar/isar.dart';
 
 class ThumbnailImage extends StatelessWidget {
   final Asset asset;
@@ -12,12 +13,15 @@ class ThumbnailImage extends StatelessWidget {
   final Asset Function(int index) loadAsset;
   final int totalAssets;
   final bool showStorageIndicator;
+  final bool showStack;
+  final bool isOwner;
   final bool useGrayBoxPlaceholder;
   final bool isSelected;
   final bool multiselectEnabled;
   final Function? onSelect;
   final Function? onDeselect;
   final int heroOffset;
+  final String? sharedAlbumId;
 
   const ThumbnailImage({
     Key? key,
@@ -26,6 +30,9 @@ class ThumbnailImage extends StatelessWidget {
     required this.loadAsset,
     required this.totalAssets,
     this.showStorageIndicator = true,
+    this.showStack = false,
+    this.isOwner = true,
+    this.sharedAlbumId,
     this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
     this.multiselectEnabled = false,
@@ -39,6 +46,8 @@ class ThumbnailImage extends StatelessWidget {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final assetContainerColor =
         isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
+    // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
+    final isFromDto = asset.id == Isar.autoIncrement;
 
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
@@ -60,12 +69,76 @@ class ThumbnailImage extends StatelessWidget {
       }
     }
 
+    Widget buildVideoIcon() {
+      final minutes = asset.duration.inMinutes;
+      final durationString = asset.duration.toString();
+      return Positioned(
+        top: 5,
+        right: 8,
+        child: Row(
+          children: [
+            Text(
+              minutes > 59
+                  ? durationString.substring(0, 7) // h:mm:ss
+                  : minutes > 0
+                      ? durationString.substring(2, 7) // mm:ss
+                      : durationString.substring(3, 7), // m:ss
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(
+              width: 3,
+            ),
+            const Icon(
+              Icons.play_circle_fill_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget buildStackIcon() {
+      return Positioned(
+        top: !asset.isImage ? 28 : 5,
+        right: 8,
+        child: Row(
+          children: [
+            if (asset.stackChildrenCount > 1)
+              Text(
+                "${asset.stackChildrenCount}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (asset.stackChildrenCount > 1)
+              const SizedBox(
+                width: 3,
+              ),
+            const Icon(
+              Icons.burst_mode_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
+      );
+    }
+
     Widget buildImage() {
       final image = SizedBox(
         width: 300,
         height: 300,
         child: Hero(
-          tag: asset.id + heroOffset,
+          tag: isFromDto
+              ? '${asset.remoteId}-$heroOffset'
+              : asset.id + heroOffset,
           child: ImmichImage(
             asset,
             useGrayBoxPlaceholder: useGrayBoxPlaceholder,
@@ -80,9 +153,9 @@ class ThumbnailImage extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             width: 0,
-            color: assetContainerColor,
+            color: onDeselect == null ? Colors.grey : assetContainerColor,
           ),
-          color: assetContainerColor,
+          color: onDeselect == null ? Colors.grey : assetContainerColor,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -111,6 +184,9 @@ class ThumbnailImage extends StatelessWidget {
               loadAsset: loadAsset,
               totalAssets: totalAssets,
               heroOffset: heroOffset,
+              showStack: showStack,
+              isOwner: isOwner,
+              sharedAlbumId: sharedAlbumId,
             ),
           );
         }
@@ -144,7 +220,7 @@ class ThumbnailImage extends StatelessWidget {
             ),
           if (showStorageIndicator)
             Positioned(
-              right: 10,
+              right: 8,
               bottom: 5,
               child: Icon(
                 storageIcon(asset),
@@ -154,7 +230,7 @@ class ThumbnailImage extends StatelessWidget {
             ),
           if (asset.isFavorite)
             const Positioned(
-              left: 10,
+              left: 8,
               bottom: 5,
               child: Icon(
                 Icons.favorite,
@@ -162,26 +238,8 @@ class ThumbnailImage extends StatelessWidget {
                 size: 18,
               ),
             ),
-          if (!asset.isImage)
-            Positioned(
-              top: 5,
-              right: 5,
-              child: Row(
-                children: [
-                  Text(
-                    asset.duration.toString().substring(0, 7),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
-                  ),
-                  const Icon(
-                    Icons.play_circle_outline_rounded,
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
+          if (!asset.isImage) buildVideoIcon(),
+          if (asset.stackChildrenCount > 0) buildStackIcon(),
         ],
       ),
     );

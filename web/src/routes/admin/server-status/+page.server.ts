@@ -11,9 +11,10 @@ export const load = (async ({ parent, locals: { api } }) => {
     throw redirect(302, AppRoute.PHOTOS);
   }
 
-  const { data: stats } = await api.serverInfoApi.getStats();
+  const { data: stats } = await api.serverInfoApi.getServerStatistics();
 
   return {
+    user,
     stats,
     meta: {
       title: 'Server Stats',

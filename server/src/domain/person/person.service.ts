@@ -33,6 +33,7 @@ import {
   PeopleUpdateDto,
   PersonResponseDto,
   PersonSearchDto,
+  PersonStatisticsResponseDto,
   PersonUpdateDto,
   mapPerson,
 } from './person.dto';
@@ -56,9 +57,9 @@ export class PersonService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(storageRepository, assetRepository, moveRepository, repository);
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, repository, storageRepository);
   }
 
   async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
@@ -84,6 +85,11 @@ export class PersonService {
     return this.findOrFail(id).then(mapPerson);
   }
 
+  async getStatistics(authUser: AuthUserDto, id: string): Promise<PersonStatisticsResponseDto> {
+    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+    return this.repository.getStatistics(id);
+  }
+
   async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
     const person = await this.repository.getById(id);
@@ -97,7 +103,7 @@ export class PersonService {
   async getAssets(authUser: AuthUserDto, id: string): Promise<AssetResponseDto[]> {
     await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
     const assets = await this.repository.getAssets(id);
-    return assets.map(mapAsset);
+    return assets.map((asset) => mapAsset(asset));
   }
 
   async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
@@ -210,8 +216,14 @@ export class PersonService {
       return true;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.resizePath) {
+    const relations = {
+      exifInfo: true,
+      faces: {
+        person: true,
+      },
+    };
+    const [asset] = await this.assetRepository.getByIds([id], relations);
+    if (!asset || !asset.resizePath || asset.faces?.length > 0) {
       return false;
     }
 
@@ -309,7 +321,7 @@ export class PersonService {
     }
 
     this.logger.verbose(`Cropping face for person: ${personId}`);
-    const thumbnailPath = this.storageCore.getPersonThumbnailPath(person);
+    const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
 
     const halfWidth = (x2 - x1) / 2;
@@ -345,7 +357,7 @@ export class PersonService {
     } as const;
 
     await this.mediaRepository.resize(croppedOutput, thumbnailPath, thumbnailOptions);
-    await this.repository.update({ id: personId, thumbnailPath });
+    await this.repository.update({ id: person.id, thumbnailPath });
 
     return true;
   }

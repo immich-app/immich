@@ -19,6 +19,10 @@ export class SharedLinkCreateDto {
   @Optional()
   description?: string;
 
+  @IsString()
+  @Optional()
+  password?: string;
+
   @IsDate()
   @Type(() => Date)
   @Optional({ nullable: true })
@@ -34,12 +38,15 @@ export class SharedLinkCreateDto {
 
   @Optional()
   @IsBoolean()
-  showExif?: boolean = true;
+  showMetadata?: boolean = true;
 }
 
 export class SharedLinkEditDto {
   @Optional()
   description?: string;
+
+  @Optional()
+  password?: string;
 
   @Optional({ nullable: true })
   expiresAt?: Date | null;
@@ -51,5 +58,25 @@ export class SharedLinkEditDto {
   allowDownload?: boolean;
 
   @Optional()
-  showExif?: boolean;
+  showMetadata?: boolean;
+
+  /**
+   * Few clients cannot send null to set the expiryTime to never.
+   * Setting this flag and not sending expiryAt is considered as null instead.
+   * Clients that can send null values can ignore this.
+   */
+  @Optional()
+  @IsBoolean()
+  changeExpiryTime?: boolean;
+}
+
+export class SharedLinkPasswordDto {
+  @IsString()
+  @Optional()
+  @ApiProperty({ example: 'password' })
+  password?: string;
+
+  @IsString()
+  @Optional()
+  token?: string;
 }

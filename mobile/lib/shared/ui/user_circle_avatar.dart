@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -39,35 +40,37 @@ class UserCircleAvatar extends ConsumerWidget {
 
     final profileImageUrl =
         '${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${user.id}?d=${Random().nextInt(1024)}';
+
+    final textIcon = Text(
+      user.firstName[0].toUpperCase(),
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.black
+            : Colors.white,
+      ),
+    );
     return CircleAvatar(
       backgroundColor: useRandomBackgroundColor
           ? randomColors[Random().nextInt(randomColors.length)]
           : Theme.of(context).primaryColor,
       radius: radius,
       child: user.profileImagePath == ""
-          ? Text(
-              user.firstName[0],
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            )
+          ? textIcon
           : ClipRRect(
               borderRadius: BorderRadius.circular(50),
-              child: FadeInImage(
+              child: CachedNetworkImage(
                 fit: BoxFit.cover,
-                placeholder: MemoryImage(kTransparentImage),
+                cacheKey: user.profileImagePath,
                 width: size,
                 height: size,
-                image: NetworkImage(
-                  profileImageUrl,
-                  headers: {
-                    "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
-                  },
-                ),
-                fadeInDuration: const Duration(milliseconds: 200),
-                imageErrorBuilder: (context, error, stackTrace) =>
-                    Image.memory(kTransparentImage),
+                placeholder: (_, __) => Image.memory(kTransparentImage),
+                imageUrl: profileImageUrl,
+                httpHeaders: {
+                  "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
+                },
+                fadeInDuration: const Duration(milliseconds: 300),
+                errorWidget: (context, error, stackTrace) => textIcon,
               ),
             ),
     );

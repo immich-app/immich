@@ -26,7 +26,16 @@ import {
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
+import {
+  H264Config,
+  HEVCConfig,
+  NVENCConfig,
+  QSVConfig,
+  RKMPPConfig,
+  ThumbnailConfig,
+  VAAPIConfig,
+  VP9Config,
+} from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -44,7 +53,7 @@ export class MediaService {
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = new StorageCore(this.storageRepository, assetRepository, moveRepository, personRepository);
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob) {
@@ -140,7 +149,7 @@ export class MediaService {
     const { thumbnail, ffmpeg } = await this.configCore.getConfig();
     const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
     const path =
-      format === 'jpeg' ? this.storageCore.getLargeThumbnailPath(asset) : this.storageCore.getSmallThumbnailPath(asset);
+      format === 'jpeg' ? StorageCore.getLargeThumbnailPath(asset) : StorageCore.getSmallThumbnailPath(asset);
     this.storageCore.ensureFolders(path);
 
     switch (asset.type) {
@@ -220,7 +229,7 @@ export class MediaService {
     }
 
     const input = asset.originalPath;
-    const output = this.storageCore.getEncodedVideoPath(asset);
+    const output = StorageCore.getEncodedVideoPath(asset);
     this.storageCore.ensureFolders(output);
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
@@ -351,6 +360,10 @@ export class MediaService {
       case TranscodeHWAccel.VAAPI:
         devices = await this.storageRepository.readdir('/dev/dri');
         handler = new VAAPIConfig(config, devices);
+        break;
+      case TranscodeHWAccel.RKMPP:
+        devices = await this.storageRepository.readdir('/dev/dri');
+        handler = new RKMPPConfig(config, devices);
         break;
       default:
         throw new UnsupportedMediaTypeException(`${config.accel.toUpperCase()} acceleration is unsupported`);

@@ -42,21 +42,21 @@ export class UploadService {
     };
   }
 
-  public checkIfAssetAlreadyExists(path: string, checksum: string): Promise<any> {
+  public checkIfAssetAlreadyExists(path: string, checksum: string) {
     this.checkAssetExistenceConfig.data = JSON.stringify({ assets: [{ id: path, checksum: checksum }] });
 
     // TODO: retry on 500 errors?
     return axios(this.checkAssetExistenceConfig);
   }
 
-  public upload(data: FormData): Promise<any> {
+  public upload(data: FormData) {
     this.uploadConfig.data = data;
 
     // TODO: retry on 500 errors?
     return axios(this.uploadConfig);
   }
 
-  public import(data: any): Promise<any> {
+  public import(data: any) {
     this.importConfig.data = data;
 
     // TODO: retry on 500 errors?

@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future<SharedLinkResponseDto> getMySharedLink({ String key }) async
+    //Future<SharedLinkResponseDto> getMySharedLink({ String password, String token, String key }) async
     test('test getMySharedLink', () async {
       // TODO
     });

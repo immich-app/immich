@@ -41,7 +41,12 @@ ThemeData immichLightTheme = ThemeData(
   fontFamily: 'WorkSans',
   scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+    contentTextStyle: TextStyle(
+      fontFamily: 'WorkSans',
+      color: Colors.indigo,
+      fontWeight: FontWeight.bold,
+    ),
+    backgroundColor: Colors.white,
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: const TextStyle(
@@ -156,8 +161,13 @@ ThemeData immichDarkTheme = ThemeData(
   scaffoldBackgroundColor: immichDarkBackgroundColor,
   hintColor: Colors.grey[600],
   fontFamily: 'WorkSans',
-  snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+  snackBarTheme: SnackBarThemeData(
+    contentTextStyle: TextStyle(
+      fontFamily: 'WorkSans',
+      color: immichDarkThemePrimaryColor,
+      fontWeight: FontWeight.bold,
+    ),
+    backgroundColor: Colors.grey[900],
   ),
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(

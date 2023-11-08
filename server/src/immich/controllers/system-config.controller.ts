@@ -17,7 +17,7 @@ export class SystemConfigController {
   }
 
   @Get('defaults')
-  getDefaults(): SystemConfigDto {
+  getConfigDefaults(): SystemConfigDto {
     return this.service.getDefaults();
   }
 

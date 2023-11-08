@@ -1,17 +1,12 @@
 import { UploadService } from './upload.service';
-import mockfs from 'mock-fs';
 import axios from 'axios';
-import mockAxios from 'jest-mock-axios';
 import FormData from 'form-data';
 import { ApiConfiguration } from '../cores/api-configuration';
 
+jest.mock('axios', () => jest.fn());
+
 describe('UploadService', () => {
   let uploadService: UploadService;
-
-  beforeAll(() => {
-    // Write a dummy output before mock-fs to prevent some annoying errors
-    console.log();
-  });
 
   beforeEach(() => {
     const apiConfiguration = new ApiConfiguration('https://example.com/api', 'key');
@@ -19,17 +14,11 @@ describe('UploadService', () => {
     uploadService = new UploadService(apiConfiguration);
   });
 
-  it('should upload a single file', async () => {
+  it('should call axios', async () => {
     const data = new FormData();
 
-    uploadService.upload(data);
+    await uploadService.upload(data);
 
-    mockAxios.mockResponse();
     expect(axios).toHaveBeenCalled();
-  });
-
-  afterEach(() => {
-    mockfs.restore();
-    mockAxios.reset();
   });
 });

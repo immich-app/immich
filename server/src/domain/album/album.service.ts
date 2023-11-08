@@ -31,7 +31,7 @@ export class AlbumService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
   }
 
   async getCount(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
@@ -95,7 +95,7 @@ export class AlbumService {
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     for (const userId of dto.sharedWithUserIds || []) {
-      const exists = await this.userRepository.get(userId);
+      const exists = await this.userRepository.get(userId, {});
       if (!exists) {
         throw new BadRequestException('User not found');
       }
@@ -120,17 +120,17 @@ export class AlbumService {
     const album = await this.findOrFail(id, { withAssets: true });
 
     if (dto.albumThumbnailAssetId) {
-      const valid = await this.albumRepository.hasAsset(id, dto.albumThumbnailAssetId);
+      const valid = await this.albumRepository.hasAsset({ albumId: id, assetId: dto.albumThumbnailAssetId });
       if (!valid) {
         throw new BadRequestException('Invalid album thumbnail');
       }
     }
-
     const updatedAlbum = await this.albumRepository.update({
       id: album.id,
       albumName: dto.albumName,
       description: dto.description,
       albumThumbnailAssetId: dto.albumThumbnailAssetId,
+      isActivityEnabled: dto.isActivityEnabled,
     });
 
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
@@ -148,35 +148,36 @@ export class AlbumService {
   }
 
   async addAssets(authUser: AuthUserDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    const album = await this.findOrFail(id, { withAssets: true });
+    const album = await this.findOrFail(id, { withAssets: false });
 
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
+    const existingAssetIds = await this.albumRepository.getAssetIds(id, dto.ids);
+
     const results: BulkIdResponseDto[] = [];
-    for (const id of dto.ids) {
-      const hasAsset = album.assets.find((asset) => asset.id === id);
+    for (const assetId of dto.ids) {
+      const hasAsset = existingAssetIds.has(assetId);
       if (hasAsset) {
-        results.push({ id, success: false, error: BulkIdErrorReason.DUPLICATE });
+        results.push({ id: assetId, success: false, error: BulkIdErrorReason.DUPLICATE });
         continue;
       }
 
-      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_SHARE, id);
+      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_SHARE, assetId);
       if (!hasAccess) {
-        results.push({ id, success: false, error: BulkIdErrorReason.NO_PERMISSION });
+        results.push({ id: assetId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
 
-      results.push({ id, success: true });
-      album.assets.push({ id } as AssetEntity);
+      results.push({ id: assetId, success: true });
     }
 
-    const newAsset = results.find(({ success }) => success);
-    if (newAsset) {
+    const newAssetIds = results.filter(({ success }) => success).map(({ id }) => id);
+    if (newAssetIds.length > 0) {
+      await this.albumRepository.addAssets({ albumId: id, assetIds: newAssetIds });
       await this.albumRepository.update({
         id,
-        assets: album.assets,
         updatedAt: new Date(),
-        albumThumbnailAssetId: album.albumThumbnailAssetId ?? newAsset.id,
+        albumThumbnailAssetId: album.albumThumbnailAssetId ?? newAssetIds[0],
       });
     }
 
@@ -184,42 +185,39 @@ export class AlbumService {
   }
 
   async removeAssets(authUser: AuthUserDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    const album = await this.findOrFail(id, { withAssets: true });
+    const album = await this.findOrFail(id, { withAssets: false });
 
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
+    const existingAssetIds = await this.albumRepository.getAssetIds(id, dto.ids);
+
     const results: BulkIdResponseDto[] = [];
-    for (const id of dto.ids) {
-      const hasAsset = album.assets.find((asset) => asset.id === id);
+    for (const assetId of dto.ids) {
+      const hasAsset = existingAssetIds.has(assetId);
       if (!hasAsset) {
-        results.push({ id, success: false, error: BulkIdErrorReason.NOT_FOUND });
+        results.push({ id: assetId, success: false, error: BulkIdErrorReason.NOT_FOUND });
         continue;
       }
 
       const hasAccess = await this.access.hasAny(authUser, [
-        { permission: Permission.ALBUM_REMOVE_ASSET, id },
-        { permission: Permission.ASSET_SHARE, id },
+        { permission: Permission.ALBUM_REMOVE_ASSET, id: assetId },
+        { permission: Permission.ASSET_SHARE, id: assetId },
       ]);
       if (!hasAccess) {
-        results.push({ id, success: false, error: BulkIdErrorReason.NO_PERMISSION });
+        results.push({ id: assetId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
 
-      results.push({ id, success: true });
-      album.assets = album.assets.filter((asset) => asset.id !== id);
-      if (album.albumThumbnailAssetId === id) {
-        album.albumThumbnailAssetId = null;
-      }
+      results.push({ id: assetId, success: true });
     }
 
-    const hasSuccess = results.find(({ success }) => success);
-    if (hasSuccess) {
-      await this.albumRepository.update({
-        id,
-        assets: album.assets,
-        updatedAt: new Date(),
-        albumThumbnailAssetId: album.albumThumbnailAssetId || album.assets[0]?.id || null,
-      });
+    const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
+    if (removedIds.length > 0) {
+      await this.albumRepository.removeAssets({ albumId: id, assetIds: removedIds });
+      await this.albumRepository.update({ id, updatedAt: new Date() });
+      if (album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
+        await this.albumRepository.updateThumbnails();
+      }
     }
 
     return results;
@@ -240,7 +238,7 @@ export class AlbumService {
         throw new BadRequestException('User already added');
       }
 
-      const user = await this.userRepository.get(userId);
+      const user = await this.userRepository.get(userId, {});
       if (!user) {
         throw new BadRequestException('User not found');
       }

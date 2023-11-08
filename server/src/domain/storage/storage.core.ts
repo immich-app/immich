@@ -1,6 +1,6 @@
 import { AssetEntity, AssetPathType, PathType, PersonEntity, PersonPathType } from '@app/infra/entities';
 import { Logger } from '@nestjs/common';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
 import { IAssetRepository, IMoveRepository, IPersonRepository, IStorageRepository } from '../repositories';
 
@@ -21,65 +21,98 @@ export interface MoveRequest {
 
 type GeneratedAssetPath = AssetPathType.JPEG_THUMBNAIL | AssetPathType.WEBP_THUMBNAIL | AssetPathType.ENCODED_VIDEO;
 
+let instance: StorageCore | null;
+
 export class StorageCore {
   private logger = new Logger(StorageCore.name);
 
-  constructor(
-    private repository: IStorageRepository,
+  private constructor(
     private assetRepository: IAssetRepository,
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
+    private repository: IStorageRepository,
   ) {}
 
-  getFolderLocation(folder: StorageFolder, userId: string) {
-    return join(this.getBaseFolder(folder), userId);
+  static create(
+    assetRepository: IAssetRepository,
+    moveRepository: IMoveRepository,
+    personRepository: IPersonRepository,
+    repository: IStorageRepository,
+  ) {
+    if (!instance) {
+      instance = new StorageCore(assetRepository, moveRepository, personRepository, repository);
+    }
+
+    return instance;
   }
 
-  getLibraryFolder(user: { storageLabel: string | null; id: string }) {
-    return join(this.getBaseFolder(StorageFolder.LIBRARY), user.storageLabel || user.id);
+  static reset() {
+    instance = null;
   }
 
-  getBaseFolder(folder: StorageFolder) {
+  static getFolderLocation(folder: StorageFolder, userId: string) {
+    return join(StorageCore.getBaseFolder(folder), userId);
+  }
+
+  static getLibraryFolder(user: { storageLabel: string | null; id: string }) {
+    return join(StorageCore.getBaseFolder(StorageFolder.LIBRARY), user.storageLabel || user.id);
+  }
+
+  static getBaseFolder(folder: StorageFolder) {
     return join(APP_MEDIA_LOCATION, folder);
   }
 
-  getPersonThumbnailPath(person: PersonEntity) {
-    return this.getNestedPath(StorageFolder.THUMBNAILS, person.ownerId, `${person.id}.jpeg`);
+  static getPersonThumbnailPath(person: PersonEntity) {
+    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, person.ownerId, `${person.id}.jpeg`);
   }
 
-  getLargeThumbnailPath(asset: AssetEntity) {
-    return this.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.jpeg`);
+  static getLargeThumbnailPath(asset: AssetEntity) {
+    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.jpeg`);
   }
 
-  getSmallThumbnailPath(asset: AssetEntity) {
-    return this.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.webp`);
+  static getSmallThumbnailPath(asset: AssetEntity) {
+    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.webp`);
   }
 
-  getEncodedVideoPath(asset: AssetEntity) {
-    return this.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.mp4`);
+  static getEncodedVideoPath(asset: AssetEntity) {
+    return StorageCore.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.mp4`);
   }
 
-  getAndroidMotionPath(asset: AssetEntity) {
-    return this.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`);
+  static getAndroidMotionPath(asset: AssetEntity) {
+    return StorageCore.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`);
   }
 
-  isAndroidMotionPath(originalPath: string) {
-    return originalPath.startsWith(this.getBaseFolder(StorageFolder.ENCODED_VIDEO));
+  static isAndroidMotionPath(originalPath: string) {
+    return originalPath.startsWith(StorageCore.getBaseFolder(StorageFolder.ENCODED_VIDEO));
+  }
+
+  static isImmichPath(path: string) {
+    return resolve(path).startsWith(resolve(APP_MEDIA_LOCATION));
   }
 
   async moveAssetFile(asset: AssetEntity, pathType: GeneratedAssetPath) {
     const { id: entityId, resizePath, webpPath, encodedVideoPath } = asset;
     switch (pathType) {
       case AssetPathType.JPEG_THUMBNAIL:
-        return this.moveFile({ entityId, pathType, oldPath: resizePath, newPath: this.getLargeThumbnailPath(asset) });
+        return this.moveFile({
+          entityId,
+          pathType,
+          oldPath: resizePath,
+          newPath: StorageCore.getLargeThumbnailPath(asset),
+        });
       case AssetPathType.WEBP_THUMBNAIL:
-        return this.moveFile({ entityId, pathType, oldPath: webpPath, newPath: this.getSmallThumbnailPath(asset) });
+        return this.moveFile({
+          entityId,
+          pathType,
+          oldPath: webpPath,
+          newPath: StorageCore.getSmallThumbnailPath(asset),
+        });
       case AssetPathType.ENCODED_VIDEO:
         return this.moveFile({
           entityId,
           pathType,
           oldPath: encodedVideoPath,
-          newPath: this.getEncodedVideoPath(asset),
+          newPath: StorageCore.getEncodedVideoPath(asset),
         });
     }
   }
@@ -92,7 +125,7 @@ export class StorageCore {
           entityId,
           pathType,
           oldPath: thumbnailPath,
-          newPath: this.getPersonThumbnailPath(person),
+          newPath: StorageCore.getPersonThumbnailPath(person),
         });
     }
   }
@@ -135,7 +168,7 @@ export class StorageCore {
   }
 
   removeEmptyDirs(folder: StorageFolder) {
-    return this.repository.removeEmptyDirs(this.getBaseFolder(folder));
+    return this.repository.removeEmptyDirs(StorageCore.getBaseFolder(folder));
   }
 
   private savePath(pathType: PathType, id: string, newPath: string) {
@@ -155,7 +188,12 @@ export class StorageCore {
     }
   }
 
-  private getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
-    return join(this.getFolderLocation(folder, ownerId), filename.substring(0, 2), filename.substring(2, 4), filename);
+  private static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
+    return join(
+      StorageCore.getFolderLocation(folder, ownerId),
+      filename.substring(0, 2),
+      filename.substring(2, 4),
+      filename,
+    );
   }
 }

@@ -46,8 +46,13 @@ void main() {
       // TODO
     });
 
-    // bool showExif (default value: true)
-    test('to test the property `showExif`', () async {
+    // String password
+    test('to test the property `password`', () async {
+      // TODO
+    });
+
+    // bool showMetadata (default value: true)
+    test('to test the property `showMetadata`', () async {
       // TODO
     });
 

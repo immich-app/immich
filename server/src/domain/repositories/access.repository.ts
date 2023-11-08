@@ -1,11 +1,20 @@
 export const IAccessRepository = 'IAccessRepository';
 
 export interface IAccessRepository {
+  activity: {
+    hasOwnerAccess(userId: string, activityId: string): Promise<boolean>;
+    hasAlbumOwnerAccess(userId: string, activityId: string): Promise<boolean>;
+    hasCreateAccess(userId: string, albumId: string): Promise<boolean>;
+  };
   asset: {
     hasOwnerAccess(userId: string, assetId: string): Promise<boolean>;
     hasAlbumAccess(userId: string, assetId: string): Promise<boolean>;
     hasPartnerAccess(userId: string, assetId: string): Promise<boolean>;
     hasSharedLinkAccess(sharedLinkId: string, assetId: string): Promise<boolean>;
+  };
+
+  authDevice: {
+    hasOwnerAccess(userId: string, deviceId: string): Promise<boolean>;
   };
 
   album: {

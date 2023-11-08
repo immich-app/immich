@@ -5,7 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
-import { createTestApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${PersonController.name}`, () => {
@@ -18,9 +18,12 @@ describe(`${PersonController.name}`, () => {
   let hiddenPerson: PersonEntity;
 
   beforeAll(async () => {
-    app = await createTestApp();
-    server = app.getHttpServer();
+    [server, app] = await testApp.create();
     personRepository = app.get<IPersonRepository>(IPersonRepository);
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
   });
 
   beforeEach(async () => {
@@ -44,11 +47,6 @@ describe(`${PersonController.name}`, () => {
       thumbnailPath: '/thumbnail/face_asset',
     });
     await personRepository.createFace({ assetId: faceAsset.id, personId: hiddenPerson.id });
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('GET /person', () => {
@@ -141,10 +139,10 @@ describe(`${PersonController.name}`, () => {
 
     it('should not accept invalid birth dates', async () => {
       for (const { birthDate, response } of [
-        { birthDate: false, response: ['id must be a UUID'] },
+        { birthDate: false, response: 'Not found or no person.write access' },
         { birthDate: 'false', response: ['birthDate must be a Date instance'] },
-        { birthDate: '123567', response: ['id must be a UUID'] },
-        { birthDate: 123456, response: ['id must be a UUID'] },
+        { birthDate: '123567', response: 'Not found or no person.write access' },
+        { birthDate: 123567, response: 'Not found or no person.write access' },
       ]) {
         const { status, body } = await request(server)
           .put(`/person/${uuidStub.notFound}`)
