@@ -196,7 +196,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (isOwner)
+          if (isOwner && album.shared)
             SwitchListTile.adaptive(
               value: activityEnabled.value,
               onChanged: (bool value) async {
