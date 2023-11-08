@@ -25,6 +25,16 @@ class UserCircleAvatar extends ConsumerWidget {
     bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final profileImageUrl =
         '${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${user.id}?d=${Random().nextInt(1024)}';
+
+    final textIcon = Text(
+      user.firstName[0].toUpperCase(),
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.black
+            : Colors.white,
+      ),
+    );
     return CircleAvatar(
       backgroundColor: user.avatarColor.toColor(isDarkTheme),
       radius: radius,
@@ -52,8 +62,7 @@ class UserCircleAvatar extends ConsumerWidget {
                   "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
                 },
                 fadeInDuration: const Duration(milliseconds: 300),
-                errorWidget: (context, error, stackTrace) =>
-                    Image.memory(kTransparentImage),
+                errorWidget: (context, error, stackTrace) => textIcon,
               ),
             ),
     );

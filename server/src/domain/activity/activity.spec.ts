@@ -94,7 +94,7 @@ describe(ActivityService.name, () => {
     });
 
     it('should create a comment', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.activity.hasCreateAccess.mockResolvedValue(true);
       activityMock.create.mockResolvedValue(activityStub.oneComment);
 
       await sut.create(authStub.admin, {
@@ -113,8 +113,23 @@ describe(ActivityService.name, () => {
       });
     });
 
-    it('should create a like', async () => {
+    it('should fail because activity is disabled for the album', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.activity.hasCreateAccess.mockResolvedValue(false);
+      activityMock.create.mockResolvedValue(activityStub.oneComment);
+
+      await expect(
+        sut.create(authStub.admin, {
+          albumId: 'album-id',
+          assetId: 'asset-id',
+          type: ReactionType.COMMENT,
+          comment: 'comment',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should create a like', async () => {
+      accessMock.activity.hasCreateAccess.mockResolvedValue(true);
       activityMock.create.mockResolvedValue(activityStub.liked);
       activityMock.search.mockResolvedValue([]);
 
@@ -134,6 +149,7 @@ describe(ActivityService.name, () => {
 
     it('should skip if like exists', async () => {
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.activity.hasCreateAccess.mockResolvedValue(true);
       activityMock.search.mockResolvedValue([activityStub.liked]);
 
       await sut.create(authStub.admin, {

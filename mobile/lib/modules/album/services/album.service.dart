@@ -284,6 +284,23 @@ class AlbumService {
     return false;
   }
 
+  Future<bool> setActivityEnabled(Album album, bool enabled) async {
+    try {
+      final result = await _apiService.albumApi.updateAlbumInfo(
+        album.remoteId!,
+        UpdateAlbumDto(isActivityEnabled: enabled),
+      );
+      if (result != null) {
+        album.activityEnabled = enabled;
+        await _db.writeTxn(() => _db.albums.put(album));
+        return true;
+      }
+    } catch (e) {
+      debugPrint("Error setActivityEnabled  ${e.toString()}");
+    }
+    return false;
+  }
+
   Future<bool> deleteAlbum(Album album) async {
     try {
       final userId = Store.get(StoreKey.currentUser).isarId;

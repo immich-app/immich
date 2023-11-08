@@ -104,6 +104,12 @@
     }
   }
 
+  $: {
+    if (album && !album.isActivityEnabled && numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  }
+
   const handleAddComment = () => {
     numberOfComments++;
     updateNumberOfComments(1);
@@ -115,7 +121,7 @@
   };
 
   const handleFavorite = async () => {
-    if (album) {
+    if (album && album.isActivityEnabled) {
       try {
         if (isLiked) {
           const activityId = isLiked.id;
@@ -661,9 +667,10 @@
             on:onVideoStarted={handleVideoStarted}
           />
         {/if}
-        {#if $slideshowState === SlideshowState.None && isShared}
+        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <ActivityStatus
+              disabled={!album?.isActivityEnabled}
               {isLiked}
               {numberOfComments}
               {isShowActivity}
@@ -744,6 +751,7 @@
     >
       <ActivityViewer
         {user}
+        disabled={!album.isActivityEnabled}
         assetType={asset.type}
         albumOwnerId={album.ownerId}
         albumId={album.id}
