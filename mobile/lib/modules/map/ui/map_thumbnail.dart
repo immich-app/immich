@@ -28,6 +28,8 @@ class MapThumbnail extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(mapStateNotifier.select((s) => s.mapStyle));
+
     return SizedBox(
       height: height,
       child: ClipRRect(

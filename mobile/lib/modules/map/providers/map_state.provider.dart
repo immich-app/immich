@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -142,10 +143,9 @@ class MapStateNotifier extends StateNotifier<MapState> {
         tileProviders: state.mapStyle!.providers!,
         theme: state.mapStyle!.theme!,
         sprites: state.mapStyle!.sprites,
-        maximumTileSubstitutionDifference: 0,
       );
     }
-    return const SizedBox.shrink();
+    return const Center(child: ImmichLoadingIndicator());
   }
 }
 

@@ -1541,7 +1541,7 @@ packages:
     description:
       path: "."
       ref: immich_above_4
-      resolved-ref: "5d0d4f53a24eb830adbee222e22ea6ecec1ed600"
+      resolved-ref: "123f6028b0dfed0b7826350a39e6d987df75ee7f"
       url: "https://github.com/shenlong-tanwen/flutter-vector-map-tiles.git"
     source: git
     version: "4.0.0"
