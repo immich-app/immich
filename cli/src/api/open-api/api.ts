@@ -232,19 +232,13 @@ export interface AdminSignupResponseDto {
      * @type {string}
      * @memberof AdminSignupResponseDto
      */
-    'firstName': string;
+    'fullName': string;
     /**
      * 
      * @type {string}
      * @memberof AdminSignupResponseDto
      */
     'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AdminSignupResponseDto
-     */
-    'lastName': string;
 }
 /**
  * 
@@ -1377,13 +1371,7 @@ export interface CreateUserDto {
      * @type {string}
      * @memberof CreateUserDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateUserDto
-     */
-    'lastName': string;
+    'fullName': string;
     /**
      * 
      * @type {boolean}
@@ -2173,19 +2161,13 @@ export interface LoginResponseDto {
      * @type {string}
      * @memberof LoginResponseDto
      */
-    'firstName': string;
+    'fullName': string;
     /**
      * 
      * @type {boolean}
      * @memberof LoginResponseDto
      */
     'isAdmin': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof LoginResponseDto
-     */
-    'lastName': string;
     /**
      * 
      * @type {string}
@@ -3343,13 +3325,7 @@ export interface SignUpDto {
      * @type {string}
      * @memberof SignUpDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SignUpDto
-     */
-    'lastName': string;
+    'fullName': string;
     /**
      * 
      * @type {string}
@@ -4272,7 +4248,7 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'firstName'?: string;
+    'fullName'?: string;
     /**
      * 
      * @type {string}
@@ -4285,12 +4261,6 @@ export interface UpdateUserDto {
      * @memberof UpdateUserDto
      */
     'isAdmin'?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
-    'lastName'?: string;
     /**
      * 
      * @type {boolean}
@@ -4339,19 +4309,13 @@ export interface UsageByUserDto {
      * @type {string}
      * @memberof UsageByUserDto
      */
-    'userFirstName': string;
+    'userFullName': string;
     /**
      * 
      * @type {string}
      * @memberof UsageByUserDto
      */
     'userId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UsageByUserDto
-     */
-    'userLastName': string;
     /**
      * 
      * @type {number}
@@ -4376,19 +4340,13 @@ export interface UserDto {
      * @type {string}
      * @memberof UserDto
      */
-    'firstName': string;
+    'fullName': string;
     /**
      * 
      * @type {string}
      * @memberof UserDto
      */
     'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserDto
-     */
-    'lastName': string;
     /**
      * 
      * @type {string}
@@ -4431,7 +4389,7 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'firstName': string;
+    'fullName': string;
     /**
      * 
      * @type {string}
@@ -4444,12 +4402,6 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'isAdmin': boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
-    'lastName': string;
     /**
      * 
      * @type {boolean}
