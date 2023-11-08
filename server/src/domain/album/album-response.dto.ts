@@ -24,6 +24,7 @@ export class AlbumResponseDto {
   lastModifiedAssetTimestamp?: Date;
   startDate?: Date;
   endDate?: Date;
+  isActivityEnabled!: boolean;
 }
 
 export class AlbumsForPersonResponseDto {
@@ -101,6 +102,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
     endDate,
     assets: (withAssets ? assets : []).map((asset) => mapAsset(asset)),
     assetCount: entity.assets?.length || 0,
+    isActivityEnabled: entity.isActivityEnabled,
   };
 };
 

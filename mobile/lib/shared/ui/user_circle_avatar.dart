@@ -40,19 +40,23 @@ class UserCircleAvatar extends ConsumerWidget {
 
     final profileImageUrl =
         '${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${user.id}?d=${Random().nextInt(1024)}';
+
+    final textIcon = Text(
+      user.firstName[0].toUpperCase(),
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.black
+            : Colors.white,
+      ),
+    );
     return CircleAvatar(
       backgroundColor: useRandomBackgroundColor
           ? randomColors[Random().nextInt(randomColors.length)]
           : Theme.of(context).primaryColor,
       radius: radius,
       child: user.profileImagePath == ""
-          ? Text(
-              user.firstName[0].toUpperCase(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            )
+          ? textIcon
           : ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: CachedNetworkImage(
@@ -66,8 +70,7 @@ class UserCircleAvatar extends ConsumerWidget {
                   "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}",
                 },
                 fadeInDuration: const Duration(milliseconds: 300),
-                errorWidget: (context, error, stackTrace) =>
-                    Image.memory(kTransparentImage),
+                errorWidget: (context, error, stackTrace) => textIcon,
               ),
             ),
     );

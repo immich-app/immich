@@ -59,6 +59,7 @@
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
+  import AlbumOptions from '$lib/components/album-page/album-options.svelte';
 
   export let data: PageData;
 
@@ -70,6 +71,12 @@
   $: namedPeoples = data.namedPeoples;
   $: unNamedPeoples = data.unNamedPeoples;
 
+  $: {
+    if (!album.isActivityEnabled && $numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  }
+
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
     LINK_SHARING = 'link-sharing',
@@ -79,6 +86,7 @@
     ALBUM_OPTIONS = 'album-options',
     VIEW_USERS = 'view-users',
     VIEW = 'view',
+    OPTIONS = 'options',
   }
 
   let backUrl: string = AppRoute.ALBUMS;
@@ -116,6 +124,8 @@
       assetGridWidth = globalWidth;
     }
   }
+  $: showActivityStatus =
+    album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
@@ -136,6 +146,24 @@
       isCreatingSharedAlbum = true;
     }
   });
+
+  const handleToggleEnableActivity = async () => {
+    try {
+      const { data } = await api.albumApi.updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          isActivityEnabled: !album.isActivityEnabled,
+        },
+      });
+      album = data;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
+      });
+    } catch (error) {
+      handleError(error, `Can't ${!album.isActivityEnabled ? 'enable' : 'disable'} activity`);
+    }
+  };
 
   const handleFavorite = async () => {
     try {
@@ -383,6 +411,7 @@
         },
       });
       currentAlbumName = album.albumName;
+      notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
       handleError(error, 'Unable to update album name');
     }
@@ -472,6 +501,7 @@
                           <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
                         {/if}
                         <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
+                        <MenuOption on:click={() => (viewMode = ViewMode.OPTIONS)} text="Options" />
                       </ContextMenu>
                     {/if}
                   </CircleIconButton>
@@ -702,9 +732,10 @@
         </AssetGrid>
       {/if}
 
-      {#if album.sharedUsers.length > 0 && !$showAssetViewer}
+      {#if showActivityStatus}
         <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
           <ActivityStatus
+            disabled={!album.isActivityEnabled}
             {isLiked}
             numberOfComments={$numberOfComments}
             {isShowActivity}
@@ -720,11 +751,12 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[1002] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
         translate="yes"
       >
         <ActivityViewer
           {user}
+          disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
           bind:reactions
@@ -770,6 +802,16 @@
       <p>If this album is shared, other users will not be able to access it anymore.</p>
     </svelte:fragment>
   </ConfirmDialogue>
+{/if}
+
+{#if viewMode === ViewMode.OPTIONS}
+  <AlbumOptions
+    {album}
+    {user}
+    on:close={() => (viewMode = ViewMode.VIEW)}
+    on:toggleEnableActivity={handleToggleEnableActivity}
+    on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
+  />
 {/if}
 
 {#if isEditingDescription}

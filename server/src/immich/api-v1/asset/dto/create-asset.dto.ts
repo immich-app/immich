@@ -22,9 +22,10 @@ export class CreateAssetBase {
   @Type(() => Date)
   fileModifiedAt!: Date;
 
+  @Optional()
   @IsBoolean()
   @Transform(toBoolean)
-  isFavorite!: boolean;
+  isFavorite?: boolean;
 
   @Optional()
   @IsBoolean()

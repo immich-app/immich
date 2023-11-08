@@ -24,7 +24,7 @@ const config = {
   },
   plugins: [sveltekit()],
   optimizeDeps: {
-    entries: ['src/**/*.{svelte, ts, html}'],
+    entries: ['src/**/*.{svelte,ts,html}'],
   },
 };
 

@@ -17,48 +17,53 @@ const AlbumSchema = CollectionSchema(
   name: r'Album',
   id: -1355968412107120937,
   properties: {
-    r'createdAt': PropertySchema(
+    r'activityEnabled': PropertySchema(
       id: 0,
+      name: r'activityEnabled',
+      type: IsarType.bool,
+    ),
+    r'createdAt': PropertySchema(
+      id: 1,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'endDate': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'endDate',
       type: IsarType.dateTime,
     ),
     r'lastModifiedAssetTimestamp': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'lastModifiedAssetTimestamp',
       type: IsarType.dateTime,
     ),
     r'localId': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'localId',
       type: IsarType.string,
     ),
     r'modifiedAt': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'modifiedAt',
       type: IsarType.dateTime,
     ),
     r'name': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'name',
       type: IsarType.string,
     ),
     r'remoteId': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'shared': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'shared',
       type: IsarType.bool,
     ),
     r'startDate': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'startDate',
       type: IsarType.dateTime,
     )
@@ -157,15 +162,16 @@ void _albumSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeDateTime(offsets[1], object.endDate);
-  writer.writeDateTime(offsets[2], object.lastModifiedAssetTimestamp);
-  writer.writeString(offsets[3], object.localId);
-  writer.writeDateTime(offsets[4], object.modifiedAt);
-  writer.writeString(offsets[5], object.name);
-  writer.writeString(offsets[6], object.remoteId);
-  writer.writeBool(offsets[7], object.shared);
-  writer.writeDateTime(offsets[8], object.startDate);
+  writer.writeBool(offsets[0], object.activityEnabled);
+  writer.writeDateTime(offsets[1], object.createdAt);
+  writer.writeDateTime(offsets[2], object.endDate);
+  writer.writeDateTime(offsets[3], object.lastModifiedAssetTimestamp);
+  writer.writeString(offsets[4], object.localId);
+  writer.writeDateTime(offsets[5], object.modifiedAt);
+  writer.writeString(offsets[6], object.name);
+  writer.writeString(offsets[7], object.remoteId);
+  writer.writeBool(offsets[8], object.shared);
+  writer.writeDateTime(offsets[9], object.startDate);
 }
 
 Album _albumDeserialize(
@@ -175,15 +181,16 @@ Album _albumDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Album(
-    createdAt: reader.readDateTime(offsets[0]),
-    endDate: reader.readDateTimeOrNull(offsets[1]),
-    lastModifiedAssetTimestamp: reader.readDateTimeOrNull(offsets[2]),
-    localId: reader.readStringOrNull(offsets[3]),
-    modifiedAt: reader.readDateTime(offsets[4]),
-    name: reader.readString(offsets[5]),
-    remoteId: reader.readStringOrNull(offsets[6]),
-    shared: reader.readBool(offsets[7]),
-    startDate: reader.readDateTimeOrNull(offsets[8]),
+    activityEnabled: reader.readBool(offsets[0]),
+    createdAt: reader.readDateTime(offsets[1]),
+    endDate: reader.readDateTimeOrNull(offsets[2]),
+    lastModifiedAssetTimestamp: reader.readDateTimeOrNull(offsets[3]),
+    localId: reader.readStringOrNull(offsets[4]),
+    modifiedAt: reader.readDateTime(offsets[5]),
+    name: reader.readString(offsets[6]),
+    remoteId: reader.readStringOrNull(offsets[7]),
+    shared: reader.readBool(offsets[8]),
+    startDate: reader.readDateTimeOrNull(offsets[9]),
   );
   object.id = id;
   return object;
@@ -197,22 +204,24 @@ P _albumDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 1:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 2:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
-      return (reader.readDateTime(offset)) as P;
-    case 5:
-      return (reader.readString(offset)) as P;
-    case 6:
       return (reader.readStringOrNull(offset)) as P;
+    case 5:
+      return (reader.readDateTime(offset)) as P;
+    case 6:
+      return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
+      return (reader.readBool(offset)) as P;
+    case 9:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -442,6 +451,16 @@ extension AlbumQueryWhere on QueryBuilder<Album, Album, QWhereClause> {
 }
 
 extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
+  QueryBuilder<Album, Album, QAfterFilterCondition> activityEnabledEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'activityEnabled',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterFilterCondition> createdAtEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -1385,6 +1404,18 @@ extension AlbumQueryLinks on QueryBuilder<Album, Album, QFilterCondition> {
 }
 
 extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
+  QueryBuilder<Album, Album, QAfterSortBy> sortByActivityEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'activityEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortByActivityEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'activityEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1496,6 +1527,18 @@ extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
 }
 
 extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
+  QueryBuilder<Album, Album, QAfterSortBy> thenByActivityEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'activityEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenByActivityEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'activityEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1619,6 +1662,12 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
 }
 
 extension AlbumQueryWhereDistinct on QueryBuilder<Album, Album, QDistinct> {
+  QueryBuilder<Album, Album, QDistinct> distinctByActivityEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'activityEnabled');
+    });
+  }
+
   QueryBuilder<Album, Album, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
@@ -1681,6 +1730,12 @@ extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
   QueryBuilder<Album, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<Album, bool, QQueryOperations> activityEnabledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'activityEnabled');
     });
   }
 

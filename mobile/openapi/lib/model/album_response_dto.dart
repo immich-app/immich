@@ -22,6 +22,7 @@ class AlbumResponseDto {
     this.endDate,
     required this.hasSharedLink,
     required this.id,
+    required this.isActivityEnabled,
     this.lastModifiedAssetTimestamp,
     required this.owner,
     required this.ownerId,
@@ -54,6 +55,8 @@ class AlbumResponseDto {
   bool hasSharedLink;
 
   String id;
+
+  bool isActivityEnabled;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -92,6 +95,7 @@ class AlbumResponseDto {
      other.endDate == endDate &&
      other.hasSharedLink == hasSharedLink &&
      other.id == id &&
+     other.isActivityEnabled == isActivityEnabled &&
      other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
      other.owner == owner &&
      other.ownerId == ownerId &&
@@ -112,6 +116,7 @@ class AlbumResponseDto {
     (endDate == null ? 0 : endDate!.hashCode) +
     (hasSharedLink.hashCode) +
     (id.hashCode) +
+    (isActivityEnabled.hashCode) +
     (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
     (owner.hashCode) +
     (ownerId.hashCode) +
@@ -121,7 +126,7 @@ class AlbumResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, owner=$owner, ownerId=$ownerId, shared=$shared, sharedUsers=$sharedUsers, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -142,6 +147,7 @@ class AlbumResponseDto {
     }
       json[r'hasSharedLink'] = this.hasSharedLink;
       json[r'id'] = this.id;
+      json[r'isActivityEnabled'] = this.isActivityEnabled;
     if (this.lastModifiedAssetTimestamp != null) {
       json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
     } else {
@@ -177,6 +183,7 @@ class AlbumResponseDto {
         endDate: mapDateTime(json, r'endDate', ''),
         hasSharedLink: mapValueOfType<bool>(json, r'hasSharedLink')!,
         id: mapValueOfType<String>(json, r'id')!,
+        isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
         lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', ''),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
@@ -239,6 +246,7 @@ class AlbumResponseDto {
     'description',
     'hasSharedLink',
     'id',
+    'isActivityEnabled',
     'owner',
     'ownerId',
     'shared',

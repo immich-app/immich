@@ -21,7 +21,7 @@ class ImportAssetDto {
     required this.fileModifiedAt,
     this.isArchived,
     this.isExternal,
-    required this.isFavorite,
+    this.isFavorite,
     this.isOffline,
     this.isReadOnly = true,
     this.isVisible,
@@ -63,7 +63,13 @@ class ImportAssetDto {
   ///
   bool? isExternal;
 
-  bool isFavorite;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isFavorite;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -127,7 +133,7 @@ class ImportAssetDto {
     (fileModifiedAt.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isExternal == null ? 0 : isExternal!.hashCode) +
-    (isFavorite.hashCode) +
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
     (isReadOnly.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
@@ -159,7 +165,11 @@ class ImportAssetDto {
     } else {
     //  json[r'isExternal'] = null;
     }
+    if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
+    } else {
+    //  json[r'isFavorite'] = null;
+    }
     if (this.isOffline != null) {
       json[r'isOffline'] = this.isOffline;
     } else {
@@ -200,7 +210,7 @@ class ImportAssetDto {
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isExternal: mapValueOfType<bool>(json, r'isExternal'),
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
@@ -258,7 +268,6 @@ class ImportAssetDto {
     'deviceId',
     'fileCreatedAt',
     'fileModifiedAt',
-    'isFavorite',
   };
 }
 
