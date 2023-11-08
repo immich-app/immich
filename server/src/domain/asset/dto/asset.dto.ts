@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsPositive, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsPositive, IsString } from 'class-validator';
 import { Optional, ValidateUUID } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
@@ -41,6 +41,15 @@ export class RandomAssetsDto {
   @IsPositive()
   @Type(() => Number)
   count?: number;
+}
+
+export class GetAssetByLibraryPathDto {
+  @ValidateUUID()
+  libraryId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  originalPath!: string;
 }
 
 export enum TrashAction {

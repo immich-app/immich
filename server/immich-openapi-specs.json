@@ -1141,6 +1141,57 @@
         ]
       }
     },
+    "/asset/by-library-and-path": {
+      "get": {
+        "description": "Get the asset in a library with a given originalPath if it exists. Otherwise return null.",
+        "operationId": "getByLibraryIdAndOriginalPath",
+        "parameters": [
+          {
+            "name": "libraryId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "originalPath",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",

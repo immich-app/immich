@@ -125,6 +125,34 @@ describe(`${AssetController.name} (e2e)`, () => {
     });
   });
 
+  describe('GET /asset/by-library-and-path', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).get('/asset/by-library-and-path');
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should return null if no asset is found', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/by-library-and-path')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ libraryId: defaultLibrary.id, originalPath: '/not-found' });
+
+      expect(status).toBe(200);
+      expect(body).toEqual({});
+    });
+
+    it('should return asset', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/by-library-and-path')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ libraryId: defaultLibrary.id, originalPath: asset1.originalPath });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ id: asset1.id }));
+    });
+  });
+
   describe('POST /asset/upload', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(server)

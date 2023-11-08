@@ -11,6 +11,7 @@ import {
   BulkIdsDto,
   DownloadInfoDto,
   DownloadResponseDto,
+  GetAssetByLibraryPathDto,
   MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
@@ -62,6 +63,17 @@ export class AssetController {
   @Get('random')
   getRandom(@AuthUser() authUser: AuthUserDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
     return this.service.getRandom(authUser, dto.count ?? 1);
+  }
+
+  /**
+   * Get the asset in a library with a given originalPath if it exists. Otherwise return null.
+   */
+  @Get('by-library-and-path')
+  getByLibraryIdAndOriginalPath(
+    @AuthUser() authUser: AuthUserDto,
+    @Query() dto: GetAssetByLibraryPathDto,
+  ): Promise<AssetResponseDto | null> {
+    return this.service.getByLibraryIdAndOriginalPath(authUser, dto);
   }
 
   @SharedLinkRoute()

@@ -80,6 +80,11 @@ void main() {
       // TODO
     });
 
+    //Future<Object> getByLibraryIdAndOriginalPath(String libraryId, String originalPath) async
+    test('test getByLibraryIdAndOriginalPath', () async {
+      // TODO
+    });
+
     //Future<List<CuratedLocationsResponseDto>> getCuratedLocations() async
     test('test getCuratedLocations', () async {
       // TODO

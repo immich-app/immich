@@ -9,7 +9,7 @@ export default async () => {
     console.warn(
       `\n\n
       *** Not running all e2e tests. Run 'make test-e2e' to run all tests inside Docker (recommended)\n
-      *** or set 'IMMICH_RUN_ALL_TESTS=true' to run all tests(requires dependencies to be installed)\n`,
+      *** or set 'IMMICH_RUN_ALL_TESTS=true' to run all tests (requires dependencies to be installed)\n`,
     );
   }
 

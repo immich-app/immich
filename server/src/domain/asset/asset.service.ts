@@ -32,6 +32,7 @@ import {
   DownloadArchiveInfo,
   DownloadInfoDto,
   DownloadResponseDto,
+  GetAssetByLibraryPathDto,
   MapMarkerDto,
   MemoryLaneDto,
   TimeBucketAssetDto,
@@ -317,6 +318,19 @@ export class AssetService {
   async getRandom(authUser: AuthUserDto, count: number): Promise<AssetResponseDto[]> {
     const assets = await this.assetRepository.getRandom(authUser.id, count);
     return assets.map((a) => mapAsset(a));
+  }
+
+  async getByLibraryIdAndOriginalPath(
+    authUser: AuthUserDto,
+    dto: GetAssetByLibraryPathDto,
+  ): Promise<AssetResponseDto | null> {
+    const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(dto.libraryId, dto.originalPath);
+    if (asset) {
+      await this.access.requirePermission(authUser, Permission.ASSET_VIEW, asset.id);
+      return mapAsset(asset);
+    } else {
+      return null;
+    }
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {

@@ -6978,6 +6978,58 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
+         * Get the asset in a library with a given originalPath if it exists. Otherwise return null.
+         * @param {string} libraryId 
+         * @param {string} originalPath 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getByLibraryIdAndOriginalPath: async (libraryId: string, originalPath: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'libraryId' is not null or undefined
+            assertParamExists('getByLibraryIdAndOriginalPath', 'libraryId', libraryId)
+            // verify required parameter 'originalPath' is not null or undefined
+            assertParamExists('getByLibraryIdAndOriginalPath', 'originalPath', originalPath)
+            const localVarPath = `/asset/by-library-and-path`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (libraryId !== undefined) {
+                localVarQueryParameter['libraryId'] = libraryId;
+            }
+
+            if (originalPath !== undefined) {
+                localVarQueryParameter['originalPath'] = originalPath;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8150,6 +8202,17 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * Get the asset in a library with a given originalPath if it exists. Otherwise return null.
+         * @param {string} libraryId 
+         * @param {string} originalPath 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getByLibraryIdAndOriginalPath(libraryId, originalPath, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8483,6 +8546,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getAssetThumbnail(requestParameters: AssetApiGetAssetThumbnailRequest, options?: AxiosRequestConfig): AxiosPromise<File> {
             return localVarFp.getAssetThumbnail(requestParameters.id, requestParameters.format, requestParameters.key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Get the asset in a library with a given originalPath if it exists. Otherwise return null.
+         * @param {AssetApiGetByLibraryIdAndOriginalPathRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getByLibraryIdAndOriginalPath(requestParameters: AssetApiGetByLibraryIdAndOriginalPathRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.getByLibraryIdAndOriginalPath(requestParameters.libraryId, requestParameters.originalPath, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8877,6 +8949,27 @@ export interface AssetApiGetAssetThumbnailRequest {
      * @memberof AssetApiGetAssetThumbnail
      */
     readonly key?: string
+}
+
+/**
+ * Request parameters for getByLibraryIdAndOriginalPath operation in AssetApi.
+ * @export
+ * @interface AssetApiGetByLibraryIdAndOriginalPathRequest
+ */
+export interface AssetApiGetByLibraryIdAndOriginalPathRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetByLibraryIdAndOriginalPath
+     */
+    readonly libraryId: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetByLibraryIdAndOriginalPath
+     */
+    readonly originalPath: string
 }
 
 /**
@@ -9514,6 +9607,17 @@ export class AssetApi extends BaseAPI {
      */
     public getAssetThumbnail(requestParameters: AssetApiGetAssetThumbnailRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getAssetThumbnail(requestParameters.id, requestParameters.format, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Get the asset in a library with a given originalPath if it exists. Otherwise return null.
+     * @param {AssetApiGetByLibraryIdAndOriginalPathRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getByLibraryIdAndOriginalPath(requestParameters: AssetApiGetByLibraryIdAndOriginalPathRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getByLibraryIdAndOriginalPath(requestParameters.libraryId, requestParameters.originalPath, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

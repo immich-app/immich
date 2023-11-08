@@ -154,7 +154,7 @@ export class AssetController {
   }
 
   /**
-   * Get all AssetEntity belong to the user
+   * Get all AssetEntity belonging to the user
    */
   @Get('/')
   @ApiHeader({

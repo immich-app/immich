@@ -251,6 +251,26 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('getByLibraryIdAndOriginalPath', () => {
+    it('should return null if no asset is found', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
+      await expect(
+        sut.getByLibraryIdAndOriginalPath(authStub.admin, { libraryId: 'library-1', originalPath: 'path' }),
+      ).resolves.toEqual(null);
+    });
+
+    it('should return the asset if it is found', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      await expect(
+        sut.getByLibraryIdAndOriginalPath(authStub.admin, { libraryId: 'library-1', originalPath: 'path' }),
+      ).resolves.toEqual(mapAsset(assetStub.image));
+    });
+  });
+
   describe('getUploadFolder', () => {
     it('should require authentication', () => {
       expect(() => sut.getUploadFolder(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
