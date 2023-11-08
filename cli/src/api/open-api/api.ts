@@ -6706,7 +6706,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Get all AssetEntity belong to the user
+         * Get all AssetEntity belonging to the user
          * @param {number} [skip] 
          * @param {number} [take] 
          * @param {string} [userId] 
@@ -8141,7 +8141,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Get all AssetEntity belong to the user
+         * Get all AssetEntity belonging to the user
          * @param {number} [skip] 
          * @param {number} [take] 
          * @param {string} [userId] 
@@ -8504,7 +8504,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.emptyTrash(options).then((request) => request(axios, basePath));
         },
         /**
-         * Get all AssetEntity belong to the user
+         * Get all AssetEntity belonging to the user
          * @param {AssetApiGetAllAssetsRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9556,7 +9556,7 @@ export class AssetApi extends BaseAPI {
     }
 
     /**
-     * Get all AssetEntity belong to the user
+     * Get all AssetEntity belonging to the user
      * @param {AssetApiGetAllAssetsRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

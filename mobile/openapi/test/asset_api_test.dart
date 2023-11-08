@@ -51,7 +51,7 @@ void main() {
       // TODO
     });
 
-    // Get all AssetEntity belong to the user
+    // Get all AssetEntity belonging to the user
     //
     //Future<List<AssetResponseDto>> getAllAssets({ int skip, int take, String userId, bool isFavorite, bool isArchived, DateTime updatedAfter, DateTime updatedBefore, String ifNoneMatch }) async
     test('test getAllAssets', () async {
@@ -80,6 +80,8 @@ void main() {
       // TODO
     });
 
+    // Get the asset in a library with a given originalPath if it exists. Otherwise return null.
+    //
     //Future<Object> getByLibraryIdAndOriginalPath(String libraryId, String originalPath) async
     test('test getByLibraryIdAndOriginalPath', () async {
       // TODO

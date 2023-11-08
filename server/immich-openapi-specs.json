@@ -911,7 +911,7 @@
         ]
       },
       "get": {
-        "description": "Get all AssetEntity belong to the user",
+        "description": "Get all AssetEntity belonging to the user",
         "operationId": "getAllAssets",
         "parameters": [
           {

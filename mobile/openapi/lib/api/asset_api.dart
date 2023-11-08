@@ -303,7 +303,7 @@ class AssetApi {
     }
   }
 
-  /// Get all AssetEntity belong to the user
+  /// Get all AssetEntity belonging to the user
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -376,7 +376,7 @@ class AssetApi {
     );
   }
 
-  /// Get all AssetEntity belong to the user
+  /// Get all AssetEntity belonging to the user
   ///
   /// Parameters:
   ///
@@ -647,7 +647,10 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/by-library-and-path' operation and returns the [Response].
+  /// Get the asset in a library with a given originalPath if it exists. Otherwise return null.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] libraryId (required):
@@ -681,6 +684,8 @@ class AssetApi {
     );
   }
 
+  /// Get the asset in a library with a given originalPath if it exists. Otherwise return null.
+  ///
   /// Parameters:
   ///
   /// * [String] libraryId (required):

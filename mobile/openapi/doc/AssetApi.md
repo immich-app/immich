@@ -379,7 +379,7 @@ void (empty response body)
 
 
 
-Get all AssetEntity belong to the user
+Get all AssetEntity belonging to the user
 
 ### Example
 ```dart
@@ -677,6 +677,8 @@ Name | Type | Description  | Notes
 > Object getByLibraryIdAndOriginalPath(libraryId, originalPath)
 
 
+
+Get the asset in a library with a given originalPath if it exists. Otherwise return null.
 
 ### Example
 ```dart
