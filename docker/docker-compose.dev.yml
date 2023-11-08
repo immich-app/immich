@@ -1,3 +1,7 @@
+# See:
+# - https://immich.app/docs/developer/setup
+# - https://immich.app/docs/developer/troubleshooting
+
 version: "3.8"
 
 services:
@@ -71,10 +75,6 @@ services:
     command: npm run dev --host
     env_file:
       - .env
-    environment:
-      # Rename these values for svelte public interface
-      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
-      - PUBLIC_IMMICH_API_URL_EXTERNAL=${IMMICH_API_URL_EXTERNAL}
     ports:
       - 3000:3000
       - 24678:24678

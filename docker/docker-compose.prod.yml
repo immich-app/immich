@@ -7,9 +7,9 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: ["./start-server.sh"]
+    command: [ "./start-server.sh" ]
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -17,19 +17,6 @@ services:
       - redis
       - database
       - typesense
-
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: immich-machine-learning:latest
-    build:
-      context: ../machine-learning
-      dockerfile: Dockerfile
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - model-cache:/cache
-    env_file:
-      - .env
-    restart: always
 
   immich-microservices:
     container_name: immich_microservices
@@ -40,9 +27,9 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: ["./start-microservices.sh"]
+    command: [ "./start-microservices.sh" ]
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -64,6 +51,18 @@ services:
     depends_on:
       - immich-server
 
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: immich-machine-learning:latest
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+    volumes:
+      - model-cache:/cache
+    env_file:
+      - .env
+    restart: always
+
   typesense:
     container_name: immich_typesense
     image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
@@ -73,7 +72,7 @@ services:
       # remove this to get debug messages
       - GLOG_minloglevel=1
     volumes:
-      - tsdata:/data
+      - ${UPLOAD_LOCATION}/typesense:/data
     restart: always
 
   redis:
@@ -91,7 +90,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     restart: always
 
   immich-proxy:
@@ -113,6 +112,4 @@ services:
     restart: always
 
 volumes:
-  pgdata:
   model-cache:
-  tsdata:
