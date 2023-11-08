@@ -9,8 +9,7 @@
 
   interface User {
     id: string;
-    firstName: string;
-    lastName: string;
+    fullName: string;
     email: string;
     profileImagePath: string;
   }
@@ -51,7 +50,7 @@
 
   $: colorClass = colorClasses[autoColor ? getUserColor() : color];
   $: sizeClass = sizeClasses[size];
-  $: title = `${user.firstName} ${user.lastName} (${user.email})`;
+  $: title = `${user.fullName} (${user.email})`;
   $: interactiveClass = interactive
     ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
     : '';
@@ -82,7 +81,7 @@
       class:font-medium={!autoColor}
       class:font-semibold={autoColor}
     >
-      {((user.firstName[0] || '') + (user.lastName[0] || '')).toUpperCase()}
+      {(user.fullName[0] || '').toUpperCase()}
     </span>
   {/if}
 </figure>

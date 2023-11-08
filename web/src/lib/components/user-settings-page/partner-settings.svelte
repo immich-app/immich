@@ -55,8 +55,7 @@
           <UserAvatar user={partner} size="md" autoColor />
           <div class="text-left">
             <p class="text-immich-fg dark:text-immich-dark-fg">
-              {partner.firstName}
-              {partner.lastName}
+              {partner.fullName}
             </p>
             <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
               {partner.email}
@@ -88,7 +87,7 @@
 {#if removePartner}
   <ConfirmDialogue
     title="Stop sharing your photos?"
-    prompt="{removePartner.firstName} will no longer be able to access your photos."
+    prompt="{removePartner.fullName} will no longer be able to access your photos."
     on:cancel={() => (removePartner = null)}
     on:confirm={() => handleRemovePartner()}
   />

@@ -219,11 +219,8 @@
               <div class="flex p-3 mx-2 mt-3 rounded-full gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
-                <div
-                  class="w-full"
-                  title={`${reaction.user.firstName} ${reaction.user.lastName} (${reaction.user.email})`}
-                >
-                  {`${reaction.user.firstName} ${reaction.user.lastName} liked ${
+                <div class="w-full" title={`${reaction.user.fullName} (${reaction.user.email})`}>
+                  {`${reaction.user.fullName} liked ${
                     assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'
                   }`}
                 </div>

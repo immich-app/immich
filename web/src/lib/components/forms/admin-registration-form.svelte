@@ -27,15 +27,13 @@
 
       const email = form.get('email');
       const password = form.get('password');
-      const firstName = form.get('firstName');
-      const lastName = form.get('lastName');
+      const fullName = form.get('fullName');
 
       const { status } = await api.authenticationApi.signUpAdmin({
         signUpDto: {
           email: String(email),
           password: String(password),
-          firstName: String(firstName),
-          lastName: String(lastName),
+          fullName: String(fullName),
         },
       });
 
@@ -83,13 +81,8 @@
   </div>
 
   <div class="flex flex-col gap-2">
-    <label class="immich-form-label" for="firstName">First Name</label>
-    <input class="immich-form-input" id="firstName" name="firstName" type="text" autocomplete="given-name" required />
-  </div>
-
-  <div class="flex flex-col gap-2">
-    <label class="immich-form-label" for="lastName">Last Name</label>
-    <input class="immich-form-input" id="lastName" name="lastName" type="text" autocomplete="family-name" required />
+    <label class="immich-form-label" for="fullName">Full Name</label>
+    <input class="immich-form-input" id="fullName" name="fullName" type="text" autocomplete="name" required />
   </div>
 
   {#if error}
