@@ -239,6 +239,7 @@ class AlbumViewerPage extends HookConsumerWidget {
             albumId: album.remoteId!,
             appBarTitle: album.name,
             isOwner: userId == album.ownerId,
+            isReadOnly: !album.activityEnabled,
           ),
         );
       }
@@ -279,7 +280,8 @@ class AlbumViewerPage extends HookConsumerWidget {
                 ],
               ),
               isOwner: userId == data.ownerId,
-              sharedAlbumId: data.remoteId,
+              sharedAlbumId:
+                  data.shared && data.activityEnabled ? data.remoteId : null,
             ),
           ),
         ),

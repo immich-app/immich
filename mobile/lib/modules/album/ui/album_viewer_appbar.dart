@@ -216,32 +216,36 @@ class AlbumViewerAppbar extends HookConsumerWidget
             ).tr(),
             onTap: () => onShareAssetsTo(),
           ),
-          album.ownerId == userId ? ListTile(
-            leading: const Icon(Icons.delete_sweep_rounded),
-            title: const Text(
-              'album_viewer_appbar_share_remove',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ).tr(),
-            onTap: () => onRemoveFromAlbumPressed(),
-          ) : const SizedBox(),
+          album.ownerId == userId
+              ? ListTile(
+                  leading: const Icon(Icons.delete_sweep_rounded),
+                  title: const Text(
+                    'album_viewer_appbar_share_remove',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ).tr(),
+                  onTap: () => onRemoveFromAlbumPressed(),
+                )
+              : const SizedBox(),
         ];
       } else {
         return [
-          album.ownerId == userId ? ListTile(
-            leading: const Icon(Icons.delete_forever_rounded),
-            title: const Text(
-              'album_viewer_appbar_share_delete',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ).tr(),
-            onTap: () => onDeleteAlbumPressed(),
-          ) : ListTile(
-            leading: const Icon(Icons.person_remove_rounded),
-            title: const Text(
-              'album_viewer_appbar_share_leave',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ).tr(),
-            onTap: () => onLeaveAlbumPressed(),
-          ),
+          album.ownerId == userId
+              ? ListTile(
+                  leading: const Icon(Icons.delete_forever_rounded),
+                  title: const Text(
+                    'album_viewer_appbar_share_delete',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ).tr(),
+                  onTap: () => onDeleteAlbumPressed(),
+                )
+              : ListTile(
+                  leading: const Icon(Icons.person_remove_rounded),
+                  title: const Text(
+                    'album_viewer_appbar_share_leave',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ).tr(),
+                  onTap: () => onLeaveAlbumPressed(),
+                ),
         ];
       }
     }
@@ -390,7 +394,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
       title: selected.isNotEmpty ? Text('${selected.length}') : null,
       centerTitle: false,
       actions: [
-        if (album.shared) buildActivitiesButton(),
+        if (album.shared && (album.activityEnabled || comments != 0))
+          buildActivitiesButton(),
         if (album.isRemote)
           IconButton(
             splashRadius: 25,
