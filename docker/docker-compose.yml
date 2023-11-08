@@ -1,5 +1,5 @@
 version: "3.8"
-
+name: immich
 services:
   immich-server:
     container_name: immich_server
@@ -26,6 +26,7 @@ services:
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+      - /e/poseidon-backup/images:/mnt/media/images:ro
     env_file:
       - .env
     depends_on:
