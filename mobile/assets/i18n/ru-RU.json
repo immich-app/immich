@@ -113,7 +113,7 @@
   "cache_settings_thumbnail_size": "Размер кэша эскизов ({} объектов)",
   "cache_settings_title": "Настройки кэширования",
   "change_password_form_confirm_password": "Подтвердите пароль",
-  "change_password_form_description": "Привет {firstName} {lastName},\n\nЭто либо ваш первый вход в систему, либо был сделан запрос на смену пароля. Пожалуйста, введите новый пароль ниже.",
+  "change_password_form_description": "Привет {fullname},\n\nЭто либо ваш первый вход в систему, либо был сделан запрос на смену пароля. Пожалуйста, введите новый пароль ниже.",
   "change_password_form_new_password": "Новый пароль",
   "change_password_form_password_mismatch": "Пароли не совпадают",
   "change_password_form_reenter_new_password": "Повторно введите новый пароль",

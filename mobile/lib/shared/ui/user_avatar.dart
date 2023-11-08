@@ -6,8 +6,7 @@ import 'package:immich_mobile/shared/models/user.dart';
 Widget userAvatar(BuildContext context, User u, {double? radius}) {
   final url =
       "${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${u.id}";
-  final firstNameFirstLetter = u.firstName.isNotEmpty ? u.firstName[0] : "";
-  final lastNameFirstLetter = u.lastName.isNotEmpty ? u.lastName[0] : "";
+  final fullNameFirstLetter = u.fullName.isNotEmpty ? u.fullName[0] : "";
   return CircleAvatar(
     radius: radius,
     backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
@@ -18,6 +17,6 @@ Widget userAvatar(BuildContext context, User u, {double? radius}) {
     ),
     // silence errors if user has no profile image, use initials as fallback
     onForegroundImageError: (exception, stackTrace) {},
-    child: Text((firstNameFirstLetter + lastNameFirstLetter).toUpperCase()),
+    child: Text(fullNameFirstLetter.toUpperCase()),
   );
 }

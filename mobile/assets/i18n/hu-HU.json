@@ -113,7 +113,7 @@
   "cache_settings_thumbnail_size": "Thumbnail cache size ({} assets)",
   "cache_settings_title": "Gyorsítótár beállítások",
   "change_password_form_confirm_password": "Jelszó Megerősítése",
-  "change_password_form_description": "Kedves {lastName} {firstName}!\n\nMost jelentkezel be először a rendszerbe vagy más okból szükséfes a jelszavad meváltoztatása. Kérjük, add meg új jelszavad.",
+  "change_password_form_description": "Kedves {fullName}!\n\nMost jelentkezel be először a rendszerbe vagy más okból szükséfes a jelszavad meváltoztatása. Kérjük, add meg új jelszavad.",
   "change_password_form_new_password": "Új Jelszó",
   "change_password_form_password_mismatch": "A két beírt jelszó nem egyezik",
   "change_password_form_reenter_new_password": "Jelszó (még egyszer)",

@@ -15,9 +15,8 @@ class UsageByUserDto {
   UsageByUserDto({
     required this.photos,
     required this.usage,
-    required this.userFirstName,
+    required this.userFullName,
     required this.userId,
-    required this.userLastName,
     required this.videos,
   });
 
@@ -25,11 +24,9 @@ class UsageByUserDto {
 
   int usage;
 
-  String userFirstName;
+  String userFullName;
 
   String userId;
-
-  String userLastName;
 
   int videos;
 
@@ -37,9 +34,8 @@ class UsageByUserDto {
   bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
      other.photos == photos &&
      other.usage == usage &&
-     other.userFirstName == userFirstName &&
+     other.userFullName == userFullName &&
      other.userId == userId &&
-     other.userLastName == userLastName &&
      other.videos == videos;
 
   @override
@@ -47,21 +43,19 @@ class UsageByUserDto {
     // ignore: unnecessary_parenthesis
     (photos.hashCode) +
     (usage.hashCode) +
-    (userFirstName.hashCode) +
+    (userFullName.hashCode) +
     (userId.hashCode) +
-    (userLastName.hashCode) +
     (videos.hashCode);
 
   @override
-  String toString() => 'UsageByUserDto[photos=$photos, usage=$usage, userFirstName=$userFirstName, userId=$userId, userLastName=$userLastName, videos=$videos]';
+  String toString() => 'UsageByUserDto[photos=$photos, usage=$usage, userFullName=$userFullName, userId=$userId, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
       json[r'usage'] = this.usage;
-      json[r'userFirstName'] = this.userFirstName;
+      json[r'userFullName'] = this.userFullName;
       json[r'userId'] = this.userId;
-      json[r'userLastName'] = this.userLastName;
       json[r'videos'] = this.videos;
     return json;
   }
@@ -76,9 +70,8 @@ class UsageByUserDto {
       return UsageByUserDto(
         photos: mapValueOfType<int>(json, r'photos')!,
         usage: mapValueOfType<int>(json, r'usage')!,
-        userFirstName: mapValueOfType<String>(json, r'userFirstName')!,
+        userFullName: mapValueOfType<String>(json, r'userFullName')!,
         userId: mapValueOfType<String>(json, r'userId')!,
-        userLastName: mapValueOfType<String>(json, r'userLastName')!,
         videos: mapValueOfType<int>(json, r'videos')!,
       );
     }
@@ -129,9 +122,8 @@ class UsageByUserDto {
   static const requiredKeys = <String>{
     'photos',
     'usage',
-    'userFirstName',
+    'userFullName',
     'userId',
-    'userLastName',
     'videos',
   };
 }

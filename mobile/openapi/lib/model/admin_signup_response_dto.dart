@@ -15,48 +15,42 @@ class AdminSignupResponseDto {
   AdminSignupResponseDto({
     required this.createdAt,
     required this.email,
-    required this.firstName,
+    required this.fullName,
     required this.id,
-    required this.lastName,
   });
 
   DateTime createdAt;
 
   String email;
 
-  String firstName;
+  String fullName;
 
   String id;
-
-  String lastName;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AdminSignupResponseDto &&
      other.createdAt == createdAt &&
      other.email == email &&
-     other.firstName == firstName &&
-     other.id == id &&
-     other.lastName == lastName;
+     other.fullName == fullName &&
+     other.id == id;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (createdAt.hashCode) +
     (email.hashCode) +
-    (firstName.hashCode) +
-    (id.hashCode) +
-    (lastName.hashCode);
+    (fullName.hashCode) +
+    (id.hashCode);
 
   @override
-  String toString() => 'AdminSignupResponseDto[createdAt=$createdAt, email=$email, firstName=$firstName, id=$id, lastName=$lastName]';
+  String toString() => 'AdminSignupResponseDto[createdAt=$createdAt, email=$email, fullName=$fullName, id=$id]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'email'] = this.email;
-      json[r'firstName'] = this.firstName;
+      json[r'fullName'] = this.fullName;
       json[r'id'] = this.id;
-      json[r'lastName'] = this.lastName;
     return json;
   }
 
@@ -70,9 +64,8 @@ class AdminSignupResponseDto {
       return AdminSignupResponseDto(
         createdAt: mapDateTime(json, r'createdAt', '')!,
         email: mapValueOfType<String>(json, r'email')!,
-        firstName: mapValueOfType<String>(json, r'firstName')!,
+        fullName: mapValueOfType<String>(json, r'fullName')!,
         id: mapValueOfType<String>(json, r'id')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
       );
     }
     return null;
@@ -122,9 +115,8 @@ class AdminSignupResponseDto {
   static const requiredKeys = <String>{
     'createdAt',
     'email',
-    'firstName',
+    'fullName',
     'id',
-    'lastName',
   };
 }
 

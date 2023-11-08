@@ -10,8 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **email** | **String** |  | 
 **externalPath** | **String** |  | [optional] 
-**firstName** | **String** |  | 
-**lastName** | **String** |  | 
+**fullName** | **String** |  | 
 **memoriesEnabled** | **bool** |  | [optional] 
 **password** | **String** |  | 
 **storageLabel** | **String** |  | [optional] 

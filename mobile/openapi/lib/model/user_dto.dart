@@ -14,48 +14,42 @@ class UserDto {
   /// Returns a new [UserDto] instance.
   UserDto({
     required this.email,
-    required this.firstName,
+    required this.fullName,
     required this.id,
-    required this.lastName,
     required this.profileImagePath,
   });
 
   String email;
 
-  String firstName;
+  String fullName;
 
   String id;
-
-  String lastName;
 
   String profileImagePath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserDto &&
      other.email == email &&
-     other.firstName == firstName &&
+     other.fullName == fullName &&
      other.id == id &&
-     other.lastName == lastName &&
      other.profileImagePath == profileImagePath;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (firstName.hashCode) +
+    (fullName.hashCode) +
     (id.hashCode) +
-    (lastName.hashCode) +
     (profileImagePath.hashCode);
 
   @override
-  String toString() => 'UserDto[email=$email, firstName=$firstName, id=$id, lastName=$lastName, profileImagePath=$profileImagePath]';
+  String toString() => 'UserDto[email=$email, fullName=$fullName, id=$id, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
-      json[r'firstName'] = this.firstName;
+      json[r'fullName'] = this.fullName;
       json[r'id'] = this.id;
-      json[r'lastName'] = this.lastName;
       json[r'profileImagePath'] = this.profileImagePath;
     return json;
   }
@@ -69,9 +63,8 @@ class UserDto {
 
       return UserDto(
         email: mapValueOfType<String>(json, r'email')!,
-        firstName: mapValueOfType<String>(json, r'firstName')!,
+        fullName: mapValueOfType<String>(json, r'fullName')!,
         id: mapValueOfType<String>(json, r'id')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
     }
@@ -121,9 +114,8 @@ class UserDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'email',
-    'firstName',
+    'fullName',
     'id',
-    'lastName',
     'profileImagePath',
   };
 }

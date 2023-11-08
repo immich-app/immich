@@ -15,8 +15,7 @@ class CreateUserDto {
   CreateUserDto({
     required this.email,
     this.externalPath,
-    required this.firstName,
-    required this.lastName,
+    required this.fullName,
     this.memoriesEnabled,
     required this.password,
     this.storageLabel,
@@ -26,9 +25,7 @@ class CreateUserDto {
 
   String? externalPath;
 
-  String firstName;
-
-  String lastName;
+  String fullName;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -46,8 +43,7 @@ class CreateUserDto {
   bool operator ==(Object other) => identical(this, other) || other is CreateUserDto &&
      other.email == email &&
      other.externalPath == externalPath &&
-     other.firstName == firstName &&
-     other.lastName == lastName &&
+     other.fullName == fullName &&
      other.memoriesEnabled == memoriesEnabled &&
      other.password == password &&
      other.storageLabel == storageLabel;
@@ -57,14 +53,13 @@ class CreateUserDto {
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
     (externalPath == null ? 0 : externalPath!.hashCode) +
-    (firstName.hashCode) +
-    (lastName.hashCode) +
+    (fullName.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (password.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'CreateUserDto[email=$email, externalPath=$externalPath, firstName=$firstName, lastName=$lastName, memoriesEnabled=$memoriesEnabled, password=$password, storageLabel=$storageLabel]';
+  String toString() => 'CreateUserDto[email=$email, externalPath=$externalPath, fullName=$fullName, memoriesEnabled=$memoriesEnabled, password=$password, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -74,8 +69,7 @@ class CreateUserDto {
     } else {
     //  json[r'externalPath'] = null;
     }
-      json[r'firstName'] = this.firstName;
-      json[r'lastName'] = this.lastName;
+      json[r'fullName'] = this.fullName;
     if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
     } else {
@@ -100,8 +94,7 @@ class CreateUserDto {
       return CreateUserDto(
         email: mapValueOfType<String>(json, r'email')!,
         externalPath: mapValueOfType<String>(json, r'externalPath'),
-        firstName: mapValueOfType<String>(json, r'firstName')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
+        fullName: mapValueOfType<String>(json, r'fullName')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         password: mapValueOfType<String>(json, r'password')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
@@ -153,8 +146,7 @@ class CreateUserDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'email',
-    'firstName',
-    'lastName',
+    'fullName',
     'password',
   };
 }
