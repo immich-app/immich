@@ -143,6 +143,7 @@ class MapStateNotifier extends StateNotifier<MapState> {
         tileProviders: state.mapStyle!.providers!,
         theme: state.mapStyle!.theme!,
         sprites: state.mapStyle!.sprites,
+        concurrency: 6,
       );
     }
     return const Center(child: ImmichLoadingIndicator());

@@ -346,7 +346,7 @@ packages:
     source: hosted
     version: "0.0.2"
   executor_lib:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: executor_lib
       sha256: "544889daa5726462657dab6410b75f2f8e3a77479d85b307a25c346e243bc38e"
@@ -1541,7 +1541,7 @@ packages:
     description:
       path: "."
       ref: immich_above_4
-      resolved-ref: "123f6028b0dfed0b7826350a39e6d987df75ee7f"
+      resolved-ref: dc685bdbcca2ff2b49b4d0fb77b7bc17fad48608
       url: "https://github.com/shenlong-tanwen/flutter-vector-map-tiles.git"
     source: git
     version: "4.0.0"
@@ -1562,7 +1562,7 @@ packages:
     source: hosted
     version: "1.0.0"
   vector_tile_renderer:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: vector_tile_renderer
       sha256: de212da0f5e48107d3b763a940a428eb1f49d8a4664d41ac0b654f77209a2d0b

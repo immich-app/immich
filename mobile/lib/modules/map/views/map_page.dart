@@ -126,7 +126,7 @@ class MapPageState extends ConsumerState<MapPage> {
     final isLoading =
         ref.watch(mapStateNotifier.select((state) => state.isLoading));
     final maxZoom = ref.read(mapStateNotifier.notifier).maxZoom;
-    final zoomLevel = math.min(maxZoom, 16.0);
+    final zoomLevel = math.min(maxZoom, 14.0);
 
     if (refetchMarkers.value) {
       mapMarkerData.value = ref.watch(mapMarkersProvider).when(
