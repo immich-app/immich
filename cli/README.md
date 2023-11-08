@@ -1,20 +1,18 @@
 A command-line interface for interfacing with Immich
 
-# Getting started
+# Installing
 
-Perform these actions in the cli folder:
+To use the cli, run
 
-    $ npm run build
+    $ npm install @immich/cli´
 
-Then install it globally:
+# Usage
 
-    $ npm install -g .
-
-To start using the CLI, you need to login with an API key first:
+To use the CLI, you need to login with an API key first:
 
     $ immich login-key https://your-immich-instance/api your-api-key
 
-NOTE: This will store your api key under ~/.config/immich/auth.yml
+NOTE: This will store your api key in cleartext under ~/.config/immich/auth.yml
 
 Next, you can run commands:
 
@@ -24,7 +22,7 @@ When you're done, log out to remove the credentials from your filesystem
 
     $ immich logout
 
-# Usage
+# Commands
 
 ```
 Usage: immich [options] [command]
@@ -46,7 +44,17 @@ Commands:
 
 - Sidecar should check both .jpg.xmp and .xmp
 - Sidecar check could be case-insensitive
+- Create albums
+- Use the SDK for all api calls. We currently use raw axos http calls
 
-# Known issues
+# For developers
 
-- Upload can't use sdk due to multiple issues
+To build the Immich CLI from source, run the following in the cli folder:
+
+    $ npm run build
+
+TODO: document how to run the cli from source
+
+You can then install the CLI globally using
+
+    $ npm install -g .
