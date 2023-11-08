@@ -30,7 +30,7 @@ class UserCircleAvatar extends ConsumerWidget {
       user.firstName[0].toUpperCase(),
       style: TextStyle(
         fontWeight: FontWeight.bold,
-        color: Theme.of(context).brightness == Brightness.dark
+        color: isDarkTheme && user.avatarColor == AvatarColorEnum.primary
             ? Colors.black
             : Colors.white,
       ),
@@ -39,16 +39,7 @@ class UserCircleAvatar extends ConsumerWidget {
       backgroundColor: user.avatarColor.toColor(isDarkTheme),
       radius: radius,
       child: user.profileImagePath.isEmpty
-          ? Text(
-              user.firstName[0].toUpperCase(),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color:
-                    isDarkTheme && user.avatarColor == AvatarColorEnum.primary
-                        ? Colors.black
-                        : Colors.white,
-              ),
-            )
+          ? textIcon
           : ClipRRect(
               borderRadius: BorderRadius.circular(50),
               child: CachedNetworkImage(
