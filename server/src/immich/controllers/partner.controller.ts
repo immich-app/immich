@@ -1,5 +1,6 @@
 import { AuthUserDto, PartnerDirection, PartnerService, UserResponseDto } from '@app/domain';
-import { Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { UpdatePartnerDto } from '@app/domain/partner/partner.dto';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -29,5 +30,10 @@ export class PartnerController {
   @Delete(':id')
   removePartner(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(authUser, id);
+  }
+
+  @Put(':id')
+  updatePartner(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdatePartnerDto) {
+    return this.service.update(authUser, id, dto);
   }
 }

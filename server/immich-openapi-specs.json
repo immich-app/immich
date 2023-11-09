@@ -3597,6 +3597,49 @@
         "tags": [
           "Partner"
         ]
+      },
+      "put": {
+        "operationId": "updatePartner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartnerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Partner"
+        ]
       }
     },
     "/person": {
@@ -8981,6 +9024,17 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdatePartnerDto": {
+        "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "inTimeline"
+        ],
         "type": "object"
       },
       "UpdateStackParentDto": {

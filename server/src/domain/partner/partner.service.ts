@@ -1,12 +1,21 @@
 import { PartnerEntity } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
-import { IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';
+import { IAccessRepository, IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';
 import { UserResponseDto, mapUser } from '../user';
+import { UpdatePartnerDto } from './partner.dto';
 
 @Injectable()
 export class PartnerService {
-  constructor(@Inject(IPartnerRepository) private repository: IPartnerRepository) {}
+  private logger = new Logger(PartnerService.name);
+  private access: AccessCore;
+  constructor(
+    @Inject(IPartnerRepository) private repository: IPartnerRepository,
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+  ) {
+    this.access = AccessCore.create(accessRepository);
+  }
 
   async create(authUser: AuthUserDto, sharedWithId: string): Promise<UserResponseDto> {
     const partnerId: PartnerIds = { sharedById: authUser.id, sharedWithId };
@@ -36,6 +45,10 @@ export class PartnerService {
       .filter((partner) => partner.sharedBy && partner.sharedWith) // Filter out soft deleted users
       .filter((partner) => partner[key] === authUser.id)
       .map((partner) => this.map(partner, direction));
+  }
+
+  async update(authUser: AuthUserDto, id: string, dto: UpdatePartnerDto) {
+    await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, id);
   }
 
   private map(partner: PartnerEntity, direction: PartnerDirection): UserResponseDto {
