@@ -28,6 +28,13 @@ dependencies:
   flutter_map: ^4.0.0
   flutter_map_heatmap: ^0.0.4
   geolocator: ^10.0.0 # used to move to current location in map view
+  vector_map_tiles:
+    git:
+      url: https://github.com/shenlong-tanwen/flutter-vector-map-tiles.git
+      ref: immich_above_4
+  # Adding the following as direct dependency since flutter cannot detect them as transitive dep
+  vector_tile_renderer: ^4.0.0
+  executor_lib: 1.1.1
   flutter_udid: ^2.0.0
   package_info_plus: ^4.1.0
   url_launcher: ^6.1.3

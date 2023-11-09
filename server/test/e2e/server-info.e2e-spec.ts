@@ -96,7 +96,6 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       expect(body).toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
-        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         trashDays: 30,
         isInitialized: true,
       });

@@ -2227,6 +2227,20 @@ export interface MapMarkerResponseDto {
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const MapTheme = {
+    Light: 'light',
+    Dark: 'dark'
+} as const;
+
+export type MapTheme = typeof MapTheme[keyof typeof MapTheme];
+
+
+/**
+ * 
+ * @export
  * @interface MemoryLaneResponseDto
  */
 export interface MemoryLaneResponseDto {
@@ -2822,12 +2836,6 @@ export interface ServerConfigDto {
      * @memberof ServerConfigDto
      */
     'loginPageMessage': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ServerConfigDto
-     */
-    'mapTileUrl': string;
     /**
      * 
      * @type {string}
@@ -3697,6 +3705,12 @@ export interface SystemConfigMachineLearningDto {
 export interface SystemConfigMapDto {
     /**
      * 
+     * @type {string}
+     * @memberof SystemConfigMapDto
+     */
+    'darkStyle': string;
+    /**
+     * 
      * @type {boolean}
      * @memberof SystemConfigMapDto
      */
@@ -3706,7 +3720,7 @@ export interface SystemConfigMapDto {
      * @type {string}
      * @memberof SystemConfigMapDto
      */
-    'tileUrl': string;
+    'lightStyle': string;
 }
 /**
  * 
@@ -15074,6 +15088,51 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
+         * @param {MapTheme} theme 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMapStyle: async (theme: MapTheme, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'theme' is not null or undefined
+            assertParamExists('getMapStyle', 'theme', theme)
+            const localVarPath = `/system-config/map/style.json`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (theme !== undefined) {
+                localVarQueryParameter['theme'] = theme;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -15184,6 +15243,16 @@ export const SystemConfigApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {MapTheme} theme 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getMapStyle(theme: MapTheme, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapStyle(theme, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -15229,6 +15298,15 @@ export const SystemConfigApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
+         * @param {SystemConfigApiGetMapStyleRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMapStyle(requestParameters: SystemConfigApiGetMapStyleRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.getMapStyle(requestParameters.theme, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -15246,6 +15324,20 @@ export const SystemConfigApiFactory = function (configuration?: Configuration, b
         },
     };
 };
+
+/**
+ * Request parameters for getMapStyle operation in SystemConfigApi.
+ * @export
+ * @interface SystemConfigApiGetMapStyleRequest
+ */
+export interface SystemConfigApiGetMapStyleRequest {
+    /**
+     * 
+     * @type {MapTheme}
+     * @memberof SystemConfigApiGetMapStyle
+     */
+    readonly theme: MapTheme
+}
 
 /**
  * Request parameters for updateConfig operation in SystemConfigApi.
@@ -15286,6 +15378,17 @@ export class SystemConfigApi extends BaseAPI {
      */
     public getConfigDefaults(options?: AxiosRequestConfig) {
         return SystemConfigApiFp(this.configuration).getConfigDefaults(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {SystemConfigApiGetMapStyleRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SystemConfigApi
+     */
+    public getMapStyle(requestParameters: SystemConfigApiGetMapStyleRequest, options?: AxiosRequestConfig) {
+        return SystemConfigApiFp(this.configuration).getMapStyle(requestParameters.theme, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

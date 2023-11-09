@@ -1,5 +1,6 @@
 import { SystemConfigDto, SystemConfigService, SystemConfigTemplateStorageOptionDto } from '@app/domain';
-import { Body, Controller, Get, Put } from '@nestjs/common';
+import { MapThemeDto } from '@app/domain/system-config/system-config-map-theme.dto';
+import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -29,5 +30,10 @@ export class SystemConfigController {
   @Get('storage-template-options')
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     return this.service.getStorageTemplateOptions();
+  }
+
+  @Get('map/style.json')
+  getMapStyle(@Query() dto: MapThemeDto) {
+    return this.service.getMapStyle(dto.theme);
   }
 }

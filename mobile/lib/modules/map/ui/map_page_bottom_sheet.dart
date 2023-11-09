@@ -15,7 +15,6 @@ import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MapPageBottomSheet extends StatefulHookConsumerWidget {
   final Stream mapPageEventStream;
@@ -320,24 +319,18 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
             Positioned(
               bottom: maxHeight * currentExtend.value,
               left: 0,
-              child: GestureDetector(
-                onTap: () => launchUrl(
-                  Uri.parse('https://openstreetmap.org/copyright'),
-                ),
-                child: ColoredBox(
-                  color: (widget.isDarkTheme
-                      ? Colors.grey[900]
-                      : Colors.grey[100])!,
-                  child: Padding(
-                    padding: const EdgeInsets.all(3),
-                    child: Text(
-                      '© OpenStreetMap contributors',
-                      style: TextStyle(
-                        fontSize: 6,
-                        color: !widget.isDarkTheme
-                            ? Colors.grey[900]
-                            : Colors.grey[100],
-                      ),
+              child: ColoredBox(
+                color:
+                    (widget.isDarkTheme ? Colors.grey[900] : Colors.grey[100])!,
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Text(
+                    'OpenStreetMap contributors',
+                    style: TextStyle(
+                      fontSize: 6,
+                      color: !widget.isDarkTheme
+                          ? Colors.grey[900]
+                          : Colors.grey[100],
                     ),
                   ),
                 ),

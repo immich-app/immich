@@ -85,7 +85,6 @@ export class ServerThemeDto extends SystemConfigThemeDto {}
 export class ServerConfigDto {
   oauthButtonText!: string;
   loginPageMessage!: string;
-  mapTileUrl!: string;
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
   isInitialized!: boolean;

@@ -181,6 +181,7 @@ Class | Method | HTTP request | Description
 *SharedLinkApi* | [**updateSharedLink**](doc//SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-link/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
+*SystemConfigApi* | [**getMapStyle**](doc//SystemConfigApi.md#getmapstyle) | **GET** /system-config/map/style.json | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 
@@ -274,6 +275,7 @@ Class | Method | HTTP request | Description
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
+ - [MapTheme](doc//MapTheme.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [ModelType](doc//ModelType.md)
