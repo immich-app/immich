@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class GroupDividerTitle extends ConsumerWidget {
   const GroupDividerTitle({
@@ -51,7 +52,7 @@ class GroupDividerTitle extends ConsumerWidget {
             child: multiselectEnabled && selected
                 ? Icon(
                     Icons.check_circle_rounded,
-                    color: Theme.of(context).primaryColor,
+                    color: context.primaryColor,
                   )
                 : const Icon(
                     Icons.check_circle_outline_rounded,

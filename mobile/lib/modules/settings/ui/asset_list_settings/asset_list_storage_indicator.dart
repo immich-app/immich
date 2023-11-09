@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
@@ -33,13 +34,11 @@ class StorageIndicator extends HookConsumerWidget {
     );
 
     return SwitchListTile.adaptive(
-      activeColor: Theme.of(context).primaryColor,
+      activeColor: context.primaryColor,
       title: Text(
         "theme_setting_asset_list_storage_indicator_title",
-        style: Theme.of(context)
-            .textTheme
-            .labelLarge
-            ?.copyWith(fontWeight: FontWeight.bold),
+        style:
+            context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
       ).tr(),
       onChanged: switchChanged,
       value: showStorageIndicator.value,

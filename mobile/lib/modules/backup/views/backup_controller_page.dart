@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
@@ -49,7 +49,6 @@ class BackupControllerPage extends HookConsumerWidget {
             !hasExclusiveAccess
         ? false
         : true;
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final checkInProgress = useState(false);
 
     useEffect(
@@ -151,7 +150,7 @@ class BackupControllerPage extends HookConsumerWidget {
       return ListTile(
         leading: Icon(
           Icons.warning_rounded,
-          color: Theme.of(context).primaryColor,
+          color: context.primaryColor,
         ),
         title: const Text(
           "Check for corrupt asset backups",
@@ -187,7 +186,7 @@ class BackupControllerPage extends HookConsumerWidget {
         leading: isAutoBackup
             ? Icon(
                 Icons.cloud_done_rounded,
-                color: Theme.of(context).primaryColor,
+                color: context.primaryColor,
               )
             : const Icon(Icons.cloud_off_rounded),
         title: Text(
@@ -266,7 +265,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 ).tr(),
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  context.pop();
                 },
               ),
             ],
@@ -279,7 +278,7 @@ class BackupControllerPage extends HookConsumerWidget {
       final bool isBackgroundEnabled = backupState.backgroundBackup;
       final bool isWifiRequired = backupState.backupRequireWifi;
       final bool isChargingRequired = backupState.backupRequireCharging;
-      final Color activeColor = Theme.of(context).primaryColor;
+      final Color activeColor = context.primaryColor;
 
       String formatBackupDelaySliderValue(double v) {
         if (v == 0.0) {
@@ -410,7 +409,7 @@ class BackupControllerPage extends HookConsumerWidget {
                       max: 3.0,
                       divisions: 3,
                       label: formatBackupDelaySliderValue(triggerDelay.value),
-                      activeColor: Theme.of(context).primaryColor,
+                      activeColor: context.primaryColor,
                     ),
                   ),
                 ElevatedButton(
@@ -511,7 +510,7 @@ class BackupControllerPage extends HookConsumerWidget {
           child: Text(
             text.trim().substring(0, text.length - 2),
             style: TextStyle(
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -523,7 +522,7 @@ class BackupControllerPage extends HookConsumerWidget {
           child: Text(
             "backup_controller_page_none_selected".tr(),
             style: TextStyle(
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -562,7 +561,7 @@ class BackupControllerPage extends HookConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
-            color: isDarkMode
+            color: context.isDarkTheme
                 ? const Color.fromARGB(255, 56, 56, 56)
                 : Colors.black12,
             width: 1,
@@ -592,7 +591,7 @@ class BackupControllerPage extends HookConsumerWidget {
           ),
           trailing: ElevatedButton(
             onPressed: () {
-              AutoRouter.of(context).push(const BackupAlbumSelectionRoute());
+              context.autoPush(const BackupAlbumSelectionRoute());
             },
             child: const Text(
               "backup_controller_page_select",
@@ -678,7 +677,7 @@ class BackupControllerPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             ref.watch(websocketProvider.notifier).listenUploadEvent();
-            AutoRouter.of(context).pop(true);
+            context.autoPop(true);
           },
           splashRadius: 24,
           icon: const Icon(

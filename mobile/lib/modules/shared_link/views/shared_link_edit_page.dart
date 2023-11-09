@@ -1,10 +1,10 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
 import 'package:immich_mobile/modules/shared_link/services/shared_link.service.dart';
@@ -26,7 +26,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const padding = 20.0;
-    final themeData = Theme.of(context);
+    final themeData = context.themeData;
     final descriptionController =
         useTextEditingController(text: existingLink?.description ?? "");
     final descriptionFocusNode = useFocusNode();
@@ -215,7 +215,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         ).tr(),
         enableSearch: false,
         enableFilter: false,
-        width: MediaQuery.of(context).size.width - 40,
+        width: context.width - 40,
         initialSelection: expiryAfter.value,
         enabled: newShareLink.value.isEmpty &&
             (existingLink == null || editExpiry.value),
@@ -307,7 +307,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
               alignment: Alignment.bottomRight,
               child: ElevatedButton(
                 onPressed: () {
-                  AutoRouter.of(context).pop();
+                  context.autoPop();
                 },
                 child: const Text(
                   "Done",
@@ -403,7 +403,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             changeExpiry: changeExpiry,
           );
       ref.invalidate(sharedLinksStateProvider);
-      AutoRouter.of(context).pop();
+      context.autoPop();
     }
 
     return Scaffold(

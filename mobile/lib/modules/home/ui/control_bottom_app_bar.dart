@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
@@ -42,7 +43,6 @@ class ControlBottomAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     var hasRemote =
         selectionAssetState.hasRemote || selectionAssetState.hasMerged;
     var hasLocal = selectionAssetState.hasLocal;
@@ -128,7 +128,7 @@ class ControlBottomAppBar extends ConsumerWidget {
         ScrollController scrollController,
       ) {
         return Card(
-          color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+          color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[100],
           surfaceTintColor: Colors.transparent,
           elevation: 18.0,
           shape: const RoundedRectangleBorder(
@@ -211,12 +211,12 @@ class AddToAlbumTitleRow extends StatelessWidget {
             onPressed: onCreateNewAlbum,
             icon: Icon(
               Icons.add,
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
             ),
             label: Text(
               "common_create_new_album",
               style: TextStyle(
-                color: Theme.of(context).primaryColor,
+                color: context.primaryColor,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

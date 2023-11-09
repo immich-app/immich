@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/map/models/map_page_event.model.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
@@ -24,7 +24,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/debounce.dart';
-import 'package:immich_mobile/utils/flutter_map_extensions.dart';
+import 'package:immich_mobile/extensions/flutter_map_extensions.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:latlong2/latlong.dart';
@@ -101,7 +101,7 @@ class MapPageState extends ConsumerState<MapPage> {
   }
 
   void openAssetInViewer(Asset asset) {
-    AutoRouter.of(context).push(
+    context.autoPush(
       GalleryViewerRoute(
         initialIndex: 0,
         loadAsset: (index) => asset,
@@ -474,8 +474,8 @@ class MapPageState extends ConsumerState<MapPage> {
                 ),
               if (showLoadingIndicator.value || isLoading)
                 Positioned(
-                  top: MediaQuery.of(context).size.height * 0.35,
-                  left: MediaQuery.of(context).size.width * 0.425,
+                  top: context.height * 0.35,
+                  left: context.width * 0.425,
                   child: const ImmichLoadingIndicator(),
                 ),
             ],

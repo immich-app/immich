@@ -1,9 +1,9 @@
 import 'dart:math' as math;
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
@@ -58,12 +58,12 @@ class SharedLinkItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeData = Theme.of(context);
+    final themeData = context.themeData;
     final isDarkMode = themeData.brightness == Brightness.dark;
     final thumbnailUrl = sharedLink.thumbAssetId != null
         ? getThumbnailUrlForRemoteId(sharedLink.thumbAssetId!)
         : null;
-    final imageSize = math.min(MediaQuery.of(context).size.width / 4, 100.0);
+    final imageSize = math.min(context.width / 4, 100.0);
 
     void copyShareLinkToClipboard() {
       final serverUrl = getServerUrl();
@@ -194,8 +194,8 @@ class SharedLinkItem extends ConsumerWidget {
               tapTargetSize:
                   MaterialTapTargetSize.shrinkWrap, // the '2023' part
             ),
-            onPressed: () => AutoRouter.of(context)
-                .push(SharedLinkEditRoute(existingLink: sharedLink)),
+            onPressed: () =>
+                context.autoPush(SharedLinkEditRoute(existingLink: sharedLink)),
           ),
           IconButton(
             splashRadius: 25,

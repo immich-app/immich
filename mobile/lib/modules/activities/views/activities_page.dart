@@ -4,13 +4,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
-import 'package:immich_mobile/utils/datetime_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class ActivitiesPage extends HookConsumerWidget {
@@ -49,12 +50,8 @@ class ActivitiesPage extends HookConsumerWidget {
     );
 
     buildTitleWithTimestamp(Activity activity, {bool leftAlign = true}) {
-      final textColor = Theme.of(context).brightness == Brightness.dark
-          ? Colors.white
-          : Colors.black;
-      final textStyle = Theme.of(context)
-          .textTheme
-          .bodyMedium
+      final textColor = context.isDarkTheme ? Colors.white : Colors.black;
+      final textStyle = context.textTheme.bodyMedium
           ?.copyWith(color: textColor.withOpacity(0.6));
 
       return Row(
@@ -306,7 +303,7 @@ class ActivitiesPage extends HookConsumerWidget {
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
-                    color: Theme.of(context).scaffoldBackgroundColor,
+                    color: context.scaffoldBackgroundColor,
                     child: buildTextField(liked?.id),
                   ),
                 ),
