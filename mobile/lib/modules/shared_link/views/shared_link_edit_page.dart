@@ -206,6 +206,13 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
     Widget buildExpiryAfterButton() {
       return DropdownMenu(
+        label: Text(
+          "shared_link_edit_expire_after",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: themeData.primaryColor,
+          ),
+        ).tr(),
         enableSearch: false,
         enableFilter: false,
         width: MediaQuery.of(context).size.width - 40,

@@ -316,6 +316,7 @@
   "shared_link_edit_description": "Description",
   "shared_link_edit_description_hint": "Enter the share description",
   "shared_link_edit_password": "Password",
+  "shared_link_edit_expire_after": "Expire after",
   "shared_link_edit_password_hint": "Enter the share password",
   "shared_link_edit_show_meta": "Show metadata",
   "shared_link_edit_submit_button": "Update link",
