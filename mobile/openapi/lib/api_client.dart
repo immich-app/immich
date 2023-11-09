@@ -197,8 +197,6 @@ class ApiClient {
           return ActivityStatisticsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
-        case 'AdminSignupResponseDto':
-          return AdminSignupResponseDto.fromJson(value);
         case 'AlbumCountResponseDto':
           return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':

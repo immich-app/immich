@@ -54,7 +54,6 @@ part 'model/activity_create_dto.dart';
 part 'model/activity_response_dto.dart';
 part 'model/activity_statistics_response_dto.dart';
 part 'model/add_users_dto.dart';
-part 'model/admin_signup_response_dto.dart';
 part 'model/album_count_response_dto.dart';
 part 'model/album_response_dto.dart';
 part 'model/all_job_status_response_dto.dart';

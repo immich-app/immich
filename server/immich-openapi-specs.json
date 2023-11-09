@@ -2630,14 +2630,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminSignupResponseDto"
+                  "$ref": "#/components/schemas/UserResponseDto"
                 }
               }
             },
             "description": ""
-          },
-          "400": {
-            "description": "The server already has an admin"
           }
         },
         "tags": [
@@ -5812,34 +5809,6 @@
         ],
         "type": "object"
       },
-      "AdminSignupResponseDto": {
-        "properties": {
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName",
-          "createdAt"
-        ],
-        "type": "object"
-      },
       "AlbumCountResponseDto": {
         "properties": {
           "notShared": {
@@ -7377,35 +7346,27 @@
       "LoginResponseDto": {
         "properties": {
           "accessToken": {
-            "readOnly": true,
             "type": "string"
           },
           "firstName": {
-            "readOnly": true,
             "type": "string"
           },
           "isAdmin": {
-            "readOnly": true,
             "type": "boolean"
           },
           "lastName": {
-            "readOnly": true,
             "type": "string"
           },
           "profileImagePath": {
-            "readOnly": true,
             "type": "string"
           },
           "shouldChangePassword": {
-            "readOnly": true,
             "type": "boolean"
           },
           "userEmail": {
-            "readOnly": true,
             "type": "string"
           },
           "userId": {
-            "readOnly": true,
             "type": "string"
           }
         },
