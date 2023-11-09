@@ -16,9 +16,11 @@ import {
   ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
+  IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
   ImmichReadStream,
+  TimeBucketOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigCore } from '../system-config';
@@ -83,6 +85,7 @@ export class AssetService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -191,7 +194,9 @@ export class AssetService {
 
   async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    return this.assetRepository.getTimeBuckets(dto);
+    const timeBucketOptions = await this.modifyTimeBucketOptions(authUser, dto);
+
+    return this.assetRepository.getTimeBuckets(timeBucketOptions);
   }
 
   async getTimeBucket(
@@ -199,7 +204,8 @@ export class AssetService {
     dto: TimeBucketAssetDto,
   ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, dto);
+    const timeBucketOptions = await this.modifyTimeBucketOptions(authUser, dto);
+    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
     if (authUser.isShowMetadata) {
       return assets.map((asset) => mapAsset(asset, { withStack: true }));
     } else {
@@ -207,6 +213,24 @@ export class AssetService {
     }
   }
 
+  async modifyTimeBucketOptions(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
+    const partners = await this.partnerRepository.getAll(authUser.id);
+    const partnersIds = partners.map((partner) => partner.sharedById);
+
+    const shouldShowPartnerAsset = !(dto.isFavorite || dto.isArchived || dto.isTrashed);
+
+    const options: TimeBucketOptions = { ...dto } satisfies TimeBucketOptions;
+
+    if (dto.userId) {
+      options.userIds = [dto.userId];
+
+      if (shouldShowPartnerAsset && partnersIds.length > 0) {
+        options.userIds = [...options.userIds, ...partnersIds];
+      }
+    }
+
+    return options;
+  }
   async downloadFile(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
     await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, id);
 
