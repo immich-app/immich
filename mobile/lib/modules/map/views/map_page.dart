@@ -25,7 +25,7 @@ import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
-import 'package:immich_mobile/utils/flutter_map_extensions.dart';
+import 'package:immich_mobile/extensions/flutter_map_extensions.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:latlong2/latlong.dart';

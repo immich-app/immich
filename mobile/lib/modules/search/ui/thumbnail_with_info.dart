@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/utils/capitalize.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 
 // ignore: must_be_immutable
 class ThumbnailWithInfo extends StatelessWidget {
