@@ -28,7 +28,7 @@ program
 
 program
   .command('import')
-  .description('Import existing assets')
+  .description('Import existing assets (Deprecated in favor of external libraries)')
   .usage('[options] [paths...]')
   .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
   .addOption(

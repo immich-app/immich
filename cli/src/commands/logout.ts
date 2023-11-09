@@ -1,4 +1,4 @@
-import { BaseCommand } from '../cli/base-command';
+import { BaseCommand } from 'src/cli/base-command';
 
 export default class Logout extends BaseCommand {
   public static readonly description = 'Logout and remove persisted credentials';

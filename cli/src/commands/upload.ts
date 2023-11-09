@@ -1,4 +1,4 @@
-import { BaseCommand } from '../cli/base-command';
+import { BaseCommand } from 'src/cli/base-command';
 import { CrawledAsset } from '../cores/models/crawled-asset';
 import { CrawlService, UploadService } from '../services';
 import * as si from 'systeminformation';
