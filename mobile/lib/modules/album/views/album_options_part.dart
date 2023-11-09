@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -45,8 +44,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
             await ref.read(sharedAlbumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
-          AutoRouter.of(context)
-              .navigate(const TabControllerRoute(children: [SharingRoute()]));
+          context.autoNavigate(
+            const TabControllerRoute(children: [SharingRoute()]),
+          );
         } else {
           showErrorMessage();
         }
@@ -187,7 +187,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
-            AutoRouter.of(context).pop(null);
+            context.autoPop(null);
           },
         ),
         centerTitle: true,

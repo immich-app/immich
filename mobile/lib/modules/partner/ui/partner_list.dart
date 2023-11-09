@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -32,7 +31,7 @@ class PartnerList extends HookConsumerWidget {
           color: context.primaryColor,
         ),
       ),
-      onTap: () => AutoRouter.of(context).push(PartnerDetailRoute(partner: p)),
+      onTap: () => context.autoPush((PartnerDetailRoute(partner: p))),
     );
   }
 }

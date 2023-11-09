@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -24,9 +23,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
       ref.watch(backupProvider.notifier).resumeBackup().catchError((error) {
         debugPrint('PermissionOnboardingPage error: $error');
       });
-      AutoRouter.of(context).replace(
-        const TabControllerRoute(),
-      );
+      context.autoReplace(const TabControllerRoute());
     }
 
     // When the permission is denied, we show a request permission page
@@ -187,9 +184,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
                   child: const Text('permission_onboarding_log_out').tr(),
                   onPressed: () {
                     ref.read(authenticationProvider.notifier).logout();
-                    AutoRouter.of(context).replace(
-                      const LoginRoute(),
-                    );
+                    context.autoReplace(const LoginRoute());
                   },
                 ),
               ],

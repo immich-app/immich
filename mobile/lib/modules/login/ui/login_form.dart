@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -151,7 +150,7 @@ class LoginForm extends HookConsumerWidget {
           // Resume backup (if enable) then navigate
           if (ref.read(authenticationProvider).shouldChangePassword &&
               !ref.read(authenticationProvider).isAdmin) {
-            AutoRouter.of(context).push(const ChangePasswordRoute());
+            context.autoPush(const ChangePasswordRoute());
           } else {
             final hasPermission = await ref
                 .read(galleryPermissionNotifier.notifier)
@@ -160,7 +159,7 @@ class LoginForm extends HookConsumerWidget {
               // Don't resume the backup until we have gallery permission
               ref.read(backupProvider.notifier).resumeBackup();
             }
-            AutoRouter.of(context).replace(const TabControllerRoute());
+            context.autoReplace(const TabControllerRoute());
           }
         } else {
           ImmichToast.show(
@@ -213,9 +212,7 @@ class LoginForm extends HookConsumerWidget {
             if (permission.isGranted || permission.isLimited) {
               ref.watch(backupProvider.notifier).resumeBackup();
             }
-            AutoRouter.of(context).replace(
-              const TabControllerRoute(),
-            );
+            context.autoReplace(const TabControllerRoute());
           } else {
             ImmichToast.show(
               context: context,
@@ -261,8 +258,7 @@ class LoginForm extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                  onPressed: () =>
-                      AutoRouter.of(context).push(const SettingsRoute()),
+                  onPressed: () => context.autoPush(const SettingsRoute()),
                   icon: const Icon(Icons.settings_rounded),
                   label: const SizedBox.shrink(),
                 ),

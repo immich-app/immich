@@ -36,8 +36,19 @@ extension ContextHelper on BuildContext {
   void pop<T>([T? result]) => Navigator.of(this).pop(result);
 
   // Auto-Push new route from the current context
-  void autoPush(PageRouteInfo route) => AutoRouter.of(this).push(route);
+  Future<T?> autoPush<T extends Object?>(PageRouteInfo<dynamic> route) =>
+      AutoRouter.of(this).push(route);
+
+  // Auto-Push navigate route from the current context
+  Future<dynamic> autoNavigate<T extends Object?>(
+    PageRouteInfo<dynamic> route,
+  ) =>
+      AutoRouter.of(this).navigate(route);
+
+// Auto-Push replace route from the current context
+  Future<T?> autoReplace<T extends Object?>(PageRouteInfo<dynamic> route) =>
+      AutoRouter.of(this).replace(route);
 
   // Auto-Pop from the current context
-  void autoPop<T>([T? result]) => AutoRouter.of(this).pop(result);
+  Future<bool> autoPop<T>([T? result]) => AutoRouter.of(this).pop(result);
 }

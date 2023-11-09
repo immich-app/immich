@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,7 +25,7 @@ class AllPeoplePage extends HookConsumerWidget {
           ),
         ).tr(),
         leading: IconButton(
-          onPressed: () => AutoRouter.of(context).pop(),
+          onPressed: () => context.autoPop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),

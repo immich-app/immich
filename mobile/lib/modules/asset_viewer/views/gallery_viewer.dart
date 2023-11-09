@@ -210,7 +210,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isDeleted && isParent) {
           if (totalAssets == 1) {
             // Handle only one asset
-            AutoRouter.of(context).pop();
+            context.autoPop();
           } else {
             // Go to next page otherwise
             controller.nextPage(
@@ -294,7 +294,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       final ratio = d.dy / max(d.dx.abs(), 1);
       if (d.dy > sensitivity && ratio > ratioThreshold) {
-        AutoRouter.of(context).pop();
+        context.autoPop();
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
@@ -309,7 +309,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           .watch(assetProvider.notifier)
           .toggleArchive([asset], !asset.isArchived);
       if (isParent) {
-        AutoRouter.of(context).pop();
+        context.autoPop();
         return;
       }
       removeAssetFromStack();
@@ -332,7 +332,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     handleActivities() {
       if (sharedAlbumId != null) {
-        AutoRouter.of(context).push(
+        context.autoPush(
           ActivitiesRoute(
             albumId: sharedAlbumId!,
             assetId: asset().remoteId,
@@ -515,7 +515,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                               stackElements.elementAt(stackIndex.value),
                             );
                         Navigator.pop(ctx);
-                        AutoRouter.of(context).pop();
+                        context.autoPop();
                       },
                       title: const Text(
                         "viewer_stack_use_as_main_asset",
@@ -542,7 +542,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                           childrenToRemove: [currentAsset],
                         );
                         Navigator.pop(ctx);
-                        AutoRouter.of(context).pop();
+                        context.autoPop();
                       } else {
                         await ref.read(assetStackServiceProvider).updateStack(
                           currentAsset,
@@ -570,7 +570,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                             childrenToRemove: stack,
                           );
                       Navigator.pop(ctx);
-                      AutoRouter.of(context).pop();
+                      context.autoPop();
                     },
                     title: const Text(
                       "viewer_unstack",

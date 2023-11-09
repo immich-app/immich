@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -592,7 +591,7 @@ class BackupControllerPage extends HookConsumerWidget {
           ),
           trailing: ElevatedButton(
             onPressed: () {
-              AutoRouter.of(context).push(const BackupAlbumSelectionRoute());
+              context.autoPush(const BackupAlbumSelectionRoute());
             },
             child: const Text(
               "backup_controller_page_select",
@@ -678,7 +677,7 @@ class BackupControllerPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             ref.watch(websocketProvider.notifier).listenUploadEvent();
-            AutoRouter.of(context).pop(true);
+            context.autoPop(true);
           },
           splashRadius: 24,
           icon: const Icon(

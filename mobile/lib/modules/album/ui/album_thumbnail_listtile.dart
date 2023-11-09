@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +60,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap ??
           () {
-            AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
+            context.autoPush(AlbumViewerRoute(albumId: album.id));
           },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12.0),

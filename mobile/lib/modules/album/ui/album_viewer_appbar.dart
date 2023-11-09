@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -59,12 +58,12 @@ class AlbumViewerAppbar extends HookConsumerWidget
       if (album.shared) {
         success =
             await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(album);
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        context
+            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [LibraryRoute()]));
+        context
+            .autoNavigate(const TabControllerRoute(children: [LibraryRoute()]));
       }
       if (!success) {
         ImmichToast.show(
@@ -129,8 +128,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
           await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(album);
 
       if (isSuccess) {
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        context
+            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         Navigator.pop(context);
         ImmichToast.show(
@@ -265,8 +264,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ListTile(
           leading: const Icon(Icons.share_rounded),
           onTap: () {
-            AutoRouter.of(context)
-                .push(SharedLinkEditRoute(albumId: album.remoteId));
+            context.autoPush(SharedLinkEditRoute(albumId: album.remoteId));
             Navigator.pop(context);
           },
           title: const Text(
@@ -276,8 +274,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ),
         ListTile(
           leading: const Icon(Icons.settings_rounded),
-          onTap: () =>
-              AutoRouter.of(context).navigate(AlbumOptionsRoute(album: album)),
+          onTap: () => context.autoNavigate(AlbumOptionsRoute(album: album)),
           title: const Text(
             "translated_text_options",
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -380,7 +377,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       } else {
         return IconButton(
-          onPressed: () async => await AutoRouter.of(context).pop(),
+          onPressed: () async => await context.autoPop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
           splashRadius: 25,
         );

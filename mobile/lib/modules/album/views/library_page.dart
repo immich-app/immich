@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -140,7 +139,7 @@ class LibraryPage extends HookConsumerWidget {
     Widget buildCreateAlbumButton() {
       return GestureDetector(
         onTap: () {
-          AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: false));
+          context.autoPush(CreateAlbumRoute(isSharedAlbum: false));
         },
         child: Padding(
           padding: const EdgeInsets.only(bottom: 32),
@@ -228,7 +227,7 @@ class LibraryPage extends HookConsumerWidget {
     Widget? shareTrashButton() {
       return trashEnabled
           ? InkWell(
-              onTap: () => AutoRouter.of(context).push(const TrashRoute()),
+              onTap: () => context.autoPush(const TrashRoute()),
               borderRadius: BorderRadius.circular(12),
               child: const Icon(
                 Icons.delete_rounded,
@@ -257,12 +256,12 @@ class LibraryPage extends HookConsumerWidget {
                 children: [
                   buildLibraryNavButton(
                       "library_page_favorites".tr(), Icons.favorite_border, () {
-                    AutoRouter.of(context).navigate(const FavoritesRoute());
+                    context.autoNavigate(const FavoritesRoute());
                   }),
                   const SizedBox(width: 12.0),
                   buildLibraryNavButton(
                       "library_page_archive".tr(), Icons.archive_outlined, () {
-                    AutoRouter.of(context).navigate(const ArchiveRoute());
+                    context.autoNavigate(const ArchiveRoute());
                   }),
                 ],
               ),
@@ -306,7 +305,7 @@ class LibraryPage extends HookConsumerWidget {
 
                   return AlbumThumbnailCard(
                     album: sorted[index - 1],
-                    onTap: () => AutoRouter.of(context).push(
+                    onTap: () => context.autoPush(
                       AlbumViewerRoute(
                         albumId: sorted[index - 1].id,
                       ),
@@ -348,7 +347,7 @@ class LibraryPage extends HookConsumerWidget {
                 childCount: local.length,
                 (context, index) => AlbumThumbnailCard(
                   album: local[index],
-                  onTap: () => AutoRouter.of(context).push(
+                  onTap: () => context.autoPush(
                     AlbumViewerRoute(
                       albumId: local[index].id,
                     ),

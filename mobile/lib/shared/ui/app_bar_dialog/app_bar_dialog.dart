@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -90,7 +89,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(
         Icons.settings_rounded,
         "profile_drawer_settings",
-        () => AutoRouter.of(context).push(const SettingsRoute()),
+        () => context.autoPush(const SettingsRoute()),
       );
     }
 
@@ -98,7 +97,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(
         Icons.assignment_outlined,
         "profile_drawer_app_logs",
-        () => AutoRouter.of(context).push(const AppLogRoute()),
+        () => context.autoPush(const AppLogRoute()),
       );
     }
 
@@ -121,7 +120,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                   ref.watch(backupProvider.notifier).cancelBackup();
                   ref.watch(assetProvider.notifier).clearAllAsset();
                   ref.watch(websocketProvider.notifier).disconnect();
-                  AutoRouter.of(context).replace(const LoginRoute());
+                  context.autoReplace(const LoginRoute());
                 },
               );
             },

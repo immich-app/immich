@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -23,8 +22,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
     final sharedUsersList = useState<Set<User>>({});
 
     addNewUsersHandler() {
-      AutoRouter.of(context)
-          .pop(sharedUsersList.value.map((e) => e.id).toList());
+      context.autoPop(sharedUsersList.value.map((e) => e.id).toList());
     }
 
     buildTileIcon(User user) {
@@ -125,7 +123,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
-            AutoRouter.of(context).pop(null);
+            context.autoPop(null);
           },
         ),
         actions: [

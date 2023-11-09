@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
@@ -26,7 +25,7 @@ class CuratedPlacesRow extends CuratedRow {
     final int actualContentIndex = isMapEnabled ? 1 : 0;
     Widget buildMapThumbnail() {
       return GestureDetector(
-        onTap: () => AutoRouter.of(context).push(
+        onTap: () => context.autoPush(
           const MapRoute(),
         ),
         child: SizedBox(

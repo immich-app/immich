@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -47,8 +46,9 @@ class SharingPage extends HookConsumerWidget {
                 album: sharedAlbums[index],
                 showOwner: true,
                 onTap: () {
-                  AutoRouter.of(context)
-                      .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
+                  context.autoPush(
+                    AlbumViewerRoute(albumId: sharedAlbums[index].id),
+                  );
                 },
               );
             },
@@ -102,8 +102,9 @@ class SharingPage extends HookConsumerWidget {
                         )
                       : null,
               onTap: () {
-                AutoRouter.of(context)
-                    .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
+                context.autoPush(
+                  AlbumViewerRoute(albumId: sharedAlbums[index].id),
+                );
               },
             );
           },
@@ -126,8 +127,7 @@ class SharingPage extends HookConsumerWidget {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  AutoRouter.of(context)
-                      .push(CreateAlbumRoute(isSharedAlbum: true));
+                  context.autoPush(CreateAlbumRoute(isSharedAlbum: true));
                 },
                 icon: const Icon(
                   Icons.photo_album_outlined,
@@ -146,8 +146,7 @@ class SharingPage extends HookConsumerWidget {
             const SizedBox(width: 12.0),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () =>
-                    AutoRouter.of(context).push(const SharedLinkRoute()),
+                onPressed: () => context.autoPush(const SharedLinkRoute()),
                 icon: const Icon(
                   Icons.link,
                   size: 20,
@@ -217,7 +216,7 @@ class SharingPage extends HookConsumerWidget {
 
     Widget sharePartnerButton() {
       return InkWell(
-        onTap: () => AutoRouter.of(context).push(const PartnerRoute()),
+        onTap: () => context.autoPush(const PartnerRoute()),
         borderRadius: BorderRadius.circular(12),
         child: const Icon(
           Icons.swap_horizontal_circle_rounded,
