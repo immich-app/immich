@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -21,7 +22,7 @@ class LibraryPage extends HookConsumerWidget {
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider);
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    var isDarkTheme = context.isDarkTheme;
     var settings = ref.watch(appSettingsServiceProvider);
 
     useEffect(
@@ -96,15 +97,14 @@ class LibraryPage extends HookConsumerWidget {
                     padding: const EdgeInsets.only(right: 12.0),
                     child: Icon(
                       Icons.check,
-                      color: selected
-                          ? Theme.of(context).primaryColor
-                          : Colors.transparent,
+                      color:
+                          selected ? context.primaryColor : Colors.transparent,
                     ),
                   ),
                   Text(
                     option,
                     style: TextStyle(
-                      color: selected ? Theme.of(context).primaryColor : null,
+                      color: selected ? context.primaryColor : null,
                       fontSize: 12.0,
                     ),
                   ),
@@ -122,13 +122,13 @@ class LibraryPage extends HookConsumerWidget {
             Icon(
               Icons.swap_vert_rounded,
               size: 18,
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
             ),
             Text(
               options[selectedAlbumSortOrder.value],
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
+                color: context.primaryColor,
                 fontSize: 12.0,
               ),
             ),
@@ -152,18 +152,18 @@ class LibraryPage extends HookConsumerWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: isDarkMode
+                      color: isDarkTheme
                           ? const Color.fromARGB(255, 53, 53, 53)
                           : const Color.fromARGB(255, 203, 203, 203),
                     ),
-                    color: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+                    color: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
                     child: Icon(
                       Icons.add_rounded,
                       size: 28,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                   ),
                 ),
@@ -201,21 +201,21 @@ class LibraryPage extends HookConsumerWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 13.0,
-                color: isDarkMode ? Colors.white : Colors.grey[800],
+                color: isDarkTheme ? Colors.white : Colors.grey[800],
               ),
             ),
           ),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+            backgroundColor: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
             side: BorderSide(
-              color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+              color: isDarkTheme ? Colors.grey[800]! : Colors.grey[300]!,
             ),
             alignment: Alignment.centerLeft,
           ),
           icon: Icon(
             icon,
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
           ),
         ),
       );

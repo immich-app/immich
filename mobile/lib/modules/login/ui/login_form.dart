@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/login/providers/oauth.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -303,7 +304,7 @@ class LoginForm extends HookConsumerWidget {
           children: [
             Text(
               serverEndpointController.text,
-              style: Theme.of(context).textTheme.displaySmall,
+              style: context.textTheme.displaySmall,
               textAlign: TextAlign.center,
             ),
             if (isPasswordLoginEnable.value) ...[
@@ -339,8 +340,7 @@ class LoginForm extends HookConsumerWidget {
                               horizontal: 16.0,
                             ),
                             child: Divider(
-                              color: Brightness.dark ==
-                                      Theme.of(context).brightness
+                              color: context.isDarkTheme
                                   ? Colors.white
                                   : Colors.black,
                             ),
@@ -588,7 +588,7 @@ class OAuthLoginButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).primaryColor.withAlpha(230),
+        backgroundColor: context.primaryColor.withAlpha(230),
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
       onPressed: onPressed,

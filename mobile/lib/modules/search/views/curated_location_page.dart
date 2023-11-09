@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
@@ -21,7 +22,7 @@ class CuratedLocationPage extends HookConsumerWidget {
         title: Text(
           'curated_location_page_title',
           style: TextStyle(
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
             fontWeight: FontWeight.bold,
             fontSize: 16.0,
           ),

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class ConfirmDialog extends ConsumerWidget {
   final Function onOk;
@@ -30,7 +31,7 @@ class ConfirmDialog extends ConsumerWidget {
           child: Text(
             cancel,
             style: TextStyle(
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
               fontWeight: FontWeight.bold,
             ),
           ).tr(),

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
@@ -22,8 +23,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
-    final theme = Theme.of(context);
-    bool isDarkTheme = theme.brightness == Brightness.dark;
+    final theme = context.themeData;
     bool isHorizontal = MediaQuery.of(context).size.width > 600;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
@@ -54,7 +54,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 style: TextStyle(
                   fontFamily: 'SnowburstOne',
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                  color: context.primaryColor,
                   fontSize: 15,
                 ),
               ),
@@ -136,8 +136,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: isDarkTheme
-                ? Theme.of(context).scaffoldBackgroundColor
+            color: context.isDarkTheme
+                ? context.scaffoldBackgroundColor
                 : const Color.fromARGB(255, 225, 229, 240),
           ),
           child: ListTile(
@@ -199,7 +199,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               },
               child: Text(
                 "profile_drawer_documentation",
-                style: Theme.of(context).textTheme.bodySmall,
+                style: context.textTheme.bodySmall,
               ).tr(),
             ),
             const SizedBox(
@@ -219,7 +219,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               },
               child: Text(
                 "profile_drawer_github",
-                style: Theme.of(context).textTheme.bodySmall,
+                style: context.textTheme.bodySmall,
               ).tr(),
             ),
           ],

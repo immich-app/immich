@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
@@ -95,17 +96,16 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                     children: [
                       Text(
                         'common_add_to_album'.tr(),
-                        style: Theme.of(context).textTheme.displayMedium,
+                        style: context.textTheme.displayMedium,
                       ),
                       TextButton.icon(
                         icon: Icon(
                           Icons.add,
-                          color: Theme.of(context).primaryColor,
+                          color: context.primaryColor,
                         ),
                         label: Text(
                           'common_create_new_album'.tr(),
-                          style:
-                              TextStyle(color: Theme.of(context).primaryColor),
+                          style: TextStyle(color: context.primaryColor),
                         ),
                         onPressed: () {
                           AutoRouter.of(context).push(

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
@@ -61,7 +62,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     Widget buildAssetInfoTable() {
       return Table(
         border: TableBorder.all(
-          color: Theme.of(context).primaryColorLight,
+          color: context.themeData.primaryColorLight,
           width: 1,
         ),
         children: [
@@ -176,7 +177,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
             onTap: () => isShowThumbnail.value = true,
             child: Icon(
               Icons.image_outlined,
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
               size: 30,
             ),
           ),
@@ -206,7 +207,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                       minHeight: 10.0,
                       value: uploadProgress / 100.0,
                       backgroundColor: Colors.grey,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                   ),
                   Text(

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart';
@@ -26,7 +27,7 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
     );
 
     return ExpansionTile(
-      textColor: Theme.of(context).primaryColor,
+      textColor: context.primaryColor,
       title: const Text(
         'theme_setting_image_viewer_quality_title',
         style: TextStyle(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -37,7 +38,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                  color: context.primaryColor,
                 ),
               ),
               Padding(
@@ -191,7 +192,7 @@ class ChangePasswordButton extends ConsumerWidget {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         visualDensity: VisualDensity.standard,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: context.primaryColor,
         foregroundColor: Colors.grey[50],
         elevation: 2,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),

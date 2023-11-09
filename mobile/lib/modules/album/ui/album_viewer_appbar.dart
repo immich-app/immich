@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
@@ -93,7 +94,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                 child: Text(
                   'Cancel',
                   style: TextStyle(
-                    color: Theme.of(context).primaryColor,
+                    color: context.primaryColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -107,9 +108,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   'Confirm',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.red
-                        : Colors.red[300],
+                    color: !context.isDarkTheme ? Colors.red : Colors.red[300],
                   ),
                 ),
               ),
@@ -300,7 +299,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ),
       ];
       showModalBottomSheet(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.scaffoldBackgroundColor,
         isScrollControlled: false,
         context: context,
         builder: (context) {
@@ -342,7 +341,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   comments.toString(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
+                    color: context.primaryColor,
                   ),
                 ),
               ),

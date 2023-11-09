@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -50,12 +51,10 @@ class LayoutSettings extends HookConsumerWidget {
     return Column(
       children: [
         SwitchListTile.adaptive(
-          activeColor: Theme.of(context).primaryColor,
+          activeColor: context.primaryColor,
           title: Text(
             "asset_list_layout_settings_dynamic_layout_title",
-            style: Theme.of(context)
-                .textTheme
-                .labelLarge
+            style: context.textTheme.labelLarge
                 ?.copyWith(fontWeight: FontWeight.bold),
           ).tr(),
           onChanged: switchChanged,
@@ -75,10 +74,10 @@ class LayoutSettings extends HookConsumerWidget {
           ).tr(),
         ),
         RadioListTile(
-          activeColor: Theme.of(context).primaryColor,
+          activeColor: context.primaryColor,
           title: Text(
             "asset_list_layout_settings_group_by_month_day",
-            style: Theme.of(context).textTheme.labelLarge,
+            style: context.textTheme.labelLarge,
           ).tr(),
           value: GroupAssetsBy.day,
           groupValue: groupBy.value,
@@ -86,10 +85,10 @@ class LayoutSettings extends HookConsumerWidget {
           controlAffinity: ListTileControlAffinity.trailing,
         ),
         RadioListTile(
-          activeColor: Theme.of(context).primaryColor,
+          activeColor: context.primaryColor,
           title: Text(
             "asset_list_layout_settings_group_by_month",
-            style: Theme.of(context).textTheme.labelLarge,
+            style: context.textTheme.labelLarge,
           ).tr(),
           value: GroupAssetsBy.month,
           groupValue: groupBy.value,
@@ -97,10 +96,10 @@ class LayoutSettings extends HookConsumerWidget {
           controlAffinity: ListTileControlAffinity.trailing,
         ),
         RadioListTile(
-          activeColor: Theme.of(context).primaryColor,
+          activeColor: context.primaryColor,
           title: Text(
             "asset_list_layout_settings_group_automatically",
-            style: Theme.of(context).textTheme.labelLarge,
+            style: context.textTheme.labelLarge,
           ).tr(),
           value: GroupAssetsBy.auto,
           groupValue: groupBy.value,

@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
@@ -16,6 +17,7 @@ class AppLogPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final immichLogger = ImmichLogger();
     final logMessages = useState(immichLogger.messages);
+    final isDarkTheme = context.isDarkTheme;
 
     Widget colorStatusIndicator(Color color) {
       return Column(
@@ -36,7 +38,7 @@ class AppLogPage extends HookConsumerWidget {
     Widget buildLeadingIcon(LogLevel level) {
       switch (level) {
         case LogLevel.INFO:
-          return colorStatusIndicator(Theme.of(context).primaryColor);
+          return colorStatusIndicator(context.primaryColor);
         case LogLevel.SEVERE:
           return colorStatusIndicator(Colors.redAccent);
 
@@ -52,15 +54,15 @@ class AppLogPage extends HookConsumerWidget {
         case LogLevel.INFO:
           return Colors.transparent;
         case LogLevel.SEVERE:
-          return Theme.of(context).brightness == Brightness.dark
+          return isDarkTheme
               ? Colors.redAccent.withOpacity(0.25)
               : Colors.redAccent.withOpacity(0.075);
         case LogLevel.WARNING:
-          return Theme.of(context).brightness == Brightness.dark
+          return isDarkTheme
               ? Colors.orangeAccent.withOpacity(0.25)
               : Colors.orangeAccent.withOpacity(0.075);
         default:
-          return Theme.of(context).primaryColor.withOpacity(0.1);
+          return context.primaryColor.withOpacity(0.1);
       }
     }
 
@@ -79,7 +81,7 @@ class AppLogPage extends HookConsumerWidget {
           IconButton(
             icon: Icon(
               Icons.delete_outline_rounded,
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
               semanticLabel: "Clear logs",
               size: 20.0,
             ),
@@ -91,7 +93,7 @@ class AppLogPage extends HookConsumerWidget {
           IconButton(
             icon: Icon(
               Icons.share_rounded,
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
               semanticLabel: "Share logs",
               size: 20.0,
             ),
@@ -115,9 +117,7 @@ class AppLogPage extends HookConsumerWidget {
         separatorBuilder: (context, index) {
           return Divider(
             height: 0,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white70
-                : Colors.grey[600],
+            color: isDarkTheme ? Colors.white70 : Colors.grey[600],
           );
         },
         itemCount: logMessages.value.length,
@@ -140,9 +140,7 @@ class AppLogPage extends HookConsumerWidget {
                   TextSpan(
                     text: "#$index ",
                     style: TextStyle(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white70
-                          : Colors.grey[600],
+                      color: isDarkTheme ? Colors.white70 : Colors.grey[600],
                       fontSize: 14.0,
                       fontWeight: FontWeight.bold,
                     ),
@@ -170,7 +168,7 @@ class AppLogPage extends HookConsumerWidget {
       ),
     );
   }
-  
+
   /// Truncate the log message to a certain number of lines
   /// @param int maxLines - Max number of lines to truncate
   String truncateLogMessage(String message, int maxLines) {

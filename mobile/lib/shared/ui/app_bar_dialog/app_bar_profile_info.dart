@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
@@ -18,7 +19,6 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
     AuthenticationState authState = ref.watch(authenticationProvider);
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final user = Store.tryGet(StoreKey.currentUser);
 
     buildUserProfileImage() {
@@ -91,8 +91,8 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Theme.of(context).scaffoldBackgroundColor
+          color: context.isDarkTheme
+              ? context.scaffoldBackgroundColor
               : const Color.fromARGB(255, 225, 229, 240),
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(10),
@@ -111,7 +111,9 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
                   bottom: -5,
                   right: -8,
                   child: Material(
-                    color: isDarkMode ? Colors.blueGrey[800] : Colors.white,
+                    color: context.isDarkTheme
+                        ? Colors.blueGrey[800]
+                        : Colors.white,
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),
@@ -120,7 +122,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
                       padding: const EdgeInsets.all(5.0),
                       child: Icon(
                         Icons.camera_alt_outlined,
-                        color: Theme.of(context).primaryColor,
+                        color: context.primaryColor,
                         size: 14,
                       ),
                     ),
@@ -132,16 +134,16 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
           title: Text(
             "${authState.firstName} ${authState.lastName}",
             style: TextStyle(
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
           subtitle: Text(
             authState.userEmail,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontSize: 12,
-                ),
+            style: context.textTheme.labelMedium?.copyWith(
+              fontSize: 12,
+            ),
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
@@ -11,7 +12,6 @@ import 'package:immich_mobile/shared/ui/immich_title_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PermissionOnboardingPage extends HookConsumerWidget {
-
   const PermissionOnboardingPage({super.key});
 
   @override
@@ -21,8 +21,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
     // Navigate to the main Tab Controller when permission is granted
     void goToHome() {
       // Resume backup (if enable) then navigate
-      ref.watch(backupProvider.notifier).resumeBackup()
-        .catchError((error) {
+      ref.watch(backupProvider.notifier).resumeBackup().catchError((error) {
         debugPrint('PermissionOnboardingPage error: $error');
       });
       AutoRouter.of(context).replace(
@@ -38,21 +37,21 @@ class PermissionOnboardingPage extends HookConsumerWidget {
         children: [
           Text(
             'permission_onboarding_request',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: context.textTheme.titleMedium,
             textAlign: TextAlign.center,
           ).tr(),
           const SizedBox(height: 18),
           ElevatedButton(
             onPressed: () => ref
-              .read(galleryPermissionNotifier.notifier)
-              .requestGalleryPermission()
-              .then((permission) async {
-                if (permission.isGranted) {
-                  // If permission is limited, we will show the limited
-                  // permission page
-                  goToHome();
-                }
-              }),
+                .read(galleryPermissionNotifier.notifier)
+                .requestGalleryPermission()
+                .then((permission) async {
+              if (permission.isGranted) {
+                // If permission is limited, we will show the limited
+                // permission page
+                goToHome();
+              }
+            }),
             child: const Text(
               'permission_onboarding_grant_permission',
             ).tr(),
@@ -70,7 +69,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
         children: [
           Text(
             'permission_onboarding_permission_granted',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: context.textTheme.titleMedium,
             textAlign: TextAlign.center,
           ).tr(),
           const SizedBox(height: 18),
@@ -90,14 +89,15 @@ class PermissionOnboardingPage extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.warning_outlined,
+          const Icon(
+            Icons.warning_outlined,
             color: Colors.yellow,
             size: 48,
           ),
           const SizedBox(height: 8),
           Text(
             'permission_onboarding_permission_limited',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: context.textTheme.titleMedium,
             textAlign: TextAlign.center,
           ).tr(),
           const SizedBox(height: 18),
@@ -123,14 +123,15 @@ class PermissionOnboardingPage extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.warning_outlined,
+          const Icon(
+            Icons.warning_outlined,
             color: Colors.red,
             size: 48,
           ),
           const SizedBox(height: 8),
           Text(
             'permission_onboarding_permission_denied',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: context.textTheme.titleMedium,
             textAlign: TextAlign.center,
           ).tr(),
           const SizedBox(height: 18),
@@ -192,7 +193,6 @@ class PermissionOnboardingPage extends HookConsumerWidget {
                   },
                 ),
               ],
-
             ),
           ),
         ),

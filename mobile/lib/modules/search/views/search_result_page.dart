@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
@@ -38,7 +39,6 @@ class SearchResultPage extends HookConsumerWidget {
     final searchTermController = useTextEditingController(text: "");
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final isDisplayDateGroup = useState(true);
 
     FocusNode? searchFocusNode;
@@ -112,8 +112,9 @@ class SearchResultPage extends HookConsumerWidget {
           hintStyle: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16.0,
-            color:
-                isDarkTheme ? Colors.grey[500] : Colors.black.withOpacity(0.5),
+            color: context.isDarkTheme
+                ? Colors.grey[500]
+                : Colors.black.withOpacity(0.5),
           ),
         ),
       );
@@ -130,7 +131,7 @@ class SearchResultPage extends HookConsumerWidget {
             Text(
               currentSearchTerm.value,
               style: TextStyle(
-                color: Theme.of(context).primaryColor,
+                color: context.primaryColor,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
@@ -138,12 +139,12 @@ class SearchResultPage extends HookConsumerWidget {
             ),
             Icon(
               Icons.close_rounded,
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
               size: 20,
             ),
           ],
         ),
-        backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
+        backgroundColor: context.primaryColor.withAlpha(50),
       );
     }
 
