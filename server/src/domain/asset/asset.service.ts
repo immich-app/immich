@@ -194,7 +194,7 @@ export class AssetService {
 
   async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    const timeBucketOptions = await this.modifyTimeBucketOptions(authUser, dto);
+    const timeBucketOptions = await this.buildTimeBucketOptions(authUser, dto);
 
     return this.assetRepository.getTimeBuckets(timeBucketOptions);
   }
@@ -204,7 +204,7 @@ export class AssetService {
     dto: TimeBucketAssetDto,
   ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    const timeBucketOptions = await this.modifyTimeBucketOptions(authUser, dto);
+    const timeBucketOptions = await this.buildTimeBucketOptions(authUser, dto);
     const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
     if (authUser.isShowMetadata) {
       return assets.map((asset) => mapAsset(asset, { withStack: true }));
@@ -213,7 +213,7 @@ export class AssetService {
     }
   }
 
-  async modifyTimeBucketOptions(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
+  async buildTimeBucketOptions(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
     const partners = await this.partnerRepository.getAll(authUser.id);
     const partnersIds = partners.map((partner) => partner.sharedById);
 
