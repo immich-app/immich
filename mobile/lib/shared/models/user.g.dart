@@ -22,9 +22,9 @@ const UserSchema = CollectionSchema(
       name: r'email',
       type: IsarType.string,
     ),
-    r'fullName': PropertySchema(
+    r'name': PropertySchema(
       id: 1,
-      name: r'fullName',
+      name: r'name',
       type: IsarType.string,
     ),
     r'id': PropertySchema(
@@ -113,7 +113,7 @@ int _userEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.email.length * 3;
-  bytesCount += 3 + object.fullName.length * 3;
+  bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.id.length * 3;
   bytesCount += 3 + object.profileImagePath.length * 3;
   return bytesCount;
@@ -126,7 +126,7 @@ void _userSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.email);
-  writer.writeString(offsets[1], object.fullName);
+  writer.writeString(offsets[1], object.name);
   writer.writeString(offsets[2], object.id);
   writer.writeBool(offsets[3], object.isAdmin);
   writer.writeBool(offsets[4], object.isPartnerSharedBy);
@@ -144,7 +144,7 @@ User _userDeserialize(
 ) {
   final object = User(
     email: reader.readString(offsets[0]),
-    fullName: reader.readString(offsets[1]),
+    name: reader.readString(offsets[1]),
     id: reader.readString(offsets[2]),
     isAdmin: reader.readBool(offsets[3]),
     isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
@@ -501,20 +501,20 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameEqualTo(
+  QueryBuilder<User, User, QAfterFilterCondition> nameEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fullName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameGreaterThan(
+  QueryBuilder<User, User, QAfterFilterCondition> nameGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -522,14 +522,14 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'fullName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameLessThan(
+  QueryBuilder<User, User, QAfterFilterCondition> nameLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -537,14 +537,14 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'fullName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameBetween(
+  QueryBuilder<User, User, QAfterFilterCondition> nameBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -553,7 +553,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'fullName',
+        property: r'name',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -563,68 +563,68 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameStartsWith(
+  QueryBuilder<User, User, QAfterFilterCondition> nameStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'fullName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameEndsWith(
+  QueryBuilder<User, User, QAfterFilterCondition> nameEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'fullName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameContains(String value,
+  QueryBuilder<User, User, QAfterFilterCondition> nameContains(String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'fullName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameMatches(
+  QueryBuilder<User, User, QAfterFilterCondition> nameMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'fullName',
+        property: r'name',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameIsEmpty() {
+  QueryBuilder<User, User, QAfterFilterCondition> nameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fullName',
+        property: r'name',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> fullNameIsNotEmpty() {
+  QueryBuilder<User, User, QAfterFilterCondition> nameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'fullName',
+        property: r'name',
         value: '',
       ));
     });
@@ -1177,15 +1177,15 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> sortByFullName() {
+  QueryBuilder<User, User, QAfterSortBy> sortByname() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fullName', Sort.asc);
+      return query.addSortBy(r'name', Sort.asc);
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> sortByFullNameDesc() {
+  QueryBuilder<User, User, QAfterSortBy> sortBynameDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fullName', Sort.desc);
+      return query.addSortBy(r'name', Sort.desc);
     });
   }
 
@@ -1287,15 +1287,15 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> thenByFullName() {
+  QueryBuilder<User, User, QAfterSortBy> thenByname() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fullName', Sort.asc);
+      return query.addSortBy(r'name', Sort.asc);
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> thenByFullNameDesc() {
+  QueryBuilder<User, User, QAfterSortBy> thenBynameDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fullName', Sort.desc);
+      return query.addSortBy(r'name', Sort.desc);
     });
   }
 
@@ -1404,10 +1404,10 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
-  QueryBuilder<User, User, QDistinct> distinctByFullName(
+  QueryBuilder<User, User, QDistinct> distinctByname(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'fullName', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
     });
   }
 
@@ -1470,9 +1470,9 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, String, QQueryOperations> fullNameProperty() {
+  QueryBuilder<User, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'fullName');
+      return query.addPropertyName(r'name');
     });
   }
 

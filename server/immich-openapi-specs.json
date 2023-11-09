@@ -5821,17 +5821,17 @@
           "email": {
             "type": "string"
           },
-          "fullName": {
+          "id": {
             "type": "string"
           },
-          "id": {
+          "name": {
             "type": "string"
           }
         },
         "required": [
           "id",
           "email",
-          "fullName",
+          "name",
           "createdAt"
         ],
         "type": "object"
@@ -6752,11 +6752,11 @@
             "nullable": true,
             "type": "string"
           },
-          "fullName": {
-            "type": "string"
-          },
           "memoriesEnabled": {
             "type": "boolean"
+          },
+          "name": {
+            "type": "string"
           },
           "password": {
             "type": "string"
@@ -6769,7 +6769,7 @@
         "required": [
           "email",
           "password",
-          "fullName"
+          "name"
         ],
         "type": "object"
       },
@@ -7368,13 +7368,13 @@
             "readOnly": true,
             "type": "string"
           },
-          "fullName": {
-            "readOnly": true,
-            "type": "string"
-          },
           "isAdmin": {
             "readOnly": true,
             "type": "boolean"
+          },
+          "name": {
+            "readOnly": true,
+            "type": "string"
           },
           "profileImagePath": {
             "readOnly": true,
@@ -7397,7 +7397,7 @@
           "accessToken",
           "userId",
           "userEmail",
-          "fullName",
+          "name",
           "profileImagePath",
           "isAdmin",
           "shouldChangePassword"
@@ -8290,7 +8290,7 @@
             "example": "testuser@email.com",
             "type": "string"
           },
-          "fullName": {
+          "name": {
             "example": "Admin",
             "type": "string"
           },
@@ -8302,7 +8302,7 @@
         "required": [
           "email",
           "password",
-          "fullName"
+          "name"
         ],
         "type": "object"
       },
@@ -8966,9 +8966,6 @@
           "externalPath": {
             "type": "string"
           },
-          "fullName": {
-            "type": "string"
-          },
           "id": {
             "format": "uuid",
             "type": "string"
@@ -8978,6 +8975,9 @@
           },
           "memoriesEnabled": {
             "type": "boolean"
+          },
+          "name": {
+            "type": "string"
           },
           "password": {
             "type": "string"
@@ -9003,10 +9003,10 @@
             "format": "int64",
             "type": "integer"
           },
-          "userFullName": {
+          "userId": {
             "type": "string"
           },
-          "userId": {
+          "userName": {
             "type": "string"
           },
           "videos": {
@@ -9015,7 +9015,7 @@
         },
         "required": [
           "userId",
-          "userFullName",
+          "userName",
           "photos",
           "videos",
           "usage"
@@ -9027,10 +9027,10 @@
           "email": {
             "type": "string"
           },
-          "fullName": {
+          "id": {
             "type": "string"
           },
-          "id": {
+          "name": {
             "type": "string"
           },
           "profileImagePath": {
@@ -9039,7 +9039,7 @@
         },
         "required": [
           "id",
-          "fullName",
+          "name",
           "email",
           "profileImagePath"
         ],
@@ -9063,9 +9063,6 @@
             "nullable": true,
             "type": "string"
           },
-          "fullName": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -9074,6 +9071,9 @@
           },
           "memoriesEnabled": {
             "type": "boolean"
+          },
+          "name": {
+            "type": "string"
           },
           "oauthId": {
             "type": "string"
@@ -9095,7 +9095,7 @@
         },
         "required": [
           "id",
-          "fullName",
+          "name",
           "email",
           "profileImagePath",
           "storageLabel",

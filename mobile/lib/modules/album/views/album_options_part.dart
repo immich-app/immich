@@ -122,7 +122,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
               )
             : const SizedBox(),
         title: Text(
-          album.owner.value?.fullName ?? "",
+          album.owner.value?.name ?? "",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
@@ -153,7 +153,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
               radius: 22,
             ),
             title: Text(
-              user.fullName,
+              user.name,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),

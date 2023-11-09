@@ -20,12 +20,12 @@
 
   const editUser = async () => {
     try {
-      const { id, email, fullName, storageLabel, externalPath } = user;
+      const { id, email, name, storageLabel, externalPath } = user;
       const { status } = await api.userApi.updateUser({
         updateUserDto: {
           id,
           email,
-          fullName,
+          name,
           storageLabel: storageLabel || '',
           externalPath: externalPath || '',
         },
@@ -83,8 +83,8 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="fullName">Full Name</label>
-      <input class="immich-form-input" id="fullName" name="fullName" type="text" required bind:value={user.fullName} />
+      <label class="immich-form-label" for="name">Name</label>
+      <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
@@ -148,7 +148,7 @@
   >
     <svelte:fragment slot="prompt">
       <p>
-        Are you sure you want to reset <b>{user.fullName}</b>'s password?
+        Are you sure you want to reset <b>{user.name}</b>'s password?
       </p>
     </svelte:fragment>
   </ConfirmDialogue>

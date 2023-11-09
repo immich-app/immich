@@ -38,14 +38,14 @@
 
       const email = form.get('email');
       const password = form.get('password');
-      const fullName = form.get('fullName');
+      const name = form.get('name');
 
       try {
         const { status } = await api.userApi.createUser({
           createUserDto: {
             email: String(email),
             password: String(password),
-            fullName: String(fullName),
+            name: String(name),
           },
         });
 
@@ -110,8 +110,8 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="fullName">Full Name</label>
-      <input class="immich-form-input" id="fullName" name="fullName" type="text" required />
+      <label class="immich-form-label" for="name">Name</label>
+      <input class="immich-form-input" id="name" name="name" type="text" required />
     </div>
 
     {#if error}

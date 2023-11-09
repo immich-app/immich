@@ -123,7 +123,7 @@
             <p>Owned</p>
           {:else}
             <p>
-              Shared by {albumOwner.fullName}
+              Shared by {albumOwner.name}
             </p>
           {/if}
         {/await}

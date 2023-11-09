@@ -15,42 +15,42 @@ class AdminSignupResponseDto {
   AdminSignupResponseDto({
     required this.createdAt,
     required this.email,
-    required this.fullName,
     required this.id,
+    required this.name,
   });
 
   DateTime createdAt;
 
   String email;
 
-  String fullName;
-
   String id;
+
+  String name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AdminSignupResponseDto &&
      other.createdAt == createdAt &&
      other.email == email &&
-     other.fullName == fullName &&
-     other.id == id;
+     other.id == id &&
+     other.name == name;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (createdAt.hashCode) +
     (email.hashCode) +
-    (fullName.hashCode) +
-    (id.hashCode);
+    (id.hashCode) +
+    (name.hashCode);
 
   @override
-  String toString() => 'AdminSignupResponseDto[createdAt=$createdAt, email=$email, fullName=$fullName, id=$id]';
+  String toString() => 'AdminSignupResponseDto[createdAt=$createdAt, email=$email, id=$id, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'email'] = this.email;
-      json[r'fullName'] = this.fullName;
       json[r'id'] = this.id;
+      json[r'name'] = this.name;
     return json;
   }
 
@@ -64,8 +64,8 @@ class AdminSignupResponseDto {
       return AdminSignupResponseDto(
         createdAt: mapDateTime(json, r'createdAt', '')!,
         email: mapValueOfType<String>(json, r'email')!,
-        fullName: mapValueOfType<String>(json, r'fullName')!,
         id: mapValueOfType<String>(json, r'id')!,
+        name: mapValueOfType<String>(json, r'name')!,
       );
     }
     return null;
@@ -115,8 +115,8 @@ class AdminSignupResponseDto {
   static const requiredKeys = <String>{
     'createdAt',
     'email',
-    'fullName',
     'id',
+    'name',
   };
 }
 

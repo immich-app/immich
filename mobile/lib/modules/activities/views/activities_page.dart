@@ -61,7 +61,7 @@ class ActivitiesPage extends HookConsumerWidget {
         mainAxisSize: leftAlign ? MainAxisSize.min : MainAxisSize.max,
         children: [
           Text(
-            activity.user.fullName,
+            activity.user.name,
             style: textStyle,
             overflow: TextOverflow.ellipsis,
           ),

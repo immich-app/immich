@@ -21,8 +21,8 @@ void main() {
       // TODO
     });
 
-    // String fullName
-    test('to test the property `fullName`', () async {
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

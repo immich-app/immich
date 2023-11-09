@@ -38,7 +38,7 @@ export class UsageByUserDto {
   @ApiProperty({ type: 'string' })
   userId!: string;
   @ApiProperty({ type: 'string' })
-  userFullName!: string;
+  userName!: string;
   @ApiProperty({ type: 'integer' })
   photos!: number;
   @ApiProperty({ type: 'integer' })

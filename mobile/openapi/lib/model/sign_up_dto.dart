@@ -14,36 +14,36 @@ class SignUpDto {
   /// Returns a new [SignUpDto] instance.
   SignUpDto({
     required this.email,
-    required this.fullName,
+    required this.name,
     required this.password,
   });
 
   String email;
 
-  String fullName;
+  String name;
 
   String password;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SignUpDto &&
      other.email == email &&
-     other.fullName == fullName &&
+     other.name == name &&
      other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (fullName.hashCode) +
+    (name.hashCode) +
     (password.hashCode);
 
   @override
-  String toString() => 'SignUpDto[email=$email, fullName=$fullName, password=$password]';
+  String toString() => 'SignUpDto[email=$email, name=$name, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
-      json[r'fullName'] = this.fullName;
+      json[r'name'] = this.name;
       json[r'password'] = this.password;
     return json;
   }
@@ -57,7 +57,7 @@ class SignUpDto {
 
       return SignUpDto(
         email: mapValueOfType<String>(json, r'email')!,
-        fullName: mapValueOfType<String>(json, r'fullName')!,
+        name: mapValueOfType<String>(json, r'name')!,
         password: mapValueOfType<String>(json, r'password')!,
       );
     }
@@ -107,7 +107,7 @@ class SignUpDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'email',
-    'fullName',
+    'name',
     'password',
   };
 }

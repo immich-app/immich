@@ -9,8 +9,8 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **accessToken** | **String** |  | [readonly] 
-**fullName** | **String** |  | [readonly] 
 **isAdmin** | **bool** |  | [readonly] 
+**name** | **String** |  | [readonly] 
 **profileImagePath** | **String** |  | [readonly] 
 **shouldChangePassword** | **bool** |  | [readonly] 
 **userEmail** | **String** |  | [readonly] 

@@ -15,13 +15,13 @@ describe(`${LibraryController.name} (e2e)`, () => {
   const user1Dto = {
     email: 'user1@immich.app',
     password: 'Password123',
-    fullName: 'User 1',
+    name: 'User 1',
   };
 
   const user2Dto = {
     email: 'user2@immich.app',
     password: 'Password123',
-    fullName: 'User 2',
+    name: 'User 2',
   };
 
   beforeAll(async () => {

@@ -14,7 +14,7 @@ import {
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
-const fullName = 'Immich Admin';
+const name = 'Immich Admin';
 const password = 'Password123';
 const email = 'admin@immich.app';
 
@@ -46,19 +46,19 @@ describe(`${AuthController.name} (e2e)`, () => {
     const invalid = [
       {
         should: 'require an email address',
-        data: { fullName, password },
+        data: { name, password },
       },
       {
         should: 'require a password',
-        data: { fullName, email },
+        data: { name, email },
       },
       {
-        should: 'require a full name ',
+        should: 'require a name',
         data: { email, password },
       },
       {
         should: 'require a valid email',
-        data: { fullName, email: 'immich', password },
+        data: { name, email: 'immich', password },
       },
     ];
 

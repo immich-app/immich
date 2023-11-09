@@ -41,12 +41,12 @@ describe(`${AlbumController.name} (e2e)`, () => {
       api.userApi.create(server, admin.accessToken, {
         email: 'user1@immich.app',
         password: 'Password123',
-        fullName: 'User 1',
+        name: 'User 1',
       }),
       api.userApi.create(server, admin.accessToken, {
         email: 'user2@immich.app',
         password: 'Password123',
-        fullName: 'User 2',
+        name: 'User 2',
       }),
     ]);
 

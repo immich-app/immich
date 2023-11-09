@@ -17,5 +17,5 @@ export class SignUpDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: 'Admin' })
-  fullName!: string;
+  name!: string;
 }

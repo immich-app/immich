@@ -17,10 +17,10 @@ class UserResponseDto {
     required this.deletedAt,
     required this.email,
     required this.externalPath,
-    required this.fullName,
     required this.id,
     required this.isAdmin,
     this.memoriesEnabled,
+    required this.name,
     required this.oauthId,
     required this.profileImagePath,
     required this.shouldChangePassword,
@@ -36,8 +36,6 @@ class UserResponseDto {
 
   String? externalPath;
 
-  String fullName;
-
   String id;
 
   bool isAdmin;
@@ -49,6 +47,8 @@ class UserResponseDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? memoriesEnabled;
+
+  String name;
 
   String oauthId;
 
@@ -66,10 +66,10 @@ class UserResponseDto {
      other.deletedAt == deletedAt &&
      other.email == email &&
      other.externalPath == externalPath &&
-     other.fullName == fullName &&
      other.id == id &&
      other.isAdmin == isAdmin &&
      other.memoriesEnabled == memoriesEnabled &&
+     other.name == name &&
      other.oauthId == oauthId &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
@@ -83,10 +83,10 @@ class UserResponseDto {
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
     (externalPath == null ? 0 : externalPath!.hashCode) +
-    (fullName.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
+    (name.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
@@ -94,7 +94,7 @@ class UserResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, fullName=$fullName, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -110,7 +110,6 @@ class UserResponseDto {
     } else {
     //  json[r'externalPath'] = null;
     }
-      json[r'fullName'] = this.fullName;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
     if (this.memoriesEnabled != null) {
@@ -118,6 +117,7 @@ class UserResponseDto {
     } else {
     //  json[r'memoriesEnabled'] = null;
     }
+      json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
@@ -142,10 +142,10 @@ class UserResponseDto {
         deletedAt: mapDateTime(json, r'deletedAt', ''),
         email: mapValueOfType<String>(json, r'email')!,
         externalPath: mapValueOfType<String>(json, r'externalPath'),
-        fullName: mapValueOfType<String>(json, r'fullName')!,
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
+        name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
@@ -202,9 +202,9 @@ class UserResponseDto {
     'deletedAt',
     'email',
     'externalPath',
-    'fullName',
     'id',
     'isAdmin',
+    'name',
     'oauthId',
     'profileImagePath',
     'shouldChangePassword',

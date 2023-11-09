@@ -48,7 +48,7 @@ class Activity {
             : ActivityType.like,
         user = User(
           email: dto.user.email,
-          fullName: dto.user.fullName,
+          name: dto.user.name,
           profileImagePath: dto.user.profileImagePath,
           id: dto.user.id,
           // Placeholder values

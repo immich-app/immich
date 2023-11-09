@@ -3,7 +3,7 @@ class AuthenticationState {
   final String userId;
   final String userEmail;
   final bool isAuthenticated;
-  final String fullName;
+  final String name;
   final bool isAdmin;
   final bool shouldChangePassword;
   final String profileImagePath;
@@ -12,7 +12,7 @@ class AuthenticationState {
     required this.userId,
     required this.userEmail,
     required this.isAuthenticated,
-    required this.fullName,
+    required this.name,
     required this.isAdmin,
     required this.shouldChangePassword,
     required this.profileImagePath,
@@ -23,7 +23,7 @@ class AuthenticationState {
     String? userId,
     String? userEmail,
     bool? isAuthenticated,
-    String? fullName,
+    String? name,
     bool? isAdmin,
     bool? shouldChangePassword,
     String? profileImagePath,
@@ -33,7 +33,7 @@ class AuthenticationState {
       userId: userId ?? this.userId,
       userEmail: userEmail ?? this.userEmail,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      fullName: fullName ?? this.fullName,
+      name: name ?? this.name,
       isAdmin: isAdmin ?? this.isAdmin,
       shouldChangePassword: shouldChangePassword ?? this.shouldChangePassword,
       profileImagePath: profileImagePath ?? this.profileImagePath,
@@ -42,7 +42,7 @@ class AuthenticationState {
 
   @override
   String toString() {
-    return 'AuthenticationState(deviceId: $deviceId, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, fullName: $fullName, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword, profileImagePath: $profileImagePath)';
+    return 'AuthenticationState(deviceId: $deviceId, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, name: $name, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword, profileImagePath: $profileImagePath)';
   }
 
   @override
@@ -54,7 +54,7 @@ class AuthenticationState {
         other.userId == userId &&
         other.userEmail == userEmail &&
         other.isAuthenticated == isAuthenticated &&
-        other.fullName == fullName &&
+        other.name == name &&
         other.isAdmin == isAdmin &&
         other.shouldChangePassword == shouldChangePassword &&
         other.profileImagePath == profileImagePath;
@@ -66,7 +66,7 @@ class AuthenticationState {
         userId.hashCode ^
         userEmail.hashCode ^
         isAuthenticated.hashCode ^
-        fullName.hashCode ^
+        name.hashCode ^
         isAdmin.hashCode ^
         shouldChangePassword.hashCode ^
         profileImagePath.hashCode;

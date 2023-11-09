@@ -10,10 +10,10 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **email** | **String** |  | [optional] 
 **externalPath** | **String** |  | [optional] 
-**fullName** | **String** |  | [optional] 
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 
+**name** | **String** |  | [optional] 
 **password** | **String** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 

@@ -26,13 +26,13 @@ void main() {
       // TODO
     });
 
-    // String fullName
-    test('to test the property `fullName`', () async {
+    // bool memoriesEnabled
+    test('to test the property `memoriesEnabled`', () async {
       // TODO
     });
 
-    // bool memoriesEnabled
-    test('to test the property `memoriesEnabled`', () async {
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

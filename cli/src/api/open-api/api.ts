@@ -232,13 +232,13 @@ export interface AdminSignupResponseDto {
      * @type {string}
      * @memberof AdminSignupResponseDto
      */
-    'fullName': string;
+    'id': string;
     /**
      * 
      * @type {string}
      * @memberof AdminSignupResponseDto
      */
-    'id': string;
+    'name': string;
 }
 /**
  * 
@@ -1368,16 +1368,16 @@ export interface CreateUserDto {
     'externalPath'?: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof CreateUserDto
-     */
-    'fullName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof CreateUserDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateUserDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}
@@ -2158,16 +2158,16 @@ export interface LoginResponseDto {
     'accessToken': string;
     /**
      * 
-     * @type {string}
-     * @memberof LoginResponseDto
-     */
-    'fullName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof LoginResponseDto
      */
     'isAdmin': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof LoginResponseDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}
@@ -3325,7 +3325,7 @@ export interface SignUpDto {
      * @type {string}
      * @memberof SignUpDto
      */
-    'fullName': string;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -4248,12 +4248,6 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'fullName'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
     'id': string;
     /**
      * 
@@ -4267,6 +4261,12 @@ export interface UpdateUserDto {
      * @memberof UpdateUserDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'name'?: string;
     /**
      * 
      * @type {string}
@@ -4309,13 +4309,13 @@ export interface UsageByUserDto {
      * @type {string}
      * @memberof UsageByUserDto
      */
-    'userFullName': string;
+    'userId': string;
     /**
      * 
      * @type {string}
      * @memberof UsageByUserDto
      */
-    'userId': string;
+    'userName': string;
     /**
      * 
      * @type {number}
@@ -4340,13 +4340,13 @@ export interface UserDto {
      * @type {string}
      * @memberof UserDto
      */
-    'fullName': string;
+    'id': string;
     /**
      * 
      * @type {string}
      * @memberof UserDto
      */
-    'id': string;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -4389,12 +4389,6 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'fullName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
     'id': string;
     /**
      * 
@@ -4408,6 +4402,12 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}

@@ -45,7 +45,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                 child: Text(
                   'change_password_form_description'.tr(
                     namedArgs: {
-                      'fullName': authState.fullName,
+                      'name': authState.name,
                     },
                   ),
                   style: TextStyle(

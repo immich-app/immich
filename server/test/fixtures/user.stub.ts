@@ -5,7 +5,7 @@ export const userStub = {
   admin: Object.freeze<UserEntity>({
     ...authStub.admin,
     password: 'admin_password',
-    fullName: 'admin_full_name',
+    name: 'admin_name',
     storageLabel: 'admin',
     externalPath: null,
     oauthId: '',
@@ -21,7 +21,7 @@ export const userStub = {
   user1: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    fullName: 'immich_full_name',
+    name: 'immich_name',
     storageLabel: null,
     externalPath: null,
     oauthId: '',
@@ -37,7 +37,7 @@ export const userStub = {
   user2: Object.freeze<UserEntity>({
     ...authStub.user2,
     password: 'immich_password',
-    fullName: 'immich_full_name',
+    name: 'immich_name',
     storageLabel: null,
     externalPath: null,
     oauthId: '',
@@ -53,7 +53,7 @@ export const userStub = {
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    fullName: 'immich_full_name',
+    name: 'immich_name',
     storageLabel: 'label-1',
     externalPath: null,
     oauthId: '',
@@ -69,7 +69,7 @@ export const userStub = {
   externalPath1: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    fullName: 'immich_full_name',
+    name: 'immich_name',
     storageLabel: 'label-1',
     externalPath: '/data/user1',
     oauthId: '',
@@ -85,7 +85,7 @@ export const userStub = {
   externalPath2: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    fullName: 'immich_full_name',
+    name: 'immich_name',
     storageLabel: 'label-1',
     externalPath: '/data/user2',
     oauthId: '',
@@ -101,7 +101,7 @@ export const userStub = {
   profilePath: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    fullName: 'immich_full_name',
+    name: 'immich_name',
     storageLabel: 'label-1',
     externalPath: null,
     oauthId: '',

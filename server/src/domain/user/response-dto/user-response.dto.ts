@@ -2,7 +2,7 @@ import { UserEntity } from '@app/infra/entities';
 
 export class UserDto {
   id!: string;
-  fullName!: string;
+  name!: string;
   email!: string;
   profileImagePath!: string;
 }
@@ -23,7 +23,7 @@ export const mapSimpleUser = (entity: UserEntity): UserDto => {
   return {
     id: entity.id,
     email: entity.email,
-    fullName: entity.fullName,
+    name: entity.name,
     profileImagePath: entity.profileImagePath,
   };
 };

@@ -42,7 +42,7 @@ class UserCircleAvatar extends ConsumerWidget {
         '${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${user.id}?d=${Random().nextInt(1024)}';
 
     final textIcon = Text(
-      user.fullName[0].toUpperCase(),
+      user.name[0].toUpperCase(),
       style: TextStyle(
         fontWeight: FontWeight.bold,
         color: Theme.of(context).brightness == Brightness.dark

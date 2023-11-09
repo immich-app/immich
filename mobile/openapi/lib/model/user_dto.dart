@@ -14,42 +14,42 @@ class UserDto {
   /// Returns a new [UserDto] instance.
   UserDto({
     required this.email,
-    required this.fullName,
     required this.id,
+    required this.name,
     required this.profileImagePath,
   });
 
   String email;
 
-  String fullName;
-
   String id;
+
+  String name;
 
   String profileImagePath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserDto &&
      other.email == email &&
-     other.fullName == fullName &&
      other.id == id &&
+     other.name == name &&
      other.profileImagePath == profileImagePath;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (fullName.hashCode) +
     (id.hashCode) +
+    (name.hashCode) +
     (profileImagePath.hashCode);
 
   @override
-  String toString() => 'UserDto[email=$email, fullName=$fullName, id=$id, profileImagePath=$profileImagePath]';
+  String toString() => 'UserDto[email=$email, id=$id, name=$name, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
-      json[r'fullName'] = this.fullName;
       json[r'id'] = this.id;
+      json[r'name'] = this.name;
       json[r'profileImagePath'] = this.profileImagePath;
     return json;
   }
@@ -63,8 +63,8 @@ class UserDto {
 
       return UserDto(
         email: mapValueOfType<String>(json, r'email')!,
-        fullName: mapValueOfType<String>(json, r'fullName')!,
         id: mapValueOfType<String>(json, r'id')!,
+        name: mapValueOfType<String>(json, r'name')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
     }
@@ -114,8 +114,8 @@ class UserDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'email',
-    'fullName',
     'id',
+    'name',
     'profileImagePath',
   };
 }

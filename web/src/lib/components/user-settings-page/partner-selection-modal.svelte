@@ -61,7 +61,7 @@
 
           <div class="text-left">
             <p class="text-immich-fg dark:text-immich-dark-fg">
-              {user.fullName}
+              {user.name}
             </p>
             <p class="text-xs">
               {user.email}

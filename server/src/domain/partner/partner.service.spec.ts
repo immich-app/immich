@@ -7,7 +7,7 @@ import { PartnerService } from './partner.service';
 const responseDto = {
   admin: <UserResponseDto>{
     email: 'admin@test.com',
-    fullName: 'admin_full_name',
+    name: 'admin_name',
     id: 'admin_id',
     isAdmin: true,
     oauthId: '',
@@ -22,7 +22,7 @@ const responseDto = {
   },
   user1: <UserResponseDto>{
     email: 'immich@test.com',
-    fullName: 'immich_full_name',
+    name: 'immich_name',
     id: 'user-id',
     isAdmin: false,
     oauthId: '',

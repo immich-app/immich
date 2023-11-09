@@ -7,7 +7,7 @@ describe('create user DTO', () => {
     const params: Partial<CreateUserDto> = {
       email: undefined,
       password: 'password',
-      fullName: 'full name',
+      name: 'name',
     };
     let dto: CreateUserDto = plainToInstance(CreateUserDto, params);
     let errors = await validate(dto);
@@ -30,7 +30,7 @@ describe('create user DTO', () => {
     const dto = plainToInstance(CreateUserDto, {
       email: someEmail,
       password: 'some password',
-      fullName: 'some full name',
+      name: 'some name',
     });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);
@@ -46,7 +46,7 @@ describe('create admin DTO', () => {
       isAdmin: true,
       email: someEmail,
       password: 'some password',
-      fullName: 'some first name',
+      name: 'some name',
     });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);
@@ -61,7 +61,7 @@ describe('create user oauth DTO', () => {
     const dto = plainToInstance(CreateUserOAuthDto, {
       email: someEmail,
       oauthId: 'some oauth id',
-      fullName: 'some first name',
+      name: 'some name',
     });
     const errors = await validate(dto);
     expect(errors).toHaveLength(0);

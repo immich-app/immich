@@ -15,8 +15,8 @@ class UsageByUserDto {
   UsageByUserDto({
     required this.photos,
     required this.usage,
-    required this.userFullName,
     required this.userId,
+    required this.userName,
     required this.videos,
   });
 
@@ -24,9 +24,9 @@ class UsageByUserDto {
 
   int usage;
 
-  String userFullName;
-
   String userId;
+
+  String userName;
 
   int videos;
 
@@ -34,8 +34,8 @@ class UsageByUserDto {
   bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
      other.photos == photos &&
      other.usage == usage &&
-     other.userFullName == userFullName &&
      other.userId == userId &&
+     other.userName == userName &&
      other.videos == videos;
 
   @override
@@ -43,19 +43,19 @@ class UsageByUserDto {
     // ignore: unnecessary_parenthesis
     (photos.hashCode) +
     (usage.hashCode) +
-    (userFullName.hashCode) +
     (userId.hashCode) +
+    (userName.hashCode) +
     (videos.hashCode);
 
   @override
-  String toString() => 'UsageByUserDto[photos=$photos, usage=$usage, userFullName=$userFullName, userId=$userId, videos=$videos]';
+  String toString() => 'UsageByUserDto[photos=$photos, usage=$usage, userId=$userId, userName=$userName, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
       json[r'usage'] = this.usage;
-      json[r'userFullName'] = this.userFullName;
       json[r'userId'] = this.userId;
+      json[r'userName'] = this.userName;
       json[r'videos'] = this.videos;
     return json;
   }
@@ -70,8 +70,8 @@ class UsageByUserDto {
       return UsageByUserDto(
         photos: mapValueOfType<int>(json, r'photos')!,
         usage: mapValueOfType<int>(json, r'usage')!,
-        userFullName: mapValueOfType<String>(json, r'userFullName')!,
         userId: mapValueOfType<String>(json, r'userId')!,
+        userName: mapValueOfType<String>(json, r'userName')!,
         videos: mapValueOfType<int>(json, r'videos')!,
       );
     }
@@ -122,8 +122,8 @@ class UsageByUserDto {
   static const requiredKeys = <String>{
     'photos',
     'usage',
-    'userFullName',
     'userId',
+    'userName',
     'videos',
   };
 }

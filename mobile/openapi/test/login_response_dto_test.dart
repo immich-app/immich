@@ -21,13 +21,13 @@ void main() {
       // TODO
     });
 
-    // String fullName
-    test('to test the property `fullName`', () async {
+    // bool isAdmin
+    test('to test the property `isAdmin`', () async {
       // TODO
     });
 
-    // bool isAdmin
-    test('to test the property `isAdmin`', () async {
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

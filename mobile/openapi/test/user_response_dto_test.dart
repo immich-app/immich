@@ -36,11 +36,6 @@ void main() {
       // TODO
     });
 
-    // String fullName
-    test('to test the property `fullName`', () async {
-      // TODO
-    });
-
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -53,6 +48,11 @@ void main() {
 
     // bool memoriesEnabled
     test('to test the property `memoriesEnabled`', () async {
+      // TODO
+    });
+
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

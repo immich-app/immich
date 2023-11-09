@@ -16,7 +16,7 @@
 
 <FullscreenContainer title={data.meta.title}>
   <p slot="message">
-    Hi {data.user.fullName} ({data.user.email}),
+    Hi {data.user.name} ({data.user.email}),
     <br />
     <br />
     This is either the first time you are signing into the system or a request has been made to change your password. Please

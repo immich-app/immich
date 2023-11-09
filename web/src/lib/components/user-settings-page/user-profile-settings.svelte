@@ -17,7 +17,7 @@
         updateUserDto: {
           id: user.id,
           email: user.email,
-          fullName: user.fullName,
+          name: user.name,
         },
       });
 
@@ -46,12 +46,7 @@
 
         <SettingInputField inputType={SettingInputFieldType.EMAIL} label="EMAIL" bind:value={user.email} />
 
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label="FULL NAME"
-          bind:value={user.fullName}
-          required={true}
-        />
+        <SettingInputField inputType={SettingInputFieldType.TEXT} label="NAME" bind:value={user.name} required={true} />
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}

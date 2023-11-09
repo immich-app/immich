@@ -62,7 +62,7 @@ void main() {
       id: "1",
       updatedAt: DateTime.now(),
       email: "a@b.c",
-      fullName: "first last",
+      name: "first last",
       isAdmin: false,
     );
     setUpAll(() async {

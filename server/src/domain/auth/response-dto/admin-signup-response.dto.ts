@@ -3,7 +3,7 @@ import { UserEntity } from '@app/infra/entities';
 export class AdminSignupResponseDto {
   id!: string;
   email!: string;
-  fullName!: string;
+  name!: string;
   createdAt!: Date;
 }
 
@@ -11,7 +11,7 @@ export function mapAdminSignupResponse(entity: UserEntity): AdminSignupResponseD
   return {
     id: entity.id,
     email: entity.email,
-    fullName: entity.fullName,
+    name: entity.name,
     createdAt: entity.createdAt,
   };
 }
