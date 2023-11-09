@@ -27,12 +27,12 @@ void main() {
       // TODO
     });
 
-    //Future<List<ActivityResponseDto>> getActivities(String albumId, { String assetId, ReactionType type, String userId }) async
+    //Future<List<ActivityResponseDto>> getActivities(String albumId, { String assetId, ReactionType type, String userId, bool isGlobal }) async
     test('test getActivities', () async {
       // TODO
     });
 
-    //Future<ActivityStatisticsResponseDto> getActivityStatistics(String albumId, { String assetId }) async
+    //Future<ActivityStatisticsResponseDto> getActivityStatistics(String albumId, { String assetId, bool isGlobal }) async
     test('test getActivityStatistics', () async {
       // TODO
     });

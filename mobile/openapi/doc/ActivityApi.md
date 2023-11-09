@@ -125,7 +125,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getActivities**
-> List<ActivityResponseDto> getActivities(albumId, assetId, type, userId)
+> List<ActivityResponseDto> getActivities(albumId, assetId, type, userId, isGlobal)
 
 
 
@@ -152,9 +152,10 @@ final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final type = ; // ReactionType | 
 final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final isGlobal = true; // bool | 
 
 try {
-    final result = api_instance.getActivities(albumId, assetId, type, userId);
+    final result = api_instance.getActivities(albumId, assetId, type, userId, isGlobal);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getActivities: $e\n');
@@ -169,6 +170,7 @@ Name | Type | Description  | Notes
  **assetId** | **String**|  | [optional] 
  **type** | [**ReactionType**](.md)|  | [optional] 
  **userId** | **String**|  | [optional] 
+ **isGlobal** | **bool**|  | [optional] 
 
 ### Return type
 
@@ -186,7 +188,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getActivityStatistics**
-> ActivityStatisticsResponseDto getActivityStatistics(albumId, assetId)
+> ActivityStatisticsResponseDto getActivityStatistics(albumId, assetId, isGlobal)
 
 
 
@@ -211,9 +213,10 @@ import 'package:openapi/api.dart';
 final api_instance = ActivityApi();
 final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final isGlobal = true; // bool | 
 
 try {
-    final result = api_instance.getActivityStatistics(albumId, assetId);
+    final result = api_instance.getActivityStatistics(albumId, assetId, isGlobal);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getActivityStatistics: $e\n');
@@ -226,6 +229,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albumId** | **String**|  | 
  **assetId** | **String**|  | [optional] 
+ **isGlobal** | **bool**|  | [optional] 
 
 ### Return type
 

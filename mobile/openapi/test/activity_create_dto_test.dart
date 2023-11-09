@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // bool isGlobal
+    test('to test the property `isGlobal`', () async {
+      // TODO
+    });
+
     // ReactionType type
     test('to test the property `type`', () async {
       // TODO

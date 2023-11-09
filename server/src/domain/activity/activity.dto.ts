@@ -1,7 +1,8 @@
 import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
-import { Optional, ValidateUUID } from '../domain.util';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { Optional, ValidateUUID, toBoolean } from '../domain.util';
 import { UserDto, mapSimpleUser } from '../user/response-dto';
 
 export enum ReactionType {
@@ -41,6 +42,11 @@ export class ActivitySearchDto extends ActivityDto {
 
   @ValidateUUID({ optional: true })
   userId?: string;
+
+  @IsBoolean()
+  @Transform(toBoolean)
+  @Optional()
+  isGlobal?: boolean;
 }
 
 const isComment = (dto: ActivityCreateDto) => dto.type === 'comment';

@@ -16,6 +16,7 @@ class ActivityCreateDto {
     required this.albumId,
     this.assetId,
     this.comment,
+    this.isGlobal,
     required this.type,
   });
 
@@ -37,6 +38,14 @@ class ActivityCreateDto {
   ///
   String? comment;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isGlobal;
+
   ReactionType type;
 
   @override
@@ -44,6 +53,7 @@ class ActivityCreateDto {
      other.albumId == albumId &&
      other.assetId == assetId &&
      other.comment == comment &&
+     other.isGlobal == isGlobal &&
      other.type == type;
 
   @override
@@ -52,10 +62,11 @@ class ActivityCreateDto {
     (albumId.hashCode) +
     (assetId == null ? 0 : assetId!.hashCode) +
     (comment == null ? 0 : comment!.hashCode) +
+    (isGlobal == null ? 0 : isGlobal!.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'ActivityCreateDto[albumId=$albumId, assetId=$assetId, comment=$comment, type=$type]';
+  String toString() => 'ActivityCreateDto[albumId=$albumId, assetId=$assetId, comment=$comment, isGlobal=$isGlobal, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -69,6 +80,11 @@ class ActivityCreateDto {
       json[r'comment'] = this.comment;
     } else {
     //  json[r'comment'] = null;
+    }
+    if (this.isGlobal != null) {
+      json[r'isGlobal'] = this.isGlobal;
+    } else {
+    //  json[r'isGlobal'] = null;
     }
       json[r'type'] = this.type;
     return json;
@@ -85,6 +101,7 @@ class ActivityCreateDto {
         albumId: mapValueOfType<String>(json, r'albumId')!,
         assetId: mapValueOfType<String>(json, r'assetId'),
         comment: mapValueOfType<String>(json, r'comment'),
+        isGlobal: mapValueOfType<bool>(json, r'isGlobal'),
         type: ReactionType.fromJson(json[r'type'])!,
       );
     }

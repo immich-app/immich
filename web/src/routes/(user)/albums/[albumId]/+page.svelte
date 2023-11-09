@@ -167,7 +167,6 @@
         const { data } = await api.activityApi.createActivity({
           activityCreateDto: { albumId: album.id, type: ReactionType.Like },
         });
-
         isLiked = data;
         reactions = [...reactions, isLiked];
       }
@@ -181,6 +180,7 @@
       try {
         const { data } = await api.activityApi.getActivities({
           userId: user.id,
+          isGlobal: true,
           albumId: album.id,
           type: ReactionType.Like,
         });
@@ -687,6 +687,7 @@
           disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
+          {isLiked}
           bind:reactions
           on:addComment={() => updateNumberOfComments(1)}
           on:deleteComment={() => updateNumberOfComments(-1)}

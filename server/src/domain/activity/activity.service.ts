@@ -31,6 +31,7 @@ export class ActivityService {
       userId: dto.userId,
       albumId: dto.albumId,
       assetId: dto.assetId,
+      isGlobal: dto.isGlobal,
       isLiked: dto.type && dto.type === ReactionType.LIKE,
     });
 

@@ -39,6 +39,14 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "name": "isGlobal",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -132,6 +140,14 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "isGlobal",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -5738,6 +5754,9 @@
           },
           "comment": {
             "type": "string"
+          },
+          "isGlobal": {
+            "type": "boolean"
           },
           "type": {
             "$ref": "#/components/schemas/ReactionType"
