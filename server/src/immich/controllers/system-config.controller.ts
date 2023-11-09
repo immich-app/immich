@@ -7,31 +7,35 @@ import { UseValidation } from '../app.utils';
 
 @ApiTags('System Config')
 @Controller('system-config')
-@Authenticated({ admin: true })
 @UseValidation()
 export class SystemConfigController {
   constructor(private readonly service: SystemConfigService) {}
 
+  @Authenticated({ admin: true })
   @Get()
   getConfig(): Promise<SystemConfigDto> {
     return this.service.getConfig();
   }
 
+  @Authenticated({ admin: true })
   @Get('defaults')
   getConfigDefaults(): SystemConfigDto {
     return this.service.getDefaults();
   }
 
+  @Authenticated({ admin: true })
   @Put()
   updateConfig(@Body() dto: SystemConfigDto): Promise<SystemConfigDto> {
     return this.service.updateConfig(dto);
   }
 
+  @Authenticated({ admin: true })
   @Get('storage-template-options')
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     return this.service.getStorageTemplateOptions();
   }
 
+  @Authenticated({ admin: false })
   @Get('map/style.json')
   getMapStyle(@Query() dto: MapThemeDto) {
     return this.service.getMapStyle(dto.theme);
