@@ -171,11 +171,19 @@ class AlbumViewerPage extends HookConsumerWidget {
         return const SizedBox();
       }
 
-      final String startDateText = (startDate.year == endDate.year
-              ? DateFormat.MMMd()
-              : DateFormat.yMMMd())
-          .format(startDate);
-      final String endDateText = DateFormat.yMMMd().format(endDate);
+      final String dateRangeText;
+      if (startDate.day == endDate.day &&
+          startDate.month == endDate.month &&
+          startDate.year == endDate.year) {
+        dateRangeText = DateFormat.yMMMd().format(startDate);
+      } else {
+        final String startDateText = (startDate.year == endDate.year
+                ? DateFormat.MMMd()
+                : DateFormat.yMMMd())
+            .format(startDate);
+        final String endDateText = DateFormat.yMMMd().format(endDate);
+        dateRangeText = "$startDateText - $endDateText";
+      }
 
       return Padding(
         padding: EdgeInsets.only(
@@ -183,7 +191,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           bottom: album.shared ? 0.0 : 8.0,
         ),
         child: Text(
-          "$startDateText - $endDateText",
+          dateRangeText,
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
