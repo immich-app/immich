@@ -179,7 +179,7 @@ class MapSettingsDialog extends HookConsumerWidget {
         width: double.maxFinite,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.6,
+            maxHeight: context.height * 0.6,
           ),
           child: ListView(
             shrinkWrap: true,

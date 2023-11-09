@@ -11,6 +11,7 @@ import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/map/models/map_page_event.model.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
@@ -484,8 +485,8 @@ class MapPageState extends ConsumerState<MapPage> {
               ),
               if (showLoadingIndicator.value)
                 Positioned(
-                  top: MediaQuery.of(context).size.height * 0.35,
-                  left: MediaQuery.of(context).size.width * 0.425,
+                  top: context.height * 0.35,
+                  left: context.width * 0.425,
                   child: const ImmichLoadingIndicator(),
                 ),
             ],

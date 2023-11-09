@@ -31,7 +31,7 @@ class SearchPage extends HookConsumerWidget {
     final curatedPeople = ref.watch(getCuratedPeopleProvider);
     final isMapEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.map));
-    double imageSize = math.min(MediaQuery.of(context).size.width / 3, 150);
+    double imageSize = math.min(context.width / 3, 150);
 
     TextStyle categoryTitleStyle = const TextStyle(
       fontWeight: FontWeight.bold,

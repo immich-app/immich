@@ -75,8 +75,8 @@ class VideoViewerPage extends HookConsumerWidget {
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
+            height: context.height,
+            width: context.width,
             child: const Center(
               child: ImmichLoadingIndicator(),
             ),
@@ -206,8 +206,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
       );
     } else {
       return SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
+        height: context.height,
+        width: context.width,
         child: Center(
           child: Stack(
             children: [

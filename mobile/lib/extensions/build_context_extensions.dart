@@ -2,8 +2,17 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 extension ContextHelper on BuildContext {
+  // Returns the current size from MediaQuery
+  Size get size => MediaQuery.sizeOf(this);
+
+  // Returns the current width from MediaQuery
+  double get width => size.width;
+
+  // Returns the current height from MediaQuery
+  double get height => size.height;
+
   // Returns true if the app is running on a mobile device (!tablets)
-  bool get isMobile => MediaQuery.sizeOf(this).width < 550;
+  bool get isMobile => width < 550;
 
   // Returns the current ThemeData
   ThemeData get themeData => Theme.of(this);

@@ -24,7 +24,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     final theme = context.themeData;
-    bool isHorizontal = MediaQuery.of(context).size.width > 600;
+    bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
 

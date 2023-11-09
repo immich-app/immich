@@ -61,7 +61,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
     final isDarkTheme = context.isDarkTheme;
     final bottomPadding =
         Platform.isAndroid ? MediaQuery.of(context).padding.bottom - 10 : 0.0;
-    final maxHeight = MediaQuery.of(context).size.height - bottomPadding;
+    final maxHeight = context.height - bottomPadding;
     final isSheetScrolled = useState(false);
     final isSheetExpanded = useState(false);
     final assetsInBound = useState(<Asset>[]);

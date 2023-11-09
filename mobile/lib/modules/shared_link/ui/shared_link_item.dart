@@ -64,7 +64,7 @@ class SharedLinkItem extends ConsumerWidget {
     final thumbnailUrl = sharedLink.thumbAssetId != null
         ? getThumbnailUrlForRemoteId(sharedLink.thumbAssetId!)
         : null;
-    final imageSize = math.min(MediaQuery.of(context).size.width / 4, 100.0);
+    final imageSize = math.min(context.width / 4, 100.0);
 
     void copyShareLinkToClipboard() {
       final serverUrl = getServerUrl();

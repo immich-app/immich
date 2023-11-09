@@ -209,7 +209,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return DropdownMenu(
         enableSearch: false,
         enableFilter: false,
-        width: MediaQuery.of(context).size.width - 40,
+        width: context.width - 40,
         initialSelection: expiryAfter.value,
         enabled: newShareLink.value.isEmpty &&
             (existingLink == null || editExpiry.value),
