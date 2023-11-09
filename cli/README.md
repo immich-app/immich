@@ -14,7 +14,7 @@ To use the CLI, you need to login with an API key first:
 
 NOTE: This will store your api key in cleartext under ~/.config/immich/auth.yml
 
-Next, you can run commands:
+Next, you can run commands, for example:
 
     $ immich server-info
 
@@ -49,12 +49,15 @@ Commands:
 
 # For developers
 
-To build the Immich CLI from source, run the following in the cli folder:
+To run the Immich CLI from source, run the following in the cli folder:
+
+    $ ts-node .
+
+You'll need ts-node, the easiest way to install it is to use npm:
+
+    $ npm i -g ts-node
+
+You can also build and install the CLI using
 
     $ npm run build
-
-TODO: document how to run the cli from source
-
-You can then install the CLI globally using
-
     $ npm install -g .
