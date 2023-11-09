@@ -4,7 +4,7 @@ import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { IAccessRepository, IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';
 import { UserResponseDto, mapUser } from '../user';
-import { UpdatePartnerDto } from './partner.dto';
+import { UpdatePartnerDto, UpdatePartnerResponseDto } from './partner.dto';
 
 @Injectable()
 export class PartnerService {
@@ -47,7 +47,7 @@ export class PartnerService {
       .map((partner) => this.map(partner, direction));
   }
 
-  async update(authUser: AuthUserDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerEntity> {
+  async update(authUser: AuthUserDto, sharedById: string, dto: UpdatePartnerDto): Promise<UpdatePartnerResponseDto> {
     await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, sharedById);
 
     const partnerId: PartnerIds = { sharedById, sharedWithId: authUser.id };
@@ -58,11 +58,19 @@ export class PartnerService {
 
     partner.inTimeline = dto.inTimeline;
 
-    return await this.repository.update(partner);
+    const entity = await this.repository.update(partner);
+
+    return this.mapUpdate(entity);
   }
 
   private map(partner: PartnerEntity, direction: PartnerDirection): UserResponseDto {
     // this is opposite to return the non-me user of the "partner"
     return mapUser(direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy);
+  }
+
+  private mapUpdate(entity: PartnerEntity): UpdatePartnerResponseDto {
+    return {
+      inTimeline: entity.inTimeline,
+    };
   }
 }

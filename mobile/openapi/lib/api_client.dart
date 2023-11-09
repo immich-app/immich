@@ -459,6 +459,10 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateLibraryDto':
           return UpdateLibraryDto.fromJson(value);
+        case 'UpdatePartnerDto':
+          return UpdatePartnerDto.fromJson(value);
+        case 'UpdatePartnerResponseDto':
+          return UpdatePartnerResponseDto.fromJson(value);
         case 'UpdateStackParentDto':
           return UpdateStackParentDto.fromJson(value);
         case 'UpdateTagDto':

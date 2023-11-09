@@ -4209,6 +4209,32 @@ export interface UpdateLibraryDto {
 /**
  * 
  * @export
+ * @interface UpdatePartnerDto
+ */
+export interface UpdatePartnerDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdatePartnerDto
+     */
+    'inTimeline': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface UpdatePartnerResponseDto
+ */
+export interface UpdatePartnerResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdatePartnerResponseDto
+     */
+    'inTimeline': boolean;
+}
+/**
+ * 
+ * @export
  * @interface UpdateStackParentDto
  */
 export interface UpdateStackParentDto {
@@ -12316,6 +12342,54 @@ export const PartnerApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {string} id 
+         * @param {UpdatePartnerDto} updatePartnerDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updatePartner: async (id: string, updatePartnerDto: UpdatePartnerDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('updatePartner', 'id', id)
+            // verify required parameter 'updatePartnerDto' is not null or undefined
+            assertParamExists('updatePartner', 'updatePartnerDto', updatePartnerDto)
+            const localVarPath = `/partner/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updatePartnerDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -12356,6 +12430,17 @@ export const PartnerApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.removePartner(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * 
+         * @param {string} id 
+         * @param {UpdatePartnerDto} updatePartnerDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updatePartner(id: string, updatePartnerDto: UpdatePartnerDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UpdatePartnerResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updatePartner(id, updatePartnerDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -12392,6 +12477,15 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          */
         removePartner(requestParameters: PartnerApiRemovePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.removePartner(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {PartnerApiUpdatePartnerRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updatePartner(requestParameters: PartnerApiUpdatePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<UpdatePartnerResponseDto> {
+            return localVarFp.updatePartner(requestParameters.id, requestParameters.updatePartnerDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -12439,6 +12533,27 @@ export interface PartnerApiRemovePartnerRequest {
 }
 
 /**
+ * Request parameters for updatePartner operation in PartnerApi.
+ * @export
+ * @interface PartnerApiUpdatePartnerRequest
+ */
+export interface PartnerApiUpdatePartnerRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerApiUpdatePartner
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {UpdatePartnerDto}
+     * @memberof PartnerApiUpdatePartner
+     */
+    readonly updatePartnerDto: UpdatePartnerDto
+}
+
+/**
  * PartnerApi - object-oriented interface
  * @export
  * @class PartnerApi
@@ -12476,6 +12591,17 @@ export class PartnerApi extends BaseAPI {
      */
     public removePartner(requestParameters: PartnerApiRemovePartnerRequest, options?: AxiosRequestConfig) {
         return PartnerApiFp(this.configuration).removePartner(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PartnerApiUpdatePartnerRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PartnerApi
+     */
+    public updatePartner(requestParameters: PartnerApiUpdatePartnerRequest, options?: AxiosRequestConfig) {
+        return PartnerApiFp(this.configuration).updatePartner(requestParameters.id, requestParameters.updatePartnerDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

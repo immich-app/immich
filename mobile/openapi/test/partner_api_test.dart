@@ -32,5 +32,10 @@ void main() {
       // TODO
     });
 
+    //Future<UpdatePartnerResponseDto> updatePartner(String id, UpdatePartnerDto updatePartnerDto) async
+    test('test updatePartner', () async {
+      // TODO
+    });
+
   });
 }
