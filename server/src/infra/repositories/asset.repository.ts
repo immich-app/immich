@@ -486,7 +486,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
-  async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
+  getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
@@ -496,7 +496,7 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
-  async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncated = dateTrunc(options);
     return (
       this.getBuilder(options)
@@ -519,12 +519,12 @@ export class AssetRepository implements IAssetRepository {
       .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
       .leftJoinAndSelect('asset.stack', 'stack');
 
-    if (userIds) {
-      builder = builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
-    }
-
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
+    }
+
+    if (userIds) {
+      builder = builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
     }
 
     if (isArchived !== undefined) {
