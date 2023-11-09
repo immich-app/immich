@@ -20,16 +20,9 @@ export enum Metadata {
   PUBLIC_SECURITY = 'public_security',
 }
 
-const adminDecorator = SetMetadata(Metadata.ADMIN_ROUTE, true);
-
-const sharedLinkDecorators = [
-  SetMetadata(Metadata.SHARED_ROUTE, true),
-  ApiQuery({ name: 'key', type: String, required: false }),
-];
-
 export interface AuthenticatedOptions {
-  admin?: boolean;
-  isShared?: boolean;
+  admin?: true;
+  isShared?: true;
 }
 
 export const Authenticated = (options: AuthenticatedOptions = {}) => {
@@ -41,11 +34,11 @@ export const Authenticated = (options: AuthenticatedOptions = {}) => {
   ];
 
   if (options.admin) {
-    decorators.push(adminDecorator);
+    decorators.push(AdminRoute());
   }
 
   if (options.isShared) {
-    decorators.push(...sharedLinkDecorators);
+    decorators.push(SharedLinkRoute());
   }
 
   return applyDecorators(...decorators);
@@ -53,8 +46,9 @@ export const Authenticated = (options: AuthenticatedOptions = {}) => {
 
 export const PublicRoute = () =>
   applyDecorators(SetMetadata(Metadata.AUTH_ROUTE, false), ApiSecurity(Metadata.PUBLIC_SECURITY));
-export const SharedLinkRoute = () => applyDecorators(...sharedLinkDecorators);
-export const AdminRoute = () => adminDecorator;
+export const SharedLinkRoute = () =>
+  applyDecorators(SetMetadata(Metadata.SHARED_ROUTE, true), ApiQuery({ name: 'key', type: String, required: false }));
+export const AdminRoute = (value = true) => SetMetadata(Metadata.ADMIN_ROUTE, value);
 
 export const AuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthUserDto => {
   return ctx.switchToHttp().getRequest<{ user: AuthUserDto }>().user;
