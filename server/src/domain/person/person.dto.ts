@@ -73,6 +73,32 @@ export class PersonResponseDto {
   isHidden!: boolean;
 }
 
+export class AssetFaceResponseDto {
+  id!: string;
+  boundingBoxX1!: number;
+  boundingBoxX2!: number;
+  boundingBoxY1!: number;
+  boundingBoxY2!: number;
+  person!: PersonResponseDto | null;
+}
+
+export class AssetFaceUpdateDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetFaceUpdateItem)
+  data!: AssetFaceUpdateItem[];
+}
+
+export class AssetFaceUpdateItem {
+  @IsString()
+  @IsNotEmpty()
+  personId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  assetId!: string;
+}
+
 export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   assets!: number;
@@ -95,6 +121,17 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     birthDate: person.birthDate,
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
+  };
+}
+
+export function mapFaces(face: AssetFaceEntity): AssetFaceResponseDto {
+  return {
+    id: face.id,
+    boundingBoxX1: face.boundingBoxX1,
+    boundingBoxX2: face.boundingBoxX2,
+    boundingBoxY1: face.boundingBoxY1,
+    boundingBoxY2: face.boundingBoxY2,
+    person: face.person ? mapPerson(face.person) : null,
   };
 }
 

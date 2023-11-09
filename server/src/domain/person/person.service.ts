@@ -28,6 +28,8 @@ import {
 import { StorageCore } from '../storage';
 import { SystemConfigCore } from '../system-config';
 import {
+  AssetFaceResponseDto,
+  AssetFaceUpdateDto,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
@@ -35,6 +37,7 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  mapFaces,
   mapPerson,
 } from './person.dto';
 
@@ -78,6 +81,106 @@ export class PersonService {
       total: persons.length,
       visible: persons.filter((person: PersonResponseDto) => !person.isHidden).length,
     };
+  }
+
+  async createPerson(authUser: AuthUserDto, dto: AssetFaceUpdateDto): Promise<PersonResponseDto> {
+    const changeFeaturePhoto: string[] = [];
+
+    const newPerson = await this.repository.create({ ownerId: authUser.id });
+    for (const data of dto.data) {
+      try {
+        await this.access.requirePermission(authUser, Permission.PERSON_CREATE, data.personId);
+        await this.repository.reassignFace(data.personId, newPerson.id, data.assetId);
+
+        await this.repository.update({
+          id: newPerson.id,
+          faceAssetId: data.assetId,
+        });
+        const [face] = await this.repository.getFacesByIds([{ personId: newPerson.id, assetId: data.assetId }]);
+        const oldPerson = await this.findOrFail(data.personId);
+        if (oldPerson.faceAssetId === face?.assetId) {
+          changeFeaturePhoto.push(oldPerson.id);
+        }
+        if (!face) {
+          throw new BadRequestException('Invalid assetId for feature face');
+        }
+      } catch (error: Error | any) {
+        this.logger.error(`Unable to create a new person`, error?.stack);
+      }
+    }
+
+    const newPersonFeaturePhoto = await this.repository.getRandomFace(newPerson.id);
+    if (newPersonFeaturePhoto) {
+      await this.repository.update({
+        id: newPerson.id,
+        faceAssetId: newPersonFeaturePhoto.assetId,
+      });
+
+      await this.jobRepository.queue({
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: {
+          id: newPerson.id,
+        },
+      });
+    }
+
+    await this.createNewFeaturePhoto(changeFeaturePhoto);
+
+    return newPerson;
+  }
+
+  async reassignFaces(authUser: AuthUserDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
+    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
+
+    const result: PersonResponseDto[] = [];
+    const changeFeaturePhoto: string[] = [];
+
+    for (const data of dto.data) {
+      try {
+        await this.access.requirePermission(authUser, Permission.PERSON_REASSIGN, data.personId);
+        const [face] = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
+        const oldPerson = await this.findOrFail(data.personId);
+        if (oldPerson.faceAssetId === face?.assetId) {
+          changeFeaturePhoto.push(oldPerson.id);
+        }
+        await this.repository.reassignFace(data.personId, personId, data.assetId);
+
+        result.push(await this.findOrFail(personId).then(mapPerson));
+      } catch (error: Error | any) {
+        this.logger.error(
+          `Unable to un-merge asset ${data.assetId} from ${data.personId} to ${personId}`,
+          error?.stack,
+        );
+      }
+    }
+
+    await this.createNewFeaturePhoto(changeFeaturePhoto);
+    return result;
+  }
+
+  async getFacesById(authUser: AuthUserDto, id: string): Promise<AssetFaceResponseDto[]> {
+    await this.access.requirePermission(authUser, Permission.ASSET_READ, id);
+    const faces = await this.repository.getFaces(id);
+    return faces.map((asset) => mapFaces(asset));
+  }
+
+  async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
+    for (const personId of changeFeaturePhoto) {
+      const assetFace = await this.repository.getRandomFace(personId);
+      if (assetFace !== null) {
+        await this.repository.update({
+          id: personId,
+          faceAssetId: assetFace.assetId,
+        });
+
+        await this.jobRepository.queue({
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: {
+            id: personId,
+          },
+        });
+      }
+    }
   }
 
   async getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {

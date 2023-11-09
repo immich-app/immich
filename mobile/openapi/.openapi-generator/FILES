@@ -25,6 +25,9 @@ doc/AssetBulkUploadCheckDto.md
 doc/AssetBulkUploadCheckItem.md
 doc/AssetBulkUploadCheckResponseDto.md
 doc/AssetBulkUploadCheckResult.md
+doc/AssetFaceResponseDto.md
+doc/AssetFaceUpdateDto.md
+doc/AssetFaceUpdateItem.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
@@ -212,6 +215,9 @@ lib/model/asset_bulk_upload_check_dto.dart
 lib/model/asset_bulk_upload_check_item.dart
 lib/model/asset_bulk_upload_check_response_dto.dart
 lib/model/asset_bulk_upload_check_result.dart
+lib/model/asset_face_response_dto.dart
+lib/model/asset_face_update_dto.dart
+lib/model/asset_face_update_item.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
@@ -364,6 +370,9 @@ test/asset_bulk_upload_check_dto_test.dart
 test/asset_bulk_upload_check_item_test.dart
 test/asset_bulk_upload_check_response_dto_test.dart
 test/asset_bulk_upload_check_result_test.dart
+test/asset_face_response_dto_test.dart
+test/asset_face_update_dto_test.dart
+test/asset_face_update_item_test.dart
 test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart

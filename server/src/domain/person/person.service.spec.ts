@@ -379,6 +379,20 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('reassignFaces', () => {
+    it('should throw an error when personId is invalid', async () => {
+      personMock.getById.mockResolvedValue(personStub.withName);
+      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
+
+      await expect(
+        sut.reassignFaces(authStub.admin, personStub.noName.id, {
+          data: [{ assetId: assetStub.primaryImage.id, personId: personStub.primaryPerson.id }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(jobMock.queue).not.toHaveBeenCalledWith();
+    });
+  });
+
   describe('handlePersonCleanup', () => {
     it('should delete people without faces', async () => {
       personMock.getAllWithoutFaces.mockResolvedValue([personStub.noName]);

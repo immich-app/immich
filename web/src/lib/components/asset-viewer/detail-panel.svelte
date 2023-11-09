@@ -10,14 +10,17 @@
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline } from '@mdi/js';
+  import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import PersonSidePanel, { PersonToCreate } from '../faces-page/person-side-panel.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
 
   let textarea: HTMLTextAreaElement;
   let description: string;
+  let showEditFaces = false;
+  let customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
 
   $: isOwner = $page?.data?.user?.id === asset.ownerId;
 
@@ -130,8 +133,13 @@
   </section>
 
   {#if !api.isSharedLink && people.length > 0}
-    <section class="px-4 py-4 text-sm">
-      <h2>PEOPLE</h2>
+    <section class="px-4 py-4 text-sm uppercase">
+      <div class="grid grid-cols-2 items-center">
+        <h2 class="justify-self-start uppercase">People</h2>
+        <button class="justify-self-end" on:click={() => (showEditFaces = true)}>
+          <Icon path={mdiPencil} size={18} />
+        </button>
+      </div>
 
       <div class="mt-4 flex flex-wrap gap-2">
         {#each people as person (person.id)}
@@ -370,4 +378,12 @@
       </a>
     {/each}
   </section>
+{/if}
+
+{#if showEditFaces}
+  <PersonSidePanel
+    bind:selectedPersonToCreate={customFeaturePhoto}
+    assetId={asset.id}
+    on:close={() => (showEditFaces = false)}
+  />
 {/if}

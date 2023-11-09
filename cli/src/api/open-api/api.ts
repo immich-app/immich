@@ -608,6 +608,81 @@ export type AssetBulkUploadCheckResultReasonEnum = typeof AssetBulkUploadCheckRe
 /**
  * 
  * @export
+ * @interface AssetFaceResponseDto
+ */
+export interface AssetFaceResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceResponseDto
+     */
+    'boundingBoxX1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceResponseDto
+     */
+    'boundingBoxX2': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceResponseDto
+     */
+    'boundingBoxY1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceResponseDto
+     */
+    'boundingBoxY2': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFaceResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {PersonResponseDto}
+     * @memberof AssetFaceResponseDto
+     */
+    'person': PersonResponseDto | null;
+}
+/**
+ * 
+ * @export
+ * @interface AssetFaceUpdateDto
+ */
+export interface AssetFaceUpdateDto {
+    /**
+     * 
+     * @type {Array<AssetFaceUpdateItem>}
+     * @memberof AssetFaceUpdateDto
+     */
+    'data': Array<AssetFaceUpdateItem>;
+}
+/**
+ * 
+ * @export
+ * @interface AssetFaceUpdateItem
+ */
+export interface AssetFaceUpdateItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFaceUpdateItem
+     */
+    'assetId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFaceUpdateItem
+     */
+    'personId': string;
+}
+/**
+ * 
+ * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -12485,6 +12560,50 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
     return {
         /**
          * 
+         * @param {AssetFaceUpdateDto} assetFaceUpdateDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createPerson: async (assetFaceUpdateDto: AssetFaceUpdateDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetFaceUpdateDto' is not null or undefined
+            assertParamExists('createPerson', 'assetFaceUpdateDto', assetFaceUpdateDto)
+            const localVarPath = `/person`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetFaceUpdateDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {boolean} [withHidden] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -12514,6 +12633,48 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
             if (withHidden !== undefined) {
                 localVarQueryParameter['withHidden'] = withHidden;
             }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getFaces: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getFaces', 'id', id)
+            const localVarPath = `/person/faces/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
 
     
@@ -12744,6 +12905,54 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {string} id 
+         * @param {AssetFaceUpdateDto} assetFaceUpdateDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        reassignFaces: async (id: string, assetFaceUpdateDto: AssetFaceUpdateDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('reassignFaces', 'id', id)
+            // verify required parameter 'assetFaceUpdateDto' is not null or undefined
+            assertParamExists('reassignFaces', 'assetFaceUpdateDto', assetFaceUpdateDto)
+            const localVarPath = `/person/{id}/reassign`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetFaceUpdateDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {PeopleUpdateDto} peopleUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -12846,12 +13055,32 @@ export const PersonApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
+         * @param {AssetFaceUpdateDto} assetFaceUpdateDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createPerson(assetFaceUpdateDto: AssetFaceUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createPerson(assetFaceUpdateDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {boolean} [withHidden] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         async getAllPeople(withHidden?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PeopleResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAllPeople(withHidden, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getFaces(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetFaceResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getFaces(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -12907,6 +13136,17 @@ export const PersonApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} id 
+         * @param {AssetFaceUpdateDto} assetFaceUpdateDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async reassignFaces(id: string, assetFaceUpdateDto: AssetFaceUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PersonResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.reassignFaces(id, assetFaceUpdateDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {PeopleUpdateDto} peopleUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -12938,12 +13178,30 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
     return {
         /**
          * 
+         * @param {PersonApiCreatePersonRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createPerson(requestParameters: PersonApiCreatePersonRequest, options?: AxiosRequestConfig): AxiosPromise<PersonResponseDto> {
+            return localVarFp.createPerson(requestParameters.assetFaceUpdateDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {PersonApiGetAllPeopleRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getAllPeople(requestParameters: PersonApiGetAllPeopleRequest = {}, options?: AxiosRequestConfig): AxiosPromise<PeopleResponseDto> {
             return localVarFp.getAllPeople(requestParameters.withHidden, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {PersonApiGetFacesRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getFaces(requestParameters: PersonApiGetFacesRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetFaceResponseDto>> {
+            return localVarFp.getFaces(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -12992,6 +13250,15 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         },
         /**
          * 
+         * @param {PersonApiReassignFacesRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        reassignFaces(requestParameters: PersonApiReassignFacesRequest, options?: AxiosRequestConfig): AxiosPromise<Array<PersonResponseDto>> {
+            return localVarFp.reassignFaces(requestParameters.id, requestParameters.assetFaceUpdateDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {PersonApiUpdatePeopleRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -13012,6 +13279,20 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
 };
 
 /**
+ * Request parameters for createPerson operation in PersonApi.
+ * @export
+ * @interface PersonApiCreatePersonRequest
+ */
+export interface PersonApiCreatePersonRequest {
+    /**
+     * 
+     * @type {AssetFaceUpdateDto}
+     * @memberof PersonApiCreatePerson
+     */
+    readonly assetFaceUpdateDto: AssetFaceUpdateDto
+}
+
+/**
  * Request parameters for getAllPeople operation in PersonApi.
  * @export
  * @interface PersonApiGetAllPeopleRequest
@@ -13023,6 +13304,20 @@ export interface PersonApiGetAllPeopleRequest {
      * @memberof PersonApiGetAllPeople
      */
     readonly withHidden?: boolean
+}
+
+/**
+ * Request parameters for getFaces operation in PersonApi.
+ * @export
+ * @interface PersonApiGetFacesRequest
+ */
+export interface PersonApiGetFacesRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonApiGetFaces
+     */
+    readonly id: string
 }
 
 /**
@@ -13103,6 +13398,27 @@ export interface PersonApiMergePersonRequest {
 }
 
 /**
+ * Request parameters for reassignFaces operation in PersonApi.
+ * @export
+ * @interface PersonApiReassignFacesRequest
+ */
+export interface PersonApiReassignFacesRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonApiReassignFaces
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {AssetFaceUpdateDto}
+     * @memberof PersonApiReassignFaces
+     */
+    readonly assetFaceUpdateDto: AssetFaceUpdateDto
+}
+
+/**
  * Request parameters for updatePeople operation in PersonApi.
  * @export
  * @interface PersonApiUpdatePeopleRequest
@@ -13146,6 +13462,17 @@ export interface PersonApiUpdatePersonRequest {
 export class PersonApi extends BaseAPI {
     /**
      * 
+     * @param {PersonApiCreatePersonRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public createPerson(requestParameters: PersonApiCreatePersonRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).createPerson(requestParameters.assetFaceUpdateDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @param {PersonApiGetAllPeopleRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -13153,6 +13480,17 @@ export class PersonApi extends BaseAPI {
      */
     public getAllPeople(requestParameters: PersonApiGetAllPeopleRequest = {}, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getAllPeople(requestParameters.withHidden, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiGetFacesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public getFaces(requestParameters: PersonApiGetFacesRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).getFaces(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -13208,6 +13546,17 @@ export class PersonApi extends BaseAPI {
      */
     public mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).mergePerson(requestParameters.id, requestParameters.mergePersonDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiReassignFacesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public reassignFaces(requestParameters: PersonApiReassignFacesRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).reassignFaces(requestParameters.id, requestParameters.assetFaceUpdateDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

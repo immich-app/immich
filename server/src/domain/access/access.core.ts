@@ -40,6 +40,8 @@ export enum Permission {
   PERSON_READ = 'person.read',
   PERSON_WRITE = 'person.write',
   PERSON_MERGE = 'person.merge',
+  PERSON_CREATE = 'person.create',
+  PERSON_REASSIGN = 'person.reassign',
 }
 
 let instance: AccessCore | null;
@@ -240,6 +242,12 @@ export class AccessCore {
         return this.repository.person.hasOwnerAccess(authUser.id, id);
 
       case Permission.PERSON_MERGE:
+        return this.repository.person.hasOwnerAccess(authUser.id, id);
+
+      case Permission.PERSON_CREATE:
+        return this.repository.person.hasOwnerAccess(authUser.id, id);
+
+      case Permission.PERSON_REASSIGN:
         return this.repository.person.hasOwnerAccess(authUser.id, id);
 
       default:

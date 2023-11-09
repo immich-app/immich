@@ -99,6 +99,27 @@ export class PersonRepository implements IPersonRepository {
       .getMany();
   }
 
+  getFaces(assetId: string): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({
+      where: { id: assetId },
+      relations: {
+        person: true,
+      },
+    });
+  }
+
+  async reassignFace(oldPersonId: string, newPersonId: string, assetId: string): Promise<number> {
+    const result = await this.assetFaceRepository
+      .createQueryBuilder()
+      .update()
+      .set({ personId: newPersonId })
+      .where({ personId: oldPersonId })
+      .andWhere({ assetId })
+      .execute();
+
+    return result.affected ?? 0;
+  }
+
   getById(personId: string): Promise<PersonEntity | null> {
     return this.personRepository.findOne({ where: { id: personId } });
   }

@@ -1,4 +1,6 @@
 import {
+  AssetFaceResponseDto,
+  AssetFaceUpdateDto,
   AssetResponseDto,
   AuthUserDto,
   BulkIdResponseDto,
@@ -32,6 +34,25 @@ export class PersonController {
   @Get()
   getAllPeople(@AuthUser() authUser: AuthUserDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
     return this.service.getAll(authUser, withHidden);
+  }
+
+  @Put(':id/reassign')
+  reassignFaces(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetFaceUpdateDto,
+  ): Promise<PersonResponseDto[]> {
+    return this.service.reassignFaces(authUser, id, dto);
+  }
+
+  @Post('')
+  createPerson(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetFaceUpdateDto): Promise<PersonResponseDto> {
+    return this.service.createPerson(authUser, dto);
+  }
+
+  @Get('faces/:id')
+  getFaces(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetFaceResponseDto[]> {
+    return this.service.getFacesById(authUser, id);
   }
 
   @Put()

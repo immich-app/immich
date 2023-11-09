@@ -152,12 +152,15 @@ Class | Method | HTTP request | Description
 *PartnerApi* | [**createPartner**](doc//PartnerApi.md#createpartner) | **POST** /partner/{id} | 
 *PartnerApi* | [**getPartners**](doc//PartnerApi.md#getpartners) | **GET** /partner | 
 *PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
+*PersonApi* | [**createPerson**](doc//PersonApi.md#createperson) | **POST** /person | 
 *PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
+*PersonApi* | [**getFaces**](doc//PersonApi.md#getfaces) | **GET** /person/faces/{id} | 
 *PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
 *PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
 *PersonApi* | [**getPersonStatistics**](doc//PersonApi.md#getpersonstatistics) | **GET** /person/{id}/statistics | 
 *PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
 *PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
+*PersonApi* | [**reassignFaces**](doc//PersonApi.md#reassignfaces) | **PUT** /person/{id}/reassign | 
 *PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
@@ -222,6 +225,9 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
+ - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
+ - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
+ - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)

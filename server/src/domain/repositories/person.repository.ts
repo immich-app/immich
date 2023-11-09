@@ -48,4 +48,6 @@ export interface IPersonRepository {
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
   createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity>;
+  getFaces(assetId: string): Promise<AssetFaceEntity[]>;
+  reassignFace(oldPersonId: string, newPersonId: string, assetId: string): Promise<number>;
 }

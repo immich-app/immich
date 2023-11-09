@@ -3627,6 +3627,46 @@
           "Person"
         ]
       },
+      "post": {
+        "operationId": "createPerson",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFaceUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      },
       "put": {
         "operationId": "updatePeople",
         "parameters": [],
@@ -3647,6 +3687,51 @@
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      }
+    },
+    "/person/faces/{id}": {
+      "get": {
+        "operationId": "getFaces",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetFaceResponseDto"
                   },
                   "type": "array"
                 }
@@ -3839,6 +3924,61 @@
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      }
+    },
+    "/person/{id}/reassign": {
+      "put": {
+        "operationId": "reassignFaces",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFaceUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PersonResponseDto"
                   },
                   "type": "array"
                 }
@@ -6114,6 +6254,71 @@
         "required": [
           "id",
           "action"
+        ],
+        "type": "object"
+      },
+      "AssetFaceResponseDto": {
+        "properties": {
+          "boundingBoxX1": {
+            "type": "number"
+          },
+          "boundingBoxX2": {
+            "type": "number"
+          },
+          "boundingBoxY1": {
+            "type": "number"
+          },
+          "boundingBoxY2": {
+            "type": "number"
+          },
+          "id": {
+            "type": "string"
+          },
+          "person": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonResponseDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "person"
+        ],
+        "type": "object"
+      },
+      "AssetFaceUpdateDto": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceUpdateItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AssetFaceUpdateItem": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "personId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "personId",
+          "assetId"
         ],
         "type": "object"
       },
