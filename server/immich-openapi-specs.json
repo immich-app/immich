@@ -2064,6 +2064,14 @@
             }
           },
           {
+            "name": "withPartners",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "timeBucket",
             "required": true,
             "in": "query",
@@ -2185,6 +2193,14 @@
           },
           {
             "name": "withStacked",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withPartners",
             "required": false,
             "in": "query",
             "schema": {

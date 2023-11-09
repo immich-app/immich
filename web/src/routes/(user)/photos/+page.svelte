@@ -26,7 +26,7 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
-  const assetStore = new AssetStore({ isArchived: false, withStacked: true });
+  const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 

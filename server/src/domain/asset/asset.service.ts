@@ -217,14 +217,12 @@ export class AssetService {
     const partners = await this.partnerRepository.getAll(authUser.id);
     const partnersIds = partners.map((partner) => partner.sharedById);
 
-    const shouldShowPartnerAsset = !(dto.isFavorite || dto.isArchived || dto.isTrashed);
-
     const options: TimeBucketOptions = { ...dto } satisfies TimeBucketOptions;
 
     if (dto.userId) {
       options.userIds = [dto.userId];
 
-      if (shouldShowPartnerAsset && partnersIds.length > 0) {
+      if (dto.withPartners && partnersIds.length > 0) {
         options.userIds = [...options.userIds, ...partnersIds];
       }
     }
