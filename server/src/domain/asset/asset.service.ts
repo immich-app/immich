@@ -190,6 +190,10 @@ export class AssetService {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
     }
+
+    if (dto.withPartners && dto.isArchived !== false) {
+      throw new BadRequestException('withPartners is only supported for non-archived assets');
+    }
   }
 
   async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
@@ -214,19 +218,21 @@ export class AssetService {
   }
 
   async buildTimeBucketOptions(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
-    const options: TimeBucketOptions = { ...dto } satisfies TimeBucketOptions;
+    const { userId, ...options } = dto;
+    let userIds: string[] | undefined = undefined;
 
-    if (dto.userId) {
-      options.userIds = [dto.userId];
+    if (userId) {
+      userIds = [userId];
 
       if (dto.withPartners) {
         const partners = await this.partnerRepository.getAll(authUser.id);
         const partnersIds = partners.map((partner) => partner.sharedById);
-        options.userIds = [...options.userIds, ...partnersIds];
+
+        userIds.push(...partnersIds);
       }
     }
 
-    return options;
+    return { ...options, userIds };
   }
   async downloadFile(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
     await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, id);
