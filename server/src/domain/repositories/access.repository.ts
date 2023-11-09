@@ -37,6 +37,6 @@ export interface IAccessRepository {
   };
 
   partner: {
-    hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
+    hasUpdateAccess(userId: string, partnerId: string): Promise<boolean>;
   };
 }

@@ -24,4 +24,8 @@ export class PartnerRepository implements IPartnerRepository {
   async remove(entity: PartnerEntity): Promise<void> {
     await this.repository.remove(entity);
   }
+
+  async update(entity: PartnerEntity): Promise<PartnerEntity> {
+    return this.repository.save(entity);
+  }
 }

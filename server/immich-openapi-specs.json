@@ -3623,6 +3623,13 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerEntity"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -5928,6 +5935,88 @@
         ],
         "type": "object"
       },
+      "AlbumEntity": {
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "albumThumbnailAsset": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEntity"
+              }
+            ],
+            "nullable": true
+          },
+          "albumThumbnailAssetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetEntity"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isActivityEnabled": {
+            "type": "boolean"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "sharedLinks": {
+            "items": {
+              "$ref": "#/components/schemas/SharedLinkEntity"
+            },
+            "type": "array"
+          },
+          "sharedUsers": {
+            "items": {
+              "$ref": "#/components/schemas/UserEntity"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "owner",
+          "ownerId",
+          "albumName",
+          "description",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "albumThumbnailAsset",
+          "albumThumbnailAssetId",
+          "sharedUsers",
+          "assets",
+          "sharedLinks",
+          "isActivityEnabled"
+        ],
+        "type": "object"
+      },
       "AlbumResponseDto": {
         "properties": {
           "albumName": {
@@ -6183,6 +6272,278 @@
         "required": [
           "id",
           "action"
+        ],
+        "type": "object"
+      },
+      "AssetEntity": {
+        "properties": {
+          "albums": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumEntity"
+            },
+            "type": "array"
+          },
+          "checksum": {
+            "type": "object"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "nullable": true,
+            "type": "string"
+          },
+          "encodedVideoPath": {
+            "nullable": true,
+            "type": "string"
+          },
+          "exifInfo": {
+            "$ref": "#/components/schemas/ExifEntity"
+          },
+          "faces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceEntity"
+            },
+            "type": "array"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isExternal": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isReadOnly": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "library": {
+            "$ref": "#/components/schemas/LibraryEntity"
+          },
+          "libraryId": {
+            "type": "string"
+          },
+          "livePhotoVideo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEntity"
+              }
+            ],
+            "nullable": true
+          },
+          "livePhotoVideoId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "localDateTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "originalFileName": {
+            "type": "string"
+          },
+          "originalPath": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "resizePath": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sharedLinks": {
+            "items": {
+              "$ref": "#/components/schemas/SharedLinkEntity"
+            },
+            "type": "array"
+          },
+          "sidecarPath": {
+            "nullable": true,
+            "type": "string"
+          },
+          "smartInfo": {
+            "$ref": "#/components/schemas/SmartInfoEntity"
+          },
+          "stack": {
+            "items": {
+              "$ref": "#/components/schemas/AssetEntity"
+            },
+            "type": "array"
+          },
+          "stackParent": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEntity"
+              }
+            ],
+            "nullable": true
+          },
+          "stackParentId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagEntity"
+            },
+            "type": "array"
+          },
+          "thumbhash": {
+            "nullable": true,
+            "type": "object"
+          },
+          "type": {
+            "enum": [
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "webpPath": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "deviceAssetId",
+          "owner",
+          "ownerId",
+          "library",
+          "libraryId",
+          "deviceId",
+          "type",
+          "originalPath",
+          "resizePath",
+          "webpPath",
+          "thumbhash",
+          "encodedVideoPath",
+          "createdAt",
+          "updatedAt",
+          "deletedAt",
+          "fileCreatedAt",
+          "localDateTime",
+          "fileModifiedAt",
+          "isFavorite",
+          "isArchived",
+          "isExternal",
+          "isReadOnly",
+          "isOffline",
+          "checksum",
+          "duration",
+          "isVisible",
+          "livePhotoVideo",
+          "livePhotoVideoId",
+          "originalFileName",
+          "sidecarPath",
+          "tags",
+          "sharedLinks",
+          "faces"
+        ],
+        "type": "object"
+      },
+      "AssetFaceEntity": {
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/AssetEntity"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "number"
+          },
+          "boundingBoxX2": {
+            "type": "number"
+          },
+          "boundingBoxY1": {
+            "type": "number"
+          },
+          "boundingBoxY2": {
+            "type": "number"
+          },
+          "embedding": {
+            "items": {
+              "type": "number"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "number"
+          },
+          "imageWidth": {
+            "type": "number"
+          },
+          "person": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonEntity"
+              }
+            ],
+            "nullable": true
+          },
+          "personId": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assetId",
+          "personId",
+          "embedding",
+          "imageWidth",
+          "imageHeight",
+          "boundingBoxX1",
+          "boundingBoxY1",
+          "boundingBoxX2",
+          "boundingBoxY2",
+          "asset",
+          "person"
         ],
         "type": "object"
       },
@@ -6974,6 +7335,157 @@
         ],
         "type": "string"
       },
+      "ExifEntity": {
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/AssetEntity"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "bitsPerSample": {
+            "nullable": true,
+            "type": "number"
+          },
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "colorspace": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
+          "dateTimeOriginal": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "description": "General info",
+            "type": "string"
+          },
+          "exifImageHeight": {
+            "nullable": true,
+            "type": "number"
+          },
+          "exifImageWidth": {
+            "nullable": true,
+            "type": "number"
+          },
+          "exifTextSearchableColumn": {
+            "type": "string"
+          },
+          "exposureTime": {
+            "nullable": true,
+            "type": "string"
+          },
+          "fNumber": {
+            "nullable": true,
+            "type": "number"
+          },
+          "fileSizeInByte": {
+            "nullable": true,
+            "type": "number"
+          },
+          "focalLength": {
+            "nullable": true,
+            "type": "number"
+          },
+          "fps": {
+            "description": "Video info",
+            "nullable": true,
+            "type": "number"
+          },
+          "iso": {
+            "nullable": true,
+            "type": "number"
+          },
+          "latitude": {
+            "nullable": true,
+            "type": "number"
+          },
+          "lensModel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "livePhotoCID": {
+            "nullable": true,
+            "type": "string"
+          },
+          "longitude": {
+            "nullable": true,
+            "type": "number"
+          },
+          "make": {
+            "description": "Image info",
+            "nullable": true,
+            "type": "string"
+          },
+          "model": {
+            "nullable": true,
+            "type": "string"
+          },
+          "modifyDate": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "orientation": {
+            "nullable": true,
+            "type": "string"
+          },
+          "profileDescription": {
+            "nullable": true,
+            "type": "string"
+          },
+          "projectionType": {
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
+          },
+          "timeZone": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "description",
+          "exifImageWidth",
+          "exifImageHeight",
+          "fileSizeInByte",
+          "orientation",
+          "dateTimeOriginal",
+          "modifyDate",
+          "timeZone",
+          "latitude",
+          "longitude",
+          "projectionType",
+          "city",
+          "livePhotoCID",
+          "state",
+          "country",
+          "make",
+          "model",
+          "lensModel",
+          "fNumber",
+          "focalLength",
+          "iso",
+          "exposureTime",
+          "profileDescription",
+          "colorspace",
+          "bitsPerSample",
+          "exifTextSearchableColumn"
+        ],
+        "type": "object"
+      },
       "ExifResponseDto": {
         "properties": {
           "city": {
@@ -7334,6 +7846,82 @@
         ],
         "type": "object"
       },
+      "LibraryEntity": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetEntity"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "refreshedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "UPLOAD",
+              "EXTERNAL"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "assets",
+          "owner",
+          "ownerId",
+          "type",
+          "importPaths",
+          "exclusionPatterns",
+          "createdAt",
+          "updatedAt",
+          "refreshedAt",
+          "isVisible"
+        ],
+        "type": "object"
+      },
       "LibraryResponseDto": {
         "properties": {
           "assetCount": {
@@ -7623,6 +8211,43 @@
         ],
         "type": "object"
       },
+      "PartnerEntity": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "inTimeline": {
+            "type": "boolean"
+          },
+          "sharedBy": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "sharedById": {
+            "type": "string"
+          },
+          "sharedWith": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "sharedWithId": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sharedById",
+          "sharedWithId",
+          "sharedBy",
+          "sharedWith",
+          "createdAt",
+          "updatedAt",
+          "inTimeline"
+        ],
+        "type": "object"
+      },
       "PathEntityType": {
         "enum": [
           "asset",
@@ -7706,6 +8331,74 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "PersonEntity": {
+        "properties": {
+          "birthDate": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "faceAsset": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEntity"
+              }
+            ],
+            "nullable": true
+          },
+          "faceAssetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "faces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceEntity"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isHidden": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "ownerId",
+          "owner",
+          "name",
+          "birthDate",
+          "thumbnailPath",
+          "faceAssetId",
+          "faceAsset",
+          "faces",
+          "isHidden"
         ],
         "type": "object"
       },
@@ -8288,6 +8981,85 @@
         },
         "type": "object"
       },
+      "SharedLinkEntity": {
+        "properties": {
+          "album": {
+            "$ref": "#/components/schemas/AlbumEntity"
+          },
+          "albumId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetEntity"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "type": "object"
+          },
+          "password": {
+            "nullable": true,
+            "type": "string"
+          },
+          "showExif": {
+            "type": "boolean"
+          },
+          "type": {
+            "enum": [
+              "ALBUM",
+              "INDIVIDUAL"
+            ],
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "description",
+          "password",
+          "userId",
+          "user",
+          "key",
+          "type",
+          "createdAt",
+          "expiresAt",
+          "allowUpload",
+          "allowDownload",
+          "showExif",
+          "assets",
+          "albumId"
+        ],
+        "type": "object"
+      },
       "SharedLinkResponseDto": {
         "properties": {
           "album": {
@@ -8389,6 +9161,44 @@
           "password",
           "firstName",
           "lastName"
+        ],
+        "type": "object"
+      },
+      "SmartInfoEntity": {
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/AssetEntity"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "clipEmbedding": {
+            "items": {
+              "type": "number"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "objects": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId",
+          "tags",
+          "objects",
+          "clipEmbedding"
         ],
         "type": "object"
       },
@@ -8883,6 +9693,50 @@
         ],
         "type": "object"
       },
+      "TagEntity": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetEntity"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "renameTagId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "OBJECT",
+              "FACE",
+              "CUSTOM"
+            ],
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "user",
+          "userId",
+          "renameTagId",
+          "assets"
+        ],
+        "type": "object"
+      },
       "TagResponseDto": {
         "properties": {
           "id": {
@@ -9157,6 +10011,92 @@
           "lastName",
           "email",
           "profileImagePath"
+        ],
+        "type": "object"
+      },
+      "UserEntity": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetEntity"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "externalPath": {
+            "nullable": true,
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
+          "oauthId": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "storageLabel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagEntity"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "isAdmin",
+          "email",
+          "storageLabel",
+          "externalPath",
+          "oauthId",
+          "profileImagePath",
+          "shouldChangePassword",
+          "createdAt",
+          "deletedAt",
+          "updatedAt",
+          "memoriesEnabled",
+          "tags",
+          "assets"
         ],
         "type": "object"
       },

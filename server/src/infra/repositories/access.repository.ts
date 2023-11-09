@@ -251,7 +251,7 @@ export class AccessRepository implements IAccessRepository {
   };
 
   partner = {
-    hasPartnerAccess: (userId: string, partnerId: string): Promise<boolean> => {
+    hasUpdateAccess: (userId: string, partnerId: string): Promise<boolean> => {
       return this.partnerRepository.exist({
         where: {
           sharedById: partnerId,

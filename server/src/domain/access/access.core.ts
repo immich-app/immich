@@ -245,7 +245,8 @@ export class AccessCore {
         return this.repository.person.hasOwnerAccess(authUser.id, id);
 
       case Permission.PARTNER_UPDATE:
-        return this.repository.partner.hasPartnerAccess(authUser.id, id);
+        return this.repository.partner.hasUpdateAccess(authUser.id, id);
+
       default:
         return false;
     }

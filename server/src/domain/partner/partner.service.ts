@@ -47,8 +47,18 @@ export class PartnerService {
       .map((partner) => this.map(partner, direction));
   }
 
-  async update(authUser: AuthUserDto, id: string, dto: UpdatePartnerDto) {
-    await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, id);
+  async update(authUser: AuthUserDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerEntity> {
+    await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, sharedById);
+
+    const partnerId: PartnerIds = { sharedById, sharedWithId: authUser.id };
+    const partner = await this.repository.get(partnerId);
+    if (!partner) {
+      throw new BadRequestException('Partner not found');
+    }
+
+    partner.inTimeline = dto.inTimeline;
+
+    return await this.repository.update(partner);
   }
 
   private map(partner: PartnerEntity, direction: PartnerDirection): UserResponseDto {
