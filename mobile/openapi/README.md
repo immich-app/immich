@@ -259,6 +259,7 @@ Class | Method | HTTP request | Description
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [EntityType](doc//EntityType.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
+ - [ExpandedPersonResponseDto](doc//ExpandedPersonResponseDto.md)
  - [FileChecksumDto](doc//FileChecksumDto.md)
  - [FileChecksumResponseDto](doc//FileChecksumResponseDto.md)
  - [FileReportDto](doc//FileReportDto.md)

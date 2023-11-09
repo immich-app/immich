@@ -62,6 +62,7 @@ doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/EntityType.md
 doc/ExifResponseDto.md
+doc/ExpandedPersonResponseDto.md
 doc/FileChecksumDto.md
 doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
@@ -249,6 +250,7 @@ lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
+lib/model/expanded_person_response_dto.dart
 lib/model/file_checksum_dto.dart
 lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
@@ -405,6 +407,7 @@ test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/entity_type_test.dart
 test/exif_response_dto_test.dart
+test/expanded_person_response_dto_test.dart
 test/file_checksum_dto_test.dart
 test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart

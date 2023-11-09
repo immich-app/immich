@@ -127,7 +127,7 @@ void main() {
       // TODO
     });
 
-    // List<PersonResponseDto> people (default value: const [])
+    // List<ExpandedPersonResponseDto> people (default value: const [])
     test('to test the property `people`', () async {
       // TODO
     });
