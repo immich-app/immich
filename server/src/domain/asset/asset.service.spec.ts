@@ -341,7 +341,7 @@ describe(AssetService.name, () => {
           size: TimeBucketSize.DAY,
         }),
       ).resolves.toEqual(expect.arrayContaining([{ timeBucket: 'bucket', count: 1 }]));
-      expect(assetMock.getTimeBuckets).toBeCalledWith({ size: TimeBucketSize.DAY, userId: authStub.admin.id });
+      expect(assetMock.getTimeBuckets).toBeCalledWith({ size: TimeBucketSize.DAY, userIds: [authStub.admin.id] });
     });
   });
 
@@ -377,7 +377,7 @@ describe(AssetService.name, () => {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
         isArchived: true,
-        userId: authStub.admin.id,
+        userIds: [authStub.admin.id],
       });
     });
 
@@ -394,8 +394,20 @@ describe(AssetService.name, () => {
       expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
-        userId: authStub.admin.id,
+        userIds: [authStub.admin.id],
       });
+    });
+
+    it('should throw error if withParners is true and isArchived is true', async () => {
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isArchived: true,
+          withPartners: true,
+          userId: authStub.admin.id,
+        }),
+      ).rejects.toThrowError(BadRequestException);
     });
   });
 
