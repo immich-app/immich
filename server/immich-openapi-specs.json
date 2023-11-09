@@ -6387,7 +6387,7 @@
           },
           "people": {
             "items": {
-              "$ref": "#/components/schemas/PersonResponseDto"
+              "$ref": "#/components/schemas/ExpandedPersonResponseDto"
             },
             "type": "array"
           },
@@ -7131,6 +7131,59 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "ExpandedPersonResponseDto": {
+        "properties": {
+          "birthDate": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "number"
+          },
+          "imageWidth": {
+            "type": "number"
+          },
+          "isHidden": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "type": "string"
+          },
+          "x1": {
+            "type": "number"
+          },
+          "x2": {
+            "type": "number"
+          },
+          "y1": {
+            "type": "number"
+          },
+          "y2": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "birthDate",
+          "x1",
+          "x2",
+          "y1",
+          "y2",
+          "imageWidth",
+          "imageHeight",
+          "id",
+          "name",
+          "thumbnailPath",
+          "isHidden"
+        ],
         "type": "object"
       },
       "FileChecksumDto": {

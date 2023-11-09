@@ -878,10 +878,10 @@ export interface AssetResponseDto {
     'ownerId': string;
     /**
      * 
-     * @type {Array<PersonResponseDto>}
+     * @type {Array<ExpandedPersonResponseDto>}
      * @memberof AssetResponseDto
      */
-    'people'?: Array<PersonResponseDto>;
+    'people'?: Array<ExpandedPersonResponseDto>;
     /**
      * 
      * @type {boolean}
@@ -1729,6 +1729,79 @@ export interface ExifResponseDto {
      * @memberof ExifResponseDto
      */
     'timeZone'?: string | null;
+}
+/**
+ * 
+ * @export
+ * @interface ExpandedPersonResponseDto
+ */
+export interface ExpandedPersonResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'birthDate': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'imageHeight': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'imageWidth': number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'isHidden': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'thumbnailPath': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'x1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'x2': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'y1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ExpandedPersonResponseDto
+     */
+    'y2': number;
 }
 /**
  * 
