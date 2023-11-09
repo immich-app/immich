@@ -67,6 +67,7 @@ export interface TimeBucketOptions {
   personId?: string;
   userId?: string;
   withStacked?: boolean;
+  partnerIds?: string[];
 }
 
 export interface TimeBucketItem {

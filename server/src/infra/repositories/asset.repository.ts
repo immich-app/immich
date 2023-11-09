@@ -20,7 +20,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
 import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
-import { AssetEntity, AssetType, ExifEntity } from '../entities';
+import { AssetEntity, AssetType, ExifEntity, PartnerEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
 
@@ -39,6 +39,7 @@ export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
+    @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
@@ -486,9 +487,12 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
-  getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
+  async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
-    return this.getBuilder(options)
+
+    const partnerIds = await this.getPartnersId(options.userId);
+
+    return this.getBuilder({ ...options, partnerIds })
       .select(`COUNT(asset.id)::int`, 'count')
       .addSelect(truncated, 'timeBucket')
       .groupBy(truncated)
@@ -496,10 +500,13 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
-  getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+  async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncated = dateTrunc(options);
+
+    const partnerIds = await this.getPartnersId(options.userId);
+
     return (
-      this.getBuilder(options)
+      this.getBuilder({ ...options, partnerIds })
         .andWhere(`${truncated} = :timeBucket`, { timeBucket })
         // First sort by the day in localtime (put it in the right bucket)
         .orderBy(truncated, 'DESC')
@@ -510,7 +517,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, isTrashed, albumId, personId, userId, withStacked } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userId, withStacked, partnerIds } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -523,11 +530,7 @@ export class AssetRepository implements IAssetRepository {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
     }
 
-    if (userId) {
-      builder = builder.andWhere('asset.ownerId = :userId', { userId });
-    }
-
-    if (isArchived != undefined) {
+    if (isArchived !== undefined) {
       builder = builder.andWhere('asset.isArchived = :isArchived', { isArchived });
     }
 
@@ -537,6 +540,14 @@ export class AssetRepository implements IAssetRepository {
 
     if (isTrashed !== undefined) {
       builder = builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
+    }
+
+    if (userId) {
+      if (partnerIds?.length === 0 || isFavorite || isArchived || isTrashed) {
+        builder = builder.andWhere('asset.ownerId = :userId', { userId });
+      } else {
+        builder = builder.andWhere('asset.ownerId IN (:userId, :...partnerIds )', { partnerIds, userId });
+      }
     }
 
     if (personId !== undefined) {
@@ -551,5 +562,15 @@ export class AssetRepository implements IAssetRepository {
     }
 
     return builder;
+  }
+
+  async getPartnersId(userId: string | undefined): Promise<string[]> {
+    const partners = await this.partnerRepository.find({
+      where: {
+        sharedWithId: userId,
+      },
+    });
+
+    return partners.map((partner) => partner.sharedById);
   }
 }
