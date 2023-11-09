@@ -214,15 +214,14 @@ export class AssetService {
   }
 
   async buildTimeBucketOptions(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
-    const partners = await this.partnerRepository.getAll(authUser.id);
-    const partnersIds = partners.map((partner) => partner.sharedById);
-
     const options: TimeBucketOptions = { ...dto } satisfies TimeBucketOptions;
 
     if (dto.userId) {
       options.userIds = [dto.userId];
 
-      if (dto.withPartners && partnersIds.length > 0) {
+      if (dto.withPartners) {
+        const partners = await this.partnerRepository.getAll(authUser.id);
+        const partnersIds = partners.map((partner) => partner.sharedById);
         options.userIds = [...options.userIds, ...partnersIds];
       }
     }
