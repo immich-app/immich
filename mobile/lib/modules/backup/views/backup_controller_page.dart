@@ -265,7 +265,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 ).tr(),
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  context.pop();
                 },
               ),
             ],

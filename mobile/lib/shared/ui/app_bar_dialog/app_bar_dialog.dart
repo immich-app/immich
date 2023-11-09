@@ -39,7 +39,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return Row(
         children: [
           InkWell(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => context.pop(),
             child: const Icon(
               Icons.close,
               size: 20,
@@ -190,7 +190,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           children: [
             InkWell(
               onTap: () {
-                Navigator.of(context).pop();
+                context.pop();
                 launchUrl(
                   Uri.parse('https://immich.app'),
                   mode: LaunchMode.externalApplication,
@@ -210,7 +210,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             ),
             InkWell(
               onTap: () {
-                Navigator.of(context).pop();
+                context.pop();
                 launchUrl(
                   Uri.parse('https://github.com/immich-app/immich'),
                   mode: LaunchMode.externalApplication,

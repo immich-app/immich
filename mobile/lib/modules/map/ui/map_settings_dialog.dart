@@ -126,7 +126,7 @@ class MapSettingsDialog extends HookConsumerWidget {
     List<Widget> getDialogActions() {
       return <Widget>[
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
           style: TextButton.styleFrom(
             backgroundColor:
                 mapSettings.isDarkTheme ? Colors.grey[100] : Colors.grey[700],
@@ -147,7 +147,7 @@ class MapSettingsDialog extends HookConsumerWidget {
             mapSettingsNotifier.setRelativeTime(showRelativeDate.value);
             mapSettingsNotifier
                 .switchIncludeArchived(showIncludeArchived.value);
-            Navigator.of(context).pop();
+            context.pop();
           },
           style: TextButton.styleFrom(
             backgroundColor: theme.primaryColor,

@@ -188,7 +188,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   gravity: ToastGravity.BOTTOM,
                 );
               }
-              Navigator.of(buildContext).pop();
+              context.pop();
             },
           );
           return const ShareDialog();
