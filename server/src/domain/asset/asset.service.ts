@@ -226,7 +226,7 @@ export class AssetService {
 
       if (dto.withPartners) {
         const partners = await this.partnerRepository.getAll(authUser.id);
-        const partnersIds = partners.map((partner) => partner.sharedById);
+        const partnersIds = partners.filter((p) => p.inTimeline).map((partner) => partner.sharedById);
 
         userIds.push(...partnersIds);
       }

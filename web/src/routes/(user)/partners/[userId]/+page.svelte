@@ -16,7 +16,7 @@
 
   export let data: PageData;
 
-  const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false });
+  const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false, withPartners: false });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
