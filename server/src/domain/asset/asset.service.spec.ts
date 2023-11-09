@@ -10,6 +10,7 @@ import {
   newCommunicationRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
+  newPartnerRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
@@ -23,6 +24,7 @@ import {
   ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
+  IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
   JobItem,
@@ -164,6 +166,7 @@ describe(AssetService.name, () => {
   let storageMock: jest.Mocked<IStorageRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let partnerMock: jest.Mocked<IPartnerRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -177,7 +180,18 @@ describe(AssetService.name, () => {
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, configMock, storageMock, communicationMock);
+    partnerMock = newPartnerRepositoryMock();
+
+    sut = new AssetService(
+      accessMock,
+      assetMock,
+      cryptoMock,
+      jobMock,
+      configMock,
+      storageMock,
+      communicationMock,
+      partnerMock,
+    );
 
     when(assetMock.getById)
       .calledWith(assetStub.livePhotoStillAsset.id)
