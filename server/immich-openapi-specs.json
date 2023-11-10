@@ -32,20 +32,20 @@
             }
           },
           {
+            "name": "level",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ReactionLevel"
+            }
+          },
+          {
             "name": "userId",
             "required": false,
             "in": "query",
             "schema": {
               "format": "uuid",
               "type": "string"
-            }
-          },
-          {
-            "name": "isGlobal",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
             }
           }
         ],
@@ -140,14 +140,6 @@
             "schema": {
               "format": "uuid",
               "type": "string"
-            }
-          },
-          {
-            "name": "isGlobal",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
             }
           }
         ],
@@ -5755,9 +5747,6 @@
           "comment": {
             "type": "string"
           },
-          "isGlobal": {
-            "type": "boolean"
-          },
           "type": {
             "$ref": "#/components/schemas/ReactionType"
           }
@@ -7737,6 +7726,13 @@
           "isPaused"
         ],
         "type": "object"
+      },
+      "ReactionLevel": {
+        "enum": [
+          "album",
+          "asset"
+        ],
+        "type": "string"
       },
       "ReactionType": {
         "enum": [

@@ -1,13 +1,17 @@
 import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
-import { Optional, ValidateUUID, toBoolean } from '../domain.util';
+import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { Optional, ValidateUUID } from '../domain.util';
 import { UserDto, mapSimpleUser } from '../user/response-dto';
 
 export enum ReactionType {
   COMMENT = 'comment',
   LIKE = 'like',
+}
+
+export enum ReactionLevel {
+  ALBUM = 'album',
+  ASSET = 'asset',
 }
 
 export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
@@ -40,13 +44,13 @@ export class ActivitySearchDto extends ActivityDto {
   @ApiProperty({ enumName: 'ReactionType', enum: ReactionType })
   type?: ReactionType;
 
+  @IsEnum(ReactionLevel)
+  @Optional()
+  @ApiProperty({ enumName: 'ReactionLevel', enum: ReactionLevel })
+  level?: ReactionLevel;
+
   @ValidateUUID({ optional: true })
   userId?: string;
-
-  @IsBoolean()
-  @Transform(toBoolean)
-  @Optional()
-  isGlobal?: boolean;
 }
 
 const isComment = (dto: ActivityCreateDto) => dto.type === 'comment';

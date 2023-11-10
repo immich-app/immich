@@ -35,7 +35,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { ActivityResponseDto, ReactionType, UserResponseDto, api } from '@api';
+  import { ActivityResponseDto, ReactionLevel, ReactionType, UserResponseDto, api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -180,9 +180,9 @@
       try {
         const { data } = await api.activityApi.getActivities({
           userId: user.id,
-          isGlobal: true,
           albumId: album.id,
           type: ReactionType.Like,
+          level: ReactionLevel.Album,
         });
         if (data.length > 0) {
           isLiked = data[0];
