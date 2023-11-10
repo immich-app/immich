@@ -39,6 +39,7 @@
   export let assetType: AssetTypeEnum | undefined = undefined;
   export let albumOwnerId: string;
   export let disabled: boolean;
+  export let isLiked: ActivityResponseDto | null;
 
   let textArea: HTMLTextAreaElement;
   let innerHeight: number;
@@ -105,7 +106,7 @@
       reactions.splice(index, 1);
       showDeleteReaction.splice(index, 1);
       reactions = reactions;
-      if (reaction.type === 'like' && reaction.user.id === user.id) {
+      if (isLiked && reaction.type === 'like' && reaction.id == isLiked.id) {
         dispatch('deleteLike');
       } else {
         dispatch('deleteComment');

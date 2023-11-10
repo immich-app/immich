@@ -9,6 +9,11 @@ export enum ReactionType {
   LIKE = 'like',
 }
 
+export enum ReactionLevel {
+  ALBUM = 'album',
+  ASSET = 'asset',
+}
+
 export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
 
 export class ActivityResponseDto {
@@ -38,6 +43,11 @@ export class ActivitySearchDto extends ActivityDto {
   @Optional()
   @ApiProperty({ enumName: 'ReactionType', enum: ReactionType })
   type?: ReactionType;
+
+  @IsEnum(ReactionLevel)
+  @Optional()
+  @ApiProperty({ enumName: 'ReactionLevel', enum: ReactionLevel })
+  level?: ReactionLevel;
 
   @ValidateUUID({ optional: true })
   userId?: string;

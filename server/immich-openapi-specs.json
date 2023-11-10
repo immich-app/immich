@@ -32,6 +32,14 @@
             }
           },
           {
+            "name": "level",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ReactionLevel"
+            }
+          },
+          {
             "name": "userId",
             "required": false,
             "in": "query",
@@ -7727,6 +7735,13 @@
           "isPaused"
         ],
         "type": "object"
+      },
+      "ReactionLevel": {
+        "enum": [
+          "album",
+          "asset"
+        ],
+        "type": "string"
       },
       "ReactionType": {
         "enum": [
