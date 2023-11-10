@@ -55,10 +55,8 @@ export class PartnerService {
     await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, sharedById);
     const partnerId: PartnerIds = { sharedById, sharedWithId: authUser.id };
 
-    console.log('payload', dto);
     const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });
 
-    console.log('new entity', entity);
     return this.mapUpdate(entity);
   }
 
