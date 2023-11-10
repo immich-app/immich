@@ -52,6 +52,7 @@ Commands:
 
 To run the Immich CLI from source, run the following in the cli folder:
 
+    $ npm run build
     $ ts-node .
 
 You'll need ts-node, the easiest way to install it is to use npm:
