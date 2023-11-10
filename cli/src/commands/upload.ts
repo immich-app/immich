@@ -8,12 +8,10 @@ import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
 import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
-import { api } from 'src/api';
 
 export default class Upload extends BaseCommand {
   private crawlService = new CrawlService();
   private uploadService!: UploadService;
-  deviceId!: string;
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {

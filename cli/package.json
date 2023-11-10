@@ -50,7 +50,8 @@
     "test": "jest",
     "test:cov": "jest --coverage",
     "format": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "check": "tsc --noEmit"
   },
   "jest": {
     "clearMocks": true,

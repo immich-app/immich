@@ -52,7 +52,7 @@ program
 program
   .command('logout')
   .description('Remove stored credentials')
-  .action(async (paths, options) => {
+  .action(async () => {
     await new Logout().run();
   });
 

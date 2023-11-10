@@ -97,6 +97,10 @@ jobs:
         run: npm run format
         if: ${{ !cancelled() }}
 
+      - name: Run tsc
+        run: npm run check
+        if: ${{ !cancelled() }}
+
       - name: Run unit tests & coverage
         run: npm run test:cov
         if: ${{ !cancelled() }}
