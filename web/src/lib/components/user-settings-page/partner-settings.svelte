@@ -6,17 +6,36 @@
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { mdiClose } from '@mdi/js';
+  import { mdiCheck, mdiClose } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import Icon from '../elements/icon.svelte';
 
   export let user: UserResponseDto;
 
-  export let partners: UserResponseDto[];
   let createPartner = false;
   let removePartner: UserResponseDto | null = null;
 
+  let currentPartners = {
+    all: [] as Array<UserResponseDto>,
+    sharedByMe: [] as Array<UserResponseDto>,
+    sharedWithMe: [] as Array<UserResponseDto>,
+  };
+
   const refreshPartners = async () => {
-    const { data } = await api.partnerApi.getPartners({ direction: 'shared-by' });
-    partners = data;
+    currentPartners.all = [];
+    currentPartners.sharedByMe = [];
+    currentPartners.sharedWithMe = [];
+
+    const [{ data: sharedBy }, { data: sharedWith }] = await Promise.all([
+      api.partnerApi.getPartners({ direction: 'shared-by' }),
+      api.partnerApi.getPartners({ direction: 'shared-with' }),
+    ]);
+
+    currentPartners.all = [...sharedBy, ...sharedWith].filter(
+      (partner, index, self) => self.findIndex((p) => p.id === partner.id) === index,
+    );
+    currentPartners.sharedByMe = sharedBy;
+    currentPartners.sharedWithMe = sharedWith;
   };
 
   const handleRemovePartner = async () => {
@@ -45,33 +64,85 @@
       handleError(error, 'Unable to add partners');
     }
   };
+
+  onMount(() => {
+    refreshPartners();
+  });
 </script>
 
 <section class="my-4">
-  {#if partners.length > 0}
-    <div class="flex flex-row gap-4">
-      {#each partners as partner (partner.id)}
-        <div class="flex gap-4 rounded-lg px-5 py-4 transition-all">
-          <UserAvatar user={partner} size="md" autoColor />
-          <div class="text-left">
-            <p class="text-immich-fg dark:text-immich-dark-fg">
-              {partner.firstName}
-              {partner.lastName}
-            </p>
-            <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
-              {partner.email}
-            </p>
+  {#if currentPartners.all.length > 0}
+    <div class="">
+      {#each Array.from(currentPartners.all) as partner (partner.id)}
+        {@const isSharedByMe = currentPartners.sharedByMe.some((p) => p.id === partner.id)}
+        {@const isSharedWithMe = currentPartners.sharedWithMe.some((p) => p.id === partner.id)}
+
+        <div class="flex gap-4 rounded-lg py-4 transition-all justify-between">
+          <div class="flex gap-4">
+            <UserAvatar user={partner} size="md" autoColor />
+            <div class="text-left">
+              <p class="text-immich-fg dark:text-immich-dark-fg">
+                {partner.firstName}
+                {partner.lastName}
+              </p>
+              <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
+                {partner.email}
+              </p>
+            </div>
           </div>
+
           <CircleIconButton
             on:click={() => (removePartner = partner)}
             icon={mdiClose}
             size={'16'}
-            title="Remove partner"
+            title="Stop sharing your photos with this user"
           />
+        </div>
+
+        <div class="dark:text-gray-200 text-immich-dark-gray">
+          <!-- I am sharing my assets with this user -->
+          {#if isSharedByMe}
+            <hr class="my-4 border border-gray-200 dark:border-gray-700" />
+            <p class="text-xs font-medium my-4">SHARED WITH {partner.firstName.toUpperCase()}</p>
+            <p class="text-md">{partner.firstName} can access</p>
+            <ul class="text-sm">
+              <li class="flex gap-2 place-items-center py-1 mt-2">
+                <Icon path={mdiCheck} /> All your photos and videos except Archived and Deleted items
+              </li>
+              <li class="flex gap-2 place-items-center py-1">
+                <Icon path={mdiCheck} /> The location where your photos were taken
+              </li>
+            </ul>
+          {/if}
+
+          <!-- this user is sharing assets with me -->
+          {#if isSharedWithMe}{/if}
         </div>
       {/each}
     </div>
   {/if}
+  <!-- 
+  {#if currentPartners.length > 0}
+    <hr />
+    <p class="text-xs mt-4 dark:text-white">PARTNERS THAT IS SHARING WITH YOU</p>
+    <div>
+      {#each currentPartners as currentPartner (currentPartner.id)}
+        <div class="flex gap-4 rounded-lg px-5 py-4 transition-all">
+          <UserAvatar user={currentPartner} size="md" autoColor />
+          <div class="text-left">
+            <p class="text-immich-fg dark:text-immich-dark-fg">
+              {currentPartner.firstName}
+              {currentPartner.lastName}
+            </p>
+            <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
+              {currentPartner.email}
+            </p>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if} -->
+
   <div class="flex justify-end">
     <Button size="sm" on:click={() => (createPartner = true)}>Add partner</Button>
   </div>
