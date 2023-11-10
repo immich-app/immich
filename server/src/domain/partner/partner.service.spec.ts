@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { authStub, newPartnerRepositoryMock, partnerStub } from '@test';
 import { UserResponseDto } from '../index';
-import { IPartnerRepository, PartnerDirection } from '../repositories';
+import { IAccessRepository, IPartnerRepository, PartnerDirection } from '../repositories';
 import { PartnerService } from './partner.service';
 
 const responseDto = {
@@ -42,10 +42,11 @@ const responseDto = {
 describe(PartnerService.name, () => {
   let sut: PartnerService;
   let partnerMock: jest.Mocked<IPartnerRepository>;
+  let accessMock: jest.Mocked<IAccessRepository>;
 
   beforeEach(async () => {
     partnerMock = newPartnerRepositoryMock();
-    sut = new PartnerService(partnerMock);
+    sut = new PartnerService(partnerMock, accessMock);
   });
 
   it('should work', () => {
