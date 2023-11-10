@@ -419,12 +419,12 @@ class Asset {
   "type": "$type",
   "fileName": "$fileName", 
   "isFavorite": $isFavorite, 
-  "isRemote: $isRemote,
+  "isRemote": $isRemote,
   "storage": "$storage",
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
   "isArchived": $isArchived,
-  "isTrashed": $isTrashed,
+  "isTrashed": $isTrashed
 }""";
   }
 }

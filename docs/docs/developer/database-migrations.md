@@ -9,6 +9,6 @@ npm run typeorm:migrations:generate ./src/infra/<migration-name>
 ```
 
 2. Check if the migration file makes sense.
-3. Move the migration file to folder `./src/infra/database/migrations` in your code editor.
+3. Move the migration file to folder `./server/src/infra/migrations` in your code editor.
 
 The server will automatically detect `*.ts` file changes and restart. Part of the server start-up process includes running any new migrations, so it will be applied immediately.

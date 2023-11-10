@@ -101,6 +101,7 @@ doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
+doc/ReactionLevel.md
 doc/ReactionType.md
 doc/RecognitionConfig.md
 doc/ScanLibraryDto.md
@@ -281,6 +282,7 @@ lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
+lib/model/reaction_level.dart
 lib/model/reaction_type.dart
 lib/model/recognition_config.dart
 lib/model/scan_library_dto.dart
@@ -440,6 +442,7 @@ test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
+test/reaction_level_test.dart
 test/reaction_type_test.dart
 test/recognition_config_test.dart
 test/scan_library_dto_test.dart
