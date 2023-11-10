@@ -27,11 +27,6 @@ export class PartnerController {
     return this.service.create(authUser, id);
   }
 
-  @Delete(':id')
-  removePartner(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.remove(authUser, id);
-  }
-
   @Put(':id')
   updatePartner(
     @AuthUser() authUser: AuthUserDto,
@@ -39,5 +34,10 @@ export class PartnerController {
     @Body() dto: UpdatePartnerDto,
   ): Promise<PartnerResponseDto> {
     return this.service.update(authUser, id, dto);
+  }
+
+  @Delete(':id')
+  removePartner(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.remove(authUser, id);
   }
 }
