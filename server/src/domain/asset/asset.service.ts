@@ -190,9 +190,16 @@ export class AssetService {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
     }
-
-    if (dto.withPartners && dto.isArchived !== false) {
-      throw new BadRequestException('withPartners is only supported for non-archived assets');
+    if (dto.withPartners) {
+      if (
+        (dto.isArchived !== undefined && dto.isArchived !== false) ||
+        (dto.isTrashed !== undefined && dto.isTrashed !== false) ||
+        (dto.isFavorite !== undefined && dto.isFavorite !== false)
+      ) {
+        throw new BadRequestException(
+          'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        );
+      }
     }
   }
 
