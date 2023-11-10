@@ -5,7 +5,7 @@ import { AssetEntity } from './asset.entity';
 export class AssetJobStatusEntity {
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   @JoinColumn()
-  asset?: AssetEntity;
+  asset!: AssetEntity;
 
   @PrimaryColumn()
   assetId!: string;
