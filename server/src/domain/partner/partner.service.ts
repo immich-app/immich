@@ -1,5 +1,5 @@
 import { PartnerEntity } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { IAccessRepository, IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';
@@ -51,7 +51,6 @@ export class PartnerService {
     const partnerId: PartnerIds = { sharedById, sharedWithId: authUser.id };
 
     const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });
-
     return this.map(entity, PartnerDirection.SharedWith);
   }
 
@@ -60,6 +59,7 @@ export class PartnerService {
     const user = mapUser(
       direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy,
     ) as PartnerResponseDto;
+
     user.inTimeline = partner.inTimeline;
 
     return user;

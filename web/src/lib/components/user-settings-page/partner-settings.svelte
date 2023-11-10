@@ -14,7 +14,7 @@
   export let user: UserResponseDto;
 
   let createPartner = false;
-  let removePartner: UserResponseDto | null = null;
+  let removePartner: PartnerResponseDto | null = null;
 
   let currentPartners = {
     all: [] as Array<PartnerResponseDto>,

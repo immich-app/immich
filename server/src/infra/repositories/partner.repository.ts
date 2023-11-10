@@ -26,6 +26,9 @@ export class PartnerRepository implements IPartnerRepository {
   }
 
   async update(entity: Partial<PartnerEntity>): Promise<PartnerEntity> {
-    return this.repository.save(entity);
+    await this.repository.save(entity);
+    return this.repository.findOneOrFail({
+      where: { sharedById: entity.sharedById, sharedWithId: entity.sharedWithId },
+    });
   }
 }
