@@ -11,38 +11,61 @@
   import Icon from '../elements/icon.svelte';
   import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
 
+  interface PartnerSharing {
+    user: UserResponseDto;
+    sharedByMe: boolean;
+    sharedWithMe: boolean;
+    inTimeline: boolean;
+  }
+
   export let user: UserResponseDto;
 
   let createPartner = false;
   let removePartner: PartnerResponseDto | null = null;
-
-  let currentPartners = {
-    all: [] as Array<PartnerResponseDto>,
-    sharedByMe: [] as Array<PartnerResponseDto>,
-    sharedWithMe: [] as Array<PartnerResponseDto>,
-  };
+  let partners: Array<PartnerSharing> = [];
 
   onMount(() => {
     refreshPartners();
   });
 
   const refreshPartners = async () => {
-    currentPartners.all = [];
-    currentPartners.sharedByMe = [];
-    currentPartners.sharedWithMe = [];
+    partners = [];
 
     const [{ data: sharedBy }, { data: sharedWith }] = await Promise.all([
       api.partnerApi.getPartners({ direction: 'shared-by' }),
       api.partnerApi.getPartners({ direction: 'shared-with' }),
     ]);
 
-    // It is important to put sharedWith first, otherwise the state won't be updated correctly
-    // for the inTimeline update call.
-    currentPartners.all = [...sharedWith, ...sharedBy]
-      .filter((partner, index, self) => self.findIndex((p) => p.id === partner.id) === index)
-      .sort((a, b) => a.firstName.localeCompare(b.firstName));
-    currentPartners.sharedByMe = sharedBy;
-    currentPartners.sharedWithMe = sharedWith;
+    for (const candidate of sharedBy) {
+      partners = [
+        ...partners,
+        {
+          user: candidate,
+          sharedByMe: true,
+          sharedWithMe: false,
+          inTimeline: candidate.inTimeline ?? false,
+        },
+      ];
+    }
+
+    for (const candidate of sharedWith) {
+      const existIndex = partners.findIndex((p) => candidate.id === p.user.id);
+
+      if (existIndex >= 0) {
+        partners[existIndex].sharedWithMe = true;
+        partners[existIndex].inTimeline = candidate.inTimeline ?? false;
+      } else {
+        partners = [
+          ...partners,
+          {
+            user: candidate,
+            sharedByMe: false,
+            sharedWithMe: true,
+            inTimeline: candidate.inTimeline ?? false,
+          },
+        ];
+      }
+    }
   };
 
   const handleRemovePartner = async () => {
@@ -72,46 +95,42 @@
     }
   };
 
-  const handleShowOnTimelineChanged = async (sharedById: string, value: boolean) => {
+  const handleShowOnTimelineChanged = async (sharedById: string, inTimeline: boolean) => {
     try {
-      await api.partnerApi.updatePartner({ id: sharedById, updatePartnerDto: { inTimeline: value } });
+      await api.partnerApi.updatePartner({ id: sharedById, updatePartnerDto: { inTimeline } });
 
-      currentPartners.sharedWithMe = currentPartners.sharedWithMe.map((partner) => {
-        if (partner.id === sharedById) {
-          return { ...partner, inTimeline: value };
+      partners = partners.map((p) => {
+        if (p.user.id === sharedById) {
+          p.inTimeline = inTimeline;
         }
-
-        return partner;
+        return p;
       });
     } catch (error) {
-      handleError(error, 'Unable to add partners');
+      handleError(error, 'Unable to update timeline display status');
     }
   };
 </script>
 
 <section class="my-4">
-  {#if currentPartners.all.length > 0}
-    {#each currentPartners.all as partner (partner.id)}
-      {@const isSharedByMe = currentPartners.sharedByMe.some((p) => p.id === partner.id)}
-      {@const isSharedWithMe = currentPartners.sharedWithMe.some((p) => p.id === partner.id)}
-
+  {#if partners.length > 0}
+    {#each partners as partner (partner.user.id)}
       <div class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-6 bg-slate-50 dark:bg-gray-900 p-5">
         <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
           <div class="flex gap-4">
-            <UserAvatar user={partner} size="md" autoColor />
+            <UserAvatar user={partner.user} size="md" autoColor />
             <div class="text-left">
               <p class="text-immich-fg dark:text-immich-dark-fg">
-                {partner.firstName}
-                {partner.lastName}
+                {partner.user.firstName}
+                {partner.user.lastName}
               </p>
               <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
-                {partner.email}
+                {partner.user.email}
               </p>
             </div>
           </div>
 
           <CircleIconButton
-            on:click={() => (removePartner = partner)}
+            on:click={() => (removePartner = partner.user)}
             icon={mdiClose}
             size={'16'}
             title="Stop sharing your photos with this user"
@@ -120,10 +139,10 @@
 
         <div class="dark:text-gray-200 text-immich-dark-gray">
           <!-- I am sharing my assets with this user -->
-          {#if isSharedByMe}
+          {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">SHARED WITH {partner.firstName.toUpperCase()}</p>
-            <p class="text-md">{partner.firstName} can access</p>
+            <p class="text-xs font-medium my-4">SHARED WITH {partner.user.firstName.toUpperCase()}</p>
+            <p class="text-md">{partner.user.firstName} can access</p>
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
                 <Icon path={mdiCheck} /> All your photos and videos except those in Archived and Deleted
@@ -135,14 +154,14 @@
           {/if}
 
           <!-- this user is sharing assets with me -->
-          {#if isSharedWithMe}
+          {#if partner.sharedWithMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">PHOTOS FROM {partner.firstName.toUpperCase()}</p>
+            <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.firstName.toUpperCase()}</p>
             <SettingSwitch
               title="Show in timeline"
               subtitle="Show photos and videos from this user in your timeline"
               bind:checked={partner.inTimeline}
-              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner.id, detail)}
+              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner.user.id, detail)}
             />
           {/if}
         </div>
