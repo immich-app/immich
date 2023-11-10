@@ -15,7 +15,7 @@
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus, mdiRestart } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
   import { assetDataUrl, imageDiv } from '$lib/stores/assets.store';
-  import { boundingBoxClassName, cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
+  import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
 
   let people: AssetFaceResponseDto[] = [];

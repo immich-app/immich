@@ -2,7 +2,7 @@ import { photoViewerId } from '$lib/stores/assets.store';
 import type { AssetFaceResponseDto } from '@api';
 
 export const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
-  let ratio = img.naturalWidth / img.naturalHeight;
+  const ratio = img.naturalWidth / img.naturalHeight;
   let width = img.height * ratio;
   let height = img.height;
   if (width > img.width) {
@@ -40,11 +40,11 @@ export const showBoundingBox = (faces: AssetFaceResponseDto[]): HTMLDivElement[]
   }
 
   for (let i = 0; i < faces.length; i++) {
-    let absoluteDiv = document.createElement('div');
+    const absoluteDiv = document.createElement('div');
 
     absoluteDiv.classList.add(boundingBoxClassName);
 
-    let coordinates = {
+    const coordinates = {
       x1: (x / faces[i].imageWidth) * faces[i].boundingBoxX1 + (clientWidth - x) / 2,
       x2: (x / faces[i].imageWidth) * faces[i].boundingBoxX2 + (clientWidth - x) / 2,
       y1: (y / faces[i].imageHeight) * faces[i].boundingBoxY1 + (clientHeight - y) / 2,

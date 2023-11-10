@@ -49,6 +49,7 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
 
     person: {
       hasOwnerAccess: jest.fn(),
+      hasFaceOwnerAccess: jest.fn(),
     },
   };
 };

@@ -386,7 +386,7 @@ describe(PersonService.name, () => {
 
       await expect(
         sut.reassignFaces(authStub.admin, personStub.noName.id, {
-          data: [{ assetId: assetStub.primaryImage.id, personId: personStub.primaryPerson.id }],
+          data: [{ assetFaceId: 'asset-face-1' }],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(jobMock.queue).not.toHaveBeenCalledWith();
