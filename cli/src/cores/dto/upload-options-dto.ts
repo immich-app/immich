@@ -4,6 +4,5 @@ export class UploadOptionsDto {
   dryRun = false;
   skipHash = false;
   delete = false;
-  import = false;
   readOnly = true;
 }

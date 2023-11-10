@@ -67,25 +67,10 @@ export default class Upload extends BaseCommand {
       });
 
       try {
-        if (options.import) {
-          const importData = {
-            assetPath: asset.path,
-            sidecarPath: asset.sidecarPath,
-            deviceAssetId: asset.deviceAssetId,
-            deviceId: this.deviceId,
-            fileCreatedAt: asset.fileCreatedAt,
-            fileModifiedAt: asset.fileModifiedAt,
-            isFavorite: false,
-            isReadOnly: options.readOnly,
-          };
-
-          if (!this.dryRun) {
-            await this.uploadService.import(importData);
-          }
-        } else {
-          await this.uploadAsset(asset, options.skipHash);
-        }
+        await this.uploadAsset(asset, options.skipHash);
       } catch (error) {
+        // Immediately halt on an upload error
+        // TODO: In the future, we might retry and do exponential backoff for certain errors
         uploadProgress.stop();
         throw error;
       }
@@ -108,31 +93,27 @@ export default class Upload extends BaseCommand {
       messageStart = 'Successfully ';
     }
 
-    if (options.import) {
-      console.log(`${messageStart} imported ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
+    if (uploadCounter === 0) {
+      console.log('All assets were already uploaded, nothing to do.');
     } else {
-      if (uploadCounter === 0) {
-        console.log('All assets were already uploaded, nothing to do.');
+      console.log(`${messageStart} uploaded ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
+    }
+    if (options.delete) {
+      if (this.dryRun) {
+        console.log(`Would now have deleted assets, but skipped due to dry run`);
       } else {
-        console.log(`${messageStart} uploaded ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
-      }
-      if (options.delete) {
-        if (this.dryRun) {
-          console.log(`Would now have deleted assets, but skipped due to dry run`);
-        } else {
-          console.log('Deleting assets that have been uploaded...');
-          const deletionProgress = new cliProgress.SingleBar(cliProgress.Presets.shades_classic);
-          deletionProgress.start(crawledFiles.length, 0);
+        console.log('Deleting assets that have been uploaded...');
+        const deletionProgress = new cliProgress.SingleBar(cliProgress.Presets.shades_classic);
+        deletionProgress.start(crawledFiles.length, 0);
 
-          for (const asset of assetsToUpload) {
-            if (!this.dryRun) {
-              await asset.delete();
-            }
-            deletionProgress.increment();
+        for (const asset of assetsToUpload) {
+          if (!this.dryRun) {
+            await asset.delete();
           }
-          deletionProgress.stop();
-          console.log('Deletion complete');
+          deletionProgress.increment();
         }
+        deletionProgress.stop();
+        console.log('Deletion complete');
       }
     }
   }

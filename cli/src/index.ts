@@ -27,25 +27,6 @@ program
   });
 
 program
-  .command('import')
-  .description('Import existing assets (Deprecated in favor of external libraries)')
-  .usage('[options] [paths...]')
-  .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
-  .addOption(
-    new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")
-      .env('IMMICH_DRY_RUN')
-      .default(false),
-  )
-  .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS').default(false))
-  .addOption(new Option('--no-read-only', 'Import files without read-only protection, allowing Immich to manage them'))
-  .argument('[paths...]', 'One or more paths to assets to be imported')
-  .action(async (paths, options) => {
-    options.import = true;
-    options.excludePatterns = options.ignore;
-    await new Upload().run(paths, options);
-  });
-
-program
   .command('server-info')
   .description('Display server information')
 
