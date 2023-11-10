@@ -125,12 +125,14 @@
             </div>
           </div>
 
-          <CircleIconButton
-            on:click={() => (removePartner = partner.user)}
-            icon={mdiClose}
-            size={'16'}
-            title="Stop sharing your photos with this user"
-          />
+          {#if partner.sharedByMe}
+            <CircleIconButton
+              on:click={() => (removePartner = partner.user)}
+              icon={mdiClose}
+              size={'16'}
+              title="Stop sharing your photos with this user"
+            />
+          {/if}
         </div>
 
         <div class="dark:text-gray-200 text-immich-dark-gray">
