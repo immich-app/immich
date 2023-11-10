@@ -72,12 +72,12 @@
   };
 
   const handleShowBoundingBox = (index: number) => {
-    const result = showBoundingBox(people[index].faces);
+    const results = showBoundingBox(people[index].faces);
     if ($photoZoomState.currentZoom !== 1) {
       return;
     }
-    for (let i = 0; i < result.length; i++) {
-      $imageDiv.appendChild(result[i]);
+    for (const result of results) {
+      $imageDiv.appendChild(result);
     }
   };
 
