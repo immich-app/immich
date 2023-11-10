@@ -46,7 +46,7 @@ export class SessionService {
 
     // Check if server and api key are valid
     const { data: userInfo } = await this.api.userApi.getMyUserInfo().catch((error) => {
-      throw new LoginError(`Failed to connect to the server: ${error.message}`);
+      throw new LoginError(`Failed to connect to server ${instanceUrl}: ${error.message}`);
     });
 
     console.log(`Logged in as ${userInfo.email}`);
@@ -78,7 +78,7 @@ export class SessionService {
 
   private async ping(): Promise<void> {
     const { data: pingResponse } = await this.api.serverInfoApi.pingServer().catch((error) => {
-      throw new Error(`Failed to connect to the server: ${error.message}`);
+      throw new Error(`Failed to connect to server ${this.api.apiConfiguration.instanceUrl}: ${error.message}`);
     });
 
     if (pingResponse.res !== 'pong') {

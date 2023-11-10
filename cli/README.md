@@ -1,10 +1,10 @@
-A command-line interface for interfacing with Immich
+A command-line interface for interfacing with the self-hosted photo manager [Immich](https://immich.app/).
 
 # Installing
 
 To use the cli, run
 
-    $ npm install @immich/cli´
+    $ npm install @immich/cli
 
 # Usage
 
@@ -34,9 +34,9 @@ Options:
 
 Commands:
   upload [options] [paths...]       Upload assets
-  import [options] [paths...]       Import existing assets
   server-info                       Display server information
   login-key [instanceUrl] [apiKey]  Login using an API key
+  logout                            Remove stored credentials
   help [command]                    display help for command
 ```
 

@@ -4,6 +4,7 @@ import { program, Option } from 'commander';
 import Upload from './commands/upload';
 import ServerInfo from './commands/server-info';
 import LoginKey from './commands/login/key';
+import Logout from './commands/logout';
 
 program.name('immich').description('Immich command line interface');
 
@@ -41,6 +42,13 @@ program
   .argument('[apiKey]')
   .action(async (paths, options) => {
     await new LoginKey().run(paths, options);
+  });
+
+program
+  .command('logout')
+  .description('Remove stored credentials')
+  .action(async (paths, options) => {
+    await new Logout().run();
   });
 
 program.parse(process.argv);

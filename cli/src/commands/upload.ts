@@ -1,4 +1,3 @@
-import { BaseCommand } from 'src/cli/base-command';
 import { CrawledAsset } from '../cores/models/crawled-asset';
 import { CrawlService, UploadService } from '../services';
 import * as si from 'systeminformation';
@@ -8,6 +7,7 @@ import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
 
 import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
+import { BaseCommand } from '../cli/base-command';
 
 export default class Upload extends BaseCommand {
   private crawlService = new CrawlService();
