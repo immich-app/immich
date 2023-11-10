@@ -48,8 +48,6 @@ export class PartnerService {
   }
 
   async update(authUser: AuthUserDto, sharedById: string, dto: UpdatePartnerDto): Promise<UpdatePartnerResponseDto> {
-    await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, sharedById);
-
     const partnerId: PartnerIds = { sharedById, sharedWithId: authUser.id };
     const partner = await this.repository.get(partnerId);
     if (!partner) {
