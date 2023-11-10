@@ -1,11 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 import { authStub, newPartnerRepositoryMock, partnerStub } from '@test';
-import { UserResponseDto } from '../index';
 import { IAccessRepository, IPartnerRepository, PartnerDirection } from '../repositories';
+import { PartnerResponseDto } from './partner.dto';
 import { PartnerService } from './partner.service';
 
 const responseDto = {
-  admin: <UserResponseDto>{
+  admin: <PartnerResponseDto>{
     email: 'admin@test.com',
     firstName: 'admin_first_name',
     id: 'admin_id',
@@ -20,8 +20,9 @@ const responseDto = {
     updatedAt: new Date('2021-01-01'),
     externalPath: null,
     memoriesEnabled: true,
+    inTimeline: true,
   },
-  user1: <UserResponseDto>{
+  user1: <PartnerResponseDto>{
     email: 'immich@test.com',
     firstName: 'immich_first_name',
     id: 'user-id',
@@ -36,6 +37,7 @@ const responseDto = {
     updatedAt: new Date('2021-01-01'),
     externalPath: null,
     memoriesEnabled: true,
+    inTimeline: true,
   },
 };
 

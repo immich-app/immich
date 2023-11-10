@@ -4319,19 +4319,6 @@ export interface UpdatePartnerDto {
 /**
  * 
  * @export
- * @interface UpdatePartnerResponseDto
- */
-export interface UpdatePartnerResponseDto {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UpdatePartnerResponseDto
-     */
-    'inTimeline': boolean;
-}
-/**
- * 
- * @export
  * @interface UpdateStackParentDto
  */
 export interface UpdateStackParentDto {
@@ -12503,7 +12490,7 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createPartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
+        async createPartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PartnerResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.createPartner(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -12534,7 +12521,7 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updatePartner(id: string, updatePartnerDto: UpdatePartnerDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UpdatePartnerResponseDto>> {
+        async updatePartner(id: string, updatePartnerDto: UpdatePartnerDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PartnerResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.updatePartner(id, updatePartnerDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -12554,7 +12541,7 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createPartner(requestParameters: PartnerApiCreatePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<UserResponseDto> {
+        createPartner(requestParameters: PartnerApiCreatePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<PartnerResponseDto> {
             return localVarFp.createPartner(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -12581,7 +12568,7 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updatePartner(requestParameters: PartnerApiUpdatePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<UpdatePartnerResponseDto> {
+        updatePartner(requestParameters: PartnerApiUpdatePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<PartnerResponseDto> {
             return localVarFp.updatePartner(requestParameters.id, requestParameters.updatePartnerDto, options).then((request) => request(axios, basePath));
         },
     };

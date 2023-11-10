@@ -3576,7 +3576,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/PartnerResponseDto"
                 }
               }
             },
@@ -3626,7 +3626,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdatePartnerResponseDto"
+                  "$ref": "#/components/schemas/PartnerResponseDto"
                 }
               }
             },
@@ -9105,17 +9105,6 @@
         "type": "object"
       },
       "UpdatePartnerDto": {
-        "properties": {
-          "inTimeline": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "inTimeline"
-        ],
-        "type": "object"
-      },
-      "UpdatePartnerResponseDto": {
         "properties": {
           "inTimeline": {
             "type": "boolean"

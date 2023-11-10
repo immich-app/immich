@@ -6,10 +6,6 @@ export class UpdatePartnerDto {
   inTimeline!: boolean;
 }
 
-export class UpdatePartnerResponseDto {
-  inTimeline!: boolean;
-}
-
 export class PartnerResponseDto extends UserResponseDto {
   inTimeline?: boolean;
 }

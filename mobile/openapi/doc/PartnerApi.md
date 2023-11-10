@@ -16,7 +16,7 @@ Method | HTTP request | Description
 
 
 # **createPartner**
-> UserResponseDto createPartner(id)
+> PartnerResponseDto createPartner(id)
 
 
 
@@ -57,7 +57,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UserResponseDto**](UserResponseDto.md)
+[**PartnerResponseDto**](PartnerResponseDto.md)
 
 ### Authorization
 
@@ -180,7 +180,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updatePartner**
-> UpdatePartnerResponseDto updatePartner(id, updatePartnerDto)
+> PartnerResponseDto updatePartner(id, updatePartnerDto)
 
 
 
@@ -223,7 +223,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UpdatePartnerResponseDto**](UpdatePartnerResponseDto.md)
+[**PartnerResponseDto**](PartnerResponseDto.md)
 
 ### Authorization
 

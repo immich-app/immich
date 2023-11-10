@@ -347,7 +347,6 @@ Class | Method | HTTP request | Description
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
  - [UpdatePartnerDto](doc//UpdatePartnerDto.md)
- - [UpdatePartnerResponseDto](doc//UpdatePartnerResponseDto.md)
  - [UpdateStackParentDto](doc//UpdateStackParentDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)

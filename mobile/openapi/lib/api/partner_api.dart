@@ -49,7 +49,7 @@ class PartnerApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<UserResponseDto?> createPartner(String id,) async {
+  Future<PartnerResponseDto?> createPartner(String id,) async {
     final response = await createPartnerWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -58,7 +58,7 @@ class PartnerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
     
     }
     return null;
@@ -193,7 +193,7 @@ class PartnerApi {
   /// * [String] id (required):
   ///
   /// * [UpdatePartnerDto] updatePartnerDto (required):
-  Future<UpdatePartnerResponseDto?> updatePartner(String id, UpdatePartnerDto updatePartnerDto,) async {
+  Future<PartnerResponseDto?> updatePartner(String id, UpdatePartnerDto updatePartnerDto,) async {
     final response = await updatePartnerWithHttpInfo(id, updatePartnerDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -202,7 +202,7 @@ class PartnerApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UpdatePartnerResponseDto',) as UpdatePartnerResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
     
     }
     return null;
