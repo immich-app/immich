@@ -249,15 +249,4 @@ export class AccessRepository implements IAccessRepository {
       });
     },
   };
-
-  partner = {
-    hasUpdateAccess: (userId: string, partnerId: string): Promise<boolean> => {
-      return this.partnerRepository.exist({
-        where: {
-          sharedById: partnerId,
-          sharedWithId: userId,
-        },
-      });
-    },
-  };
 }
