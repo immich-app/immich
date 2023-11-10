@@ -113,7 +113,7 @@
   "cache_settings_thumbnail_size": "サムネイルのキャッシュのサイズ ({}枚)",
   "cache_settings_title": "キャッシュの設定",
   "change_password_form_confirm_password": "確定",
-  "change_password_form_description": "{name}さん こんにちは\n\nサーバーにアクセスするのが初めてか、パスワードリセットのリクエストがされました。新しいパスワードを入力してください",
+  "change_password_form_description": "{lastaName} {firstName}さん こんにちは\n\nサーバーにアクセスするのが初めてか、パスワードリセットのリクエストがされました。新しいパスワードを入力してください",
   "change_password_form_new_password": "新しいパスワード",
   "change_password_form_password_mismatch": "パスワードが一致しません",
   "change_password_form_reenter_new_password": "再度パスワードを入力してください",
