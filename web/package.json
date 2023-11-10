@@ -31,8 +31,6 @@
     "@types/cookie": "^0.5.1",
     "@types/dom-to-image": "^2.6.4",
     "@types/justified-layout": "^4.1.0",
-    "@types/leaflet": "^1.9.1",
-    "@types/leaflet.markercluster": "^1.5.1",
     "@types/lodash-es": "^4.17.6",
     "@types/luxon": "^3.2.0",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
@@ -70,13 +68,13 @@
     "dom-to-image": "^2.6.0",
     "handlebars": "^4.7.7",
     "justified-layout": "^4.1.0",
-    "leaflet": "^1.9.4",
-    "leaflet.markercluster": "^1.5.3",
     "lodash-es": "^4.17.21",
     "luxon": "^3.2.1",
+    "maplibre-gl": "^3.5.2",
     "socket.io-client": "^4.6.1",
     "svelte-loading-spinners": "^0.3.4",
     "svelte-local-storage-store": "^0.5.0",
+    "svelte-maplibre": "^0.6.0",
     "thumbhash": "^0.1.1"
   }
 }

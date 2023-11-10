@@ -300,7 +300,7 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
-  Future<AdminSignupResponseDto?> signUpAdmin(SignUpDto signUpDto,) async {
+  Future<UserResponseDto?> signUpAdmin(SignUpDto signUpDto,) async {
     final response = await signUpAdminWithHttpInfo(signUpDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -309,7 +309,7 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AdminSignupResponseDto',) as AdminSignupResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
     
     }
     return null;

@@ -2,43 +2,35 @@ import 'package:openapi/api.dart';
 
 class ServerConfig {
   final int trashDays;
-  final String mapTileUrl;
 
   const ServerConfig({
     required this.trashDays,
-    required this.mapTileUrl,
   });
 
   ServerConfig copyWith({
     int? trashDays,
-    String? mapTileUrl,
   }) {
     return ServerConfig(
       trashDays: trashDays ?? this.trashDays,
-      mapTileUrl: mapTileUrl ?? this.mapTileUrl,
     );
   }
 
   @override
   String toString() {
-    return 'ServerConfig(trashDays: $trashDays, mapTileUrl: $mapTileUrl)';
+    return 'ServerConfig(trashDays: $trashDays)';
   }
 
-  ServerConfig.fromDto(ServerConfigDto dto)
-      : trashDays = dto.trashDays,
-        mapTileUrl = dto.mapTileUrl;
+  ServerConfig.fromDto(ServerConfigDto dto) : trashDays = dto.trashDays;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ServerConfig &&
-        other.trashDays == trashDays &&
-        other.mapTileUrl == mapTileUrl;
+    return other is ServerConfig && other.trashDays == trashDays;
   }
 
   @override
   int get hashCode {
-    return trashDays.hashCode ^ mapTileUrl.hashCode;
+    return trashDays.hashCode;
   }
 }

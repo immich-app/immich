@@ -1,8 +1,8 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
@@ -35,9 +35,9 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         // ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
-        AutoRouter.of(context).pop(true);
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        context.autoPop(true);
+        context
+            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
       }
 
       ScaffoldMessenger(
@@ -50,7 +50,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
     buildTileIcon(User user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: context.primaryColor,
           child: const Icon(
             Icons.check_rounded,
             size: 25,
@@ -71,7 +71,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Chip(
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.15),
+              backgroundColor: context.primaryColor.withOpacity(0.15),
               label: Text(
                 user.email,
                 style: const TextStyle(
@@ -139,20 +139,20 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(
           'share_invite',
-          style: TextStyle(color: Theme.of(context).primaryColor),
+          style: TextStyle(color: context.primaryColor),
         ).tr(),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () async {
-            AutoRouter.of(context).pop();
+            context.autoPop();
           },
         ),
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).primaryColor,
+              foregroundColor: context.primaryColor,
             ),
             onPressed: sharedUsersList.value.isEmpty ? null : createSharedAlbum,
             child: const Text(
@@ -160,7 +160,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                // color: Theme.of(context).primaryColor,
+                // color: context.primaryColor,
               ),
             ).tr(),
           ),

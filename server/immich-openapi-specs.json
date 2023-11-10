@@ -32,6 +32,14 @@
             }
           },
           {
+            "name": "level",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ReactionLevel"
+            }
+          },
+          {
             "name": "userId",
             "required": false,
             "in": "query",
@@ -2630,14 +2638,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminSignupResponseDto"
+                  "$ref": "#/components/schemas/UserResponseDto"
                 }
               }
             },
             "description": ""
-          },
-          "400": {
-            "description": "The server already has an admin"
           }
         },
         "tags": [
@@ -4884,6 +4889,47 @@
         ]
       }
     },
+    "/system-config/map/style.json": {
+      "get": {
+        "operationId": "getMapStyle",
+        "parameters": [
+          {
+            "name": "theme",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MapTheme"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Config"
+        ]
+      }
+    },
     "/system-config/storage-template-options": {
       "get": {
         "operationId": "getStorageTemplateOptions",
@@ -5809,34 +5855,6 @@
         },
         "required": [
           "sharedUserIds"
-        ],
-        "type": "object"
-      },
-      "AdminSignupResponseDto": {
-        "properties": {
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName",
-          "createdAt"
         ],
         "type": "object"
       },
@@ -7377,35 +7395,27 @@
       "LoginResponseDto": {
         "properties": {
           "accessToken": {
-            "readOnly": true,
             "type": "string"
           },
           "firstName": {
-            "readOnly": true,
             "type": "string"
           },
           "isAdmin": {
-            "readOnly": true,
             "type": "boolean"
           },
           "lastName": {
-            "readOnly": true,
             "type": "string"
           },
           "profileImagePath": {
-            "readOnly": true,
             "type": "string"
           },
           "shouldChangePassword": {
-            "readOnly": true,
             "type": "boolean"
           },
           "userEmail": {
-            "readOnly": true,
             "type": "string"
           },
           "userId": {
-            "readOnly": true,
             "type": "string"
           }
         },
@@ -7456,6 +7466,13 @@
           "lon"
         ],
         "type": "object"
+      },
+      "MapTheme": {
+        "enum": [
+          "light",
+          "dark"
+        ],
+        "type": "string"
       },
       "MemoryLaneResponseDto": {
         "properties": {
@@ -7719,6 +7736,13 @@
         ],
         "type": "object"
       },
+      "ReactionLevel": {
+        "enum": [
+          "album",
+          "asset"
+        ],
+        "type": "string"
+      },
       "ReactionType": {
         "enum": [
           "comment",
@@ -7926,9 +7950,6 @@
           "loginPageMessage": {
             "type": "string"
           },
-          "mapTileUrl": {
-            "type": "string"
-          },
           "oauthButtonText": {
             "type": "string"
           },
@@ -7940,7 +7961,6 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "mapTileUrl",
           "isInitialized"
         ],
         "type": "object"
@@ -8591,16 +8611,20 @@
       },
       "SystemConfigMapDto": {
         "properties": {
+          "darkStyle": {
+            "type": "string"
+          },
           "enabled": {
             "type": "boolean"
           },
-          "tileUrl": {
+          "lightStyle": {
             "type": "string"
           }
         },
         "required": [
           "enabled",
-          "tileUrl"
+          "lightStyle",
+          "darkStyle"
         ],
         "type": "object"
       },

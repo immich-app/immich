@@ -5,5 +5,8 @@ export class SystemConfigMapDto {
   enabled!: boolean;
 
   @IsString()
-  tileUrl!: string;
+  lightStyle!: string;
+
+  @IsString()
+  darkStyle!: string;
 }

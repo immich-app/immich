@@ -185,7 +185,6 @@ describe(ServerInfoService.name, () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
-        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       });
       expect(configMock.load).toHaveBeenCalled();
     });

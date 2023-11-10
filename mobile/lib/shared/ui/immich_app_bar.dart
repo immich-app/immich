@@ -1,6 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
@@ -28,7 +28,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     AuthenticationState authState = ref.watch(authenticationProvider);
     final user = Store.tryGet(StoreKey.currentUser);
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isDarkTheme = context.isDarkTheme;
     const widgetSize = 30.0;
 
     buildProfileIndicator() {
@@ -70,7 +70,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     getBackupBadgeIcon() {
-      final iconColor = isDarkMode ? Colors.white : Colors.black;
+      final iconColor = isDarkTheme ? Colors.white : Colors.black;
 
       if (isEnableAutoBackup) {
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
@@ -104,10 +104,10 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     buildBackupIndicator() {
       final indicatorIcon = getBackupBadgeIcon();
-      final badgeBackground = isDarkMode ? Colors.blueGrey[800] : Colors.white;
+      final badgeBackground = isDarkTheme ? Colors.blueGrey[800] : Colors.white;
 
       return InkWell(
-        onTap: () => AutoRouter.of(context).push(const BackupControllerRoute()),
+        onTap: () => context.autoPush(const BackupControllerRoute()),
         borderRadius: BorderRadius.circular(12),
         child: Badge(
           label: Container(
@@ -116,7 +116,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             decoration: BoxDecoration(
               color: badgeBackground,
               border: Border.all(
-                color: isDarkMode ? Colors.black : Colors.grey,
+                color: isDarkTheme ? Colors.black : Colors.grey,
               ),
               borderRadius: BorderRadius.circular(widgetSize / 2),
             ),
@@ -129,14 +129,14 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           child: Icon(
             Icons.backup_rounded,
             size: widgetSize,
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
           ),
         ),
       );
     }
 
     return AppBar(
-      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+      backgroundColor: context.themeData.appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
           Radius.circular(5),

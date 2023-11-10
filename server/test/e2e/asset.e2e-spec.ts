@@ -6,9 +6,12 @@ import {
   LoginResponseDto,
   SharedLinkResponseDto,
   TimeBucketSize,
+  WithoutProperty,
+  usePagination,
 } from '@app/domain';
 import { AssetController } from '@app/immich';
 import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
+import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub, uuidStub } from '@test/fixtures';
@@ -786,6 +789,57 @@ describe(`${AssetController.name} (e2e)`, () => {
       const asset = await api.assetApi.get(server, user1.accessToken, asset2.id);
       expect(asset.stack).not.toBeUndefined();
       expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset3.id })]));
+    });
+  });
+
+  describe(AssetRepository.name, () => {
+    describe('getWithout', () => {
+      describe('WithoutProperty.FACES', () => {
+        const getAssetIdsWithoutFaces = async () => {
+          const assetPagination = usePagination(10, (pagination) =>
+            assetRepository.getWithout(pagination, WithoutProperty.FACES),
+          );
+          let assets: AssetEntity[] = [];
+          for await (const assetsPage of assetPagination) {
+            assets = [...assets, ...assetsPage];
+          }
+          return assets.map((a) => a.id);
+        };
+
+        beforeEach(async () => {
+          await assetRepository.save({ id: asset1.id, resizePath: '/path/to/resize' });
+          expect(await getAssetIdsWithoutFaces()).toContain(asset1.id);
+        });
+
+        describe('with recognized faces', () => {
+          beforeEach(async () => {
+            const personRepository = app.get<IPersonRepository>(IPersonRepository);
+            const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
+            await personRepository.createFace({ assetId: asset1.id, personId: person.id });
+          });
+
+          it('should not return asset with facesRecognizedAt unset', async () => {
+            expect(await getAssetIdsWithoutFaces()).not.toContain(asset1.id);
+          });
+
+          it('should not return asset with facesRecognizedAt set', async () => {
+            await assetRepository.upsertJobStatus({ assetId: asset1.id, facesRecognizedAt: new Date() });
+            expect(await getAssetIdsWithoutFaces()).not.toContain(asset1.id);
+          });
+        });
+
+        describe('without recognized faces', () => {
+          it('should return asset with facesRecognizedAt unset', async () => {
+            expect(await getAssetIdsWithoutFaces()).toContain(asset1.id);
+          });
+
+          it('should not return asset with facesRecognizedAt set', async () => {
+            expect(await getAssetIdsWithoutFaces()).toContain(asset1.id);
+            await assetRepository.upsertJobStatus({ assetId: asset1.id, facesRecognizedAt: new Date() });
+            expect(await getAssetIdsWithoutFaces()).not.toContain(asset1.id);
+          });
+        });
+      });
     });
   });
 });

@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future<Object> getMapStyle(MapTheme theme) async
+    test('test getMapStyle', () async {
+      // TODO
+    });
+
     //Future<SystemConfigTemplateStorageOptionDto> getStorageTemplateOptions() async
     test('test getStorageTemplateOptions', () async {
       // TODO

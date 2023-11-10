@@ -1,5 +1,7 @@
 version: "3.8"
 
+name: immich-prod
+
 services:
   immich-server:
     container_name: immich_server

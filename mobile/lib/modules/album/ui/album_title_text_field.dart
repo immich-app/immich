@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
 
 class AlbumTitleTextField extends ConsumerWidget {
@@ -19,7 +20,7 @@ class AlbumTitleTextField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isDarkTheme = context.isDarkTheme;
 
     return TextField(
       onChanged: (v) {
@@ -55,7 +56,7 @@ class AlbumTitleTextField extends ConsumerWidget {
                 },
                 icon: Icon(
                   Icons.cancel_rounded,
-                  color: Theme.of(context).primaryColor,
+                  color: context.primaryColor,
                 ),
                 splashRadius: 10,
               )

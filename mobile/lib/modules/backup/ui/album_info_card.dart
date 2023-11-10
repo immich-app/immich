@@ -1,9 +1,9 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -22,10 +22,10 @@ class AlbumInfoCard extends HookConsumerWidget {
         ref.watch(backupProvider).selectedBackupAlbums.contains(albumInfo);
     final bool isExcluded =
         ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isDarkTheme = context.isDarkTheme;
 
     ColorFilter selectedFilter = ColorFilter.mode(
-      Theme.of(context).primaryColor.withAlpha(100),
+      context.primaryColor.withAlpha(100),
       BlendMode.darken,
     );
     ColorFilter excludedFilter =
@@ -46,7 +46,7 @@ class AlbumInfoCard extends HookConsumerWidget {
               fontWeight: FontWeight.bold,
             ),
           ).tr(),
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: context.primaryColor,
         );
       } else if (isExcluded) {
         return Chip(
@@ -194,7 +194,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                           albumInfo.name,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Theme.of(context).primaryColor,
+                            color: context.primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -224,13 +224,13 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      AutoRouter.of(context).push(
+                      context.autoPush(
                         AlbumPreviewRoute(album: albumInfo.albumEntity),
                       );
                     },
                     icon: Icon(
                       Icons.image_outlined,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                       size: 24,
                     ),
                     splashRadius: 25,

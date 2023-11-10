@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -85,7 +86,7 @@ class CuratedPeopleRow extends StatelessWidget {
                         "Add name",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
+                          color: context.primaryColor,
                         ),
                       ),
                     ),
