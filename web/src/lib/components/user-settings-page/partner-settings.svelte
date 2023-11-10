@@ -75,7 +75,14 @@
   const handleShowOnTimelineChanged = async (sharedById: string, value: boolean) => {
     try {
       await api.partnerApi.updatePartner({ id: sharedById, updatePartnerDto: { inTimeline: value } });
-      await refreshPartners();
+
+      currentPartners.sharedWithMe = currentPartners.sharedWithMe.map((partner) => {
+        if (partner.id === sharedById) {
+          return { ...partner, inTimeline: value };
+        }
+
+        return partner;
+      });
     } catch (error) {
       handleError(error, 'Unable to add partners');
     }
@@ -132,8 +139,8 @@
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
             <p class="text-xs font-medium my-4">PHOTOS FROM {partner.firstName.toUpperCase()}</p>
             <SettingSwitch
-              title="Show on timeline"
-              subtitle="Merge photos and videos from this user into your timeline"
+              title="Show in timeline"
+              subtitle="Show photos and videos from this user in your timeline"
               bind:checked={partner.inTimeline}
               on:toggle={({ detail }) => handleShowOnTimelineChanged(partner.id, detail)}
             />
