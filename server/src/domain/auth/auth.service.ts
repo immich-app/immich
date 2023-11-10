@@ -272,8 +272,9 @@ export class AuthService {
         storageLabel = null;
       }
 
+      const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.userCore.createUser({
-        name: `${profile.given_name || ''} ${profile.family_name || ''}`,
+        name: userName,
         email: profile.email,
         oauthId: profile.sub,
         storageLabel,

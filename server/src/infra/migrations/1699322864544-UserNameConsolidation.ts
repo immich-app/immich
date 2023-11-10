@@ -14,6 +14,8 @@ export class AddUsername1699322864544 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "users" DROP COLUMN "name"`);
         await queryRunner.query(`ALTER TABLE "users" ADD "lastName" character varying NOT NULL DEFAULT ''`);
         await queryRunner.query(`ALTER TABLE "users" ADD "firstName" character varying NOT NULL DEFAULT ''`);
+        await queryRunner.query(`UPDATE "users" SET "lastName" = COALESCE("email", '')`);
+        await queryRunner.query(`UPDATE "users" SET "firstName" = COALESCE("email", '')`);
     }
 
 }
