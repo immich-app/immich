@@ -44,9 +44,8 @@ Commands:
 
 - Sidecar should check both .jpg.xmp and .xmp
 - Sidecar check could be case-insensitive
-- Create albums
 - Use the SDK for all api calls. We currently use raw axos http calls
-- Use list of supported files from server vi api
+- Use list of supported files from server via api
 
 # For developers
 
