@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 
@@ -126,4 +126,5 @@ export interface IAssetRepository {
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
+  upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
 }
