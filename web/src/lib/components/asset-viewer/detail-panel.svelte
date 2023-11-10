@@ -259,6 +259,11 @@
               </p>
             {/if}
           </div>
+          {#if isOwner && asset.isExternal}
+            <p class="text-xs opacity-50">
+              {asset.originalPath}
+            </p>
+          {/if}
         </div>
       </div>
     {/if}
