@@ -1,5 +1,7 @@
 version: "3.8"
-name: immich
+
+name: immich-prod
+
 services:
   immich-server:
     container_name: immich_server
@@ -7,7 +9,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: ["./start-server.sh"]
+    command: [ "./start-server.sh" ]
     volumes:
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
@@ -27,7 +29,7 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: ["./start-microservices.sh"]
+    command: [ "./start-microservices.sh" ]
     volumes:
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
