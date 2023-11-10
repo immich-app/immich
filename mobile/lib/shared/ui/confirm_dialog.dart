@@ -7,7 +7,6 @@ class ConfirmDialog extends ConsumerWidget {
   final Function onOk;
   final String title;
   final String content;
-  final Color? contentColor;
   final String cancel;
   final String ok;
 
@@ -18,7 +17,6 @@ class ConfirmDialog extends ConsumerWidget {
     required this.content,
     this.cancel = "delete_dialog_cancel",
     this.ok = "backup_controller_page_background_battery_info_ok",
-    this.contentColor,
   }) : super(key: key);
 
   @override
@@ -26,10 +24,7 @@ class ConfirmDialog extends ConsumerWidget {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       title: Text(title).tr(),
-      content: Text(
-        content,
-        style: TextStyle(color: contentColor),
-      ).tr(),
+      content: Text(content).tr(),
       actions: [
         TextButton(
           onPressed: () => context.pop(false),
