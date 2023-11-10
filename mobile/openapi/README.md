@@ -184,6 +184,7 @@ Class | Method | HTTP request | Description
 *SharedLinkApi* | [**updateSharedLink**](doc//SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-link/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
+*SystemConfigApi* | [**getMapStyle**](doc//SystemConfigApi.md#getmapstyle) | **GET** /system-config/map/style.json | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 *TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 
@@ -215,7 +216,6 @@ Class | Method | HTTP request | Description
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
- - [AdminSignupResponseDto](doc//AdminSignupResponseDto.md)
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
@@ -281,6 +281,7 @@ Class | Method | HTTP request | Description
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
  - [MapMarkerResponseDto](doc//MapMarkerResponseDto.md)
+ - [MapTheme](doc//MapTheme.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [ModelType](doc//ModelType.md)
@@ -297,6 +298,7 @@ Class | Method | HTTP request | Description
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
+ - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
  - [RecognitionConfig](doc//RecognitionConfig.md)
  - [ScanLibraryDto](doc//ScanLibraryDto.md)
