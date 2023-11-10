@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { basename } from 'node:path';
 import crypto from 'crypto';
 
-export class CrawledAsset {
+export class Asset {
   public path: string;
 
   public assetData?: fs.ReadStream;
@@ -13,6 +13,7 @@ export class CrawledAsset {
   public sidecarPath?: string;
   public fileSize!: number;
   public skipped = false;
+  public albumName?: string;
 
   constructor(path: string) {
     this.path = path;
@@ -28,6 +29,7 @@ export class CrawledAsset {
     this.fileCreatedAt = stats.mtime.toISOString();
     this.fileModifiedAt = stats.mtime.toISOString();
     this.fileSize = stats.size;
+    this.albumName = this.extractAlbumName();
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
@@ -54,5 +56,9 @@ export class CrawledAsset {
     };
 
     return await sha1(this.path);
+  }
+
+  private extractAlbumName(): string {
+    return this.path.split('/').slice(-2)[0];
   }
 }

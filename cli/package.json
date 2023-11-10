@@ -67,6 +67,9 @@
     "collectCoverageFrom": [
       "<rootDir>/src/**/*.(t|j)s"
     ],
+    "moduleNameMapper": {
+      "^@api(|/.*)$": "<rootDir>/src/api/$1"
+    },
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"
   }

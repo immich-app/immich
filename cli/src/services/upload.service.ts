@@ -1,6 +1,7 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import FormData from 'form-data';
 import { ApiConfiguration } from '../cores/api-configuration';
+import { AssetFileUploadResponseDto } from 'src/api/open-api';
 
 export class UploadService {
   private readonly uploadConfig: AxiosRequestConfig<any>;
@@ -36,7 +37,7 @@ export class UploadService {
     return axios(this.checkAssetExistenceConfig);
   }
 
-  public upload(data: FormData) {
+  public upload(data: FormData): Promise<AxiosResponse<AssetFileUploadResponseDto>> {
     this.uploadConfig.data = data;
 
     // TODO: retry on 500 errors?

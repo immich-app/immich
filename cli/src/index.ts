@@ -16,6 +16,11 @@ program
   .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS'))
   .addOption(new Option('-h, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
   .addOption(
+    new Option('-a, --album', 'Automatically create albums based on folder name')
+      .env('IMMICH_AUTO_CREATE_ALBUM')
+      .default(false),
+  )
+  .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")
       .env('IMMICH_DRY_RUN')
       .default(false),

@@ -5,4 +5,5 @@ export class UploadOptionsDto {
   skipHash = false;
   delete = false;
   readOnly = true;
+  album = false;
 }
