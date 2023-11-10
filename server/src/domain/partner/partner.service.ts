@@ -48,15 +48,10 @@ export class PartnerService {
   }
 
   async update(authUser: AuthUserDto, sharedById: string, dto: UpdatePartnerDto): Promise<UpdatePartnerResponseDto> {
+    await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, sharedById);
     const partnerId: PartnerIds = { sharedById, sharedWithId: authUser.id };
-    const partner = await this.repository.get(partnerId);
-    if (!partner) {
-      throw new BadRequestException('Partner not found');
-    }
 
-    partner.inTimeline = dto.inTimeline;
-
-    const entity = await this.repository.update(partner);
+    const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });
 
     return this.mapUpdate(entity);
   }
