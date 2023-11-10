@@ -355,6 +355,8 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'ReactionLevel':
+          return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':
           return ReactionTypeTypeTransformer().decode(value);
         case 'RecognitionConfig':

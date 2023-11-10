@@ -112,10 +112,10 @@ class ActivityApi {
   ///
   /// * [ReactionType] type:
   ///
-  /// * [String] userId:
+  /// * [ReactionLevel] level:
   ///
-  /// * [bool] isGlobal:
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionType? type, String? userId, bool? isGlobal, }) async {
+  /// * [String] userId:
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionType? type, ReactionLevel? level, String? userId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity';
 
@@ -133,11 +133,11 @@ class ActivityApi {
     if (type != null) {
       queryParams.addAll(_queryParams('', 'type', type));
     }
+    if (level != null) {
+      queryParams.addAll(_queryParams('', 'level', level));
+    }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
-    }
-    if (isGlobal != null) {
-      queryParams.addAll(_queryParams('', 'isGlobal', isGlobal));
     }
 
     const contentTypes = <String>[];
@@ -162,11 +162,11 @@ class ActivityApi {
   ///
   /// * [ReactionType] type:
   ///
-  /// * [String] userId:
+  /// * [ReactionLevel] level:
   ///
-  /// * [bool] isGlobal:
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionType? type, String? userId, bool? isGlobal, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, type: type, userId: userId, isGlobal: isGlobal, );
+  /// * [String] userId:
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionType? type, ReactionLevel? level, String? userId, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, type: type, level: level, userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -189,9 +189,7 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  ///
-  /// * [bool] isGlobal:
-  Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, bool? isGlobal, }) async {
+  Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity/statistics';
 
@@ -205,9 +203,6 @@ class ActivityApi {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
-    }
-    if (isGlobal != null) {
-      queryParams.addAll(_queryParams('', 'isGlobal', isGlobal));
     }
 
     const contentTypes = <String>[];
@@ -229,10 +224,8 @@ class ActivityApi {
   /// * [String] albumId (required):
   ///
   /// * [String] assetId:
-  ///
-  /// * [bool] isGlobal:
-  Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, bool? isGlobal, }) async {
-    final response = await getActivityStatisticsWithHttpInfo(albumId,  assetId: assetId, isGlobal: isGlobal, );
+  Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, }) async {
+    final response = await getActivityStatisticsWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

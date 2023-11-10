@@ -11,7 +11,6 @@ Name | Type | Description | Notes
 **albumId** | **String** |  | 
 **assetId** | **String** |  | [optional] 
 **comment** | **String** |  | [optional] 
-**isGlobal** | **bool** |  | [optional] 
 **type** | [**ReactionType**](ReactionType.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

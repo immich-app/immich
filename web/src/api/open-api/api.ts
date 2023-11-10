@@ -125,12 +125,6 @@ export interface ActivityCreateDto {
     'comment'?: string;
     /**
      * 
-     * @type {boolean}
-     * @memberof ActivityCreateDto
-     */
-    'isGlobal'?: boolean;
-    /**
-     * 
      * @type {ReactionType}
      * @memberof ActivityCreateDto
      */
@@ -2599,6 +2593,20 @@ export interface QueueStatusDto {
      */
     'isPaused': boolean;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const ReactionLevel = {
+    Album: 'album',
+    Asset: 'asset'
+} as const;
+
+export type ReactionLevel = typeof ReactionLevel[keyof typeof ReactionLevel];
+
+
 /**
  * 
  * @export
@@ -5094,12 +5102,12 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
          * @param {string} albumId 
          * @param {string} [assetId] 
          * @param {ReactionType} [type] 
+         * @param {ReactionLevel} [level] 
          * @param {string} [userId] 
-         * @param {boolean} [isGlobal] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivities: async (albumId: string, assetId?: string, type?: ReactionType, userId?: string, isGlobal?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getActivities: async (albumId: string, assetId?: string, type?: ReactionType, level?: ReactionLevel, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getActivities', 'albumId', albumId)
             const localVarPath = `/activity`;
@@ -5135,12 +5143,12 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
                 localVarQueryParameter['type'] = type;
             }
 
-            if (userId !== undefined) {
-                localVarQueryParameter['userId'] = userId;
+            if (level !== undefined) {
+                localVarQueryParameter['level'] = level;
             }
 
-            if (isGlobal !== undefined) {
-                localVarQueryParameter['isGlobal'] = isGlobal;
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
             }
 
 
@@ -5158,11 +5166,10 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
          * 
          * @param {string} albumId 
          * @param {string} [assetId] 
-         * @param {boolean} [isGlobal] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivityStatistics: async (albumId: string, assetId?: string, isGlobal?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getActivityStatistics: async (albumId: string, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getActivityStatistics', 'albumId', albumId)
             const localVarPath = `/activity/statistics`;
@@ -5192,10 +5199,6 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
 
             if (assetId !== undefined) {
                 localVarQueryParameter['assetId'] = assetId;
-            }
-
-            if (isGlobal !== undefined) {
-                localVarQueryParameter['isGlobal'] = isGlobal;
             }
 
 
@@ -5244,25 +5247,24 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * @param {string} albumId 
          * @param {string} [assetId] 
          * @param {ReactionType} [type] 
+         * @param {ReactionLevel} [level] 
          * @param {string} [userId] 
-         * @param {boolean} [isGlobal] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivities(albumId: string, assetId?: string, type?: ReactionType, userId?: string, isGlobal?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, type, userId, isGlobal, options);
+        async getActivities(albumId: string, assetId?: string, type?: ReactionType, level?: ReactionLevel, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, type, level, userId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
          * @param {string} albumId 
          * @param {string} [assetId] 
-         * @param {boolean} [isGlobal] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivityStatistics(albumId: string, assetId?: string, isGlobal?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityStatisticsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivityStatistics(albumId, assetId, isGlobal, options);
+        async getActivityStatistics(albumId: string, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ActivityStatisticsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivityStatistics(albumId, assetId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -5300,7 +5302,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityResponseDto>> {
-            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.userId, requestParameters.isGlobal, options).then((request) => request(axios, basePath));
+            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.level, requestParameters.userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5309,7 +5311,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getActivityStatistics(requestParameters: ActivityApiGetActivityStatisticsRequest, options?: AxiosRequestConfig): AxiosPromise<ActivityStatisticsResponseDto> {
-            return localVarFp.getActivityStatistics(requestParameters.albumId, requestParameters.assetId, requestParameters.isGlobal, options).then((request) => request(axios, basePath));
+            return localVarFp.getActivityStatistics(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5371,17 +5373,17 @@ export interface ActivityApiGetActivitiesRequest {
 
     /**
      * 
+     * @type {ReactionLevel}
+     * @memberof ActivityApiGetActivities
+     */
+    readonly level?: ReactionLevel
+
+    /**
+     * 
      * @type {string}
      * @memberof ActivityApiGetActivities
      */
     readonly userId?: string
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ActivityApiGetActivities
-     */
-    readonly isGlobal?: boolean
 }
 
 /**
@@ -5403,13 +5405,6 @@ export interface ActivityApiGetActivityStatisticsRequest {
      * @memberof ActivityApiGetActivityStatistics
      */
     readonly assetId?: string
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ActivityApiGetActivityStatistics
-     */
-    readonly isGlobal?: boolean
 }
 
 /**
@@ -5449,7 +5444,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.userId, requestParameters.isGlobal, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.level, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5460,7 +5455,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getActivityStatistics(requestParameters: ActivityApiGetActivityStatisticsRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivityStatistics(requestParameters.albumId, requestParameters.assetId, requestParameters.isGlobal, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getActivityStatistics(requestParameters.albumId, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
