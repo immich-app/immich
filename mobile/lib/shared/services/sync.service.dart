@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:intl/intl.dart';
 
@@ -43,7 +44,7 @@ class IosDebugInfoTile extends HookConsumerWidget {
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,
-          color: Theme.of(context).primaryColor,
+          color: context.primaryColor,
         ),
       ),
       subtitle: Text(
@@ -54,7 +55,7 @@ class IosDebugInfoTile extends HookConsumerWidget {
       ),
       leading: Icon(
         Icons.bug_report,
-        color: Theme.of(context).primaryColor,
+        color: context.primaryColor,
       ),
     );
   }

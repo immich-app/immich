@@ -11,13 +11,6 @@ export const userSignupStub = {
   memoriesEnabled: true,
 };
 
-export const signupResponseStub = {
-  id: expect.any(String),
-  email: 'admin@immich.app',
-  name: 'Immich Admin',
-  createdAt: expect.any(String),
-};
-
 export const loginStub = {
   admin: {
     email: 'admin@immich.app',

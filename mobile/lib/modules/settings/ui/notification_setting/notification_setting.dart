@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -49,12 +50,12 @@ class NotificationSetting extends HookConsumerWidget {
           actions: [
             TextButton(
               child: const Text('notification_permission_dialog_cancel').tr(),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
             ),
             TextButton(
               child: const Text('notification_permission_dialog_settings').tr(),
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
                 openAppSettings();
               },
             ),
@@ -65,7 +66,7 @@ class NotificationSetting extends HookConsumerWidget {
 
     final String formattedValue = _formatSliderValue(sliderValue.value);
     return ExpansionTile(
-      textColor: Theme.of(context).primaryColor,
+      textColor: context.primaryColor,
       title: const Text(
         'setting_notifications_title',
         style: TextStyle(
@@ -84,9 +85,7 @@ class NotificationSetting extends HookConsumerWidget {
             leading: const Icon(Icons.notifications_outlined),
             title: Text(
               'notification_permission_list_tile_title',
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
+              style: context.textTheme.labelLarge
                   ?.copyWith(fontWeight: FontWeight.bold),
             ).tr(),
             subtitle: Column(
@@ -94,7 +93,7 @@ class NotificationSetting extends HookConsumerWidget {
               children: [
                 Text(
                   'notification_permission_list_tile_content',
-                  style: Theme.of(context).textTheme.labelMedium,
+                  style: context.textTheme.labelMedium,
                 ).tr(),
                 const SizedBox(height: 8),
                 ElevatedButton(
@@ -149,7 +148,7 @@ class NotificationSetting extends HookConsumerWidget {
             max: 5.0,
             divisions: 5,
             label: formattedValue,
-            activeColor: Theme.of(context).primaryColor,
+            activeColor: context.primaryColor,
           ),
         ),
       ],

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useEffect, useState;
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -43,7 +44,7 @@ class AdvancedSettings extends HookConsumerWidget {
     final logLevel = Level.LEVELS[levelId.value].name;
 
     return ExpansionTile(
-      textColor: Theme.of(context).primaryColor,
+      textColor: context.primaryColor,
       title: const Text(
         "advanced_settings_tile_title",
         style: TextStyle(
@@ -86,7 +87,7 @@ class AdvancedSettings extends HookConsumerWidget {
             min: 1.0,
             divisions: 7,
             label: logLevel,
-            activeColor: Theme.of(context).primaryColor,
+            activeColor: context.primaryColor,
           ),
         ),
         SettingsSwitchListTile(

@@ -1,5 +1,5 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -50,13 +50,13 @@ class ExploreGrid extends StatelessWidget {
           borderRadius: 0,
           onTap: () {
             isPeople
-                ? AutoRouter.of(context).push(
+                ? context.autoPush(
                     PersonResultRoute(
                       personId: content.id,
                       personName: content.label,
                     ),
                   )
-                : AutoRouter.of(context).push(
+                : context.autoPush(
                     SearchResultRoute(searchTerm: 'm:${content.label}'),
                   );
           },

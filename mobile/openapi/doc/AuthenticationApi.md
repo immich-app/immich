@@ -322,7 +322,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **signUpAdmin**
-> AdminSignupResponseDto signUpAdmin(signUpDto)
+> UserResponseDto signUpAdmin(signUpDto)
 
 
 
@@ -349,7 +349,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AdminSignupResponseDto**](AdminSignupResponseDto.md)
+[**UserResponseDto**](UserResponseDto.md)
 
 ### Authorization
 

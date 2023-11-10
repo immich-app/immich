@@ -31,8 +31,8 @@ import {
   IUserTokenRepository,
 } from '../repositories';
 import { AuthType } from './auth.constant';
+import { AuthUserDto, SignUpDto } from './auth.dto';
 import { AuthService } from './auth.service';
-import { AuthUserDto, SignUpDto } from './dto';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 

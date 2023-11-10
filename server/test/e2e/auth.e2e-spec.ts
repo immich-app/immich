@@ -8,7 +8,6 @@ import {
   errorStub,
   loginResponseStub,
   loginStub,
-  signupResponseStub,
   uuidStub,
 } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
@@ -17,6 +16,23 @@ import request from 'supertest';
 const name = 'Immich Admin';
 const password = 'Password123';
 const email = 'admin@immich.app';
+
+const adminSignupResponse = {
+  id: expect.any(String),
+  name: 'Immich Admin',
+  email: 'admin@immich.app',
+  storageLabel: 'admin',
+  externalPath: null,
+  profileImagePath: '',
+  // why? lol
+  shouldChangePassword: true,
+  isAdmin: true,
+  createdAt: expect.any(String),
+  updatedAt: expect.any(String),
+  deletedAt: null,
+  oauthId: '',
+  memoriesEnabled: true,
+};
 
 describe(`${AuthController.name} (e2e)`, () => {
   let server: any;
@@ -79,7 +95,7 @@ describe(`${AuthController.name} (e2e)`, () => {
         .post('/auth/admin-sign-up')
         .send({ ...adminSignupStub, email: 'admin@local' });
       expect(status).toEqual(201);
-      expect(body).toEqual({ ...signupResponseStub, email: 'admin@local' });
+      expect(body).toEqual({ ...adminSignupResponse, email: 'admin@local' });
     });
 
     it('should transform email to lower case', async () => {
@@ -87,7 +103,7 @@ describe(`${AuthController.name} (e2e)`, () => {
         .post('/auth/admin-sign-up')
         .send({ ...adminSignupStub, email: 'aDmIn@IMMICH.app' });
       expect(status).toEqual(201);
-      expect(body).toEqual(signupResponseStub);
+      expect(body).toEqual(adminSignupResponse);
     });
 
     it('should not allow a second admin to sign up', async () => {

@@ -6,7 +6,7 @@ import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:path/path.dart' as p;
 
 part 'asset.g.dart';

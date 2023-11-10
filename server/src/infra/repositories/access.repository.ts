@@ -43,6 +43,24 @@ export class AccessRepository implements IAccessRepository {
         },
       });
     },
+    hasCreateAccess: (userId: string, albumId: string): Promise<boolean> => {
+      return this.albumRepository.exist({
+        where: [
+          {
+            id: albumId,
+            isActivityEnabled: true,
+            sharedUsers: {
+              id: userId,
+            },
+          },
+          {
+            id: albumId,
+            isActivityEnabled: true,
+            ownerId: userId,
+          },
+        ],
+      });
+    },
   };
   library = {
     hasOwnerAccess: (userId: string, libraryId: string): Promise<boolean> => {

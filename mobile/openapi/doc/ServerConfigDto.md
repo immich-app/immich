@@ -10,7 +10,6 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **isInitialized** | **bool** |  | 
 **loginPageMessage** | **String** |  | 
-**mapTileUrl** | **String** |  | 
 **oauthButtonText** | **String** |  | 
 **trashDays** | **int** |  | 
 

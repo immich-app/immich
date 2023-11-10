@@ -1,10 +1,9 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
   import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
-  import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import { asByteUnitString } from '../../utils/byte-units';
@@ -12,6 +11,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import Map from '../shared-components/map/map.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -36,19 +36,9 @@
     const lng = asset.exifInfo?.longitude;
 
     if (lat && lng) {
-      return [Number(lat.toFixed(7)), Number(lng.toFixed(7))] as LatLngTuple;
+      return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
     }
   })();
-
-  $: {
-    if (!asset.exifInfo) {
-      api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-        asset.exifInfo = res.data?.exifInfo;
-      });
-    }
-  }
-  $: lat = latlng ? latlng[0] : undefined;
-  $: lng = latlng ? latlng[1] : undefined;
 
   $: people = asset.people || [];
 
@@ -297,24 +287,21 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    {#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
-      <Map center={latlng} zoom={14}>
-        <TileLayer
-          urlTemplate={$serverConfig.mapTileUrl}
-          options={{
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          }}
-        />
-        <Marker {latlng}>
-          <p>
-            {lat}, {lng}
-          </p>
-          <a href="https://www.openstreetmap.org/?mlat={lat}&mlon={lng}&zoom=15#map=15/{lat}/{lng}">
+    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+      <svelte:fragment slot="popup" let:marker>
+        {@const { lat, lon } = marker}
+        <div class="flex flex-col items-center gap-1">
+          <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+          <a
+            href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+            target="_blank"
+            class="font-medium text-immich-primary"
+          >
             Open in OpenStreetMap
           </a>
-        </Marker>
-      </Map>
-    {/await}
+        </div>
+      </svelte:fragment>
+    </Map>
   </div>
 {/if}
 

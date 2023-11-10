@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
-import 'package:immich_mobile/utils/color_filter_generator.dart';
+import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -29,11 +28,7 @@ class MapThumbnail extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tileLayer = TileLayer(
-      urlTemplate: ref.watch(
-        serverInfoProvider.select((v) => v.serverConfig.mapTileUrl),
-      ),
-    );
+    ref.watch(mapStateNotifier.select((s) => s.mapStyle));
 
     return SizedBox(
       height: height,
@@ -55,20 +50,14 @@ class MapThumbnail extends HookConsumerWidget {
                     'OpenStreetMap contributors',
                     onTap: () => launchUrl(
                       Uri.parse('https://openstreetmap.org/copyright'),
+                      mode: LaunchMode.externalApplication,
                     ),
                   ),
                 ],
               ),
           ],
           children: [
-            isDarkTheme
-                ? InvertionFilter(
-                    child: SaturationFilter(
-                      saturation: -1,
-                      child: tileLayer,
-                    ),
-                  )
-                : tileLayer,
+            ref.read(mapStateNotifier.notifier).getTileLayer(isDarkTheme),
             if (markers.isNotEmpty) MarkerLayer(markers: markers),
           ],
         ),

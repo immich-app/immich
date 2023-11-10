@@ -9,9 +9,9 @@
   import { fade } from 'svelte/transition';
   import SettingAccordion from '../setting-accordion.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import SettingSelect from '../setting-select.svelte';
+  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
@@ -34,7 +34,8 @@
           ...current,
           map: {
             enabled: config.map.enabled,
-            tileUrl: config.map.tileUrl,
+            lightStyle: config.map.lightStyle,
+            darkStyle: config.map.darkStyle,
           },
           reverseGeocoding: {
             enabled: config.reverseGeocoding.enabled,
@@ -95,12 +96,19 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="Tile URL"
-                desc="URL to a leaflet compatible tile server"
-                bind:value={config.map.tileUrl}
-                required={true}
+                label="Light Style"
+                desc="URL to a style.json map theme"
+                bind:value={config.map.lightStyle}
                 disabled={disabled || !config.map.enabled}
-                isEdited={config.map.tileUrl !== savedConfig.map.tileUrl}
+                isEdited={config.map.lightStyle !== savedConfig.map.lightStyle}
+              />
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label="Dark Style"
+                desc="URL to a style.json map theme"
+                bind:value={config.map.darkStyle}
+                disabled={disabled || !config.map.enabled}
+                isEdited={config.map.darkStyle !== savedConfig.map.darkStyle}
               />
             </div></SettingAccordion
           >

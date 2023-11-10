@@ -15,7 +15,6 @@ class ServerConfigDto {
   ServerConfigDto({
     required this.isInitialized,
     required this.loginPageMessage,
-    required this.mapTileUrl,
     required this.oauthButtonText,
     required this.trashDays,
   });
@@ -23,8 +22,6 @@ class ServerConfigDto {
   bool isInitialized;
 
   String loginPageMessage;
-
-  String mapTileUrl;
 
   String oauthButtonText;
 
@@ -34,7 +31,6 @@ class ServerConfigDto {
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
      other.isInitialized == isInitialized &&
      other.loginPageMessage == loginPageMessage &&
-     other.mapTileUrl == mapTileUrl &&
      other.oauthButtonText == oauthButtonText &&
      other.trashDays == trashDays;
 
@@ -43,18 +39,16 @@ class ServerConfigDto {
     // ignore: unnecessary_parenthesis
     (isInitialized.hashCode) +
     (loginPageMessage.hashCode) +
-    (mapTileUrl.hashCode) +
     (oauthButtonText.hashCode) +
     (trashDays.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[isInitialized=$isInitialized, loginPageMessage=$loginPageMessage, mapTileUrl=$mapTileUrl, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
+  String toString() => 'ServerConfigDto[isInitialized=$isInitialized, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'isInitialized'] = this.isInitialized;
       json[r'loginPageMessage'] = this.loginPageMessage;
-      json[r'mapTileUrl'] = this.mapTileUrl;
       json[r'oauthButtonText'] = this.oauthButtonText;
       json[r'trashDays'] = this.trashDays;
     return json;
@@ -70,7 +64,6 @@ class ServerConfigDto {
       return ServerConfigDto(
         isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
-        mapTileUrl: mapValueOfType<String>(json, r'mapTileUrl')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
         trashDays: mapValueOfType<int>(json, r'trashDays')!,
       );
@@ -122,7 +115,6 @@ class ServerConfigDto {
   static const requiredKeys = <String>{
     'isInitialized',
     'loginPageMessage',
-    'mapTileUrl',
     'oauthButtonText',
     'trashDays',
   };

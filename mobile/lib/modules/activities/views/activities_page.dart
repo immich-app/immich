@@ -4,13 +4,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
-import 'package:immich_mobile/utils/datetime_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class ActivitiesPage extends HookConsumerWidget {
@@ -19,12 +20,14 @@ class ActivitiesPage extends HookConsumerWidget {
   final bool withAssetThumbs;
   final String appBarTitle;
   final bool isOwner;
+  final bool isReadOnly;
   const ActivitiesPage(
     this.albumId, {
     this.appBarTitle = "",
     this.assetId,
     this.withAssetThumbs = true,
     this.isOwner = false,
+    this.isReadOnly = false,
     super.key,
   });
 
@@ -45,13 +48,10 @@ class ActivitiesPage extends HookConsumerWidget {
       },
       [],
     );
+
     buildTitleWithTimestamp(Activity activity, {bool leftAlign = true}) {
-      final textColor = Theme.of(context).brightness == Brightness.dark
-          ? Colors.white
-          : Colors.black;
-      final textStyle = Theme.of(context)
-          .textTheme
-          .bodyMedium
+      final textColor = context.isDarkTheme ? Colors.white : Colors.black;
+      final textStyle = context.textTheme.bodyMedium
           ?.copyWith(color: textColor.withOpacity(0.6));
 
       return Row(
@@ -116,6 +116,7 @@ class ActivitiesPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(bottom: 10),
         child: TextField(
           controller: inputController,
+          enabled: !isReadOnly,
           focusNode: inputFocusNode,
           textInputAction: TextInputAction.send,
           autofocus: false,
@@ -150,7 +151,9 @@ class ActivitiesPage extends HookConsumerWidget {
               ),
             ),
             suffixIconColor: liked ? Colors.red[700] : null,
-            hintText: 'shared_album_activities_input_hint'.tr(),
+            hintText: isReadOnly
+                ? 'shared_album_activities_input_disable'.tr()
+                : 'shared_album_activities_input_hint'.tr(),
             hintStyle: TextStyle(
               fontWeight: FontWeight.normal,
               fontSize: 14,
@@ -240,70 +243,72 @@ class ActivitiesPage extends HookConsumerWidget {
                 a.assetId == assetId,
           );
 
-          return Stack(
-            children: [
-              ListView.builder(
-                controller: listViewScrollController,
-                itemCount: data.length + 1,
-                itemBuilder: (context, index) {
-                  // Vertical gap after the last element
-                  if (index == data.length) {
-                    return const SizedBox(
-                      height: 80,
-                    );
-                  }
+          return SafeArea(
+            child: Stack(
+              children: [
+                ListView.builder(
+                  controller: listViewScrollController,
+                  itemCount: data.length + 1,
+                  itemBuilder: (context, index) {
+                    // Vertical gap after the last element
+                    if (index == data.length) {
+                      return const SizedBox(
+                        height: 80,
+                      );
+                    }
 
-                  final activity = data[index];
-                  final canDelete =
-                      activity.user.id == currentUser?.id || isOwner;
+                    final activity = data[index];
+                    final canDelete =
+                        activity.user.id == currentUser?.id || isOwner;
 
-                  return Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: activity.type == ActivityType.comment
-                        ? getDismissibleWidget(
-                            ListTile(
-                              minVerticalPadding: 15,
-                              leading: UserCircleAvatar(user: activity.user),
-                              title: buildTitleWithTimestamp(
-                                activity,
-                                leftAlign:
-                                    withAssetThumbs && activity.assetId != null,
-                              ),
-                              titleAlignment: ListTileTitleAlignment.top,
-                              trailing: buildAssetThumbnail(activity),
-                              subtitle: Text(activity.comment!),
-                            ),
-                            activity,
-                            canDelete,
-                          )
-                        : getDismissibleWidget(
-                            ListTile(
-                              minVerticalPadding: 15,
-                              leading: Container(
-                                width: 44,
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  Icons.favorite_rounded,
-                                  color: Colors.red[700],
+                    return Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: activity.type == ActivityType.comment
+                          ? getDismissibleWidget(
+                              ListTile(
+                                minVerticalPadding: 15,
+                                leading: UserCircleAvatar(user: activity.user),
+                                title: buildTitleWithTimestamp(
+                                  activity,
+                                  leftAlign: withAssetThumbs &&
+                                      activity.assetId != null,
                                 ),
+                                titleAlignment: ListTileTitleAlignment.top,
+                                trailing: buildAssetThumbnail(activity),
+                                subtitle: Text(activity.comment!),
                               ),
-                              title: buildTitleWithTimestamp(activity),
-                              trailing: buildAssetThumbnail(activity),
+                              activity,
+                              canDelete,
+                            )
+                          : getDismissibleWidget(
+                              ListTile(
+                                minVerticalPadding: 15,
+                                leading: Container(
+                                  width: 44,
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    Icons.favorite_rounded,
+                                    color: Colors.red[700],
+                                  ),
+                                ),
+                                title: buildTitleWithTimestamp(activity),
+                                trailing: buildAssetThumbnail(activity),
+                              ),
+                              activity,
+                              canDelete,
                             ),
-                            activity,
-                            canDelete,
-                          ),
-                  );
-                },
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  child: buildTextField(liked?.id),
+                    );
+                  },
                 ),
-              ),
-            ],
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    color: context.scaffoldBackgroundColor,
+                    child: buildTextField(liked?.id),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),

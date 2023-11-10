@@ -1,8 +1,8 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
@@ -34,11 +34,11 @@ class CreateAlbumPage extends HookConsumerWidget {
     final selectedAssets = useState<Set<Asset>>(
       initialAssets != null ? Set.from(initialAssets!) : const {},
     );
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     showSelectUserPage() async {
-      final bool? ok = await AutoRouter.of(context)
-          .push<bool?>(SelectUserForSharingRoute(assets: selectedAssets.value));
+      final bool? ok = await context.autoPush<bool?>(
+        SelectUserForSharingRoute(assets: selectedAssets.value),
+      );
       if (ok == true) {
         selectedAssets.value = {};
       }
@@ -58,7 +58,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
     onSelectPhotosButtonPressed() async {
       AssetSelectionPageResult? selectedAsset =
-          await AutoRouter.of(context).push<AssetSelectionPageResult?>(
+          await context.autoPush<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: selectedAssets.value,
           canDeselect: true,
@@ -94,10 +94,10 @@ class CreateAlbumPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 200, left: 18),
             child: Text(
               'create_shared_album_page_share_add_assets',
-              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontSize: 12,
-                    fontWeight: FontWeight.normal,
-                  ),
+              style: context.textTheme.displayMedium?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+              ),
             ).tr(),
           ),
         );
@@ -117,7 +117,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
                 side: BorderSide(
-                  color: isDarkTheme
+                  color: context.isDarkTheme
                       ? const Color.fromARGB(255, 63, 63, 63)
                       : const Color.fromARGB(255, 206, 206, 206),
                 ),
@@ -128,16 +128,16 @@ class CreateAlbumPage extends HookConsumerWidget {
               onPressed: onSelectPhotosButtonPressed,
               icon: Icon(
                 Icons.add_rounded,
-                color: Theme.of(context).primaryColor,
+                color: context.primaryColor,
               ),
               label: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
                   'create_shared_album_page_share_select_photos',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: context.textTheme.labelLarge?.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ).tr(),
               ),
             ),
@@ -206,7 +206,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         selectedAssets.value = {};
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
-        AutoRouter.of(context).replace(AlbumViewerRoute(albumId: newAlbum.id));
+        context.autoReplace(AlbumViewerRoute(albumId: newAlbum.id));
       }
     }
 
@@ -214,19 +214,19 @@ class CreateAlbumPage extends HookConsumerWidget {
       appBar: AppBar(
         elevation: 0,
         centerTitle: false,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(
           onPressed: () {
             selectedAssets.value = {};
-            AutoRouter.of(context).pop();
+            context.autoPop();
           },
           icon: const Icon(Icons.close_rounded),
         ),
         title: Text(
           'share_create_album',
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                color: Theme.of(context).primaryColor,
-              ),
+          style: context.textTheme.displayMedium?.copyWith(
+            color: context.primaryColor,
+          ),
         ).tr(),
         actions: [
           if (isSharedAlbum)
@@ -239,8 +239,8 @@ class CreateAlbumPage extends HookConsumerWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: albumTitleController.text.isEmpty
-                      ? Theme.of(context).disabledColor
-                      : Theme.of(context).primaryColor,
+                      ? context.themeData.disabledColor
+                      : context.primaryColor,
                 ),
               ),
             ),
@@ -254,7 +254,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                 'create_shared_album_page_create'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                  color: context.primaryColor,
                 ),
               ),
             ),
@@ -265,7 +265,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: context.scaffoldBackgroundColor,
               elevation: 5,
               automaticallyImplyLeading: false,
               pinned: true,

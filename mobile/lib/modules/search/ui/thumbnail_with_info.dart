@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/utils/capitalize.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 
 // ignore: must_be_immutable
 class ThumbnailWithInfo extends StatelessWidget {
@@ -22,8 +23,8 @@ class ThumbnailWithInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    var textAndIconColor = isDarkMode ? Colors.grey[100] : Colors.grey[700];
+    var textAndIconColor =
+        context.isDarkTheme ? Colors.grey[100] : Colors.grey[700];
     return GestureDetector(
       onTap: () {
         onTap();
@@ -34,7 +35,7 @@ class ThumbnailWithInfo extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
-              color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+              color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[100],
             ),
             child: imageUrl != null
                 ? ClipRRect(
