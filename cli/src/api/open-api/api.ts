@@ -643,6 +643,18 @@ export interface AssetFaceResponseDto {
     'id': string;
     /**
      * 
+     * @type {number}
+     * @memberof AssetFaceResponseDto
+     */
+    'imageHeight': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceResponseDto
+     */
+    'imageWidth': number;
+    /**
+     * 
      * @type {PersonResponseDto}
      * @memberof AssetFaceResponseDto
      */
@@ -672,13 +684,7 @@ export interface AssetFaceUpdateItem {
      * @type {string}
      * @memberof AssetFaceUpdateItem
      */
-    'assetId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetFaceUpdateItem
-     */
-    'personId': string;
+    'assetFaceId': string;
 }
 /**
  * 

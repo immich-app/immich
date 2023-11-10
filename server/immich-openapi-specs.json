@@ -6274,6 +6274,12 @@
           "id": {
             "type": "string"
           },
+          "imageHeight": {
+            "type": "number"
+          },
+          "imageWidth": {
+            "type": "number"
+          },
           "person": {
             "allOf": [
               {
@@ -6285,6 +6291,8 @@
         },
         "required": [
           "id",
+          "imageHeight",
+          "imageWidth",
           "boundingBoxX1",
           "boundingBoxX2",
           "boundingBoxY1",
@@ -6309,16 +6317,12 @@
       },
       "AssetFaceUpdateItem": {
         "properties": {
-          "assetId": {
-            "type": "string"
-          },
-          "personId": {
+          "assetFaceId": {
             "type": "string"
           }
         },
         "required": [
-          "personId",
-          "assetId"
+          "assetFaceId"
         ],
         "type": "object"
       },

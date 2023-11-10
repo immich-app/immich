@@ -41,6 +41,16 @@ void main() {
       // TODO
     });
 
+    // num imageHeight
+    test('to test the property `imageHeight`', () async {
+      // TODO
+    });
+
+    // num imageWidth
+    test('to test the property `imageWidth`', () async {
+      // TODO
+    });
+
     // PersonResponseDto person
     test('to test the property `person`', () async {
       // TODO

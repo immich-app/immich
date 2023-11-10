@@ -159,7 +159,7 @@ export class SearchService {
     };
   }
 
-  searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+  async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
     return this.personRepository.getByName(authUser.id, dto.name, { withHidden: dto.withHidden });
   }
 

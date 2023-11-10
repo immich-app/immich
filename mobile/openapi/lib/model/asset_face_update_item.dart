@@ -13,32 +13,26 @@ part of openapi.api;
 class AssetFaceUpdateItem {
   /// Returns a new [AssetFaceUpdateItem] instance.
   AssetFaceUpdateItem({
-    required this.assetId,
-    required this.personId,
+    required this.assetFaceId,
   });
 
-  String assetId;
-
-  String personId;
+  String assetFaceId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceUpdateItem &&
-     other.assetId == assetId &&
-     other.personId == personId;
+     other.assetFaceId == assetFaceId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetId.hashCode) +
-    (personId.hashCode);
+    (assetFaceId.hashCode);
 
   @override
-  String toString() => 'AssetFaceUpdateItem[assetId=$assetId, personId=$personId]';
+  String toString() => 'AssetFaceUpdateItem[assetFaceId=$assetFaceId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetId'] = this.assetId;
-      json[r'personId'] = this.personId;
+      json[r'assetFaceId'] = this.assetFaceId;
     return json;
   }
 
@@ -50,8 +44,7 @@ class AssetFaceUpdateItem {
       final json = value.cast<String, dynamic>();
 
       return AssetFaceUpdateItem(
-        assetId: mapValueOfType<String>(json, r'assetId')!,
-        personId: mapValueOfType<String>(json, r'personId')!,
+        assetFaceId: mapValueOfType<String>(json, r'assetFaceId')!,
       );
     }
     return null;
@@ -99,8 +92,7 @@ class AssetFaceUpdateItem {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'assetId',
-    'personId',
+    'assetFaceId',
   };
 }
 

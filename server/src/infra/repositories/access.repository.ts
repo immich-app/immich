@@ -5,6 +5,7 @@ import {
   ActivityEntity,
   AlbumEntity,
   AssetEntity,
+  AssetFaceEntity,
   LibraryEntity,
   PartnerEntity,
   PersonEntity,
@@ -20,6 +21,7 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>,
     @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
+    @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SharedLinkEntity) private sharedLinkRepository: Repository<SharedLinkEntity>,
     @InjectRepository(UserTokenEntity) private tokenRepository: Repository<UserTokenEntity>,
   ) {}
@@ -245,6 +247,16 @@ export class AccessRepository implements IAccessRepository {
         where: {
           id: personId,
           ownerId: userId,
+        },
+      });
+    },
+    hasFaceOwnerAccess: (userId: string, assetFaceId: string): Promise<boolean> => {
+      return this.assetFaceRepository.exist({
+        where: {
+          id: assetFaceId,
+          asset: {
+            ownerId: userId,
+          },
         },
       });
     },

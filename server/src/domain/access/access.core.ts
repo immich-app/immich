@@ -245,10 +245,10 @@ export class AccessCore {
         return this.repository.person.hasOwnerAccess(authUser.id, id);
 
       case Permission.PERSON_CREATE:
-        return this.repository.person.hasOwnerAccess(authUser.id, id);
+        return this.repository.person.hasFaceOwnerAccess(authUser.id, id);
 
       case Permission.PERSON_REASSIGN:
-        return this.repository.person.hasOwnerAccess(authUser.id, id);
+        return this.repository.person.hasFaceOwnerAccess(authUser.id, id);
 
       default:
         return false;

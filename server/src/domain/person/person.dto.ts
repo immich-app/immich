@@ -75,6 +75,8 @@ export class PersonResponseDto {
 
 export class AssetFaceResponseDto {
   id!: string;
+  imageHeight!: number;
+  imageWidth!: number;
   boundingBoxX1!: number;
   boundingBoxX2!: number;
   boundingBoxY1!: number;
@@ -92,11 +94,7 @@ export class AssetFaceUpdateDto {
 export class AssetFaceUpdateItem {
   @IsString()
   @IsNotEmpty()
-  personId!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  assetId!: string;
+  assetFaceId!: string;
 }
 
 export class PersonStatisticsResponseDto {
@@ -127,6 +125,8 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
 export function mapFaces(face: AssetFaceEntity): AssetFaceResponseDto {
   return {
     id: face.id,
+    imageHeight: face.imageHeight,
+    imageWidth: face.imageWidth,
     boundingBoxX1: face.boundingBoxX1,
     boundingBoxX2: face.boundingBoxX2,
     boundingBoxY1: face.boundingBoxY1,

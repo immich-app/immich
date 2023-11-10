@@ -12,7 +12,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import PersonSidePanel, { PersonToCreate } from '../faces-page/person-side-panel.svelte';
+  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -20,7 +20,18 @@
   let textarea: HTMLTextAreaElement;
   let description: string;
   let showEditFaces = false;
-  let customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
+  let customFeaturePhoto = new Array<string | null>(asset.people?.length || 0);
+  let previousId: string;
+  $: {
+    if (!previousId) {
+      previousId = asset.id;
+    }
+    if (asset.id !== previousId) {
+      customFeaturePhoto = new Array<string | null>(asset.people?.length || 0);
+      showEditFaces = false;
+      previousId = asset.id;
+    }
+  }
 
   $: isOwner = $page?.data?.user?.id === asset.ownerId;
 
@@ -92,7 +103,7 @@
   };
 </script>
 
-<section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+<section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
     <button
       class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
@@ -142,12 +153,12 @@
       </div>
 
       <div class="mt-4 flex flex-wrap gap-2">
-        {#each people as person (person.id)}
+        {#each people as person, index (person.id)}
           <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
             <ImageThumbnail
               curve
               shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
+              url={customFeaturePhoto[index] || api.getPeopleThumbnailUrl(person.id)}
               altText={person.name}
               title={person.name}
               widthStyle="90px"
@@ -382,7 +393,8 @@
 
 {#if showEditFaces}
   <PersonSidePanel
-    bind:selectedPersonToCreate={customFeaturePhoto}
+    bind:createdPeople={customFeaturePhoto}
+    bind:people2={people}
     assetId={asset.id}
     on:close={() => (showEditFaces = false)}
   />

@@ -57,6 +57,18 @@ interface TrashAsset {
   value: string;
 }
 
+export const assetDataUrl = writable<string>();
+
+export const setAssetDataUrl = (data: string) => {
+  assetDataUrl.set(data);
+};
+
+export const imageDiv = writable<HTMLDivElement>();
+
+export const setimageDiv = (div: HTMLDivElement) => {
+  imageDiv.set(div);
+};
+
 type PendingChange = AddAsset | DeleteAsset | TrashAsset;
 
 export class AssetStore {

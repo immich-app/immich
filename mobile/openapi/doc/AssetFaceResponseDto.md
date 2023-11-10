@@ -13,6 +13,8 @@ Name | Type | Description | Notes
 **boundingBoxY1** | **num** |  | 
 **boundingBoxY2** | **num** |  | 
 **id** | **String** |  | 
+**imageHeight** | **num** |  | 
+**imageWidth** | **num** |  | 
 **person** | [**PersonResponseDto**](PersonResponseDto.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

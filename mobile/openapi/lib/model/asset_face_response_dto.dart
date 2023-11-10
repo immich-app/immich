@@ -18,6 +18,8 @@ class AssetFaceResponseDto {
     required this.boundingBoxY1,
     required this.boundingBoxY2,
     required this.id,
+    required this.imageHeight,
+    required this.imageWidth,
     required this.person,
   });
 
@@ -31,6 +33,10 @@ class AssetFaceResponseDto {
 
   String id;
 
+  num imageHeight;
+
+  num imageWidth;
+
   PersonResponseDto? person;
 
   @override
@@ -40,6 +46,8 @@ class AssetFaceResponseDto {
      other.boundingBoxY1 == boundingBoxY1 &&
      other.boundingBoxY2 == boundingBoxY2 &&
      other.id == id &&
+     other.imageHeight == imageHeight &&
+     other.imageWidth == imageWidth &&
      other.person == person;
 
   @override
@@ -50,10 +58,12 @@ class AssetFaceResponseDto {
     (boundingBoxY1.hashCode) +
     (boundingBoxY2.hashCode) +
     (id.hashCode) +
+    (imageHeight.hashCode) +
+    (imageWidth.hashCode) +
     (person == null ? 0 : person!.hashCode);
 
   @override
-  String toString() => 'AssetFaceResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, person=$person]';
+  String toString() => 'AssetFaceResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, person=$person]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -62,6 +72,8 @@ class AssetFaceResponseDto {
       json[r'boundingBoxY1'] = this.boundingBoxY1;
       json[r'boundingBoxY2'] = this.boundingBoxY2;
       json[r'id'] = this.id;
+      json[r'imageHeight'] = this.imageHeight;
+      json[r'imageWidth'] = this.imageWidth;
     if (this.person != null) {
       json[r'person'] = this.person;
     } else {
@@ -91,6 +103,12 @@ class AssetFaceResponseDto {
             ? null
             : num.parse(json[r'boundingBoxY2'].toString()),
         id: mapValueOfType<String>(json, r'id')!,
+        imageHeight: json[r'imageHeight'] == null
+            ? null
+            : num.parse(json[r'imageHeight'].toString()),
+        imageWidth: json[r'imageWidth'] == null
+            ? null
+            : num.parse(json[r'imageWidth'].toString()),
         person: PersonResponseDto.fromJson(json[r'person']),
       );
     }
@@ -144,6 +162,8 @@ class AssetFaceResponseDto {
     'boundingBoxY1',
     'boundingBoxY2',
     'id',
+    'imageHeight',
+    'imageWidth',
     'person',
   };
 }
