@@ -31,6 +31,7 @@
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: hasPartnerAssetsInSelection = Array.from($selectedAssets).some((asset) => asset.ownerId != data.user.id);
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -55,19 +56,21 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    <DeleteAssets
-      on:escape={() => (handleEscapeKey = true)}
-      onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
-    />
-    <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-      <DownloadAction menuItem />
-      <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
-      {#if $selectedAssets.size > 1}
-        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
-      {/if}
-      <AssetJobActions />
-    </AssetSelectContextMenu>
+    {#if !hasPartnerAssetsInSelection}
+      <DeleteAssets
+        on:escape={() => (handleEscapeKey = true)}
+        onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
+      />
+      <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+        <DownloadAction menuItem />
+        <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
+        {#if $selectedAssets.size > 1}
+          <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+        {/if}
+        <AssetJobActions />
+      </AssetSelectContextMenu>
+    {/if}
   </AssetSelectControlBar>
 {/if}
 
