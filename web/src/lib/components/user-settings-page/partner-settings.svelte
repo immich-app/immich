@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { UserResponseDto, api } from '@api';
+  import { PartnerResponseDto, UserResponseDto, api } from '@api';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import Button from '../elements/buttons/button.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';
@@ -9,6 +9,7 @@
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import Icon from '../elements/icon.svelte';
+  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
 
   export let user: UserResponseDto;
 
@@ -16,10 +17,14 @@
   let removePartner: UserResponseDto | null = null;
 
   let currentPartners = {
-    all: [] as Array<UserResponseDto>,
-    sharedByMe: [] as Array<UserResponseDto>,
-    sharedWithMe: [] as Array<UserResponseDto>,
+    all: [] as Array<PartnerResponseDto>,
+    sharedByMe: [] as Array<PartnerResponseDto>,
+    sharedWithMe: [] as Array<PartnerResponseDto>,
   };
+
+  onMount(() => {
+    refreshPartners();
+  });
 
   const refreshPartners = async () => {
     currentPartners.all = [];
@@ -31,9 +36,11 @@
       api.partnerApi.getPartners({ direction: 'shared-with' }),
     ]);
 
-    currentPartners.all = [...sharedBy, ...sharedWith].filter(
-      (partner, index, self) => self.findIndex((p) => p.id === partner.id) === index,
-    );
+    // It is important to put sharedWith first, otherwise the state won't be updated correctly
+    // for the inTimeline update call.
+    currentPartners.all = [...sharedWith, ...sharedBy]
+      .filter((partner, index, self) => self.findIndex((p) => p.id === partner.id) === index)
+      .sort((a, b) => a.firstName.localeCompare(b.firstName));
     currentPartners.sharedByMe = sharedBy;
     currentPartners.sharedWithMe = sharedWith;
   };
@@ -65,19 +72,24 @@
     }
   };
 
-  onMount(() => {
-    refreshPartners();
-  });
+  const handleShowOnTimelineChanged = async (sharedById: string, value: boolean) => {
+    try {
+      await api.partnerApi.updatePartner({ id: sharedById, updatePartnerDto: { inTimeline: value } });
+      await refreshPartners();
+    } catch (error) {
+      handleError(error, 'Unable to add partners');
+    }
+  };
 </script>
 
 <section class="my-4">
   {#if currentPartners.all.length > 0}
-    <div class="">
-      {#each Array.from(currentPartners.all) as partner (partner.id)}
-        {@const isSharedByMe = currentPartners.sharedByMe.some((p) => p.id === partner.id)}
-        {@const isSharedWithMe = currentPartners.sharedWithMe.some((p) => p.id === partner.id)}
+    {#each currentPartners.all as partner (partner.id)}
+      {@const isSharedByMe = currentPartners.sharedByMe.some((p) => p.id === partner.id)}
+      {@const isSharedWithMe = currentPartners.sharedWithMe.some((p) => p.id === partner.id)}
 
-        <div class="flex gap-4 rounded-lg py-4 transition-all justify-between">
+      <div class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-6 bg-slate-50 dark:bg-gray-900 p-5">
+        <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
           <div class="flex gap-4">
             <UserAvatar user={partner} size="md" autoColor />
             <div class="text-left">
@@ -107,7 +119,7 @@
             <p class="text-md">{partner.firstName} can access</p>
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
-                <Icon path={mdiCheck} /> All your photos and videos except Archived and Deleted items
+                <Icon path={mdiCheck} /> All your photos and videos except those in Archived and Deleted
               </li>
               <li class="flex gap-2 place-items-center py-1">
                 <Icon path={mdiCheck} /> The location where your photos were taken
@@ -116,34 +128,22 @@
           {/if}
 
           <!-- this user is sharing assets with me -->
-          {#if isSharedWithMe}{/if}
+          {#if isSharedWithMe}
+            <hr class="my-4 border border-gray-200 dark:border-gray-700" />
+            <p class="text-xs font-medium my-4">PHOTOS FROM {partner.firstName.toUpperCase()}</p>
+            <SettingSwitch
+              title="Show on timeline"
+              subtitle="Merge photos and videos from this user into your timeline"
+              bind:checked={partner.inTimeline}
+              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner.id, detail)}
+            />
+          {/if}
         </div>
-      {/each}
-    </div>
+      </div>
+    {/each}
   {/if}
-  <!-- 
-  {#if currentPartners.length > 0}
-    <hr />
-    <p class="text-xs mt-4 dark:text-white">PARTNERS THAT IS SHARING WITH YOU</p>
-    <div>
-      {#each currentPartners as currentPartner (currentPartner.id)}
-        <div class="flex gap-4 rounded-lg px-5 py-4 transition-all">
-          <UserAvatar user={currentPartner} size="md" autoColor />
-          <div class="text-left">
-            <p class="text-immich-fg dark:text-immich-dark-fg">
-              {currentPartner.firstName}
-              {currentPartner.lastName}
-            </p>
-            <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
-              {currentPartner.email}
-            </p>
-          </div>
-        </div>
-      {/each}
-    </div>
-  {/if} -->
 
-  <div class="flex justify-end">
+  <div class="flex justify-end mt-5">
     <Button size="sm" on:click={() => (createPartner = true)}>Add partner</Button>
   </div>
 </section>

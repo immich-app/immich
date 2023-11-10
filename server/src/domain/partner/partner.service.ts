@@ -4,7 +4,7 @@ import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { IAccessRepository, IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';
 import { UserResponseDto, mapUser } from '../user';
-import { UpdatePartnerDto, UpdatePartnerResponseDto } from './partner.dto';
+import { PartnerResponseDto, UpdatePartnerDto, UpdatePartnerResponseDto } from './partner.dto';
 
 @Injectable()
 export class PartnerService {
@@ -38,21 +38,27 @@ export class PartnerService {
     await this.repository.remove(partner);
   }
 
-  async getAll(authUser: AuthUserDto, direction: PartnerDirection): Promise<UserResponseDto[]> {
+  async getAll(authUser: AuthUserDto, direction: PartnerDirection): Promise<PartnerResponseDto[]> {
     const partners = await this.repository.getAll(authUser.id);
     const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
     return partners
       .filter((partner) => partner.sharedBy && partner.sharedWith) // Filter out soft deleted users
       .filter((partner) => partner[key] === authUser.id)
-      .map((partner) => this.map(partner, direction));
+      .map((partner) => {
+        const user = this.map(partner, direction) as PartnerResponseDto;
+        user.inTimeline = partner.inTimeline;
+        return user;
+      });
   }
 
   async update(authUser: AuthUserDto, sharedById: string, dto: UpdatePartnerDto): Promise<UpdatePartnerResponseDto> {
     await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, sharedById);
     const partnerId: PartnerIds = { sharedById, sharedWithId: authUser.id };
 
+    console.log('payload', dto);
     const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });
 
+    console.log('new entity', entity);
     return this.mapUpdate(entity);
   }
 

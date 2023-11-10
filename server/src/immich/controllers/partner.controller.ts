@@ -1,5 +1,5 @@
 import { AuthUserDto, PartnerDirection, PartnerService, UserResponseDto } from '@app/domain';
-import { UpdatePartnerDto, UpdatePartnerResponseDto } from '@app/domain/partner/partner.dto';
+import { PartnerResponseDto, UpdatePartnerDto, UpdatePartnerResponseDto } from '@app/domain/partner/partner.dto';
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated } from '../app.guard';
@@ -18,7 +18,7 @@ export class PartnerController {
   getPartners(
     @AuthUser() authUser: AuthUserDto,
     @Query('direction') direction: PartnerDirection,
-  ): Promise<UserResponseDto[]> {
+  ): Promise<PartnerResponseDto[]> {
     return this.service.getAll(authUser, direction);
   }
 

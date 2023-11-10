@@ -71,7 +71,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getPartners**
-> List<UserResponseDto> getPartners(direction)
+> List<PartnerResponseDto> getPartners(direction)
 
 
 
@@ -112,7 +112,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List<UserResponseDto>**](UserResponseDto.md)
+[**List<PartnerResponseDto>**](PartnerResponseDto.md)
 
 ### Authorization
 

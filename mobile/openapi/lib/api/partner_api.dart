@@ -98,7 +98,7 @@ class PartnerApi {
   /// Parameters:
   ///
   /// * [String] direction (required):
-  Future<List<UserResponseDto>?> getPartners(String direction,) async {
+  Future<List<PartnerResponseDto>?> getPartners(String direction,) async {
     final response = await getPartnersWithHttpInfo(direction,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -108,8 +108,8 @@ class PartnerApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<UserResponseDto>') as List)
-        .cast<UserResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<PartnerResponseDto>') as List)
+        .cast<PartnerResponseDto>()
         .toList();
 
     }

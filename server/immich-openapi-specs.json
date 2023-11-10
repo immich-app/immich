@@ -3499,7 +3499,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/UserResponseDto"
+                    "$ref": "#/components/schemas/PartnerResponseDto"
                   },
                   "type": "array"
                 }
@@ -7627,6 +7627,77 @@
         "required": [
           "enabled",
           "passwordLoginEnabled"
+        ],
+        "type": "object"
+      },
+      "PartnerResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "externalPath": {
+            "nullable": true,
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "inTimeline": {
+            "type": "boolean"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
+          "oauthId": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "storageLabel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "profileImagePath",
+          "storageLabel",
+          "externalPath",
+          "shouldChangePassword",
+          "isAdmin",
+          "createdAt",
+          "deletedAt",
+          "updatedAt",
+          "oauthId"
         ],
         "type": "object"
       },

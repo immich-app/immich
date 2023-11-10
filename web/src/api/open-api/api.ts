@@ -2364,6 +2364,103 @@ export interface OAuthConfigResponseDto {
 /**
  * 
  * @export
+ * @interface PartnerResponseDto
+ */
+export interface PartnerResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'deletedAt': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'email': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'externalPath': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'firstName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PartnerResponseDto
+     */
+    'inTimeline'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PartnerResponseDto
+     */
+    'isAdmin': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'lastName': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PartnerResponseDto
+     */
+    'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'oauthId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'profileImagePath': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PartnerResponseDto
+     */
+    'shouldChangePassword': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'storageLabel': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'updatedAt': string;
+}
+/**
+ * 
+ * @export
  * @enum {string}
  */
 
@@ -12416,7 +12513,7 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPartners(direction: 'shared-by' | 'shared-with', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<UserResponseDto>>> {
+        async getPartners(direction: 'shared-by' | 'shared-with', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PartnerResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPartners(direction, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -12466,7 +12563,7 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPartners(requestParameters: PartnerApiGetPartnersRequest, options?: AxiosRequestConfig): AxiosPromise<Array<UserResponseDto>> {
+        getPartners(requestParameters: PartnerApiGetPartnersRequest, options?: AxiosRequestConfig): AxiosPromise<Array<PartnerResponseDto>> {
             return localVarFp.getPartners(requestParameters.direction, options).then((request) => request(axios, basePath));
         },
         /**

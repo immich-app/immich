@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<UserResponseDto>> getPartners(String direction) async
+    //Future<List<PartnerResponseDto>> getPartners(String direction) async
     test('test getPartners', () async {
       // TODO
     });

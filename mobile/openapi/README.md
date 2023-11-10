@@ -284,6 +284,7 @@ Class | Method | HTTP request | Description
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
+ - [PartnerResponseDto](doc//PartnerResponseDto.md)
  - [PathEntityType](doc//PathEntityType.md)
  - [PathType](doc//PathType.md)
  - [PeopleResponseDto](doc//PeopleResponseDto.md)
