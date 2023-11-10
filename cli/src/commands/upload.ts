@@ -88,9 +88,9 @@ export default class Upload extends BaseCommand {
 
     let messageStart;
     if (this.dryRun) {
-      messageStart = 'Would have ';
+      messageStart = 'Would have';
     } else {
-      messageStart = 'Successfully ';
+      messageStart = 'Successfully';
     }
 
     if (uploadCounter === 0) {
