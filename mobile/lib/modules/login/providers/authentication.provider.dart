@@ -188,7 +188,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.put(StoreKey.deviceId, deviceId);
         Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
         Store.put(
-            StoreKey.currentUser, User.fromUserResponseDto(userResponseDto));
+          StoreKey.currentUser,
+          User.fromUserResponseDto(userResponseDto),
+        );
         Store.put(StoreKey.serverUrl, serverUrl);
         Store.put(StoreKey.accessToken, accessToken);
 
