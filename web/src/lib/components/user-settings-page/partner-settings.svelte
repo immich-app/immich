@@ -95,16 +95,12 @@
     }
   };
 
-  const handleShowOnTimelineChanged = async (sharedById: string, inTimeline: boolean) => {
+  const handleShowOnTimelineChanged = async (partner: PartnerSharing, inTimeline: boolean) => {
     try {
-      await api.partnerApi.updatePartner({ id: sharedById, updatePartnerDto: { inTimeline } });
+      await api.partnerApi.updatePartner({ id: partner.user.id, updatePartnerDto: { inTimeline } });
 
-      partners = partners.map((p) => {
-        if (p.user.id === sharedById) {
-          p.inTimeline = inTimeline;
-        }
-        return p;
-      });
+      partner.inTimeline = inTimeline;
+      partners = partners;
     } catch (error) {
       handleError(error, 'Unable to update timeline display status');
     }
@@ -161,7 +157,7 @@
               title="Show in timeline"
               subtitle="Show photos and videos from this user in your timeline"
               bind:checked={partner.inTimeline}
-              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner.user.id, detail)}
+              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
             />
           {/if}
         </div>
