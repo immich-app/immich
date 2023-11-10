@@ -23,19 +23,19 @@ class AssetFaceResponseDto {
     required this.person,
   });
 
-  num boundingBoxX1;
+  int boundingBoxX1;
 
-  num boundingBoxX2;
+  int boundingBoxX2;
 
-  num boundingBoxY1;
+  int boundingBoxY1;
 
-  num boundingBoxY2;
+  int boundingBoxY2;
 
   String id;
 
-  num imageHeight;
+  int imageHeight;
 
-  num imageWidth;
+  int imageWidth;
 
   PersonResponseDto? person;
 
@@ -90,25 +90,13 @@ class AssetFaceResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AssetFaceResponseDto(
-        boundingBoxX1: json[r'boundingBoxX1'] == null
-            ? null
-            : num.parse(json[r'boundingBoxX1'].toString()),
-        boundingBoxX2: json[r'boundingBoxX2'] == null
-            ? null
-            : num.parse(json[r'boundingBoxX2'].toString()),
-        boundingBoxY1: json[r'boundingBoxY1'] == null
-            ? null
-            : num.parse(json[r'boundingBoxY1'].toString()),
-        boundingBoxY2: json[r'boundingBoxY2'] == null
-            ? null
-            : num.parse(json[r'boundingBoxY2'].toString()),
+        boundingBoxX1: mapValueOfType<int>(json, r'boundingBoxX1')!,
+        boundingBoxX2: mapValueOfType<int>(json, r'boundingBoxX2')!,
+        boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
+        boundingBoxY2: mapValueOfType<int>(json, r'boundingBoxY2')!,
         id: mapValueOfType<String>(json, r'id')!,
-        imageHeight: json[r'imageHeight'] == null
-            ? null
-            : num.parse(json[r'imageHeight'].toString()),
-        imageWidth: json[r'imageWidth'] == null
-            ? null
-            : num.parse(json[r'imageWidth'].toString()),
+        imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
+        imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         person: PersonResponseDto.fromJson(json[r'person']),
       );
     }

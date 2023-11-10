@@ -16,22 +16,22 @@ void main() {
   // final instance = AssetFaceResponseDto();
 
   group('test AssetFaceResponseDto', () {
-    // num boundingBoxX1
+    // int boundingBoxX1
     test('to test the property `boundingBoxX1`', () async {
       // TODO
     });
 
-    // num boundingBoxX2
+    // int boundingBoxX2
     test('to test the property `boundingBoxX2`', () async {
       // TODO
     });
 
-    // num boundingBoxY1
+    // int boundingBoxY1
     test('to test the property `boundingBoxY1`', () async {
       // TODO
     });
 
-    // num boundingBoxY2
+    // int boundingBoxY2
     test('to test the property `boundingBoxY2`', () async {
       // TODO
     });
@@ -41,12 +41,12 @@ void main() {
       // TODO
     });
 
-    // num imageHeight
+    // int imageHeight
     test('to test the property `imageHeight`', () async {
       // TODO
     });
 
-    // num imageWidth
+    // int imageWidth
     test('to test the property `imageWidth`', () async {
       // TODO
     });

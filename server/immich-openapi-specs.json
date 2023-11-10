@@ -6278,25 +6278,25 @@
       "AssetFaceResponseDto": {
         "properties": {
           "boundingBoxX1": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxX2": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxY1": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxY2": {
-            "type": "number"
+            "type": "integer"
           },
           "id": {
             "type": "string"
           },
           "imageHeight": {
-            "type": "number"
+            "type": "integer"
           },
           "imageWidth": {
-            "type": "number"
+            "type": "integer"
           },
           "person": {
             "allOf": [
@@ -6308,13 +6308,13 @@
           }
         },
         "required": [
-          "id",
           "imageHeight",
           "imageWidth",
           "boundingBoxX1",
           "boundingBoxX2",
           "boundingBoxY1",
           "boundingBoxY2",
+          "id",
           "person"
         ],
         "type": "object"
@@ -6499,7 +6499,7 @@
           },
           "people": {
             "items": {
-              "$ref": "#/components/schemas/PersonResponseDto"
+              "$ref": "#/components/schemas/PersonWithFacesResponseDto"
             },
             "type": "array"
           },
@@ -7928,6 +7928,42 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "PersonWithFacesResponseDto": {
+        "properties": {
+          "birthDate": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "faces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceResponseDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isHidden": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "birthDate",
+          "faces",
+          "id",
+          "name",
+          "thumbnailPath",
+          "isHidden"
+        ],
         "type": "object"
       },
       "QueueStatusDto": {

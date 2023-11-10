@@ -13,6 +13,9 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import Map from '../shared-components/map/map.svelte';
+  import { imageDiv } from '$lib/stores/assets.store';
+  import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -66,6 +69,16 @@
     }
 
     return undefined;
+  };
+
+  const handleShowBoundingBox = (index: number) => {
+    const result = showBoundingBox(people[index].faces);
+    if ($photoZoomState.currentZoom !== 1) {
+      return;
+    }
+    for (let i = 0; i < result.length; i++) {
+      $imageDiv.appendChild(result[i]);
+    }
   };
 
   const autoGrowHeight = (e: Event) => {
@@ -144,35 +157,43 @@
 
       <div class="mt-4 flex flex-wrap gap-2">
         {#each people as person, index (person.id)}
-          <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
-            <ImageThumbnail
-              curve
-              shadow
-              url={customFeaturePhoto[index] || api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              title={person.name}
-              widthStyle="90px"
-              heightStyle="90px"
-              thumbhash={null}
-            />
-            <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-            {#if person.birthDate}
-              {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-              <p
-                class="font-light"
-                title={personBirthDate.toLocaleString(
-                  {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  },
-                  { locale: $locale },
-                )}
-              >
-                Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-              </p>
-            {/if}
-          </a>
+          <div
+            role="button"
+            tabindex={index}
+            on:focus={() => handleShowBoundingBox(index)}
+            on:mouseover={() => handleShowBoundingBox(index)}
+            on:mouseleave={() => cleanBoundingBox()}
+          >
+            <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
+              <ImageThumbnail
+                curve
+                shadow
+                url={customFeaturePhoto[index] || api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                title={person.name}
+                widthStyle="90px"
+                heightStyle="90px"
+                thumbhash={null}
+              />
+              <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+              {#if person.birthDate}
+                {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+                <p
+                  class="font-light"
+                  title={personBirthDate.toLocaleString(
+                    {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    },
+                    { locale: $locale },
+                  )}
+                >
+                  Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                </p>
+              {/if}
+            </a>
+          </div>
         {/each}
       </div>
     </section>

@@ -297,6 +297,7 @@ Class | Method | HTTP request | Description
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
+ - [PersonWithFacesResponseDto](doc//PersonWithFacesResponseDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)

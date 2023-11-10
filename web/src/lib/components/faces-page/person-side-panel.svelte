@@ -15,6 +15,8 @@
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus, mdiRestart } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
   import { assetDataUrl, imageDiv } from '$lib/stores/assets.store';
+  import { boundingBoxClassName, cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
 
   let people: AssetFaceResponseDto[] = [];
 
@@ -60,22 +62,6 @@
     }
   });
 
-  const cleanBoundingBox = () => {
-    let boundingBox = document.getElementById('boundingbox');
-    if (boundingBox) $imageDiv.removeChild(boundingBox);
-  };
-
-  function getContainedSize(img: HTMLImageElement) {
-    var ratio = img.naturalWidth / img.naturalHeight;
-    var width = img.height * ratio;
-    var height = img.height;
-    if (width > img.width) {
-      width = img.width;
-      height = img.width / ratio;
-    }
-    return { width, height };
-  }
-
   const searchPeople = async () => {
     if ((searchedPeople.length < 20 && searchName.startsWith(searchWord)) || searchName === '') {
       return;
@@ -94,45 +80,12 @@
     isSearchingPeople = false;
   };
 
-  const showBoundingBox = (index: number) => {
-    cleanBoundingBox();
-    let x = 0;
-    let y = 0;
-    let clientHeight = 0;
-    let clientWidth = 0;
-    const image: HTMLImageElement = document.getElementById('img') as HTMLImageElement;
-
-    if (image) {
-      clientHeight = image.clientHeight;
-      clientWidth = image.clientWidth;
-
-      const { width, height } = getContainedSize(image);
-      x = width;
-      y = height;
+  const handleShowBoundingBox = (index: number) => {
+    const [result] = showBoundingBox([people[index]]);
+    if ($photoZoomState.currentZoom !== 1) {
+      return;
     }
-
-    let absoluteDiv = document.createElement('div');
-
-    // Add a class to the new div for styling
-    absoluteDiv.classList.add('absoluteDiv');
-    absoluteDiv.id = 'boundingbox';
-
-    let coordinates = {
-      x1: (x / people[index].imageWidth) * people[index].boundingBoxX1 + (clientWidth - x) / 2,
-      x2: (x / people[index].imageWidth) * people[index].boundingBoxX2 + (clientWidth - x) / 2,
-      y1: (y / people[index].imageHeight) * people[index].boundingBoxY1 + (clientHeight - y) / 2,
-      y2: (y / people[index].imageHeight) * people[index].boundingBoxY2 + (clientHeight - y) / 2,
-    };
-
-    absoluteDiv.style.setProperty('position', 'absolute');
-    absoluteDiv.style.setProperty('top', coordinates.y1 + 'px');
-    absoluteDiv.style.setProperty('left', coordinates.x1 + 'px');
-    absoluteDiv.style.setProperty('width', coordinates.x2 - coordinates.x1 + 'px');
-    absoluteDiv.style.setProperty('height', coordinates.y2 - coordinates.y1 + 'px');
-    absoluteDiv.style.setProperty('border-color', 'rgb(255 255 255)');
-    absoluteDiv.style.setProperty('border-width', '2px');
-    absoluteDiv.style.setProperty('border-radius', '0.75rem');
-    $imageDiv.appendChild(absoluteDiv);
+    $imageDiv.appendChild(result);
   };
 
   function initInput(element: HTMLInputElement) {
@@ -319,8 +272,8 @@
                 role="button"
                 tabindex={index}
                 class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
-                on:focus={() => showBoundingBox(index)}
-                on:mouseover={() => showBoundingBox(index)}
+                on:focus={() => handleShowBoundingBox(index)}
+                on:mouseover={() => handleShowBoundingBox(index)}
                 on:mouseleave={() => cleanBoundingBox()}
               >
                 <ImageThumbnail
@@ -423,7 +376,7 @@
             <Icon path={mdiArrowLeftThin} size="24" />
           </div>
         </button>
-        <div class="w-full flex ">
+        <div class="w-full flex">
           <input
             class="w-full gap-2 bg-immich-bg dark:bg-immich-dark-bg"
             type="text"
@@ -433,9 +386,9 @@
             use:initInput
           />
           {#if isSearchingPeople}
-          <div>
-            <LoadingSpinner/>
-          </div>
+            <div>
+              <LoadingSpinner />
+            </div>
           {/if}
         </div>
         <button

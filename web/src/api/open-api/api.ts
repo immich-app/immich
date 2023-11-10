@@ -891,10 +891,10 @@ export interface AssetResponseDto {
     'ownerId': string;
     /**
      * 
-     * @type {Array<PersonResponseDto>}
+     * @type {Array<PersonWithFacesResponseDto>}
      * @memberof AssetResponseDto
      */
-    'people'?: Array<PersonResponseDto>;
+    'people'?: Array<PersonWithFacesResponseDto>;
     /**
      * 
      * @type {boolean}
@@ -2631,6 +2631,49 @@ export interface PersonUpdateDto {
      * @memberof PersonUpdateDto
      */
     'name'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface PersonWithFacesResponseDto
+ */
+export interface PersonWithFacesResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonWithFacesResponseDto
+     */
+    'birthDate': string | null;
+    /**
+     * 
+     * @type {Array<AssetFaceResponseDto>}
+     * @memberof PersonWithFacesResponseDto
+     */
+    'faces': Array<AssetFaceResponseDto>;
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonWithFacesResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PersonWithFacesResponseDto
+     */
+    'isHidden': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonWithFacesResponseDto
+     */
+    'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonWithFacesResponseDto
+     */
+    'thumbnailPath': string;
 }
 /**
  * 

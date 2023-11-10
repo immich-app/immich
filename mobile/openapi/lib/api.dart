@@ -135,6 +135,7 @@ part 'model/people_update_item.dart';
 part 'model/person_response_dto.dart';
 part 'model/person_statistics_response_dto.dart';
 part 'model/person_update_dto.dart';
+part 'model/person_with_faces_response_dto.dart';
 part 'model/queue_status_dto.dart';
 part 'model/reaction_level.dart';
 part 'model/reaction_type.dart';

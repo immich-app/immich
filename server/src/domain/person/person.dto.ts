@@ -73,13 +73,25 @@ export class PersonResponseDto {
   isHidden!: boolean;
 }
 
+export class PersonWithFacesResponseDto extends PersonResponseDto {
+  faces!: AssetFaceResponseDto[];
+}
+
 export class AssetFaceResponseDto {
+  @IsString()
+  @IsNotEmpty()
   id!: string;
+  @ApiProperty({ type: 'integer' })
   imageHeight!: number;
+  @ApiProperty({ type: 'integer' })
   imageWidth!: number;
+  @ApiProperty({ type: 'integer' })
   boundingBoxX1!: number;
+  @ApiProperty({ type: 'integer' })
   boundingBoxX2!: number;
+  @ApiProperty({ type: 'integer' })
   boundingBoxY1!: number;
+  @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
   person!: PersonResponseDto | null;
 }

@@ -8,7 +8,8 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { assetDataUrl, setAssetDataUrl, setimageDiv } from '$lib/stores/assets.store';
+  import { assetDataUrl, photoViewerId, setAssetDataUrl, setimageDiv } from '$lib/stores/assets.store';
+  import { cleanBoundingBox } from '$lib/utils/people-utils';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -108,9 +109,11 @@
 
     if (state.currentZoom > 1 && isWebCompatibleImage(asset) && !hasZoomed) {
       hasZoomed = true;
-      let boundingBox = document.getElementById('boundingbox');
-      if (boundingBox) imgElement.removeChild(boundingBox);
+
       loadAssetData({ loadOriginal: true });
+    }
+    if (state.currentZoom !== 1) {
+      cleanBoundingBox();
     }
   });
 
@@ -134,7 +137,7 @@
   {:then}
     <div bind:this={imgElement} class="h-full w-full">
       <img
-        id="img"
+        id={photoViewerId}
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={$assetDataUrl}
         alt={asset.id}
