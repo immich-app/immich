@@ -1,8 +1,8 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -28,7 +28,7 @@ class FavoritesPage extends HookConsumerWidget {
     AppBar buildAppBar() {
       return AppBar(
         leading: IconButton(
-          onPressed: () => AutoRouter.of(context).pop(),
+          onPressed: () => context.autoPop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         centerTitle: true,

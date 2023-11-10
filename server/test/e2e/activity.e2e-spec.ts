@@ -247,6 +247,20 @@ describe(`${ActivityController.name} (e2e)`, () => {
       expect(body).toEqual(reaction);
     });
 
+    it('should not confuse an album like with an asset like', async () => {
+      const reaction = await api.activityApi.create(server, admin.accessToken, {
+        albumId: album.id,
+        assetId: asset.id,
+        type: ReactionType.LIKE,
+      });
+      const { status, body } = await request(server)
+        .post('/activity')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ albumId: album.id, type: 'like' });
+      expect(status).toEqual(201);
+      expect(body.id).not.toEqual(reaction.id);
+    });
+
     it('should add a comment to an asset', async () => {
       const { status, body } = await request(server)
         .post('/activity')

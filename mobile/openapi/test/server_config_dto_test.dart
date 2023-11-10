@@ -26,11 +26,6 @@ void main() {
       // TODO
     });
 
-    // String mapTileUrl
-    test('to test the property `mapTileUrl`', () async {
-      // TODO
-    });
-
     // String oauthButtonText
     test('to test the property `oauthButtonText`', () async {
       // TODO

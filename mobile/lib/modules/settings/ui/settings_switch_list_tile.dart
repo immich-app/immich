@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 class SettingsSwitchListTile extends StatelessWidget {
@@ -23,7 +24,7 @@ class SettingsSwitchListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
-      selectedTileColor: enabled ? null : Theme.of(context).disabledColor,
+      selectedTileColor: enabled ? null : context.themeData.disabledColor,
       value: valueNotifier.value,
       onChanged: (bool value) {
         if (enabled) {
@@ -34,16 +35,13 @@ class SettingsSwitchListTile extends StatelessWidget {
           onChanged!(value);
         }
       },
-      activeColor: enabled
-          ? Theme.of(context).primaryColor
-          : Theme.of(context).disabledColor,
+      activeColor:
+          enabled ? context.primaryColor : context.themeData.disabledColor,
       dense: true,
       title: Text(
         title,
-        style: Theme.of(context)
-            .textTheme
-            .labelLarge
-            ?.copyWith(fontWeight: FontWeight.bold),
+        style:
+            context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
       ),
       subtitle: subtitle != null ? Text(subtitle!) : null,
     );

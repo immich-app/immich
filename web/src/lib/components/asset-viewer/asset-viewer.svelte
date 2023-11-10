@@ -756,6 +756,7 @@
         albumOwnerId={album.ownerId}
         albumId={album.id}
         assetId={asset.id}
+        {isLiked}
         bind:reactions
         on:addComment={handleAddComment}
         on:deleteComment={handleRemoveComment}

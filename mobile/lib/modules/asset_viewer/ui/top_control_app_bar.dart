@@ -1,6 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
@@ -147,7 +147,7 @@ class TopControlAppBar extends HookConsumerWidget {
     Widget buildBackButton() {
       return IconButton(
         onPressed: () {
-          AutoRouter.of(context).pop();
+          context.autoPop();
         },
         icon: Icon(
           Icons.arrow_back_ios_new_rounded,

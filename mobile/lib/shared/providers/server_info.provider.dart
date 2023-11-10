@@ -23,7 +23,6 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
               trash: true,
             ),
             serverConfig: const ServerConfig(
-              mapTileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
               trashDays: 30,
             ),
             serverDiskInfo: const ServerDiskInfo(

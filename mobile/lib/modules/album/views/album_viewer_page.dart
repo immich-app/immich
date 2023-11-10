@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -67,7 +67,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     /// If they exist, add to selected asset state to show they are already selected.
     void onAddPhotosPressed(Album albumInfo) async {
       AssetSelectionPageResult? returnPayload =
-          await AutoRouter.of(context).push<AssetSelectionPageResult?>(
+          await context.autoPush<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: albumInfo.assets,
           canDeselect: false,
@@ -97,8 +97,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     void onAddUsersPressed(Album album) async {
-      List<String>? sharedUserIds =
-          await AutoRouter.of(context).push<List<String>?>(
+      List<String>? sharedUserIds = await context.autoPush<List<String>?>(
         SelectAdditionalUserForSharingRoute(album: album),
       );
 
@@ -203,7 +202,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     Widget buildSharedUserIconsRow(Album album) {
       return GestureDetector(
         onTap: () async {
-          await AutoRouter.of(context).push(AlbumOptionsRoute(album: album));
+          await context.autoPush(AlbumOptionsRoute(album: album));
           ref.invalidate(albumDetailProvider(album.id));
         },
         child: SizedBox(
@@ -242,7 +241,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     onActivitiesPressed(Album album) {
       if (album.remoteId != null) {
-        AutoRouter.of(context).push(
+        context.autoPush(
           ActivitiesRoute(
             albumId: album.remoteId!,
             appBarTitle: album.name,

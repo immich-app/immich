@@ -1,6 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -43,9 +43,9 @@ class ThumbnailImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final assetContainerColor =
-        isDarkTheme ? Colors.blueGrey : Theme.of(context).primaryColorLight;
+    final assetContainerColor = context.isDarkTheme
+        ? Colors.blueGrey
+        : context.themeData.primaryColorLight;
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
     final isFromDto = asset.id == Isar.autoIncrement;
 
@@ -58,7 +58,7 @@ class ThumbnailImage extends StatelessWidget {
           ),
           child: Icon(
             Icons.check_circle_rounded,
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
           ),
         );
       } else {
@@ -178,7 +178,7 @@ class ThumbnailImage extends StatelessWidget {
             onSelect?.call();
           }
         } else {
-          AutoRouter.of(context).push(
+          context.autoPush(
             GalleryViewerRoute(
               initialIndex: index,
               loadAsset: loadAsset,
