@@ -3,17 +3,19 @@
   "extends": ["config:base"],
   "packageRules": [
     {
-      "matchPaths": ["mobile"],
-      "groupName": "mobile"
+      "matchFileNames": ["mobile/**"],
+      "groupName": "mobile",
+      "matchUpdateTypes": ["minor", "patch"]
     },
     {
-      "matchPaths": ["server"],
-      "groupName": "server"
+      "matchFileNames": ["server/**"],
+      "groupName": "server",
+      "matchUpdateTypes": ["minor", "patch"]
     },
     {
-      "matchPaths": ["web"],
-      "groupName": "web"
+      "matchFileNames": ["web/**"],
+      "groupName": "web",
+      "matchUpdateTypes": ["minor", "patch"]
     }
   ],
-  "enabled": false
 }
