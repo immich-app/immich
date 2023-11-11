@@ -190,8 +190,13 @@ export class AssetService {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
     }
+
     if (dto.withPartners) {
-      if (dto.isArchived !== undefined || dto.isTrashed !== undefined || dto.isFavorite !== undefined) {
+      const requestedArchived = dto.isArchived === true || dto.isArchived === undefined;
+      const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
+      const requestedTrash = dto.isTrashed === true;
+
+      if (requestedArchived || requestedFavorite || requestedTrash) {
         throw new BadRequestException(
           'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
         );

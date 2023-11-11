@@ -398,7 +398,7 @@ describe(AssetService.name, () => {
       });
     });
 
-    it('should throw error if withParners is true and isArchived true or false', async () => {
+    it('should throw an error if withParners is true and isArchived true or undefined', async () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
@@ -413,36 +413,14 @@ describe(AssetService.name, () => {
         sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
-          isArchived: false,
+          isArchived: undefined,
           withPartners: true,
           userId: authStub.admin.id,
         }),
       ).rejects.toThrowError(BadRequestException);
     });
 
-    it('should throw error if withParners is true and isTrashed true or false', async () => {
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isTrashed: true,
-          withPartners: true,
-          userId: authStub.admin.id,
-        }),
-      ).rejects.toThrowError(BadRequestException);
-
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isTrashed: false,
-          withPartners: true,
-          userId: authStub.admin.id,
-        }),
-      ).rejects.toThrowError(BadRequestException);
-    });
-
-    it('should throw error if withParners is true and isFavorite true or false', async () => {
+    it('should throw an error if withParners is true and isFavorite is either true or false', async () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
@@ -464,26 +442,12 @@ describe(AssetService.name, () => {
       ).rejects.toThrowError(BadRequestException);
     });
 
-    it('should throw error if withParners is true and any of value isArchived/isTrashed/isFavorite are either true or false', async () => {
+    it('should throw an error if withParners is true and isTrash is true', async () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           size: TimeBucketSize.DAY,
           timeBucket: 'bucket',
-          isArchived: true,
           isTrashed: true,
-          isFavorite: true,
-          withPartners: true,
-          userId: authStub.admin.id,
-        }),
-      ).rejects.toThrowError(BadRequestException);
-
-      await expect(
-        sut.getTimeBucket(authStub.admin, {
-          size: TimeBucketSize.DAY,
-          timeBucket: 'bucket',
-          isArchived: false,
-          isTrashed: false,
-          isFavorite: false,
           withPartners: true,
           userId: authStub.admin.id,
         }),
