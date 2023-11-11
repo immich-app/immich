@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class ImmichTitleText extends StatelessWidget {
   final double fontSize;
@@ -18,9 +19,8 @@ class ImmichTitleText extends StatelessWidget {
         fontFamily: 'SnowburstOne',
         fontWeight: FontWeight.bold,
         fontSize: fontSize,
-        color: color ?? Theme.of(context).primaryColor,
+        color: color ?? context.primaryColor,
       ),
     );
   }
-
 }

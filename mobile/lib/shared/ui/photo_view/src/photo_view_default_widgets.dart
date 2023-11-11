@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class PhotoViewDefaultError extends StatelessWidget {
   const PhotoViewDefaultError({Key? key, required this.decoration})
@@ -13,7 +14,7 @@ class PhotoViewDefaultError extends StatelessWidget {
       child: Center(
         child: Icon(
           Icons.broken_image,
-          color: Theme.of(context).primaryColor,
+          color: context.primaryColor,
           size: 40.0,
         ),
       ),

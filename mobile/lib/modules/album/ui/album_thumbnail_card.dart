@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -22,7 +23,8 @@ class AlbumThumbnailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    var isDarkTheme = context.isDarkTheme;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         var cardSize = constraints.maxWidth;
@@ -81,14 +83,14 @@ class AlbumThumbnailCard extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'WorkSans',
                     fontSize: 12,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: isDarkTheme ? Colors.white : Colors.black,
                   ),
                 ),
                 if (owner != null) const TextSpan(text: ' · '),
                 if (owner != null)
                   TextSpan(
                     text: owner,
-                    style: Theme.of(context).textTheme.labelSmall,
+                    style: context.textTheme.labelSmall,
                   ),
               ],
             ),
@@ -122,8 +124,8 @@ class AlbumThumbnailCard extends StatelessWidget {
                           album.name,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: isDarkMode
-                                ? Theme.of(context).primaryColor
+                            color: isDarkTheme
+                                ? context.primaryColor
                                 : Colors.black,
                           ),
                         ),

@@ -1,6 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -51,13 +51,13 @@ class ThumbnailImage extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: context.colorScheme.surfaceVariant,
           ),
           child: Icon(
             Icons.check_circle_rounded,
             color: onDeselect == null
-                ? Theme.of(context).colorScheme.primary.withAlpha(120)
-                : Theme.of(context).colorScheme.primary,
+                ? context.primaryColor.withAlpha(120)
+                : context.primaryColor,
           ),
         );
       } else {
@@ -134,7 +134,7 @@ class ThumbnailImage extends StatelessWidget {
       final image = Container(
         width: 300,
         height: 300,
-        color: Theme.of(context).colorScheme.surfaceVariant,
+        color: context.colorScheme.surfaceVariant,
         child: Hero(
           tag: isFromDto
               ? '${asset.remoteId}-$heroOffset'
@@ -153,9 +153,9 @@ class ThumbnailImage extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             width: 0,
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: context.colorScheme.surfaceVariant,
           ),
-          color: Theme.of(context).colorScheme.surfaceVariant,
+          color: context.colorScheme.surfaceVariant,
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -178,7 +178,7 @@ class ThumbnailImage extends StatelessWidget {
             onSelect?.call();
           }
         } else {
-          AutoRouter.of(context).push(
+          context.autoPush(
             GalleryViewerRoute(
               initialIndex: index,
               loadAsset: loadAsset,
@@ -203,7 +203,7 @@ class ThumbnailImage extends StatelessWidget {
             decoration: BoxDecoration(
               border: multiselectEnabled && isSelected
                   ? Border.all(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      color: context.colorScheme.surfaceVariant,
                       width: 12,
                     )
                   : const Border(),

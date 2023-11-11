@@ -1,5 +1,4 @@
 import {
-  AdminSignupResponseDto,
   AuthDeviceResponseDto,
   AuthService,
   AuthUserDto,
@@ -15,7 +14,7 @@ import {
   ValidateAccessTokenResponseDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthUser, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -42,9 +41,8 @@ export class AuthController {
 
   @PublicRoute()
   @Post('admin-sign-up')
-  @ApiBadRequestResponse({ description: 'The server already has an admin' })
-  signUpAdmin(@Body() signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
-    return this.service.adminSignUp(signUpCredential);
+  signUpAdmin(@Body() dto: SignUpDto): Promise<UserResponseDto> {
+    return this.service.adminSignUp(dto);
   }
 
   @Get('devices')

@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
@@ -106,8 +106,7 @@ class HomePage extends HookConsumerWidget {
           handleShareAssets(ref, context, selection.value.toList());
         } else {
           final ids = remoteOnlySelection().map((e) => e.remoteId!);
-          AutoRouter.of(context)
-              .push(SharedLinkEditRoute(assetsList: ids.toList()));
+          context.autoPush(SharedLinkEditRoute(assetsList: ids.toList()));
         }
         processing.value = false;
         selectionEnabledHook.value = false;
@@ -243,7 +242,7 @@ class HomePage extends HookConsumerWidget {
             ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
             selectionEnabledHook.value = false;
 
-            AutoRouter.of(context).push(AlbumViewerRoute(albumId: result.id));
+            context.autoPush(AlbumViewerRoute(albumId: result.id));
           }
         } finally {
           processing.value = false;
@@ -300,7 +299,7 @@ class HomePage extends HookConsumerWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
-                    color: Theme.of(context).primaryColor,
+                    color: context.primaryColor,
                   ),
                 ).tr(),
               ),

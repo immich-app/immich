@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -33,7 +34,7 @@ class ImmichImage extends StatelessWidget {
     if (this.asset == null) {
       return Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceVariant,
+          color: context.colorScheme.surfaceVariant,
         ),
         child: SizedBox(
           width: width,
@@ -64,7 +65,7 @@ class ImmichImage extends StatelessWidget {
                   dimension: 250,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      color: context.colorScheme.surfaceVariant,
                     ),
                   ),
                 ),
@@ -88,7 +89,7 @@ class ImmichImage extends StatelessWidget {
           }
           return Icon(
             Icons.image_not_supported_outlined,
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
           );
         },
       );
@@ -115,7 +116,7 @@ class ImmichImage extends StatelessWidget {
                 dimension: 250,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    color: context.colorScheme.surfaceVariant,
                   ),
                 ),
               ),
@@ -141,7 +142,7 @@ class ImmichImage extends StatelessWidget {
         }
         return Icon(
           Icons.image_not_supported_outlined,
-          color: Theme.of(context).primaryColor,
+          color: context.primaryColor,
         );
       },
     );

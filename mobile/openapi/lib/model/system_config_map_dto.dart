@@ -13,32 +13,38 @@ part of openapi.api;
 class SystemConfigMapDto {
   /// Returns a new [SystemConfigMapDto] instance.
   SystemConfigMapDto({
+    required this.darkStyle,
     required this.enabled,
-    required this.tileUrl,
+    required this.lightStyle,
   });
+
+  String darkStyle;
 
   bool enabled;
 
-  String tileUrl;
+  String lightStyle;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMapDto &&
+     other.darkStyle == darkStyle &&
      other.enabled == enabled &&
-     other.tileUrl == tileUrl;
+     other.lightStyle == lightStyle;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (darkStyle.hashCode) +
     (enabled.hashCode) +
-    (tileUrl.hashCode);
+    (lightStyle.hashCode);
 
   @override
-  String toString() => 'SystemConfigMapDto[enabled=$enabled, tileUrl=$tileUrl]';
+  String toString() => 'SystemConfigMapDto[darkStyle=$darkStyle, enabled=$enabled, lightStyle=$lightStyle]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'darkStyle'] = this.darkStyle;
       json[r'enabled'] = this.enabled;
-      json[r'tileUrl'] = this.tileUrl;
+      json[r'lightStyle'] = this.lightStyle;
     return json;
   }
 
@@ -50,8 +56,9 @@ class SystemConfigMapDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigMapDto(
+        darkStyle: mapValueOfType<String>(json, r'darkStyle')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        tileUrl: mapValueOfType<String>(json, r'tileUrl')!,
+        lightStyle: mapValueOfType<String>(json, r'lightStyle')!,
       );
     }
     return null;
@@ -99,8 +106,9 @@ class SystemConfigMapDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'darkStyle',
     'enabled',
-    'tileUrl',
+    'lightStyle',
   };
 }
 

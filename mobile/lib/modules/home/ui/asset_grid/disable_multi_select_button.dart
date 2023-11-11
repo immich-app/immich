@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class DisableMultiSelectButton extends StatelessWidget {
   const DisableMultiSelectButton({
@@ -18,8 +19,8 @@ class DisableMultiSelectButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.surface,
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: context.colorScheme.surface,
+            backgroundColor: context.primaryColor,
           ),
           onPressed: () {
             onPressed();

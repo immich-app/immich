@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
@@ -15,7 +16,6 @@ import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MapPageBottomSheet extends StatefulHookConsumerWidget {
   final Stream mapPageEventStream;
@@ -57,10 +57,10 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isDarkTheme = context.isDarkTheme;
     final bottomPadding =
         Platform.isAndroid ? MediaQuery.of(context).padding.bottom - 10 : 0.0;
-    final maxHeight = MediaQuery.of(context).size.height - bottomPadding;
+    final maxHeight = context.height - bottomPadding;
     final isSheetScrolled = useState(false);
     final isSheetExpanded = useState(false);
     final assetsInBound = useState(<Asset>[]);
@@ -137,7 +137,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                 SizedBox(
                   height: 150,
                   width: 150,
-                  child: isDarkMode
+                  child: isDarkTheme
                       ? const InvertionFilter(
                           child: SaturationFilter(
                             saturation: -1,
@@ -156,7 +156,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                   "map_zoom_to_see_photos".tr(),
                   style: TextStyle(
                     fontSize: 20,
-                    color: Theme.of(context).textTheme.displayLarge?.color,
+                    color: context.textTheme.displayLarge?.color,
                   ),
                 ),
               ],
@@ -182,7 +182,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
         height: 60,
         width: double.infinity,
         decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+          color: isDarkTheme ? Colors.grey[900] : Colors.grey[100],
         ),
         child: Stack(
           children: [
@@ -197,17 +197,14 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                   textToDisplay,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Theme.of(context).textTheme.displayLarge?.color,
+                    color: context.textTheme.displayLarge?.color,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Divider(
                   height: 10,
-                  color: Theme.of(context)
-                      .textTheme
-                      .displayLarge
-                      ?.color
-                      ?.withOpacity(0.5),
+                  color:
+                      context.textTheme.displayLarge?.color?.withOpacity(0.5),
                 ),
               ],
             ),
@@ -218,7 +215,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                 child: IconButton(
                   icon: Icon(
                     Icons.map_outlined,
-                    color: Theme.of(context).textTheme.displayLarge?.color,
+                    color: context.textTheme.displayLarge?.color,
                   ),
                   iconSize: 20,
                   tooltip: 'Zoom to bounds',
@@ -266,7 +263,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                 ScrollController scrollController,
               ) {
                 return Card(
-                  color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+                  color: isDarkTheme ? Colors.grey[900] : Colors.grey[100],
                   surfaceTintColor: Colors.transparent,
                   elevation: 18.0,
                   margin: const EdgeInsets.all(0),
@@ -320,24 +317,18 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
             Positioned(
               bottom: maxHeight * currentExtend.value,
               left: 0,
-              child: GestureDetector(
-                onTap: () => launchUrl(
-                  Uri.parse('https://openstreetmap.org/copyright'),
-                ),
-                child: ColoredBox(
-                  color: (widget.isDarkTheme
-                      ? Colors.grey[900]
-                      : Colors.grey[100])!,
-                  child: Padding(
-                    padding: const EdgeInsets.all(3),
-                    child: Text(
-                      '© OpenStreetMap contributors',
-                      style: TextStyle(
-                        fontSize: 6,
-                        color: !widget.isDarkTheme
-                            ? Colors.grey[900]
-                            : Colors.grey[100],
-                      ),
+              child: ColoredBox(
+                color:
+                    (widget.isDarkTheme ? Colors.grey[900] : Colors.grey[100])!,
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Text(
+                    'OpenStreetMap contributors',
+                    style: TextStyle(
+                      fontSize: 6,
+                      color: !widget.isDarkTheme
+                          ? Colors.grey[900]
+                          : Colors.grey[100],
                     ),
                   ),
                 ),

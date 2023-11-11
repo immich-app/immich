@@ -1,7 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
@@ -51,7 +51,7 @@ class SplashScreenPage extends HookConsumerWidget {
       // If the device is offline and there is a currentUser stored locallly
       // Proceed into the app
       if (deviceIsOffline && Store.tryGet(StoreKey.currentUser) != null) {
-        AutoRouter.of(context).replace(const TabControllerRoute());
+        context.autoReplace(const TabControllerRoute());
       } else if (isSuccess) {
         // If device was able to login through the internet successfully
         final hasPermission =
@@ -60,10 +60,10 @@ class SplashScreenPage extends HookConsumerWidget {
           // Resume backup (if enable) then navigate
           ref.watch(backupProvider.notifier).resumeBackup();
         }
-        AutoRouter.of(context).replace(const TabControllerRoute());
+        context.autoReplace(const TabControllerRoute());
       } else {
         // User was unable to login through either offline or online methods
-        AutoRouter.of(context).replace(const LoginRoute());
+        context.autoReplace(const LoginRoute());
       }
     }
 
@@ -72,7 +72,7 @@ class SplashScreenPage extends HookConsumerWidget {
         if (serverUrl != null && accessToken != null) {
           performLoggingIn();
         } else {
-          AutoRouter.of(context).replace(const LoginRoute());
+          context.autoReplace(const LoginRoute());
         }
         return null;
       },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 enum ToastType { info, success, error }
 
@@ -11,14 +12,13 @@ class ImmichToast {
     ToastGravity gravity = ToastGravity.TOP,
     int durationInSecond = 3,
   }) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final fToast = FToast();
     fToast.init(context);
 
     Color getColor(ToastType type, BuildContext context) {
       switch (type) {
         case ToastType.info:
-          return Theme.of(context).primaryColor;
+          return context.primaryColor;
         case ToastType.success:
           return const Color.fromARGB(255, 78, 140, 124);
         case ToastType.error:
@@ -31,7 +31,7 @@ class ImmichToast {
         case ToastType.info:
           return Icon(
             Icons.info_outline_rounded,
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
           );
         case ToastType.success:
           return const Icon(
@@ -51,7 +51,7 @@ class ImmichToast {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5.0),
-          color: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
+          color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[50],
           border: Border.all(
             color: Colors.black12,
             width: 1,

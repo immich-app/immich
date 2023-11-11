@@ -1,5 +1,5 @@
-import { AdminSignupResponseDto, AuthDeviceResponseDto, LoginCredentialDto, LoginResponseDto } from '@app/domain';
-import { adminSignupStub, loginResponseStub, loginStub, signupResponseStub } from '@test';
+import { AuthDeviceResponseDto, LoginCredentialDto, LoginResponseDto, UserResponseDto } from '@app/domain';
+import { adminSignupStub, loginResponseStub, loginStub } from '@test';
 import request from 'supertest';
 
 export const authApi = {
@@ -7,9 +7,8 @@ export const authApi = {
     const { status, body } = await request(server).post('/auth/admin-sign-up').send(adminSignupStub);
 
     expect(status).toBe(201);
-    expect(body).toEqual(signupResponseStub);
 
-    return body as AdminSignupResponseDto;
+    return body as UserResponseDto;
   },
   adminLogin: async (server: any) => {
     const { status, body } = await request(server).post('/auth/login').send(loginStub.admin);

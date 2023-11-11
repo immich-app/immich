@@ -345,6 +345,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.2"
+  executor_lib:
+    dependency: "direct main"
+    description:
+      name: executor_lib
+      sha256: "544889daa5726462657dab6410b75f2f8e3a77479d85b307a25c346e243bc38e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   fake_async:
     dependency: transitive
     description:
@@ -1131,6 +1139,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      sha256: "01dd9bd0fa02548bf2ceee13545d4a0ec6046459d847b6b061d8a27237108a08"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   provider:
     dependency: transitive
     description:
@@ -1520,6 +1536,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  vector_map_tiles:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: immich_above_4
+      resolved-ref: dc685bdbcca2ff2b49b4d0fb77b7bc17fad48608
+      url: "https://github.com/shenlong-tanwen/flutter-vector-map-tiles.git"
+    source: git
+    version: "4.0.0"
   vector_math:
     dependency: transitive
     description:
@@ -1528,6 +1553,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  vector_tile:
+    dependency: transitive
+    description:
+      name: vector_tile
+      sha256: "2ac77f6bbd7ddd97efe059207d67bb7eaf807ab98ad58d99fe41a22c230f44e1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  vector_tile_renderer:
+    dependency: "direct main"
+    description:
+      name: vector_tile_renderer
+      sha256: de212da0f5e48107d3b763a940a428eb1f49d8a4664d41ac0b654f77209a2d0b
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
   video_player:
     dependency: "direct main"
     description:

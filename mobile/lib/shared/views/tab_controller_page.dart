@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -31,7 +32,7 @@ class TabControllerPage extends HookConsumerWidget {
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).primaryColor,
+                  context.primaryColor,
                 ),
               ),
             ),
@@ -55,10 +56,10 @@ class TabControllerPage extends HookConsumerWidget {
           ref.read(tabProvider.notifier).state = TabEnum.values[index];
         },
         selectedIconTheme: IconThemeData(
-          color: Theme.of(context).primaryColor,
+          color: context.primaryColor,
         ),
         selectedLabelTextStyle: TextStyle(
-          color: Theme.of(context).primaryColor,
+          color: context.primaryColor,
         ),
         useIndicator: false,
         destinations: [

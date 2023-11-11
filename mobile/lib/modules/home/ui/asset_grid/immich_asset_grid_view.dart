@@ -4,10 +4,11 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'asset_grid_data_structure.dart';
 import 'group_divider_title.dart';
@@ -221,7 +222,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleLarge,
+        style: context.textTheme.displayLarge,
       ),
     );
   }
@@ -239,7 +240,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
               bottom: widget.margin,
               right: i + 1 == num ? 0.0 : widget.margin,
             ),
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: context.colorScheme.surfaceVariant,
           ),
       ],
     );
@@ -325,7 +326,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     return Text(
       DateFormat.yMMMM().format(date),
       style: TextStyle(
-        color: Theme.of(context).colorScheme.onPrimary,
+        color: context.colorScheme.onPrimary,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -368,8 +369,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            backgroundColor: context.primaryColor,
+            foregroundColor: context.colorScheme.onPrimary,
             labelTextBuilder: _labelBuilder,
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),

@@ -4,6 +4,10 @@ You can use the CLI to upload an existing gallery to the Immich server
 
 [Immich CLI Repository](https://github.com/immich-app/CLI)
 
+:::tip Google Photos Takeout
+If you are looking to import your Google Photos takeout, we recommed this community maintained tool [immich-go](https://github.com/simulot/immich-go)
+:::
+
 ## Requirements
 
 - Node.js 16 or above

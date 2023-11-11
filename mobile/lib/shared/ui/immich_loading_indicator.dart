@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class ImmichLoadingIndicator extends StatelessWidget {
   final double? borderRadius;
@@ -14,7 +15,7 @@ class ImmichLoadingIndicator extends StatelessWidget {
       height: 60,
       width: 60,
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withAlpha(200),
+        color: context.primaryColor.withAlpha(200),
         borderRadius: BorderRadius.circular(borderRadius ?? 10),
       ),
       padding: const EdgeInsets.all(15),

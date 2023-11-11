@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class CustomDraggingHandle extends StatelessWidget {
   const CustomDraggingHandle({super.key});
@@ -9,7 +10,7 @@ class CustomDraggingHandle extends StatelessWidget {
       height: 5,
       width: 30,
       decoration: BoxDecoration(
-        color: Theme.of(context).dividerColor,
+        color: context.themeData.dividerColor,
         borderRadius: BorderRadius.circular(16),
       ),
     );

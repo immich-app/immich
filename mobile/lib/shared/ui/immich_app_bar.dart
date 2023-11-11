@@ -1,6 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
@@ -76,7 +76,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               strokeCap: StrokeCap.round,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: context.colorScheme.onSurfaceVariant,
             ),
           );
         } else if (backupState.backupProgress !=
@@ -85,7 +85,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           return Icon(
             Icons.check_outlined,
             size: 9,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: context.colorScheme.onSurfaceVariant,
           );
         }
       }
@@ -94,7 +94,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
         return Icon(
           Icons.cloud_off_rounded,
           size: 9,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          color: context.colorScheme.onSurfaceVariant,
         );
       }
       return null;
@@ -104,7 +104,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       final indicatorIcon = getBackupBadgeIcon();
 
       return InkWell(
-        onTap: () => AutoRouter.of(context).push(const BackupControllerRoute()),
+        onTap: () => context.autoPush(const BackupControllerRoute()),
         borderRadius: BorderRadius.circular(12),
         child: Badge(
           label: Container(
@@ -112,10 +112,10 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             height: widgetSize / 2,
             decoration: BoxDecoration(
               border: Border.all(
-                color: Theme.of(context).colorScheme.surface,
+                color: context.colorScheme.surface,
               ),
               borderRadius: BorderRadius.circular(widgetSize / 2),
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: context.colorScheme.surfaceVariant,
             ),
             child: indicatorIcon,
           ),
@@ -132,7 +132,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     return AppBar(
-      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+      backgroundColor: context.themeData.appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
           Radius.circular(5),
@@ -160,7 +160,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     fontFamily: 'SnowburstOne',
                     fontWeight: FontWeight.bold,
                     fontSize: 24,
-                    color: Theme.of(context).primaryColor,
+                    color: context.primaryColor,
                   ),
                 ),
               ),

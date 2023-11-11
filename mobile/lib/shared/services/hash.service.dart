@@ -10,7 +10,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/device_asset.dart';
 import 'package:immich_mobile/shared/models/ios_device_asset.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';

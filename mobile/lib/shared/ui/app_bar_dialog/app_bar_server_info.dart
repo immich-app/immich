@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/server_info/server_info.model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -39,7 +40,7 @@ class AppBarServerInfo extends HookConsumerWidget {
       padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: context.colorScheme.surface,
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10),
@@ -59,7 +60,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context).primaryColor,
+                    color: context.primaryColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -81,7 +82,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         "server_info_box_app_version".tr(),
                         style: TextStyle(
                           fontSize: 11,
-                          color: Theme.of(context).textTheme.labelSmall?.color,
+                          color: context.textTheme.labelSmall?.color,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -95,10 +96,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
                         style: TextStyle(
                           fontSize: 11,
-                          color: Theme.of(context)
-                              .textTheme
-                              .labelSmall
-                              ?.color
+                          color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
                         ),
@@ -124,7 +122,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         "server_info_box_server_version".tr(),
                         style: TextStyle(
                           fontSize: 11,
-                          color: Theme.of(context).textTheme.labelSmall?.color,
+                          color: context.textTheme.labelSmall?.color,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -140,10 +138,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                             : "--",
                         style: TextStyle(
                           fontSize: 11,
-                          color: Theme.of(context)
-                              .textTheme
-                              .labelSmall
-                              ?.color
+                          color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
                         ),
@@ -169,7 +164,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         "server_info_box_server_url".tr(),
                         style: TextStyle(
                           fontSize: 11,
-                          color: Theme.of(context).textTheme.labelSmall?.color,
+                          color: context.textTheme.labelSmall?.color,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -183,12 +178,11 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Tooltip(
                         verticalOffset: 0,
                         decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).primaryColor.withOpacity(0.9),
+                          color: context.primaryColor.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         textStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
+                          color: context.colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                         message: getServerUrl() ?? '--',
@@ -198,10 +192,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                           getServerUrl() ?? '--',
                           style: TextStyle(
                             fontSize: 11,
-                            color: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.color
+                            color: context.textTheme.labelSmall?.color
                                 ?.withOpacity(0.5),
                             fontWeight: FontWeight.bold,
                             overflow: TextOverflow.ellipsis,

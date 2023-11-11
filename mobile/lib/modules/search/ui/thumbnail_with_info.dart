@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/utils/capitalize.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 
 // ignore: must_be_immutable
 class ThumbnailWithInfo extends StatelessWidget {
@@ -32,7 +33,7 @@ class ThumbnailWithInfo extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: context.colorScheme.surfaceVariant,
             ),
             child: imageUrl != null
                 ? ClipRRect(
@@ -46,8 +47,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                           dimension: 250,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color:
-                                  Theme.of(context).colorScheme.surfaceVariant,
+                              color: context.colorScheme.surfaceVariant,
                             ),
                           ),
                         );
@@ -64,7 +64,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                 : Center(
                     child: Icon(
                       noImageIcon ?? Icons.not_listed_location,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                   ),
           ),
@@ -76,10 +76,10 @@ class ThumbnailWithInfo extends StatelessWidget {
                 begin: FractionalOffset.topCenter,
                 end: FractionalOffset.bottomCenter,
                 colors: [
-                  Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.0),
+                  context.colorScheme.surfaceVariant.withOpacity(0.0),
                   textInfo == ''
-                      ? Theme.of(context).colorScheme.surface.withOpacity(0.1)
-                      : Theme.of(context).colorScheme.surface.withOpacity(0.6),
+                      ? context.colorScheme.surface.withOpacity(0.1)
+                      : context.colorScheme.surface.withOpacity(0.6),
                 ],
                 stops: const [0.0, 1.0],
               ),

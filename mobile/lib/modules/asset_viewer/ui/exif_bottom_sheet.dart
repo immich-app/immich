@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:timezone/timezone.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
 import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
@@ -28,7 +29,7 @@ class ExifBottomSheet extends HookConsumerWidget {
       exifInfo.longitude != 0;
 
   String formatTimeZone(Duration d) =>
-      "GMT${d.isNegative ? '-': '+'}${d.inHours.abs().toString().padLeft(2, '0')}:${d.inMinutes.abs().remainder(60).toString().padLeft(2, '0')}";
+      "GMT${d.isNegative ? '-' : '+'}${d.inHours.abs().toString().padLeft(2, '0')}:${d.inMinutes.abs().remainder(60).toString().padLeft(2, '0')}";
 
   String get formattedDateTime {
     DateTime dt = asset.fileCreatedAt.toLocal();
@@ -41,10 +42,16 @@ class ExifBottomSheet extends HookConsumerWidget {
           final location = getLocation(asset.exifInfo!.timeZone!);
           dt = TZDateTime.from(dt, location);
         } on LocationNotFoundException {
-          RegExp re = RegExp(r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$', caseSensitive: false);
+          RegExp re = RegExp(
+            r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$',
+            caseSensitive: false,
+          );
           final m = re.firstMatch(asset.exifInfo!.timeZone!);
           if (m != null) {
-            final duration = Duration(hours: int.parse(m.group(1) ?? '0'), minutes: int.parse(m.group(2) ?? '0'));
+            final duration = Duration(
+              hours: int.parse(m.group(1) ?? '0'),
+              minutes: int.parse(m.group(2) ?? '0'),
+            );
             dt = dt.add(duration);
             timeZone = formatTimeZone(duration);
           }
@@ -105,8 +112,7 @@ class ExifBottomSheet extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assetWithExif = ref.watch(assetDetailProvider(asset));
     final exifInfo = (assetWithExif.value ?? asset).exifInfo;
-    var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    var textColor = isDarkTheme ? Colors.white : Colors.black;
+    var textColor = context.isDarkTheme ? Colors.white : Colors.black;
 
     buildMap() {
       return Padding(
@@ -322,9 +328,14 @@ class ExifBottomSheet extends HookConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              subtitle: exifInfo.f != null || exifInfo.exposureSeconds != null || exifInfo.mm != null || exifInfo.iso != null ? Text(
-                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
-              ) : null,
+              subtitle: exifInfo.f != null ||
+                      exifInfo.exposureSeconds != null ||
+                      exifInfo.mm != null ||
+                      exifInfo.iso != null
+                  ? Text(
+                      "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
+                    )
+                  : null,
             ),
         ],
       );
@@ -393,7 +404,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                       data: (data) => DescriptionInput(asset: data),
                       error: (error, stackTrace) => Icon(
                         Icons.image_not_supported_outlined,
-                        color: Theme.of(context).primaryColor,
+                        color: context.primaryColor,
                       ),
                       loading: () => const SizedBox(
                         width: 75,

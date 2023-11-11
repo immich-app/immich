@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
@@ -208,12 +209,12 @@ class AddToAlbumTitleRow extends StatelessWidget {
             onPressed: onCreateNewAlbum,
             icon: Icon(
               Icons.add,
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
             ),
             label: Text(
               "common_create_new_album",
               style: TextStyle(
-                color: Theme.of(context).primaryColor,
+                color: context.primaryColor,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

@@ -1,9 +1,9 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -23,6 +23,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final sharedUsers = useState(album.sharedUsers.toList());
     final owner = album.owner.value;
     final userId = ref.watch(authenticationProvider).userId;
+    final activityEnabled = useState(album.activityEnabled);
     final isOwner = owner?.id == userId;
 
     void showErrorMessage() {
@@ -43,8 +44,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
             await ref.read(sharedAlbumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
-          AutoRouter.of(context)
-              .navigate(const TabControllerRoute(children: [SharingRoute()]));
+          context.autoNavigate(
+            const TabControllerRoute(children: [SharingRoute()]),
+          );
         } else {
           showErrorMessage();
         }
@@ -96,7 +98,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       }
 
       showModalBottomSheet(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.scaffoldBackgroundColor,
         isScrollControlled: false,
         context: context,
         builder: (context) {
@@ -176,7 +178,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     buildSectionTitle(String text) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+        child: Text(text, style: context.textTheme.bodySmall),
       );
     }
 
@@ -185,7 +187,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
-            AutoRouter.of(context).pop(null);
+            context.autoPop(null);
           },
         ),
         centerTitle: true,
@@ -195,6 +197,29 @@ class AlbumOptionsPage extends HookConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (isOwner && album.shared)
+            SwitchListTile.adaptive(
+              value: activityEnabled.value,
+              onChanged: (bool value) async {
+                activityEnabled.value = value;
+                if (await ref
+                    .read(sharedAlbumProvider.notifier)
+                    .setActivityEnabled(album, value)) {
+                  album.activityEnabled = value;
+                }
+              },
+              activeColor: activityEnabled.value
+                  ? context.primaryColor
+                  : context.themeData.disabledColor,
+              dense: true,
+              title: Text(
+                "shared_album_activity_setting_title",
+                style: context.textTheme.labelLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ).tr(),
+              subtitle:
+                  const Text("shared_album_activity_setting_subtitle").tr(),
+            ),
           buildSectionTitle("PEOPLE"),
           buildOwnerInfo(),
           buildSharedUsersList(),
