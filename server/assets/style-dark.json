@@ -1,7 +1,6 @@
 {
   "version": 8,
   "name": "Immich Map",
-  "metadata": { "maputnik:renderer": "mbgljs" },
   "sources": {
     "immich-map": {
       "type": "vector",
