@@ -22,6 +22,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-typescript": "^7.22.5",
+    "@esbuild/linux-x64": "^0.19.5",
     "@faker-js/faker": "^8.0.0",
     "@floating-ui/dom": "^1.5.1",
     "@sveltejs/adapter-static": "^2.0.3",

@@ -105,7 +105,7 @@ export class SmartInfoService {
       machineLearning.clip,
     );
 
-    await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
+    await this.repository.upsert({ assetId: asset.id }, clipEmbedding);
 
     return true;
   }

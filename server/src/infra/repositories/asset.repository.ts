@@ -477,13 +477,13 @@ export class AssetRepository implements IAssetRepository {
 
       case WithoutProperty.CLIP_ENCODING:
         relations = {
-          smartInfo: true,
+          smartSearch: true,
         };
         where = {
           isVisible: true,
           resizePath: Not(IsNull()),
-          smartInfo: {
-            clipEmbedding: IsNull(),
+          smartSearch: {
+            embedding: IsNull(),
           },
         };
         break;

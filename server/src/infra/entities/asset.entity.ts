@@ -22,6 +22,7 @@ import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
+import { SmartSearchEntity } from '.';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 
@@ -136,6 +137,9 @@ export class AssetEntity {
 
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
+
+  @OneToOne(() => SmartSearchEntity, (smartSearchEntity) => smartSearchEntity.asset)
+  smartSearch?: SmartSearchEntity;
 
   @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true })
   @JoinTable({ name: 'tag_asset' })

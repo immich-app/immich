@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 
-@Entity('smart_info')
-export class SmartInfoEntity {
+@Entity('smart_search')
+export class SmartSearchEntity {
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
   asset?: AssetEntity;
@@ -10,9 +10,9 @@ export class SmartInfoEntity {
   @PrimaryColumn()
   assetId!: string;
 
-  @Column({ type: 'text', array: true, nullable: true })
-  tags!: string[] | null;
-
-  @Column({ type: 'text', array: true, nullable: true })
-  objects!: string[] | null;
+  @Column({
+    type: 'float4',
+    array: true,
+  })
+  embedding!: number[];
 }

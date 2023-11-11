@@ -25,9 +25,11 @@ export interface PersonStatistics {
   assets: number;
 }
 
+export type Embedding = number[]; 
+
 export interface EmbeddingSearch {
   ownerId: string;
-  embedding: number[];
+  embedding: Embedding;
   numResults: number;
   maxDistance?: number;
 }

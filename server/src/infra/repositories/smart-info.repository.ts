@@ -1,9 +1,9 @@
-import { EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
+import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { Repository } from 'typeorm';
-import { AssetEntity, SmartInfoEntity } from '../entities';
+import { AssetEntity, SmartInfoEntity, SmartSearchEntity } from '../entities';
 import { asVector } from '../infra.utils';
 
 @Injectable()
@@ -12,70 +12,72 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   private lock: AsyncLock;
   private curDimSize: number | undefined;
 
-  constructor(@InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>) {
+  constructor(
+      @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
+      @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+        @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>) {
     this.lock = new AsyncLock();
   }
 
   async searchByEmbedding({ ownerId, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
-    const results = await this.repository
-      .createQueryBuilder('smartInfo')
-      .useTransaction(true)
-      .leftJoinAndSelect('smartInfo.asset', 'asset')
-      .where('asset.ownerId = :ownerId', { ownerId })
-      .orderBy(`smartInfo.clipEmbedding <=> :embedding`)
-      .setParameters({ embedding: asVector(embedding) })
-      .limit(numResults)
-      .getMany();
+    let results: AssetEntity[] = await this.assetRepository.createQueryBuilder('a')
+    .innerJoin('a.smartSearch', 's')
+    .where('a.ownerId = :ownerId')
+    .leftJoinAndSelect('a.exifInfo', 'e')
+    .orderBy('s.embedding <=> :embedding')
+    .setParameters({ embedding: asVector(embedding), ownerId })
+    .limit(numResults)
+    .getMany();
 
-    return results.map((result) => result.asset).filter((asset): asset is AssetEntity => !!asset);
+    return results;
   }
 
-  async upsert(info: Partial<SmartInfoEntity>): Promise<void> {
-    const { clipEmbedding, ...withoutEmbedding } = info;
-    await this.repository.upsert(withoutEmbedding, { conflictPaths: ['assetId'] });
-    if (!clipEmbedding || !info.assetId) return;
+  async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
+    await this.repository.upsert(smartInfo, { conflictPaths: ['assetId'] });
+    if (!smartInfo.assetId || !embedding) return;
 
     try {
-      await this.updateEmbedding(clipEmbedding, info.assetId);
+      await this.upsertEmbedding(smartInfo.assetId, embedding);
     } catch (e) {
-      await this.updateDimSize(clipEmbedding.length);
-      await this.updateEmbedding(clipEmbedding, info.assetId);
+      await this.updateDimSize(embedding.length);
+      await this.upsertEmbedding(smartInfo.assetId, embedding);
     }
   }
 
-  private async updateEmbedding(embedding: number[], assetId: string): Promise<void> {
-    await this.repository.manager.query(`UPDATE "smart_info" SET "clipEmbedding" = $1 WHERE "assetId" = $2`, [
-      asVector(embedding),
-      assetId,
-    ]);
+  private async upsertEmbedding(assetId: string, embedding: number[]): Promise<void> {
+    await this.smartSearchRepository.manager.query(
+      `INSERT INTO smart_search ($1, $2) ON CONFLICT ("assetId") SET embedding = $2`,
+      [assetId, asVector(embedding)],
+    );
   }
 
   /*
    * note: never use this with user input
    * this does not parameterize the query because it is not possible to parameterize the column type
-  */
+   */
   private async updateDimSize(dimSize: number): Promise<void> {
     await this.lock.acquire('updateDimSizeLock', async () => {
       if (this.curDimSize === dimSize) return;
 
       this.logger.log(`Updating CLIP dimension size to ${dimSize}`);
 
-      await this.repository.manager.query(`
+      await this.smartSearchRepository.manager.query(`
         BEGIN;
 
-        ALTER TABLE smart_info
-        DROP COLUMN "clipEmbedding",
-        ADD COLUMN "clipEmbedding" vector(${dimSize});
+        ALTER TABLE smart_search
+        DROP COLUMN embedding,
+        ADD COLUMN embedding vector(${dimSize});
 
-        CREATE INDEX IF NOT EXISTS clip_index
-        ON smart_info
-        USING hnsw ("clipEmbedding" vector_ip_ops)
-        WITH (m = 16, ef_construction = 128);
+        CREATE INDEX clip_index ON smart_search
+        USING vectors (embedding dot_ops) WITH (options = $$
+        capacity = 2097152
+        [indexing.hnsw]
+        m = 16
+        ef_construction = 300
+        $$);
 
-        SET hnsw.ef_search = 250;
         COMMIT;
-      `
-      );
+      `);
 
       this.curDimSize = dimSize;
       this.logger.log(`Successfully updated CLIP dimension size to ${dimSize}`);
