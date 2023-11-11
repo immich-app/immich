@@ -1,9 +1,14 @@
 import { CrawlOptionsDto } from 'src/cores/dto/crawl-options-dto';
-import { ACCEPTED_FILE_EXTENSIONS } from '../cores';
 import { glob } from 'glob';
 import * as fs from 'fs';
 
 export class CrawlService {
+  private readonly extensions!: string[];
+
+  constructor(image: string[], video: string[]) {
+    this.extensions = image.concat(video).map((extension) => extension.replace('.', ''));
+  }
+
   public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
     const pathsToCrawl: string[] = crawlOptions.pathsToCrawl;
 
@@ -32,7 +37,7 @@ export class CrawlService {
       searchPattern = searchPattern + '/**/';
     }
 
-    searchPattern = `${searchPattern}/*.{${ACCEPTED_FILE_EXTENSIONS.join(',')}}`;
+    searchPattern = `${searchPattern}/*.{${this.extensions.join(',')}}`;
 
     const globbedFiles = await glob(searchPattern, {
       nocase: true,

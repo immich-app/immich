@@ -10,7 +10,6 @@ import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
 
 export default class Upload extends BaseCommand {
-  private crawlService = new CrawlService();
   private uploadService!: UploadService;
   uploadLength!: number;
 
@@ -21,12 +20,16 @@ export default class Upload extends BaseCommand {
     this.deviceId = uuid.os || 'CLI';
     this.uploadService = new UploadService(this.immichApi.apiConfiguration);
 
+    const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
+
+    const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
+
     const crawlOptions = new CrawlOptionsDto();
     crawlOptions.pathsToCrawl = paths;
     crawlOptions.recursive = options.recursive;
     crawlOptions.excludePatterns = options.excludePatterns;
 
-    const crawledFiles: string[] = await this.crawlService.crawl(crawlOptions);
+    const crawledFiles: string[] = await crawlService.crawl(crawlOptions);
 
     if (crawledFiles.length === 0) {
       console.log('No assets found, exiting');
