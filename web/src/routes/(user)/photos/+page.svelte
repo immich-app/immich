@@ -31,7 +31,6 @@
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
-  $: hasPartnerAssetsInSelection = Array.from($selectedAssets).some((asset) => asset.ownerId != data.user.id);
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -49,28 +48,30 @@
 </script>
 
 {#if $isMultiSelectState}
-  <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+  <AssetSelectControlBar
+    ownerId={data.user.id}
+    assets={$selectedAssets}
+    clearSelect={() => assetInteractionStore.clearMultiselect()}
+  >
     <CreateSharedLink on:escape={() => (handleEscapeKey = true)} />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
-    {#if !hasPartnerAssetsInSelection}
-      <DeleteAssets
-        on:escape={() => (handleEscapeKey = true)}
-        onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
-      />
-      <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-        <DownloadAction menuItem />
-        <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
-        {#if $selectedAssets.size > 1}
-          <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
-        {/if}
-        <AssetJobActions />
-      </AssetSelectContextMenu>
-    {/if}
+    <DeleteAssets
+      on:escape={() => (handleEscapeKey = true)}
+      onAssetDelete={(assetId) => assetStore.removeAsset(assetId)}
+    />
+    <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
+      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+      <DownloadAction menuItem />
+      <ArchiveAction menuItem onArchive={(ids) => assetStore.removeAssets(ids)} />
+      {#if $selectedAssets.size > 1}
+        <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
+      {/if}
+      <AssetJobActions />
+    </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}
 
