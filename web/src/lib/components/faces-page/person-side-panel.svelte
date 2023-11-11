@@ -179,7 +179,12 @@
               id: personId,
               assetFaceUpdateDto: { data: [{ assetFaceId: peopleWithFaces[i].id }] },
             });
-            people.push({ ...data[0], faces: [peopleWithFaces[i]] });
+            const indexToUpdate = people.findIndex((person) => person.id === data[0].id);
+            if (indexToUpdate !== -1) {
+              people[indexToUpdate].faces.push(peopleWithFaces[i]);
+            } else {
+              people.push({ ...data[0], faces: [peopleWithFaces[i]] });
+            }
           } else if (selectedPersonToCreate[i]) {
             const { data } = await api.personApi.createPerson({
               assetFaceUpdateDto: { data: [{ assetFaceId: peopleWithFaces[i].id }] },
