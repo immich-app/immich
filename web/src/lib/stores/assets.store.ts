@@ -319,10 +319,7 @@ export class AssetStore {
     let index = Math.floor(Math.random() * this.buckets.reduce((acc, bucket) => acc + bucket.bucketCount, 0));
     for (const bucket of this.buckets) {
       if (index < bucket.bucketCount) {
-        if (bucket.assets.length === 0) {
-          await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
-        }
-
+        await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
         return bucket.assets[index] || null;
       }
 
