@@ -27,6 +27,11 @@ const UserSchema = CollectionSchema(
       name: r'id',
       type: IsarType.string,
     ),
+    r'inTimeline': PropertySchema(
+      id: 2,
+      name: r'inTimeline',
+      type: IsarType.bool,
+    ),
     r'isAdmin': PropertySchema(
       id: 3,
       name: r'isAdmin',
@@ -42,18 +47,13 @@ const UserSchema = CollectionSchema(
       name: r'isPartnerSharedWith',
       type: IsarType.bool,
     ),
-    r'lastName': PropertySchema(
-      id: 6,
-      name: r'lastName',
-      type: IsarType.string,
-    ),
     r'memoryEnabled': PropertySchema(
-      id: 7,
+      id: 6,
       name: r'memoryEnabled',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'name',
       type: IsarType.string,
     ),
@@ -131,13 +131,13 @@ void _userSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.email);
-  writer.writeString(offsets[1], object.firstName);
-  writer.writeString(offsets[2], object.id);
+  writer.writeString(offsets[1], object.id);
+  writer.writeBool(offsets[2], object.inTimeline);
   writer.writeBool(offsets[3], object.isAdmin);
   writer.writeBool(offsets[4], object.isPartnerSharedBy);
   writer.writeBool(offsets[5], object.isPartnerSharedWith);
-  writer.writeString(offsets[6], object.lastName);
-  writer.writeBool(offsets[7], object.memoryEnabled);
+  writer.writeBool(offsets[6], object.memoryEnabled);
+  writer.writeString(offsets[7], object.name);
   writer.writeString(offsets[8], object.profileImagePath);
   writer.writeDateTime(offsets[9], object.updatedAt);
 }
@@ -150,13 +150,13 @@ User _userDeserialize(
 ) {
   final object = User(
     email: reader.readString(offsets[0]),
-    firstName: reader.readString(offsets[1]),
-    id: reader.readString(offsets[2]),
+    id: reader.readString(offsets[1]),
+    inTimeline: reader.readBoolOrNull(offsets[2]),
     isAdmin: reader.readBool(offsets[3]),
     isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
     isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
-    lastName: reader.readString(offsets[6]),
-    memoryEnabled: reader.readBoolOrNull(offsets[7]),
+    memoryEnabled: reader.readBoolOrNull(offsets[6]),
+    name: reader.readString(offsets[7]),
     profileImagePath: reader.readStringOrNull(offsets[8]) ?? '',
     updatedAt: reader.readDateTime(offsets[9]),
   );
@@ -175,17 +175,17 @@ P _userDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 3:
       return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readBool(offset)) as P;
-    case 5:
-      return (reader.readBoolOrNull(offset)) as P;
-    case 6:
       return (reader.readBoolOrNull(offset) ?? false) as P;
-    case 7:
+    case 5:
+      return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 6:
       return (reader.readBoolOrNull(offset)) as P;
+    case 7:
+      return (reader.readString(offset)) as P;
     case 8:
       return (reader.readStringOrNull(offset) ?? '') as P;
     case 9:
