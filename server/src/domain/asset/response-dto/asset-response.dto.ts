@@ -59,7 +59,6 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
     faces.forEach((face) => {
       if (face.person !== null && face.person !== undefined) {
         const existingPersonEntry = result.find((item) => item.id === face.person!.id);
-
         if (existingPersonEntry) {
           existingPersonEntry.faces.push(face);
         } else {

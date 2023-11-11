@@ -21,7 +21,7 @@ void main() {
       // TODO
     });
 
-    // List<AssetFaceResponseDto> faces (default value: const [])
+    // List<AssetFaceWithoutPersonResponseDto> faces (default value: const [])
     test('to test the property `faces`', () async {
       // TODO
     });

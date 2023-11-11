@@ -1,5 +1,5 @@
 import { photoViewerId } from '$lib/stores/assets.store';
-import type { AssetFaceResponseDto } from '@api';
+import type { AssetFaceWithoutPersonResponseDto } from '@api';
 
 export const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
   const ratio = img.naturalWidth / img.naturalHeight;
@@ -21,7 +21,7 @@ export const cleanBoundingBox = (): void => {
   });
 };
 
-export const showBoundingBox = (faces: AssetFaceResponseDto[]): HTMLDivElement[] => {
+export const showBoundingBox = (faces: AssetFaceWithoutPersonResponseDto[]): HTMLDivElement[] => {
   const boxes: HTMLDivElement[] = [];
   cleanBoundingBox();
 

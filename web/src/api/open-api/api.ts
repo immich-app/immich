@@ -652,6 +652,55 @@ export interface AssetFaceUpdateItem {
 /**
  * 
  * @export
+ * @interface AssetFaceWithoutPersonResponseDto
+ */
+export interface AssetFaceWithoutPersonResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceWithoutPersonResponseDto
+     */
+    'boundingBoxX1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceWithoutPersonResponseDto
+     */
+    'boundingBoxX2': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceWithoutPersonResponseDto
+     */
+    'boundingBoxY1': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceWithoutPersonResponseDto
+     */
+    'boundingBoxY2': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFaceWithoutPersonResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceWithoutPersonResponseDto
+     */
+    'imageHeight': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetFaceWithoutPersonResponseDto
+     */
+    'imageWidth': number;
+}
+/**
+ * 
+ * @export
  * @interface AssetFileUploadResponseDto
  */
 export interface AssetFileUploadResponseDto {
@@ -2646,10 +2695,10 @@ export interface PersonWithFacesResponseDto {
     'birthDate': string | null;
     /**
      * 
-     * @type {Array<AssetFaceResponseDto>}
+     * @type {Array<AssetFaceWithoutPersonResponseDto>}
      * @memberof PersonWithFacesResponseDto
      */
-    'faces': Array<AssetFaceResponseDto>;
+    'faces': Array<AssetFaceWithoutPersonResponseDto>;
     /**
      * 
      * @type {string}

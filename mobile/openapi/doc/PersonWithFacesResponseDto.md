@@ -9,7 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **birthDate** | [**DateTime**](DateTime.md) |  | 
-**faces** | [**List<AssetFaceResponseDto>**](AssetFaceResponseDto.md) |  | [default to const []]
+**faces** | [**List<AssetFaceWithoutPersonResponseDto>**](AssetFaceWithoutPersonResponseDto.md) |  | [default to const []]
 **id** | **String** |  | 
 **isHidden** | **bool** |  | 
 **name** | **String** |  | 

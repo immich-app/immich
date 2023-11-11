@@ -23,7 +23,7 @@ class PersonWithFacesResponseDto {
 
   DateTime? birthDate;
 
-  List<AssetFaceResponseDto> faces;
+  List<AssetFaceWithoutPersonResponseDto> faces;
 
   String id;
 
@@ -79,7 +79,7 @@ class PersonWithFacesResponseDto {
 
       return PersonWithFacesResponseDto(
         birthDate: mapDateTime(json, r'birthDate', ''),
-        faces: AssetFaceResponseDto.listFromJson(json[r'faces']),
+        faces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'faces']),
         id: mapValueOfType<String>(json, r'id')!,
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,

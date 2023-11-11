@@ -74,10 +74,10 @@ export class PersonResponseDto {
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
-  faces!: AssetFaceResponseDto[];
+  faces!: AssetFaceWithoutPersonResponseDto[];
 }
 
-export class AssetFaceResponseDto {
+export class AssetFaceWithoutPersonResponseDto {
   @IsString()
   @IsNotEmpty()
   id!: string;
@@ -93,6 +93,9 @@ export class AssetFaceResponseDto {
   boundingBoxY1!: number;
   @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
+}
+
+export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
   person!: PersonResponseDto | null;
 }
 
