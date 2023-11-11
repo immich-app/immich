@@ -98,10 +98,10 @@ export class PersonService {
 
         await this.repository.update({
           id: newPerson.id,
-          faceAssetId: face.assetId,
+          faceAssetId: face.id,
         });
 
-        if (face.person?.faceAssetId === face?.assetId) {
+        if (face.person && face.person.faceAssetId === face.id) {
           changeFeaturePhoto.push(face.person?.id);
         }
         if (!face) {
@@ -141,20 +141,17 @@ export class PersonService {
       try {
         await this.access.requirePermission(authUser, Permission.PERSON_REASSIGN, data.assetFaceId);
         const face = await this.repository.getFaceById(data.assetFaceId);
-
-        if (face.person && face.person.faceAssetId === face?.assetId) {
+        if (face.person && face.person.faceAssetId === face.id) {
           changeFeaturePhoto.push(face.person.id);
         }
-        if (face.person) {
-          await this.repository.reassignFace(face.id, personId);
-        }
+
+        await this.repository.reassignFace(face.id, personId);
 
         result.push(await this.findOrFail(personId).then(mapPerson));
       } catch (error: Error | any) {
         this.logger.error(`Unable to un-merge asset ${data.assetFaceId} to ${personId}`, error?.stack);
       }
     }
-
     await this.createNewFeaturePhoto(changeFeaturePhoto);
     return result;
   }
@@ -168,10 +165,11 @@ export class PersonService {
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
     for (const personId of changeFeaturePhoto) {
       const assetFace = await this.repository.getRandomFace(personId);
+
       if (assetFace !== null) {
         await this.repository.update({
           id: personId,
-          faceAssetId: assetFace.assetId,
+          faceAssetId: assetFace.id,
         });
 
         await this.jobRepository.queue({
@@ -359,9 +357,9 @@ export class PersonService {
         personId = newPerson.id;
       }
 
-      const faceId: AssetFaceId = { assetId: asset.id, personId };
-      await this.repository.createFace({
-        ...faceId,
+      const face = await this.repository.createFace({
+        assetId: asset.id,
+        personId,
         embedding,
         imageHeight: rest.imageHeight,
         imageWidth: rest.imageWidth,
@@ -370,10 +368,11 @@ export class PersonService {
         boundingBoxY1: rest.boundingBox.y1,
         boundingBoxY2: rest.boundingBox.y2,
       });
+      const faceId: AssetFaceId = { assetId: asset.id, personId };
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
 
       if (newPerson) {
-        await this.repository.update({ id: personId, faceAssetId: asset.id });
+        await this.repository.update({ id: personId, faceAssetId: face.id });
         await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
       }
     }
@@ -408,14 +407,13 @@ export class PersonService {
       return false;
     }
 
-    const [face] = await this.repository.getFacesByIds([{ personId: person.id, assetId: person.faceAssetId }]);
-    if (!face) {
+    const face = await this.repository.getFaceByIdWithAssets(person.faceAssetId);
+    if (face === null) {
       return false;
     }
 
     const {
       assetId,
-      personId,
       boundingBoxX1: x1,
       boundingBoxX2: x2,
       boundingBoxY1: y1,
@@ -428,8 +426,7 @@ export class PersonService {
     if (!asset?.resizePath) {
       return false;
     }
-
-    this.logger.verbose(`Cropping face for person: ${personId}`);
+    this.logger.verbose(`Cropping face for person: ${person.id}`);
     const thumbnailPath = StorageCore.getPersonThumbnailPath(person);
     this.storageCore.ensureFolders(thumbnailPath);
 

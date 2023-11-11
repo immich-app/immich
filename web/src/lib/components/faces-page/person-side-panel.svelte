@@ -191,6 +191,7 @@
             });
             peopleWithFaces[i].person = data;
             people.push({ ...data, faces: [peopleWithFaces[i]] });
+            selectedPersonToCreate = selectedPersonToCreate.splice(i, 1);
           }
         }
 

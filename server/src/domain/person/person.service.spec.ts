@@ -579,6 +579,7 @@ describe(PersonService.name, () => {
       searchMock.searchFaces.mockResolvedValue(faceSearch.oneRemoteMatch);
       personMock.create.mockResolvedValue(personStub.noName);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      personMock.createFace.mockResolvedValue(faceStub.primaryFace1);
 
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
 
@@ -621,16 +622,16 @@ describe(PersonService.name, () => {
       expect(mediaMock.crop).not.toHaveBeenCalled();
     });
 
-    it('should skip an person with a face asset id not found', async () => {
-      personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.assetId });
-      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
+    it('should skip a person with a face asset id not found', async () => {
+      personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.id });
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
       expect(mediaMock.crop).not.toHaveBeenCalled();
     });
 
     it('should skip a person with a face asset id without a thumbnail', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.assetId });
-      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
       assetMock.getByIds.mockResolvedValue([assetStub.noResizePath]);
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
       expect(mediaMock.crop).not.toHaveBeenCalled();
@@ -638,7 +639,7 @@ describe(PersonService.name, () => {
 
     it('should generate a thumbnail', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.assetId });
-      personMock.getFacesByIds.mockResolvedValue([faceStub.middle]);
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.middle);
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
 
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
@@ -665,7 +666,7 @@ describe(PersonService.name, () => {
 
     it('should generate a thumbnail without going negative', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.start.assetId });
-      personMock.getFacesByIds.mockResolvedValue([faceStub.start]);
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.start);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
 
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
@@ -686,7 +687,7 @@ describe(PersonService.name, () => {
 
     it('should generate a thumbnail without overflowing', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.end.assetId });
-      personMock.getFacesByIds.mockResolvedValue([faceStub.end]);
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.end);
       assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
 
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
