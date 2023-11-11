@@ -86,7 +86,7 @@
 </script>
 
 {#await style then style}
-  <MapLibre {style} class="h-full" {center} {zoom} attributionControl={false} let:map>
+  <MapLibre {style} class="h-full" {center} {zoom} attributionControl={false} diffStyleUpdates={true} let:map>
     <NavigationControl position="top-left" showCompass={!simplified} />
     {#if !simplified}
       <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} />
