@@ -14,9 +14,9 @@
     ScaleControl,
     Popup,
   } from 'svelte-maplibre';
-  import { mapSettings } from '$lib/stores/preferences.store';
+  import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { MapMarkerResponseDto, api } from '@api';
-  import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
+  import { LngLat, type GeoJSONSource, type LngLatLike, type StyleSpecification } from 'maplibre-gl';
   import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiCog } from '@mdi/js';
@@ -29,7 +29,9 @@
   export let simplified = false;
 
   $: style = (async () => {
-    const { data } = await api.systemConfigApi.getMapStyle({ theme: $mapSettings.allowDarkMode ? 'dark' : 'light' });
+    const { data } = await api.systemConfigApi.getMapStyle({
+      theme: $mapSettings.allowDarkMode ? $colorTheme : 'light',
+    });
     return data as StyleSpecification;
   })();
 
@@ -74,16 +76,17 @@
 
   const asMarker = (feature: Feature<Geometry, GeoJsonProperties>): MapMarkerResponseDto => {
     const featurePoint = feature as FeaturePoint;
+    const coords = LngLat.convert(featurePoint.geometry.coordinates as [number, number]);
     return {
-      lat: featurePoint.geometry.coordinates[0],
-      lon: featurePoint.geometry.coordinates[1],
+      lat: coords.lat,
+      lon: coords.lng,
       id: featurePoint.properties.id,
     };
   };
 </script>
 
 {#await style then style}
-  <MapLibre {style} class="h-full" {center} {zoom} attributionControl={false} let:map>
+  <MapLibre {style} class="h-full" {center} {zoom} attributionControl={false} diffStyleUpdates={true} let:map>
     <NavigationControl position="top-left" showCompass={!simplified} />
     {#if !simplified}
       <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} />
