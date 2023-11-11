@@ -189,13 +189,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
         Store.put(
           StoreKey.currentUser,
-          User.fromUserResponseDto(userResponseDto),
+          User.fromUserDto(userResponseDto),
         );
         Store.put(StoreKey.serverUrl, serverUrl);
         Store.put(StoreKey.accessToken, accessToken);
 
         shouldChangePassword = userResponseDto.shouldChangePassword;
-        user = User.fromUserResponseDto(userResponseDto);
+        user = User.fromUserDto(userResponseDto);
 
         retResult = true;
       } else {

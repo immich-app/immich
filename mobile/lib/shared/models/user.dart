@@ -23,7 +23,7 @@ class User {
 
   Id get isarId => fastHash(id);
 
-  User.fromUserResponseDto(UserResponseDto dto)
+  User.fromUserDto(UserResponseDto dto)
       : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
@@ -35,7 +35,7 @@ class User {
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled;
 
-  User.fromPartnerResponseDto(PartnerResponseDto dto)
+  User.fromPartnerDto(PartnerResponseDto dto)
       : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,

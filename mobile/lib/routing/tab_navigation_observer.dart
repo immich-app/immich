@@ -65,7 +65,7 @@ class TabNavigationObserver extends AutoRouterObserver {
 
         Store.put(
           StoreKey.currentUser,
-          User.fromUserResponseDto(userResponseDto),
+          User.fromUserDto(userResponseDto),
         );
         ref.read(serverInfoProvider.notifier).getServerVersion();
       } catch (e) {
