@@ -88,8 +88,8 @@ export class PersonService {
 
     const newPerson = await this.repository.create({ ownerId: authUser.id });
     for (const data of dto.data) {
+      await this.access.requirePermission(authUser, Permission.PERSON_CREATE, data.assetFaceId);
       try {
-        await this.access.requirePermission(authUser, Permission.PERSON_CREATE, data.assetFaceId);
         const face = await this.repository.getFaceById(data.assetFaceId);
 
         if (face.personId) {
@@ -138,8 +138,8 @@ export class PersonService {
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
     for (const data of dto.data) {
+      await this.access.requirePermission(authUser, Permission.PERSON_REASSIGN, data.assetFaceId);
       try {
-        await this.access.requirePermission(authUser, Permission.PERSON_REASSIGN, data.assetFaceId);
         const face = await this.repository.getFaceById(data.assetFaceId);
         if (face.person && face.person.faceAssetId === face.id) {
           changeFeaturePhoto.push(face.person.id);

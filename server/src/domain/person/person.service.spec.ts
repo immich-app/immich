@@ -425,7 +425,7 @@ describe(PersonService.name, () => {
   });
 
   describe('createPerson', () => {
-    it('should throw an error when personId is invalid', async () => {
+    it('should create a new person', async () => {
       personMock.create.mockResolvedValue(personStub.primaryPerson);
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       accessMock.person.hasFaceOwnerAccess.mockResolvedValue(true);
@@ -436,6 +436,34 @@ describe(PersonService.name, () => {
         }),
       ).resolves.toBe(personStub.primaryPerson);
       expect(jobMock.queue).not.toHaveBeenCalledWith();
+    });
+    it('should throw an error when personId is invalid', async () => {
+      personMock.create.mockResolvedValue(personStub.primaryPerson);
+      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(false);
+
+      await expect(
+        sut.createPerson(authStub.admin, {
+          data: [{ assetFaceId: faceStub.face1.id }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
+  describe('handlePersonDelete', () => {
+    it('should stop if a person has not be found', async () => {
+      personMock.getById.mockResolvedValue(null);
+
+      await expect(sut.handlePersonDelete({ id: 'person-1' })).resolves.toBe(false);
+      expect(personMock.update).not.toHaveBeenCalled();
+      expect(storageMock.unlink).not.toHaveBeenCalled();
+    });
+    it('should delete a person', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+
+      await expect(sut.handlePersonDelete({ id: 'person-1' })).resolves.toBe(true);
+      expect(personMock.delete).toHaveBeenCalledWith(personStub.primaryPerson);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.primaryPerson.thumbnailPath);
     });
   });
 
