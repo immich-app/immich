@@ -55,7 +55,7 @@ export const showBoundingBox = (faces: AssetFaceResponseDto[]): HTMLDivElement[]
       width: coordinates.x2 - coordinates.x1 + 'px',
       height: coordinates.y2 - coordinates.y1 + 'px',
       borderColor: 'rgb(255, 255, 255)',
-      borderWidth: '2px',
+      borderWidth: '3px',
       borderRadius: '0.75rem',
     };
 

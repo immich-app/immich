@@ -11,7 +11,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import PersonSidePanel, { PersonToCreate } from '../faces-page/person-side-panel.svelte';
   import Map from '../shared-components/map/map.svelte';
   import { imageDiv } from '$lib/stores/assets.store';
   import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
@@ -23,14 +23,14 @@
   let textarea: HTMLTextAreaElement;
   let description: string;
   let showEditFaces = false;
-  let customFeaturePhoto = new Array<string | null>(asset.people?.length || 0);
+  let customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
   let previousId: string;
   $: {
     if (!previousId) {
       previousId = asset.id;
     }
     if (asset.id !== previousId) {
-      customFeaturePhoto = new Array<string | null>(asset.people?.length || 0);
+      customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
       showEditFaces = false;
       previousId = asset.id;
     }
@@ -168,7 +168,7 @@
               <ImageThumbnail
                 curve
                 shadow
-                url={customFeaturePhoto[index] || api.getPeopleThumbnailUrl(person.id)}
+                url={customFeaturePhoto[index]?.thumbnail || api.getPeopleThumbnailUrl(person.id)}
                 altText={person.name}
                 title={person.name}
                 widthStyle="90px"
@@ -402,7 +402,7 @@
 {#if showEditFaces}
   <PersonSidePanel
     bind:createdPeople={customFeaturePhoto}
-    bind:people2={people}
+    bind:people
     assetId={asset.id}
     on:close={() => (showEditFaces = false)}
   />

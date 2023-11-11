@@ -7,7 +7,7 @@ import {
   UpdateFacesData,
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 
 export class PersonRepository implements IPersonRepository {
@@ -16,25 +16,6 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
-
-  /**
-   * Before reassigning faces, delete potential key violations
-   */
-  async prepareReassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<string[]> {
-    const results = await this.assetFaceRepository
-      .createQueryBuilder('face')
-      .select('face."assetId"')
-      .where(`face."personId" IN (:...ids)`, { ids: [oldPersonId, newPersonId] })
-      .groupBy('face."assetId"')
-      .having('COUNT(face."personId") > 1')
-      .getRawMany();
-
-    const assetIds = results.map(({ assetId }) => assetId);
-
-    await this.assetFaceRepository.delete({ personId: oldPersonId, assetId: In(assetIds) });
-
-    return assetIds;
-  }
 
   async reassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<number> {
     const result = await this.assetFaceRepository

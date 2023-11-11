@@ -1,10 +1,14 @@
 <script lang="ts" context="module">
+  export type PersonToCreate = {
+    thumbnail: string;
+    id: string;
+  };
 </script>
 
 <script lang="ts">
   import { blur, fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, AssetFaceResponseDto } from '@api';
+  import { api, type PersonResponseDto, AssetFaceResponseDto, PersonWithFacesResponseDto } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { cloneDeep } from 'lodash-es';
   import { handleError } from '$lib/utils/handle-error';
@@ -18,26 +22,24 @@
   import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
 
-  let people: AssetFaceResponseDto[] = [];
-
   export let assetId: string;
-  export let createdPeople: (string | null)[];
-  export let people2: PersonResponseDto[];
+  export let createdPeople: (PersonToCreate | null)[];
+  export let people: PersonWithFacesResponseDto[];
 
-  let createdPeopleClone = cloneDeep(createdPeople);
-
+  let peopleWithFaces: AssetFaceResponseDto[] = [];
+  let createdPeopleClone: (PersonToCreate | null)[];
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
-
-  const dispatch = createEventDispatcher();
 
   let searchFaces = false;
   let searchName = '';
 
   let allPeople: PersonResponseDto[] = [];
   let editedPerson: number;
-  let selectedPersonToReassign: (PersonResponseDto | null)[] = new Array<PersonResponseDto | null>(people.length);
-  let selectedPersonToCreate: (string | null)[] = new Array<string | null>(people.length);
+  let selectedPersonToReassign: (PersonResponseDto | null)[] = new Array<PersonResponseDto | null>(
+    peopleWithFaces.length,
+  );
+  let selectedPersonToCreate: (PersonToCreate | null)[] = new Array<PersonToCreate | null>(peopleWithFaces.length);
 
   let showSeletecFaces = false;
   let showLoadingSpinner = false;
@@ -47,17 +49,37 @@
   let isCreatingPerson = false;
   let isShowLoadingPeople = false;
 
+  const dispatch = createEventDispatcher();
+
   onMount(async () => {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), 100);
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: true });
       allPeople = data.people;
       const result = await api.personApi.getFaces({ id: assetId });
-      people = result.data;
-      editedPeople = cloneDeep(people);
+      peopleWithFaces = result.data;
+      editedPeople = cloneDeep(peopleWithFaces);
+
+      const idToIndexMap: Record<string, number> = {};
+      editedPeople
+        .filter((item) => item !== null && item.id !== undefined) // Filter out null and undefined elements
+        .forEach((item, index) => {
+          idToIndexMap[item.id] = index;
+        });
+
+      createdPeople.sort((a, b) => {
+        const indexA = a?.id ? idToIndexMap[a.id] : undefined;
+        const indexB = b?.id ? idToIndexMap[b.id] : undefined;
+
+        if (indexA !== undefined && indexB !== undefined) {
+          return indexA - indexB;
+        } else {
+          return 0;
+        }
+      });
+      createdPeopleClone = cloneDeep(createdPeople);
       clearTimeout(timeout);
     } catch (error) {
-      people = [];
       handleError(error, "Can't get faces");
     }
   });
@@ -81,7 +103,7 @@
   };
 
   const handleShowBoundingBox = (index: number) => {
-    const [result] = showBoundingBox([people[index]]);
+    const [result] = showBoundingBox([peopleWithFaces[index]]);
     if ($photoZoomState.currentZoom !== 1) {
       return;
     }
@@ -96,7 +118,7 @@
     cleanBoundingBox();
     searchName = '';
     searchFaces = false;
-    selectedPersonToCreate = new Array<string | null>(people.length);
+    selectedPersonToCreate = new Array<PersonToCreate | null>(peopleWithFaces.length);
     if (showSeletecFaces) {
       showSeletecFaces = false;
     } else {
@@ -104,13 +126,13 @@
     }
   };
 
-  async function zoomImageToBase64(
+  const zoomImageToBase64 = async (
     imageSrc: string,
     x1: number,
     x2: number,
     y1: number,
     y2: number,
-  ): Promise<string | null> {
+  ): Promise<string | null> => {
     const width = x2 - x1;
     const height = y2 - y1;
 
@@ -130,16 +152,14 @@
     if (ctx) {
       ctx.drawImage(img, x1 - (width - width) / 2, y1 - (height - height) / 2, width, height, 0, 0, width, height);
 
-      // Convert the canvas content to base64
-      const base64Image = canvas.toDataURL();
-      return base64Image;
+      return canvas.toDataURL();
     } else {
       return null;
     }
-  }
+  };
 
   const handleReset = (index: number) => {
-    editedPeople[index] = cloneDeep(people[index]);
+    editedPeople[index] = cloneDeep(peopleWithFaces[index]);
     if (createdPeople[index]) {
       createdPeopleClone[index] = createdPeople[index];
     }
@@ -157,29 +177,24 @@
       selectedPersonToReassign.filter((person) => person !== null).length;
     if (numberOfChanges > 0) {
       try {
-        for (let i = 0; i < selectedPersonToReassign.length; i++) {
+        for (let i = 0; i < peopleWithFaces.length; i++) {
           const personId = selectedPersonToReassign[i]?.id;
-          const personId2 = people[i].person?.id;
-          if (personId && personId2) {
-            await api.personApi.reassignFaces({
-              id: personId,
-              assetFaceUpdateDto: { data: [{ assetFaceId: people[i].id }] },
-            });
-            people2[i] = selectedPersonToReassign[i] as PersonResponseDto;
-          }
-        }
-        for (let i = 0; i < selectedPersonToCreate.length; i++) {
-          const personToCreate = selectedPersonToCreate[i];
-          if (personToCreate) {
-            const { data } = await api.personApi.createPerson({
-              assetFaceUpdateDto: { data: [{ assetFaceId: people[i].id }] },
-            });
-            people[i].person = data;
-            people2[i] = data;
 
-            selectedPersonToCreate[i] = personToCreate;
+          if (personId) {
+            const { data } = await api.personApi.reassignFaces({
+              id: personId,
+              assetFaceUpdateDto: { data: [{ assetFaceId: peopleWithFaces[i].id }] },
+            });
+            people.push({ ...data[0], faces: [peopleWithFaces[i]] });
+          } else if (selectedPersonToCreate[i]) {
+            const { data } = await api.personApi.createPerson({
+              assetFaceUpdateDto: { data: [{ assetFaceId: peopleWithFaces[i].id }] },
+            });
+            peopleWithFaces[i].person = data;
+            people.push({ ...data, faces: [peopleWithFaces[i]] });
           }
         }
+
         notificationController.show({
           message: `Edited ${numberOfChanges} ${numberOfChanges > 1 ? 'people' : 'person'}`,
           type: NotificationType.Info,
@@ -194,18 +209,18 @@
 
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isCreatingPerson = true), 100);
-    for (let i = 0; i < people.length; i++) {
-      if (people[i].id === people[editedPerson].id) {
+    for (let i = 0; i < peopleWithFaces.length; i++) {
+      if (peopleWithFaces[i].id === peopleWithFaces[editedPerson].id) {
         const newFeaturePhoto = await zoomImageToBase64(
           $assetDataUrl,
-          people[i].boundingBoxX1,
-          people[i].boundingBoxX2,
-          people[i].boundingBoxY1,
-          people[i].boundingBoxY2,
+          peopleWithFaces[i].boundingBoxX1,
+          peopleWithFaces[i].boundingBoxX2,
+          peopleWithFaces[i].boundingBoxY1,
+          peopleWithFaces[i].boundingBoxY2,
         );
 
         if (newFeaturePhoto) {
-          selectedPersonToCreate[i] = newFeaturePhoto;
+          selectedPersonToCreate[i] = { thumbnail: newFeaturePhoto, id: peopleWithFaces[i].id };
         }
         createdPeopleClone[i] = null;
         break;
@@ -279,8 +294,8 @@
                 <ImageThumbnail
                   curve
                   shadow
-                  url={createdPeopleClone[index] ||
-                    selectedPersonToCreate[index] ||
+                  url={createdPeopleClone[index]?.thumbnail ||
+                    selectedPersonToCreate[index]?.thumbnail ||
                     api.getPeopleThumbnailUrl(person.person.id)}
                   altText={person.person?.name || ''}
                   title={person.person?.name || ''}
@@ -406,7 +421,7 @@
       <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
         {#if searchName == ''}
           {#each allPeople as person (person.id)}
-            {#if person.id !== people[editedPerson].person?.id}
+            {#if person.id !== peopleWithFaces[editedPerson].person?.id}
               <div class="w-fit">
                 <button class="w-[90px]" on:click={() => handleReassignFace(person)}>
                   <ImageThumbnail
@@ -427,7 +442,7 @@
           {/each}
         {:else}
           {#each searchedPeople as person (person.id)}
-            {#if person.id !== people[editedPerson].person?.id}
+            {#if person.id !== peopleWithFaces[editedPerson].person?.id}
               <div class="w-fit">
                 <button class="w-[90px]" on:click={() => handleReassignFace(person)}>
                   <ImageThumbnail

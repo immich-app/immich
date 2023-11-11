@@ -498,10 +498,6 @@ export class PersonService {
         const mergeData: UpdateFacesData = { oldPersonId: mergeId, newPersonId: id };
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
 
-        const assetIds = await this.repository.prepareReassignFaces(mergeData);
-        for (const assetId of assetIds) {
-          await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId: mergeId } });
-        }
         await this.repository.reassignFaces(mergeData);
         await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: mergePerson.id } });
 

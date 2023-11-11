@@ -710,15 +710,12 @@ describe(PersonService.name, () => {
     it('should require person.write and person.merge permission', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
       personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
-      personMock.prepareReassignFaces.mockResolvedValue([]);
       personMock.delete.mockResolvedValue(personStub.mergePerson);
       accessMock.person.hasOwnerAccess.mockResolvedValue(false);
 
       await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).rejects.toBeInstanceOf(
         BadRequestException,
       );
-
-      expect(personMock.prepareReassignFaces).not.toHaveBeenCalled();
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
 
@@ -729,18 +726,12 @@ describe(PersonService.name, () => {
     it('should merge two people', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
       personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
-      personMock.prepareReassignFaces.mockResolvedValue([]);
       personMock.delete.mockResolvedValue(personStub.mergePerson);
       accessMock.person.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
         { id: 'person-2', success: true },
       ]);
-
-      expect(personMock.prepareReassignFaces).toHaveBeenCalledWith({
-        newPersonId: personStub.primaryPerson.id,
-        oldPersonId: personStub.mergePerson.id,
-      });
 
       expect(personMock.reassignFaces).toHaveBeenCalledWith({
         newPersonId: personStub.primaryPerson.id,
@@ -750,28 +741,6 @@ describe(PersonService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.PERSON_DELETE,
         data: { id: personStub.mergePerson.id },
-      });
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
-    });
-
-    it('should delete conflicting faces before merging', async () => {
-      personMock.getById.mockResolvedValue(personStub.primaryPerson);
-      personMock.getById.mockResolvedValue(personStub.mergePerson);
-      personMock.prepareReassignFaces.mockResolvedValue([assetStub.image.id]);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
-
-      await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
-        { id: 'person-2', success: true },
-      ]);
-
-      expect(personMock.prepareReassignFaces).toHaveBeenCalledWith({
-        newPersonId: personStub.primaryPerson.id,
-        oldPersonId: personStub.mergePerson.id,
-      });
-
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.SEARCH_REMOVE_FACE,
-        data: { assetId: assetStub.image.id, personId: personStub.mergePerson.id },
       });
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
     });
@@ -797,7 +766,6 @@ describe(PersonService.name, () => {
         { id: 'person-2', success: false, error: BulkIdErrorReason.NOT_FOUND },
       ]);
 
-      expect(personMock.prepareReassignFaces).not.toHaveBeenCalled();
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.delete).not.toHaveBeenCalled();
       expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
@@ -806,7 +774,6 @@ describe(PersonService.name, () => {
     it('should handle an error reassigning faces', async () => {
       personMock.getById.mockResolvedValue(personStub.primaryPerson);
       personMock.getById.mockResolvedValue(personStub.mergePerson);
-      personMock.prepareReassignFaces.mockResolvedValue([assetStub.image.id]);
       personMock.reassignFaces.mockRejectedValue(new Error('update failed'));
       accessMock.person.hasOwnerAccess.mockResolvedValue(true);
 

@@ -34,7 +34,7 @@ export interface IPersonRepository {
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
 
   getAssets(personId: string): Promise<AssetEntity[]>;
-  prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
+
   reassignFaces(data: UpdateFacesData): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
