@@ -17,7 +17,7 @@
   export let menuItem = false;
   export let force = !$featureFlags.trash;
 
-  const { getAssets, clearSelect } = getAssetControlContext();
+  const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const dispatch = createEventDispatcher();
 
@@ -37,7 +37,7 @@
     loading = true;
 
     try {
-      const ids = Array.from(getAssets())
+      const ids = Array.from(getOwnedAssets())
         .filter((a) => !a.isExternal)
         .map((a) => a.id);
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids, force } });
@@ -75,7 +75,7 @@
 
 {#if isShowConfirmation}
   <ConfirmDialogue
-    title="Permanently Delete Asset{getAssets().size > 1 ? 's' : ''}"
+    title="Permanently Delete Asset{getOwnedAssets().size > 1 ? 's' : ''}"
     confirmText="Delete"
     on:confirm={handleDelete}
     on:cancel={() => (isShowConfirmation = false)}
@@ -84,8 +84,8 @@
     <svelte:fragment slot="prompt">
       <p>
         Are you sure you want to permanently delete
-        {#if getAssets().size > 1}
-          these <b>{getAssets().size}</b> assets? This will also remove them from their album(s).
+        {#if getOwnedAssets().size > 1}
+          these <b>{getOwnedAssets().size}</b> assets? This will also remove them from their album(s).
         {:else}
           this asset? This will also remove it from its album(s).
         {/if}

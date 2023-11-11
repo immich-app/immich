@@ -65,7 +65,7 @@ export interface TimeBucketOptions {
   isTrashed?: boolean;
   albumId?: string;
   personId?: string;
-  userId?: string;
+  userIds?: string[];
   withStacked?: boolean;
 }
 

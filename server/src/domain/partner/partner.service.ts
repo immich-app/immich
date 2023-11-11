@@ -1,14 +1,22 @@
 import { PartnerEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
-import { IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';
-import { UserResponseDto, mapUser } from '../user';
+import { IAccessRepository, IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';
+import { mapUser } from '../user';
+import { PartnerResponseDto, UpdatePartnerDto } from './partner.dto';
 
 @Injectable()
 export class PartnerService {
-  constructor(@Inject(IPartnerRepository) private repository: IPartnerRepository) {}
+  private access: AccessCore;
+  constructor(
+    @Inject(IPartnerRepository) private repository: IPartnerRepository,
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
+  ) {
+    this.access = AccessCore.create(accessRepository);
+  }
 
-  async create(authUser: AuthUserDto, sharedWithId: string): Promise<UserResponseDto> {
+  async create(authUser: AuthUserDto, sharedWithId: string): Promise<PartnerResponseDto> {
     const partnerId: PartnerIds = { sharedById: authUser.id, sharedWithId };
     const exists = await this.repository.get(partnerId);
     if (exists) {
@@ -29,7 +37,7 @@ export class PartnerService {
     await this.repository.remove(partner);
   }
 
-  async getAll(authUser: AuthUserDto, direction: PartnerDirection): Promise<UserResponseDto[]> {
+  async getAll(authUser: AuthUserDto, direction: PartnerDirection): Promise<PartnerResponseDto[]> {
     const partners = await this.repository.getAll(authUser.id);
     const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
     return partners
@@ -38,8 +46,22 @@ export class PartnerService {
       .map((partner) => this.map(partner, direction));
   }
 
-  private map(partner: PartnerEntity, direction: PartnerDirection): UserResponseDto {
+  async update(authUser: AuthUserDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerResponseDto> {
+    await this.access.requirePermission(authUser, Permission.PARTNER_UPDATE, sharedById);
+    const partnerId: PartnerIds = { sharedById, sharedWithId: authUser.id };
+
+    const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });
+    return this.map(entity, PartnerDirection.SharedWith);
+  }
+
+  private map(partner: PartnerEntity, direction: PartnerDirection): PartnerResponseDto {
     // this is opposite to return the non-me user of the "partner"
-    return mapUser(direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy);
+    const user = mapUser(
+      direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy,
+    ) as PartnerResponseDto;
+
+    user.inTimeline = partner.inTimeline;
+
+    return user;
   }
 }

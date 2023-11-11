@@ -28,22 +28,27 @@ const UserSchema = CollectionSchema(
       type: IsarType.string,
     ),
     r'isAdmin': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'isAdmin',
       type: IsarType.bool,
     ),
     r'isPartnerSharedBy': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isPartnerSharedBy',
       type: IsarType.bool,
     ),
     r'isPartnerSharedWith': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'isPartnerSharedWith',
       type: IsarType.bool,
     ),
+    r'lastName': PropertySchema(
+      id: 6,
+      name: r'lastName',
+      type: IsarType.string,
+    ),
     r'memoryEnabled': PropertySchema(
-      id: 5,
+      id: 7,
       name: r'memoryEnabled',
       type: IsarType.bool,
     ),
@@ -53,12 +58,12 @@ const UserSchema = CollectionSchema(
       type: IsarType.string,
     ),
     r'profileImagePath': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'profileImagePath',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -126,14 +131,15 @@ void _userSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.email);
-  writer.writeString(offsets[1], object.id);
-  writer.writeBool(offsets[2], object.isAdmin);
-  writer.writeBool(offsets[3], object.isPartnerSharedBy);
-  writer.writeBool(offsets[4], object.isPartnerSharedWith);
-  writer.writeBool(offsets[5], object.memoryEnabled);
-  writer.writeString(offsets[6], object.name);
-  writer.writeString(offsets[7], object.profileImagePath);
-  writer.writeDateTime(offsets[8], object.updatedAt);
+  writer.writeString(offsets[1], object.firstName);
+  writer.writeString(offsets[2], object.id);
+  writer.writeBool(offsets[3], object.isAdmin);
+  writer.writeBool(offsets[4], object.isPartnerSharedBy);
+  writer.writeBool(offsets[5], object.isPartnerSharedWith);
+  writer.writeString(offsets[6], object.lastName);
+  writer.writeBool(offsets[7], object.memoryEnabled);
+  writer.writeString(offsets[8], object.profileImagePath);
+  writer.writeDateTime(offsets[9], object.updatedAt);
 }
 
 User _userDeserialize(
@@ -144,14 +150,15 @@ User _userDeserialize(
 ) {
   final object = User(
     email: reader.readString(offsets[0]),
-    id: reader.readString(offsets[1]),
-    isAdmin: reader.readBool(offsets[2]),
-    isPartnerSharedBy: reader.readBoolOrNull(offsets[3]) ?? false,
-    isPartnerSharedWith: reader.readBoolOrNull(offsets[4]) ?? false,
-    memoryEnabled: reader.readBoolOrNull(offsets[5]),
-    name: reader.readString(offsets[6]),
-    profileImagePath: reader.readStringOrNull(offsets[7]) ?? '',
-    updatedAt: reader.readDateTime(offsets[8]),
+    firstName: reader.readString(offsets[1]),
+    id: reader.readString(offsets[2]),
+    isAdmin: reader.readBool(offsets[3]),
+    isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
+    isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
+    lastName: reader.readString(offsets[6]),
+    memoryEnabled: reader.readBoolOrNull(offsets[7]),
+    profileImagePath: reader.readStringOrNull(offsets[8]) ?? '',
+    updatedAt: reader.readDateTime(offsets[9]),
   );
   return object;
 }
@@ -168,18 +175,20 @@ P _userDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
+      return (reader.readBool(offset)) as P;
     case 5:
       return (reader.readBoolOrNull(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 7:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 8:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 9:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -625,6 +634,32 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'id',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> inTimelineIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'inTimeline',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> inTimelineIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'inTimeline',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> inTimelineEqualTo(
+      bool? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'inTimeline',
+        value: value,
       ));
     });
   }
@@ -1188,6 +1223,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> sortByInTimeline() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inTimeline', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByInTimelineDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inTimeline', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByIsAdmin() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isAdmin', Sort.asc);
@@ -1295,6 +1342,18 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
   QueryBuilder<User, User, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByInTimeline() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inTimeline', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByInTimelineDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inTimeline', Sort.desc);
     });
   }
 
@@ -1410,6 +1469,12 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
+  QueryBuilder<User, User, QDistinct> distinctByInTimeline() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'inTimeline');
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByIsAdmin() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isAdmin');
@@ -1472,6 +1537,12 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, String, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<User, bool?, QQueryOperations> inTimelineProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'inTimeline');
     });
   }
 

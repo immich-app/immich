@@ -70,11 +70,11 @@
     "justified-layout": "^4.1.0",
     "lodash-es": "^4.17.21",
     "luxon": "^3.2.1",
-    "maplibre-gl": "^3.5.2",
+    "maplibre-gl": "^3.6.0",
     "socket.io-client": "^4.6.1",
     "svelte-loading-spinners": "^0.3.4",
     "svelte-local-storage-store": "^0.5.0",
-    "svelte-maplibre": "^0.6.0",
+    "svelte-maplibre": "^0.7.0",
     "thumbhash": "^0.1.1"
   }
 }

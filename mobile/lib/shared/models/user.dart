@@ -17,11 +17,12 @@ class User {
     this.isPartnerSharedWith = false,
     this.profileImagePath = '',
     this.memoryEnabled = true,
+    this.inTimeline = false,
   });
 
   Id get isarId => fastHash(id);
 
-  User.fromDto(UserResponseDto dto)
+  User.fromUserDto(UserResponseDto dto)
       : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
@@ -31,6 +32,19 @@ class User {
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled;
+
+  User.fromPartnerDto(PartnerResponseDto dto)
+      : id = dto.id,
+        updatedAt = dto.updatedAt,
+        email = dto.email,
+        firstName = dto.firstName,
+        lastName = dto.lastName,
+        isPartnerSharedBy = false,
+        isPartnerSharedWith = false,
+        profileImagePath = dto.profileImagePath,
+        isAdmin = dto.isAdmin,
+        memoryEnabled = dto.memoriesEnabled,
+        inTimeline = dto.inTimeline;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
@@ -42,6 +56,8 @@ class User {
   bool isAdmin;
   String profileImagePath;
   bool? memoryEnabled;
+  bool? inTimeline;
+
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
   @Backlink(to: 'sharedUsers')
@@ -58,7 +74,8 @@ class User {
         isPartnerSharedWith == other.isPartnerSharedWith &&
         profileImagePath == other.profileImagePath &&
         isAdmin == other.isAdmin &&
-        memoryEnabled == other.memoryEnabled;
+        memoryEnabled == other.memoryEnabled &&
+        inTimeline == other.inTimeline;
   }
 
   @override
@@ -72,5 +89,6 @@ class User {
       isPartnerSharedWith.hashCode ^
       profileImagePath.hashCode ^
       isAdmin.hashCode ^
-      memoryEnabled.hashCode;
+      memoryEnabled.hashCode ^
+      inTimeline.hashCode;
 }
