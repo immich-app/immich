@@ -91,6 +91,7 @@ doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
+doc/PartnerResponseDto.md
 doc/PathEntityType.md
 doc/PathType.md
 doc/PeopleResponseDto.md
@@ -159,6 +160,7 @@ doc/TranscodePolicy.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
 doc/UpdateLibraryDto.md
+doc/UpdatePartnerDto.md
 doc/UpdateStackParentDto.md
 doc/UpdateTagDto.md
 doc/UpdateUserDto.md
@@ -273,6 +275,7 @@ lib/model/o_auth_authorize_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
+lib/model/partner_response_dto.dart
 lib/model/path_entity_type.dart
 lib/model/path_type.dart
 lib/model/people_response_dto.dart
@@ -335,6 +338,7 @@ lib/model/transcode_policy.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_library_dto.dart
+lib/model/update_partner_dto.dart
 lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
@@ -432,6 +436,7 @@ test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
+test/partner_response_dto_test.dart
 test/path_entity_type_test.dart
 test/path_type_test.dart
 test/people_response_dto_test.dart
@@ -500,6 +505,7 @@ test/transcode_policy_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_library_dto_test.dart
+test/update_partner_dto_test.dart
 test/update_stack_parent_dto_test.dart
 test/update_tag_dto_test.dart
 test/update_user_dto_test.dart

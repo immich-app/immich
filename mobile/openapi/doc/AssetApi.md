@@ -1005,7 +1005,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getTimeBucket**
-> List<AssetResponseDto> getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key)
+> List<AssetResponseDto> getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key)
 
 
 
@@ -1037,10 +1037,11 @@ final isArchived = true; // bool |
 final isFavorite = true; // bool | 
 final isTrashed = true; // bool | 
 final withStacked = true; // bool | 
+final withPartners = true; // bool | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key);
+    final result = api_instance.getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getTimeBucket: $e\n');
@@ -1060,6 +1061,7 @@ Name | Type | Description  | Notes
  **isFavorite** | **bool**|  | [optional] 
  **isTrashed** | **bool**|  | [optional] 
  **withStacked** | **bool**|  | [optional] 
+ **withPartners** | **bool**|  | [optional] 
  **key** | **String**|  | [optional] 
 
 ### Return type
@@ -1078,7 +1080,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getTimeBuckets**
-> List<TimeBucketResponseDto> getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key)
+> List<TimeBucketResponseDto> getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key)
 
 
 
@@ -1109,10 +1111,11 @@ final isArchived = true; // bool |
 final isFavorite = true; // bool | 
 final isTrashed = true; // bool | 
 final withStacked = true; // bool | 
+final withPartners = true; // bool | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key);
+    final result = api_instance.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getTimeBuckets: $e\n');
@@ -1131,6 +1134,7 @@ Name | Type | Description  | Notes
  **isFavorite** | **bool**|  | [optional] 
  **isTrashed** | **bool**|  | [optional] 
  **withStacked** | **bool**|  | [optional] 
+ **withPartners** | **bool**|  | [optional] 
  **key** | **String**|  | [optional] 
 
 ### Return type

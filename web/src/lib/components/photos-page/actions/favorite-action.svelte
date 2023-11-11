@@ -20,14 +20,15 @@
 
   let loading = false;
 
-  const { getAssets, clearSelect } = getAssetControlContext();
+  const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleFavorite = async () => {
     const isFavorite = !removeFavorite;
     loading = true;
 
     try {
-      const assets = Array.from(getAssets()).filter((asset) => asset.isFavorite !== isFavorite);
+      const assets = Array.from(getOwnedAssets()).filter((asset) => asset.isFavorite !== isFavorite);
+
       const ids = assets.map(({ id }) => id);
 
       if (ids.length > 0) {

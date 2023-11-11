@@ -1,7 +1,7 @@
 import { IPartnerRepository, PartnerIds } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { PartnerEntity } from '../entities';
 
 @Injectable()
@@ -16,12 +16,22 @@ export class PartnerRepository implements IPartnerRepository {
     return this.repository.findOne({ where: { sharedById, sharedWithId } });
   }
 
-  async create({ sharedById, sharedWithId }: PartnerIds): Promise<PartnerEntity> {
-    await this.repository.save({ sharedBy: { id: sharedById }, sharedWith: { id: sharedWithId } });
-    return this.repository.findOneOrFail({ where: { sharedById, sharedWithId } });
+  create({ sharedById, sharedWithId }: PartnerIds): Promise<PartnerEntity> {
+    return this.save({ sharedBy: { id: sharedById }, sharedWith: { id: sharedWithId } });
   }
 
   async remove(entity: PartnerEntity): Promise<void> {
     await this.repository.remove(entity);
+  }
+
+  update(entity: Partial<PartnerEntity>): Promise<PartnerEntity> {
+    return this.save(entity);
+  }
+
+  private async save(entity: DeepPartial<PartnerEntity>): Promise<PartnerEntity> {
+    await this.repository.save(entity);
+    return this.repository.findOneOrFail({
+      where: { sharedById: entity.sharedById, sharedWithId: entity.sharedWithId },
+    });
   }
 }

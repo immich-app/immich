@@ -8,6 +8,7 @@ export interface IAccessRepositoryMock {
   library: jest.Mocked<IAccessRepository['library']>;
   timeline: jest.Mocked<IAccessRepository['timeline']>;
   person: jest.Mocked<IAccessRepository['person']>;
+  partner: jest.Mocked<IAccessRepository['partner']>;
 }
 
 export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => {
@@ -49,6 +50,10 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
 
     person: {
       hasOwnerAccess: jest.fn(),
+    },
+
+    partner: {
+      hasUpdateAccess: jest.fn(),
     },
   };
 };
