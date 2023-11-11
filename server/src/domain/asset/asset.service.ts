@@ -191,11 +191,7 @@ export class AssetService {
       }
     }
     if (dto.withPartners) {
-      if (
-        (dto.isArchived !== undefined && dto.isArchived !== false) ||
-        (dto.isTrashed !== undefined && dto.isTrashed !== false) ||
-        (dto.isFavorite !== undefined && dto.isFavorite !== false)
-      ) {
+      if (dto.isArchived !== undefined || dto.isTrashed !== undefined || dto.isFavorite !== undefined) {
         throw new BadRequestException(
           'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
         );
@@ -234,8 +230,7 @@ export class AssetService {
       if (dto.withPartners) {
         const partners = await this.partnerRepository.getAll(authUser.id);
         const partnersIds = partners
-          .filter((partner) => partner.sharedBy && partner.sharedWith)
-          .filter((p) => p.inTimeline)
+          .filter((partner) => partner.sharedBy && partner.sharedWith && partner.inTimeline)
           .map((partner) => partner.sharedById);
 
         userIds.push(...partnersIds);
