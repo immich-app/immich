@@ -32,7 +32,7 @@ export class AssetBucket {
    */
   bucketHeight!: number;
   bucketDate!: string;
-  totalAssets!: number;
+  bucketCount!: number;
   assets!: AssetResponseDto[];
   cancelToken!: AbortController | null;
   position!: BucketPosition;
@@ -159,7 +159,7 @@ export class AssetStore {
       return {
         bucketDate: bucket.timeBucket,
         bucketHeight: height,
-        totalAssets: bucket.count,
+        bucketCount: bucket.count,
         assets: [],
         cancelToken: null,
         position: BucketPosition.Unknown,
@@ -276,7 +276,7 @@ export class AssetStore {
       bucket = {
         bucketDate: timeBucket,
         bucketHeight: THUMBNAIL_HEIGHT,
-        totalAssets: 0,
+        bucketCount: 0,
         assets: [],
         cancelToken: null,
         position: BucketPosition.Unknown,
@@ -316,9 +316,9 @@ export class AssetStore {
   }
 
   async getRandomAsset(): Promise<AssetResponseDto | null> {
-    let index = Math.floor(Math.random() * this.buckets.reduce((acc, bucket) => acc + bucket.totalAssets, 0));
+    let index = Math.floor(Math.random() * this.buckets.reduce((acc, bucket) => acc + bucket.bucketCount, 0));
     for (const bucket of this.buckets) {
-      if (index < bucket.totalAssets) {
+      if (index < bucket.bucketCount) {
         if (bucket.assets.length === 0) {
           await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
         }
@@ -326,7 +326,7 @@ export class AssetStore {
         return bucket.assets[index] || null;
       }
 
-      index -= bucket.totalAssets;
+      index -= bucket.bucketCount;
     }
 
     return null;
@@ -420,7 +420,7 @@ export class AssetStore {
       for (let i = 0; i < this.buckets.length; i++) {
         const bucket = this.buckets[i];
         if (bucket.assets.length !== 0) {
-          bucket.totalAssets = bucket.assets.length;
+          bucket.bucketCount = bucket.assets.length;
         }
         for (let j = 0; j < bucket.assets.length; j++) {
           const asset = bucket.assets[j];
