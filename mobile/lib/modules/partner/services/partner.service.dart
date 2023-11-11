@@ -36,7 +36,7 @@ class PartnerService {
       final userDtos =
           await _apiService.partnerApi.getPartners(direction._value);
       if (userDtos != null) {
-        return userDtos.map((u) => User.fromDto(u)).toList();
+        return userDtos.map((u) => User.fromPartnerDto(u)).toList();
       }
     } catch (e) {
       _log.warning("failed to get partners for direction $direction:\n$e");
