@@ -36,4 +36,8 @@ export interface IAccessRepository {
     hasOwnerAccess(userId: string, personId: string): Promise<boolean>;
     hasFaceOwnerAccess(userId: string, assetFaceId: string): Promise<boolean>;
   };
+
+  partner: {
+    hasUpdateAccess(userId: string, partnerId: string): Promise<boolean>;
+  };
 }

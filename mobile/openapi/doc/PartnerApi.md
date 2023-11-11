@@ -12,10 +12,11 @@ Method | HTTP request | Description
 [**createPartner**](PartnerApi.md#createpartner) | **POST** /partner/{id} | 
 [**getPartners**](PartnerApi.md#getpartners) | **GET** /partner | 
 [**removePartner**](PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
+[**updatePartner**](PartnerApi.md#updatepartner) | **PUT** /partner/{id} | 
 
 
 # **createPartner**
-> UserResponseDto createPartner(id)
+> PartnerResponseDto createPartner(id)
 
 
 
@@ -56,7 +57,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UserResponseDto**](UserResponseDto.md)
+[**PartnerResponseDto**](PartnerResponseDto.md)
 
 ### Authorization
 
@@ -70,7 +71,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getPartners**
-> List<UserResponseDto> getPartners(direction)
+> List<PartnerResponseDto> getPartners(direction)
 
 
 
@@ -111,7 +112,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List<UserResponseDto>**](UserResponseDto.md)
+[**List<PartnerResponseDto>**](PartnerResponseDto.md)
 
 ### Authorization
 
@@ -175,6 +176,63 @@ void (empty response body)
 
  - **Content-Type**: Not defined
  - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updatePartner**
+> PartnerResponseDto updatePartner(id, updatePartnerDto)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = PartnerApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final updatePartnerDto = UpdatePartnerDto(); // UpdatePartnerDto | 
+
+try {
+    final result = api_instance.updatePartner(id, updatePartnerDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling PartnerApi->updatePartner: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
+ **updatePartnerDto** | [**UpdatePartnerDto**](UpdatePartnerDto.md)|  | 
+
+### Return type
+
+[**PartnerResponseDto**](PartnerResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

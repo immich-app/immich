@@ -9,6 +9,7 @@ export const partnerStub = {
     sharedBy: userStub.admin,
     sharedWith: userStub.user1,
     sharedWithId: userStub.user1.id,
+    inTimeline: true,
   }),
   user1ToAdmin1: Object.freeze<PartnerEntity>({
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -17,5 +18,6 @@ export const partnerStub = {
     sharedById: userStub.user1.id,
     sharedWithId: userStub.admin.id,
     sharedWith: userStub.admin,
+    inTimeline: true,
   }),
 };

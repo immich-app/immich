@@ -1,22 +1,71 @@
 <script lang="ts">
-  import { UserResponseDto, api } from '@api';
+  import { PartnerResponseDto, UserResponseDto, api } from '@api';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import Button from '../elements/buttons/button.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-  import { mdiClose } from '@mdi/js';
+  import { mdiCheck, mdiClose } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import Icon from '../elements/icon.svelte';
+  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
+
+  interface PartnerSharing {
+    user: UserResponseDto;
+    sharedByMe: boolean;
+    sharedWithMe: boolean;
+    inTimeline: boolean;
+  }
 
   export let user: UserResponseDto;
 
-  export let partners: UserResponseDto[];
   let createPartner = false;
-  let removePartner: UserResponseDto | null = null;
+  let removePartner: PartnerResponseDto | null = null;
+  let partners: Array<PartnerSharing> = [];
+
+  onMount(() => {
+    refreshPartners();
+  });
 
   const refreshPartners = async () => {
-    const { data } = await api.partnerApi.getPartners({ direction: 'shared-by' });
-    partners = data;
+    partners = [];
+
+    const [{ data: sharedBy }, { data: sharedWith }] = await Promise.all([
+      api.partnerApi.getPartners({ direction: 'shared-by' }),
+      api.partnerApi.getPartners({ direction: 'shared-with' }),
+    ]);
+
+    for (const candidate of sharedBy) {
+      partners = [
+        ...partners,
+        {
+          user: candidate,
+          sharedByMe: true,
+          sharedWithMe: false,
+          inTimeline: candidate.inTimeline ?? false,
+        },
+      ];
+    }
+
+    for (const candidate of sharedWith) {
+      const existIndex = partners.findIndex((p) => candidate.id === p.user.id);
+
+      if (existIndex >= 0) {
+        partners[existIndex].sharedWithMe = true;
+        partners[existIndex].inTimeline = candidate.inTimeline ?? false;
+      } else {
+        partners = [
+          ...partners,
+          {
+            user: candidate,
+            sharedByMe: false,
+            sharedWithMe: true,
+            inTimeline: candidate.inTimeline ?? false,
+          },
+        ];
+      }
+    }
   };
 
   const handleRemovePartner = async () => {
@@ -45,34 +94,80 @@
       handleError(error, 'Unable to add partners');
     }
   };
+
+  const handleShowOnTimelineChanged = async (partner: PartnerSharing, inTimeline: boolean) => {
+    try {
+      await api.partnerApi.updatePartner({ id: partner.user.id, updatePartnerDto: { inTimeline } });
+
+      partner.inTimeline = inTimeline;
+      partners = partners;
+    } catch (error) {
+      handleError(error, 'Unable to update timeline display status');
+    }
+  };
 </script>
 
 <section class="my-4">
   {#if partners.length > 0}
-    <div class="flex flex-row gap-4">
-      {#each partners as partner (partner.id)}
-        <div class="flex gap-4 rounded-lg px-5 py-4 transition-all">
-          <UserAvatar user={partner} size="md" autoColor />
-          <div class="text-left">
-            <p class="text-immich-fg dark:text-immich-dark-fg">
-              {partner.firstName}
-              {partner.lastName}
-            </p>
-            <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
-              {partner.email}
-            </p>
+    {#each partners as partner (partner.user.id)}
+      <div class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-6 bg-slate-50 dark:bg-gray-900 p-5">
+        <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
+          <div class="flex gap-4">
+            <UserAvatar user={partner.user} size="md" autoColor />
+            <div class="text-left">
+              <p class="text-immich-fg dark:text-immich-dark-fg">
+                {partner.user.firstName}
+                {partner.user.lastName}
+              </p>
+              <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
+                {partner.user.email}
+              </p>
+            </div>
           </div>
-          <CircleIconButton
-            on:click={() => (removePartner = partner)}
-            icon={mdiClose}
-            size={'16'}
-            title="Remove partner"
-          />
+
+          {#if partner.sharedByMe}
+            <CircleIconButton
+              on:click={() => (removePartner = partner.user)}
+              icon={mdiClose}
+              size={'16'}
+              title="Stop sharing your photos with this user"
+            />
+          {/if}
         </div>
-      {/each}
-    </div>
+
+        <div class="dark:text-gray-200 text-immich-dark-gray">
+          <!-- I am sharing my assets with this user -->
+          {#if partner.sharedByMe}
+            <hr class="my-4 border border-gray-200 dark:border-gray-700" />
+            <p class="text-xs font-medium my-4">SHARED WITH {partner.user.firstName.toUpperCase()}</p>
+            <p class="text-md">{partner.user.firstName} can access</p>
+            <ul class="text-sm">
+              <li class="flex gap-2 place-items-center py-1 mt-2">
+                <Icon path={mdiCheck} /> All your photos and videos except those in Archived and Deleted
+              </li>
+              <li class="flex gap-2 place-items-center py-1">
+                <Icon path={mdiCheck} /> The location where your photos were taken
+              </li>
+            </ul>
+          {/if}
+
+          <!-- this user is sharing assets with me -->
+          {#if partner.sharedWithMe}
+            <hr class="my-4 border border-gray-200 dark:border-gray-700" />
+            <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.firstName.toUpperCase()}</p>
+            <SettingSwitch
+              title="Show in timeline"
+              subtitle="Show photos and videos from this user in your timeline"
+              bind:checked={partner.inTimeline}
+              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
+            />
+          {/if}
+        </div>
+      </div>
+    {/each}
   {/if}
-  <div class="flex justify-end">
+
+  <div class="flex justify-end mt-5">
     <Button size="sm" on:click={() => (createPartner = true)}>Add partner</Button>
   </div>
 </section>

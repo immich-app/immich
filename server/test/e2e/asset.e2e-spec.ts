@@ -584,6 +584,52 @@ describe(`${AssetController.name} (e2e)`, () => {
         ]),
       );
     });
+
+    it('should return error if time bucket is requested with partners asset and archived', async () => {
+      const req1 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isArchived: true });
+
+      expect(req1.status).toBe(400);
+      expect(req1.body).toEqual(errorStub.badRequest());
+
+      const req2 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isArchived: undefined });
+
+      expect(req2.status).toBe(400);
+      expect(req2.body).toEqual(errorStub.badRequest());
+    });
+
+    it('should return error if time bucket is requested with partners asset and favorite', async () => {
+      const req1 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isFavorite: true });
+
+      expect(req1.status).toBe(400);
+      expect(req1.body).toEqual(errorStub.badRequest());
+
+      const req2 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isFavorite: false });
+
+      expect(req2.status).toBe(400);
+      expect(req2.body).toEqual(errorStub.badRequest());
+    });
+
+    it('should return error if time bucket is requested with partners asset and trash', async () => {
+      const req = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isTrashed: true });
+
+      expect(req.status).toBe(400);
+      expect(req.body).toEqual(errorStub.badRequest());
+    });
   });
 
   describe('GET /asset/map-marker', () => {

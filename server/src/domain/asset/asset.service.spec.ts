@@ -10,6 +10,7 @@ import {
   newCommunicationRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
+  newPartnerRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
@@ -23,6 +24,7 @@ import {
   ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
+  IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
   JobItem,
@@ -164,6 +166,7 @@ describe(AssetService.name, () => {
   let storageMock: jest.Mocked<IStorageRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let partnerMock: jest.Mocked<IPartnerRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -177,7 +180,18 @@ describe(AssetService.name, () => {
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, cryptoMock, jobMock, configMock, storageMock, communicationMock);
+    partnerMock = newPartnerRepositoryMock();
+
+    sut = new AssetService(
+      accessMock,
+      assetMock,
+      cryptoMock,
+      jobMock,
+      configMock,
+      storageMock,
+      communicationMock,
+      partnerMock,
+    );
 
     when(assetMock.getById)
       .calledWith(assetStub.livePhotoStillAsset.id)
@@ -327,7 +341,7 @@ describe(AssetService.name, () => {
           size: TimeBucketSize.DAY,
         }),
       ).resolves.toEqual(expect.arrayContaining([{ timeBucket: 'bucket', count: 1 }]));
-      expect(assetMock.getTimeBuckets).toBeCalledWith({ size: TimeBucketSize.DAY, userId: authStub.admin.id });
+      expect(assetMock.getTimeBuckets).toBeCalledWith({ size: TimeBucketSize.DAY, userIds: [authStub.admin.id] });
     });
   });
 
@@ -363,7 +377,7 @@ describe(AssetService.name, () => {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
         isArchived: true,
-        userId: authStub.admin.id,
+        userIds: [authStub.admin.id],
       });
     });
 
@@ -380,8 +394,64 @@ describe(AssetService.name, () => {
       expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
-        userId: authStub.admin.id,
+        userIds: [authStub.admin.id],
       });
+    });
+
+    it('should throw an error if withParners is true and isArchived true or undefined', async () => {
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isArchived: true,
+          withPartners: true,
+          userId: authStub.admin.id,
+        }),
+      ).rejects.toThrowError(BadRequestException);
+
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isArchived: undefined,
+          withPartners: true,
+          userId: authStub.admin.id,
+        }),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should throw an error if withParners is true and isFavorite is either true or false', async () => {
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isFavorite: true,
+          withPartners: true,
+          userId: authStub.admin.id,
+        }),
+      ).rejects.toThrowError(BadRequestException);
+
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isFavorite: false,
+          withPartners: true,
+          userId: authStub.admin.id,
+        }),
+      ).rejects.toThrowError(BadRequestException);
+    });
+
+    it('should throw an error if withParners is true and isTrash is true', async () => {
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          size: TimeBucketSize.DAY,
+          timeBucket: 'bucket',
+          isTrashed: true,
+          withPartners: true,
+          userId: authStub.admin.id,
+        }),
+      ).rejects.toThrowError(BadRequestException);
     });
   });
 
