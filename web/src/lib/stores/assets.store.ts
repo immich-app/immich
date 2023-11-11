@@ -59,12 +59,6 @@ interface TrashAsset {
 
 export const photoViewerId = 'photoViewerId';
 
-export const assetDataUrl = writable<string>();
-
-export const setAssetDataUrl = (data: string) => {
-  assetDataUrl.set(data);
-};
-
 export const imageDiv = writable<HTMLDivElement>();
 
 export const setimageDiv = (div: HTMLDivElement) => {

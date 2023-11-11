@@ -8,7 +8,7 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { assetDataUrl, photoViewerId, setAssetDataUrl, setimageDiv } from '$lib/stores/assets.store';
+  import { photoViewerId, setimageDiv } from '$lib/stores/assets.store';
   import { cleanBoundingBox } from '$lib/utils/people-utils';
 
   export let asset: AssetResponseDto;
@@ -16,6 +16,7 @@
   export let haveFadeTransition = true;
 
   let imgElement: HTMLDivElement;
+  let assetData: string;
 
   $: setimageDiv(imgElement);
 
@@ -53,7 +54,7 @@
         return;
       }
 
-      setAssetDataUrl(URL.createObjectURL(data));
+      assetData = URL.createObjectURL(data);
     } catch {
       // Do nothing
     }
@@ -77,7 +78,7 @@
     }
 
     try {
-      await copyImageToClipboard($assetDataUrl);
+      await copyImageToClipboard(assetData);
       notificationController.show({
         type: NotificationType.Info,
         message: 'Copied image to clipboard.',
@@ -113,6 +114,7 @@
       loadAssetData({ loadOriginal: true });
     }
     if (state.currentZoom !== 1) {
+      // TODO: change all boundingBox according to the current zoom
       cleanBoundingBox();
     }
   });
@@ -139,7 +141,7 @@
       <img
         id={photoViewerId}
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
-        src={$assetDataUrl}
+        src={assetData}
         alt={asset.id}
         class="h-full w-full object-contain"
         draggable="false"

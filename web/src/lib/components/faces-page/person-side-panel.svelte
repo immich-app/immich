@@ -18,7 +18,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus, mdiRestart } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
-  import { assetDataUrl, imageDiv } from '$lib/stores/assets.store';
+  import { imageDiv, photoViewerId } from '$lib/stores/assets.store';
   import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
 
@@ -36,10 +36,8 @@
 
   let allPeople: PersonResponseDto[] = [];
   let editedPerson: number;
-  let selectedPersonToReassign: (PersonResponseDto | null)[] = new Array<PersonResponseDto | null>(
-    peopleWithFaces.length,
-  );
-  let selectedPersonToCreate: (PersonToCreate | null)[] = new Array<PersonToCreate | null>(peopleWithFaces.length);
+  let selectedPersonToReassign: (PersonResponseDto | null)[];
+  let selectedPersonToCreate: (PersonToCreate | null)[];
 
   let showSeletecFaces = false;
   let showLoadingSpinner = false;
@@ -58,25 +56,11 @@
       allPeople = data.people;
       const result = await api.personApi.getFaces({ id: assetId });
       peopleWithFaces = result.data;
+      selectedPersonToCreate = new Array<PersonToCreate | null>(peopleWithFaces.length);
+      selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
       editedPeople = cloneDeep(peopleWithFaces);
 
-      const idToIndexMap: Record<string, number> = {};
-      editedPeople
-        .filter((item) => item !== null && item.id !== undefined) // Filter out null and undefined elements
-        .forEach((item, index) => {
-          idToIndexMap[item.id] = index;
-        });
-
-      createdPeople.sort((a, b) => {
-        const indexA = a?.id ? idToIndexMap[a.id] : undefined;
-        const indexB = b?.id ? idToIndexMap[b.id] : undefined;
-
-        if (indexA !== undefined && indexB !== undefined) {
-          return indexA - indexB;
-        } else {
-          return 0;
-        }
-      });
+      createdPeople = peopleWithFaces.map((face) => createdPeople.find((person) => person?.id === face.id) ?? null);
       createdPeopleClone = cloneDeep(createdPeople);
       clearTimeout(timeout);
     } catch (error) {
@@ -126,31 +110,41 @@
     }
   };
 
-  const zoomImageToBase64 = async (
-    imageSrc: string,
-    x1: number,
-    x2: number,
-    y1: number,
-    y2: number,
-  ): Promise<string | null> => {
-    const width = x2 - x1;
-    const height = y2 - y1;
+  const zoomImageToBase64 = async (face: AssetFaceResponseDto): Promise<string | null> => {
+    const image: HTMLImageElement | null = document.getElementById(photoViewerId) as HTMLImageElement | null;
+    if (image === null) {
+      return null;
+    }
 
-    const img = new Image();
-    img.src = imageSrc;
+    const naturalHeight = image.naturalHeight;
+    const naturalWidth = image.naturalWidth;
+    const { boundingBoxX1: x1, boundingBoxX2: x2, boundingBoxY1: y1, boundingBoxY2: y2 } = face;
+
+    const coordinates = {
+      x1: (naturalWidth / face.imageWidth) * x1,
+      x2: (naturalWidth / face.imageWidth) * x2,
+      y1: (naturalHeight / face.imageHeight) * y1,
+      y2: (naturalHeight / face.imageHeight) * y2,
+    };
+
+    const faceWidth = coordinates.x2 - coordinates.x1;
+    const faceHeight = coordinates.y2 - coordinates.y1;
+
+    const faceImage = new Image();
+    faceImage.src = image.src;
 
     await new Promise((resolve) => {
-      img.onload = resolve;
-      img.onerror = () => resolve(null);
+      faceImage.onload = resolve;
+      faceImage.onerror = () => resolve(null);
     });
 
     const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = faceWidth;
+    canvas.height = faceHeight;
 
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.drawImage(img, x1 - (width - width) / 2, y1 - (height - height) / 2, width, height, 0, 0, width, height);
+      ctx.drawImage(faceImage, coordinates.x1, coordinates.y1, faceWidth, faceHeight, 0, 0, faceWidth, faceHeight);
 
       return canvas.toDataURL();
     } else {
@@ -211,13 +205,7 @@
     const timeout = setTimeout(() => (isCreatingPerson = true), 100);
     for (let i = 0; i < peopleWithFaces.length; i++) {
       if (peopleWithFaces[i].id === peopleWithFaces[editedPerson].id) {
-        const newFeaturePhoto = await zoomImageToBase64(
-          $assetDataUrl,
-          peopleWithFaces[i].boundingBoxX1,
-          peopleWithFaces[i].boundingBoxX2,
-          peopleWithFaces[i].boundingBoxY1,
-          peopleWithFaces[i].boundingBoxY2,
-        );
+        const newFeaturePhoto = await zoomImageToBase64(peopleWithFaces[i]);
 
         if (newFeaturePhoto) {
           selectedPersonToCreate[i] = { thumbnail: newFeaturePhoto, id: peopleWithFaces[i].id };
