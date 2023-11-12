@@ -80,8 +80,7 @@ export class UserRepository implements IUserRepository {
     const stats = await this.userRepository
       .createQueryBuilder('users')
       .select('users.id', 'userId')
-      .addSelect('users.firstName', 'userFirstName')
-      .addSelect('users.lastName', 'userLastName')
+      .addSelect('users.name', 'userName')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
       .addSelect('COALESCE(SUM(exif.fileSizeInByte), 0)', 'usage')

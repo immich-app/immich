@@ -10,15 +10,13 @@ import request from 'supertest';
 const user1Dto = {
   email: 'user1@immich.app',
   password: 'Password123',
-  firstName: 'User 1',
-  lastName: 'Test',
+  name: 'User 1',
 };
 
 const user2Dto = {
   email: 'user2@immich.app',
   password: 'Password123',
-  firstName: 'User 2',
-  lastName: 'Test',
+  name: 'User 2',
 };
 
 describe(`${PartnerController.name} (e2e)`, () => {
@@ -112,6 +110,26 @@ describe(`${PartnerController.name} (e2e)`, () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(expect.objectContaining({ message: 'Partner already exists' }));
+    });
+  });
+
+  describe('PUT /partner/:id', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(server).put(`/partner/${user2.userId}`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorStub.unauthorized);
+    });
+
+    it('should update partner', async () => {
+      await repository.create({ sharedById: user2.userId, sharedWithId: user1.userId });
+      const { status, body } = await request(server)
+        .put(`/partner/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ inTimeline: false });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ id: user2.userId, inTimeline: false }));
     });
   });
 

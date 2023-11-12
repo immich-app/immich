@@ -11,40 +11,52 @@ class User {
     required this.id,
     required this.updatedAt,
     required this.email,
-    required this.firstName,
-    required this.lastName,
+    required this.name,
     required this.isAdmin,
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
     this.profileImagePath = '',
     this.memoryEnabled = true,
+    this.inTimeline = false,
   });
 
   Id get isarId => fastHash(id);
 
-  User.fromDto(UserResponseDto dto)
+  User.fromUserDto(UserResponseDto dto)
       : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
-        firstName = dto.firstName,
-        lastName = dto.lastName,
+        name = dto.name,
         isPartnerSharedBy = false,
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled;
 
+  User.fromPartnerDto(PartnerResponseDto dto)
+      : id = dto.id,
+        updatedAt = dto.updatedAt,
+        email = dto.email,
+        name = dto.name,
+        isPartnerSharedBy = false,
+        isPartnerSharedWith = false,
+        profileImagePath = dto.profileImagePath,
+        isAdmin = dto.isAdmin,
+        memoryEnabled = dto.memoriesEnabled,
+        inTimeline = dto.inTimeline;
+
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
   DateTime updatedAt;
   String email;
-  String firstName;
-  String lastName;
+  String name;
   bool isPartnerSharedBy;
   bool isPartnerSharedWith;
   bool isAdmin;
   String profileImagePath;
   bool? memoryEnabled;
+  bool? inTimeline;
+
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
   @Backlink(to: 'sharedUsers')
@@ -56,13 +68,13 @@ class User {
     return id == other.id &&
         updatedAt.isAtSameMomentAs(other.updatedAt) &&
         email == other.email &&
-        firstName == other.firstName &&
-        lastName == other.lastName &&
+        name == other.name &&
         isPartnerSharedBy == other.isPartnerSharedBy &&
         isPartnerSharedWith == other.isPartnerSharedWith &&
         profileImagePath == other.profileImagePath &&
         isAdmin == other.isAdmin &&
-        memoryEnabled == other.memoryEnabled;
+        memoryEnabled == other.memoryEnabled &&
+        inTimeline == other.inTimeline;
   }
 
   @override
@@ -71,11 +83,11 @@ class User {
       id.hashCode ^
       updatedAt.hashCode ^
       email.hashCode ^
-      firstName.hashCode ^
-      lastName.hashCode ^
+      name.hashCode ^
       isPartnerSharedBy.hashCode ^
       isPartnerSharedWith.hashCode ^
       profileImagePath.hashCode ^
       isAdmin.hashCode ^
-      memoryEnabled.hashCode;
+      memoryEnabled.hashCode ^
+      inTimeline.hashCode;
 }

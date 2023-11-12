@@ -72,8 +72,7 @@
               <UserAvatar user={partner} size="lg" autoColor />
               <div class="text-left">
                 <p class="text-immich-fg dark:text-immich-dark-fg">
-                  {partner.firstName}
-                  {partner.lastName}
+                  {partner.name}
                 </p>
                 <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
                   {partner.email}

@@ -24,7 +24,7 @@ class PartnerList extends HookConsumerWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
       leading: userAvatar(context, p, radius: 30),
       title: Text(
-        "${p.firstName} ${p.lastName}'s photos",
+        "${p.name}'s photos",
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,

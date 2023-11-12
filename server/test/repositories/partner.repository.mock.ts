@@ -6,5 +6,6 @@ export const newPartnerRepositoryMock = (): jest.Mocked<IPartnerRepository> => {
     remove: jest.fn(),
     getAll: jest.fn(),
     get: jest.fn(),
+    update: jest.fn(),
   };
 };

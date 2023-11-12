@@ -146,8 +146,7 @@ export class AuthService {
     const admin = await this.userCore.createUser({
       isAdmin: true,
       email: dto.email,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
+      name: dto.name,
       password: dto.password,
       storageLabel: 'admin',
     });
@@ -273,9 +272,9 @@ export class AuthService {
         storageLabel = null;
       }
 
+      const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.userCore.createUser({
-        firstName: profile.given_name || '',
-        lastName: profile.family_name || '',
+        name: userName,
         email: profile.email,
         oauthId: profile.sub,
         storageLabel,

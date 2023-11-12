@@ -97,8 +97,12 @@
 </script>
 
 <header>
-  {#if $isMultiSelectState}
-    <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+  {#if $isMultiSelectState && user}
+    <AssetSelectControlBar
+      ownerId={user.id}
+      assets={$selectedAssets}
+      clearSelect={() => assetInteractionStore.clearMultiselect()}
+    >
       <SelectAllAssets {assetStore} {assetInteractionStore} />
       {#if sharedLink.allowDownload}
         <DownloadAction filename="{album.albumName}.zip" />

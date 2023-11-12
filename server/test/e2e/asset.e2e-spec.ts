@@ -22,15 +22,13 @@ import request from 'supertest';
 const user1Dto = {
   email: 'user1@immich.app',
   password: 'Password123',
-  firstName: 'User 1',
-  lastName: 'Test',
+  name: 'User 1',
 };
 
 const user2Dto = {
   email: 'user2@immich.app',
   password: 'Password123',
-  firstName: 'User 2',
-  lastName: 'Test',
+  name: 'User 2',
 };
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
@@ -583,6 +581,52 @@ describe(`${AssetController.name} (e2e)`, () => {
           expect.objectContaining({ id: asset2.id }),
         ]),
       );
+    });
+
+    it('should return error if time bucket is requested with partners asset and archived', async () => {
+      const req1 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isArchived: true });
+
+      expect(req1.status).toBe(400);
+      expect(req1.body).toEqual(errorStub.badRequest());
+
+      const req2 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isArchived: undefined });
+
+      expect(req2.status).toBe(400);
+      expect(req2.body).toEqual(errorStub.badRequest());
+    });
+
+    it('should return error if time bucket is requested with partners asset and favorite', async () => {
+      const req1 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isFavorite: true });
+
+      expect(req1.status).toBe(400);
+      expect(req1.body).toEqual(errorStub.badRequest());
+
+      const req2 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isFavorite: false });
+
+      expect(req2.status).toBe(400);
+      expect(req2.body).toEqual(errorStub.badRequest());
+    });
+
+    it('should return error if time bucket is requested with partners asset and trash', async () => {
+      const req = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isTrashed: true });
+
+      expect(req.status).toBe(400);
+      expect(req.body).toEqual(errorStub.badRequest());
     });
   });
 

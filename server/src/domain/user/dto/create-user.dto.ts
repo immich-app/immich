@@ -13,11 +13,7 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsString()
-  firstName!: string;
-
-  @IsNotEmpty()
-  @IsString()
-  lastName!: string;
+  name!: string;
 
   @Optional({ nullable: true })
   @IsString()
@@ -45,10 +41,7 @@ export class CreateAdminDto {
   password!: string;
 
   @IsNotEmpty()
-  firstName!: string;
-
-  @IsNotEmpty()
-  lastName!: string;
+  name!: string;
 }
 
 export class CreateUserOAuthDto {
@@ -59,7 +52,5 @@ export class CreateUserOAuthDto {
   @IsNotEmpty()
   oauthId!: string;
 
-  firstName?: string;
-
-  lastName?: string;
+  name?: string;
 }

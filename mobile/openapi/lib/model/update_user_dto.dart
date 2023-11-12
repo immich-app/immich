@@ -15,11 +15,10 @@ class UpdateUserDto {
   UpdateUserDto({
     this.email,
     this.externalPath,
-    this.firstName,
     required this.id,
     this.isAdmin,
-    this.lastName,
     this.memoriesEnabled,
+    this.name,
     this.password,
     this.shouldChangePassword,
     this.storageLabel,
@@ -41,14 +40,6 @@ class UpdateUserDto {
   ///
   String? externalPath;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? firstName;
-
   String id;
 
   ///
@@ -65,7 +56,7 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? lastName;
+  bool? memoriesEnabled;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -73,7 +64,7 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? memoriesEnabled;
+  String? name;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -103,11 +94,10 @@ class UpdateUserDto {
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
      other.email == email &&
      other.externalPath == externalPath &&
-     other.firstName == firstName &&
      other.id == id &&
      other.isAdmin == isAdmin &&
-     other.lastName == lastName &&
      other.memoriesEnabled == memoriesEnabled &&
+     other.name == name &&
      other.password == password &&
      other.shouldChangePassword == shouldChangePassword &&
      other.storageLabel == storageLabel;
@@ -117,17 +107,16 @@ class UpdateUserDto {
     // ignore: unnecessary_parenthesis
     (email == null ? 0 : email!.hashCode) +
     (externalPath == null ? 0 : externalPath!.hashCode) +
-    (firstName == null ? 0 : firstName!.hashCode) +
     (id.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
-    (lastName == null ? 0 : lastName!.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, password=$password, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UpdateUserDto[email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -141,26 +130,21 @@ class UpdateUserDto {
     } else {
     //  json[r'externalPath'] = null;
     }
-    if (this.firstName != null) {
-      json[r'firstName'] = this.firstName;
-    } else {
-    //  json[r'firstName'] = null;
-    }
       json[r'id'] = this.id;
     if (this.isAdmin != null) {
       json[r'isAdmin'] = this.isAdmin;
     } else {
     //  json[r'isAdmin'] = null;
     }
-    if (this.lastName != null) {
-      json[r'lastName'] = this.lastName;
-    } else {
-    //  json[r'lastName'] = null;
-    }
     if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
     } else {
     //  json[r'memoriesEnabled'] = null;
+    }
+    if (this.name != null) {
+      json[r'name'] = this.name;
+    } else {
+    //  json[r'name'] = null;
     }
     if (this.password != null) {
       json[r'password'] = this.password;
@@ -190,11 +174,10 @@ class UpdateUserDto {
       return UpdateUserDto(
         email: mapValueOfType<String>(json, r'email'),
         externalPath: mapValueOfType<String>(json, r'externalPath'),
-        firstName: mapValueOfType<String>(json, r'firstName'),
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
-        lastName: mapValueOfType<String>(json, r'lastName'),
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
+        name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),

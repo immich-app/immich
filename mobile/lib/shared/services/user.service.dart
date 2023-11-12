@@ -40,7 +40,7 @@ class UserService {
   Future<List<User>?> _getAllUsers({required bool isAll}) async {
     try {
       final dto = await _apiService.userApi.getAllUsers(isAll);
-      return dto?.map(User.fromDto).toList();
+      return dto?.map(User.fromUserDto).toList();
     } catch (e) {
       _log.warning("Failed get all users:\n$e");
       return null;

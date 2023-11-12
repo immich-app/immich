@@ -33,8 +33,7 @@ export class LoginResponseDto {
   accessToken!: string;
   userId!: string;
   userEmail!: string;
-  firstName!: string;
-  lastName!: string;
+  name!: string;
   profileImagePath!: string;
   isAdmin!: boolean;
   shouldChangePassword!: boolean;
@@ -45,8 +44,7 @@ export function mapLoginResponse(entity: UserEntity, accessToken: string): Login
     accessToken: accessToken,
     userId: entity.id,
     userEmail: entity.email,
-    firstName: entity.firstName,
-    lastName: entity.lastName,
+    name: entity.name,
     isAdmin: entity.isAdmin,
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
@@ -62,12 +60,7 @@ export class SignUpDto extends LoginCredentialDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: 'Admin' })
-  firstName!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ example: 'Doe' })
-  lastName!: string;
+  name!: string;
 }
 
 export class ChangePasswordDto {
