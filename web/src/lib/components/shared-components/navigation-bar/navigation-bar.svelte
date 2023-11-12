@@ -133,7 +133,7 @@
               out:fade={{ delay: 200, duration: 150 }}
               class="absolute -bottom-12 right-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
             >
-              <p>{user.firstName} {user.lastName}</p>
+              <p>{user.name}</p>
               <p>{user.email}</p>
             </div>
           {/if}

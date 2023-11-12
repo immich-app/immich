@@ -17,12 +17,11 @@ class PartnerResponseDto {
     required this.deletedAt,
     required this.email,
     required this.externalPath,
-    required this.firstName,
     required this.id,
     this.inTimeline,
     required this.isAdmin,
-    required this.lastName,
     this.memoriesEnabled,
+    required this.name,
     required this.oauthId,
     required this.profileImagePath,
     required this.shouldChangePassword,
@@ -38,8 +37,6 @@ class PartnerResponseDto {
 
   String? externalPath;
 
-  String firstName;
-
   String id;
 
   ///
@@ -52,8 +49,6 @@ class PartnerResponseDto {
 
   bool isAdmin;
 
-  String lastName;
-
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -61,6 +56,8 @@ class PartnerResponseDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? memoriesEnabled;
+
+  String name;
 
   String oauthId;
 
@@ -78,12 +75,11 @@ class PartnerResponseDto {
      other.deletedAt == deletedAt &&
      other.email == email &&
      other.externalPath == externalPath &&
-     other.firstName == firstName &&
      other.id == id &&
      other.inTimeline == inTimeline &&
      other.isAdmin == isAdmin &&
-     other.lastName == lastName &&
      other.memoriesEnabled == memoriesEnabled &&
+     other.name == name &&
      other.oauthId == oauthId &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
@@ -97,12 +93,11 @@ class PartnerResponseDto {
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
     (externalPath == null ? 0 : externalPath!.hashCode) +
-    (firstName.hashCode) +
     (id.hashCode) +
     (inTimeline == null ? 0 : inTimeline!.hashCode) +
     (isAdmin.hashCode) +
-    (lastName.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
+    (name.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
@@ -110,7 +105,7 @@ class PartnerResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'PartnerResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstName=$firstName, id=$id, inTimeline=$inTimeline, isAdmin=$isAdmin, lastName=$lastName, memoriesEnabled=$memoriesEnabled, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'PartnerResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, inTimeline=$inTimeline, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -126,7 +121,6 @@ class PartnerResponseDto {
     } else {
     //  json[r'externalPath'] = null;
     }
-      json[r'firstName'] = this.firstName;
       json[r'id'] = this.id;
     if (this.inTimeline != null) {
       json[r'inTimeline'] = this.inTimeline;
@@ -134,12 +128,12 @@ class PartnerResponseDto {
     //  json[r'inTimeline'] = null;
     }
       json[r'isAdmin'] = this.isAdmin;
-      json[r'lastName'] = this.lastName;
     if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
     } else {
     //  json[r'memoriesEnabled'] = null;
     }
+      json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
@@ -164,12 +158,11 @@ class PartnerResponseDto {
         deletedAt: mapDateTime(json, r'deletedAt', ''),
         email: mapValueOfType<String>(json, r'email')!,
         externalPath: mapValueOfType<String>(json, r'externalPath'),
-        firstName: mapValueOfType<String>(json, r'firstName')!,
         id: mapValueOfType<String>(json, r'id')!,
         inTimeline: mapValueOfType<bool>(json, r'inTimeline'),
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
+        name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
@@ -226,10 +219,9 @@ class PartnerResponseDto {
     'deletedAt',
     'email',
     'externalPath',
-    'firstName',
     'id',
     'isAdmin',
-    'lastName',
+    'name',
     'oauthId',
     'profileImagePath',
     'shouldChangePassword',
