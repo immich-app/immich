@@ -14,8 +14,7 @@ RUN micromamba install -y -n base -f /tmp/conda-lock.yml && \
 
 WORKDIR /usr/src/app
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER start.sh .
-COPY --chown=$MAMBA_USER:$MAMBA_USER app .
+COPY --chown=$MAMBA_USER:$MAMBA_USER export .
 
 ENTRYPOINT ["/usr/local/bin/_entrypoint.sh"]
-CMD ["./start.sh"]
+CMD ["python -m run"]
