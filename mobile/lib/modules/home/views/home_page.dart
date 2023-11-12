@@ -86,20 +86,48 @@ class HomePage extends HookConsumerWidget {
             SelectionAssetState.fromSelection(selectedAssets);
       }
 
-      List<Asset> remoteOnlySelection({String? localErrorMessage}) {
-        final Set<Asset> assets = selection.value;
+      Iterable<Asset> remoteOnly(
+        Iterable<Asset> assets, {
+        void Function()? errorCallback,
+      }) {
         final bool onlyRemote = assets.every((e) => e.isRemote);
         if (!onlyRemote) {
-          if (localErrorMessage != null && localErrorMessage.isNotEmpty) {
-            ImmichToast.show(
-              context: context,
-              msg: localErrorMessage,
-              gravity: ToastGravity.BOTTOM,
-            );
-          }
-          return assets.where((a) => a.isRemote).toList();
+          if (errorCallback != null) errorCallback();
+          return assets.where((a) => a.isRemote);
         }
-        return assets.toList();
+        return assets;
+      }
+
+      Iterable<Asset> ownedOnly(
+        Iterable<Asset> assets, {
+        void Function()? errorCallback,
+      }) {
+        if (currentUser == null) return [];
+        final userId = currentUser.isarId;
+        final bool onlyOwned = assets.every((e) => e.ownerId == userId);
+        if (!onlyOwned) {
+          if (errorCallback != null) errorCallback();
+          return assets.where((a) => a.ownerId == userId);
+        }
+        return assets;
+      }
+
+      Iterable<Asset> ownedRemoteSelection({
+        String? localErrorMessage,
+        String? ownerErrorMessage,
+      }) {
+        final assets = selection.value;
+        errorBuilder(String? msg) => msg != null && msg.isNotEmpty
+            ? () => ImmichToast.show(
+                  context: context,
+                  msg: msg,
+                  gravity: ToastGravity.BOTTOM,
+                )
+            : null;
+        return remoteOnly(
+          ownedOnly(assets, errorCallback: errorBuilder(ownerErrorMessage)),
+          errorCallback: errorBuilder(localErrorMessage),
+        );
       }
 
       void onShareAssets(bool shareLocal) {
@@ -107,7 +135,7 @@ class HomePage extends HookConsumerWidget {
         if (shareLocal) {
           handleShareAssets(ref, context, selection.value.toList());
         } else {
-          final ids = remoteOnlySelection().map((e) => e.remoteId!);
+          final ids = ownedRemoteSelection().map((e) => e.remoteId!);
           context.autoPush(SharedLinkEditRoute(assetsList: ids.toList()));
         }
         processing.value = false;
@@ -117,11 +145,12 @@ class HomePage extends HookConsumerWidget {
       void onFavoriteAssets() async {
         processing.value = true;
         try {
-          final remoteAssets = remoteOnlySelection(
+          final remoteAssets = ownedRemoteSelection(
             localErrorMessage: 'home_page_favorite_err_local'.tr(),
+            ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
           );
           if (remoteAssets.isNotEmpty) {
-            await handleFavoriteAssets(ref, context, remoteAssets);
+            await handleFavoriteAssets(ref, context, remoteAssets.toList());
           }
         } finally {
           processing.value = false;
@@ -132,10 +161,11 @@ class HomePage extends HookConsumerWidget {
       void onArchiveAsset() async {
         processing.value = true;
         try {
-          final remoteAssets = remoteOnlySelection(
+          final remoteAssets = ownedRemoteSelection(
             localErrorMessage: 'home_page_archive_err_local'.tr(),
+            ownerErrorMessage: 'home_page_archive_err_partner'.tr(),
           );
-          await handleArchiveAssets(ref, context, remoteAssets);
+          await handleArchiveAssets(ref, context, remoteAssets.toList());
         } finally {
           processing.value = false;
           selectionEnabledHook.value = false;
@@ -147,7 +177,7 @@ class HomePage extends HookConsumerWidget {
         try {
           await ref
               .read(assetProvider.notifier)
-              .deleteAssets(selection.value, force: !trashEnabled);
+              .deleteAssets(ownedOnly(selection.value), force: !trashEnabled);
 
           final hasRemote = selection.value.any((a) => a.isRemote);
           final assetOrAssets = selection.value.length > 1 ? 'assets' : 'asset';
@@ -182,8 +212,9 @@ class HomePage extends HookConsumerWidget {
       void onAddToAlbum(Album album) async {
         processing.value = true;
         try {
-          final Iterable<Asset> assets = remoteOnlySelection(
+          final Iterable<Asset> assets = ownedRemoteSelection(
             localErrorMessage: "home_page_add_to_album_err_local".tr(),
+            ownerErrorMessage: "home_page_album_err_partner".tr(),
           );
           if (assets.isEmpty) {
             return;
@@ -230,8 +261,9 @@ class HomePage extends HookConsumerWidget {
       void onCreateNewAlbum() async {
         processing.value = true;
         try {
-          final Iterable<Asset> assets = remoteOnlySelection(
+          final Iterable<Asset> assets = ownedRemoteSelection(
             localErrorMessage: "home_page_add_to_album_err_local".tr(),
+            ownerErrorMessage: "home_page_album_err_partner".tr(),
           );
           if (assets.isEmpty) {
             return;
