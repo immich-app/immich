@@ -6,7 +6,7 @@ export const load = (async ({ locals: { user } }) => {
   if (!user) {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   } else if (!user.shouldChangePassword) {
-    throw redirect(302, AppRoute.ALBUMS);
+    throw redirect(302, AppRoute.DEFAULT);
   }
 
   return {
