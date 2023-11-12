@@ -21,6 +21,7 @@
   import { imageDiv, photoViewerId } from '$lib/stores/assets.store';
   import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { setBoundingBoxesArray } from '$lib/stores/people.store';
 
   export let assetId: string;
   export let createdPeople: (PersonToCreate | null)[];
@@ -86,11 +87,14 @@
     isSearchingPeople = false;
   };
 
+  const handleCleanBoundingBox = () => {
+    setBoundingBoxesArray([]);
+    cleanBoundingBox();
+  };
+
   const handleShowBoundingBox = (index: number) => {
-    const [result] = showBoundingBox([peopleWithFaces[index]]);
-    if ($photoZoomState.currentZoom !== 1) {
-      return;
-    }
+    setBoundingBoxesArray(people[index].faces);
+    const [result] = showBoundingBox([peopleWithFaces[index]], $photoZoomState);
     $imageDiv.appendChild(result);
   };
 
@@ -283,7 +287,7 @@
                 class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
                 on:focus={() => handleShowBoundingBox(index)}
                 on:mouseover={() => handleShowBoundingBox(index)}
-                on:mouseleave={() => cleanBoundingBox()}
+                on:mouseleave={() => handleCleanBoundingBox()}
               >
                 <ImageThumbnail
                   curve

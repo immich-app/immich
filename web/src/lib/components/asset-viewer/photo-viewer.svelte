@@ -8,8 +8,9 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { photoViewerId, setimageDiv } from '$lib/stores/assets.store';
-  import { cleanBoundingBox } from '$lib/utils/people-utils';
+  import { imageDiv, photoViewerId, setimageDiv } from '$lib/stores/assets.store';
+  import { showBoundingBox } from '$lib/utils/people-utils';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -114,8 +115,10 @@
       loadAssetData({ loadOriginal: true });
     }
     if (state.currentZoom !== 1) {
-      // TODO: change all boundingBox according to the current zoom
-      cleanBoundingBox();
+      const results = showBoundingBox($boundingBoxesArray, state);
+      for (const result of results) {
+        $imageDiv.appendChild(result);
+      }
     }
   });
 

@@ -1,5 +1,6 @@
 import { photoViewerId } from '$lib/stores/assets.store';
-import type { AssetFaceWithoutPersonResponseDto } from '@api';
+import type { Faces } from '$lib/stores/people.store';
+import type { ZoomImageWheelState } from '@zoom-image/core';
 
 export const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
   const ratio = img.naturalWidth / img.naturalHeight;
@@ -21,10 +22,9 @@ export const cleanBoundingBox = (): void => {
   });
 };
 
-export const showBoundingBox = (faces: AssetFaceWithoutPersonResponseDto[]): HTMLDivElement[] => {
+export const showBoundingBox = (faces: Faces[], zoom: ZoomImageWheelState): HTMLDivElement[] => {
   const boxes: HTMLDivElement[] = [];
   cleanBoundingBox();
-
   const image: HTMLImageElement = document.getElementById(photoViewerId) as HTMLImageElement;
 
   if (image === null) {
@@ -34,20 +34,30 @@ export const showBoundingBox = (faces: AssetFaceWithoutPersonResponseDto[]): HTM
   const clientWidth = image.clientWidth;
 
   const { width, height } = getContainedSize(image);
-  const x = width;
-  const y = height;
+
   for (const face of faces) {
     const absoluteDiv = document.createElement('div');
 
     absoluteDiv.classList.add(boundingBoxClassName);
 
     const coordinates = {
-      x1: (x / face.imageWidth) * face.boundingBoxX1 + (clientWidth - x) / 2,
-      x2: (x / face.imageWidth) * face.boundingBoxX2 + (clientWidth - x) / 2,
-      y1: (y / face.imageHeight) * face.boundingBoxY1 + (clientHeight - y) / 2,
-      y2: (y / face.imageHeight) * face.boundingBoxY2 + (clientHeight - y) / 2,
+      x1:
+        (width / face.imageWidth) * zoom.currentZoom * face.boundingBoxX1 +
+        ((clientWidth - width) / 2) * zoom.currentZoom +
+        zoom.currentPositionX,
+      x2:
+        (width / face.imageWidth) * zoom.currentZoom * face.boundingBoxX2 +
+        ((clientWidth - width) / 2) * zoom.currentZoom +
+        zoom.currentPositionX,
+      y1:
+        (height / face.imageHeight) * zoom.currentZoom * face.boundingBoxY1 +
+        ((clientHeight - height) / 2) * zoom.currentZoom +
+        zoom.currentPositionY,
+      y2:
+        (height / face.imageHeight) * zoom.currentZoom * face.boundingBoxY2 +
+        ((clientHeight - height) / 2) * zoom.currentZoom +
+        zoom.currentPositionY,
     };
-
     const styles = {
       position: 'absolute',
       top: coordinates.y1 + 'px',
@@ -62,6 +72,5 @@ export const showBoundingBox = (faces: AssetFaceWithoutPersonResponseDto[]): HTM
     Object.assign(absoluteDiv.style, styles);
     boxes.push(absoluteDiv);
   }
-
   return boxes;
 };

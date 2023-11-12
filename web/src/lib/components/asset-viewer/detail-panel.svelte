@@ -16,6 +16,7 @@
   import { imageDiv } from '$lib/stores/assets.store';
   import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { setBoundingBoxesArray } from '$lib/stores/people.store';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -71,11 +72,14 @@
     return undefined;
   };
 
+  const handleCleanBoundingBox = () => {
+    setBoundingBoxesArray([]);
+    cleanBoundingBox();
+  };
+
   const handleShowBoundingBox = (index: number) => {
-    const results = showBoundingBox(people[index].faces);
-    if ($photoZoomState.currentZoom !== 1) {
-      return;
-    }
+    setBoundingBoxesArray(people[index].faces);
+    const results = showBoundingBox(people[index].faces, $photoZoomState);
     for (const result of results) {
       $imageDiv.appendChild(result);
     }
@@ -162,7 +166,7 @@
             tabindex={index}
             on:focus={() => handleShowBoundingBox(index)}
             on:mouseover={() => handleShowBoundingBox(index)}
-            on:mouseleave={() => cleanBoundingBox()}
+            on:mouseleave={() => handleCleanBoundingBox()}
           >
             <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
               <ImageThumbnail
