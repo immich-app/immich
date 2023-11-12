@@ -44,6 +44,7 @@ class HomePage extends HookConsumerWidget {
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
     final currentUser = ref.watch(currentUserProvider);
+    final timelineUsers = ref.watch(timelineUsersIdsProvider);
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
@@ -55,6 +56,7 @@ class HomePage extends HookConsumerWidget {
       () {
         ref.read(websocketProvider.notifier).connect();
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
+        ref.read(assetProvider.notifier).getPartnerAssets();
         ref.read(albumProvider.notifier).getAllAlbums();
         ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.read(serverInfoProvider.notifier).getServerInfo();
@@ -270,6 +272,9 @@ class HomePage extends HookConsumerWidget {
       Future<void> refreshAssets() async {
         final fullRefresh = refreshCount.value > 0;
         await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
+        if (timelineUsers.length > 1) {
+          await ref.read(assetProvider.notifier).getPartnerAssets();
+        }
         if (fullRefresh) {
           // refresh was forced: user requested another refresh within 2 seconds
           refreshCount.value = 0;
@@ -330,7 +335,13 @@ class HomePage extends HookConsumerWidget {
         bottom: false,
         child: Stack(
           children: [
-            ref.watch(assetsProvider(currentUser?.isarId)).when(
+            ref
+                .watch(
+                  timelineUsers.length > 1
+                      ? multiUserAssetsProvider(timelineUsers)
+                      : assetsProvider(currentUser?.isarId),
+                )
+                .when(
                   data: (data) => data.isEmpty
                       ? buildLoadingIndicator()
                       : ImmichAssetGrid(
@@ -338,11 +349,10 @@ class HomePage extends HookConsumerWidget {
                           listener: selectionListener,
                           selectionActive: selectionEnabledHook.value,
                           onRefresh: refreshAssets,
-                          topWidget: (currentUser != null &&
-                                  currentUser.memoryEnabled != null &&
-                                  currentUser.memoryEnabled!)
-                              ? const MemoryLane()
-                              : const SizedBox(),
+                          topWidget:
+                              (currentUser != null && currentUser.memoryEnabled)
+                                  ? const MemoryLane()
+                                  : const SizedBox(),
                           showStack: true,
                         ),
                   error: (error, _) => Center(child: Text(error.toString())),

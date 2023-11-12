@@ -151,11 +151,11 @@ User _userDeserialize(
   final object = User(
     email: reader.readString(offsets[0]),
     id: reader.readString(offsets[1]),
-    inTimeline: reader.readBoolOrNull(offsets[2]),
+    inTimeline: reader.readBoolOrNull(offsets[2]) ?? false,
     isAdmin: reader.readBool(offsets[3]),
     isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
     isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
-    memoryEnabled: reader.readBoolOrNull(offsets[6]),
+    memoryEnabled: reader.readBoolOrNull(offsets[6]) ?? true,
     name: reader.readString(offsets[7]),
     profileImagePath: reader.readStringOrNull(offsets[8]) ?? '',
     updatedAt: reader.readDateTime(offsets[9]),
@@ -175,7 +175,7 @@ P _userDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 3:
       return (reader.readBool(offset)) as P;
     case 4:
@@ -183,7 +183,7 @@ P _userDeserializeProp<P>(
     case 5:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 6:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 7:
       return (reader.readString(offset)) as P;
     case 8:
@@ -638,24 +638,8 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> inTimelineIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'inTimeline',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> inTimelineIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'inTimeline',
-      ));
-    });
-  }
-
   QueryBuilder<User, User, QAfterFilterCondition> inTimelineEqualTo(
-      bool? value) {
+      bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'inTimeline',
@@ -745,24 +729,8 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'memoryEnabled',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'memoryEnabled',
-      ));
-    });
-  }
-
   QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledEqualTo(
-      bool? value) {
+      bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'memoryEnabled',
@@ -1540,7 +1508,7 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, bool?, QQueryOperations> inTimelineProperty() {
+  QueryBuilder<User, bool, QQueryOperations> inTimelineProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'inTimeline');
     });
@@ -1564,7 +1532,7 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, bool?, QQueryOperations> memoryEnabledProperty() {
+  QueryBuilder<User, bool, QQueryOperations> memoryEnabledProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'memoryEnabled');
     });
