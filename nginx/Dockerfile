@@ -1,4 +1,4 @@
-FROM ghcr.io/nginxinc/nginx-unprivileged:1.25.0-alpine3.17@sha256:5ebb90a0dd5ce841d8527abcfee4081a48de86560cd26dc64a6b1212ef59bf36
+FROM ghcr.io/nginxinc/nginx-unprivileged:1.25.1-alpine3.17@sha256:c38e27fdba47f725f49177b88fdd1fd2feef11b13dc11dea3695c3feb2c6d96d
 
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
