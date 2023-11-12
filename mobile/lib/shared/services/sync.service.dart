@@ -34,36 +34,8 @@ class SyncService {
 
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
-  Future<bool> syncUsersFromServer(List<User> users) async {
-    users.sortBy((u) => u.id);
-    final dbUsers = await _db.users.where().sortById().findAll();
-    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
-    final List<int> toDelete = [];
-    final List<User> toUpsert = [];
-    final changes = diffSortedListsSync(
-      users,
-      dbUsers,
-      compare: (User a, User b) => a.id.compareTo(b.id),
-      both: (User a, User b) {
-        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
-            a.isPartnerSharedBy != b.isPartnerSharedBy ||
-            a.isPartnerSharedWith != b.isPartnerSharedWith) {
-          toUpsert.add(a);
-          return true;
-        }
-        return false;
-      },
-      onlyFirst: (User a) => toUpsert.add(a),
-      onlySecond: (User b) => toDelete.add(b.isarId),
-    );
-    if (changes) {
-      await _db.writeTxn(() async {
-        await _db.users.deleteAll(toDelete);
-        await _db.users.putAll(toUpsert);
-      });
-    }
-    return changes;
-  }
+  Future<bool> syncUsersFromServer(List<User> users) =>
+      _lock.run(() => _syncUsersFromServer(users));
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
@@ -119,6 +91,39 @@ class SyncService {
       _lock.run(() => _syncNewAssetToDb(newAsset));
 
   // private methods:
+
+  /// Syncs users from the server to the local database
+  /// Returns `true`if there were any changes
+  Future<bool> _syncUsersFromServer(List<User> users) async {
+    users.sortBy((u) => u.id);
+    final dbUsers = await _db.users.where().sortById().findAll();
+    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
+    final List<int> toDelete = [];
+    final List<User> toUpsert = [];
+    final changes = diffSortedListsSync(
+      users,
+      dbUsers,
+      compare: (User a, User b) => a.id.compareTo(b.id),
+      both: (User a, User b) {
+        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
+            a.isPartnerSharedBy != b.isPartnerSharedBy ||
+            a.isPartnerSharedWith != b.isPartnerSharedWith) {
+          toUpsert.add(a);
+          return true;
+        }
+        return false;
+      },
+      onlyFirst: (User a) => toUpsert.add(a),
+      onlySecond: (User b) => toDelete.add(b.isarId),
+    );
+    if (changes) {
+      await _db.writeTxn(() async {
+        await _db.users.deleteAll(toDelete);
+        await _db.users.putAll(toUpsert);
+      });
+    }
+    return changes;
+  }
 
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> _syncNewAssetToDb(Asset a) async {
