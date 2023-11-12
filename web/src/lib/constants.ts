@@ -33,6 +33,8 @@ export enum AppRoute {
   AUTH_LOGOUT = '/auth/logout',
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
+
+  DEFAULT = '/albums',
 }
 
 export enum ProjectionType {

@@ -7,7 +7,7 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ parent, locals: { api } }) => {
   const { user } = await parent();
   if (user) {
-    throw redirect(302, AppRoute.PHOTOS);
+    throw redirect(302, AppRoute.DEFAULT);
   }
 
   const { data } = await api.serverInfoApi.getServerConfig();

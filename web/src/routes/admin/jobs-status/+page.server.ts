@@ -6,7 +6,7 @@ export const load = (async ({ locals: { user, api } }) => {
   if (!user) {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   } else if (!user.isAdmin) {
-    throw redirect(302, AppRoute.PHOTOS);
+    throw redirect(302, AppRoute.DEFAULT);
   }
 
   try {

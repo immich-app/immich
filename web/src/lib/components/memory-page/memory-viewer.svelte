@@ -77,7 +77,7 @@
       toPrevious();
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      goto(AppRoute.PHOTOS);
+      goto(AppRoute.DEFAULT);
     }
   };
 
@@ -101,7 +101,7 @@
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if currentMemory}
-    <ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} forceDark>
+    <ControlAppBar on:close-button-click={() => goto(AppRoute.DEFAULT)} forceDark>
       <svelte:fragment slot="leading">
         <p class="text-lg">
           {currentMemory.title}

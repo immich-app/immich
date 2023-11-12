@@ -26,7 +26,7 @@
 
   export let data: PageData;
 
-  $: $featureFlags.trash || goto(AppRoute.PHOTOS);
+  $: $featureFlags.trash || goto(AppRoute.DEFAULT);
 
   const assetStore = new AssetStore({ isTrashed: true });
   const assetInteractionStore = createAssetInteractionStore();
