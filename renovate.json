@@ -10,7 +10,12 @@
     {
       "matchFileNames": ["server/**"],
       "groupName": "server",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "excludePackagePrefixes": ["exiftool"]
+    },
+    {
+      "groupName": "exiftool",
+      "matchPackagePrefixes": ["exiftool"]
     },
     {
       "matchFileNames": ["web/**"],
