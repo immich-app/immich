@@ -21,13 +21,22 @@ class PartnerList extends HookConsumerWidget {
   Widget listEntry(BuildContext context, int index) {
     final User p = partner[index];
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
-      leading: userAvatar(context, p, radius: 30),
+      contentPadding: const EdgeInsets.only(
+        left: 12.0,
+        right: 18.0,
+      ),
+      leading: userAvatar(context, p, radius: 24),
       title: Text(
         "${p.name}'s photos",
-        style: TextStyle(
+        style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,
+        ),
+      ),
+      trailing: Text(
+        "View all",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
           color: context.primaryColor,
         ),
       ),
