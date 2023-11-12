@@ -37,7 +37,7 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  $: $featureFlags.map || goto(AppRoute.PHOTOS);
+  $: $featureFlags.map || goto(AppRoute.ALBUMS);
 
   async function loadMapMarkers() {
     if (abortController) {
