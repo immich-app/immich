@@ -10,6 +10,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **citiesFileOverride** | [**CitiesFile**](CitiesFile.md) |  | 
 **enabled** | **bool** |  | 
+**mapboxAccessToken** | **String** |  | 
+**useMapbox** | **bool** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

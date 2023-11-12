@@ -3926,6 +3926,18 @@ export interface SystemConfigReverseGeocodingDto {
      * @memberof SystemConfigReverseGeocodingDto
      */
     'enabled': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigReverseGeocodingDto
+     */
+    'mapboxAccessToken': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigReverseGeocodingDto
+     */
+    'useMapbox': boolean;
 }
 
 

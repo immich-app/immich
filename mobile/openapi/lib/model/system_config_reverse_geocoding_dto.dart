@@ -15,30 +15,42 @@ class SystemConfigReverseGeocodingDto {
   SystemConfigReverseGeocodingDto({
     required this.citiesFileOverride,
     required this.enabled,
+    required this.mapboxAccessToken,
+    required this.useMapbox,
   });
 
   CitiesFile citiesFileOverride;
 
   bool enabled;
 
+  String mapboxAccessToken;
+
+  bool useMapbox;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigReverseGeocodingDto &&
      other.citiesFileOverride == citiesFileOverride &&
-     other.enabled == enabled;
+     other.enabled == enabled &&
+     other.mapboxAccessToken == mapboxAccessToken &&
+     other.useMapbox == useMapbox;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (citiesFileOverride.hashCode) +
-    (enabled.hashCode);
+    (enabled.hashCode) +
+    (mapboxAccessToken.hashCode) +
+    (useMapbox.hashCode);
 
   @override
-  String toString() => 'SystemConfigReverseGeocodingDto[citiesFileOverride=$citiesFileOverride, enabled=$enabled]';
+  String toString() => 'SystemConfigReverseGeocodingDto[citiesFileOverride=$citiesFileOverride, enabled=$enabled, mapboxAccessToken=$mapboxAccessToken, useMapbox=$useMapbox]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'citiesFileOverride'] = this.citiesFileOverride;
       json[r'enabled'] = this.enabled;
+      json[r'mapboxAccessToken'] = this.mapboxAccessToken;
+      json[r'useMapbox'] = this.useMapbox;
     return json;
   }
 
@@ -52,6 +64,8 @@ class SystemConfigReverseGeocodingDto {
       return SystemConfigReverseGeocodingDto(
         citiesFileOverride: CitiesFile.fromJson(json[r'citiesFileOverride'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
+        mapboxAccessToken: mapValueOfType<String>(json, r'mapboxAccessToken')!,
+        useMapbox: mapValueOfType<bool>(json, r'useMapbox')!,
       );
     }
     return null;
@@ -101,6 +115,8 @@ class SystemConfigReverseGeocodingDto {
   static const requiredKeys = <String>{
     'citiesFileOverride',
     'enabled',
+    'mapboxAccessToken',
+    'useMapbox',
   };
 }
 

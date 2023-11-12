@@ -8828,11 +8828,19 @@
           },
           "enabled": {
             "type": "boolean"
+          },
+          "mapboxAccessToken": {
+            "type": "string"
+          },
+          "useMapbox": {
+            "type": "boolean"
           }
         },
         "required": [
           "citiesFileOverride",
-          "enabled"
+          "enabled",
+          "useMapbox",
+          "mapboxAccessToken"
         ],
         "type": "object"
       },

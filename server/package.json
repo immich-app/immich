@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
+    "@mapbox/mapbox-sdk": "^0.15.3",
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/common": "^10.2.2",
     "@nestjs/config": "^3.0.0",
@@ -100,6 +101,7 @@
     "@types/jest": "29.5.4",
     "@types/jest-when": "^3.5.2",
     "@types/lodash": "^4.14.197",
+    "@types/mapbox__mapbox-sdk": "^0.13.9",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^1.4.7",
     "@types/mv": "^2.1.2",

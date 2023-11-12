@@ -26,6 +26,16 @@ void main() {
       // TODO
     });
 
+    // String mapboxAccessToken
+    test('to test the property `mapboxAccessToken`', () async {
+      // TODO
+    });
+
+    // bool useMapbox
+    test('to test the property `useMapbox`', () async {
+      // TODO
+    });
+
 
   });
 

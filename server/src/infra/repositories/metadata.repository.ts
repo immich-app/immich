@@ -1,5 +1,7 @@
 import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from '@app/domain';
 import { REVERSE_GEOCODING_DUMP_DIRECTORY } from '@app/infra';
+import { MapiResponse } from '@mapbox/mapbox-sdk/lib/classes/mapi-response';
+import mapboxGeocoding, { GeocodeService } from '@mapbox/mapbox-sdk/services/geocoding';
 import { Injectable, Logger } from '@nestjs/common';
 import { DefaultReadTaskOptions, exiftool } from 'exiftool-vendored';
 import { readdir, rm } from 'fs/promises';
@@ -25,6 +27,7 @@ const lookup = promisify<GeoPoint[], number, AddressObject[][]>(geocoder.lookUp)
 @Injectable()
 export class MetadataRepository implements IMetadataRepository {
   private logger = new Logger(MetadataRepository.name);
+  private mapboxClient?: GeocodeService;
 
   async init(options: Partial<InitOptions>): Promise<void> {
     return new Promise<void>((resolve) => {
@@ -61,7 +64,8 @@ export class MetadataRepository implements IMetadataRepository {
     }
   }
 
-  async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
+  async reverseGeocode(point: GeoPoint, useMapbox: boolean = false): Promise<ReverseGeocodeResult> {
+    console.log(point);
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
     const [address] = await lookup([point], 1);
@@ -72,6 +76,38 @@ export class MetadataRepository implements IMetadataRepository {
     const stateParts = [(admin2Code as AdminCode)?.name, (admin1Code as AdminCode)?.name].filter((name) => !!name);
     const state = stateParts.length > 0 ? stateParts.join(', ') : null;
     this.logger.debug(`Normalized: ${JSON.stringify({ country, state, city })}`);
+
+    // Mapbox
+    this.mapboxClient = mapboxGeocoding({
+      accessToken: 'pk.eyJ1IjoiYWx0cmFuMTUwMiIsImEiOiJjbDBoaXQyZGkwOTEyM2tvMzd2dzJqcXZwIn0.-Lrg7SfQVnhAwWSNV5HoSQ',
+    });
+
+    const geoCodeInfo: MapiResponse = await this.mapboxClient
+      .reverseGeocode({
+        query: [point.longitude, point.latitude],
+        types: ['country', 'region', 'place'],
+      })
+      .send();
+    console.log(geoCodeInfo.body);
+    const res: [] = geoCodeInfo.body['features'];
+
+    let mbCity = '';
+    let mbState = '';
+    let mbCountry = '';
+
+    if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
+      mbCity = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+    }
+
+    if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
+      mbState = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+    }
+
+    if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
+      mbCountry = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+    }
+
+    console.log('Mapbox: ', mbCity, mbState, mbCountry);
 
     return { country, state, city };
   }
