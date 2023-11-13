@@ -414,7 +414,7 @@
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
         <!-- Face information block -->
         <div
-          style="display: flex;"
+          style="display: flex; align-items: flex-start"
           class="relative w-fit p-4 sm:px-6;"
           use:clickOutside
           on:outclick={handleCancelEditName}
@@ -461,22 +461,25 @@
               </div>
             {/if}
           </section>
-          <div style="display: flex; ">
+          <div class="flexWrapper">
             {#if albums.length}
               <div class="appersIn">Appears in:</div>
-              {#each albums as album}
-                <div class="marginRight">
-                  <a href="/albums/{album.albumId}">
-                  <img
-                    class="h-[70px] w-[70px] rounded object-cover"
-                    src={album.albumThumbnailAssetId &&
-                      api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
-                    draggable="false"
-                    alt={album.albumName}
-                    title={`${album.albumName} \n${album.assetCount} occurrence${album.assetCount > 1 ? 's' : ''}`}
-                  /></a>
-                </div>
-              {/each}
+              <div class="albumsWraper">
+                {#each albums as album}
+                  <div class="marginRight">
+                    <a href="/albums/{album.albumId}">
+                      <img
+                        class="h-[70px] w-[70px] rounded object-cover"
+                        src={album.albumThumbnailAssetId &&
+                          api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
+                        draggable="false"
+                        alt={album.albumName}
+                        title={`${album.albumName} \n${album.assetCount} occurrence${album.assetCount > 1 ? 's' : ''}`}
+                      /></a
+                    >
+                  </div>
+                {/each}
+              </div>
             {/if}
           </div>
           {#if isEditingName}
@@ -523,10 +526,22 @@
   .marginRight {
     margin-right: 1.5rem;
   }
+
+  .flexWrapper {
+    display: flex;
+    align-items: flex-start;
+    max-width: 80%;
+  }
   .appersIn {
     margin-right: 1.5rem;
     margin-left: 1rem;
     align-items: center;
     display: flex;
+  }
+
+  .albumsWraper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 </style>
