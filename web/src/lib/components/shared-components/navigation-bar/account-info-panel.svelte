@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { AppRoute } from '$lib/constants';
-  import { api, UserDtoAvatarColorEnum, type UserResponseDto } from '@api';
+  import { api, UserAvatarColor, type UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { fade } from 'svelte/transition';
@@ -17,7 +17,7 @@
 
   const dispatch = createEventDispatcher();
 
-  const handleSaveProfile = async (color: UserDtoAvatarColorEnum) => {
+  const handleSaveProfile = async (color: UserAvatarColor) => {
     try {
       if (user.profileImagePath !== '') {
         await api.userApi.deleteProfileImage();

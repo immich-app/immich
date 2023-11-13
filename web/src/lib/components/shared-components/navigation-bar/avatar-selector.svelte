@@ -1,7 +1,7 @@
 <script lang="ts">
   import { mdiClose } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import { UserDtoAvatarColorEnum, UserResponseDto } from '@api';
+  import { UserAvatarColor, UserResponseDto } from '@api';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import FullScreenModal from '../full-screen-modal.svelte';
   import UserAvatar from '../user-avatar.svelte';
@@ -9,7 +9,7 @@
   export let user: UserResponseDto;
 
   const dispatch = createEventDispatcher();
-  const colors: Array<UserDtoAvatarColorEnum> = Object.values(UserDtoAvatarColorEnum);
+  const colors: UserAvatarColor[] = Object.values(UserAvatarColor);
 </script>
 
 <FullScreenModal on:clickOutside={() => dispatch('close')} on:escape={() => dispatch('close')}>

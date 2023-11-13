@@ -4,18 +4,18 @@
 
 <script lang="ts">
   import { imageLoad } from '$lib/utils/image-load';
-  import { UserDtoAvatarColorEnum, api } from '@api';
+  import { UserAvatarColor, api } from '@api';
 
   interface User {
     id: string;
     name: string;
     email: string;
     profileImagePath: string;
-    avatarColor: UserDtoAvatarColorEnum;
+    avatarColor: UserAvatarColor;
   }
 
   export let user: User;
-  export let color: UserDtoAvatarColorEnum = user.avatarColor;
+  export let color: UserAvatarColor = user.avatarColor;
   export let size: Size = 'full';
   export let rounded = true;
   export let interactive = false;
@@ -24,7 +24,7 @@
 
   let showFallback = true;
 
-  const colorClasses: Record<UserDtoAvatarColorEnum, string> = {
+  const colorClasses: Record<UserAvatarColor, string> = {
     primary: 'bg-immich-primary dark:bg-immich-dark-primary text-immich-dark-fg dark:text-immich-fg',
     pink: 'bg-pink-400 text-immich-bg',
     red: 'bg-red-500 text-immich-bg',

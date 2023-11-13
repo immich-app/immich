@@ -31,8 +31,8 @@ export class UserEntity {
   @Column({ default: '' })
   name!: string;
 
-  @Column({ type: 'varchar', default: UserAvatarColor.PRIMARY })
-  avatarColor!: UserAvatarColor;
+  @Column({ type: 'varchar', default: null })
+  avatarColor!: UserAvatarColor | null;
 
   @Column({ default: false })
   isAdmin!: boolean;

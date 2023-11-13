@@ -16,7 +16,7 @@ void main() {
   // final instance = UserDto();
 
   group('test UserDto', () {
-    // String avatarColor
+    // UserAvatarColor avatarColor
     test('to test the property `avatarColor`', () async {
       // TODO
     });

@@ -16,7 +16,7 @@ void main() {
   // final instance = PartnerResponseDto();
 
   group('test PartnerResponseDto', () {
-    // String avatarColor
+    // UserAvatarColor avatarColor
     test('to test the property `avatarColor`', () async {
       // TODO
     });

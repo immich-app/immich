@@ -8,7 +8,7 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**avatarColor** | **String** |  | 
+**avatarColor** | [**UserAvatarColor**](UserAvatarColor.md) |  | 
 **email** | **String** |  | 
 **id** | **String** |  | 
 **name** | **String** |  | 

@@ -4,7 +4,6 @@ import path from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository, ILibraryRepository, IUserRepository } from '../repositories';
-import { getRandomAvatarColor } from './response-dto/user-response.dto';
 
 const SALT_ROUNDS = 10;
 
@@ -99,7 +98,6 @@ export class UserCore {
     if (payload.storageLabel) {
       payload.storageLabel = sanitize(payload.storageLabel);
     }
-    payload.avatarColor = getRandomAvatarColor();
     const userEntity = await this.userRepository.create(payload);
     await this.libraryRepository.create({
       owner: { id: userEntity.id } as UserEntity,

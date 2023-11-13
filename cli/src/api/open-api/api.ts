@@ -2357,10 +2357,10 @@ export interface OAuthConfigResponseDto {
 export interface PartnerResponseDto {
     /**
      * 
-     * @type {string}
+     * @type {UserAvatarColor}
      * @memberof PartnerResponseDto
      */
-    'avatarColor': PartnerResponseDtoAvatarColorEnum;
+    'avatarColor': UserAvatarColor;
     /**
      * 
      * @type {string}
@@ -2447,20 +2447,6 @@ export interface PartnerResponseDto {
     'updatedAt': string;
 }
 
-export const PartnerResponseDtoAvatarColorEnum = {
-    Primary: 'primary',
-    Pink: 'pink',
-    Red: 'red',
-    Yellow: 'yellow',
-    Blue: 'blue',
-    Green: 'green',
-    Purple: 'purple',
-    Orange: 'orange',
-    Gray: 'gray',
-    Amber: 'amber'
-} as const;
-
-export type PartnerResponseDtoAvatarColorEnum = typeof PartnerResponseDtoAvatarColorEnum[keyof typeof PartnerResponseDtoAvatarColorEnum];
 
 /**
  * 
@@ -4496,10 +4482,10 @@ export type UserAvatarColor = typeof UserAvatarColor[keyof typeof UserAvatarColo
 export interface UserDto {
     /**
      * 
-     * @type {string}
+     * @type {UserAvatarColor}
      * @memberof UserDto
      */
-    'avatarColor': UserDtoAvatarColorEnum;
+    'avatarColor': UserAvatarColor;
     /**
      * 
      * @type {string}
@@ -4526,20 +4512,6 @@ export interface UserDto {
     'profileImagePath': string;
 }
 
-export const UserDtoAvatarColorEnum = {
-    Primary: 'primary',
-    Pink: 'pink',
-    Red: 'red',
-    Yellow: 'yellow',
-    Blue: 'blue',
-    Green: 'green',
-    Purple: 'purple',
-    Orange: 'orange',
-    Gray: 'gray',
-    Amber: 'amber'
-} as const;
-
-export type UserDtoAvatarColorEnum = typeof UserDtoAvatarColorEnum[keyof typeof UserDtoAvatarColorEnum];
 
 /**
  * 
@@ -4549,10 +4521,10 @@ export type UserDtoAvatarColorEnum = typeof UserDtoAvatarColorEnum[keyof typeof 
 export interface UserResponseDto {
     /**
      * 
-     * @type {string}
+     * @type {UserAvatarColor}
      * @memberof UserResponseDto
      */
-    'avatarColor': UserResponseDtoAvatarColorEnum;
+    'avatarColor': UserAvatarColor;
     /**
      * 
      * @type {string}
@@ -4633,20 +4605,6 @@ export interface UserResponseDto {
     'updatedAt': string;
 }
 
-export const UserResponseDtoAvatarColorEnum = {
-    Primary: 'primary',
-    Pink: 'pink',
-    Red: 'red',
-    Yellow: 'yellow',
-    Blue: 'blue',
-    Green: 'green',
-    Purple: 'purple',
-    Orange: 'orange',
-    Gray: 'gray',
-    Amber: 'amber'
-} as const;
-
-export type UserResponseDtoAvatarColorEnum = typeof UserResponseDtoAvatarColorEnum[keyof typeof UserResponseDtoAvatarColorEnum];
 
 /**
  * 

@@ -20,7 +20,7 @@ class UserDto {
     required this.profileImagePath,
   });
 
-  UserDtoAvatarColorEnum avatarColor;
+  UserAvatarColor avatarColor;
 
   String email;
 
@@ -68,7 +68,7 @@ class UserDto {
       final json = value.cast<String, dynamic>();
 
       return UserDto(
-        avatarColor: UserDtoAvatarColorEnum.fromJson(json[r'avatarColor'])!,
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
@@ -127,102 +127,4 @@ class UserDto {
     'profileImagePath',
   };
 }
-
-
-class UserDtoAvatarColorEnum {
-  /// Instantiate a new enum with the provided [value].
-  const UserDtoAvatarColorEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const primary = UserDtoAvatarColorEnum._(r'primary');
-  static const pink = UserDtoAvatarColorEnum._(r'pink');
-  static const red = UserDtoAvatarColorEnum._(r'red');
-  static const yellow = UserDtoAvatarColorEnum._(r'yellow');
-  static const blue = UserDtoAvatarColorEnum._(r'blue');
-  static const green = UserDtoAvatarColorEnum._(r'green');
-  static const purple = UserDtoAvatarColorEnum._(r'purple');
-  static const orange = UserDtoAvatarColorEnum._(r'orange');
-  static const gray = UserDtoAvatarColorEnum._(r'gray');
-  static const amber = UserDtoAvatarColorEnum._(r'amber');
-
-  /// List of all possible values in this [enum][UserDtoAvatarColorEnum].
-  static const values = <UserDtoAvatarColorEnum>[
-    primary,
-    pink,
-    red,
-    yellow,
-    blue,
-    green,
-    purple,
-    orange,
-    gray,
-    amber,
-  ];
-
-  static UserDtoAvatarColorEnum? fromJson(dynamic value) => UserDtoAvatarColorEnumTypeTransformer().decode(value);
-
-  static List<UserDtoAvatarColorEnum>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UserDtoAvatarColorEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UserDtoAvatarColorEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [UserDtoAvatarColorEnum] to String,
-/// and [decode] dynamic data back to [UserDtoAvatarColorEnum].
-class UserDtoAvatarColorEnumTypeTransformer {
-  factory UserDtoAvatarColorEnumTypeTransformer() => _instance ??= const UserDtoAvatarColorEnumTypeTransformer._();
-
-  const UserDtoAvatarColorEnumTypeTransformer._();
-
-  String encode(UserDtoAvatarColorEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a UserDtoAvatarColorEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  UserDtoAvatarColorEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'primary': return UserDtoAvatarColorEnum.primary;
-        case r'pink': return UserDtoAvatarColorEnum.pink;
-        case r'red': return UserDtoAvatarColorEnum.red;
-        case r'yellow': return UserDtoAvatarColorEnum.yellow;
-        case r'blue': return UserDtoAvatarColorEnum.blue;
-        case r'green': return UserDtoAvatarColorEnum.green;
-        case r'purple': return UserDtoAvatarColorEnum.purple;
-        case r'orange': return UserDtoAvatarColorEnum.orange;
-        case r'gray': return UserDtoAvatarColorEnum.gray;
-        case r'amber': return UserDtoAvatarColorEnum.amber;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [UserDtoAvatarColorEnumTypeTransformer] instance.
-  static UserDtoAvatarColorEnumTypeTransformer? _instance;
-}
-
 

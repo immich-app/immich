@@ -7656,19 +7656,8 @@
       "PartnerResponseDto": {
         "properties": {
           "avatarColor": {
-            "enum": [
-              "primary",
-              "pink",
-              "red",
-              "yellow",
-              "blue",
-              "green",
-              "purple",
-              "orange",
-              "gray",
-              "amber"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/UserAvatarColor",
+            "nullable": true
           },
           "createdAt": {
             "format": "date-time",
@@ -7720,11 +7709,11 @@
           }
         },
         "required": [
+          "avatarColor",
           "id",
           "name",
           "email",
           "profileImagePath",
-          "avatarColor",
           "storageLabel",
           "externalPath",
           "shouldChangePassword",
@@ -9262,19 +9251,8 @@
       "UserDto": {
         "properties": {
           "avatarColor": {
-            "enum": [
-              "primary",
-              "pink",
-              "red",
-              "yellow",
-              "blue",
-              "green",
-              "purple",
-              "orange",
-              "gray",
-              "amber"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/UserAvatarColor",
+            "nullable": true
           },
           "email": {
             "type": "string"
@@ -9290,30 +9268,19 @@
           }
         },
         "required": [
+          "avatarColor",
           "id",
           "name",
           "email",
-          "profileImagePath",
-          "avatarColor"
+          "profileImagePath"
         ],
         "type": "object"
       },
       "UserResponseDto": {
         "properties": {
           "avatarColor": {
-            "enum": [
-              "primary",
-              "pink",
-              "red",
-              "yellow",
-              "blue",
-              "green",
-              "purple",
-              "orange",
-              "gray",
-              "amber"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/UserAvatarColor",
+            "nullable": true
           },
           "createdAt": {
             "format": "date-time",
@@ -9362,11 +9329,11 @@
           }
         },
         "required": [
+          "avatarColor",
           "id",
           "name",
           "email",
           "profileImagePath",
-          "avatarColor",
           "storageLabel",
           "externalPath",
           "shouldChangePassword",
