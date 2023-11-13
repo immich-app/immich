@@ -174,7 +174,7 @@ jobs:
           poetry run black --check app
       - name: Run mypy type checking
         run: |
-          poetry run mypy --install-types --non-interactive app/
+          poetry run mypy --install-types --non-interactive --strict app/ export/
       - name: Run tests and coverage
         run: |
           poetry run pytest --cov app
