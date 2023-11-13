@@ -59,8 +59,7 @@ describe(`${UserController.name}`, () => {
       const user1 = await api.userApi.create(server, accessToken, {
         email: `user1@immich.app`,
         password: 'Password123',
-        firstName: `User 1`,
-        lastName: 'Test',
+        name: `User 1`,
       });
 
       await api.userApi.delete(server, accessToken, user1.id);
@@ -78,8 +77,7 @@ describe(`${UserController.name}`, () => {
       const user1 = await api.userApi.create(server, accessToken, {
         email: `user1@immich.app`,
         password: 'Password123',
-        firstName: `User 1`,
-        lastName: 'Test',
+        name: `User 1`,
       });
 
       await api.userApi.delete(server, accessToken, user1.id);
@@ -149,8 +147,7 @@ describe(`${UserController.name}`, () => {
           isAdmin: true,
           email: 'user1@immich.app',
           password: 'Password123',
-          firstName: 'Immich',
-          lastName: 'User',
+          name: 'Immich',
         })
         .set('Authorization', `Bearer ${accessToken}`);
       expect(body).toMatchObject({
@@ -167,8 +164,7 @@ describe(`${UserController.name}`, () => {
         .send({
           email: 'no-memories@immich.app',
           password: 'Password123',
-          firstName: 'No Memories',
-          lastName: 'User',
+          name: 'No Memories',
           memoriesEnabled: false,
         })
         .set('Authorization', `Bearer ${accessToken}`);
@@ -186,8 +182,7 @@ describe(`${UserController.name}`, () => {
     beforeEach(async () => {
       userToDelete = await api.userApi.create(server, accessToken, {
         email: userStub.user1.email,
-        firstName: userStub.user1.firstName,
-        lastName: userStub.user1.lastName,
+        name: userStub.user1.name,
         password: 'superSecurePassword',
       });
     });
@@ -246,8 +241,7 @@ describe(`${UserController.name}`, () => {
       const user = await api.userApi.create(server, accessToken, {
         email: 'user1@immich.app',
         password: 'Password123',
-        firstName: 'Immich',
-        lastName: 'User',
+        name: 'Immich User',
       });
 
       const { status, body } = await request(server)
@@ -284,15 +278,13 @@ describe(`${UserController.name}`, () => {
       const before = await api.userApi.get(server, accessToken, loginResponse.userId);
       const after = await api.userApi.update(server, accessToken, {
         id: before.id,
-        firstName: 'First Name',
-        lastName: 'Last Name',
+        name: 'Name',
       });
 
       expect(after).toEqual({
         ...before,
         updatedAt: expect.any(String),
-        firstName: 'First Name',
-        lastName: 'Last Name',
+        name: 'Name',
       });
       expect(before.updatedAt).not.toEqual(after.updatedAt);
     });

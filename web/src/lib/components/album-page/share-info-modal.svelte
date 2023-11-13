@@ -56,7 +56,7 @@
     try {
       await api.albumApi.removeUserFromAlbum({ id: album.id, userId });
       dispatch('remove', userId);
-      const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.firstName}`;
+      const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
     } catch (e) {
       handleError(e, 'Unable to remove user');
@@ -78,7 +78,7 @@
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
           <UserAvatar user={album.owner} size="md" autoColor />
-          <p class="text-sm font-medium">{album.owner.firstName} {album.owner.lastName}</p>
+          <p class="text-sm font-medium">{album.owner.name}</p>
         </div>
 
         <div id="icon-{album.owner.id}" class="flex place-items-center">
@@ -91,7 +91,7 @@
         >
           <div class="flex place-items-center gap-4">
             <UserAvatar {user} size="md" autoColor />
-            <p class="text-sm font-medium">{user.firstName} {user.lastName}</p>
+            <p class="text-sm font-medium">{user.name}</p>
           </div>
 
           <div id="icon-{user.id}" class="flex place-items-center">
@@ -138,7 +138,7 @@
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialogue
     title="Remove User?"
-    prompt="Are you sure you want to remove {selectedRemoveUser.firstName} {selectedRemoveUser.lastName}"
+    prompt="Are you sure you want to remove {selectedRemoveUser.name}"
     confirmText="Remove"
     on:confirm={handleRemoveUser}
     on:cancel={() => (selectedRemoveUser = null)}

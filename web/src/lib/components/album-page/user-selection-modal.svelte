@@ -72,7 +72,7 @@
               class="flex place-items-center gap-1 rounded-full border border-gray-400 p-1 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <UserAvatar {user} size="sm" autoColor />
-              <p class="text-xs font-medium">{user.firstName} {user.lastName}</p>
+              <p class="text-xs font-medium">{user.name}</p>
             </button>
           {/key}
         {/each}
@@ -99,8 +99,7 @@
 
             <div class="text-left">
               <p class="text-immich-fg dark:text-immich-dark-fg">
-                {user.firstName}
-                {user.lastName}
+                {user.name}
               </p>
               <p class="text-xs">
                 {user.email}

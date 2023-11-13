@@ -22,15 +22,13 @@ import request from 'supertest';
 const user1Dto = {
   email: 'user1@immich.app',
   password: 'Password123',
-  firstName: 'User 1',
-  lastName: 'Test',
+  name: 'User 1',
 };
 
 const user2Dto = {
   email: 'user2@immich.app',
   password: 'Password123',
-  firstName: 'User 2',
-  lastName: 'Test',
+  name: 'User 2',
 };
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {

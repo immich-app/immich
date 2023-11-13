@@ -106,13 +106,13 @@ class TestCLIP:
 class TestFaceRecognition:
     def test_set_min_score(self, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
-        face_recognizer = FaceRecognizer("test_model_name", cache_dir="test_cache", min_score=0.5)
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache", min_score=0.5)
 
         assert face_recognizer.min_score == 0.5
 
     def test_basic(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
-        face_recognizer = FaceRecognizer("test_model_name", min_score=0.0, cache_dir="test_cache")
+        face_recognizer = FaceRecognizer("buffalo_s", min_score=0.0, cache_dir="test_cache")
 
         det_model = mock.Mock()
         num_faces = 2

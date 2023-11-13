@@ -359,8 +359,7 @@
 
       <div class="mb-auto mt-auto">
         <p>
-          {asset.owner.firstName}
-          {asset.owner.lastName}
+          {asset.owner.name}
         </p>
       </div>
     </div>

@@ -350,8 +350,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
       const { id: userId } = await api.userApi.create(server, admin.accessToken, {
         email: 'user1@immich.app',
         password: 'Password123',
-        firstName: 'User 1',
-        lastName: 'Test',
+        name: 'User 1',
       });
       await api.albumApi.addUsers(server, admin.accessToken, album.id, { sharedUserIds: [userId] });
       const nonOwner = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
@@ -371,8 +370,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
       const { id: userId } = await api.userApi.create(server, admin.accessToken, {
         email: 'user1@immich.app',
         password: 'Password123',
-        firstName: 'User 1',
-        lastName: 'Test',
+        name: 'User 1',
       });
       await api.albumApi.addUsers(server, admin.accessToken, album.id, { sharedUserIds: [userId] });
       const nonOwner = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
@@ -393,8 +391,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
       const { id: userId } = await api.userApi.create(server, admin.accessToken, {
         email: 'user1@immich.app',
         password: 'Password123',
-        firstName: 'User 1',
-        lastName: 'Test',
+        name: 'User 1',
       });
       await api.albumApi.addUsers(server, admin.accessToken, album.id, { sharedUserIds: [userId] });
       const nonOwner = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
