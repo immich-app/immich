@@ -38,7 +38,7 @@ def init_state() -> None:
     )
     # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
     app.state.thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
-    app.state.locks = {model_type: threading.Lock() for model_type in ModelType}
+    app.state.lock = threading.Lock()
     app.state.last_called = None
     if settings.model_ttl > 0 and settings.shutdown_poll_s > 0:
         asyncio.ensure_future(idle_shutdown_task())
@@ -97,7 +97,7 @@ async def load(model: InferenceModel) -> InferenceModel:
         return model
 
     def _load() -> None:
-        with app.state.locks[model.model_type]:
+        with app.state.lock:
             model.load()
 
     loop = asyncio.get_running_loop()
@@ -126,7 +126,7 @@ async def idle_shutdown_task() -> None:
     while True:
         log.debug("Checking for inactivity...")
         if app.state.last_called is not None and time.time() - app.state.last_called > settings.model_ttl:
-            log.debug("Shutting down due to inactivity.")
+            log.info("Shutting down due to inactivity.")
             loop = asyncio.get_running_loop()
             for task in asyncio.all_tasks(loop):
                 if task is not asyncio.current_task():
