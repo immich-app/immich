@@ -44,8 +44,8 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
     if (!_wasPaused) return;
     _wasPaused = false;
 
-    final isAuthenticated = _ref.watch(authenticationProvider).isAuthenticated;
-    final permission = _ref.watch(galleryPermissionNotifier);
+    final isAuthenticated = _ref.read(authenticationProvider).isAuthenticated;
+    final permission = _ref.read(galleryPermissionNotifier);
 
     // Needs to be logged in and have gallery permissions
     if (isAuthenticated && (permission.isGranted || permission.isLimited)) {
@@ -66,14 +66,14 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
       }
     }
 
-    _ref.watch(websocketProvider.notifier).connect();
+    _ref.read(websocketProvider.notifier).connect();
 
-    _ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+    _ref.read(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     _ref
-        .watch(notificationPermissionProvider.notifier)
+        .read(notificationPermissionProvider.notifier)
         .getNotificationPermission();
-    _ref.watch(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
+    _ref.read(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
 
     _ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
@@ -89,7 +89,7 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
     state = AppStateEnum.paused;
     _wasPaused = true;
     // Do not cancel backup if manual upload is in progress
-    if (_ref.watch(backupProvider.notifier).backupProgress !=
+    if (_ref.read(backupProvider.notifier).backupProgress !=
         BackUpProgressEnum.manualInProgress) {
       _ref.read(backupProvider.notifier).cancelBackup();
     }
@@ -100,7 +100,7 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
   void handleAppDetached() {
     state = AppStateEnum.detached;
     // no guarantee this is called at all
-    _ref.watch(manualUploadProvider.notifier).cancelBackup();
+    _ref.read(manualUploadProvider.notifier).cancelBackup();
   }
 
   void handleAppHidden() {
