@@ -343,7 +343,7 @@ describe(PersonService.name, () => {
       ).resolves.toEqual(responseDto);
 
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
-      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', faceAssetId: faceStub.face1.assetId });
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', faceAssetId: faceStub.face1.id });
       expect(personMock.getFacesByIds).toHaveBeenCalledWith([
         {
           assetId: faceStub.face1.assetId,
