@@ -28,7 +28,6 @@
       <string>es</string>
       <string>vi</string>
       <string>fr</string>
-      <string>fr</string>
       <string>ja</string>
       <string>pl</string>
       <string>fi</string>
@@ -44,15 +43,10 @@
       <string>mn</string>
       <string>ko</string>
       <string>sr</string>
-      <string>sr</string>
       <string>hi</string>
-      <string>es</string>
-      <string>es</string>
-      <string>sv</string>
       <string>ca</string>
       <string>hu</string>
       <string>lv</string>
-      <string>zh</string>
       <string>th</string>
     </array>
     <key>CFBundleName</key>

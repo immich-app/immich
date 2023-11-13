@@ -30,6 +30,7 @@ const List<Locale> locales = [
   Locale('hi', 'IN'),
   Locale('es', 'PE'),
   Locale('es', 'MX'),
+  Locale('es', 'US'),
   Locale('sv', 'FI'),
   Locale('ca', 'CA'),
   Locale('hu', 'HU'),
