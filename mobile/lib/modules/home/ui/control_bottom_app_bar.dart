@@ -150,6 +150,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                     SizedBox(
                       height: 70,
                       child: ListView(
+                        shrinkWrap: true,
                         scrollDirection: Axis.horizontal,
                         children: renderActionButtons(),
                       ),
