@@ -6,7 +6,24 @@ part of 'people.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$personAssetsHash() => r'6365a957da89dd7c1c2cf495633f1a5ef57dd69d';
+String _$getCuratedPeopleHash() => r'2a534553812abe69abce2c2e41aa62b8de16e9d0';
+
+/// See also [getCuratedPeople].
+@ProviderFor(getCuratedPeople)
+final getCuratedPeopleProvider =
+    AutoDisposeFutureProvider<List<CuratedContent>>.internal(
+  getCuratedPeople,
+  name: r'getCuratedPeopleProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$getCuratedPeopleHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef GetCuratedPeopleRef
+    = AutoDisposeFutureProviderRef<List<CuratedContent>>;
+String _$personAssetsHash() => r'1d6eff5ca3aa630b58c4dad9516193b21896984d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -155,42 +172,25 @@ class _PersonAssetsProviderElement
   String get personId => (origin as PersonAssetsProvider).personId;
 }
 
-String _$getCuratedPeopleHash() => r'290c4374ab205319f42fed6682eebf7db0bac39f';
-
-/// See also [getCuratedPeople].
-@ProviderFor(getCuratedPeople)
-final getCuratedPeopleProvider =
-    AutoDisposeFutureProvider<List<CuratedContent>>.internal(
-  getCuratedPeople,
-  name: r'getCuratedPeopleProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$getCuratedPeopleHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef GetCuratedPeopleRef
-    = AutoDisposeFutureProviderRef<List<CuratedContent>>;
-String _$updatePersonNameHash() => r'8026619b65d713ac6d5cd46b071074a46df99fef';
+String _$updatePersonNameHash() => r'c7179a7cc558669c3b30b03fbca7782a42f2b6fd';
 
 /// See also [updatePersonName].
 @ProviderFor(updatePersonName)
 const updatePersonNameProvider = UpdatePersonNameFamily();
 
 /// See also [updatePersonName].
-class UpdatePersonNameFamily extends Family<void> {
+class UpdatePersonNameFamily extends Family<AsyncValue<bool>> {
   /// See also [updatePersonName].
   const UpdatePersonNameFamily();
 
   /// See also [updatePersonName].
   UpdatePersonNameProvider call(
-    String id,
-    String personName,
+    String personId,
+    String updatedName,
   ) {
     return UpdatePersonNameProvider(
-      id,
-      personName,
+      personId,
+      updatedName,
     );
   }
 
@@ -199,8 +199,8 @@ class UpdatePersonNameFamily extends Family<void> {
     covariant UpdatePersonNameProvider provider,
   ) {
     return call(
-      provider.id,
-      provider.personName,
+      provider.personId,
+      provider.updatedName,
     );
   }
 
@@ -220,16 +220,16 @@ class UpdatePersonNameFamily extends Family<void> {
 }
 
 /// See also [updatePersonName].
-class UpdatePersonNameProvider extends AutoDisposeProvider<void> {
+class UpdatePersonNameProvider extends AutoDisposeFutureProvider<bool> {
   /// See also [updatePersonName].
   UpdatePersonNameProvider(
-    String id,
-    String personName,
+    String personId,
+    String updatedName,
   ) : this._internal(
           (ref) => updatePersonName(
             ref as UpdatePersonNameRef,
-            id,
-            personName,
+            personId,
+            updatedName,
           ),
           from: updatePersonNameProvider,
           name: r'updatePersonNameProvider',
@@ -240,8 +240,8 @@ class UpdatePersonNameProvider extends AutoDisposeProvider<void> {
           dependencies: UpdatePersonNameFamily._dependencies,
           allTransitiveDependencies:
               UpdatePersonNameFamily._allTransitiveDependencies,
-          id: id,
-          personName: personName,
+          personId: personId,
+          updatedName: updatedName,
         );
 
   UpdatePersonNameProvider._internal(
@@ -251,16 +251,16 @@ class UpdatePersonNameProvider extends AutoDisposeProvider<void> {
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.id,
-    required this.personName,
+    required this.personId,
+    required this.updatedName,
   }) : super.internal();
 
-  final String id;
-  final String personName;
+  final String personId;
+  final String updatedName;
 
   @override
   Override overrideWith(
-    void Function(UpdatePersonNameRef provider) create,
+    FutureOr<bool> Function(UpdatePersonNameRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -271,50 +271,50 @@ class UpdatePersonNameProvider extends AutoDisposeProvider<void> {
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        id: id,
-        personName: personName,
+        personId: personId,
+        updatedName: updatedName,
       ),
     );
   }
 
   @override
-  AutoDisposeProviderElement<void> createElement() {
+  AutoDisposeFutureProviderElement<bool> createElement() {
     return _UpdatePersonNameProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
     return other is UpdatePersonNameProvider &&
-        other.id == id &&
-        other.personName == personName;
+        other.personId == personId &&
+        other.updatedName == updatedName;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, id.hashCode);
-    hash = _SystemHash.combine(hash, personName.hashCode);
+    hash = _SystemHash.combine(hash, personId.hashCode);
+    hash = _SystemHash.combine(hash, updatedName.hashCode);
 
     return _SystemHash.finish(hash);
   }
 }
 
-mixin UpdatePersonNameRef on AutoDisposeProviderRef<void> {
-  /// The parameter `id` of this provider.
-  String get id;
+mixin UpdatePersonNameRef on AutoDisposeFutureProviderRef<bool> {
+  /// The parameter `personId` of this provider.
+  String get personId;
 
-  /// The parameter `personName` of this provider.
-  String get personName;
+  /// The parameter `updatedName` of this provider.
+  String get updatedName;
 }
 
-class _UpdatePersonNameProviderElement extends AutoDisposeProviderElement<void>
-    with UpdatePersonNameRef {
+class _UpdatePersonNameProviderElement
+    extends AutoDisposeFutureProviderElement<bool> with UpdatePersonNameRef {
   _UpdatePersonNameProviderElement(super.provider);
 
   @override
-  String get id => (origin as UpdatePersonNameProvider).id;
+  String get personId => (origin as UpdatePersonNameProvider).personId;
   @override
-  String get personName => (origin as UpdatePersonNameProvider).personName;
+  String get updatedName => (origin as UpdatePersonNameProvider).updatedName;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
