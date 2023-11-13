@@ -26,24 +26,6 @@
   export let assetId: string;
   let numberOfPersonToCreate = 0;
   let numberOfAssetFaceGenerated = 0;
-  const { onPersonThumbnail } = websocketStore;
-
-  $: {
-    if (selectedPersonToCreate) {
-      numberOfPersonToCreate = selectedPersonToCreate.filter((person) => person !== null).length;
-    }
-  }
-  $: {
-    if ($onPersonThumbnail) {
-      numberOfAssetFaceGenerated++;
-    }
-  }
-
-  $: {
-    if (numberOfPersonToCreate === numberOfAssetFaceGenerated) {
-      dispatch('refresh');
-    }
-  }
 
   let peopleWithFaces: AssetFaceResponseDto[] = [];
   let searchedPeople: PersonResponseDto[] = [];
@@ -58,13 +40,36 @@
   let selectedPersonToCreate: (PersonToCreate | null)[];
 
   let showSeletecFaces = false;
-  let showLoadingSpinner = false;
+  let showLoadingDone = false;
 
   let isSearchingPeople = false;
   let isCreatingPerson = false;
   let isShowLoadingPeople = false;
+  let doneTimeout: NodeJS.Timeout;
 
+  const { onPersonThumbnail } = websocketStore;
   const dispatch = createEventDispatcher();
+
+  // Reset value
+  $onPersonThumbnail = '';
+
+  $: {
+    if (selectedPersonToCreate) {
+      numberOfPersonToCreate = selectedPersonToCreate.filter((person) => person !== null).length;
+    }
+  }
+  $: {
+    if ($onPersonThumbnail) {
+      numberOfAssetFaceGenerated++;
+    }
+  }
+
+  $: {
+    if (numberOfPersonToCreate === numberOfAssetFaceGenerated && doneTimeout) {
+      clearTimeout(doneTimeout);
+      dispatch('refresh');
+    }
+  }
 
   onMount(async () => {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), 100);
@@ -179,6 +184,7 @@
   };
 
   const handleEditFaces = async () => {
+    doneTimeout = setTimeout(() => (showLoadingDone = true), 100);
     const numberOfChanges =
       selectedPersonToCreate.filter((person) => person !== null).length +
       selectedPersonToReassign.filter((person) => person !== null).length;
@@ -209,6 +215,7 @@
     }
 
     if (numberOfPersonToCreate === 0) {
+      clearTimeout(doneTimeout);
       dispatch('refresh');
     }
   };
@@ -259,7 +266,7 @@
       </button>
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Edit faces</p>
     </div>
-    {#if !showLoadingSpinner}
+    {#if !showLoadingDone}
       <button
         class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
         on:click={() => handleEditFaces()}
