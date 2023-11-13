@@ -54,6 +54,7 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
       switch (ref.read(tabProvider)) {
         case TabEnum.home:
           ref.read(assetProvider.notifier).getAllAsset();
+          ref.read(assetProvider.notifier).getPartnerAssets();
         case TabEnum.search:
         // nothing to do
         case TabEnum.sharing:

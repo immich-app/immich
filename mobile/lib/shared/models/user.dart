@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
@@ -34,8 +35,9 @@ class User {
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
-        memoryEnabled = dto.memoriesEnabled,
-        avatarColor = dto.avatarColor.toAvatarColor();
+        memoryEnabled = dto.memoriesEnabled ?? false,
+        avatarColor = dto.avatarColor.toAvatarColor(),
+        inTimeline = false;
 
   User.fromPartnerDto(PartnerResponseDto dto)
       : id = dto.id,
@@ -46,9 +48,9 @@ class User {
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
-        memoryEnabled = dto.memoriesEnabled,
+        memoryEnabled = dto.memoriesEnabled ?? false,
         avatarColor = dto.avatarColor.toAvatarColor(),
-        inTimeline = dto.inTimeline;
+        inTimeline = dto.inTimeline ?? false;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
@@ -61,8 +63,8 @@ class User {
   String profileImagePath;
   @Enumerated(EnumType.name)
   AvatarColorEnum avatarColor;
-  bool? memoryEnabled;
-  bool? inTimeline;
+  bool memoryEnabled;
+  bool inTimeline;
 
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
@@ -114,7 +116,7 @@ enum AvatarColorEnum {
   amber,
 }
 
-extension UserResponseAvatarColorEnumHelper on UserResponseDtoAvatarColorEnum {
+extension UserResponseAvatarColorEnumHelper on UserAvatarColor {
   AvatarColorEnum toAvatarColor() {
     switch (this) {
       case UserResponseDtoAvatarColorEnum.primary:

@@ -8,12 +8,11 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/shared/services/user.service.dart';
 import 'package:immich_mobile/utils/db.dart';
+import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -251,26 +250,23 @@ final assetWatcher =
   return db.assets.watchObject(asset.id, fireImmediately: true);
 });
 
-final assetsProvider =
-    StreamProvider.family<RenderList, int?>((ref, userId) async* {
-  if (userId == null) return;
-  final query = ref
-      .watch(dbProvider)
-      .assets
-      .where()
-      .ownerIdEqualToAnyChecksum(userId)
-      .filter()
-      .isArchivedEqualTo(false)
-      .isTrashedEqualTo(false)
-      .stackParentIdIsNull()
-      .sortByFileCreatedAtDesc();
-  final settings = ref.watch(appSettingsServiceProvider);
-  final groupBy =
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
-  yield await RenderList.fromQuery(query, groupBy);
-  await for (final _ in query.watchLazy()) {
-    yield await RenderList.fromQuery(query, groupBy);
-  }
+final assetsProvider = StreamProvider.family<RenderList, int?>((ref, userId) {
+  if (userId == null) return const Stream.empty();
+  final query = _commonFilterAndSort(
+    _assets(ref).where().ownerIdEqualToAnyChecksum(userId),
+  );
+  return renderListGenerator(query, ref);
+});
+
+final multiUserAssetsProvider =
+    StreamProvider.family<RenderList, List<int>>((ref, userIds) {
+  if (userIds.isEmpty) return const Stream.empty();
+  final query = _commonFilterAndSort(
+    _assets(ref)
+        .where()
+        .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
+  );
+  return renderListGenerator(query, ref);
 });
 
 QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
@@ -285,6 +281,20 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
+      .isTrashedEqualTo(false)
+      .stackParentIdIsNull()
+      .sortByFileCreatedAtDesc();
+}
+
+IsarCollection<Asset> _assets(StreamProviderRef<RenderList> ref) =>
+    ref.watch(dbProvider).assets;
+
+QueryBuilder<Asset, Asset, QAfterSortBy> _commonFilterAndSort(
+  QueryBuilder<Asset, Asset, QAfterWhereClause> query,
+) {
+  return query
+      .filter()
+      .isArchivedEqualTo(false)
       .isTrashedEqualTo(false)
       .stackParentIdIsNull()
       .sortByFileCreatedAtDesc();
