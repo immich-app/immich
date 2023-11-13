@@ -47,7 +47,7 @@ void main() {
       // TODO
     });
 
-    //Future<AdminSignupResponseDto> signUpAdmin(SignUpDto signUpDto) async
+    //Future<UserResponseDto> signUpAdmin(SignUpDto signUpDto) async
     test('test signUpAdmin', () async {
       // TODO
     });

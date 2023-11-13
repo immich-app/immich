@@ -11,8 +11,7 @@ import request from 'supertest';
 const user1Dto = {
   email: 'user1@immich.app',
   password: 'Password123',
-  firstName: 'User 1',
-  lastName: 'Test',
+  name: 'User 1',
 };
 
 describe(`${PartnerController.name} (e2e)`, () => {

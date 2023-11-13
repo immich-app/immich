@@ -8,8 +8,7 @@
 
   interface User {
     id: string;
-    firstName: string;
-    lastName: string;
+    name: string;
     email: string;
     profileImagePath: string;
     avatarColor: UserDtoAvatarColorEnum;
@@ -50,7 +49,7 @@
 
   $: colorClass = colorClasses[color];
   $: sizeClass = sizeClasses[size];
-  $: title = `${user.firstName} ${user.lastName} (${user.email})`;
+  $: title = `${user.name} (${user.email})`;
   $: interactiveClass = interactive
     ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
     : '';
@@ -81,7 +80,7 @@
       class:text-2xl={size === 'xxl'}
       class:text-3xl={size === 'xxxl'}
     >
-      {((user.firstName[0] || '') + (user.lastName[0] || '')).toUpperCase()}
+      {(user.name[0] || '').toUpperCase()}
     </span>
   {/if}
 </figure>

@@ -22,6 +22,7 @@ class ApiService {
   late PersonApi personApi;
   late AuditApi auditApi;
   late SharedLinkApi sharedLinkApi;
+  late SystemConfigApi systemConfigApi;
   late ActivityApi activityApi;
 
   ApiService() {
@@ -48,6 +49,7 @@ class ApiService {
     personApi = PersonApi(_apiClient);
     auditApi = AuditApi(_apiClient);
     sharedLinkApi = SharedLinkApi(_apiClient);
+    systemConfigApi = SystemConfigApi(_apiClient);
     activityApi = ActivityApi(_apiClient);
   }
 

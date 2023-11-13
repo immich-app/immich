@@ -467,6 +467,8 @@ describe(PersonService.name, () => {
     });
 
     it('should handle no results', async () => {
+      const start = Date.now();
+
       machineLearningMock.detectFaces.mockResolvedValue([]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
@@ -485,6 +487,12 @@ describe(PersonService.name, () => {
       );
       expect(personMock.createFace).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
+
+      expect(assetMock.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: assetStub.image.id,
+        facesRecognizedAt: expect.any(Date),
+      });
+      expect(assetMock.upsertJobStatus.mock.calls[0][0].facesRecognizedAt?.getTime()).toBeGreaterThan(start);
     });
 
     it('should match existing people', async () => {

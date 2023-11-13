@@ -85,7 +85,6 @@ export class ServerInfoService {
 
     return {
       loginPageMessage,
-      mapTileUrl: config.map.tileUrl,
       trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
       isInitialized,
@@ -99,8 +98,7 @@ export class ServerInfoService {
     for (const user of userStats) {
       const usage = new UsageByUserDto();
       usage.userId = user.userId;
-      usage.userFirstName = user.userFirstName;
-      usage.userLastName = user.userLastName;
+      usage.userName = user.userName;
       usage.photos = user.photos;
       usage.videos = user.videos;
       usage.usage = user.usage;

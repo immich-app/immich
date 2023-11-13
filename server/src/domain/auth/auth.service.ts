@@ -32,18 +32,21 @@ import {
   LOGIN_URL,
   MOBILE_REDIRECT,
 } from './auth.constant';
-import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, OAuthCallbackDto, OAuthConfigDto, SignUpDto } from './dto';
 import {
-  AdminSignupResponseDto,
   AuthDeviceResponseDto,
+  AuthUserDto,
+  ChangePasswordDto,
+  LoginCredentialDto,
   LoginResponseDto,
   LogoutResponseDto,
   OAuthAuthorizeResponseDto,
+  OAuthCallbackDto,
+  OAuthConfigDto,
   OAuthConfigResponseDto,
-  mapAdminSignupResponse,
+  SignUpDto,
   mapLoginResponse,
   mapUserToken,
-} from './response-dto';
+} from './auth.dto';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -133,7 +136,7 @@ export class AuthService {
     return this.userCore.updateUser(authUser, authUser.id, { password: newPassword });
   }
 
-  async adminSignUp(dto: SignUpDto): Promise<AdminSignupResponseDto> {
+  async adminSignUp(dto: SignUpDto): Promise<UserResponseDto> {
     const adminUser = await this.userRepository.getAdmin();
 
     if (adminUser) {
@@ -143,13 +146,12 @@ export class AuthService {
     const admin = await this.userCore.createUser({
       isAdmin: true,
       email: dto.email,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
+      name: dto.name,
       password: dto.password,
       storageLabel: 'admin',
     });
 
-    return mapAdminSignupResponse(admin);
+    return mapUser(admin);
   }
 
   async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto> {
@@ -270,9 +272,9 @@ export class AuthService {
         storageLabel = null;
       }
 
+      const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.userCore.createUser({
-        firstName: profile.given_name || '',
-        lastName: profile.family_name || '',
+        name: userName,
         email: profile.email,
         oauthId: profile.sub,
         storageLabel,

@@ -41,7 +41,7 @@ class PartnerPage extends HookConsumerWidget {
                         padding: const EdgeInsets.only(right: 8),
                         child: userAvatar(context, u),
                       ),
-                      Text("${u.firstName} ${u.lastName}"),
+                      Text(u.name),
                     ],
                   ),
                 ),
@@ -71,7 +71,7 @@ class PartnerPage extends HookConsumerWidget {
           return ConfirmDialog(
             title: "partner_page_stop_sharing_title",
             content:
-                "partner_page_stop_sharing_content".tr(args: [u.firstName]),
+                "partner_page_stop_sharing_content".tr(args: [u.name]),
             onOk: () => ref.read(partnerServiceProvider).removePartner(u),
           );
         },

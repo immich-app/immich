@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:math' as math;
 
-import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +11,7 @@ import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/map/models/map_page_event.model.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
@@ -20,12 +21,10 @@ import 'package:immich_mobile/modules/map/ui/map_page_bottom_sheet.dart';
 import 'package:immich_mobile/modules/map/ui/map_page_app_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/utils/color_filter_generator.dart';
 import 'package:immich_mobile/utils/debounce.dart';
-import 'package:immich_mobile/utils/flutter_map_extensions.dart';
+import 'package:immich_mobile/extensions/flutter_map_extensions.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:latlong2/latlong.dart';
@@ -79,26 +78,30 @@ class MapPageState extends ConsumerState<MapPage> {
     Set<AssetMarkerData>? assetMarkers, {
     bool forceReload = false,
   }) {
-    final bounds = mapController.bounds;
-    if (bounds != null) {
-      final oldAssetsInBounds = assetsInBounds.toSet();
-      assetsInBounds =
-          assetMarkers?.where((e) => bounds.contains(e.point)).toSet() ?? {};
-      final shouldReload = forceReload ||
-          assetsInBounds.difference(oldAssetsInBounds).isNotEmpty ||
-          assetsInBounds.length != oldAssetsInBounds.length;
-      if (shouldReload) {
-        mapPageEventSC.add(
-          MapPageAssetsInBoundUpdated(
-            assetsInBounds.map((e) => e.asset).toList(),
-          ),
-        );
+    try {
+      final bounds = mapController.bounds;
+      if (bounds != null) {
+        final oldAssetsInBounds = assetsInBounds.toSet();
+        assetsInBounds =
+            assetMarkers?.where((e) => bounds.contains(e.point)).toSet() ?? {};
+        final shouldReload = forceReload ||
+            assetsInBounds.difference(oldAssetsInBounds).isNotEmpty ||
+            assetsInBounds.length != oldAssetsInBounds.length;
+        if (shouldReload) {
+          mapPageEventSC.add(
+            MapPageAssetsInBoundUpdated(
+              assetsInBounds.map((e) => e.asset).toList(),
+            ),
+          );
+        }
       }
+    } finally {
+      // Consume all error
     }
   }
 
   void openAssetInViewer(Asset asset) {
-    AutoRouter.of(context).push(
+    context.autoPush(
       GalleryViewerRoute(
         initialIndex: 0,
         loadAsset: (index) => asset,
@@ -120,6 +123,10 @@ class MapPageState extends ConsumerState<MapPage> {
     final selectedAssets = useState(<Asset>{});
     final showLoadingIndicator = useState(false);
     final refetchMarkers = useState(true);
+    final isLoading =
+        ref.watch(mapStateNotifier.select((state) => state.isLoading));
+    final maxZoom = ref.read(mapStateNotifier.notifier).maxZoom;
+    final zoomLevel = math.min(maxZoom, 14.0);
 
     if (refetchMarkers.value) {
       mapMarkerData.value = ref.watch(mapMarkersProvider).when(
@@ -168,7 +175,6 @@ class MapPageState extends ConsumerState<MapPage> {
         final mapMarker = mapMarkerData.value
             .firstWhereOrNull((e) => e.asset.id == assetInBottomSheet.id);
         if (mapMarker != null) {
-          const zoomLevel = 16.0;
           LatLng? newCenter = mapController.centerBoundsWithPadding(
             mapMarker.point,
             const Offset(0, -120),
@@ -230,7 +236,7 @@ class MapPageState extends ConsumerState<MapPage> {
         forceAssetUpdate = true;
         mapController.move(
           LatLng(currentUserLocation.latitude, currentUserLocation.longitude),
-          12,
+          zoomLevel,
         );
       } catch (error) {
         log.severe(
@@ -359,24 +365,6 @@ class MapPageState extends ConsumerState<MapPage> {
       selectedAssets.value = selection;
     }
 
-    final tileLayer = TileLayer(
-      urlTemplate: ref.watch(
-        serverInfoProvider.select((v) => v.serverConfig.mapTileUrl),
-      ),
-      maxNativeZoom: 19,
-      maxZoom: 19,
-    );
-
-    final darkTileLayer = InvertionFilter(
-      child: SaturationFilter(
-        saturation: -1,
-        child: BrightnessFilter(
-          brightness: -1,
-          child: tileLayer,
-        ),
-      ),
-    );
-
     final markerLayer = MarkerLayer(
       markers: [
         if (closestAssetMarker.value != null)
@@ -451,41 +439,43 @@ class MapPageState extends ConsumerState<MapPage> {
           extendBodyBehindAppBar: true,
           body: Stack(
             children: [
-              FlutterMap(
-                mapController: mapController,
-                options: MapOptions(
-                  maxBounds:
-                      LatLngBounds(LatLng(-90, -180.0), LatLng(90.0, 180.0)),
-                  interactiveFlags: InteractiveFlag.doubleTapZoom |
-                      InteractiveFlag.drag |
-                      InteractiveFlag.flingAnimation |
-                      InteractiveFlag.pinchMove |
-                      InteractiveFlag.pinchZoom,
-                  center: LatLng(20, 20),
-                  zoom: 2,
-                  minZoom: 1,
-                  maxZoom: 18, // max level supported by OSM,
-                  onMapReady: () {
-                    mapController.mapEventStream.listen(onMapEvent);
-                  },
+              if (!isLoading)
+                FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    maxBounds:
+                        LatLngBounds(LatLng(-90, -180.0), LatLng(90.0, 180.0)),
+                    interactiveFlags: InteractiveFlag.doubleTapZoom |
+                        InteractiveFlag.drag |
+                        InteractiveFlag.flingAnimation |
+                        InteractiveFlag.pinchMove |
+                        InteractiveFlag.pinchZoom,
+                    center: LatLng(20, 20),
+                    zoom: 2,
+                    minZoom: 1,
+                    maxZoom: maxZoom,
+                    onMapReady: () {
+                      mapController.mapEventStream.listen(onMapEvent);
+                    },
+                  ),
+                  children: [
+                    ref.read(mapStateNotifier.notifier).getTileLayer(),
+                    heatMapLayer,
+                    markerLayer,
+                  ],
                 ),
-                children: [
-                  isDarkTheme ? darkTileLayer : tileLayer,
-                  heatMapLayer,
-                  markerLayer,
-                ],
-              ),
-              MapPageBottomSheet(
-                mapPageEventStream: mapPageEventSC.stream,
-                bottomSheetEventSC: bottomSheetEventSC,
-                selectionEnabled: selectionEnabledHook.value,
-                selectionlistener: selectionListener,
-                isDarkTheme: isDarkTheme,
-              ),
-              if (showLoadingIndicator.value)
+              if (!isLoading)
+                MapPageBottomSheet(
+                  mapPageEventStream: mapPageEventSC.stream,
+                  bottomSheetEventSC: bottomSheetEventSC,
+                  selectionEnabled: selectionEnabledHook.value,
+                  selectionlistener: selectionListener,
+                  isDarkTheme: isDarkTheme,
+                ),
+              if (showLoadingIndicator.value || isLoading)
                 Positioned(
-                  top: MediaQuery.of(context).size.height * 0.35,
-                  left: MediaQuery.of(context).size.width * 0.425,
+                  top: context.height * 0.35,
+                  left: context.width * 0.425,
                   child: const ImmichLoadingIndicator(),
                 ),
             ],

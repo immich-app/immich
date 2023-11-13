@@ -32,6 +32,14 @@
             }
           },
           {
+            "name": "level",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ReactionLevel"
+            }
+          },
+          {
             "name": "userId",
             "required": false,
             "in": "query",
@@ -2064,6 +2072,14 @@
             }
           },
           {
+            "name": "withPartners",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "timeBucket",
             "required": true,
             "in": "query",
@@ -2185,6 +2201,14 @@
           },
           {
             "name": "withStacked",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withPartners",
             "required": false,
             "in": "query",
             "schema": {
@@ -2630,14 +2654,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AdminSignupResponseDto"
+                  "$ref": "#/components/schemas/UserResponseDto"
                 }
               }
             },
             "description": ""
-          },
-          "400": {
-            "description": "The server already has an admin"
           }
         },
         "tags": [
@@ -3486,7 +3507,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/UserResponseDto"
+                    "$ref": "#/components/schemas/PartnerResponseDto"
                   },
                   "type": "array"
                 }
@@ -3563,7 +3584,57 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/PartnerResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Partner"
+        ]
+      },
+      "put": {
+        "operationId": "updatePartner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartnerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerResponseDto"
                 }
               }
             },
@@ -4884,6 +4955,47 @@
         ]
       }
     },
+    "/system-config/map/style.json": {
+      "get": {
+        "operationId": "getMapStyle",
+        "parameters": [
+          {
+            "name": "theme",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MapTheme"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "System Config"
+        ]
+      }
+    },
     "/system-config/storage-template-options": {
       "get": {
         "operationId": "getStorageTemplateOptions",
@@ -5835,34 +5947,6 @@
         ],
         "type": "object"
       },
-      "AdminSignupResponseDto": {
-        "properties": {
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName",
-          "createdAt"
-        ],
-        "type": "object"
-      },
       "AlbumCountResponseDto": {
         "properties": {
           "notShared": {
@@ -6783,14 +6867,11 @@
             "nullable": true,
             "type": "string"
           },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
           "memoriesEnabled": {
             "type": "boolean"
+          },
+          "name": {
+            "type": "string"
           },
           "password": {
             "type": "string"
@@ -6803,8 +6884,7 @@
         "required": [
           "email",
           "password",
-          "firstName",
-          "lastName"
+          "name"
         ],
         "type": "object"
       },
@@ -7400,35 +7480,24 @@
       "LoginResponseDto": {
         "properties": {
           "accessToken": {
-            "readOnly": true,
-            "type": "string"
-          },
-          "firstName": {
-            "readOnly": true,
             "type": "string"
           },
           "isAdmin": {
-            "readOnly": true,
             "type": "boolean"
           },
-          "lastName": {
-            "readOnly": true,
+          "name": {
             "type": "string"
           },
           "profileImagePath": {
-            "readOnly": true,
             "type": "string"
           },
           "shouldChangePassword": {
-            "readOnly": true,
             "type": "boolean"
           },
           "userEmail": {
-            "readOnly": true,
             "type": "string"
           },
           "userId": {
-            "readOnly": true,
             "type": "string"
           }
         },
@@ -7436,8 +7505,7 @@
           "accessToken",
           "userId",
           "userEmail",
-          "firstName",
-          "lastName",
+          "name",
           "profileImagePath",
           "isAdmin",
           "shouldChangePassword"
@@ -7479,6 +7547,13 @@
           "lon"
         ],
         "type": "object"
+      },
+      "MapTheme": {
+        "enum": [
+          "light",
+          "dark"
+        ],
+        "type": "string"
       },
       "MemoryLaneResponseDto": {
         "properties": {
@@ -7575,6 +7650,73 @@
         "required": [
           "enabled",
           "passwordLoginEnabled"
+        ],
+        "type": "object"
+      },
+      "PartnerResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "externalPath": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "inTimeline": {
+            "type": "boolean"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "memoriesEnabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
+          },
+          "storageLabel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "profileImagePath",
+          "storageLabel",
+          "externalPath",
+          "shouldChangePassword",
+          "isAdmin",
+          "createdAt",
+          "deletedAt",
+          "updatedAt",
+          "oauthId"
         ],
         "type": "object"
       },
@@ -7741,6 +7883,13 @@
           "isPaused"
         ],
         "type": "object"
+      },
+      "ReactionLevel": {
+        "enum": [
+          "album",
+          "asset"
+        ],
+        "type": "string"
       },
       "ReactionType": {
         "enum": [
@@ -7949,9 +8098,6 @@
           "loginPageMessage": {
             "type": "string"
           },
-          "mapTileUrl": {
-            "type": "string"
-          },
           "oauthButtonText": {
             "type": "string"
           },
@@ -7963,7 +8109,6 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "mapTileUrl",
           "isInitialized"
         ],
         "type": "object"
@@ -8330,12 +8475,8 @@
             "example": "testuser@email.com",
             "type": "string"
           },
-          "firstName": {
+          "name": {
             "example": "Admin",
-            "type": "string"
-          },
-          "lastName": {
-            "example": "Doe",
             "type": "string"
           },
           "password": {
@@ -8346,8 +8487,7 @@
         "required": [
           "email",
           "password",
-          "firstName",
-          "lastName"
+          "name"
         ],
         "type": "object"
       },
@@ -8614,16 +8754,20 @@
       },
       "SystemConfigMapDto": {
         "properties": {
+          "darkStyle": {
+            "type": "string"
+          },
           "enabled": {
             "type": "boolean"
           },
-          "tileUrl": {
+          "lightStyle": {
             "type": "string"
           }
         },
         "required": [
           "enabled",
-          "tileUrl"
+          "lightStyle",
+          "darkStyle"
         ],
         "type": "object"
       },
@@ -8981,6 +9125,17 @@
         },
         "type": "object"
       },
+      "UpdatePartnerDto": {
+        "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "inTimeline"
+        ],
+        "type": "object"
+      },
       "UpdateStackParentDto": {
         "properties": {
           "newParentId": {
@@ -9017,9 +9172,6 @@
           "externalPath": {
             "type": "string"
           },
-          "firstName": {
-            "type": "string"
-          },
           "id": {
             "format": "uuid",
             "type": "string"
@@ -9027,11 +9179,11 @@
           "isAdmin": {
             "type": "boolean"
           },
-          "lastName": {
-            "type": "string"
-          },
           "memoriesEnabled": {
             "type": "boolean"
+          },
+          "name": {
+            "type": "string"
           },
           "password": {
             "type": "string"
@@ -9057,13 +9209,10 @@
             "format": "int64",
             "type": "integer"
           },
-          "userFirstName": {
-            "type": "string"
-          },
           "userId": {
             "type": "string"
           },
-          "userLastName": {
+          "userName": {
             "type": "string"
           },
           "videos": {
@@ -9072,8 +9221,7 @@
         },
         "required": [
           "userId",
-          "userFirstName",
-          "userLastName",
+          "userName",
           "photos",
           "videos",
           "usage"
@@ -9115,13 +9263,10 @@
           "email": {
             "type": "string"
           },
-          "firstName": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
-          "lastName": {
+          "name": {
             "type": "string"
           },
           "profileImagePath": {
@@ -9130,8 +9275,7 @@
         },
         "required": [
           "id",
-          "firstName",
-          "lastName",
+          "name",
           "email",
           "profileImagePath",
           "avatarColor"
@@ -9171,20 +9315,17 @@
             "nullable": true,
             "type": "string"
           },
-          "firstName": {
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
           "isAdmin": {
             "type": "boolean"
           },
-          "lastName": {
-            "type": "string"
-          },
           "memoriesEnabled": {
             "type": "boolean"
+          },
+          "name": {
+            "type": "string"
           },
           "oauthId": {
             "type": "string"
@@ -9206,8 +9347,7 @@
         },
         "required": [
           "id",
-          "firstName",
-          "lastName",
+          "name",
           "email",
           "profileImagePath",
           "avatarColor",

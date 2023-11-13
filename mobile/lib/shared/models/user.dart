@@ -13,24 +13,23 @@ class User {
     required this.id,
     required this.updatedAt,
     required this.email,
-    required this.firstName,
-    required this.lastName,
+    required this.name,
     required this.isAdmin,
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
     this.profileImagePath = '',
     this.avatarColor = AvatarColorEnum.primary,
     this.memoryEnabled = true,
+    this.inTimeline = false,
   });
 
   Id get isarId => fastHash(id);
 
-  User.fromDto(UserResponseDto dto)
+  User.fromUserDto(UserResponseDto dto)
       : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
-        firstName = dto.firstName,
-        lastName = dto.lastName,
+        name = dto.name,
         isPartnerSharedBy = false,
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
@@ -38,12 +37,23 @@ class User {
         memoryEnabled = dto.memoriesEnabled,
         avatarColor = dto.avatarColor.toAvatarColor();
 
+  User.fromPartnerDto(PartnerResponseDto dto)
+      : id = dto.id,
+        updatedAt = dto.updatedAt,
+        email = dto.email,
+        name = dto.name,
+        isPartnerSharedBy = false,
+        isPartnerSharedWith = false,
+        profileImagePath = dto.profileImagePath,
+        isAdmin = dto.isAdmin,
+        memoryEnabled = dto.memoriesEnabled,
+        inTimeline = dto.inTimeline;
+
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
   DateTime updatedAt;
   String email;
-  String firstName;
-  String lastName;
+  String name;
   bool isPartnerSharedBy;
   bool isPartnerSharedWith;
   bool isAdmin;
@@ -51,6 +61,8 @@ class User {
   @Enumerated(EnumType.name)
   AvatarColorEnum avatarColor;
   bool? memoryEnabled;
+  bool? inTimeline;
+
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
   @Backlink(to: 'sharedUsers')
@@ -63,13 +75,13 @@ class User {
         updatedAt.isAtSameMomentAs(other.updatedAt) &&
         avatarColor == other.avatarColor &&
         email == other.email &&
-        firstName == other.firstName &&
-        lastName == other.lastName &&
+        name == other.name &&
         isPartnerSharedBy == other.isPartnerSharedBy &&
         isPartnerSharedWith == other.isPartnerSharedWith &&
         profileImagePath == other.profileImagePath &&
         isAdmin == other.isAdmin &&
-        memoryEnabled == other.memoryEnabled;
+        memoryEnabled == other.memoryEnabled &&
+        inTimeline == other.inTimeline;
   }
 
   @override
@@ -78,14 +90,14 @@ class User {
       id.hashCode ^
       updatedAt.hashCode ^
       email.hashCode ^
-      firstName.hashCode ^
-      lastName.hashCode ^
+      name.hashCode ^
       isPartnerSharedBy.hashCode ^
       isPartnerSharedWith.hashCode ^
       profileImagePath.hashCode ^
       avatarColor.hashCode ^
       isAdmin.hashCode ^
-      memoryEnabled.hashCode;
+      memoryEnabled.hashCode ^
+      inTimeline.hashCode;
 }
 
 enum AvatarColorEnum {

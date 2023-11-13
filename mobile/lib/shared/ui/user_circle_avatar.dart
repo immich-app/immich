@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/transparent_image.dart';
@@ -27,7 +28,7 @@ class UserCircleAvatar extends ConsumerWidget {
         '${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${user.id}?d=${Random().nextInt(1024)}';
 
     final textIcon = Text(
-      user.firstName[0].toUpperCase(),
+      user.name[0].toUpperCase(),
       style: TextStyle(
         fontWeight: FontWeight.bold,
         color: isDarkTheme && user.avatarColor == AvatarColorEnum.primary
@@ -36,7 +37,9 @@ class UserCircleAvatar extends ConsumerWidget {
       ),
     );
     return CircleAvatar(
-      backgroundColor: user.avatarColor.toColor(isDarkTheme),
+      backgroundColor: useRandomBackgroundColor
+          ? randomColors[Random().nextInt(randomColors.length)]
+          : context.primaryColor,
       radius: radius,
       child: user.profileImagePath.isEmpty
           ? textIcon

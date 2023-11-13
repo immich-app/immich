@@ -96,7 +96,6 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       expect(body).toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
-        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         trashDays: 30,
         isInitialized: true,
       });
@@ -112,7 +111,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
 
     it('should only work for admins', async () => {
       const loginDto = { email: 'test@immich.app', password: 'Immich123' };
-      await api.userApi.create(server, accessToken, { ...loginDto, firstName: 'test', lastName: 'test' });
+      await api.userApi.create(server, accessToken, { ...loginDto, name: 'test' });
       const { accessToken: userAccessToken } = await api.authApi.login(server, loginDto);
       const { status, body } = await request(server)
         .get('/server-info/statistics')
@@ -133,9 +132,8 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
           {
             photos: 0,
             usage: 0,
-            userFirstName: 'Immich',
+            userName: 'Immich Admin',
             userId: loginResponse.userId,
-            userLastName: 'Admin',
             videos: 0,
           },
         ],

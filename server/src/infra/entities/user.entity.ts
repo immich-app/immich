@@ -29,13 +29,10 @@ export class UserEntity {
   id!: string;
 
   @Column({ default: '' })
-  firstName!: string;
+  name!: string;
 
   @Column({ type: 'varchar', default: UserAvatarColor.PRIMARY })
   avatarColor!: UserAvatarColor;
-
-  @Column({ default: '' })
-  lastName!: string;
 
   @Column({ default: false })
   isAdmin!: boolean;

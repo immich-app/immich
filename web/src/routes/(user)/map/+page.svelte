@@ -7,29 +7,26 @@
   import { AppRoute } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { MapMarkerResponseDto, api } from '@api';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
-  import { mdiCog } from '@mdi/js';
+  import Map from '$lib/components/shared-components/map/map.svelte';
 
   export let data: PageData;
 
   let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
 
-  let leaflet: typeof import('$lib/components/shared-components/leaflet');
-  let mapMarkers: MapMarkerResponseDto[] = [];
   let abortController: AbortController;
+  let mapMarkers: MapMarkerResponseDto[] = [];
   let viewingAssets: string[] = [];
   let viewingAssetCursor = 0;
   let showSettingsModal = false;
 
   onMount(() => {
     loadMapMarkers().then((data) => (mapMarkers = data));
-    import('$lib/components/shared-components/leaflet').then((data) => (leaflet = data));
   });
 
   onDestroy(() => {
@@ -84,10 +81,10 @@
     }
   }
 
-  function onViewAssets(assetIds: string[], activeAssetIndex: number) {
-    assetViewingStore.setAssetId(assetIds[activeAssetIndex]);
+  function onViewAssets(assetIds: string[]) {
+    assetViewingStore.setAssetId(assetIds[0]);
     viewingAssets = assetIds;
-    viewingAssetCursor = activeAssetIndex;
+    viewingAssetCursor = 0;
   }
 
   function navigateNext() {
@@ -106,44 +103,9 @@
 {#if $featureFlags.loaded && $featureFlags.map}
   <UserPageLayout user={data.user} title={data.meta.title}>
     <div class="isolate h-full w-full">
-      {#if leaflet}
-        {@const { Map, TileLayer, AssetMarkerCluster, Control } = leaflet}
-        <Map
-          center={[30, 0]}
-          zoom={3}
-          allowDarkMode={$mapSettings.allowDarkMode}
-          options={{
-            maxBounds: [
-              [-90, -180],
-              [90, 180],
-            ],
-            minZoom: 2,
-          }}
-        >
-          <TileLayer
-            urlTemplate={$serverConfig.mapTileUrl}
-            options={{
-              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            }}
-          />
-          <AssetMarkerCluster
-            markers={mapMarkers}
-            on:view={({ detail }) => onViewAssets(detail.assetIds, detail.activeAssetIndex)}
-          />
-          <Control>
-            <button
-              class="flex h-8 w-8 items-center justify-center rounded-sm border-2 border-black/20 bg-white font-bold text-black/70 hover:bg-gray-50 focus:bg-gray-50"
-              title="Open map settings"
-              on:click={() => (showSettingsModal = true)}
-            >
-              <Icon path={mdiCog} size="100%" class="p-1" />
-            </button>
-          </Control>
-        </Map>
-      {/if}
-    </div>
-  </UserPageLayout>
-
+      <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
+    </div></UserPageLayout
+  >
   <Portal target="body">
     {#if $showAssetViewer}
       <AssetViewer
@@ -152,6 +114,7 @@
         on:next={navigateNext}
         on:previous={navigatePrevious}
         on:close={() => assetViewingStore.showAssetViewer(false)}
+        isShared={false}
       />
     {/if}
   </Portal>

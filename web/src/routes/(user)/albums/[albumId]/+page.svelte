@@ -35,7 +35,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { ActivityResponseDto, ReactionType, UserResponseDto, api } from '@api';
+  import { ActivityResponseDto, ReactionLevel, ReactionType, UserResponseDto, api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -167,7 +167,6 @@
         const { data } = await api.activityApi.createActivity({
           activityCreateDto: { albumId: album.id, type: ReactionType.Like },
         });
-
         isLiked = data;
         reactions = [...reactions, isLiked];
       }
@@ -183,6 +182,7 @@
           userId: user.id,
           albumId: album.id,
           type: ReactionType.Like,
+          level: ReactionLevel.Album,
         });
         if (data.length > 0) {
           isLiked = data[0];
@@ -687,6 +687,7 @@
           disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
+          {isLiked}
           bind:reactions
           on:addComment={() => updateNumberOfComments(1)}
           on:deleteComment={() => updateNumberOfComments(-1)}

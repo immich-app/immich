@@ -10,6 +10,7 @@ import {
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
   MaybeDuplicate,
+  ReactionLevel,
   ReactionType,
   mapActivity,
 } from './activity.dto';
@@ -30,7 +31,7 @@ export class ActivityService {
     const activities = await this.repository.search({
       userId: dto.userId,
       albumId: dto.albumId,
-      assetId: dto.assetId,
+      assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
       isLiked: dto.type && dto.type === ReactionType.LIKE,
     });
 
@@ -54,11 +55,12 @@ export class ActivityService {
     let activity: ActivityEntity | null = null;
     let duplicate = false;
 
-    if (dto.type === 'like') {
+    if (dto.type === ReactionType.LIKE) {
       delete dto.comment;
       [activity] = await this.repository.search({
         ...common,
-        isGlobal: !dto.assetId,
+        // `null` will search for an album like
+        assetId: dto.assetId ?? null,
         isLiked: true,
       });
       duplicate = !!activity;

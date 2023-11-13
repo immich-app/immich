@@ -8,8 +8,7 @@ export const getRandomAvatarColor = (): UserAvatarColor => {
 
 export class UserDto {
   id!: string;
-  firstName!: string;
-  lastName!: string;
+  name!: string;
   email!: string;
   profileImagePath!: string;
   avatarColor!: UserAvatarColor;
@@ -31,8 +30,7 @@ export const mapSimpleUser = (entity: UserEntity): UserDto => {
   return {
     id: entity.id,
     email: entity.email,
-    firstName: entity.firstName,
-    lastName: entity.lastName,
+    name: entity.name,
     profileImagePath: entity.profileImagePath,
     avatarColor: entity.avatarColor,
   };

@@ -31,8 +31,8 @@ import {
   IUserTokenRepository,
 } from '../repositories';
 import { AuthType } from './auth.constant';
+import { AuthUserDto, SignUpDto } from './auth.dto';
 import { AuthService } from './auth.service';
-import { AuthUserDto, SignUpDto } from './dto';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -236,7 +236,7 @@ describe('AuthService', () => {
   });
 
   describe('adminSignUp', () => {
-    const dto: SignUpDto = { email: 'test@immich.com', password: 'password', firstName: 'immich', lastName: 'admin' };
+    const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
     it('should only allow one admin', async () => {
       userMock.getAdmin.mockResolvedValue({} as UserEntity);
@@ -251,8 +251,7 @@ describe('AuthService', () => {
         id: 'admin',
         createdAt: new Date('2021-01-01'),
         email: 'test@immich.com',
-        firstName: 'immich',
-        lastName: 'admin',
+        name: 'immich admin',
       });
       expect(userMock.getAdmin).toHaveBeenCalled();
       expect(userMock.create).toHaveBeenCalled();

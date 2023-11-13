@@ -39,6 +39,7 @@
   export let assetType: AssetTypeEnum | undefined = undefined;
   export let albumOwnerId: string;
   export let disabled: boolean;
+  export let isLiked: ActivityResponseDto | null;
 
   let textArea: HTMLTextAreaElement;
   let innerHeight: number;
@@ -105,7 +106,7 @@
       reactions.splice(index, 1);
       showDeleteReaction.splice(index, 1);
       reactions = reactions;
-      if (reaction.type === 'like' && reaction.user.id === user.id) {
+      if (isLiked && reaction.type === 'like' && reaction.id == isLiked.id) {
         dispatch('deleteLike');
       } else {
         dispatch('deleteComment');
@@ -220,13 +221,8 @@
               <div class="flex p-3 mx-2 mt-3 rounded-full gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
-                <div
-                  class="w-full"
-                  title={`${reaction.user.firstName} ${reaction.user.lastName} (${reaction.user.email})`}
-                >
-                  {`${reaction.user.firstName} ${reaction.user.lastName} liked ${
-                    assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'
-                  }`}
+                <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
+                  {`${reaction.user.name} liked ${assetType ? `this ${getAssetType(assetType).toLowerCase()}` : 'it'}`}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
                   <div class="aspect-square w-[75px] h-[75px]">

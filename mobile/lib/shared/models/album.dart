@@ -68,11 +68,8 @@ class Album {
     }
 
     final name = <String>[];
-    if (owner.value?.firstName != null) {
-      name.add(owner.value!.firstName);
-    }
-    if (owner.value?.lastName != null) {
-      name.add(owner.value!.lastName);
+    if (owner.value?.name != null) {
+      name.add(owner.value!.name);
     }
 
     return name.join(' ');

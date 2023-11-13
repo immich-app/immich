@@ -26,7 +26,7 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
-  const assetStore = new AssetStore({ isArchived: false, withStacked: true });
+  const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -48,7 +48,11 @@
 </script>
 
 {#if $isMultiSelectState}
-  <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+  <AssetSelectControlBar
+    ownerId={data.user.id}
+    assets={$selectedAssets}
+    clearSelect={() => assetInteractionStore.clearMultiselect()}
+  >
     <CreateSharedLink on:escape={() => (handleEscapeKey = true)} />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add">

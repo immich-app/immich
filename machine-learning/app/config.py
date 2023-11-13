@@ -38,8 +38,16 @@ class LogSettings(BaseSettings):
 _clean_name = str.maketrans(":\\/", "___", ".")
 
 
+def clean_name(model_name: str) -> str:
+    return model_name.split("/")[-1].translate(_clean_name)
+
+
 def get_cache_dir(model_name: str, model_type: ModelType) -> Path:
-    return Path(settings.cache_folder) / model_type.value / model_name.translate(_clean_name)
+    return Path(settings.cache_folder) / model_type.value / clean_name(model_name)
+
+
+def get_hf_model_name(model_name: str) -> str:
+    return f"immich-app/{clean_name(model_name)}"
 
 
 LOG_LEVELS: dict[str, int] = {

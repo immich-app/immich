@@ -32,6 +32,7 @@ export class AssetBucket {
    */
   bucketHeight!: number;
   bucketDate!: string;
+  bucketCount!: number;
   assets!: AssetResponseDto[];
   cancelToken!: AbortController | null;
   position!: BucketPosition;
@@ -158,6 +159,7 @@ export class AssetStore {
       return {
         bucketDate: bucket.timeBucket,
         bucketHeight: height,
+        bucketCount: bucket.count,
         assets: [],
         cancelToken: null,
         position: BucketPosition.Unknown,
@@ -274,6 +276,7 @@ export class AssetStore {
       bucket = {
         bucketDate: timeBucket,
         bucketHeight: THUMBNAIL_HEIGHT,
+        bucketCount: 0,
         assets: [],
         cancelToken: null,
         position: BucketPosition.Unknown,
@@ -313,16 +316,17 @@ export class AssetStore {
   }
 
   async getRandomAsset(): Promise<AssetResponseDto | null> {
-    const bucket = this.buckets[Math.floor(Math.random() * this.buckets.length)] || null;
-    if (!bucket) {
-      return null;
+    let index = Math.floor(Math.random() * this.buckets.reduce((acc, bucket) => acc + bucket.bucketCount, 0));
+    for (const bucket of this.buckets) {
+      if (index < bucket.bucketCount) {
+        await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+        return bucket.assets[index] || null;
+      }
+
+      index -= bucket.bucketCount;
     }
 
-    if (bucket.assets.length === 0) {
-      await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
-    }
-
-    return bucket.assets[Math.floor(Math.random() * bucket.assets.length)] || null;
+    return null;
   }
 
   updateAsset(_asset: AssetResponseDto, recalculate = false) {
@@ -412,6 +416,9 @@ export class AssetStore {
       const assetToBucket: Record<string, AssetLookup> = {};
       for (let i = 0; i < this.buckets.length; i++) {
         const bucket = this.buckets[i];
+        if (bucket.assets.length !== 0) {
+          bucket.bucketCount = bucket.assets.length;
+        }
         for (let j = 0; j < bucket.assets.length; j++) {
           const asset = bucket.assets[j];
           assetToBucket[asset.id] = { bucket, bucketIndex: i, assetIndex: j };
