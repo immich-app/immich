@@ -86,6 +86,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
   reverseGeocoding: {
     enabled: true,
     citiesFileOverride: CitiesFile.CITIES_500,
+    useMapbox: false,
+    mapboxAccessToken: '',
   },
   oauth: {
     autoLaunch: true,
