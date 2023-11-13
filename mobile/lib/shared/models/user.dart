@@ -35,7 +35,7 @@ class User {
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled ?? false,
-        avatarColor = AvatarColorEnumHelper(dto.avatarColor).toAvatarColor(),
+        avatarColor = dto.avatarColor.toAvatarColor(),
         inTimeline = false;
 
   User.fromPartnerDto(PartnerResponseDto dto)
@@ -48,7 +48,7 @@ class User {
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled ?? false,
-        avatarColor = AvatarColorEnumHelper(dto.avatarColor).toAvatarColor(),
+        avatarColor = dto.avatarColor.toAvatarColor(),
         inTimeline = dto.inTimeline ?? false;
 
   @Index(unique: true, replace: false, type: IndexType.hash)

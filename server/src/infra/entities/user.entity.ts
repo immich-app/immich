@@ -31,7 +31,7 @@ export class UserEntity {
   @Column({ default: '' })
   name!: string;
 
-  @Column({ type: 'varchar', default: null })
+  @Column({ type: 'varchar', nullable: true })
   avatarColor!: UserAvatarColor | null;
 
   @Column({ default: false })
