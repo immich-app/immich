@@ -25,15 +25,15 @@
   $: scrollY = toScrollY(timelineY);
 
   class Segment {
-    public count: number = 0;
-    public height: number = 0;
-    public timeGroup: string = '';
+    public count = 0;
+    public height = 0;
+    public timeGroup = '';
     public date!: DateTime;
-    public hasLabel: boolean = false;
+    public hasLabel = false;
   }
 
   const calculateSegments = (buckets: AssetBucket[]) => {
-    let height: number = 0;
+    let height = 0;
     let prev: Segment;
     return buckets.map((bucket) => {
       const segment = new Segment();
