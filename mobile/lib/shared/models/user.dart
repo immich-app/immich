@@ -60,7 +60,7 @@ class User {
   bool isPartnerSharedWith;
   bool isAdmin;
   String profileImagePath;
-  @Enumerated(EnumType.name)
+  @Enumerated(EnumType.ordinal)
   AvatarColorEnum avatarColor;
   bool memoryEnabled;
   bool inTimeline;
@@ -103,6 +103,7 @@ class User {
 }
 
 enum AvatarColorEnum {
+  // do not change this order or reuse indices for other purposes, adding is OK
   primary,
   pink,
   red,
