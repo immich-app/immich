@@ -3,9 +3,14 @@ import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 
-export const getRandomAvatarColor = (value: number): UserAvatarColor => {
+export const getRandomAvatarColor = (user: UserEntity): UserAvatarColor => {
   const values = Object.values(UserAvatarColor);
-  const randomIndex = Math.floor(value % values.length);
+  const randomIndex = Math.floor(
+    user.email
+      .split('')
+      .map((letter) => letter.charCodeAt(0))
+      .reduce((a, b) => a + b, 0) % values.length,
+  );
   return values[randomIndex] as UserAvatarColor;
 };
 
@@ -38,14 +43,7 @@ export const mapSimpleUser = (entity: UserEntity): UserDto => {
     email: entity.email,
     name: entity.name,
     profileImagePath: entity.profileImagePath,
-    avatarColor:
-      entity.avatarColor ??
-      getRandomAvatarColor(
-        entity.email
-          .split('')
-          .map((letter) => letter.charCodeAt(0))
-          .reduce((a, b) => a + b, 0),
-      ),
+    avatarColor: entity.avatarColor ?? getRandomAvatarColor(entity),
   };
 };
 
