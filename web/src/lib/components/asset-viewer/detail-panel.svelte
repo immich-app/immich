@@ -226,8 +226,8 @@
         <div><Icon path={mdiImageOutline} size="24" /></div>
 
         <div>
-          <p class="break-all">
-            {#if isOwner && asset.isExternal}
+          <p class="break-all flex place-items-center gap-2">
+            {#if isOwner}
               {asset.originalFileName}
               <button title="Show File Location" on:click={toggleAssetPath}>
                 <Icon path={mdiInformationOutline} />
