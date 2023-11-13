@@ -3,8 +3,8 @@ import gc
 import os
 import sys
 import threading
-from concurrent.futures import ThreadPoolExecutor
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 from zipfile import BadZipFile
 
@@ -120,10 +120,6 @@ async def load(model: InferenceModel) -> InferenceModel:
         else:
             await loop.run_in_executor(app.state.thread_pool, _load)
         return model
-
-
-def predict(model: InferenceModel, inputs: Any) -> Any:
-    return model.predict(inputs)
 
 
 async def idle_shutdown_task() -> None:
