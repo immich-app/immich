@@ -1,5 +1,4 @@
 import { UserAvatarColor, UserEntity } from '@app/infra/entities';
-import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 

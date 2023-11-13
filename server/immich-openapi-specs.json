@@ -7656,8 +7656,7 @@
       "PartnerResponseDto": {
         "properties": {
           "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor",
-            "nullable": true
+            "$ref": "#/components/schemas/UserAvatarColor"
           },
           "createdAt": {
             "format": "date-time",
@@ -9251,8 +9250,7 @@
       "UserDto": {
         "properties": {
           "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor",
-            "nullable": true
+            "$ref": "#/components/schemas/UserAvatarColor"
           },
           "email": {
             "type": "string"
@@ -9279,8 +9277,7 @@
       "UserResponseDto": {
         "properties": {
           "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor",
-            "nullable": true
+            "$ref": "#/components/schemas/UserAvatarColor"
           },
           "createdAt": {
             "format": "date-time",
