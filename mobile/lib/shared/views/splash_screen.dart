@@ -49,6 +49,8 @@ class SplashScreenPage extends HookConsumerWidget {
                 offlineLogin: deviceIsOffline,
               );
         } catch (error, stackTrace) {
+          ref.read(authenticationProvider.notifier).logout();
+
           log.severe(
             'Cannot set success login info: $error',
             error,
