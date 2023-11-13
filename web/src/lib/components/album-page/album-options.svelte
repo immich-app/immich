@@ -56,7 +56,7 @@
                 <div>
                   <UserAvatar {user} size="md" />
                 </div>
-                <div class="w-full">{`${user.firstName} ${user.lastName}`}</div>
+                <div class="w-full">{user.name}</div>
                 <div>Owner</div>
               </div>
               {#each album.sharedUsers as user (user.id)}
@@ -64,7 +64,7 @@
                   <div>
                     <UserAvatar {user} size="md" />
                   </div>
-                  <div class="w-full">{`${user.firstName} ${user.lastName}`}</div>
+                  <div class="w-full">{user.name}</div>
                 </div>
               {/each}
             </div>

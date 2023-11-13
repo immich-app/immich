@@ -64,8 +64,7 @@ describe(`${SystemConfigController.name} (e2e)`, () => {
       const credentials = { email: 'user1@immich.app', password: 'Password123' };
       await api.userApi.create(server, admin.accessToken, {
         ...credentials,
-        firstName: 'User 1',
-        lastName: 'Test',
+        name: 'User 1',
       });
       const { accessToken } = await api.authApi.login(server, credentials);
       const { status, body } = await request(server)

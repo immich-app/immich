@@ -132,7 +132,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
             ),
           ),
           title: Text(
-            "${authState.firstName} ${authState.lastName}",
+            authState.name,
             style: TextStyle(
               color: context.primaryColor,
               fontWeight: FontWeight.bold,

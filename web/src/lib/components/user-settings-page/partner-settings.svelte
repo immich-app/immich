@@ -116,8 +116,7 @@
             <UserAvatar user={partner.user} size="md" autoColor />
             <div class="text-left">
               <p class="text-immich-fg dark:text-immich-dark-fg">
-                {partner.user.firstName}
-                {partner.user.lastName}
+                {partner.user.name}
               </p>
               <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
                 {partner.user.email}
@@ -139,8 +138,8 @@
           <!-- I am sharing my assets with this user -->
           {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">SHARED WITH {partner.user.firstName.toUpperCase()}</p>
-            <p class="text-md">{partner.user.firstName} can access</p>
+            <p class="text-xs font-medium my-4">SHARED WITH {partner.user.name.toUpperCase()}</p>
+            <p class="text-md">{partner.user.name} can access</p>
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
                 <Icon path={mdiCheck} /> All your photos and videos except those in Archived and Deleted
@@ -154,7 +153,7 @@
           <!-- this user is sharing assets with me -->
           {#if partner.sharedWithMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.firstName.toUpperCase()}</p>
+            <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.name.toUpperCase()}</p>
             <SettingSwitch
               title="Show in timeline"
               subtitle="Show photos and videos from this user in your timeline"
@@ -183,7 +182,7 @@
 {#if removePartner}
   <ConfirmDialogue
     title="Stop sharing your photos?"
-    prompt="{removePartner.firstName} will no longer be able to access your photos."
+    prompt="{removePartner.name} will no longer be able to access your photos."
     on:cancel={() => (removePartner = null)}
     on:confirm={() => handleRemovePartner()}
   />

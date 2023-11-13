@@ -11,8 +11,7 @@ class User {
     required this.id,
     required this.updatedAt,
     required this.email,
-    required this.firstName,
-    required this.lastName,
+    required this.name,
     required this.isAdmin,
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
@@ -27,8 +26,7 @@ class User {
       : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
-        firstName = dto.firstName,
-        lastName = dto.lastName,
+        name = dto.name,
         isPartnerSharedBy = false,
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
@@ -39,8 +37,7 @@ class User {
       : id = dto.id,
         updatedAt = dto.updatedAt,
         email = dto.email,
-        firstName = dto.firstName,
-        lastName = dto.lastName,
+        name = dto.name,
         isPartnerSharedBy = false,
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
@@ -52,8 +49,7 @@ class User {
   String id;
   DateTime updatedAt;
   String email;
-  String firstName;
-  String lastName;
+  String name;
   bool isPartnerSharedBy;
   bool isPartnerSharedWith;
   bool isAdmin;
@@ -72,8 +68,7 @@ class User {
     return id == other.id &&
         updatedAt.isAtSameMomentAs(other.updatedAt) &&
         email == other.email &&
-        firstName == other.firstName &&
-        lastName == other.lastName &&
+        name == other.name &&
         isPartnerSharedBy == other.isPartnerSharedBy &&
         isPartnerSharedWith == other.isPartnerSharedWith &&
         profileImagePath == other.profileImagePath &&
@@ -88,8 +83,7 @@ class User {
       id.hashCode ^
       updatedAt.hashCode ^
       email.hashCode ^
-      firstName.hashCode ^
-      lastName.hashCode ^
+      name.hashCode ^
       isPartnerSharedBy.hashCode ^
       isPartnerSharedWith.hashCode ^
       profileImagePath.hashCode ^

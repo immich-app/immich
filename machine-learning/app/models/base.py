@@ -7,8 +7,9 @@ from shutil import rmtree
 from typing import Any
 
 import onnxruntime as ort
+from huggingface_hub import snapshot_download
 
-from ..config import get_cache_dir, log, settings
+from ..config import get_cache_dir, get_hf_model_name, log, settings
 from ..schemas import ModelType
 
 
@@ -78,9 +79,13 @@ class InferenceModel(ABC):
     def configure(self, **model_kwargs: Any) -> None:
         pass
 
-    @abstractmethod
     def _download(self) -> None:
-        ...
+        snapshot_download(
+            get_hf_model_name(self.model_name),
+            cache_dir=self.cache_dir,
+            local_dir=self.cache_dir,
+            local_dir_use_symlinks=False,
+        )
 
     @abstractmethod
     def _load(self) -> None:

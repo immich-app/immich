@@ -289,8 +289,7 @@ describe(UserService.name, () => {
       await expect(
         sut.create({
           email: 'john_smith@email.com',
-          firstName: 'John',
-          lastName: 'Smith',
+          name: 'John Smith',
           password: 'password',
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -303,8 +302,7 @@ describe(UserService.name, () => {
       await expect(
         sut.create({
           email: userStub.user1.email,
-          firstName: userStub.user1.firstName,
-          lastName: userStub.user1.lastName,
+          name: userStub.user1.name,
           password: 'password',
           storageLabel: 'label',
         }),
@@ -313,8 +311,7 @@ describe(UserService.name, () => {
       expect(userMock.getAdmin).toBeCalled();
       expect(userMock.create).toBeCalledWith({
         email: userStub.user1.email,
-        firstName: userStub.user1.firstName,
-        lastName: userStub.user1.lastName,
+        name: userStub.user1.name,
         storageLabel: 'label',
         password: expect.anything(),
       });

@@ -16,7 +16,8 @@
   } from 'svelte-maplibre';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { MapMarkerResponseDto, api } from '@api';
-  import { LngLat, type GeoJSONSource, type LngLatLike, type StyleSpecification } from 'maplibre-gl';
+  import maplibregl from 'maplibre-gl';
+  import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiCog } from '@mdi/js';
@@ -76,7 +77,7 @@
 
   const asMarker = (feature: Feature<Geometry, GeoJsonProperties>): MapMarkerResponseDto => {
     const featurePoint = feature as FeaturePoint;
-    const coords = LngLat.convert(featurePoint.geometry.coordinates as [number, number]);
+    const coords = maplibregl.LngLat.convert(featurePoint.geometry.coordinates as [number, number]);
     return {
       lat: coords.lat,
       lon: coords.lng,

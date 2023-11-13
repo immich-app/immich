@@ -97,7 +97,7 @@
     "@types/express": "^4.17.17",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/imagemin": "^8.0.1",
-    "@types/jest": "29.5.4",
+    "@types/jest": "29.5.8",
     "@types/jest-when": "^3.5.2",
     "@types/lodash": "^4.14.197",
     "@types/mock-fs": "^4.13.1",

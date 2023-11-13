@@ -12,12 +12,11 @@ Name | Type | Description | Notes
 **deletedAt** | [**DateTime**](DateTime.md) |  | 
 **email** | **String** |  | 
 **externalPath** | **String** |  | 
-**firstName** | **String** |  | 
 **id** | **String** |  | 
 **inTimeline** | **bool** |  | [optional] 
 **isAdmin** | **bool** |  | 
-**lastName** | **String** |  | 
 **memoriesEnabled** | **bool** |  | [optional] 
+**name** | **String** |  | 
 **oauthId** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 

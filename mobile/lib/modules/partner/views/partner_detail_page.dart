@@ -25,7 +25,7 @@ class PartnerDetailPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("${partner.firstName} ${partner.lastName}"),
+        title: Text(partner.name),
         elevation: 0,
         centerTitle: false,
       ),
@@ -34,7 +34,7 @@ class PartnerDetailPage extends HookConsumerWidget {
             ? Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                    "It seems ${partner.firstName} does not have any photos...\n"
+                    "It seems ${partner.name} does not have any photos...\n"
                     "Or your server version does not match the app version."),
               )
             : ImmichAssetGrid(

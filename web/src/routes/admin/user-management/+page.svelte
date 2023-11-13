@@ -168,8 +168,7 @@
         >
           <tr class="flex w-full place-items-center">
             <th class="w-4/12 text-center text-sm font-medium">Email</th>
-            <th class="w-2/12 text-center text-sm font-medium">First name</th>
-            <th class="w-2/12 text-center text-sm font-medium">Last name</th>
+            <th class="w-2/12 text-center text-sm font-medium">Name</th>
             <th class="w-2/12 text-center text-sm font-medium">Can import</th>
             <th class="w-2/12 text-center text-sm font-medium">Action</th>
           </tr>
@@ -187,8 +186,7 @@
                 }`}
               >
                 <td class="w-4/12 text-ellipsis break-all px-2 text-sm">{user.email}</td>
-                <td class="w-2/12 text-ellipsis break-all px-2 text-sm">{user.firstName}</td>
-                <td class="w-2/12 text-ellipsis break-all px-2 text-sm">{user.lastName}</td>
+                <td class="w-2/12 text-ellipsis break-all px-2 text-sm">{user.name}</td>
                 <td class="w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
                     {#if user.externalPath}
@@ -253,7 +251,7 @@
                     : 'bg-immich-bg dark:bg-immich-dark-gray/50'
                 }`}
               >
-                <td class="w-1/4 text-ellipsis break-words px-2 text-sm">{user.firstName} {user.lastName}</td>
+                <td class="w-1/4 text-ellipsis break-words px-2 text-sm">{user.name}</td>
                 <td class="w-1/2 text-ellipsis break-all px-2 text-sm">{user.email}</td>
                 <td class="w-1/4 text-ellipsis px-2 text-sm">
                   {#if !isDeleted(user)}
