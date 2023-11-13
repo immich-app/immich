@@ -17,10 +17,8 @@ class UserResponseDto {
     required this.deletedAt,
     required this.email,
     required this.externalPath,
-    this.firstname,
     required this.id,
     required this.isAdmin,
-    this.lastname,
     this.memoriesEnabled,
     required this.name,
     required this.oauthId,
@@ -38,27 +36,9 @@ class UserResponseDto {
 
   String? externalPath;
 
-  /// @deprecated use name
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? firstname;
-
   String id;
 
   bool isAdmin;
-
-  /// @deprecated use name
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? lastname;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -86,10 +66,8 @@ class UserResponseDto {
      other.deletedAt == deletedAt &&
      other.email == email &&
      other.externalPath == externalPath &&
-     other.firstname == firstname &&
      other.id == id &&
      other.isAdmin == isAdmin &&
-     other.lastname == lastname &&
      other.memoriesEnabled == memoriesEnabled &&
      other.name == name &&
      other.oauthId == oauthId &&
@@ -105,10 +83,8 @@ class UserResponseDto {
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
     (externalPath == null ? 0 : externalPath!.hashCode) +
-    (firstname == null ? 0 : firstname!.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
-    (lastname == null ? 0 : lastname!.hashCode) +
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
@@ -118,7 +94,7 @@ class UserResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, firstname=$firstname, id=$id, isAdmin=$isAdmin, lastname=$lastname, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -134,18 +110,8 @@ class UserResponseDto {
     } else {
     //  json[r'externalPath'] = null;
     }
-    if (this.firstname != null) {
-      json[r'firstname'] = this.firstname;
-    } else {
-    //  json[r'firstname'] = null;
-    }
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
-    if (this.lastname != null) {
-      json[r'lastname'] = this.lastname;
-    } else {
-    //  json[r'lastname'] = null;
-    }
     if (this.memoriesEnabled != null) {
       json[r'memoriesEnabled'] = this.memoriesEnabled;
     } else {
@@ -176,10 +142,8 @@ class UserResponseDto {
         deletedAt: mapDateTime(json, r'deletedAt', ''),
         email: mapValueOfType<String>(json, r'email')!,
         externalPath: mapValueOfType<String>(json, r'externalPath'),
-        firstname: mapValueOfType<String>(json, r'firstname'),
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        lastname: mapValueOfType<String>(json, r'lastname'),
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,

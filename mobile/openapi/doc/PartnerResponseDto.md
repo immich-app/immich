@@ -12,11 +12,9 @@ Name | Type | Description | Notes
 **deletedAt** | [**DateTime**](DateTime.md) |  | 
 **email** | **String** |  | 
 **externalPath** | **String** |  | 
-**firstname** | **String** | @deprecated use name | [optional] 
 **id** | **String** |  | 
 **inTimeline** | **bool** |  | [optional] 
 **isAdmin** | **bool** |  | 
-**lastname** | **String** | @deprecated use name | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 
 **name** | **String** |  | 
 **oauthId** | **String** |  | 

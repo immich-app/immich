@@ -2380,13 +2380,6 @@ export interface PartnerResponseDto {
      */
     'externalPath': string | null;
     /**
-     * @deprecated use name
-     * @type {string}
-     * @memberof PartnerResponseDto
-     * @deprecated
-     */
-    'firstname'?: string;
-    /**
      * 
      * @type {string}
      * @memberof PartnerResponseDto
@@ -2404,13 +2397,6 @@ export interface PartnerResponseDto {
      * @memberof PartnerResponseDto
      */
     'isAdmin': boolean;
-    /**
-     * @deprecated use name
-     * @type {string}
-     * @memberof PartnerResponseDto
-     * @deprecated
-     */
-    'lastname'?: string;
     /**
      * 
      * @type {boolean}
@@ -4463,25 +4449,11 @@ export interface UserDto {
      */
     'email': string;
     /**
-     * @deprecated use name
-     * @type {string}
-     * @memberof UserDto
-     * @deprecated
-     */
-    'firstname'?: string;
-    /**
      * 
      * @type {string}
      * @memberof UserDto
      */
     'id': string;
-    /**
-     * @deprecated use name
-     * @type {string}
-     * @memberof UserDto
-     * @deprecated
-     */
-    'lastname'?: string;
     /**
      * 
      * @type {string}
@@ -4526,13 +4498,6 @@ export interface UserResponseDto {
      */
     'externalPath': string | null;
     /**
-     * @deprecated use name
-     * @type {string}
-     * @memberof UserResponseDto
-     * @deprecated
-     */
-    'firstname'?: string;
-    /**
      * 
      * @type {string}
      * @memberof UserResponseDto
@@ -4544,13 +4509,6 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'isAdmin': boolean;
-    /**
-     * @deprecated use name
-     * @type {string}
-     * @memberof UserResponseDto
-     * @deprecated
-     */
-    'lastname'?: string;
     /**
      * 
      * @type {boolean}

@@ -36,12 +36,6 @@ void main() {
       // TODO
     });
 
-    // @deprecated use name
-    // String firstname
-    test('to test the property `firstname`', () async {
-      // TODO
-    });
-
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -54,12 +48,6 @@ void main() {
 
     // bool isAdmin
     test('to test the property `isAdmin`', () async {
-      // TODO
-    });
-
-    // @deprecated use name
-    // String lastname
-    test('to test the property `lastname`', () async {
       // TODO
     });
 

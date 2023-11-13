@@ -7648,11 +7648,6 @@
             "nullable": true,
             "type": "string"
           },
-          "firstname": {
-            "deprecated": true,
-            "description": "@deprecated use name",
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -7661,11 +7656,6 @@
           },
           "isAdmin": {
             "type": "boolean"
-          },
-          "lastname": {
-            "deprecated": true,
-            "description": "@deprecated use name",
-            "type": "string"
           },
           "memoriesEnabled": {
             "type": "boolean"
@@ -9217,17 +9207,7 @@
           "email": {
             "type": "string"
           },
-          "firstname": {
-            "deprecated": true,
-            "description": "@deprecated use name",
-            "type": "string"
-          },
           "id": {
-            "type": "string"
-          },
-          "lastname": {
-            "deprecated": true,
-            "description": "@deprecated use name",
             "type": "string"
           },
           "name": {
@@ -9263,21 +9243,11 @@
             "nullable": true,
             "type": "string"
           },
-          "firstname": {
-            "deprecated": true,
-            "description": "@deprecated use name",
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
           "isAdmin": {
             "type": "boolean"
-          },
-          "lastname": {
-            "deprecated": true,
-            "description": "@deprecated use name",
-            "type": "string"
           },
           "memoriesEnabled": {
             "type": "boolean"
