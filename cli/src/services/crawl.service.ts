@@ -9,44 +9,21 @@ export class CrawlService {
     this.extensions = image.concat(video).map((extension) => extension.replace('.', ''));
   }
 
-  public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const pathsToCrawl: string[] = crawlOptions.pathsToCrawl;
-
-    const directories: string[] = [];
-    const crawledFiles: string[] = [];
-
-    for await (const currentPath of pathsToCrawl) {
-      const stats = await fs.promises.stat(currentPath);
-      if (stats.isFile() || stats.isSymbolicLink()) {
-        crawledFiles.push(currentPath);
-      } else {
-        directories.push(currentPath);
-      }
+  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
+    if (!pathsToCrawl) {
+      return Promise.resolve([]);
     }
 
-    let searchPattern: string;
-    if (directories.length === 1) {
-      searchPattern = directories[0];
-    } else if (directories.length === 0) {
-      return crawledFiles;
-    } else {
-      searchPattern = '{' + directories.join(',') + '}';
-    }
+    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
+    const extensions = `*{${this.extensions}}`;
 
-    if (crawlOptions.recursive) {
-      searchPattern = searchPattern + '/**/';
-    }
-
-    searchPattern = `${searchPattern}/*.{${this.extensions.join(',')}}`;
-
-    const globbedFiles = await glob(searchPattern, {
+    return glob(`${base}/**/${extensions}`, {
+      absolute: true,
       nocase: true,
       nodir: true,
-      ignore: crawlOptions.excludePatterns,
+      dot: includeHidden,
+      ignore: exclusionPatterns,
     });
-
-    const returnedFiles = crawledFiles.concat(globbedFiles);
-    returnedFiles.sort();
-    return returnedFiles;
   }
 }

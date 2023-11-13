@@ -27,7 +27,7 @@ export default class Upload extends BaseCommand {
     const crawlOptions = new CrawlOptionsDto();
     crawlOptions.pathsToCrawl = paths;
     crawlOptions.recursive = options.recursive;
-    crawlOptions.excludePatterns = options.excludePatterns;
+    crawlOptions.exclusionPatterns = options.excludePatterns;
 
     const crawledFiles: string[] = await crawlService.crawl(crawlOptions);
 
