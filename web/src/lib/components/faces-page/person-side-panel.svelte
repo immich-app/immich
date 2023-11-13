@@ -304,27 +304,24 @@
                 <p class="relative mt-1 truncate font-medium" title={person.person?.name}>
                   {person.person?.name}
                 </p>
-              </div>
 
-              <div
-                transition:blur={{ amount: 10, duration: 50 }}
-                class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700"
-              >
-                {#if selectedPersonToCreate[index] || selectedPersonToReassign[index]}
-                  <button on:click={() => handleReset(index)} class="flex h-full w-full">
-                    <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-                      <div>
-                        <Icon path={mdiRestart} size={18} />
+                <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700">
+                  {#if selectedPersonToCreate[index] || selectedPersonToReassign[index]}
+                    <button on:click={() => handleReset(index)} class="flex h-full w-full">
+                      <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+                        <div>
+                          <Icon path={mdiRestart} size={18} />
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                {:else}
-                  <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
-                    <div
-                      class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
-                    />
-                  </button>
-                {/if}
+                    </button>
+                  {:else}
+                    <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
+                      <div
+                        class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
+                      />
+                    </button>
+                  {/if}
+                </div>
               </div>
             </div>
           {/if}
