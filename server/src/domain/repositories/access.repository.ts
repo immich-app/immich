@@ -1,6 +1,11 @@
 export const IAccessRepository = 'IAccessRepository';
 
 export interface IAccessRepository {
+  activity: {
+    hasOwnerAccess(userId: string, activityId: string): Promise<boolean>;
+    hasAlbumOwnerAccess(userId: string, activityId: string): Promise<boolean>;
+    hasCreateAccess(userId: string, albumId: string): Promise<boolean>;
+  };
   asset: {
     hasOwnerAccess(userId: string, assetId: string): Promise<boolean>;
     hasAlbumAccess(userId: string, assetId: string): Promise<boolean>;
@@ -29,5 +34,9 @@ export interface IAccessRepository {
 
   person: {
     hasOwnerAccess(userId: string, personId: string): Promise<boolean>;
+  };
+
+  partner: {
+    hasUpdateAccess(userId: string, partnerId: string): Promise<boolean>;
   };
 }

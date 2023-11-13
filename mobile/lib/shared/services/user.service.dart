@@ -40,7 +40,7 @@ class UserService {
   Future<List<User>?> _getAllUsers({required bool isAll}) async {
     try {
       final dto = await _apiService.userApi.getAllUsers(isAll);
-      return dto?.map(User.fromDto).toList();
+      return dto?.map(User.fromUserDto).toList();
     } catch (e) {
       _log.warning("Failed get all users:\n$e");
       return null;
@@ -99,7 +99,11 @@ class UserService {
       users,
       sharedWith,
       compare: (User a, User b) => a.id.compareTo(b.id),
-      both: (User a, User b) => a.isPartnerSharedWith = true,
+      both: (User a, User b) {
+        a.isPartnerSharedWith = true;
+        a.inTimeline = b.inTimeline;
+        return true;
+      },
       onlyFirst: (_) {},
       onlySecond: (_) {},
     );

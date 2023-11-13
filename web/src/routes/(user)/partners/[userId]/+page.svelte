@@ -16,7 +16,7 @@
 
   export let data: PageData;
 
-  const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false });
+  const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false, withStacked: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
@@ -39,8 +39,7 @@
     <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
       <svelte:fragment slot="leading">
         <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-          {data.partner.firstName}
-          {data.partner.lastName}'s photos
+          {data.partner.name}'s photos
         </p>
       </svelte:fragment>
     </ControlAppBar>

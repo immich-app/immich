@@ -8,6 +8,8 @@ part 'exif_info.g.dart';
 class ExifInfo {
   Id? id;
   int? fileSize;
+  DateTime? dateTimeOriginal;
+  String? timeZone;
   String? make;
   String? model;
   String? lens;
@@ -47,6 +49,8 @@ class ExifInfo {
 
   ExifInfo.fromDto(ExifResponseDto dto)
       : fileSize = dto.fileSizeInByte,
+        dateTimeOriginal = dto.dateTimeOriginal,
+        timeZone = dto.timeZone,
         make = dto.make,
         model = dto.model,
         lens = dto.lensModel,
@@ -64,6 +68,8 @@ class ExifInfo {
   ExifInfo({
     this.id,
     this.fileSize,
+    this.dateTimeOriginal,
+    this.timeZone,
     this.make,
     this.model,
     this.lens,
@@ -82,6 +88,8 @@ class ExifInfo {
   ExifInfo copyWith({
     Id? id,
     int? fileSize,
+    DateTime? dateTimeOriginal,
+    String? timeZone,
     String? make,
     String? model,
     String? lens,
@@ -99,6 +107,8 @@ class ExifInfo {
       ExifInfo(
         id: id ?? this.id,
         fileSize: fileSize ?? this.fileSize,
+        dateTimeOriginal: dateTimeOriginal ?? this.dateTimeOriginal,
+        timeZone: timeZone ?? this.timeZone,
         make: make ?? this.make,
         model: model ?? this.model,
         lens: lens ?? this.lens,
@@ -119,6 +129,8 @@ class ExifInfo {
     if (other is! ExifInfo) return false;
     return id == other.id &&
         fileSize == other.fileSize &&
+        dateTimeOriginal == other.dateTimeOriginal &&
+        timeZone == other.timeZone &&
         make == other.make &&
         model == other.model &&
         lens == other.lens &&
@@ -139,6 +151,8 @@ class ExifInfo {
   int get hashCode =>
       id.hashCode ^
       fileSize.hashCode ^
+      dateTimeOriginal.hashCode ^
+      timeZone.hashCode ^
       make.hashCode ^
       model.hashCode ^
       lens.hashCode ^

@@ -3,17 +3,31 @@
   "extends": ["config:base"],
   "packageRules": [
     {
-      "matchPaths": ["mobile"],
-      "groupName": "mobile"
+      "matchFileNames": ["mobile/**"],
+      "groupName": "mobile",
+      "matchUpdateTypes": ["minor", "patch"]
     },
     {
-      "matchPaths": ["server"],
-      "groupName": "server"
+      "matchFileNames": ["server/**"],
+      "groupName": "server",
+      "matchUpdateTypes": ["minor", "patch"],
+      "excludePackagePrefixes": ["exiftool"]
     },
     {
-      "matchPaths": ["web"],
-      "groupName": "web"
+      "groupName": "exiftool",
+      "matchPackagePrefixes": ["exiftool"]
+    },
+    {
+      "matchFileNames": ["web/**"],
+      "groupName": "web",
+      "matchUpdateTypes": ["minor", "patch"]
     }
   ],
-  "enabled": false
+  "ignoreDeps": [
+    "http",
+    "latlong2",
+    "vector_map_tiles",
+    "flutter_map",
+    "flutter_map_heatmap"
+  ],
 }

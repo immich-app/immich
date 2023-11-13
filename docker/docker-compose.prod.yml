@@ -1,5 +1,7 @@
 version: "3.8"
 
+name: immich-prod
+
 services:
   immich-server:
     container_name: immich_server
@@ -7,9 +9,9 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: ["./start-server.sh"]
+    command: [ "./start-server.sh" ]
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -17,19 +19,6 @@ services:
       - redis
       - database
       - typesense
-
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: immich-machine-learning:latest
-    build:
-      context: ../machine-learning
-      dockerfile: Dockerfile
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - model-cache:/cache
-    env_file:
-      - .env
-    restart: always
 
   immich-microservices:
     container_name: immich_microservices
@@ -40,9 +29,9 @@ services:
     build:
       context: ../server
       dockerfile: Dockerfile
-    command: ["./start-microservices.sh"]
+    command: [ "./start-microservices.sh" ]
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -64,6 +53,18 @@ services:
     depends_on:
       - immich-server
 
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: immich-machine-learning:latest
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+    volumes:
+      - model-cache:/cache
+    env_file:
+      - .env
+    restart: always
+
   typesense:
     container_name: immich_typesense
     image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
@@ -73,17 +74,17 @@ services:
       # remove this to get debug messages
       - GLOG_minloglevel=1
     volumes:
-      - tsdata:/data
+      - ${UPLOAD_LOCATION}/typesense:/data
     restart: always
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:70a7a5b641117670beae0d80658430853896b5ef269ccf00d1827427e3263fa3
+    image: redis:6.2-alpine@sha256:3995fe6ea6a619313e31046bd3c8643f9e70f8f2b294ff82659d409b47d06abb
     restart: always
 
   database:
     container_name: immich_postgres
-    image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    image: postgres:14-alpine@sha256:874f566dd512d79cf74f59754833e869ae76ece96716d153b0fa3e64aec88d92
     env_file:
       - .env
     environment:
@@ -91,7 +92,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     restart: always
 
   immich-proxy:
@@ -113,6 +114,4 @@ services:
     restart: always
 
 volumes:
-  pgdata:
   model-cache:
-  tsdata:

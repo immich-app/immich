@@ -1,17 +1,12 @@
 from enum import StrEnum
-from typing import TypeAlias
+from typing import Any, Protocol, TypeAlias, TypedDict, TypeGuard
 
 import numpy as np
 from pydantic import BaseModel
 
-
-def to_lower_camel(string: str) -> str:
-    tokens = [token.capitalize() if i > 0 else token for i, token in enumerate(string.split("_"))]
-    return "".join(tokens)
-
-
-class TextModelRequest(BaseModel):
-    text: str
+ndarray_f32: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
+ndarray_i64: TypeAlias = np.ndarray[int, np.dtype[np.int64]]
+ndarray_i32: TypeAlias = np.ndarray[int, np.dtype[np.int32]]
 
 
 class TextResponse(BaseModel):
@@ -22,7 +17,7 @@ class MessageResponse(BaseModel):
     message: str
 
 
-class BoundingBox(BaseModel):
+class BoundingBox(TypedDict):
     x1: int
     y1: int
     x2: int
@@ -35,6 +30,17 @@ class ModelType(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
 
 
-ndarray_f32: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
-ndarray_i64: TypeAlias = np.ndarray[int, np.dtype[np.int64]]
-ndarray_i32: TypeAlias = np.ndarray[int, np.dtype[np.int32]]
+class HasProfiling(Protocol):
+    profiling: dict[str, float]
+
+
+class Face(TypedDict):
+    boundingBox: BoundingBox
+    embedding: ndarray_f32
+    imageWidth: int
+    imageHeight: int
+    score: float
+
+
+def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
+    return hasattr(obj, "profiling") and type(obj.profiling) == dict

@@ -18,7 +18,6 @@
 
   export let keys: APIKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
-  export let partners: UserResponseDto[] = [];
 
   let oauthOpen = false;
   if (browser) {
@@ -61,7 +60,7 @@
 </SettingAccordion>
 
 <SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
-  <PartnerSettings {user} bind:partners />
+  <PartnerSettings {user} />
 </SettingAccordion>
 
 <SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">

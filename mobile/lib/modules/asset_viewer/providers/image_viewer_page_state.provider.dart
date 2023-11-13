@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/image_viewer.service.dart';
@@ -67,7 +68,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
                 gravity: ToastGravity.BOTTOM,
               );
             }
-            Navigator.of(buildContext).pop();
+            context.pop();
           },
         );
         return const ShareDialog();

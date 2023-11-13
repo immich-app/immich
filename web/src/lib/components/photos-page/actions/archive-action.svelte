@@ -20,14 +20,14 @@
 
   let loading = false;
 
-  const { getAssets, clearSelect } = getAssetControlContext();
+  const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleArchive = async () => {
     const isArchived = !unarchive;
     loading = true;
 
     try {
-      const assets = Array.from(getAssets()).filter((asset) => asset.isArchived !== isArchived);
+      const assets = Array.from(getOwnedAssets()).filter((asset) => asset.isArchived !== isArchived);
       const ids = assets.map(({ id }) => id);
 
       if (ids.length > 0) {

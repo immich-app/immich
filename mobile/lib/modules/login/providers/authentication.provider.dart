@@ -26,8 +26,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
             deviceId: "",
             userId: "",
             userEmail: "",
-            firstName: '',
-            lastName: '',
+            name: '',
             profileImagePath: '',
             isAdmin: false,
             shouldChangePassword: false,
@@ -117,8 +116,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         deviceId: "",
         userId: "",
         userEmail: "",
-        firstName: '',
-        lastName: '',
+        name: '',
         profileImagePath: '',
         isAdmin: false,
         shouldChangePassword: false,
@@ -187,12 +185,15 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       if (userResponseDto != null) {
         Store.put(StoreKey.deviceId, deviceId);
         Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
-        Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
+        Store.put(
+          StoreKey.currentUser,
+          User.fromUserDto(userResponseDto),
+        );
         Store.put(StoreKey.serverUrl, serverUrl);
         Store.put(StoreKey.accessToken, accessToken);
 
         shouldChangePassword = userResponseDto.shouldChangePassword;
-        user = User.fromDto(userResponseDto);
+        user = User.fromUserDto(userResponseDto);
 
         retResult = true;
       } else {
@@ -205,8 +206,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       isAuthenticated: true,
       userId: user.id,
       userEmail: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      name: user.name,
       profileImagePath: user.profileImagePath,
       isAdmin: user.isAdmin,
       shouldChangePassword: shouldChangePassword,

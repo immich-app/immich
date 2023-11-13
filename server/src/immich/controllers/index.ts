@@ -1,3 +1,4 @@
+export * from './activity.controller';
 export * from './album.controller';
 export * from './api-key.controller';
 export * from './app.controller';

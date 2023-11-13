@@ -20,7 +20,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
 import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
-import { AssetEntity, AssetType, ExifEntity } from '../entities';
+import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
 
@@ -39,10 +39,15 @@ export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
+    @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
+  }
+
+  async upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void> {
+    await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
@@ -104,10 +109,9 @@ export class AssetRepository implements IAssetRepository {
       .getMany();
   }
 
-  getByIds(ids: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { id: In(ids) },
-      relations: {
+  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
+    if (!relations) {
+      relations = {
         exifInfo: true,
         smartInfo: true,
         tags: true,
@@ -115,7 +119,11 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
         stack: true,
-      },
+      };
+    }
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations,
       withDeleted: true,
     });
   }
@@ -320,6 +328,7 @@ export class AssetRepository implements IAssetRepository {
       case WithoutProperty.FACES:
         relations = {
           faces: true,
+          jobStatus: true,
         };
         where = {
           resizePath: Not(IsNull()),
@@ -327,6 +336,9 @@ export class AssetRepository implements IAssetRepository {
           faces: {
             assetId: IsNull(),
             personId: IsNull(),
+          },
+          jobStatus: {
+            facesRecognizedAt: IsNull(),
           },
         };
         break;
@@ -493,7 +505,7 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
-  getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncated = dateTrunc(options);
     return (
       this.getBuilder(options)
@@ -507,7 +519,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, isTrashed, albumId, personId, userId, withStacked } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userIds, withStacked } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
@@ -520,11 +532,11 @@ export class AssetRepository implements IAssetRepository {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
     }
 
-    if (userId) {
-      builder = builder.andWhere('asset.ownerId = :userId', { userId });
+    if (userIds) {
+      builder = builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
     }
 
-    if (isArchived != undefined) {
+    if (isArchived !== undefined) {
       builder = builder.andWhere('asset.isArchived = :isArchived', { isArchived });
     }
 

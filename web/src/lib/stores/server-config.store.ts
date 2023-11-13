@@ -24,7 +24,6 @@ export type ServerConfig = ServerConfigDto & { loaded: boolean };
 export const serverConfig = writable<ServerConfig>({
   loaded: false,
   oauthButtonText: '',
-  mapTileUrl: '',
   loginPageMessage: '',
   trashDays: 30,
   isInitialized: false,

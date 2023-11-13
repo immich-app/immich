@@ -57,9 +57,9 @@ export class ServerInfoController {
   }
 
   @AdminRoute()
-  @Get('stats')
-  getStats(): Promise<ServerStatsResponseDto> {
-    return this.service.getStats();
+  @Get('statistics')
+  getServerStatistics(): Promise<ServerStatsResponseDto> {
+    return this.service.getStatistics();
   }
 
   @PublicRoute()

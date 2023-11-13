@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:chewie/chewie.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/video_player_controls.dart';
@@ -44,7 +45,7 @@ class VideoViewerPage extends HookConsumerWidget {
         ),
         error: (error, stackTrace) => Icon(
           Icons.image_not_supported_outlined,
-          color: Theme.of(context).primaryColor,
+          color: context.primaryColor,
         ),
         loading: () => const Center(
           child: SizedBox(
@@ -74,8 +75,8 @@ class VideoViewerPage extends HookConsumerWidget {
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
+            height: context.height,
+            width: context.width,
             child: const Center(
               child: ImmichLoadingIndicator(),
             ),
@@ -205,8 +206,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
       );
     } else {
       return SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
+        height: context.height,
+        width: context.width,
         child: Center(
           child: Stack(
             children: [

@@ -18,6 +18,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
+    isActivityEnabled: true,
   }),
   sharedWithUser: Object.freeze<AlbumEntity>({
     id: 'album-2',
@@ -33,6 +34,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [userStub.user1],
+    isActivityEnabled: true,
   }),
   sharedWithMultiple: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -48,6 +50,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [userStub.user1, userStub.user2],
+    isActivityEnabled: true,
   }),
   sharedWithAdmin: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -63,6 +66,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [userStub.admin],
+    isActivityEnabled: true,
   }),
   oneAsset: Object.freeze<AlbumEntity>({
     id: 'album-4',
@@ -78,6 +82,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
+    isActivityEnabled: true,
   }),
   twoAssets: Object.freeze<AlbumEntity>({
     id: 'album-4a',
@@ -93,6 +98,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
+    isActivityEnabled: true,
   }),
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -108,6 +114,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
+    isActivityEnabled: true,
   }),
   emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -123,6 +130,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
+    isActivityEnabled: true,
   }),
   oneAssetInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -138,6 +146,7 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
+    isActivityEnabled: true,
   }),
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -153,5 +162,6 @@ export const albumStub = {
     deletedAt: null,
     sharedLinks: [],
     sharedUsers: [],
+    isActivityEnabled: true,
   }),
 };

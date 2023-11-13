@@ -2,7 +2,9 @@ import { IJobRepository, JobCounts, JobItem, JobName, JOBS_TO_QUEUE, QueueName, 
 import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
+import { CronJob, CronTime } from 'cron';
 import { bullConfig } from '../infra.config';
 
 @Injectable()
@@ -10,12 +12,52 @@ export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
   private logger = new Logger(JobRepository.name);
 
-  constructor(private moduleRef: ModuleRef) {}
+  constructor(
+    private moduleRef: ModuleRef,
+    private schedulerReqistry: SchedulerRegistry,
+  ) {}
 
   addHandler(queueName: QueueName, concurrency: number, handler: (item: JobItem) => Promise<void>) {
     const workerHandler: Processor = async (job: Job) => handler(job as JobItem);
     const workerOptions: WorkerOptions = { ...bullConfig, concurrency };
     this.workers[queueName] = new Worker(queueName, workerHandler, workerOptions);
+  }
+
+  addCronJob(name: string, expression: string, onTick: () => void, start = true): void {
+    const job = new CronJob(
+      expression,
+      onTick,
+      // function to run onComplete
+      undefined,
+      // whether it should start directly
+      start,
+      // timezone
+      undefined,
+      // context
+      undefined,
+      // runOnInit
+      undefined,
+      // utcOffset
+      undefined,
+      // prevents memory leaking by automatically stopping when the node process finishes
+      true,
+    );
+
+    this.schedulerReqistry.addCronJob(name, job);
+  }
+
+  updateCronJob(name: string, expression?: string, start?: boolean): void {
+    const job = this.schedulerReqistry.getCronJob(name);
+    if (expression) {
+      job.setTime(new CronTime(expression));
+    }
+    if (start !== undefined) {
+      start ? job.start() : job.stop();
+    }
+  }
+
+  deleteCronJob(name: string): void {
+    this.schedulerReqistry.deleteCronJob(name);
   }
 
   setConcurrency(queueName: QueueName, concurrency: number) {

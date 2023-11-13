@@ -62,20 +62,31 @@ class AssetService {
 
   /// Returns `null` if the server state did not change, else list of assets
   Future<List<Asset>?> _getRemoteAssets(User user) async {
+    const int chunkSize = 5000;
     try {
-      final List<AssetResponseDto>? assets =
-          await _apiService.assetApi.getAllAssets(
-        userId: user.id,
-      );
-      if (assets == null) {
-        return null;
-      } else if (assets.isNotEmpty && assets.first.ownerId != user.id) {
-        log.warning("Make sure that server and app versions match!"
-            " The server returned assets for user ${assets.first.ownerId}"
-            " while requesting assets of user ${user.id}");
-        return null;
+      final DateTime now = DateTime.now().toUtc();
+      final List<Asset> allAssets = [];
+      for (int i = 0;; i += chunkSize) {
+        final List<AssetResponseDto>? assets =
+            await _apiService.assetApi.getAllAssets(
+          userId: user.id,
+          // updatedBefore is important! without it we could
+          // a) get the same Asset multiple times in different versions (when
+          // the asset is modified while the chunks are loaded from the server)
+          // b) miss assets when new assets are inserted in between the calls
+          updatedBefore: now,
+          skip: i,
+          take: chunkSize,
+        );
+        if (assets == null) {
+          return null;
+        }
+        allAssets.addAll(assets.map(Asset.remote));
+        if (assets.length < chunkSize) {
+          break;
+        }
       }
-      return assets.map(Asset.remote).toList();
+      return allAssets;
     } catch (error, stack) {
       log.severe(
         'Error while getting remote assets: ${error.toString()}',

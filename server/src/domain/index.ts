@@ -1,4 +1,5 @@
 export * from './access';
+export * from './activity';
 export * from './album';
 export * from './api-key';
 export * from './asset';

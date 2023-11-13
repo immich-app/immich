@@ -4,6 +4,7 @@ import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
+import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
@@ -67,6 +68,7 @@ export class MetadataService {
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
   private oldCities?: string;
+  private subscription: Subscription | null = null;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -81,10 +83,13 @@ export class MetadataService {
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
     this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
-    this.configCore.config$.subscribe(() => this.init());
   }
 
   async init(deleteCache = false) {
+    if (!this.subscription) {
+      this.subscription = this.configCore.config$.subscribe(() => this.init());
+    }
+
     const { reverseGeocoding } = await this.configCore.getConfig();
     const { citiesFileOverride } = reverseGeocoding;
 
@@ -111,6 +116,7 @@ export class MetadataService {
   }
 
   async teardown() {
+    this.subscription?.unsubscribe();
     await this.repository.teardown();
   }
 

@@ -34,6 +34,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool showDragScroll;
   final bool showStack;
   final bool isOwner;
+  final String? sharedAlbumId;
 
   const ImmichAssetGrid({
     super.key,
@@ -55,6 +56,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.showDragScroll = true,
     this.showStack = false,
     this.isOwner = true,
+    this.sharedAlbumId,
   });
 
   @override
@@ -120,6 +122,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           showDragScroll: showDragScroll,
           showStack: showStack,
           isOwner: isOwner,
+          sharedAlbumId: sharedAlbumId,
         ),
       );
     }

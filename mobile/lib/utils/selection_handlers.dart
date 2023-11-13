@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
@@ -26,7 +27,7 @@ void handleShareAssets(
               gravity: ToastGravity.BOTTOM,
             );
           }
-          Navigator.of(buildContext).pop();
+          context.pop();
         },
       );
       return const ShareDialog();

@@ -1,4 +1,4 @@
-import { Colorspace, SystemConfigKey } from '@app/infra/entities';
+import { AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
@@ -449,7 +449,26 @@ describe(PersonService.name, () => {
       expect(machineLearningMock.detectFaces).not.toHaveBeenCalled();
     });
 
+    it('should skip it the asset has already been processed', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        {
+          ...assetStub.noResizePath,
+          faces: [
+            {
+              id: 'asset-face-1',
+              assetId: assetStub.noResizePath.id,
+              personId: faceStub.face1.personId,
+            } as AssetFaceEntity,
+          ],
+        },
+      ]);
+      await sut.handleRecognizeFaces({ id: assetStub.noResizePath.id });
+      expect(machineLearningMock.detectFaces).not.toHaveBeenCalled();
+    });
+
     it('should handle no results', async () => {
+      const start = Date.now();
+
       machineLearningMock.detectFaces.mockResolvedValue([]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
@@ -468,6 +487,12 @@ describe(PersonService.name, () => {
       );
       expect(personMock.createFace).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
+
+      expect(assetMock.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: assetStub.image.id,
+        facesRecognizedAt: expect.any(Date),
+      });
+      expect(assetMock.upsertJobStatus.mock.calls[0][0].facesRecognizedAt?.getTime()).toBeGreaterThan(start);
     });
 
     it('should match existing people', async () => {

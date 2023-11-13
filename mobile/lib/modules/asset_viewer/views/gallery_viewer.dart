@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
@@ -49,6 +50,7 @@ class GalleryViewerPage extends HookConsumerWidget {
   final int heroOffset;
   final bool showStack;
   final bool isOwner;
+  final String? sharedAlbumId;
 
   GalleryViewerPage({
     super.key,
@@ -58,6 +60,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     this.heroOffset = 0,
     this.showStack = false,
     this.isOwner = true,
+    this.sharedAlbumId,
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
@@ -207,7 +210,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isDeleted && isParent) {
           if (totalAssets == 1) {
             // Handle only one asset
-            AutoRouter.of(context).pop();
+            context.autoPop();
           } else {
             // Go to next page otherwise
             controller.nextPage(
@@ -291,7 +294,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       final ratio = d.dy / max(d.dx.abs(), 1);
       if (d.dy > sensitivity && ratio > ratioThreshold) {
-        AutoRouter.of(context).pop();
+        context.autoPop();
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
@@ -306,7 +309,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           .watch(assetProvider.notifier)
           .toggleArchive([asset], !asset.isArchived);
       if (isParent) {
-        AutoRouter.of(context).pop();
+        context.autoPop();
         return;
       }
       removeAssetFromStack();
@@ -325,6 +328,19 @@ class GalleryViewerPage extends HookConsumerWidget {
           );
         },
       );
+    }
+
+    handleActivities() {
+      if (sharedAlbumId != null) {
+        context.autoPush(
+          ActivitiesRoute(
+            albumId: sharedAlbumId!,
+            assetId: asset().remoteId,
+            withAssetThumbs: false,
+            isOwner: isOwner,
+          ),
+        );
+      }
     }
 
     buildAppBar() {
@@ -355,6 +371,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
               }),
               onAddToAlbumPressed: () => addToAlbum(asset()),
+              shareAlbumId: sharedAlbumId,
+              onActivitiesPressed: handleActivities,
             ),
           ),
         ),
@@ -443,7 +461,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(6),
-                  border: index == stackIndex.value
+                  border: (stackIndex.value == -1 && index == 0) ||
+                          index == stackIndex.value
                       ? Border.all(
                           color: Colors.white,
                           width: 2,
@@ -496,7 +515,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                               stackElements.elementAt(stackIndex.value),
                             );
                         Navigator.pop(ctx);
-                        AutoRouter.of(context).pop();
+                        context.autoPop();
                       },
                       title: const Text(
                         "viewer_stack_use_as_main_asset",
@@ -523,7 +542,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                           childrenToRemove: [currentAsset],
                         );
                         Navigator.pop(ctx);
-                        AutoRouter.of(context).pop();
+                        context.autoPop();
                       } else {
                         await ref.read(assetStackServiceProvider).updateStack(
                           currentAsset,
@@ -551,7 +570,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                             childrenToRemove: stack,
                           );
                       Navigator.pop(ctx);
-                      AutoRouter.of(context).pop();
+                      context.autoPop();
                     },
                     title: const Text(
                       "viewer_unstack",
@@ -811,8 +830,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                       placeholder: Image(
                         image: provider,
                         fit: BoxFit.fitWidth,
-                        height: MediaQuery.of(context).size.height,
-                        width: MediaQuery.of(context).size.width,
+                        height: context.height,
+                        width: context.width,
                         alignment: Alignment.center,
                       ),
                       onVideoEnded: () {

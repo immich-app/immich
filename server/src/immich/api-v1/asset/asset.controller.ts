@@ -17,8 +17,8 @@ import {
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
-import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../app.interceptor';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
+import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
@@ -204,7 +204,7 @@ export class AssetController {
    */
   @Post('/bulk-upload-check')
   @HttpCode(HttpStatus.OK)
-  bulkUploadCheck(
+  checkBulkUpload(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
   ): Promise<AssetBulkUploadCheckResponseDto> {

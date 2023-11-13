@@ -6,9 +6,12 @@ import {
   LoginResponseDto,
   SharedLinkResponseDto,
   TimeBucketSize,
+  WithoutProperty,
+  usePagination,
 } from '@app/domain';
 import { AssetController } from '@app/immich';
 import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
+import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub, uuidStub } from '@test/fixtures';
@@ -19,15 +22,13 @@ import request from 'supertest';
 const user1Dto = {
   email: 'user1@immich.app',
   password: 'Password123',
-  firstName: 'User 1',
-  lastName: 'Test',
+  name: 'User 1',
 };
 
 const user2Dto = {
   email: 'user2@immich.app',
   password: 'Password123',
-  firstName: 'User 2',
-  lastName: 'Test',
+  name: 'User 2',
 };
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
@@ -146,7 +147,6 @@ describe(`${AssetController.name} (e2e)`, () => {
       { should: 'require `deviceId`', dto: { ...makeUploadDto({ omit: 'deviceId' }) } },
       { should: 'require `fileCreatedAt`', dto: { ...makeUploadDto({ omit: 'fileCreatedAt' }) } },
       { should: 'require `fileModifiedAt`', dto: { ...makeUploadDto({ omit: 'fileModifiedAt' }) } },
-      { should: 'require `isFavorite`', dto: { ...makeUploadDto({ omit: 'isFavorite' }) } },
       { should: 'require `duration`', dto: { ...makeUploadDto({ omit: 'duration' }) } },
       { should: 'throw if `isFavorite` is not a boolean', dto: { ...makeUploadDto(), isFavorite: 'not-a-boolean' } },
       { should: 'throw if `isVisible` is not a boolean', dto: { ...makeUploadDto(), isVisible: 'not-a-boolean' } },
@@ -582,6 +582,52 @@ describe(`${AssetController.name} (e2e)`, () => {
         ]),
       );
     });
+
+    it('should return error if time bucket is requested with partners asset and archived', async () => {
+      const req1 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isArchived: true });
+
+      expect(req1.status).toBe(400);
+      expect(req1.body).toEqual(errorStub.badRequest());
+
+      const req2 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isArchived: undefined });
+
+      expect(req2.status).toBe(400);
+      expect(req2.body).toEqual(errorStub.badRequest());
+    });
+
+    it('should return error if time bucket is requested with partners asset and favorite', async () => {
+      const req1 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isFavorite: true });
+
+      expect(req1.status).toBe(400);
+      expect(req1.body).toEqual(errorStub.badRequest());
+
+      const req2 = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isFavorite: false });
+
+      expect(req2.status).toBe(400);
+      expect(req2.body).toEqual(errorStub.badRequest());
+    });
+
+    it('should return error if time bucket is requested with partners asset and trash', async () => {
+      const req = await request(server)
+        .get('/asset/time-buckets')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ size: TimeBucketSize.MONTH, withPartners: true, isTrashed: true });
+
+      expect(req.status).toBe(400);
+      expect(req.body).toEqual(errorStub.badRequest());
+    });
   });
 
   describe('GET /asset/map-marker', () => {
@@ -787,6 +833,57 @@ describe(`${AssetController.name} (e2e)`, () => {
       const asset = await api.assetApi.get(server, user1.accessToken, asset2.id);
       expect(asset.stack).not.toBeUndefined();
       expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset3.id })]));
+    });
+  });
+
+  describe(AssetRepository.name, () => {
+    describe('getWithout', () => {
+      describe('WithoutProperty.FACES', () => {
+        const getAssetIdsWithoutFaces = async () => {
+          const assetPagination = usePagination(10, (pagination) =>
+            assetRepository.getWithout(pagination, WithoutProperty.FACES),
+          );
+          let assets: AssetEntity[] = [];
+          for await (const assetsPage of assetPagination) {
+            assets = [...assets, ...assetsPage];
+          }
+          return assets.map((a) => a.id);
+        };
+
+        beforeEach(async () => {
+          await assetRepository.save({ id: asset1.id, resizePath: '/path/to/resize' });
+          expect(await getAssetIdsWithoutFaces()).toContain(asset1.id);
+        });
+
+        describe('with recognized faces', () => {
+          beforeEach(async () => {
+            const personRepository = app.get<IPersonRepository>(IPersonRepository);
+            const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
+            await personRepository.createFace({ assetId: asset1.id, personId: person.id });
+          });
+
+          it('should not return asset with facesRecognizedAt unset', async () => {
+            expect(await getAssetIdsWithoutFaces()).not.toContain(asset1.id);
+          });
+
+          it('should not return asset with facesRecognizedAt set', async () => {
+            await assetRepository.upsertJobStatus({ assetId: asset1.id, facesRecognizedAt: new Date() });
+            expect(await getAssetIdsWithoutFaces()).not.toContain(asset1.id);
+          });
+        });
+
+        describe('without recognized faces', () => {
+          it('should return asset with facesRecognizedAt unset', async () => {
+            expect(await getAssetIdsWithoutFaces()).toContain(asset1.id);
+          });
+
+          it('should not return asset with facesRecognizedAt set', async () => {
+            expect(await getAssetIdsWithoutFaces()).toContain(asset1.id);
+            await assetRepository.upsertJobStatus({ assetId: asset1.id, facesRecognizedAt: new Date() });
+            expect(await getAssetIdsWithoutFaces()).not.toContain(asset1.id);
+          });
+        });
+      });
     });
   });
 });

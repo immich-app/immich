@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -34,36 +34,8 @@ class SyncService {
 
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
-  Future<bool> syncUsersFromServer(List<User> users) async {
-    users.sortBy((u) => u.id);
-    final dbUsers = await _db.users.where().sortById().findAll();
-    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
-    final List<int> toDelete = [];
-    final List<User> toUpsert = [];
-    final changes = diffSortedListsSync(
-      users,
-      dbUsers,
-      compare: (User a, User b) => a.id.compareTo(b.id),
-      both: (User a, User b) {
-        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
-            a.isPartnerSharedBy != b.isPartnerSharedBy ||
-            a.isPartnerSharedWith != b.isPartnerSharedWith) {
-          toUpsert.add(a);
-          return true;
-        }
-        return false;
-      },
-      onlyFirst: (User a) => toUpsert.add(a),
-      onlySecond: (User b) => toDelete.add(b.isarId),
-    );
-    if (changes) {
-      await _db.writeTxn(() async {
-        await _db.users.deleteAll(toDelete);
-        await _db.users.putAll(toUpsert);
-      });
-    }
-    return changes;
-  }
+  Future<bool> syncUsersFromServer(List<User> users) =>
+      _lock.run(() => _syncUsersFromServer(users));
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
@@ -119,6 +91,39 @@ class SyncService {
       _lock.run(() => _syncNewAssetToDb(newAsset));
 
   // private methods:
+
+  /// Syncs users from the server to the local database
+  /// Returns `true`if there were any changes
+  Future<bool> _syncUsersFromServer(List<User> users) async {
+    users.sortBy((u) => u.id);
+    final dbUsers = await _db.users.where().sortById().findAll();
+    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
+    final List<int> toDelete = [];
+    final List<User> toUpsert = [];
+    final changes = diffSortedListsSync(
+      users,
+      dbUsers,
+      compare: (User a, User b) => a.id.compareTo(b.id),
+      both: (User a, User b) {
+        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
+            a.isPartnerSharedBy != b.isPartnerSharedBy ||
+            a.isPartnerSharedWith != b.isPartnerSharedWith) {
+          toUpsert.add(a);
+          return true;
+        }
+        return false;
+      },
+      onlyFirst: (User a) => toUpsert.add(a),
+      onlySecond: (User b) => toDelete.add(b.isarId),
+    );
+    if (changes) {
+      await _db.writeTxn(() async {
+        await _db.users.deleteAll(toDelete);
+        await _db.users.putAll(toUpsert);
+      });
+    }
+    return changes;
+  }
 
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> _syncNewAssetToDb(Asset a) async {
@@ -197,7 +202,7 @@ class SyncService {
     User user,
     FutureOr<List<Asset>?> Function(User user) loadAssets,
   ) async {
-    final DateTime now = DateTime.now();
+    final DateTime now = DateTime.now().toUtc();
     final List<Asset>? remote = await loadAssets(user);
     if (remote == null) {
       return false;
@@ -210,6 +215,10 @@ class SyncService {
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
 
     remote.sort(Asset.compareByChecksum);
+
+    // filter our duplicates that might be introduced by the chunked retrieval
+    remote.uniqueConsecutive(compare: Asset.compareByChecksum);
+
     final (toAdd, toUpdate, toRemove) = _diffAssets(remote, inDb, remote: true);
     if (toAdd.isEmpty && toUpdate.isEmpty && toRemove.isEmpty) {
       await _updateUserAssetsETag(user, now);
@@ -759,6 +768,12 @@ class SyncService {
   final List<Asset> toAdd = [];
   final List<Asset> toUpdate = [];
   final List<Asset> toRemove = [];
+  if (assets.isEmpty || inDb.isEmpty) {
+    // fast path for trivial cases: halfes memory usage during initial sync
+    return assets.isEmpty
+        ? (toAdd, toUpdate, inDb) // remove all from DB
+        : (assets, toUpdate, toRemove); // add all assets
+  }
   diffSortedListsSync(
     inDb,
     assets,

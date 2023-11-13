@@ -4,10 +4,11 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'asset_grid_data_structure.dart';
 import 'group_divider_title.dart';
@@ -39,6 +40,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final bool showDragScroll;
   final bool showStack;
   final bool isOwner;
+  final String? sharedAlbumId;
 
   const ImmichAssetGridView({
     super.key,
@@ -60,6 +62,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.showDragScroll = true,
     this.showStack = false,
     this.isOwner = true,
+    this.sharedAlbumId,
   });
 
   @override
@@ -141,6 +144,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       heroOffset: widget.heroOffset,
       showStack: widget.showStack,
       isOwner: widget.isOwner,
+      sharedAlbumId: widget.sharedAlbumId,
     );
   }
 
@@ -221,7 +225,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         style: TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).textTheme.displayLarge?.color,
+          color: context.textTheme.displayLarge?.color,
         ),
       ),
     );
@@ -369,7 +373,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,
-            backgroundColor: Theme.of(context).hintColor,
+            backgroundColor: context.themeData.hintColor,
             labelTextBuilder: _labelBuilder,
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),

@@ -216,8 +216,14 @@ export class PersonService {
       return true;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.resizePath) {
+    const relations = {
+      exifInfo: true,
+      faces: {
+        person: true,
+      },
+    };
+    const [asset] = await this.assetRepository.getByIds([id], relations);
+    if (!asset || !asset.resizePath || asset.faces?.length > 0) {
       return false;
     }
 
@@ -267,6 +273,11 @@ export class PersonService {
         await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
       }
     }
+
+    await this.assetRepository.upsertJobStatus({
+      assetId: asset.id,
+      facesRecognizedAt: new Date(),
+    });
 
     return true;
   }

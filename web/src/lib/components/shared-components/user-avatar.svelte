@@ -5,9 +5,16 @@
 
 <script lang="ts">
   import { imageLoad } from '$lib/utils/image-load';
-  import { api, UserResponseDto } from '@api';
+  import { api } from '@api';
 
-  export let user: UserResponseDto;
+  interface User {
+    id: string;
+    name: string;
+    email: string;
+    profileImagePath: string;
+  }
+
+  export let user: User;
   export let color: Color = 'primary';
   export let size: Size = 'full';
   export let rounded = true;
@@ -43,7 +50,7 @@
 
   $: colorClass = colorClasses[autoColor ? getUserColor() : color];
   $: sizeClass = sizeClasses[size];
-  $: title = `${user.firstName} ${user.lastName} (${user.email})`;
+  $: title = `${user.name} (${user.email})`;
   $: interactiveClass = interactive
     ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
     : '';
@@ -74,7 +81,7 @@
       class:font-medium={!autoColor}
       class:font-semibold={autoColor}
     >
-      {((user.firstName[0] || '') + (user.lastName[0] || '')).toUpperCase()}
+      {(user.name[0] || '').toUpperCase()}
     </span>
   {/if}
 </figure>

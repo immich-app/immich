@@ -26,8 +26,7 @@
 
     <div>
       <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">
-        {user.firstName}
-        {user.lastName}
+        {user.name}
       </p>
       <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{user.email}</p>
     </div>

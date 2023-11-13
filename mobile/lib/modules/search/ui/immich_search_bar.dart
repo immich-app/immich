@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 
 class ImmichSearchBar extends HookConsumerWidget
@@ -57,11 +58,11 @@ class ImmichSearchBar extends HookConsumerWidget
         },
         decoration: InputDecoration(
           hintText: 'search_bar_hint'.tr(),
-          hintStyle: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
+          hintStyle: context.textTheme.titleSmall?.copyWith(
+            color: context.themeData.colorScheme.onSurface.withOpacity(0.5),
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),

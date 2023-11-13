@@ -96,26 +96,25 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       expect(body).toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
-        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         trashDays: 30,
         isInitialized: true,
       });
     });
   });
 
-  describe('GET /server-info/stats', () => {
+  describe('GET /server-info/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/server-info/stats');
+      const { status, body } = await request(server).get('/server-info/statistics');
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
 
     it('should only work for admins', async () => {
       const loginDto = { email: 'test@immich.app', password: 'Immich123' };
-      await api.userApi.create(server, accessToken, { ...loginDto, firstName: 'test', lastName: 'test' });
+      await api.userApi.create(server, accessToken, { ...loginDto, name: 'test' });
       const { accessToken: userAccessToken } = await api.authApi.login(server, loginDto);
       const { status, body } = await request(server)
-        .get('/server-info/stats')
+        .get('/server-info/statistics')
         .set('Authorization', `Bearer ${userAccessToken}`);
       expect(status).toBe(403);
       expect(body).toEqual(errorStub.forbidden);
@@ -123,7 +122,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
 
     it('should return the server stats', async () => {
       const { status, body } = await request(server)
-        .get('/server-info/stats')
+        .get('/server-info/statistics')
         .set('Authorization', `Bearer ${accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -133,9 +132,8 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
           {
             photos: 0,
             usage: 0,
-            userFirstName: 'Immich',
+            userName: 'Immich Admin',
             userId: loginResponse.userId,
-            userLastName: 'Admin',
             videos: 0,
           },
         ],

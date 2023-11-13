@@ -1,5 +1,5 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
 import 'package:immich_mobile/modules/search/ui/curated_row.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
@@ -25,7 +25,7 @@ class CuratedPlacesRow extends CuratedRow {
     final int actualContentIndex = isMapEnabled ? 1 : 0;
     Widget buildMapThumbnail() {
       return GestureDetector(
-        onTap: () => AutoRouter.of(context).push(
+        onTap: () => context.autoPush(
           const MapRoute(),
         ),
         child: SizedBox(
@@ -43,21 +43,24 @@ class CuratedPlacesRow extends CuratedRow {
                   ),
                   height: imageSize,
                   showAttribution: false,
-                  isDarkTheme: Theme.of(context).brightness == Brightness.dark,
+                  isDarkTheme: context.isDarkTheme,
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.black,
-                  gradient: LinearGradient(
-                    begin: FractionalOffset.topCenter,
-                    end: FractionalOffset.bottomCenter,
-                    colors: [
-                      Colors.blueGrey.withOpacity(0.0),
-                      Colors.black.withOpacity(0.4),
-                    ],
-                    stops: const [0.0, 1.0],
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.black,
+                    gradient: LinearGradient(
+                      begin: FractionalOffset.topCenter,
+                      end: FractionalOffset.bottomCenter,
+                      colors: [
+                        Colors.blueGrey.withOpacity(0.0),
+                        Colors.black.withOpacity(0.4),
+                      ],
+                      stops: const [0.0, 0.4],
+                    ),
                   ),
                 ),
               ),

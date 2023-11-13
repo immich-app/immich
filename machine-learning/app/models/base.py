@@ -7,8 +7,10 @@ from shutil import rmtree
 from typing import Any
 
 import onnxruntime as ort
+from huggingface_hub import snapshot_download
+from typing_extensions import Buffer
 
-from ..config import get_cache_dir, log, settings
+from ..config import get_cache_dir, get_hf_model_name, log, settings
 from ..schemas import ModelType
 
 
@@ -78,9 +80,13 @@ class InferenceModel(ABC):
     def configure(self, **model_kwargs: Any) -> None:
         pass
 
-    @abstractmethod
     def _download(self) -> None:
-        ...
+        snapshot_download(
+            get_hf_model_name(self.model_name),
+            cache_dir=self.cache_dir,
+            local_dir=self.cache_dir,
+            local_dir_use_symlinks=False,
+        )
 
     @abstractmethod
     def _load(self) -> None:
@@ -134,11 +140,12 @@ class InferenceModel(ABC):
 
 
 # HF deep copies configs, so we need to make session options picklable
-class PicklableSessionOptions(ort.SessionOptions):
+class PicklableSessionOptions(ort.SessionOptions):  # type: ignore[misc]
     def __getstate__(self) -> bytes:
         return pickle.dumps([(attr, getattr(self, attr)) for attr in dir(self) if not callable(getattr(self, attr))])
 
-    def __setstate__(self, state: Any) -> None:
-        self.__init__()  # type: ignore
-        for attr, val in pickle.loads(state):
+    def __setstate__(self, state: Buffer) -> None:
+        self.__init__()  # type: ignore[misc]
+        attrs: list[tuple[str, Any]] = pickle.loads(state)
+        for attr, val in attrs:
             setattr(self, attr, val)

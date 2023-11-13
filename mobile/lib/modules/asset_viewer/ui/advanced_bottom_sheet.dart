@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 
 class AdvancedBottomSheet extends HookConsumerWidget {
@@ -11,8 +12,6 @@ class AdvancedBottomSheet extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return SingleChildScrollView(
       child: Card(
         shape: const RoundedRectangleBorder(
@@ -40,7 +39,9 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                   const SizedBox(height: 32.0),
                   Container(
                     decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                      color: context.isDarkTheme
+                          ? Colors.grey[900]
+                          : Colors.grey[200],
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                     child: Padding(
@@ -70,7 +71,7 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                               icon: Icon(
                                 Icons.copy,
                                 size: 16.0,
-                                color: Theme.of(context).primaryColor,
+                                color: context.primaryColor,
                               ),
                             ),
                           ),

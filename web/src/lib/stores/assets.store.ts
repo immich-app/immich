@@ -32,6 +32,7 @@ export class AssetBucket {
    */
   bucketHeight!: number;
   bucketDate!: string;
+  bucketCount!: number;
   assets!: AssetResponseDto[];
   cancelToken!: AbortController | null;
   position!: BucketPosition;
@@ -158,6 +159,7 @@ export class AssetStore {
       return {
         bucketDate: bucket.timeBucket,
         bucketHeight: height,
+        bucketCount: bucket.count,
         assets: [],
         cancelToken: null,
         position: BucketPosition.Unknown,
@@ -196,7 +198,7 @@ export class AssetStore {
 
       bucket.cancelToken = new AbortController();
 
-      const { data: assets } = await api.assetApi.getByTimeBucket(
+      const { data: assets } = await api.assetApi.getTimeBucket(
         {
           ...this.options,
           timeBucket: bucketDate,
@@ -206,7 +208,7 @@ export class AssetStore {
       );
 
       if (this.albumId) {
-        const { data: albumAssets } = await api.assetApi.getByTimeBucket(
+        const { data: albumAssets } = await api.assetApi.getTimeBucket(
           {
             albumId: this.albumId,
             timeBucket: bucketDate,
@@ -261,6 +263,9 @@ export class AssetStore {
       isMismatched(this.options.isArchived, asset.isArchived) ||
       isMismatched(this.options.isFavorite, asset.isFavorite)
     ) {
+      // If asset is already in the bucket we don't need to recalculate
+      // asset store containers
+      this.updateAsset(asset);
       return;
     }
 
@@ -271,6 +276,7 @@ export class AssetStore {
       bucket = {
         bucketDate: timeBucket,
         bucketHeight: THUMBNAIL_HEIGHT,
+        bucketCount: 0,
         assets: [],
         cancelToken: null,
         position: BucketPosition.Unknown,
@@ -290,6 +296,11 @@ export class AssetStore {
       const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
       return bDate.diff(aDate).milliseconds;
     });
+
+    // If we added an asset to the store, we need to recalculate
+    // asset store containers
+    this.assets.push(asset);
+    this.updateAsset(asset, true);
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
@@ -304,7 +315,21 @@ export class AssetStore {
     return this.assetToBucket[assetId]?.bucketIndex ?? null;
   }
 
-  updateAsset(_asset: AssetResponseDto) {
+  async getRandomAsset(): Promise<AssetResponseDto | null> {
+    let index = Math.floor(Math.random() * this.buckets.reduce((acc, bucket) => acc + bucket.bucketCount, 0));
+    for (const bucket of this.buckets) {
+      if (index < bucket.bucketCount) {
+        await this.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+        return bucket.assets[index] || null;
+      }
+
+      index -= bucket.bucketCount;
+    }
+
+    return null;
+  }
+
+  updateAsset(_asset: AssetResponseDto, recalculate = false) {
     const asset = this.assets.find((asset) => asset.id === _asset.id);
     if (!asset) {
       return;
@@ -312,7 +337,7 @@ export class AssetStore {
 
     Object.assign(asset, _asset);
 
-    this.emit(false);
+    this.emit(recalculate);
   }
 
   removeAssets(ids: string[]) {
@@ -391,6 +416,9 @@ export class AssetStore {
       const assetToBucket: Record<string, AssetLookup> = {};
       for (let i = 0; i < this.buckets.length; i++) {
         const bucket = this.buckets[i];
+        if (bucket.assets.length !== 0) {
+          bucket.bucketCount = bucket.assets.length;
+        }
         for (let j = 0; j < bucket.assets.length; j++) {
           const asset = bucket.assets[j];
           assetToBucket[asset.id] = { bucket, bucketIndex: i, assetIndex: j };

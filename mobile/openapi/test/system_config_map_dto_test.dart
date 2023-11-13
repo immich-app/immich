@@ -16,13 +16,18 @@ void main() {
   // final instance = SystemConfigMapDto();
 
   group('test SystemConfigMapDto', () {
+    // String darkStyle
+    test('to test the property `darkStyle`', () async {
+      // TODO
+    });
+
     // bool enabled
     test('to test the property `enabled`', () async {
       // TODO
     });
 
-    // String tileUrl
-    test('to test the property `tileUrl`', () async {
+    // String lightStyle
+    test('to test the property `lightStyle`', () async {
       // TODO
     });
 

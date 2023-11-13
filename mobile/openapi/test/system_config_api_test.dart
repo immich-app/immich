@@ -22,8 +22,13 @@ void main() {
       // TODO
     });
 
-    //Future<SystemConfigDto> getDefaults() async
-    test('test getDefaults', () async {
+    //Future<SystemConfigDto> getConfigDefaults() async
+    test('test getConfigDefaults', () async {
+      // TODO
+    });
+
+    //Future<Object> getMapStyle(MapTheme theme) async
+    test('test getMapStyle', () async {
       // TODO
     });
 

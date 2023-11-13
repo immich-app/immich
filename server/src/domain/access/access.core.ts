@@ -3,6 +3,9 @@ import { AuthUserDto } from '../auth';
 import { IAccessRepository } from '../repositories';
 
 export enum Permission {
+  ACTIVITY_CREATE = 'activity.create',
+  ACTIVITY_DELETE = 'activity.delete',
+
   // ASSET_CREATE = 'asset.create',
   ASSET_READ = 'asset.read',
   ASSET_UPDATE = 'asset.update',
@@ -37,6 +40,8 @@ export enum Permission {
   PERSON_READ = 'person.read',
   PERSON_WRITE = 'person.write',
   PERSON_MERGE = 'person.merge',
+
+  PARTNER_UPDATE = 'partner.update',
 }
 
 let instance: AccessCore | null;
@@ -133,6 +138,17 @@ export class AccessCore {
 
   private async hasOtherAccess(authUser: AuthUserDto, permission: Permission, id: string) {
     switch (permission) {
+      // uses album id
+      case Permission.ACTIVITY_CREATE:
+        return await this.repository.activity.hasCreateAccess(authUser.id, id);
+
+      // uses activity id
+      case Permission.ACTIVITY_DELETE:
+        return (
+          (await this.repository.activity.hasOwnerAccess(authUser.id, id)) ||
+          (await this.repository.activity.hasAlbumOwnerAccess(authUser.id, id))
+        );
+
       case Permission.ASSET_READ:
         return (
           (await this.repository.asset.hasOwnerAccess(authUser.id, id)) ||
@@ -227,6 +243,9 @@ export class AccessCore {
 
       case Permission.PERSON_MERGE:
         return this.repository.person.hasOwnerAccess(authUser.id, id);
+
+      case Permission.PARTNER_UPDATE:
+        return this.repository.partner.hasUpdateAccess(authUser.id, id);
 
       default:
         return false;

@@ -1,10 +1,10 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_list_tile.dart';
@@ -18,7 +18,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     // final availableAlbums = ref.watch(backupProvider).availableAlbums;
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isDarkTheme = context.isDarkTheme;
     final allAlbums = ref.watch(backupProvider).availableAlbums;
 
     // Albums which are displayed to the user
@@ -118,7 +118,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: context.primaryColor,
               deleteIconColor: isDarkTheme ? Colors.black : Colors.white,
               deleteIcon: const Icon(
                 Icons.cancel_rounded,
@@ -211,7 +211,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => AutoRouter.of(context).pop(),
+          onPressed: () => context.autoPop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         title: const Text(
@@ -315,7 +315,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       "backup_album_selection_page_albums_tap",
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).primaryColor,
+                        color: context.primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ).tr(),
@@ -325,7 +325,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     icon: Icon(
                       Icons.info,
                       size: 20,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                     onPressed: () {
                       // show the dialog
@@ -342,7 +342,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).primaryColor,
+                                color: context.primaryColor,
                               ),
                             ).tr(),
                             content: SingleChildScrollView(

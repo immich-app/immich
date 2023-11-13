@@ -19,8 +19,8 @@ void main() {
   group('tests for AssetApi', () {
     // Checks if assets exist by checksums
     //
-    //Future<AssetBulkUploadCheckResponseDto> bulkUploadCheck(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
-    test('test bulkUploadCheck', () async {
+    //Future<AssetBulkUploadCheckResponseDto> checkBulkUpload(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
+    test('test checkBulkUpload', () async {
       // TODO
     });
 
@@ -53,7 +53,7 @@ void main() {
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, num skip, DateTime updatedAfter, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ int skip, int take, String userId, bool isFavorite, bool isArchived, DateTime updatedAfter, DateTime updatedBefore, String ifNoneMatch }) async
     test('test getAllAssets', () async {
       // TODO
     });
@@ -70,18 +70,13 @@ void main() {
       // TODO
     });
 
-    //Future<AssetStatsResponseDto> getAssetStats({ bool isArchived, bool isFavorite, bool isTrashed }) async
-    test('test getAssetStats', () async {
+    //Future<AssetStatsResponseDto> getAssetStatistics({ bool isArchived, bool isFavorite, bool isTrashed }) async
+    test('test getAssetStatistics', () async {
       // TODO
     });
 
     //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
-      // TODO
-    });
-
-    //Future<List<AssetResponseDto>> getByTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, String key }) async
-    test('test getByTimeBucket', () async {
       // TODO
     });
 
@@ -115,7 +110,12 @@ void main() {
       // TODO
     });
 
-    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, String key }) async
+    //Future<List<AssetResponseDto>> getTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, bool withPartners, String key }) async
+    test('test getTimeBucket', () async {
+      // TODO
+    });
+
+    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, bool withPartners, String key }) async
     test('test getTimeBuckets', () async {
       // TODO
     });
@@ -172,7 +172,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, String duration, bool isArchived, bool isExternal, bool isOffline, bool isReadOnly, bool isVisible, String libraryId, MultipartFile livePhotoData, MultipartFile sidecarData }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String key, String duration, bool isArchived, bool isExternal, bool isFavorite, bool isOffline, bool isReadOnly, bool isVisible, String libraryId, MultipartFile livePhotoData, MultipartFile sidecarData }) async
     test('test uploadFile', () async {
       // TODO
     });

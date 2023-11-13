@@ -1,13 +1,15 @@
 import { UserEntity } from '@app/infra/entities';
 
-export class UserResponseDto {
+export class UserDto {
   id!: string;
+  name!: string;
   email!: string;
-  firstName!: string;
-  lastName!: string;
+  profileImagePath!: string;
+}
+
+export class UserResponseDto extends UserDto {
   storageLabel!: string | null;
   externalPath!: string | null;
-  profileImagePath!: string;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
   createdAt!: Date;
@@ -17,15 +19,20 @@ export class UserResponseDto {
   memoriesEnabled?: boolean;
 }
 
-export function mapUser(entity: UserEntity): UserResponseDto {
+export const mapSimpleUser = (entity: UserEntity): UserDto => {
   return {
     id: entity.id,
     email: entity.email,
-    firstName: entity.firstName,
-    lastName: entity.lastName,
+    name: entity.name,
+    profileImagePath: entity.profileImagePath,
+  };
+};
+
+export function mapUser(entity: UserEntity): UserResponseDto {
+  return {
+    ...mapSimpleUser(entity),
     storageLabel: entity.storageLabel,
     externalPath: entity.externalPath,
-    profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
     createdAt: entity.createdAt,

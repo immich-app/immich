@@ -1,4 +1,4 @@
-import { AssetType, LibraryType, UserEntity } from '@app/infra/entities';
+import { AssetType, LibraryType, SystemConfig, SystemConfigKey, UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 
 import {
@@ -12,6 +12,7 @@ import {
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   userStub,
 } from '@test';
@@ -23,8 +24,10 @@ import {
   IJobRepository,
   ILibraryRepository,
   IStorageRepository,
+  ISystemConfigRepository,
   IUserRepository,
 } from '../repositories';
+import { SystemConfigCore } from '../system-config/system-config.core';
 import { LibraryService } from './library.service';
 
 describe(LibraryService.name, () => {
@@ -32,6 +35,7 @@ describe(LibraryService.name, () => {
 
   let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
@@ -40,6 +44,7 @@ describe(LibraryService.name, () => {
 
   beforeEach(() => {
     accessMock = newAccessRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
     userMock = newUserRepositoryMock();
     assetMock = newAssetRepositoryMock();
@@ -55,11 +60,44 @@ describe(LibraryService.name, () => {
 
     accessMock.library.hasOwnerAccess.mockResolvedValue(true);
 
-    sut = new LibraryService(accessMock, assetMock, cryptoMock, jobMock, libraryMock, storageMock, userMock);
+    sut = new LibraryService(
+      accessMock,
+      assetMock,
+      configMock,
+      cryptoMock,
+      jobMock,
+      libraryMock,
+      storageMock,
+      userMock,
+    );
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('init', () => {
+    it('should init cron job and subscribe to config changes', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.LIBRARY_SCAN_ENABLED, value: true },
+        { key: SystemConfigKey.LIBRARY_SCAN_CRON_EXPRESSION, value: '0 0 * * *' },
+      ]);
+
+      await sut.init();
+      expect(configMock.load).toHaveBeenCalled();
+      expect(jobMock.addCronJob).toHaveBeenCalled();
+
+      SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
+        library: {
+          scan: {
+            enabled: true,
+            cronExpression: '0 1 * * *',
+          },
+        },
+      } as SystemConfig);
+
+      expect(jobMock.updateCronJob).toHaveBeenCalledWith('libraryScan', '0 1 * * *', true);
+    });
   });
 
   describe('handleQueueAssetRefresh', () => {
