@@ -13,7 +13,7 @@ from .schemas import ModelType
 
 class Settings(BaseSettings):
     cache_folder: str = "/cache"
-    model_ttl: int = 0
+    model_ttl: int = 300
     host: str = "0.0.0.0"
     port: int = 3003
     workers: int = 1
@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     request_threads: int = os.cpu_count() or 4
     model_inter_op_threads: int = 1
     model_intra_op_threads: int = 2
+    shutdown_poll_s: int = 10
 
     class Config:
         env_prefix = "MACHINE_LEARNING_"
