@@ -1,7 +1,7 @@
-from math import e
 import tempfile
 import warnings
 from dataclasses import dataclass, field
+from math import e
 from pathlib import Path
 
 import open_clip
@@ -75,7 +75,7 @@ def export_image_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, 
         return output
 
     args = (torch.randn(1, 3, model_cfg.image_size, model_cfg.image_size),)
-    traced = torch.jit.trace(encode_image, args) # type: ignore[no-untyped-call]
+    traced = torch.jit.trace(encode_image, args)  # type: ignore[no-untyped-call]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
@@ -99,7 +99,7 @@ def export_text_encoder(model: open_clip.CLIP, model_cfg: OpenCLIPModelConfig, o
         return output
 
     args = (torch.ones(1, model_cfg.sequence_length, dtype=torch.int32),)
-    traced = torch.jit.trace(encode_text, args) # type: ignore[no-untyped-call]
+    traced = torch.jit.trace(encode_text, args)  # type: ignore[no-untyped-call]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)

@@ -140,7 +140,7 @@ class InferenceModel(ABC):
 
 
 # HF deep copies configs, so we need to make session options picklable
-class PicklableSessionOptions(ort.SessionOptions): # type: ignore[misc]
+class PicklableSessionOptions(ort.SessionOptions):  # type: ignore[misc]
     def __getstate__(self) -> bytes:
         return pickle.dumps([(attr, getattr(self, attr)) for attr in dir(self) if not callable(getattr(self, attr))])
 

@@ -1,9 +1,8 @@
 from enum import StrEnum
-from typing import Any, Protocol, TypeAlias, TypeGuard, TypedDict
+from typing import Any, Protocol, TypeAlias, TypedDict, TypeGuard
 
 import numpy as np
 from pydantic import BaseModel
-
 
 ndarray_f32: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
 ndarray_i64: TypeAlias = np.ndarray[int, np.dtype[np.int64]]
@@ -29,7 +28,6 @@ class ModelType(StrEnum):
     IMAGE_CLASSIFICATION = "image-classification"
     CLIP = "clip"
     FACIAL_RECOGNITION = "facial-recognition"
-
 
 
 class HasProfiling(Protocol):

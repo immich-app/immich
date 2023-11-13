@@ -63,7 +63,7 @@ class ModelCache:
         return self.cache.profiling
 
 
-class RevalidationPlugin(BasePlugin): # type: ignore[misc]
+class RevalidationPlugin(BasePlugin):  # type: ignore[misc]
     """Revalidates cache item's TTL after cache hit."""
 
     async def post_get(
