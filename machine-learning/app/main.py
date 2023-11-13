@@ -86,9 +86,9 @@ async def predict(
 
 
 async def run(model: InferenceModel, inputs: Any) -> Any:
+    app.state.last_called = time.time()
     if app.state.thread_pool is None:
         return model.predict(inputs)
-    app.state.last_called = time.time()
     return await asyncio.get_running_loop().run_in_executor(app.state.thread_pool, model.predict, inputs)
 
 
