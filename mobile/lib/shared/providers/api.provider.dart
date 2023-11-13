@@ -4,6 +4,4 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'api.provider.g.dart';
 
 @Riverpod(keepAlive: true)
-ApiService apiService(ApiServiceRef ref) {
-  return ApiService();
-}
+ApiService apiService(ApiServiceRef ref) => ApiService();

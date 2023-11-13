@@ -9,9 +9,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'person.service.g.dart';
 
 @riverpod
-PersonService personService(PersonServiceRef ref) {
-  return PersonService(ref.read(apiServiceProvider));
-}
+PersonService personService(PersonServiceRef ref) =>
+    PersonService(ref.read(apiServiceProvider));
 
 class PersonService with ErrorLoggerMixin {
   @override
