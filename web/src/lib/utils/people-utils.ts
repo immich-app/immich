@@ -1,8 +1,7 @@
-import { photoViewerId } from '$lib/stores/assets.store';
 import type { Faces } from '$lib/stores/people.store';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 
-export const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
+const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
   const ratio = img.naturalWidth / img.naturalHeight;
   let width = img.height * ratio;
   let height = img.height;
@@ -20,33 +19,22 @@ export interface boundingBox {
   height: number;
 }
 
-export const boundingBoxClassName = 'boundingBox';
-
-export const cleanBoundingBox = (): void => {
-  const get = Array.from(document.getElementsByClassName(boundingBoxClassName));
-  get.forEach((element) => {
-    element.remove();
-  });
-};
-
-export const showBoundingBox = (faces: Faces[], zoom: ZoomImageWheelState): boundingBox[] => {
+export const showBoundingBox = (
+  faces: Faces[],
+  zoom: ZoomImageWheelState,
+  photoViewer: HTMLImageElement | null,
+): boundingBox[] => {
   const boxes: boundingBox[] = [];
-  cleanBoundingBox();
-  const image: HTMLImageElement = document.getElementById(photoViewerId) as HTMLImageElement;
 
-  if (image === null) {
+  if (photoViewer === null) {
     return boxes;
   }
-  const clientHeight = image.clientHeight;
-  const clientWidth = image.clientWidth;
+  const clientHeight = photoViewer.clientHeight;
+  const clientWidth = photoViewer.clientWidth;
 
-  const { width, height } = getContainedSize(image);
+  const { width, height } = getContainedSize(photoViewer);
 
   for (const face of faces) {
-    const absoluteDiv = document.createElement('div');
-
-    absoluteDiv.classList.add(boundingBoxClassName);
-
     const coordinates = {
       x1:
         (width / face.imageWidth) * zoom.currentZoom * face.boundingBoxX1 +
@@ -65,15 +53,13 @@ export const showBoundingBox = (faces: Faces[], zoom: ZoomImageWheelState): boun
         ((clientHeight - height) / 2) * zoom.currentZoom +
         zoom.currentPositionY,
     };
-    const styles = {
+
+    boxes.push({
       top: Math.round(coordinates.y1),
       left: Math.round(coordinates.x1),
       width: Math.round(coordinates.x2 - coordinates.x1),
       height: Math.round(coordinates.y2 - coordinates.y1),
-    };
-
-    Object.assign(absoluteDiv.style, styles);
-    boxes.push(styles);
+    });
   }
   return boxes;
 };

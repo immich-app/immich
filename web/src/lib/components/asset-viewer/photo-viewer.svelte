@@ -8,7 +8,7 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { photoViewerId } from '$lib/stores/assets.store';
+  import { photoViewer } from '$lib/stores/assets.store';
   import { showBoundingBox } from '$lib/utils/people-utils';
   import { boundingBoxesArray, setBoundingBoxesArray } from '$lib/stores/people.store';
 
@@ -135,14 +135,14 @@
   {:then}
     <div bind:this={imgElement} class="h-full w-full">
       <img
-        id={photoViewerId}
+        bind:this={$photoViewer}
         transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
         src={assetData}
         alt={asset.id}
         class="h-full w-full object-contain"
         draggable="false"
       />
-      {#each showBoundingBox($boundingBoxesArray, $photoZoomState) as boundingbox}
+      {#each showBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
         <div
           class="absolute border-solid border-white border-[3px] rounded-lg p-3"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
