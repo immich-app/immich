@@ -5,6 +5,7 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 final partnerServiceProvider = Provider(
   (ref) => PartnerService(
@@ -66,6 +67,21 @@ class PartnerService {
       }
     } catch (e) {
       _log.warning("failed to add partner ${partner.id}:\n$e");
+    }
+    return false;
+  }
+
+  Future<bool> updatePartner(User partner, {required bool inTimeline}) async {
+    try {
+      final dto = await _apiService.partnerApi
+          .updatePartner(partner.id, UpdatePartnerDto(inTimeline: inTimeline));
+      if (dto != null) {
+        partner.inTimeline = dto.inTimeline ?? partner.inTimeline;
+        await _db.writeTxn(() => _db.users.put(partner));
+        return true;
+      }
+    } catch (e) {
+      _log.warning("failed to update partner ${partner.id}:\n$e");
     }
     return false;
   }

@@ -31,7 +31,8 @@ class User {
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
-        memoryEnabled = dto.memoriesEnabled;
+        memoryEnabled = dto.memoriesEnabled ?? false,
+        inTimeline = false;
 
   User.fromPartnerDto(PartnerResponseDto dto)
       : id = dto.id,
@@ -42,8 +43,8 @@ class User {
         isPartnerSharedWith = false,
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
-        memoryEnabled = dto.memoriesEnabled,
-        inTimeline = dto.inTimeline;
+        memoryEnabled = dto.memoriesEnabled ?? false,
+        inTimeline = dto.inTimeline ?? false;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
@@ -54,8 +55,8 @@ class User {
   bool isPartnerSharedWith;
   bool isAdmin;
   String profileImagePath;
-  bool? memoryEnabled;
-  bool? inTimeline;
+  bool memoryEnabled;
+  bool inTimeline;
 
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
