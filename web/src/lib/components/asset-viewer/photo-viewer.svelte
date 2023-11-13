@@ -8,9 +8,9 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { imageDiv, photoViewerId, setimageDiv } from '$lib/stores/assets.store';
+  import { photoViewerId } from '$lib/stores/assets.store';
   import { showBoundingBox } from '$lib/utils/people-utils';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
+  import { boundingBoxesArray, setBoundingBoxesArray } from '$lib/stores/people.store';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -18,8 +18,6 @@
 
   let imgElement: HTMLDivElement;
   let assetData: string;
-
-  $: setimageDiv(imgElement);
 
   let abortController: AbortController;
   let hasZoomed = false;
@@ -35,6 +33,7 @@
   });
 
   onDestroy(() => {
+    setBoundingBoxesArray([]);
     abortController?.abort();
   });
 
@@ -114,12 +113,6 @@
 
       loadAssetData({ loadOriginal: true });
     }
-    if (state.currentZoom !== 1) {
-      const results = showBoundingBox($boundingBoxesArray, state);
-      for (const result of results) {
-        $imageDiv.appendChild(result);
-      }
-    }
   });
 
   $: if (imgElement) {
@@ -149,6 +142,12 @@
         class="h-full w-full object-contain"
         draggable="false"
       />
+      {#each showBoundingBox($boundingBoxesArray, $photoZoomState) as boundingbox}
+        <div
+          class="absolute border-solid border-white border-[3px] rounded-lg p-3"
+          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+        />
+      {/each}
     </div>
   {/await}
 </div>

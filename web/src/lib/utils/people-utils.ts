@@ -13,6 +13,13 @@ export const getContainedSize = (img: HTMLImageElement): { width: number; height
   return { width, height };
 };
 
+export interface boundingBox {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 export const boundingBoxClassName = 'boundingBox';
 
 export const cleanBoundingBox = (): void => {
@@ -22,8 +29,8 @@ export const cleanBoundingBox = (): void => {
   });
 };
 
-export const showBoundingBox = (faces: Faces[], zoom: ZoomImageWheelState): HTMLDivElement[] => {
-  const boxes: HTMLDivElement[] = [];
+export const showBoundingBox = (faces: Faces[], zoom: ZoomImageWheelState): boundingBox[] => {
+  const boxes: boundingBox[] = [];
   cleanBoundingBox();
   const image: HTMLImageElement = document.getElementById(photoViewerId) as HTMLImageElement;
 
@@ -59,18 +66,14 @@ export const showBoundingBox = (faces: Faces[], zoom: ZoomImageWheelState): HTML
         zoom.currentPositionY,
     };
     const styles = {
-      position: 'absolute',
-      top: coordinates.y1 + 'px',
-      left: coordinates.x1 + 'px',
-      width: coordinates.x2 - coordinates.x1 + 'px',
-      height: coordinates.y2 - coordinates.y1 + 'px',
-      borderColor: 'rgb(255, 255, 255)',
-      borderWidth: '3px',
-      borderRadius: '0.75rem',
+      top: Math.round(coordinates.y1),
+      left: Math.round(coordinates.x1),
+      width: Math.round(coordinates.x2 - coordinates.x1),
+      height: Math.round(coordinates.y2 - coordinates.y1),
     };
 
     Object.assign(absoluteDiv.style, styles);
-    boxes.push(absoluteDiv);
+    boxes.push(styles);
   }
   return boxes;
 };

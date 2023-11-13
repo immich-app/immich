@@ -60,12 +60,6 @@ interface TrashAsset {
 
 export const photoViewerId = 'photoViewerId';
 
-export const imageDiv = writable<HTMLDivElement>();
-
-export const setimageDiv = (div: HTMLDivElement) => {
-  imageDiv.set(div);
-};
-
 type PendingChange = AddAsset | DeleteAsset | TrashAsset;
 
 export class AssetStore {

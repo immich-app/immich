@@ -17,9 +17,8 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus, mdiRestart } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
-  import { imageDiv, photoViewerId } from '$lib/stores/assets.store';
-  import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
+  import { photoViewerId } from '$lib/stores/assets.store';
+  import { cleanBoundingBox } from '$lib/utils/people-utils';
   import { setBoundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
 
@@ -105,17 +104,6 @@
     isSearchingPeople = false;
   };
 
-  const handleCleanBoundingBox = () => {
-    setBoundingBoxesArray([]);
-    cleanBoundingBox();
-  };
-
-  const handleShowBoundingBox = (index: number) => {
-    setBoundingBoxesArray([peopleWithFaces[index]]);
-    const [result] = showBoundingBox([peopleWithFaces[index]], $photoZoomState);
-    $imageDiv.appendChild(result);
-  };
-
   function initInput(element: HTMLInputElement) {
     element.focus();
   }
@@ -137,16 +125,13 @@
     if (image === null) {
       return null;
     }
-
-    const naturalHeight = image.naturalHeight;
-    const naturalWidth = image.naturalWidth;
     const { boundingBoxX1: x1, boundingBoxX2: x2, boundingBoxY1: y1, boundingBoxY2: y2 } = face;
 
     const coordinates = {
-      x1: (naturalWidth / face.imageWidth) * x1,
-      x2: (naturalWidth / face.imageWidth) * x2,
-      y1: (naturalHeight / face.imageHeight) * y1,
-      y2: (naturalHeight / face.imageHeight) * y2,
+      x1: (image.naturalWidth / face.imageWidth) * x1,
+      x2: (image.naturalWidth / face.imageWidth) * x2,
+      y1: (image.naturalHeight / face.imageHeight) * y1,
+      y2: (image.naturalHeight / face.imageHeight) * y2,
     };
 
     const faceWidth = coordinates.x2 - coordinates.x1;
@@ -292,9 +277,9 @@
                 role="button"
                 tabindex={index}
                 class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
-                on:focus={() => handleShowBoundingBox(index)}
-                on:mouseover={() => handleShowBoundingBox(index)}
-                on:mouseleave={() => handleCleanBoundingBox()}
+                on:focus={() => setBoundingBoxesArray([peopleWithFaces[index]])}
+                on:mouseover={() => setBoundingBoxesArray([peopleWithFaces[index]])}
+                on:mouseleave={() => setBoundingBoxesArray([])}
               >
                 <ImageThumbnail
                   curve

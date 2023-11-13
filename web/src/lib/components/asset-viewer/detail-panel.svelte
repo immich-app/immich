@@ -13,9 +13,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import PersonSidePanel, { PersonToCreate } from '../faces-page/person-side-panel.svelte';
   import Map from '../shared-components/map/map.svelte';
-  import { imageDiv } from '$lib/stores/assets.store';
-  import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { setBoundingBoxesArray } from '$lib/stores/people.store';
 
   export let asset: AssetResponseDto;
@@ -72,25 +69,12 @@
     return undefined;
   };
 
-  const handleCleanBoundingBox = () => {
-    setBoundingBoxesArray([]);
-    cleanBoundingBox();
-  };
-
   const handleRefreshPeople = async () => {
     await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
       people = res.data?.people || [];
       textarea.value = res.data?.exifInfo?.description || '';
     });
     showEditFaces = false;
-  };
-
-  const handleShowBoundingBox = (index: number) => {
-    setBoundingBoxesArray(people[index].faces);
-    const results = showBoundingBox(people[index].faces, $photoZoomState);
-    for (const result of results) {
-      $imageDiv.appendChild(result);
-    }
   };
 
   const autoGrowHeight = (e: Event) => {
@@ -172,9 +156,9 @@
           <div
             role="button"
             tabindex={index}
-            on:focus={() => handleShowBoundingBox(index)}
-            on:mouseover={() => handleShowBoundingBox(index)}
-            on:mouseleave={() => handleCleanBoundingBox()}
+            on:focus={() => setBoundingBoxesArray(people[index].faces)}
+            on:mouseover={() => setBoundingBoxesArray(people[index].faces)}
+            on:mouseleave={() => setBoundingBoxesArray([])}
           >
             <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
               <ImageThumbnail
