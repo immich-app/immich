@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-  import { blur, fly } from 'svelte/transition';
+  import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
   import { api, type PersonResponseDto, AssetFaceResponseDto, PersonWithFacesResponseDto } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';

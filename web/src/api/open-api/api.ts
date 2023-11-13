@@ -1473,22 +1473,16 @@ export interface CreateUserDto {
     'externalPath'?: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof CreateUserDto
-     */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateUserDto
-     */
-    'lastName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof CreateUserDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateUserDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}
@@ -2269,12 +2263,6 @@ export interface LoginResponseDto {
     'accessToken': string;
     /**
      * 
-     * @type {string}
-     * @memberof LoginResponseDto
-     */
-    'firstName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof LoginResponseDto
      */
@@ -2284,7 +2272,7 @@ export interface LoginResponseDto {
      * @type {string}
      * @memberof LoginResponseDto
      */
-    'lastName': string;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -2526,12 +2514,6 @@ export interface PartnerResponseDto {
      * @type {string}
      * @memberof PartnerResponseDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PartnerResponseDto
-     */
     'id': string;
     /**
      * 
@@ -2547,16 +2529,16 @@ export interface PartnerResponseDto {
     'isAdmin': boolean;
     /**
      * 
-     * @type {string}
-     * @memberof PartnerResponseDto
-     */
-    'lastName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof PartnerResponseDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}
@@ -3604,13 +3586,7 @@ export interface SignUpDto {
      * @type {string}
      * @memberof SignUpDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SignUpDto
-     */
-    'lastName': string;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -4558,12 +4534,6 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'firstName'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
     'id': string;
     /**
      * 
@@ -4573,16 +4543,16 @@ export interface UpdateUserDto {
     'isAdmin'?: boolean;
     /**
      * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
-    'lastName'?: string;
-    /**
-     * 
      * @type {boolean}
      * @memberof UpdateUserDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'name'?: string;
     /**
      * 
      * @type {string}
@@ -4625,19 +4595,13 @@ export interface UsageByUserDto {
      * @type {string}
      * @memberof UsageByUserDto
      */
-    'userFirstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UsageByUserDto
-     */
     'userId': string;
     /**
      * 
      * @type {string}
      * @memberof UsageByUserDto
      */
-    'userLastName': string;
+    'userName': string;
     /**
      * 
      * @type {number}
@@ -4662,19 +4626,13 @@ export interface UserDto {
      * @type {string}
      * @memberof UserDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserDto
-     */
     'id': string;
     /**
      * 
      * @type {string}
      * @memberof UserDto
      */
-    'lastName': string;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -4717,12 +4675,6 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
     'id': string;
     /**
      * 
@@ -4732,16 +4684,16 @@ export interface UserResponseDto {
     'isAdmin': boolean;
     /**
      * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
-    'lastName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof UserResponseDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}
