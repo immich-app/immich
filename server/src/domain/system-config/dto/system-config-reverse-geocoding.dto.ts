@@ -18,13 +18,13 @@ const useMapbox = (config: SystemConfigReverseGeocodingDto) => config.useMapbox;
 
 @ValidatorConstraint({ name: 'mapboxAccessToken', async: false })
 class MapboxAccessToken implements ValidatorConstraintInterface {
-  async validate(text: string, _: ValidationArguments) {
+  async validate(text: string) {
     const mb = mapbox({ accessToken: text });
     const response = await mb.getToken().send();
     return response.body.code === 'TokenValid';
   }
 
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage() {
     // here you can provide default error message if validation failed
     return 'Token invalid';
   }
