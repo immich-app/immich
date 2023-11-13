@@ -17,6 +17,7 @@
     mdiImageOutline,
     mdiMapMarkerOutline,
     mdiInformationOutline,
+    mdiPencil,
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import PersonSidePanel, { PersonToCreate } from '../faces-page/person-side-panel.svelte';
