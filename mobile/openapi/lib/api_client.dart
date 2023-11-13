@@ -197,8 +197,6 @@ class ApiClient {
           return ActivityStatisticsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
-        case 'AdminSignupResponseDto':
-          return AdminSignupResponseDto.fromJson(value);
         case 'AlbumCountResponseDto':
           return AlbumCountResponseDto.fromJson(value);
         case 'AlbumResponseDto':
@@ -323,6 +321,8 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MapMarkerResponseDto':
           return MapMarkerResponseDto.fromJson(value);
+        case 'MapTheme':
+          return MapThemeTypeTransformer().decode(value);
         case 'MemoryLaneResponseDto':
           return MemoryLaneResponseDto.fromJson(value);
         case 'MergePersonDto':
@@ -337,6 +337,8 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
+        case 'PartnerResponseDto':
+          return PartnerResponseDto.fromJson(value);
         case 'PathEntityType':
           return PathEntityTypeTypeTransformer().decode(value);
         case 'PathType':
@@ -355,6 +357,8 @@ class ApiClient {
           return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
+        case 'ReactionLevel':
+          return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':
           return ReactionTypeTypeTransformer().decode(value);
         case 'RecognitionConfig':
@@ -459,6 +463,8 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateLibraryDto':
           return UpdateLibraryDto.fromJson(value);
+        case 'UpdatePartnerDto':
+          return UpdatePartnerDto.fromJson(value);
         case 'UpdateStackParentDto':
           return UpdateStackParentDto.fromJson(value);
         case 'UpdateTagDto':

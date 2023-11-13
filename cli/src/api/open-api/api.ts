@@ -212,43 +212,6 @@ export interface AddUsersDto {
 /**
  * 
  * @export
- * @interface AdminSignupResponseDto
- */
-export interface AdminSignupResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof AdminSignupResponseDto
-     */
-    'createdAt': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AdminSignupResponseDto
-     */
-    'email': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AdminSignupResponseDto
-     */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AdminSignupResponseDto
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof AdminSignupResponseDto
-     */
-    'lastName': string;
-}
-/**
- * 
- * @export
  * @interface AlbumCountResponseDto
  */
 export interface AlbumCountResponseDto {
@@ -1380,22 +1343,16 @@ export interface CreateUserDto {
     'externalPath'?: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof CreateUserDto
-     */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CreateUserDto
-     */
-    'lastName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof CreateUserDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateUserDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}
@@ -2176,12 +2133,6 @@ export interface LoginResponseDto {
     'accessToken': string;
     /**
      * 
-     * @type {string}
-     * @memberof LoginResponseDto
-     */
-    'firstName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof LoginResponseDto
      */
@@ -2191,7 +2142,7 @@ export interface LoginResponseDto {
      * @type {string}
      * @memberof LoginResponseDto
      */
-    'lastName': string;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -2261,6 +2212,20 @@ export interface MapMarkerResponseDto {
      */
     'lon': number;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const MapTheme = {
+    Light: 'light',
+    Dark: 'dark'
+} as const;
+
+export type MapTheme = typeof MapTheme[keyof typeof MapTheme];
+
+
 /**
  * 
  * @export
@@ -2384,6 +2349,119 @@ export interface OAuthConfigResponseDto {
      */
     'url'?: string;
 }
+/**
+ * 
+ * @export
+ * @interface PartnerResponseDto
+ */
+export interface PartnerResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'avatarColor': PartnerResponseDtoAvatarColorEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'deletedAt': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'email': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'externalPath': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PartnerResponseDto
+     */
+    'inTimeline'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PartnerResponseDto
+     */
+    'isAdmin': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PartnerResponseDto
+     */
+    'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'name': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'oauthId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'profileImagePath': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PartnerResponseDto
+     */
+    'shouldChangePassword': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'storageLabel': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'updatedAt': string;
+}
+
+export const PartnerResponseDtoAvatarColorEnum = {
+    Primary: 'primary',
+    Pink: 'pink',
+    Red: 'red',
+    Yellow: 'yellow',
+    Blue: 'blue',
+    Green: 'green',
+    Purple: 'purple',
+    Orange: 'orange',
+    Gray: 'gray',
+    Amber: 'amber'
+} as const;
+
+export type PartnerResponseDtoAvatarColorEnum = typeof PartnerResponseDtoAvatarColorEnum[keyof typeof PartnerResponseDtoAvatarColorEnum];
+
 /**
  * 
  * @export
@@ -2593,6 +2671,20 @@ export interface QueueStatusDto {
      */
     'isPaused': boolean;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const ReactionLevel = {
+    Album: 'album',
+    Asset: 'asset'
+} as const;
+
+export type ReactionLevel = typeof ReactionLevel[keyof typeof ReactionLevel];
+
+
 /**
  * 
  * @export
@@ -2859,12 +2951,6 @@ export interface ServerConfigDto {
      * @memberof ServerConfigDto
      */
     'loginPageMessage': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ServerConfigDto
-     */
-    'mapTileUrl': string;
     /**
      * 
      * @type {string}
@@ -3349,13 +3435,7 @@ export interface SignUpDto {
      * @type {string}
      * @memberof SignUpDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SignUpDto
-     */
-    'lastName': string;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -3734,6 +3814,12 @@ export interface SystemConfigMachineLearningDto {
 export interface SystemConfigMapDto {
     /**
      * 
+     * @type {string}
+     * @memberof SystemConfigMapDto
+     */
+    'darkStyle': string;
+    /**
+     * 
      * @type {boolean}
      * @memberof SystemConfigMapDto
      */
@@ -3743,7 +3829,7 @@ export interface SystemConfigMapDto {
      * @type {string}
      * @memberof SystemConfigMapDto
      */
-    'tileUrl': string;
+    'lightStyle': string;
 }
 /**
  * 
@@ -4232,6 +4318,19 @@ export interface UpdateLibraryDto {
 /**
  * 
  * @export
+ * @interface UpdatePartnerDto
+ */
+export interface UpdatePartnerDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdatePartnerDto
+     */
+    'inTimeline': boolean;
+}
+/**
+ * 
+ * @export
  * @interface UpdateStackParentDto
  */
 export interface UpdateStackParentDto {
@@ -4290,12 +4389,6 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'firstName'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
     'id': string;
     /**
      * 
@@ -4305,16 +4398,16 @@ export interface UpdateUserDto {
     'isAdmin'?: boolean;
     /**
      * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
-    'lastName'?: string;
-    /**
-     * 
      * @type {boolean}
      * @memberof UpdateUserDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'name'?: string;
     /**
      * 
      * @type {string}
@@ -4359,19 +4452,13 @@ export interface UsageByUserDto {
      * @type {string}
      * @memberof UsageByUserDto
      */
-    'userFirstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UsageByUserDto
-     */
     'userId': string;
     /**
      * 
      * @type {string}
      * @memberof UsageByUserDto
      */
-    'userLastName': string;
+    'userName': string;
     /**
      * 
      * @type {number}
@@ -4424,19 +4511,13 @@ export interface UserDto {
      * @type {string}
      * @memberof UserDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserDto
-     */
     'id': string;
     /**
      * 
      * @type {string}
      * @memberof UserDto
      */
-    'lastName': string;
+    'name': string;
     /**
      * 
      * @type {string}
@@ -4501,12 +4582,6 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'firstName': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
     'id': string;
     /**
      * 
@@ -4516,16 +4591,16 @@ export interface UserResponseDto {
     'isAdmin': boolean;
     /**
      * 
-     * @type {string}
-     * @memberof UserResponseDto
-     */
-    'lastName': string;
-    /**
-     * 
      * @type {boolean}
      * @memberof UserResponseDto
      */
     'memoriesEnabled'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}
@@ -5162,11 +5237,12 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
          * @param {string} albumId 
          * @param {string} [assetId] 
          * @param {ReactionType} [type] 
+         * @param {ReactionLevel} [level] 
          * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivities: async (albumId: string, assetId?: string, type?: ReactionType, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getActivities: async (albumId: string, assetId?: string, type?: ReactionType, level?: ReactionLevel, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getActivities', 'albumId', albumId)
             const localVarPath = `/activity`;
@@ -5200,6 +5276,10 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
 
             if (type !== undefined) {
                 localVarQueryParameter['type'] = type;
+            }
+
+            if (level !== undefined) {
+                localVarQueryParameter['level'] = level;
             }
 
             if (userId !== undefined) {
@@ -5302,12 +5382,13 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * @param {string} albumId 
          * @param {string} [assetId] 
          * @param {ReactionType} [type] 
+         * @param {ReactionLevel} [level] 
          * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivities(albumId: string, assetId?: string, type?: ReactionType, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, type, userId, options);
+        async getActivities(albumId: string, assetId?: string, type?: ReactionType, level?: ReactionLevel, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, type, level, userId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5356,7 +5437,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityResponseDto>> {
-            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.userId, options).then((request) => request(axios, basePath));
+            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.level, requestParameters.userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5427,6 +5508,13 @@ export interface ActivityApiGetActivitiesRequest {
 
     /**
      * 
+     * @type {ReactionLevel}
+     * @memberof ActivityApiGetActivities
+     */
+    readonly level?: ReactionLevel
+
+    /**
+     * 
      * @type {string}
      * @memberof ActivityApiGetActivities
      */
@@ -5491,7 +5579,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.level, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7344,11 +7432,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
          * @param {boolean} [withStacked] 
+         * @param {boolean} [withPartners] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTimeBucket: async (size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getTimeBucket: async (size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, withPartners?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'size' is not null or undefined
             assertParamExists('getTimeBucket', 'size', size)
             // verify required parameter 'timeBucket' is not null or undefined
@@ -7406,6 +7495,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['withStacked'] = withStacked;
             }
 
+            if (withPartners !== undefined) {
+                localVarQueryParameter['withPartners'] = withPartners;
+            }
+
             if (timeBucket !== undefined) {
                 localVarQueryParameter['timeBucket'] = timeBucket;
             }
@@ -7435,11 +7528,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
          * @param {boolean} [withStacked] 
+         * @param {boolean} [withPartners] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTimeBuckets: async (size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getTimeBuckets: async (size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, withPartners?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'size' is not null or undefined
             assertParamExists('getTimeBuckets', 'size', size)
             const localVarPath = `/asset/time-buckets`;
@@ -7493,6 +7587,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (withStacked !== undefined) {
                 localVarQueryParameter['withStacked'] = withStacked;
+            }
+
+            if (withPartners !== undefined) {
+                localVarQueryParameter['withPartners'] = withPartners;
             }
 
             if (key !== undefined) {
@@ -8297,12 +8395,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
          * @param {boolean} [withStacked] 
+         * @param {boolean} [withPartners] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTimeBucket(size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key, options);
+        async getTimeBucket(size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, withPartners?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8315,12 +8414,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
          * @param {boolean} [withStacked] 
+         * @param {boolean} [withPartners] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTimeBuckets(size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TimeBucketResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key, options);
+        async getTimeBuckets(size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, withPartners?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TimeBucketResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8617,7 +8717,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getTimeBucket(requestParameters: AssetApiGetTimeBucketRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8626,7 +8726,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getTimeBuckets(requestParameters: AssetApiGetTimeBucketsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<TimeBucketResponseDto>> {
-            return localVarFp.getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all asset of a device that are in the database, ID only.
@@ -9115,6 +9215,13 @@ export interface AssetApiGetTimeBucketRequest {
 
     /**
      * 
+     * @type {boolean}
+     * @memberof AssetApiGetTimeBucket
+     */
+    readonly withPartners?: boolean
+
+    /**
+     * 
      * @type {string}
      * @memberof AssetApiGetTimeBucket
      */
@@ -9182,6 +9289,13 @@ export interface AssetApiGetTimeBucketsRequest {
      * @memberof AssetApiGetTimeBuckets
      */
     readonly withStacked?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiGetTimeBuckets
+     */
+    readonly withPartners?: boolean
 
     /**
      * 
@@ -9662,7 +9776,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getTimeBucket(requestParameters: AssetApiGetTimeBucketRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9673,7 +9787,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getTimeBuckets(requestParameters: AssetApiGetTimeBucketsRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10583,7 +10697,7 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async signUpAdmin(signUpDto: SignUpDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AdminSignupResponseDto>> {
+        async signUpAdmin(signUpDto: SignUpDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.signUpAdmin(signUpDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -10663,7 +10777,7 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        signUpAdmin(requestParameters: AuthenticationApiSignUpAdminRequest, options?: AxiosRequestConfig): AxiosPromise<AdminSignupResponseDto> {
+        signUpAdmin(requestParameters: AuthenticationApiSignUpAdminRequest, options?: AxiosRequestConfig): AxiosPromise<UserResponseDto> {
             return localVarFp.signUpAdmin(requestParameters.signUpDto, options).then((request) => request(axios, basePath));
         },
         /**
@@ -12387,6 +12501,54 @@ export const PartnerApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {string} id 
+         * @param {UpdatePartnerDto} updatePartnerDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updatePartner: async (id: string, updatePartnerDto: UpdatePartnerDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('updatePartner', 'id', id)
+            // verify required parameter 'updatePartnerDto' is not null or undefined
+            assertParamExists('updatePartner', 'updatePartnerDto', updatePartnerDto)
+            const localVarPath = `/partner/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updatePartnerDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -12403,7 +12565,7 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createPartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
+        async createPartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PartnerResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.createPartner(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -12413,7 +12575,7 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPartners(direction: 'shared-by' | 'shared-with', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<UserResponseDto>>> {
+        async getPartners(direction: 'shared-by' | 'shared-with', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PartnerResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPartners(direction, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -12425,6 +12587,17 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          */
         async removePartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.removePartner(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {UpdatePartnerDto} updatePartnerDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async updatePartner(id: string, updatePartnerDto: UpdatePartnerDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PartnerResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updatePartner(id, updatePartnerDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -12443,7 +12616,7 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createPartner(requestParameters: PartnerApiCreatePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<UserResponseDto> {
+        createPartner(requestParameters: PartnerApiCreatePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<PartnerResponseDto> {
             return localVarFp.createPartner(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -12452,7 +12625,7 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPartners(requestParameters: PartnerApiGetPartnersRequest, options?: AxiosRequestConfig): AxiosPromise<Array<UserResponseDto>> {
+        getPartners(requestParameters: PartnerApiGetPartnersRequest, options?: AxiosRequestConfig): AxiosPromise<Array<PartnerResponseDto>> {
             return localVarFp.getPartners(requestParameters.direction, options).then((request) => request(axios, basePath));
         },
         /**
@@ -12463,6 +12636,15 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          */
         removePartner(requestParameters: PartnerApiRemovePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.removePartner(requestParameters.id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {PartnerApiUpdatePartnerRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        updatePartner(requestParameters: PartnerApiUpdatePartnerRequest, options?: AxiosRequestConfig): AxiosPromise<PartnerResponseDto> {
+            return localVarFp.updatePartner(requestParameters.id, requestParameters.updatePartnerDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -12510,6 +12692,27 @@ export interface PartnerApiRemovePartnerRequest {
 }
 
 /**
+ * Request parameters for updatePartner operation in PartnerApi.
+ * @export
+ * @interface PartnerApiUpdatePartnerRequest
+ */
+export interface PartnerApiUpdatePartnerRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerApiUpdatePartner
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {UpdatePartnerDto}
+     * @memberof PartnerApiUpdatePartner
+     */
+    readonly updatePartnerDto: UpdatePartnerDto
+}
+
+/**
  * PartnerApi - object-oriented interface
  * @export
  * @class PartnerApi
@@ -12547,6 +12750,17 @@ export class PartnerApi extends BaseAPI {
      */
     public removePartner(requestParameters: PartnerApiRemovePartnerRequest, options?: AxiosRequestConfig) {
         return PartnerApiFp(this.configuration).removePartner(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PartnerApiUpdatePartnerRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PartnerApi
+     */
+    public updatePartner(requestParameters: PartnerApiUpdatePartnerRequest, options?: AxiosRequestConfig) {
+        return PartnerApiFp(this.configuration).updatePartner(requestParameters.id, requestParameters.updatePartnerDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -15185,6 +15399,51 @@ export const SystemConfigApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
+         * @param {MapTheme} theme 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMapStyle: async (theme: MapTheme, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'theme' is not null or undefined
+            assertParamExists('getMapStyle', 'theme', theme)
+            const localVarPath = `/system-config/map/style.json`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (theme !== undefined) {
+                localVarQueryParameter['theme'] = theme;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -15295,6 +15554,16 @@ export const SystemConfigApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {MapTheme} theme 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getMapStyle(theme: MapTheme, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapStyle(theme, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -15340,6 +15609,15 @@ export const SystemConfigApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
+         * @param {SystemConfigApiGetMapStyleRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMapStyle(requestParameters: SystemConfigApiGetMapStyleRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.getMapStyle(requestParameters.theme, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -15357,6 +15635,20 @@ export const SystemConfigApiFactory = function (configuration?: Configuration, b
         },
     };
 };
+
+/**
+ * Request parameters for getMapStyle operation in SystemConfigApi.
+ * @export
+ * @interface SystemConfigApiGetMapStyleRequest
+ */
+export interface SystemConfigApiGetMapStyleRequest {
+    /**
+     * 
+     * @type {MapTheme}
+     * @memberof SystemConfigApiGetMapStyle
+     */
+    readonly theme: MapTheme
+}
 
 /**
  * Request parameters for updateConfig operation in SystemConfigApi.
@@ -15397,6 +15689,17 @@ export class SystemConfigApi extends BaseAPI {
      */
     public getConfigDefaults(options?: AxiosRequestConfig) {
         return SystemConfigApiFp(this.configuration).getConfigDefaults(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {SystemConfigApiGetMapStyleRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SystemConfigApi
+     */
+    public getMapStyle(requestParameters: SystemConfigApiGetMapStyleRequest, options?: AxiosRequestConfig) {
+        return SystemConfigApiFp(this.configuration).getMapStyle(requestParameters.theme, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

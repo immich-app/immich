@@ -7655,6 +7655,21 @@
       },
       "PartnerResponseDto": {
         "properties": {
+          "avatarColor": {
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
+            ],
+            "type": "string"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -7709,6 +7724,7 @@
           "name",
           "email",
           "profileImagePath",
+          "avatarColor",
           "storageLabel",
           "externalPath",
           "shouldChangePassword",
