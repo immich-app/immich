@@ -27,7 +27,7 @@ ftfy = "^6.1.1"
 setuptools = "^68.0.0"
 python-multipart = "^0.0.6"
 orjson = "^3.9.5"
-safetensors = "0.3.2"
+safetensors = "0.4.0"
 gunicorn = "^21.1.0"
 
 [tool.poetry.group.dev.dependencies]
