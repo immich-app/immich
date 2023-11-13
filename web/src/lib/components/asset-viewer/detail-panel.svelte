@@ -20,7 +20,7 @@
     mdiPencil,
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import PersonSidePanel, { PersonToCreate } from '../faces-page/person-side-panel.svelte';
+  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import Map from '../shared-components/map/map.svelte';
   import { setBoundingBoxesArray } from '$lib/stores/people.store';
 
@@ -30,14 +30,13 @@
   let textarea: HTMLTextAreaElement;
   let description: string;
   let showEditFaces = false;
-  let customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
+
   let previousId: string;
   $: {
     if (!previousId) {
       previousId = asset.id;
     }
     if (asset.id !== previousId) {
-      customFeaturePhoto = new Array<PersonToCreate | null>(asset.people?.length || 0);
       showEditFaces = false;
       previousId = asset.id;
     }
@@ -176,7 +175,7 @@
               <ImageThumbnail
                 curve
                 shadow
-                url={customFeaturePhoto[index]?.thumbnail || api.getPeopleThumbnailUrl(person.id)}
+                url={api.getPeopleThumbnailUrl(person.id)}
                 altText={person.name}
                 title={person.name}
                 widthStyle="90px"
