@@ -29,9 +29,6 @@
   async function saveSetting() {
     try {
       const { data: current } = await api.systemConfigApi.getConfig();
-      console.log('current', current.reverseGeocoding);
-
-      console.log('update', config.reverseGeocoding.useMapbox);
       const { data: updated } = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
           ...current,
@@ -43,8 +40,8 @@
           reverseGeocoding: {
             enabled: config.reverseGeocoding.enabled,
             citiesFileOverride: config.reverseGeocoding.citiesFileOverride,
-            useMapbox: config.reverseGeocoding.useMapbox,
-            mapboxAccessToken: config.reverseGeocoding.mapboxAccessToken,
+            useMapbox: config.reverseGeocoding.enabled ? config.reverseGeocoding.useMapbox : false,
+            mapboxAccessToken: config.reverseGeocoding.enabled ? config.reverseGeocoding.mapboxAccessToken : '',
           },
         },
       });
@@ -154,20 +151,22 @@
                 isEdited={config.reverseGeocoding.citiesFileOverride !==
                   savedConfig.reverseGeocoding.citiesFileOverride}
               />
+
+              <hr />
+
               <SettingSwitch
                 title="Use Mapbox"
-                {disabled}
+                disabled={!config.reverseGeocoding.enabled}
                 subtitle="Use Mapbox for reverse geocoding"
                 bind:checked={config.reverseGeocoding.useMapbox}
               />
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="URL"
-                desc="URL of the machine learning server"
+                label="Mapbox Access Token"
                 bind:value={config.reverseGeocoding.mapboxAccessToken}
                 required={true}
-                disabled={disabled || !config.reverseGeocoding.useMapbox}
+                disabled={!config.reverseGeocoding.enabled || !config.reverseGeocoding.useMapbox}
                 isEdited={config.reverseGeocoding.mapboxAccessToken !== savedConfig.reverseGeocoding.mapboxAccessToken}
               />
             </div>

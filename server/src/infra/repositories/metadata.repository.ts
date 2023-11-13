@@ -27,10 +27,23 @@ const lookup = promisify<GeoPoint[], number, AddressObject[][]>(geocoder.lookUp)
 @Injectable()
 export class MetadataRepository implements IMetadataRepository {
   private logger = new Logger(MetadataRepository.name);
-  private mapboxClient?: GeocodeService;
+  private mapboxClient?: GeocodeService = undefined;
 
-  async init(options: Partial<InitOptions>): Promise<void> {
+  async initMapboxGeocoding(accessToken: string): Promise<void> {
     return new Promise<void>((resolve) => {
+      this.mapboxClient = mapboxGeocoding({ accessToken });
+      resolve();
+    });
+  }
+
+  deinitMapboxGeocoding(): void {
+    this.mapboxClient = undefined;
+  }
+
+  async initLocalGeocoding(options: Partial<InitOptions>): Promise<void> {
+    return new Promise<void>((resolve) => {
+      this.mapboxClient = undefined;
+      console.log('init local geocoding', this.mapboxClient);
       geocoder.init(
         {
           load: {
@@ -64,10 +77,15 @@ export class MetadataRepository implements IMetadataRepository {
     }
   }
 
-  async reverseGeocode(point: GeoPoint, useMapbox: boolean = false): Promise<ReverseGeocodeResult> {
-    console.log(point);
-    this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
+  async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
+    if (this.mapboxClient) {
+      return this.useMapboxGeocoding(point, this.mapboxClient);
+    }
 
+    return this.useLocalGeocoding(point);
+  }
+
+  private async useLocalGeocoding(point: GeoPoint) {
     const [address] = await lookup([point], 1);
     this.logger.verbose(`Raw: ${JSON.stringify(address, null, 2)}`);
 
@@ -77,37 +95,35 @@ export class MetadataRepository implements IMetadataRepository {
     const state = stateParts.length > 0 ? stateParts.join(', ') : null;
     this.logger.debug(`Normalized: ${JSON.stringify({ country, state, city })}`);
 
-    // Mapbox
-    this.mapboxClient = mapboxGeocoding({
-      accessToken: 'pk.eyJ1IjoiYWx0cmFuMTUwMiIsImEiOiJjbDBoaXQyZGkwOTEyM2tvMzd2dzJqcXZwIn0.-Lrg7SfQVnhAwWSNV5HoSQ',
-    });
+    return { country, state, city };
+  }
 
-    const geoCodeInfo: MapiResponse = await this.mapboxClient
+  private async useMapboxGeocoding(point: GeoPoint, mbClient: GeocodeService) {
+    const geoCodeInfo: MapiResponse = await mbClient
       .reverseGeocode({
         query: [point.longitude, point.latitude],
         types: ['country', 'region', 'place'],
       })
       .send();
-    console.log(geoCodeInfo.body);
     const res: [] = geoCodeInfo.body['features'];
 
-    let mbCity = '';
-    let mbState = '';
-    let mbCountry = '';
+    let city = '';
+    let state = '';
+    let country = '';
 
     if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]) {
-      mbCity = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
+      city = res.filter((geoInfo) => geoInfo['place_type'][0] == 'place')[0]['text'];
     }
 
     if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]) {
-      mbState = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
+      state = res.filter((geoInfo) => geoInfo['place_type'][0] == 'region')[0]['text'];
     }
 
     if (res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]) {
-      mbCountry = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
+      country = res.filter((geoInfo) => geoInfo['place_type'][0] == 'country')[0]['text'];
     }
 
-    console.log('Mapbox: ', mbCity, mbState, mbCountry);
+    this.logger.debug(`Mapbox Normalized: ${JSON.stringify({ country, state, city })}`);
 
     return { country, state, city };
   }

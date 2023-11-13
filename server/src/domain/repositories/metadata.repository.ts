@@ -31,7 +31,9 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
 }
 
 export interface IMetadataRepository {
-  init(options: Partial<InitOptions>): Promise<void>;
+  initLocalGeocoding(options: Partial<InitOptions>): Promise<void>;
+  initMapboxGeocoding(accessToken: string): Promise<void>;
+  deinitMapboxGeocoding(): void;
   teardown(): Promise<void>;
   reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult>;
   deleteCache(): Promise<void>;

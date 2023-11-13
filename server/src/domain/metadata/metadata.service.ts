@@ -97,7 +97,17 @@ export class MetadataService {
       return;
     }
 
+    if (reverseGeocoding.useMapbox) {
+      await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
+      await this.repository.initMapboxGeocoding(reverseGeocoding.mapboxAccessToken);
+      await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
+      this.logger.log(`Initialized Mapbox reverse geocoder`);
+      return;
+    }
+
     try {
+      this.repository.deinitMapboxGeocoding();
+
       if (deleteCache) {
         await this.repository.deleteCache();
       } else if (this.oldCities && this.oldCities === citiesFileOverride) {
@@ -105,7 +115,7 @@ export class MetadataService {
       }
 
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.repository.init({ citiesFileOverride });
+      await this.repository.initLocalGeocoding({ citiesFileOverride });
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log(`Initialized local reverse geocoder with ${citiesFileOverride}`);

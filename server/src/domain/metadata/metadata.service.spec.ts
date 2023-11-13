@@ -91,7 +91,7 @@ describe(MetadataService.name, () => {
       await sut.init();
       expect(metadataMock.deleteCache).not.toHaveBeenCalled();
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
-      expect(metadataMock.init).toHaveBeenCalledTimes(1);
+      expect(metadataMock.initLocalGeocoding).toHaveBeenCalledTimes(1);
       expect(jobMock.resume).toHaveBeenCalledTimes(1);
     });
 
@@ -100,7 +100,7 @@ describe(MetadataService.name, () => {
 
       expect(metadataMock.deleteCache).not.toHaveBeenCalled();
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
-      expect(metadataMock.init).toHaveBeenCalledTimes(1);
+      expect(metadataMock.initLocalGeocoding).toHaveBeenCalledTimes(1);
       expect(jobMock.resume).toHaveBeenCalledTimes(1);
     });
 
@@ -113,7 +113,7 @@ describe(MetadataService.name, () => {
 
       expect(metadataMock.deleteCache).not.toHaveBeenCalled();
       expect(jobMock.pause).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
-      expect(metadataMock.init).toHaveBeenCalledWith({ citiesFileOverride: CitiesFile.CITIES_1000 });
+      expect(metadataMock.initLocalGeocoding).toHaveBeenCalledWith({ citiesFileOverride: CitiesFile.CITIES_1000 });
       expect(jobMock.resume).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
     });
 
@@ -122,7 +122,7 @@ describe(MetadataService.name, () => {
 
       expect(metadataMock.deleteCache).toHaveBeenCalled();
       expect(jobMock.pause).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
-      expect(metadataMock.init).toHaveBeenCalledWith({ citiesFileOverride: CitiesFile.CITIES_500 });
+      expect(metadataMock.initLocalGeocoding).toHaveBeenCalledWith({ citiesFileOverride: CitiesFile.CITIES_500 });
       expect(jobMock.resume).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
     });
   });
