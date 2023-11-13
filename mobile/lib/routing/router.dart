@@ -44,7 +44,7 @@ import 'package:immich_mobile/modules/search/views/search_result_page.dart';
 import 'package:immich_mobile/modules/settings/views/settings_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
-import 'package:immich_mobile/routing/gallery_permission_guard.dart';
+import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
@@ -77,7 +77,7 @@ part 'router.gr.dart';
     AutoRoute(page: ChangePasswordPage),
     CustomRoute(
       page: TabControllerPage,
-      guards: [AuthGuard, DuplicateGuard, GalleryPermissionGuard],
+      guards: [AuthGuard, DuplicateGuard],
       children: [
         AutoRoute(page: HomePage, guards: [AuthGuard, DuplicateGuard]),
         AutoRoute(page: SearchPage, guards: [AuthGuard, DuplicateGuard]),
@@ -88,10 +88,13 @@ part 'router.gr.dart';
     ),
     AutoRoute(
       page: GalleryViewerPage,
-      guards: [AuthGuard, DuplicateGuard, GalleryPermissionGuard],
+      guards: [AuthGuard, DuplicateGuard],
     ),
     AutoRoute(page: VideoViewerPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: BackupControllerPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(
+      page: BackupControllerPage,
+      guards: [AuthGuard, DuplicateGuard, BackupPermissionGuard],
+    ),
     AutoRoute(page: SearchResultPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: CuratedLocationPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: CreateAlbumPage, guards: [AuthGuard, DuplicateGuard]),
@@ -179,8 +182,8 @@ class AppRouter extends _$AppRouter {
   ) : super(
           authGuard: AuthGuard(_apiService),
           duplicateGuard: DuplicateGuard(),
-          galleryPermissionGuard:
-              GalleryPermissionGuard(galleryPermissionNotifier),
+          backupPermissionGuard:
+              BackupPermissionGuard(galleryPermissionNotifier),
         );
 }
 
