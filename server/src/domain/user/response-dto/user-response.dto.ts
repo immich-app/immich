@@ -38,7 +38,14 @@ export const mapSimpleUser = (entity: UserEntity): UserDto => {
     email: entity.email,
     name: entity.name,
     profileImagePath: entity.profileImagePath,
-    avatarColor: entity.avatarColor ?? getRandomAvatarColor(entity.email.length),
+    avatarColor:
+      entity.avatarColor ??
+      getRandomAvatarColor(
+        entity.email
+          .split('')
+          .map((letter) => letter.charCodeAt(0))
+          .reduce((a, b) => a + b, 0),
+      ),
   };
 };
 
