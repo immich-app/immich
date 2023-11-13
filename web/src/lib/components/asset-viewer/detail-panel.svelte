@@ -77,6 +77,14 @@
     cleanBoundingBox();
   };
 
+  const handleRefreshPeople = async () => {
+    await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
+      people = res.data?.people || [];
+      textarea.value = res.data?.exifInfo?.description || '';
+    });
+    showEditFaces = false;
+  };
+
   const handleShowBoundingBox = (index: number) => {
     setBoundingBoxesArray(people[index].faces);
     const results = showBoundingBox(people[index].faces, $photoZoomState);
@@ -404,9 +412,10 @@
 
 {#if showEditFaces}
   <PersonSidePanel
-    bind:createdPeople={customFeaturePhoto}
-    bind:people
     assetId={asset.id}
-    on:close={() => (showEditFaces = false)}
+    on:close={() => {
+      showEditFaces = false;
+    }}
+    on:refresh={handleRefreshPeople}
   />
 {/if}

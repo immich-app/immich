@@ -92,13 +92,18 @@ export class PersonService {
       try {
         const face = await this.repository.getFaceById(data.assetFaceId);
 
-        if (face.personId) {
-          await this.repository.reassignFace(face.id, newPerson.id);
-        }
+        await this.repository.reassignFace(face.id, newPerson.id);
 
         await this.repository.update({
           id: newPerson.id,
           faceAssetId: face.id,
+        });
+
+        await this.jobRepository.queue({
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: {
+            id: newPerson.id,
+          },
         });
 
         if (face.person && face.person.faceAssetId === face.id) {
@@ -110,21 +115,6 @@ export class PersonService {
       } catch (error: Error | any) {
         this.logger.error(`Unable to create a new person`, error?.stack);
       }
-    }
-
-    const newPersonFeaturePhoto = await this.repository.getRandomFace(newPerson.id);
-    if (newPersonFeaturePhoto) {
-      await this.repository.update({
-        id: newPerson.id,
-        faceAssetId: newPersonFeaturePhoto.assetId,
-      });
-
-      await this.jobRepository.queue({
-        name: JobName.GENERATE_PERSON_THUMBNAIL,
-        data: {
-          id: newPerson.id,
-        },
-      });
     }
 
     await this.createNewFeaturePhoto(changeFeaturePhoto);

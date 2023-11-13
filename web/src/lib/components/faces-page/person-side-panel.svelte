@@ -8,9 +8,8 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, AssetFaceResponseDto, PersonWithFacesResponseDto } from '@api';
+  import { api, type PersonResponseDto, AssetFaceResponseDto } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { cloneDeep } from 'lodash-es';
   import { handleError } from '$lib/utils/handle-error';
   import { createEventDispatcher, onMount } from 'svelte';
 
@@ -22,13 +21,31 @@
   import { cleanBoundingBox, showBoundingBox } from '$lib/utils/people-utils';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { setBoundingBoxesArray } from '$lib/stores/people.store';
+  import { websocketStore } from '$lib/stores/websocket';
 
   export let assetId: string;
-  export let createdPeople: (PersonToCreate | null)[];
-  export let people: PersonWithFacesResponseDto[];
+  let numberOfPersonToCreate = 0;
+  let numberOfAssetFaceGenerated = 0;
+  const { onPersonThumbnail } = websocketStore;
+
+  $: {
+    if (selectedPersonToCreate) {
+      numberOfPersonToCreate = selectedPersonToCreate.filter((person) => person !== null).length;
+    }
+  }
+  $: {
+    if ($onPersonThumbnail) {
+      numberOfAssetFaceGenerated++;
+    }
+  }
+
+  $: {
+    if (numberOfPersonToCreate === numberOfAssetFaceGenerated) {
+      dispatch('refresh');
+    }
+  }
 
   let peopleWithFaces: AssetFaceResponseDto[] = [];
-  let createdPeopleClone: (PersonToCreate | null)[];
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
 
@@ -43,7 +60,6 @@
   let showSeletecFaces = false;
   let showLoadingSpinner = false;
 
-  let editedPeople: AssetFaceResponseDto[] = [];
   let isSearchingPeople = false;
   let isCreatingPerson = false;
   let isShowLoadingPeople = false;
@@ -59,10 +75,7 @@
       peopleWithFaces = result.data;
       selectedPersonToCreate = new Array<PersonToCreate | null>(peopleWithFaces.length);
       selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
-      editedPeople = cloneDeep(peopleWithFaces);
 
-      createdPeople = peopleWithFaces.map((face) => createdPeople.find((person) => person?.id === face.id) ?? null);
-      createdPeopleClone = cloneDeep(createdPeople);
       clearTimeout(timeout);
     } catch (error) {
       handleError(error, "Can't get faces");
@@ -93,7 +106,7 @@
   };
 
   const handleShowBoundingBox = (index: number) => {
-    setBoundingBoxesArray(people[index].faces);
+    setBoundingBoxesArray([peopleWithFaces[index]]);
     const [result] = showBoundingBox([peopleWithFaces[index]], $photoZoomState);
     $imageDiv.appendChild(result);
   };
@@ -157,10 +170,6 @@
   };
 
   const handleReset = (index: number) => {
-    editedPeople[index] = cloneDeep(peopleWithFaces[index]);
-    if (createdPeople[index]) {
-      createdPeopleClone[index] = createdPeople[index];
-    }
     if (selectedPersonToReassign[index]) {
       selectedPersonToReassign[index] = null;
     }
@@ -179,23 +188,14 @@
           const personId = selectedPersonToReassign[i]?.id;
 
           if (personId) {
-            const { data } = await api.personApi.reassignFaces({
+            await api.personApi.reassignFaces({
               id: personId,
               assetFaceUpdateDto: { data: [{ assetFaceId: peopleWithFaces[i].id }] },
             });
-            const indexToUpdate = people.findIndex((person) => person.id === data[0].id);
-            if (indexToUpdate !== -1) {
-              people[indexToUpdate].faces.push(peopleWithFaces[i]);
-            } else {
-              people.push({ ...data[0], faces: [peopleWithFaces[i]] });
-            }
           } else if (selectedPersonToCreate[i]) {
-            const { data } = await api.personApi.createPerson({
+            await api.personApi.createPerson({
               assetFaceUpdateDto: { data: [{ assetFaceId: peopleWithFaces[i].id }] },
             });
-            peopleWithFaces[i].person = data;
-            people.push({ ...data, faces: [peopleWithFaces[i]] });
-            selectedPersonToCreate = selectedPersonToCreate.splice(i, 1);
           }
         }
 
@@ -207,8 +207,10 @@
         handleError(error, "Can't apply changes");
       }
     }
-    createdPeople = selectedPersonToCreate;
-    dispatch('close');
+
+    if (numberOfPersonToCreate === 0) {
+      dispatch('refresh');
+    }
   };
 
   const handleCreatePerson = async () => {
@@ -220,7 +222,7 @@
         if (newFeaturePhoto) {
           selectedPersonToCreate[i] = { thumbnail: newFeaturePhoto, id: peopleWithFaces[i].id };
         }
-        createdPeopleClone[i] = null;
+
         break;
       }
     }
@@ -231,8 +233,6 @@
   const handleReassignFace = (person: PersonResponseDto | null) => {
     if (person) {
       selectedPersonToReassign[editedPerson] = person;
-      editedPeople[editedPerson].person = person;
-      createdPeopleClone[editedPerson] = null;
       showSeletecFaces = false;
     }
   };
@@ -278,7 +278,7 @@
           <LoadingSpinner />
         </div>
       {:else}
-        {#each editedPeople as person, index}
+        {#each peopleWithFaces as person, index}
           {#if person.person}
             <div class="relative z-[20001] h-[115px] w-[95px]">
               <div
@@ -292,18 +292,23 @@
                 <ImageThumbnail
                   curve
                   shadow
-                  url={createdPeopleClone[index]?.thumbnail ||
-                    selectedPersonToCreate[index]?.thumbnail ||
-                    api.getPeopleThumbnailUrl(person.person.id)}
+                  url={selectedPersonToCreate[index]?.thumbnail ||
+                    api.getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || person.person.id)}
                   altText={person.person?.name || ''}
                   title={person.person?.name || ''}
                   widthStyle="90px"
                   heightStyle="90px"
                   thumbhash={null}
                 />
-                <p class="relative mt-1 truncate font-medium" title={person.person?.name}>
-                  {person.person?.name}
-                </p>
+                {#if !selectedPersonToCreate[index]?.thumbnail}
+                  <p class="relative mt-1 truncate font-medium" title={person.person?.name}>
+                    {#if selectedPersonToReassign[index]?.id}
+                      {selectedPersonToReassign[index]?.name}
+                    {:else}
+                      {person.person?.name}
+                    {/if}
+                  </p>
+                {/if}
 
                 <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700">
                   {#if selectedPersonToCreate[index] || selectedPersonToReassign[index]}
