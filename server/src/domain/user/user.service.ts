@@ -96,20 +96,18 @@ export class UserService {
     const { profileImagePath: oldpath } = await this.findOrFail(authUser.id, { withDeleted: false });
     const updatedUser = await this.userRepository.update(authUser.id, { profileImagePath: fileInfo.path });
     if (oldpath !== '') {
-      const files = [oldpath];
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldpath] } });
     }
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
   }
 
   async deleteProfileImage(authUser: AuthUserDto): Promise<void> {
     const user = await this.findOrFail(authUser.id, { withDeleted: false });
-    if (user.profileImagePath !== '') {
-      await this.userRepository.update(authUser.id, { profileImagePath: '' });
-      const files = [user.profileImagePath];
-      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    if (user.profileImagePath === '') {
+      throw new BadRequestException("Can't delete a missing profile Image");
     }
-    return;
+    await this.userRepository.update(authUser.id, { profileImagePath: '' });
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 
   async getProfileImage(id: string): Promise<ImmichReadStream> {

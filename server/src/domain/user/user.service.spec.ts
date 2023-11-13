@@ -355,10 +355,10 @@ describe(UserService.name, () => {
   });
 
   describe('deleteProfileImage', () => {
-    it('should do nothing if the user has no profile image', async () => {
+    it('should send an http error has no profile image', async () => {
       userMock.get.mockResolvedValue(userStub.admin);
 
-      await sut.deleteProfileImage(userStub.admin);
+      await expect(sut.deleteProfileImage(userStub.admin)).rejects.toBeInstanceOf(BadRequestException);
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
