@@ -19,6 +19,7 @@
   const toTimelineY = (scrollY: number) => Math.round((scrollY * $assetStore.timelineHeight) / height);
 
   const HOVER_DATE_HEIGHT = 30;
+  const MIN_YEAR_LABEL_DISTANCE = 16;
 
   $: hoverY = height - windowHeight + clientY;
   $: scrollY = toScrollY(timelineY);
@@ -32,21 +33,21 @@
   }
 
   const calculateSegments = (buckets: AssetBucket[]) => {
-    var height: number = 0;
-    var prev!: Segment;
+    let height: number = 0;
+    let prev: Segment;
     return buckets.map((bucket) => {
-      var segment = new Segment();
+      const segment = new Segment();
       segment.count = bucket.assets.length;
       segment.height = toScrollY(bucket.bucketHeight);
       segment.timeGroup = bucket.bucketDate;
       segment.date = fromLocalDateTime(segment.timeGroup);
 
-      if (prev?.date.year != segment.date.year && (!prev || height > 16)) {
+      if (prev?.date.year !== segment.date.year && (!prev || height > MIN_YEAR_LABEL_DISTANCE)) {
         segment.hasLabel = true;
         height = 0;
       }
 
-      height! += segment.height;
+      height += segment.height;
       prev = segment;
       return segment;
     });
