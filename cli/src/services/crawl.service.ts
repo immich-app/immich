@@ -1,6 +1,5 @@
 import { CrawlOptionsDto } from 'src/cores/dto/crawl-options-dto';
 import { glob } from 'glob';
-import * as fs from 'fs';
 
 export class CrawlService {
   private readonly extensions!: string[];
