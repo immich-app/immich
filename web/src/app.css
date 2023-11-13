@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* light */
+    --immich-primary: 66 80 175;
+    --immich-bg: 255 255 255;
+    --immich-fg: 0 0 0;
+    --immich-gray: 246 246 244;
+    --immich-error: 229 115 115;
+    --immich-success: 129 199 132;
+    --immich-warning: 255 183 77;
+
+    /* dark */
+    --immich-dark-primary: 172 203 250;
+    --immich-dark-bg: 0 0 0;
+    --immich-dark-fg: 229 231 235;
+    --immich-dark-gray: 33 33 33;
+    --immich-dark-error: 211 47 47;
+    --immich-dark-success: 56 142 60;
+    --immich-dark-warning: 245 124 0;
+  }
+}
+
 @font-face {
   font-family: 'Work Sans';
   src: url('$lib/assets/fonts/WorkSans-VariableFont_wght.ttf') format('truetype-variations');
