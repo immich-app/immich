@@ -51,8 +51,11 @@
   const updateAssetQuery = (asset?: AssetResponseDto) => {
     let query = new URLSearchParams($page.url.searchParams.toString());
 
-    if (asset) query.set('asset', asset.id);
-    else query.delete('asset');
+    if (asset) {
+      query.set('asset', asset.id);
+    } else {
+      query.delete('asset');
+    }
 
     goto(`?${query.toString()}`, { keepFocus: true, replaceState: true, noScroll: true });
   };
@@ -79,7 +82,9 @@
 
     // initial ID setting - for example, when refreshing the page with a url param already set
     const assetId = $page.url.searchParams.get('asset');
-    if (assetId) assetViewingStore.setAssetId(assetId);
+    if (assetId) {
+      assetViewingStore.setAssetId(assetId);
+    }
   });
 
   onDestroy(() => {
