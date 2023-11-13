@@ -66,7 +66,7 @@ class ImageClassifier(InferenceModel):
     def _predict(self, image: Image.Image | bytes) -> list[str]:
         if isinstance(image, bytes):
             image = Image.open(BytesIO(image))
-        predictions: list[dict[str, Any]] = self.model(image)  # type: ignore
+        predictions: list[dict[str, Any]] = self.model(image)
         tags = [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
 
         return tags

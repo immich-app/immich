@@ -8,7 +8,7 @@ from insightface.model_zoo import ArcFaceONNX, RetinaFace
 from insightface.utils.face_align import norm_crop
 
 from app.config import clean_name
-from app.schemas import ModelType, ndarray_f32
+from app.schemas import BoundingBox, Face, ModelType, ndarray_f32
 
 from .base import InferenceModel
 
@@ -52,7 +52,7 @@ class FaceRecognizer(InferenceModel):
         )
         self.rec_model.prepare(ctx_id=0)
 
-    def _predict(self, image: ndarray_f32 | bytes) -> list[dict[str, Any]]:
+    def _predict(self, image: ndarray_f32 | bytes) -> list[Face]:
         if isinstance(image, bytes):
             image = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)
         bboxes, kpss = self.det_model.detect(image)
@@ -67,21 +67,20 @@ class FaceRecognizer(InferenceModel):
         height, width, _ = image.shape
         for (x1, y1, x2, y2), score, kps in zip(bboxes, scores, kpss):
             cropped_img = norm_crop(image, kps)
-            embedding = self.rec_model.get_feat(cropped_img)[0].tolist()
-            results.append(
-                {
-                    "imageWidth": width,
-                    "imageHeight": height,
-                    "boundingBox": {
-                        "x1": x1,
-                        "y1": y1,
-                        "x2": x2,
-                        "y2": y2,
-                    },
-                    "score": score,
-                    "embedding": embedding,
-                }
-            )
+            embedding: ndarray_f32 = self.rec_model.get_feat(cropped_img)[0]
+            face: Face = {
+                "imageWidth": width,
+                "imageHeight": height,
+                "boundingBox": {
+                    "x1": x1,
+                    "y1": y1,
+                    "x2": x2,
+                    "y2": y2,
+                },
+                "score": score,
+                "embedding": embedding,
+            }
+            results.append(face)
         return results
 
     @property

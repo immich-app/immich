@@ -99,7 +99,11 @@ class UserService {
       users,
       sharedWith,
       compare: (User a, User b) => a.id.compareTo(b.id),
-      both: (User a, User b) => a.isPartnerSharedWith = true,
+      both: (User a, User b) {
+        a.isPartnerSharedWith = true;
+        a.inTimeline = b.inTimeline;
+        return true;
+      },
       onlyFirst: (_) {},
       onlySecond: (_) {},
     );

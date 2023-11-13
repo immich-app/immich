@@ -23,4 +23,11 @@
       "matchUpdateTypes": ["minor", "patch"]
     }
   ],
+  "ignoreDeps": [
+    "http",
+    "latlong2",
+    "vector_map_tiles",
+    "flutter_map",
+    "flutter_map_heatmap"
+  ],
 }
