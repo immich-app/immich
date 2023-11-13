@@ -42,8 +42,8 @@ export class MetadataRepository implements IMetadataRepository {
 
   async initLocalGeocoding(options: Partial<InitOptions>): Promise<void> {
     return new Promise<void>((resolve) => {
-      this.mapboxClient = undefined;
-      console.log('init local geocoding', this.mapboxClient);
+      this.deinitMapboxGeocoding();
+
       geocoder.init(
         {
           load: {
