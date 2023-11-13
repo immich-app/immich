@@ -47,6 +47,7 @@ class User {
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled,
+        avatarColor = dto.avatarColor.toAvatarColor(),
         inTimeline = dto.inTimeline;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
@@ -113,7 +114,7 @@ enum AvatarColorEnum {
   amber,
 }
 
-extension AvatarColorEnumHelper on UserResponseDtoAvatarColorEnum {
+extension UserResponseAvatarColorEnumHelper on UserResponseDtoAvatarColorEnum {
   AvatarColorEnum toAvatarColor() {
     switch (this) {
       case UserResponseDtoAvatarColorEnum.primary:
@@ -135,6 +136,35 @@ extension AvatarColorEnumHelper on UserResponseDtoAvatarColorEnum {
       case UserResponseDtoAvatarColorEnum.gray:
         return AvatarColorEnum.gray;
       case UserResponseDtoAvatarColorEnum.amber:
+        return AvatarColorEnum.amber;
+    }
+    return AvatarColorEnum.primary;
+  }
+}
+
+extension PartnerResponseAvatarColorEnumHelper
+    on PartnerResponseDtoAvatarColorEnum {
+  AvatarColorEnum toAvatarColor() {
+    switch (this) {
+      case PartnerResponseDtoAvatarColorEnum.primary:
+        return AvatarColorEnum.primary;
+      case PartnerResponseDtoAvatarColorEnum.pink:
+        return AvatarColorEnum.pink;
+      case PartnerResponseDtoAvatarColorEnum.red:
+        return AvatarColorEnum.red;
+      case PartnerResponseDtoAvatarColorEnum.yellow:
+        return AvatarColorEnum.yellow;
+      case PartnerResponseDtoAvatarColorEnum.blue:
+        return AvatarColorEnum.blue;
+      case PartnerResponseDtoAvatarColorEnum.green:
+        return AvatarColorEnum.green;
+      case PartnerResponseDtoAvatarColorEnum.purple:
+        return AvatarColorEnum.purple;
+      case PartnerResponseDtoAvatarColorEnum.orange:
+        return AvatarColorEnum.orange;
+      case PartnerResponseDtoAvatarColorEnum.gray:
+        return AvatarColorEnum.gray;
+      case PartnerResponseDtoAvatarColorEnum.amber:
         return AvatarColorEnum.amber;
     }
     return AvatarColorEnum.primary;
