@@ -3,6 +3,8 @@ import { UserEntity } from '@app/infra/entities';
 export class UserDto {
   id!: string;
   name!: string;
+  firstname?: string;
+  lastname?: string;
   email!: string;
   profileImagePath!: string;
 }

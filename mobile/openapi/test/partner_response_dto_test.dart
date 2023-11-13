@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // String firstname
+    test('to test the property `firstname`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -48,6 +53,11 @@ void main() {
 
     // bool isAdmin
     test('to test the property `isAdmin`', () async {
+      // TODO
+    });
+
+    // String lastname
+    test('to test the property `lastname`', () async {
       // TODO
     });
 

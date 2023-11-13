@@ -7648,6 +7648,9 @@
             "nullable": true,
             "type": "string"
           },
+          "firstname": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -7656,6 +7659,9 @@
           },
           "isAdmin": {
             "type": "boolean"
+          },
+          "lastname": {
+            "type": "string"
           },
           "memoriesEnabled": {
             "type": "boolean"
@@ -9207,7 +9213,13 @@
           "email": {
             "type": "string"
           },
+          "firstname": {
+            "type": "string"
+          },
           "id": {
+            "type": "string"
+          },
+          "lastname": {
             "type": "string"
           },
           "name": {
@@ -9243,11 +9255,17 @@
             "nullable": true,
             "type": "string"
           },
+          "firstname": {
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
           "isAdmin": {
             "type": "boolean"
+          },
+          "lastname": {
+            "type": "string"
           },
           "memoriesEnabled": {
             "type": "boolean"

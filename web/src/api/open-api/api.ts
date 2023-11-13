@@ -2384,6 +2384,12 @@ export interface PartnerResponseDto {
      * @type {string}
      * @memberof PartnerResponseDto
      */
+    'firstname'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
     'id': string;
     /**
      * 
@@ -2397,6 +2403,12 @@ export interface PartnerResponseDto {
      * @memberof PartnerResponseDto
      */
     'isAdmin': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof PartnerResponseDto
+     */
+    'lastname'?: string;
     /**
      * 
      * @type {boolean}
@@ -4453,7 +4465,19 @@ export interface UserDto {
      * @type {string}
      * @memberof UserDto
      */
+    'firstname'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
     'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserDto
+     */
+    'lastname'?: string;
     /**
      * 
      * @type {string}
@@ -4502,6 +4526,12 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
+    'firstname'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
     'id': string;
     /**
      * 
@@ -4509,6 +4539,12 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'isAdmin': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'lastname'?: string;
     /**
      * 
      * @type {boolean}

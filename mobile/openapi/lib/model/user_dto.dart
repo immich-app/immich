@@ -14,14 +14,32 @@ class UserDto {
   /// Returns a new [UserDto] instance.
   UserDto({
     required this.email,
+    this.firstname,
     required this.id,
+    this.lastname,
     required this.name,
     required this.profileImagePath,
   });
 
   String email;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? firstname;
+
   String id;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? lastname;
 
   String name;
 
@@ -30,7 +48,9 @@ class UserDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserDto &&
      other.email == email &&
+     other.firstname == firstname &&
      other.id == id &&
+     other.lastname == lastname &&
      other.name == name &&
      other.profileImagePath == profileImagePath;
 
@@ -38,17 +58,29 @@ class UserDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
+    (firstname == null ? 0 : firstname!.hashCode) +
     (id.hashCode) +
+    (lastname == null ? 0 : lastname!.hashCode) +
     (name.hashCode) +
     (profileImagePath.hashCode);
 
   @override
-  String toString() => 'UserDto[email=$email, id=$id, name=$name, profileImagePath=$profileImagePath]';
+  String toString() => 'UserDto[email=$email, firstname=$firstname, id=$id, lastname=$lastname, name=$name, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
+    if (this.firstname != null) {
+      json[r'firstname'] = this.firstname;
+    } else {
+    //  json[r'firstname'] = null;
+    }
       json[r'id'] = this.id;
+    if (this.lastname != null) {
+      json[r'lastname'] = this.lastname;
+    } else {
+    //  json[r'lastname'] = null;
+    }
       json[r'name'] = this.name;
       json[r'profileImagePath'] = this.profileImagePath;
     return json;
@@ -63,7 +95,9 @@ class UserDto {
 
       return UserDto(
         email: mapValueOfType<String>(json, r'email')!,
+        firstname: mapValueOfType<String>(json, r'firstname'),
         id: mapValueOfType<String>(json, r'id')!,
+        lastname: mapValueOfType<String>(json, r'lastname'),
         name: mapValueOfType<String>(json, r'name')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );

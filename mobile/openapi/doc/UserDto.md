@@ -9,7 +9,9 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **email** | **String** |  | 
+**firstname** | **String** |  | [optional] 
 **id** | **String** |  | 
+**lastname** | **String** |  | [optional] 
 **name** | **String** |  | 
 **profileImagePath** | **String** |  | 
 
