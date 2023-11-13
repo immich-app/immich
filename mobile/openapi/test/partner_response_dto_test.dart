@@ -36,6 +36,7 @@ void main() {
       // TODO
     });
 
+    // @deprecated use name
     // String firstname
     test('to test the property `firstname`', () async {
       // TODO
@@ -56,6 +57,7 @@ void main() {
       // TODO
     });
 
+    // @deprecated use name
     // String lastname
     test('to test the property `lastname`', () async {
       // TODO

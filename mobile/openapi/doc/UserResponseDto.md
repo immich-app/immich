@@ -12,10 +12,10 @@ Name | Type | Description | Notes
 **deletedAt** | [**DateTime**](DateTime.md) |  | 
 **email** | **String** |  | 
 **externalPath** | **String** |  | 
-**firstname** | **String** |  | [optional] 
+**firstname** | **String** | @deprecated use name | [optional] 
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | 
-**lastname** | **String** |  | [optional] 
+**lastname** | **String** | @deprecated use name | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 
 **name** | **String** |  | 
 **oauthId** | **String** |  | 
