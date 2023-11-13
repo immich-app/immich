@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
@@ -36,7 +35,7 @@ class User {
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled ?? false,
-        avatarColor = dto.avatarColor.toAvatarColor(),
+        avatarColor = AvatarColorEnumHelper(dto.avatarColor).toAvatarColor(),
         inTimeline = false;
 
   User.fromPartnerDto(PartnerResponseDto dto)
@@ -49,7 +48,7 @@ class User {
         profileImagePath = dto.profileImagePath,
         isAdmin = dto.isAdmin,
         memoryEnabled = dto.memoriesEnabled ?? false,
-        avatarColor = dto.avatarColor.toAvatarColor(),
+        avatarColor = AvatarColorEnumHelper(dto.avatarColor).toAvatarColor(),
         inTimeline = dto.inTimeline ?? false;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
@@ -116,57 +115,28 @@ enum AvatarColorEnum {
   amber,
 }
 
-extension UserResponseAvatarColorEnumHelper on UserAvatarColor {
+extension AvatarColorEnumHelper on UserAvatarColor {
   AvatarColorEnum toAvatarColor() {
     switch (this) {
-      case UserResponseDtoAvatarColorEnum.primary:
+      case UserAvatarColor.primary:
         return AvatarColorEnum.primary;
-      case UserResponseDtoAvatarColorEnum.pink:
+      case UserAvatarColor.pink:
         return AvatarColorEnum.pink;
-      case UserResponseDtoAvatarColorEnum.red:
+      case UserAvatarColor.red:
         return AvatarColorEnum.red;
-      case UserResponseDtoAvatarColorEnum.yellow:
+      case UserAvatarColor.yellow:
         return AvatarColorEnum.yellow;
-      case UserResponseDtoAvatarColorEnum.blue:
+      case UserAvatarColor.blue:
         return AvatarColorEnum.blue;
-      case UserResponseDtoAvatarColorEnum.green:
+      case UserAvatarColor.green:
         return AvatarColorEnum.green;
-      case UserResponseDtoAvatarColorEnum.purple:
+      case UserAvatarColor.purple:
         return AvatarColorEnum.purple;
-      case UserResponseDtoAvatarColorEnum.orange:
+      case UserAvatarColor.orange:
         return AvatarColorEnum.orange;
-      case UserResponseDtoAvatarColorEnum.gray:
+      case UserAvatarColor.gray:
         return AvatarColorEnum.gray;
-      case UserResponseDtoAvatarColorEnum.amber:
-        return AvatarColorEnum.amber;
-    }
-    return AvatarColorEnum.primary;
-  }
-}
-
-extension PartnerResponseAvatarColorEnumHelper
-    on PartnerResponseDtoAvatarColorEnum {
-  AvatarColorEnum toAvatarColor() {
-    switch (this) {
-      case PartnerResponseDtoAvatarColorEnum.primary:
-        return AvatarColorEnum.primary;
-      case PartnerResponseDtoAvatarColorEnum.pink:
-        return AvatarColorEnum.pink;
-      case PartnerResponseDtoAvatarColorEnum.red:
-        return AvatarColorEnum.red;
-      case PartnerResponseDtoAvatarColorEnum.yellow:
-        return AvatarColorEnum.yellow;
-      case PartnerResponseDtoAvatarColorEnum.blue:
-        return AvatarColorEnum.blue;
-      case PartnerResponseDtoAvatarColorEnum.green:
-        return AvatarColorEnum.green;
-      case PartnerResponseDtoAvatarColorEnum.purple:
-        return AvatarColorEnum.purple;
-      case PartnerResponseDtoAvatarColorEnum.orange:
-        return AvatarColorEnum.orange;
-      case PartnerResponseDtoAvatarColorEnum.gray:
-        return AvatarColorEnum.gray;
-      case PartnerResponseDtoAvatarColorEnum.amber:
+      case UserAvatarColor.amber:
         return AvatarColorEnum.amber;
     }
     return AvatarColorEnum.primary;
