@@ -186,10 +186,10 @@ Typesense URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                                                         | Default             | Services         |
+| Variable                                         | Description                                                                         |       Default       | Services         |
 | :----------------------------------------------- | :---------------------------------------------------------------------------------- | :-----------------: | :--------------- |
 | `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if <= 0)                   |        `300`        | machine learning |
-| `MACHINE_LEARNING_TTL_POLL_S`                    | The frequency with which the model TTL is checked for inactivity (disabled if <= 0) |         `10`        | machine learning |
+| `MACHINE_LEARNING_TTL_POLL_S`                    | The frequency with which the model TTL is checked for inactivity (disabled if <= 0) |        `10`         | machine learning |
 | `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                                               |      `/cache`       | machine learning |
 | `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if <= 0)                          | number of CPU cores | machine learning |
 | `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                                 |         `1`         | machine learning |
