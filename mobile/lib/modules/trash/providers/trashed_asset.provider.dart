@@ -5,6 +5,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
+import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
@@ -107,9 +108,9 @@ final trashProvider = StateNotifierProvider<TrashNotifier, bool>((ref) {
   );
 });
 
-final trashedAssetsProvider = StreamProvider<RenderList>((ref) async* {
+final trashedAssetsProvider = StreamProvider<RenderList>((ref) {
   final user = ref.read(currentUserProvider);
-  if (user == null) return;
+  if (user == null) return const Stream.empty();
   final query = ref
       .watch(dbProvider)
       .assets
@@ -117,9 +118,5 @@ final trashedAssetsProvider = StreamProvider<RenderList>((ref) async* {
       .ownerIdEqualTo(user.isarId)
       .isTrashedEqualTo(true)
       .sortByFileCreatedAt();
-  const groupBy = GroupAssetsBy.none;
-  yield await RenderList.fromQuery(query, groupBy);
-  await for (final _ in query.watchLazy()) {
-    yield await RenderList.fromQuery(query, groupBy);
-  }
+  return renderListGeneratorWithGroupBy(query, GroupAssetsBy.none);
 });

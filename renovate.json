@@ -10,12 +10,24 @@
     {
       "matchFileNames": ["server/**"],
       "groupName": "server",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "excludePackagePrefixes": ["exiftool"]
+    },
+    {
+      "groupName": "exiftool",
+      "matchPackagePrefixes": ["exiftool"]
     },
     {
       "matchFileNames": ["web/**"],
       "groupName": "web",
       "matchUpdateTypes": ["minor", "patch"]
     }
+  ],
+  "ignoreDeps": [
+    "http",
+    "latlong2",
+    "vector_map_tiles",
+    "flutter_map",
+    "flutter_map_heatmap"
   ],
 }

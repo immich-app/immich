@@ -6,7 +6,7 @@ from aiocache.plugins import BasePlugin, TimingPlugin
 
 from app.models import from_model_type
 
-from ..schemas import ModelType
+from ..schemas import ModelType, has_profiling
 from .base import InferenceModel
 
 
@@ -50,20 +50,20 @@ class ModelCache:
 
         key = f"{model_name}{model_type.value}{model_kwargs.get('mode', '')}"
         async with OptimisticLock(self.cache, key) as lock:
-            model = await self.cache.get(key)
+            model: InferenceModel | None = await self.cache.get(key)
             if model is None:
                 model = from_model_type(model_type, model_name, **model_kwargs)
                 await lock.cas(model, ttl=self.ttl)
         return model
 
     async def get_profiling(self) -> dict[str, float] | None:
-        if not hasattr(self.cache, "profiling"):
+        if not has_profiling(self.cache):
             return None
 
-        return self.cache.profiling  # type: ignore
+        return self.cache.profiling
 
 
-class RevalidationPlugin(BasePlugin):
+class RevalidationPlugin(BasePlugin):  # type: ignore[misc]
     """Revalidates cache item's TTL after cache hit."""
 
     async def post_get(
