@@ -20,9 +20,8 @@ export class UserDto {
   email!: string;
   profileImagePath!: string;
   @IsEnum(UserAvatarColor)
-  @Optional()
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
-  avatarColor!: UserAvatarColor | null;
+  avatarColor!: UserAvatarColor;
 }
 
 export class UserResponseDto extends UserDto {

@@ -124,7 +124,7 @@ export class UserService {
       throw new BadRequestException('Admin account does not exist');
     }
 
-    const providedPassword = await ask(admin);
+    const providedPassword = await ask(mapUser(admin));
     const password = providedPassword || randomBytes(24).toString('base64').replace(/\W/g, '');
 
     await this.userCore.updateUser(admin, admin.id, { password });
