@@ -76,6 +76,7 @@ Future<void> initApp() async {
 
   PlatformDispatcher.instance.onError = (error, stack) {
     log.severe('Catch all error: ${error.toString()} - $error', error, stack);
+    print(stack);
     return true;
   };
 
