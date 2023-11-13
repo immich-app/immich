@@ -86,6 +86,14 @@ class HomePage extends HookConsumerWidget {
             SelectionAssetState.fromSelection(selectedAssets);
       }
 
+      errorBuilder(String? msg) => msg != null && msg.isNotEmpty
+          ? () => ImmichToast.show(
+                context: context,
+                msg: msg,
+                gravity: ToastGravity.BOTTOM,
+              )
+          : null;
+
       Iterable<Asset> remoteOnly(
         Iterable<Asset> assets, {
         void Function()? errorCallback,
@@ -117,13 +125,6 @@ class HomePage extends HookConsumerWidget {
         String? ownerErrorMessage,
       }) {
         final assets = selection.value;
-        errorBuilder(String? msg) => msg != null && msg.isNotEmpty
-            ? () => ImmichToast.show(
-                  context: context,
-                  msg: msg,
-                  gravity: ToastGravity.BOTTOM,
-                )
-            : null;
         return remoteOnly(
           ownedOnly(assets, errorCallback: errorBuilder(ownerErrorMessage)),
           errorCallback: errorBuilder(localErrorMessage),
@@ -175,12 +176,16 @@ class HomePage extends HookConsumerWidget {
       void onDelete() async {
         processing.value = true;
         try {
+          final toDelete = ownedOnly(
+            selection.value,
+            errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
+          ).toList();
           await ref
               .read(assetProvider.notifier)
-              .deleteAssets(ownedOnly(selection.value), force: !trashEnabled);
+              .deleteAssets(toDelete, force: !trashEnabled);
 
-          final hasRemote = selection.value.any((a) => a.isRemote);
-          final assetOrAssets = selection.value.length > 1 ? 'assets' : 'asset';
+          final hasRemote = toDelete.any((a) => a.isRemote);
+          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
           final trashOrRemoved =
               !trashEnabled ? 'deleted permanently' : 'trashed';
           if (hasRemote) {

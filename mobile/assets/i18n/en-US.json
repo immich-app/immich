@@ -173,6 +173,7 @@
   "home_page_favorite_err_partner": "Can not favorite partner assets yet, skipping",
   "home_page_album_err_partner": "Can not add partner assets to an album yet, skipping",
   "home_page_archive_err_partner": "Can not archive partner assets, skipping",
+  "home_page_delete_err_partner": "Can not delete partner assets, skipping",
   "image_viewer_page_state_provider_download_error": "Download Error",
   "image_viewer_page_state_provider_download_success": "Download Success",
   "image_viewer_page_state_provider_share_error": "Share Error",
