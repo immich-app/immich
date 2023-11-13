@@ -28,7 +28,7 @@ program
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action(async (paths, options) => {
-    options.excludePatterns = options.ignore;
+    options.exclusionPatterns = options.ignore;
     await new Upload().run(paths, options);
   });
 

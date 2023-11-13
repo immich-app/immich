@@ -122,10 +122,14 @@ You can automatically create albums based on the folder name by passing the `--a
 immich upload --album --recursive directory/
 ```
 
-It is possible to skip assets matching a glob pattern by passing the `--ignore` option. See [the library documentation](docs/features/libraries.md) on how to use glob patterns.
+It is possible to skip assets matching a glob pattern by passing the `--ignore` option. See [the library documentation](docs/features/libraries.md) on how to use glob patterns. You can add several exclusion patterns if needed.
 
 ```bash
 immich upload --ignore **/Raw/** --recursive directory/
+```
+
+```bash
+immich upload --ignore **/Raw/** **/*.tif --recursive directory/
 ```
 
 ### Obtain the API Key

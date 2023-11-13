@@ -1,6 +1,6 @@
 export class UploadOptionsDto {
   recursive = false;
-  excludePatterns!: string[];
+  exclusionPatterns!: string[];
   dryRun = false;
   skipHash = false;
   delete = false;
