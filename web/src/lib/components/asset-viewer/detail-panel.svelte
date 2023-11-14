@@ -333,7 +333,7 @@
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
-        <UserAvatar user={asset.owner} size="md" autoColor />
+        <UserAvatar user={asset.owner} size="md" />
       </div>
 
       <div class="mb-auto mt-auto">

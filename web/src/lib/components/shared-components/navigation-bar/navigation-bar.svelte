@@ -124,7 +124,9 @@
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
-            <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {#key user}
+              <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {/key}
           </button>
 
           {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
@@ -139,7 +141,7 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel {user} on:logout={logOut} />
+            <AccountInfoPanel bind:user on:logout={logOut} />
           {/if}
         </div>
       </section>

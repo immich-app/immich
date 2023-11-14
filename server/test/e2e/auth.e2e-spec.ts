@@ -18,6 +18,7 @@ const password = 'Password123';
 const email = 'admin@immich.app';
 
 const adminSignupResponse = {
+  avatarColor: expect.any(String),
   id: expect.any(String),
   name: 'Immich Admin',
   email: 'admin@immich.app',

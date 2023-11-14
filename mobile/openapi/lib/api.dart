@@ -192,6 +192,7 @@ part 'model/update_stack_parent_dto.dart';
 part 'model/update_tag_dto.dart';
 part 'model/update_user_dto.dart';
 part 'model/usage_by_user_dto.dart';
+part 'model/user_avatar_color.dart';
 part 'model/user_dto.dart';
 part 'model/user_response_dto.dart';
 part 'model/validate_access_token_response_dto.dart';

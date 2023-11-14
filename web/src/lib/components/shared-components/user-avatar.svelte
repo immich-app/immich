@@ -1,35 +1,40 @@
 <script lang="ts" context="module">
-  export type Color = 'primary' | 'pink' | 'red' | 'yellow' | 'blue' | 'green';
-  export type Size = 'full' | 'sm' | 'md' | 'lg' | 'xl';
+  export type Size = 'full' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
 </script>
 
 <script lang="ts">
   import { imageLoad } from '$lib/utils/image-load';
-  import { api } from '@api';
+  import { UserAvatarColor, api } from '@api';
 
   interface User {
     id: string;
     name: string;
     email: string;
     profileImagePath: string;
+    avatarColor: UserAvatarColor;
   }
 
   export let user: User;
-  export let color: Color = 'primary';
+  export let color: UserAvatarColor = user.avatarColor;
   export let size: Size = 'full';
   export let rounded = true;
   export let interactive = false;
   export let showTitle = true;
-  export let autoColor = false;
+  export let showProfileImage = true;
+
   let showFallback = true;
 
-  const colorClasses: Record<Color, string> = {
+  const colorClasses: Record<UserAvatarColor, string> = {
     primary: 'bg-immich-primary dark:bg-immich-dark-primary text-immich-dark-fg dark:text-immich-fg',
     pink: 'bg-pink-400 text-immich-bg',
     red: 'bg-red-500 text-immich-bg',
     yellow: 'bg-yellow-500 text-immich-bg',
     blue: 'bg-blue-500 text-immich-bg',
     green: 'bg-green-600 text-immich-bg',
+    purple: 'bg-purple-600 text-immich-bg',
+    orange: 'bg-orange-600 text-immich-bg',
+    gray: 'bg-gray-600 text-immich-bg',
+    amber: 'bg-amber-600 text-immich-bg',
   };
 
   const sizeClasses: Record<Size, string> = {
@@ -37,18 +42,12 @@
     sm: 'w-7 h-7',
     md: 'w-10 h-10',
     lg: 'w-12 h-12',
-    xl: 'w-20 h-20',
+    xl: 'w-16 h-16',
+    xxl: 'w-24 h-24',
+    xxxl: 'w-28 h-28',
   };
 
-  // Get color based on the user UUID.
-  function getUserColor() {
-    const seed = parseInt(user.id.split('-')[0], 16);
-    const colors = Object.keys(colorClasses).filter((color) => color !== 'primary') as Color[];
-    const randomIndex = seed % colors.length;
-    return colors[randomIndex];
-  }
-
-  $: colorClass = colorClasses[autoColor ? getUserColor() : color];
+  $: colorClass = colorClasses[color];
   $: sizeClass = sizeClasses[size];
   $: title = `${user.name} (${user.email})`;
   $: interactiveClass = interactive
@@ -61,7 +60,7 @@
   class:rounded-full={rounded}
   title={showTitle ? title : undefined}
 >
-  {#if user.profileImagePath}
+  {#if showProfileImage && user.profileImagePath}
     <img
       src={api.getProfileImageUrl(user.id)}
       alt="Profile image of {title}"
@@ -74,12 +73,12 @@
   {/if}
   {#if showFallback}
     <span
-      class="flex h-full w-full select-none items-center justify-center"
+      class="flex h-full w-full select-none items-center justify-center font-medium"
       class:text-xs={size === 'sm'}
       class:text-lg={size === 'lg'}
       class:text-xl={size === 'xl'}
-      class:font-medium={!autoColor}
-      class:font-semibold={autoColor}
+      class:text-2xl={size === 'xxl'}
+      class:text-3xl={size === 'xxxl'}
     >
       {(user.name[0] || '').toUpperCase()}
     </span>

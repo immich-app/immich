@@ -127,6 +127,9 @@ String parameterToString(dynamic value) {
   if (value is TranscodePolicy) {
     return TranscodePolicyTypeTransformer().encode(value).toString();
   }
+  if (value is UserAvatarColor) {
+    return UserAvatarColorTypeTransformer().encode(value).toString();
+  }
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();
   }

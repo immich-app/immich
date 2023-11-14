@@ -473,6 +473,8 @@ class ApiClient {
           return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
+        case 'UserAvatarColor':
+          return UserAvatarColorTypeTransformer().decode(value);
         case 'UserDto':
           return UserDto.fromJson(value);
         case 'UserResponseDto':

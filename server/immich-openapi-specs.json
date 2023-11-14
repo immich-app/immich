@@ -5578,6 +5578,29 @@
       }
     },
     "/user/profile-image": {
+      "delete": {
+        "operationId": "deleteProfileImage",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      },
       "post": {
         "operationId": "createProfileImage",
         "parameters": [],
@@ -7632,6 +7655,9 @@
       },
       "PartnerResponseDto": {
         "properties": {
+          "avatarColor": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -7682,6 +7708,7 @@
           }
         },
         "required": [
+          "avatarColor",
           "id",
           "name",
           "email",
@@ -9140,6 +9167,9 @@
       },
       "UpdateUserDto": {
         "properties": {
+          "avatarColor": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          },
           "email": {
             "type": "string"
           },
@@ -9202,8 +9232,26 @@
         ],
         "type": "object"
       },
+      "UserAvatarColor": {
+        "enum": [
+          "primary",
+          "pink",
+          "red",
+          "yellow",
+          "blue",
+          "green",
+          "purple",
+          "orange",
+          "gray",
+          "amber"
+        ],
+        "type": "string"
+      },
       "UserDto": {
         "properties": {
+          "avatarColor": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          },
           "email": {
             "type": "string"
           },
@@ -9218,6 +9266,7 @@
           }
         },
         "required": [
+          "avatarColor",
           "id",
           "name",
           "email",
@@ -9227,6 +9276,9 @@
       },
       "UserResponseDto": {
         "properties": {
+          "avatarColor": {
+            "$ref": "#/components/schemas/UserAvatarColor"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -9274,6 +9326,7 @@
           }
         },
         "required": [
+          "avatarColor",
           "id",
           "name",
           "email",

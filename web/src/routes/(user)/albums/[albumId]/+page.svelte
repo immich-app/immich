@@ -603,13 +603,13 @@
 
                   <!-- owner -->
                   <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                    <UserAvatar user={album.owner} size="md" autoColor />
+                    <UserAvatar user={album.owner} size="md" />
                   </button>
 
                   <!-- users -->
                   {#each album.sharedUsers as user (user.id)}
                     <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                      <UserAvatar {user} size="md" autoColor />
+                      <UserAvatar {user} size="md" />
                     </button>
                   {/each}
 
