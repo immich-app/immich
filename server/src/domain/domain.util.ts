@@ -1,6 +1,17 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf, ValidationOptions } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateIf,
+  ValidationOptions,
+} from 'class-validator';
 import { CronJob } from 'cron';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
@@ -32,6 +43,22 @@ export function validateCronExpression(expression: string) {
 interface IValue {
   value?: string;
 }
+
+export const QueryBoolean = ({ optional }: { optional?: boolean }) => {
+  const decorators = [IsBoolean(), Transform(toBoolean)];
+  if (optional) {
+    decorators.push(Optional());
+  }
+  return applyDecorators(...decorators);
+};
+
+export const QueryDate = ({ optional }: { optional?: boolean }) => {
+  const decorators = [IsDate(), Type(() => Date)];
+  if (optional) {
+    decorators.push(Optional());
+  }
+  return applyDecorators(...decorators);
+};
 
 export const toBoolean = ({ value }: IValue) => {
   if (value == 'true') {

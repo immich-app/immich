@@ -11,11 +11,58 @@ export interface AssetStatsOptions {
 }
 
 export interface AssetSearchOptions {
-  isVisible?: boolean;
-  trashedBefore?: Date;
+  id?: string;
+  libraryId?: string;
+  deviceAssetId?: string;
+  deviceId?: string;
+  ownerId?: string;
   type?: AssetType;
-  order?: 'ASC' | 'DESC';
+  checksum?: Buffer;
+
+  isArchived?: boolean;
+  isEncoded?: boolean;
+  isExternal?: boolean;
+  isFavorite?: boolean;
+  isMotion?: boolean;
+  isOffline?: boolean;
+  isReadOnly?: boolean;
+  isVisible?: boolean;
+
   withDeleted?: boolean;
+  withStacked?: boolean;
+  withExif?: boolean;
+  withPeople?: boolean;
+
+  createdBefore?: Date;
+  createdAfter?: Date;
+  updatedBefore?: Date;
+  updatedAfter?: Date;
+  trashedBefore?: Date;
+  trashedAfter?: Date;
+  takenBefore?: Date;
+  takenAfter?: Date;
+
+  originalFileName?: string;
+  originalPath?: string;
+  resizePath?: string;
+  webpPath?: string;
+  encodedVideoPath?: string;
+
+  city?: string;
+  state?: string;
+  country?: string;
+  make?: string;
+  model?: string;
+  lensModel?: string;
+
+  /** defaults to 'DESC' */
+  order?: 'ASC' | 'DESC';
+
+  /** defaults to 1 */
+  page?: number;
+
+  /** defaults to 250 */
+  size?: number;
 }
 
 export interface LivePhotoSearchOptions {
@@ -127,4 +174,5 @@ export interface IAssetRepository {
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
+  search(options: AssetSearchOptions): Promise<AssetEntity[]>;
 }
