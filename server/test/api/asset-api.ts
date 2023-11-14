@@ -7,6 +7,24 @@ import request from 'supertest';
 type UploadDto = Partial<CreateAssetDto> & { content?: Buffer };
 
 export const assetApi = {
+  create: async (
+    server: any,
+    accessToken: string,
+    dto: Omit<CreateAssetDto, 'assetData'>,
+  ): Promise<AssetResponseDto> => {
+    const { status, body } = await request(server)
+      .post(`/asset/upload`)
+      .field('deviceAssetId', dto.deviceAssetId)
+      .field('deviceId', dto.deviceId)
+      .field('fileCreatedAt', dto.fileCreatedAt.toISOString())
+      .field('fileModifiedAt', dto.fileModifiedAt.toISOString())
+      .attach('assetData', randomBytes(32), 'example.jpg')
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    expect([200, 201].includes(status)).toBe(true);
+
+    return body as AssetResponseDto;
+  },
   get: async (server: any, accessToken: string, id: string): Promise<AssetResponseDto> => {
     const { body, status } = await request(server)
       .get(`/asset/assetById/${id}`)

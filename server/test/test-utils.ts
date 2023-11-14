@@ -85,8 +85,8 @@ export const testApp = {
 
     return [app.getHttpServer(), app];
   },
-  reset: async () => {
-    await db.reset();
+  reset: async (options?: ResetOptions) => {
+    await db.reset(options);
   },
   teardown: async () => {
     await app.get(AppService).teardown();
