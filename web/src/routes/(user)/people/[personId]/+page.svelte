@@ -127,7 +127,7 @@
     const action = $page.url.searchParams.get('action');
     const validRoutes = [AppRoute.EXPLORE, AppRoute.PHOTOS, AppRoute.PEOPLE].map(String);
     const getPreviousRoute = $page.url.searchParams.get('previousRoute');
-    if (getPreviousRoute && validRoutes.includes(getPreviousRoute)) {
+    if (getPreviousRoute && (validRoutes.includes(getPreviousRoute) || getPreviousRoute.startsWith(AppRoute.ALBUMS))) {
       previousRoute = getPreviousRoute;
     }
     if (action == 'merge') {
