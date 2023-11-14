@@ -85,7 +85,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Virtual scroll                               | Yes    | Yes |
 | OAuth support                                | Yes    | Yes |
 | API Keys                                     | N/A    | Yes |
-| LivePhoto/MotionPhoto backup and playback   | Yes    | Yes |
+| LivePhoto/MotionPhoto backup and playback    | Yes    | Yes |
 | User-defined storage structure               | Yes    | Yes |
 | Public Sharing                               | No     | Yes |
 | Archive and Favorites                        | Yes    | Yes |
