@@ -239,47 +239,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   ),
                 ),
 
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                  child: Card(
-                    margin: const EdgeInsets.all(0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: isDarkTheme
-                            ? const Color.fromARGB(255, 0, 0, 0)
-                            : const Color.fromARGB(255, 235, 235, 235),
-                        width: 1,
-                      ),
-                    ),
-                    elevation: 0,
-                    borderOnForeground: false,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          visualDensity: VisualDensity.compact,
-                          title: const Text(
-                            "backup_album_selection_page_total_assets",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ).tr(),
-                          trailing: Text(
-                            ref
-                                .watch(backupProvider)
-                                .allUniqueAssets
-                                .length
-                                .toString(),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
                 ListTile(
                   title: Text(
                     "backup_album_selection_page_albums_device".tr(

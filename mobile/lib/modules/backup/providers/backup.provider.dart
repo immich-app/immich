@@ -115,7 +115,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(excludedBackupAlbums: currentExcludedAlbums);
   }
 
-  void backupAlbumSelectionDone() {
+  Future<void> backupAlbumSelectionDone() {
     if (state.selectedBackupAlbums.isEmpty) {
       // disable any backup
       cancelBackup();
@@ -126,7 +126,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         onBatteryInfo: () {},
       );
     }
-    _updateBackupAssetCount();
+    return _updateBackupAssetCount();
   }
 
   void setAutoBackup(bool enabled) {

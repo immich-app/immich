@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
@@ -594,7 +595,11 @@ class BackupControllerPage extends HookConsumerWidget {
             onPressed: () async {
               await context.autoPush(const BackupAlbumSelectionRoute());
               // waited until returning from selection
-              ref.read(backupProvider.notifier).backupAlbumSelectionDone();
+              await ref
+                  .read(backupProvider.notifier)
+                  .backupAlbumSelectionDone();
+              // waited until backup albums are stored in DB
+              ref.read(albumProvider.notifier).getDeviceAlbums();
             },
             child: const Text(
               "backup_controller_page_select",
