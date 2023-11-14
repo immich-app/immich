@@ -58,8 +58,8 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   size: widgetSize,
                 )
               : UserCircleAvatar(
-                  radius: 15,
-                  size: 27,
+                  radius: 16,
+                  size: 29,
                   user: user,
                 ),
         ),

@@ -30,6 +30,7 @@ class UserCircleAvatar extends ConsumerWidget {
       user.name[0].toUpperCase(),
       style: TextStyle(
         fontWeight: FontWeight.bold,
+        fontSize: 12,
         color: isDarkTheme && user.avatarColor == AvatarColorEnum.primary
             ? Colors.black
             : Colors.white,
