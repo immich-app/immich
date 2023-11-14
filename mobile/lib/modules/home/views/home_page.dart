@@ -131,12 +131,19 @@ class HomePage extends HookConsumerWidget {
         );
       }
 
+      Iterable<Asset> remoteSelection({String? errorMessage}) => remoteOnly(
+            selection.value,
+            errorCallback: errorBuilder(errorMessage),
+          );
+
       void onShareAssets(bool shareLocal) {
         processing.value = true;
         if (shareLocal) {
           handleShareAssets(ref, context, selection.value.toList());
         } else {
-          final ids = ownedRemoteSelection().map((e) => e.remoteId!);
+          final ids =
+              remoteSelection(errorMessage: "home_page_share_err_local".tr())
+                  .map((e) => e.remoteId!);
           context.autoPush(SharedLinkEditRoute(assetsList: ids.toList()));
         }
         processing.value = false;
@@ -217,9 +224,8 @@ class HomePage extends HookConsumerWidget {
       void onAddToAlbum(Album album) async {
         processing.value = true;
         try {
-          final Iterable<Asset> assets = ownedRemoteSelection(
-            localErrorMessage: "home_page_add_to_album_err_local".tr(),
-            ownerErrorMessage: "home_page_album_err_partner".tr(),
+          final Iterable<Asset> assets = remoteSelection(
+            errorMessage: "home_page_add_to_album_err_local".tr(),
           );
           if (assets.isEmpty) {
             return;
@@ -266,9 +272,8 @@ class HomePage extends HookConsumerWidget {
       void onCreateNewAlbum() async {
         processing.value = true;
         try {
-          final Iterable<Asset> assets = ownedRemoteSelection(
-            localErrorMessage: "home_page_add_to_album_err_local".tr(),
-            ownerErrorMessage: "home_page_album_err_partner".tr(),
+          final Iterable<Asset> assets = remoteSelection(
+            errorMessage: "home_page_add_to_album_err_local".tr(),
           );
           if (assets.isEmpty) {
             return;
