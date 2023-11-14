@@ -85,7 +85,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Virtual scroll                               | Yes    | Yes |
 | OAuth support                                | Yes    | Yes |
 | API Keys                                     | N/A    | Yes |
-| LivePhoto backup and playback                | iOS    | Yes |
+| LivePhoto/MotionPhoto backup and playback    | Yes    | Yes |
 | User-defined storage structure               | Yes    | Yes |
 | Public Sharing                               | No     | Yes |
 | Archive and Favorites                        | Yes    | Yes |
@@ -95,6 +95,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Memories (x years ago)                       | Yes    | Yes |
 | Offline support                              | Yes    | No  |
 | Read-only gallery                            | Yes    | Yes |
+| Stacked Photos                               | Yes    | Yes |
 
 ## Support the project
 
