@@ -2491,7 +2491,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/AssetType"
+              "$ref": "#/components/schemas/AssetTypeEnum"
             }
           },
           {
@@ -6729,15 +6729,6 @@
           "total"
         ],
         "type": "object"
-      },
-      "AssetType": {
-        "enum": [
-          "IMAGE",
-          "VIDEO",
-          "AUDIO",
-          "OTHER"
-        ],
-        "type": "string"
       },
       "AssetTypeEnum": {
         "enum": [

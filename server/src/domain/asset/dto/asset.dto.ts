@@ -27,7 +27,7 @@ export class AssetSearchDto {
 
   @IsEnum(AssetType)
   @Optional()
-  @ApiProperty({ enumName: 'AssetType', enum: AssetType })
+  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type?: AssetType;
 
   @IsString()

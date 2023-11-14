@@ -916,22 +916,6 @@ export interface AssetStatsResponseDto {
  * @enum {string}
  */
 
-export const AssetType = {
-    Image: 'IMAGE',
-    Video: 'VIDEO',
-    Audio: 'AUDIO',
-    Other: 'OTHER'
-} as const;
-
-export type AssetType = typeof AssetType[keyof typeof AssetType];
-
-
-/**
- * 
- * @export
- * @enum {string}
- */
-
 export const AssetTypeEnum = {
     Image: 'IMAGE',
     Video: 'VIDEO',
@@ -7802,7 +7786,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * 
          * @param {string} [id] 
          * @param {string} [libraryId] 
-         * @param {AssetType} [type] 
+         * @param {AssetTypeEnum} [type] 
          * @param {AssetOrder} [order] 
          * @param {string} [deviceAssetId] 
          * @param {string} [deviceId] 
@@ -7832,7 +7816,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchAssets: async (id?: string, libraryId?: string, type?: AssetType, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, page?: number, size?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        searchAssets: async (id?: string, libraryId?: string, type?: AssetTypeEnum, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, page?: number, size?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/assets`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -8619,7 +8603,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * 
          * @param {string} [id] 
          * @param {string} [libraryId] 
-         * @param {AssetType} [type] 
+         * @param {AssetTypeEnum} [type] 
          * @param {AssetOrder} [order] 
          * @param {string} [deviceAssetId] 
          * @param {string} [deviceId] 
@@ -8649,7 +8633,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async searchAssets(id?: string, libraryId?: string, type?: AssetType, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, page?: number, size?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+        async searchAssets(id?: string, libraryId?: string, type?: AssetTypeEnum, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, page?: number, size?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, page, size, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -9577,10 +9561,10 @@ export interface AssetApiSearchAssetsRequest {
 
     /**
      * 
-     * @type {AssetType}
+     * @type {AssetTypeEnum}
      * @memberof AssetApiSearchAssets
      */
-    readonly type?: AssetType
+    readonly type?: AssetTypeEnum
 
     /**
      * 

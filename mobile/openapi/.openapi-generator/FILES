@@ -32,7 +32,6 @@ doc/AssetJobsDto.md
 doc/AssetOrder.md
 doc/AssetResponseDto.md
 doc/AssetStatsResponseDto.md
-doc/AssetType.md
 doc/AssetTypeEnum.md
 doc/AudioCodec.md
 doc/AuditApi.md
@@ -224,7 +223,6 @@ lib/model/asset_jobs_dto.dart
 lib/model/asset_order.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_stats_response_dto.dart
-lib/model/asset_type.dart
 lib/model/asset_type_enum.dart
 lib/model/audio_codec.dart
 lib/model/audit_deletes_response_dto.dart
@@ -382,7 +380,6 @@ test/asset_order_test.dart
 test/asset_response_dto_test.dart
 test/asset_stats_response_dto_test.dart
 test/asset_type_enum_test.dart
-test/asset_type_test.dart
 test/audio_codec_test.dart
 test/audit_api_test.dart
 test/audit_deletes_response_dto_test.dart

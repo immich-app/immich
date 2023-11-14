@@ -232,7 +232,6 @@ Class | Method | HTTP request | Description
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
- - [AssetType](doc//AssetType.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
  - [AuditDeletesResponseDto](doc//AuditDeletesResponseDto.md)

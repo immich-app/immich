@@ -1504,7 +1504,7 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final type = ; // AssetType | 
+final type = ; // AssetTypeEnum | 
 final order = ; // AssetOrder | 
 final deviceAssetId = deviceAssetId_example; // String | 
 final deviceId = deviceId_example; // String | 
@@ -1546,7 +1546,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | [optional] 
  **libraryId** | **String**|  | [optional] 
- **type** | [**AssetType**](.md)|  | [optional] 
+ **type** | [**AssetTypeEnum**](.md)|  | [optional] 
  **order** | [**AssetOrder**](.md)|  | [optional] 
  **deviceAssetId** | **String**|  | [optional] 
  **deviceId** | **String**|  | [optional] 
