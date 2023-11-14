@@ -5,25 +5,39 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as fs from 'fs';
 import path from 'path';
+import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../src/microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
 
+export interface ResetOptions {
+  entities?: EntityTarget<ObjectLiteral>[];
+}
 export const db = {
-  reset: async () => {
+  reset: async (options?: ResetOptions) => {
     if (!dataSource.isInitialized) {
       await dataSource.initialize();
     }
 
     await dataSource.transaction(async (em) => {
-      for (const entity of dataSource.entityMetadatas) {
-        if (entity.tableName === 'users') {
+      const entities = options?.entities || [];
+      const tableNames =
+        entities.length > 0
+          ? entities.map((entity) => em.getRepository(entity).metadata.tableName)
+          : dataSource.entityMetadatas.map((entity) => entity.tableName);
+
+      let deleteUsers = false;
+      for (const tableName of tableNames) {
+        if (tableName === 'users') {
+          deleteUsers = true;
           continue;
         }
-        await em.query(`DELETE FROM ${entity.tableName} CASCADE;`);
+        await em.query(`DELETE FROM ${tableName} CASCADE;`);
       }
-      await em.query(`DELETE FROM "users" CASCADE;`);
+      if (deleteUsers) {
+        await em.query(`DELETE FROM "users" CASCADE;`);
+      }
     });
   },
   disconnect: async () => {

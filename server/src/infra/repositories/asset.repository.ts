@@ -18,11 +18,14 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
 import { DateTime } from 'luxon';
 import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
+
+const DEFAULT_SEARCH_SIZE = 250;
 
 const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
@@ -48,6 +51,97 @@ export class AssetRepository implements IAssetRepository {
 
   async upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void> {
     await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
+  }
+
+  search(options: AssetSearchOptions): Promise<AssetEntity[]> {
+    const {
+      id,
+      libraryId,
+      deviceAssetId,
+      type,
+      checksum,
+      ownerId,
+
+      isVisible,
+      isFavorite,
+      isExternal,
+      isReadOnly,
+      isOffline,
+      isArchived,
+      isMotion,
+      isEncoded,
+
+      createdBefore,
+      createdAfter,
+      updatedBefore,
+      updatedAfter,
+      trashedBefore,
+      trashedAfter,
+      takenBefore,
+      takenAfter,
+
+      withDeleted: _withDeleted,
+      withExif,
+      withStacked,
+      withPeople,
+
+      order,
+    } = options;
+
+    const withDeleted = _withDeleted ?? (trashedAfter !== undefined || trashedBefore !== undefined);
+
+    const page = Math.max(options.page || 1, 1);
+    const size = Math.min(options.size || DEFAULT_SEARCH_SIZE, DEFAULT_SEARCH_SIZE);
+
+    const where = _.omitBy(
+      {
+        ownerId,
+        id,
+        libraryId,
+        deviceAssetId,
+        type,
+        checksum,
+        isVisible,
+        isFavorite,
+        isExternal,
+        isReadOnly,
+        isOffline,
+        isArchived,
+        livePhotoVideoId: isMotion ? Not(IsNull()) : undefined,
+        encodedVideoPath: isEncoded ? Not(IsNull()) : undefined,
+        createdAt: OptionalBetween(createdAfter, createdBefore),
+        updatedAt: OptionalBetween(updatedAfter, updatedBefore),
+        deletedAt: OptionalBetween(trashedAfter, trashedBefore),
+        fileCreatedAt: OptionalBetween(takenAfter, takenBefore),
+      },
+      _.isUndefined,
+    );
+
+    const builder = this.repository
+      .createQueryBuilder('asset')
+      .where(where)
+      .skip(size * (page - 1))
+      .take(size)
+      .orderBy('asset.fileCreatedAt', order ?? 'DESC');
+
+    if (withStacked) {
+      builder.leftJoinAndSelect('asset.stack', 'stack');
+    }
+
+    if (withExif) {
+      builder.leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+    }
+
+    if (withPeople) {
+      builder.leftJoinAndSelect('asset.faces', 'faces');
+      builder.leftJoinAndSelect('faces.person', 'person');
+    }
+
+    if (withDeleted) {
+      builder.withDeleted();
+    }
+
+    return builder.getMany();
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
