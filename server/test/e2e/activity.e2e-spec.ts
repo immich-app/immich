@@ -1,6 +1,7 @@
 import { AlbumResponseDto, LoginResponseDto, ReactionType } from '@app/domain';
 import { ActivityController } from '@app/immich';
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
+import { ActivityEntity } from '@app/infra/entities';
 import { api } from '@test/api';
 import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
@@ -12,9 +13,24 @@ describe(`${ActivityController.name} (e2e)`, () => {
   let admin: LoginResponseDto;
   let asset: AssetFileUploadResponseDto;
   let album: AlbumResponseDto;
+  let nonOwner: LoginResponseDto;
 
   beforeAll(async () => {
     [server] = await testApp.create();
+    await db.reset();
+    await api.authApi.adminSignUp(server);
+    admin = await api.authApi.adminLogin(server);
+    asset = await api.assetApi.upload(server, admin.accessToken, 'example');
+
+    const credentials = { email: 'user1@immich.app', password: 'Password123' };
+    await api.userApi.create(server, admin.accessToken, { ...credentials, name: 'User 1' });
+    nonOwner = await api.authApi.login(server, credentials);
+
+    album = await api.albumApi.create(server, admin.accessToken, {
+      albumName: 'Album 1',
+      assetIds: [asset.id],
+      sharedWithUserIds: [nonOwner.userId],
+    });
   });
 
   afterAll(async () => {
@@ -22,11 +38,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
-    await api.authApi.adminSignUp(server);
-    admin = await api.authApi.adminLogin(server);
-    asset = await api.assetApi.upload(server, admin.accessToken, 'example');
-    album = await api.albumApi.create(server, admin.accessToken, { albumName: 'Album 1', assetIds: [asset.id] });
+    await testApp.reset({ entities: [ActivityEntity] });
   });
 
   describe('GET /activity', () => {
@@ -347,13 +359,6 @@ describe(`${ActivityController.name} (e2e)`, () => {
     });
 
     it('should let the owner remove a comment by another user', async () => {
-      const { id: userId } = await api.userApi.create(server, admin.accessToken, {
-        email: 'user1@immich.app',
-        password: 'Password123',
-        name: 'User 1',
-      });
-      await api.albumApi.addUsers(server, admin.accessToken, album.id, { sharedUserIds: [userId] });
-      const nonOwner = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
       const reaction = await api.activityApi.create(server, nonOwner.accessToken, {
         albumId: album.id,
         type: ReactionType.COMMENT,
@@ -363,17 +368,11 @@ describe(`${ActivityController.name} (e2e)`, () => {
       const { status } = await request(server)
         .delete(`/activity/${reaction.id}`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
+
       expect(status).toEqual(204);
     });
 
     it('should not let a user remove a comment by another user', async () => {
-      const { id: userId } = await api.userApi.create(server, admin.accessToken, {
-        email: 'user1@immich.app',
-        password: 'Password123',
-        name: 'User 1',
-      });
-      await api.albumApi.addUsers(server, admin.accessToken, album.id, { sharedUserIds: [userId] });
-      const nonOwner = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
       const reaction = await api.activityApi.create(server, admin.accessToken, {
         albumId: album.id,
         type: ReactionType.COMMENT,
@@ -383,18 +382,12 @@ describe(`${ActivityController.name} (e2e)`, () => {
       const { status, body } = await request(server)
         .delete(`/activity/${reaction.id}`)
         .set('Authorization', `Bearer ${nonOwner.accessToken}`);
+
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.badRequest('Not found or no activity.delete access'));
     });
 
     it('should let a non-owner remove their own comment', async () => {
-      const { id: userId } = await api.userApi.create(server, admin.accessToken, {
-        email: 'user1@immich.app',
-        password: 'Password123',
-        name: 'User 1',
-      });
-      await api.albumApi.addUsers(server, admin.accessToken, album.id, { sharedUserIds: [userId] });
-      const nonOwner = await api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' });
       const reaction = await api.activityApi.create(server, nonOwner.accessToken, {
         albumId: album.id,
         type: ReactionType.COMMENT,
@@ -404,6 +397,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
       const { status } = await request(server)
         .delete(`/activity/${reaction.id}`)
         .set('Authorization', `Bearer ${nonOwner.accessToken}`);
+
       expect(status).toBe(204);
     });
   });
