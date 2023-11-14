@@ -77,7 +77,7 @@
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
-          <UserAvatar user={album.owner} size="md" autoColor />
+          <UserAvatar user={album.owner} size="md" />
           <p class="text-sm font-medium">{album.owner.name}</p>
         </div>
 
@@ -90,7 +90,7 @@
           class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <div class="flex place-items-center gap-4">
-            <UserAvatar {user} size="md" autoColor />
+            <UserAvatar {user} size="md" />
             <p class="text-sm font-medium">{user.name}</p>
           </div>
 

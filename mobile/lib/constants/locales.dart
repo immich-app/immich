@@ -9,6 +9,7 @@ const List<Locale> locales = [
   Locale('it', 'IT'),
   Locale('es', 'ES'),
   Locale('vi', 'VN'),
+  Locale('fr', 'CA'),
   Locale('fr', 'FR'),
   Locale('ja', 'JP'),
   Locale('pl', 'PL'),

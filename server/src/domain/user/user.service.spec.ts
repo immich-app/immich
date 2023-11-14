@@ -323,16 +323,51 @@ describe(UserService.name, () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
       userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
-      await sut.createProfileImage(userStub.admin, file);
-
-      expect(userMock.update).toHaveBeenCalledWith(userStub.admin.id, { profileImagePath: file.path });
+      await expect(sut.createProfileImage(userStub.admin, file)).rejects.toThrowError(BadRequestException);
     });
 
     it('should throw an error if the user profile could not be updated with the new image', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
+      userMock.get.mockResolvedValue(userStub.profilePath);
       userMock.update.mockRejectedValue(new InternalServerErrorException('mocked error'));
 
       await expect(sut.createProfileImage(userStub.admin, file)).rejects.toThrowError(InternalServerErrorException);
+    });
+
+    it('should delete the previous profile image', async () => {
+      const file = { path: '/profile/path' } as Express.Multer.File;
+      userMock.get.mockResolvedValue(userStub.profilePath);
+      const files = [userStub.profilePath.profileImagePath];
+      userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
+
+      await sut.createProfileImage(userStub.admin, file);
+      await expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
+    });
+
+    it('should not delete the profile image if it has not been set', async () => {
+      const file = { path: '/profile/path' } as Express.Multer.File;
+      userMock.get.mockResolvedValue(userStub.admin);
+      userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
+
+      await sut.createProfileImage(userStub.admin, file);
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteProfileImage', () => {
+    it('should send an http error has no profile image', async () => {
+      userMock.get.mockResolvedValue(userStub.admin);
+
+      await expect(sut.deleteProfileImage(userStub.admin)).rejects.toBeInstanceOf(BadRequestException);
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+
+    it('should delete the profile image if user has one', async () => {
+      userMock.get.mockResolvedValue(userStub.profilePath);
+      const files = [userStub.profilePath.profileImagePath];
+
+      await sut.deleteProfileImage(userStub.admin);
+      await expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
     });
   });
 

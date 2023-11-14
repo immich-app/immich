@@ -166,6 +166,7 @@ doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UsageByUserDto.md
 doc/UserApi.md
+doc/UserAvatarColor.md
 doc/UserDto.md
 doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
@@ -343,6 +344,7 @@ lib/model/update_stack_parent_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/usage_by_user_dto.dart
+lib/model/user_avatar_color.dart
 lib/model/user_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
@@ -511,6 +513,7 @@ test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/usage_by_user_dto_test.dart
 test/user_api_test.dart
+test/user_avatar_color_test.dart
 test/user_dto_test.dart
 test/user_response_dto_test.dart
 test/validate_access_token_response_dto_test.dart

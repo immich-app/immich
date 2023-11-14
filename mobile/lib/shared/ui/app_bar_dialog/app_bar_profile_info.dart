@@ -22,14 +22,12 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
     final user = Store.tryGet(StoreKey.currentUser);
 
     buildUserProfileImage() {
-      const immichImage = CircleAvatar(
-        radius: 20,
-        backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
-        backgroundColor: Colors.transparent,
-      );
-
-      if (authState.profileImagePath.isEmpty || user == null) {
-        return immichImage;
+      if (user == null) {
+        return const CircleAvatar(
+          radius: 20,
+          backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
+          backgroundColor: Colors.transparent,
+        );
       }
 
       final userImage = UserCircleAvatar(
@@ -37,18 +35,6 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
         size: 40,
         user: user,
       );
-
-      if (uploadProfileImageStatus == UploadProfileStatus.idle) {
-        return authState.profileImagePath.isNotEmpty ? userImage : immichImage;
-      }
-
-      if (uploadProfileImageStatus == UploadProfileStatus.success) {
-        return userImage;
-      }
-
-      if (uploadProfileImageStatus == UploadProfileStatus.failure) {
-        return immichImage;
-      }
 
       if (uploadProfileImageStatus == UploadProfileStatus.loading) {
         return const SizedBox(
@@ -58,7 +44,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
         );
       }
 
-      return immichImage;
+      return userImage;
     }
 
     pickUserProfileImage() async {

@@ -113,7 +113,7 @@
       <div class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-6 bg-slate-50 dark:bg-gray-900 p-5">
         <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
           <div class="flex gap-4">
-            <UserAvatar user={partner.user} size="md" autoColor />
+            <UserAvatar user={partner.user} size="md" />
             <div class="text-left">
               <p class="text-immich-fg dark:text-immich-dark-fg">
                 {partner.user.name}

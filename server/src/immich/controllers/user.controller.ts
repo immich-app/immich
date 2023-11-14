@@ -13,6 +13,8 @@ import {
   Delete,
   Get,
   Header,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -52,6 +54,12 @@ export class UserController {
   @Post()
   createUser(@Body() createUserDto: CreateDto): Promise<UserResponseDto> {
     return this.service.create(createUserDto);
+  }
+
+  @Delete('profile-image')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteProfileImage(@AuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.deleteProfileImage(authUser);
   }
 
   @AdminRoute()

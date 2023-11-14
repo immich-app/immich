@@ -1,3 +1,4 @@
+import { UserAvatarColor } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { authStub, newPartnerRepositoryMock, partnerStub } from '@test';
 import { IAccessRepository, IPartnerRepository, PartnerDirection } from '../repositories';
@@ -19,6 +20,7 @@ const responseDto = {
     updatedAt: new Date('2021-01-01'),
     externalPath: null,
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
     inTimeline: true,
   },
   user1: <PartnerResponseDto>{
@@ -35,6 +37,7 @@ const responseDto = {
     updatedAt: new Date('2021-01-01'),
     externalPath: null,
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
     inTimeline: true,
   },
 };

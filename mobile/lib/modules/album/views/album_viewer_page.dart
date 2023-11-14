@@ -217,7 +217,6 @@ class AlbumViewerPage extends HookConsumerWidget {
                   user: album.sharedUsers.toList()[index],
                   radius: 18,
                   size: 36,
-                  useRandomBackgroundColor: true,
                 ),
               );
             }),
