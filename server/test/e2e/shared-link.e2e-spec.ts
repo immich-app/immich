@@ -73,9 +73,8 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
       country: 'United States of America',
     });
 
-    [album, adminAlbum, deletedAlbum, metadataAlbum] = await Promise.all([
+    [album, deletedAlbum, metadataAlbum] = await Promise.all([
       api.albumApi.create(server, user1.accessToken, { albumName: 'album' }),
-      api.albumApi.create(server, admin.accessToken, { albumName: 'admin album' }),
       api.albumApi.create(server, user2.accessToken, { albumName: 'deleted album' }),
       api.albumApi.create(server, user1.accessToken, { albumName: 'metadata album', assetIds: [asset.id] }),
     ]);
