@@ -138,12 +138,27 @@ describe(`${AssetController.name} (e2e)`, () => {
         createdAt: yesterday.toJSDate(),
         updatedAt: yesterday.toJSDate(),
         localDateTime: yesterday.toJSDate(),
+        encodedVideoPath: '/path/to/encoded-video.mp4',
+        webpPath: '/path/to/thumb.webp',
+        resizePath: '/path/to/thumb.jpg',
       }),
       createAsset(user2, new Date('1970-01-01')),
       createAsset(user1, new Date('1970-01-01'), {
         deletedAt: yesterday.toJSDate(),
       }),
     ]);
+
+    await assetRepository.upsertExif({
+      assetId: asset3.id,
+      latitude: 90,
+      longitude: 90,
+      city: 'Immich',
+      state: 'Nebraska',
+      country: 'United States',
+      make: 'Cannon',
+      model: 'EOS Rebel T7',
+      lensModel: 'Fancy lens',
+    });
   });
 
   afterAll(async () => {
@@ -373,6 +388,83 @@ describe(`${AssetController.name} (e2e)`, () => {
         deferred: () => ({
           query: { takenAfter: today.plus({ hour: 1 }).toJSDate() },
           assets: [],
+        }),
+      },
+      {
+        should: 'should search by originalPath',
+        deferred: () => ({
+          query: { originalPath: asset1.originalPath },
+          assets: [asset1],
+        }),
+      },
+      {
+        should: 'should search by originalFilename',
+        deferred: () => ({
+          query: { originalFileName: asset1.originalFileName },
+          assets: [asset1],
+        }),
+      },
+      {
+        should: 'should search by encodedVideoPath',
+        deferred: () => ({
+          query: { encodedVideoPath: '/path/to/encoded-video.mp4' },
+          assets: [asset3],
+        }),
+      },
+      {
+        should: 'should search by resizePath',
+        deferred: () => ({
+          query: { resizePath: '/path/to/thumb.jpg' },
+          assets: [asset3],
+        }),
+      },
+      {
+        should: 'should search by webpPath',
+        deferred: () => ({
+          query: { webpPath: '/path/to/thumb.webp' },
+          assets: [asset3],
+        }),
+      },
+      {
+        should: 'should search by city',
+        deferred: () => ({
+          query: { city: 'Immich' },
+          assets: [asset3],
+        }),
+      },
+      {
+        should: 'should search by state',
+        deferred: () => ({
+          query: { state: 'Nebraska' },
+          assets: [asset3],
+        }),
+      },
+      {
+        should: 'should search by country',
+        deferred: () => ({
+          query: { country: 'United States' },
+          assets: [asset3],
+        }),
+      },
+      {
+        should: 'sohuld search by make',
+        deferred: () => ({
+          query: { make: 'Cannon' },
+          assets: [asset3],
+        }),
+      },
+      {
+        should: 'should search by country',
+        deferred: () => ({
+          query: { model: 'EOS Rebel T7' },
+          assets: [asset3],
+        }),
+      },
+      {
+        should: 'should search by lensModel',
+        deferred: () => ({
+          query: { lensModel: 'Fancy lens' },
+          assets: [asset3],
         }),
       },
     ];
@@ -919,16 +1011,12 @@ describe(`${AssetController.name} (e2e)`, () => {
     it('should get map markers for all non-archived assets', async () => {
       const { status, body } = await request(server)
         .get('/asset/map-marker')
+        .query({ isArchived: false })
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toHaveLength(2);
-      expect(body).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: asset1.id }),
-          expect.objectContaining({ id: asset2.id }),
-        ]),
-      );
+      expect(body).toHaveLength(1);
+      expect(body).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset2.id })]));
     });
 
     it('should get all map markers', async () => {

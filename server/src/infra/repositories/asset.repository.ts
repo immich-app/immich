@@ -80,8 +80,21 @@ export class AssetRepository implements IAssetRepository {
       takenBefore,
       takenAfter,
 
+      originalFileName,
+      originalPath,
+      resizePath,
+      webpPath,
+      encodedVideoPath,
+
+      city,
+      state,
+      country,
+      make,
+      model,
+      lensModel,
+
       withDeleted: _withDeleted,
-      withExif,
+      withExif: _withExif,
       withStacked,
       withPeople,
 
@@ -92,6 +105,20 @@ export class AssetRepository implements IAssetRepository {
 
     const page = Math.max(options.page || 1, 1);
     const size = Math.min(options.size || DEFAULT_SEARCH_SIZE, DEFAULT_SEARCH_SIZE);
+
+    const exifWhere = _.omitBy(
+      {
+        city,
+        state,
+        country,
+        make,
+        model,
+        lensModel,
+      },
+      _.isUndefined,
+    );
+
+    const withExif = Object.keys(exifWhere).length > 0 || _withExif !== undefined;
 
     const where = _.omitBy(
       {
@@ -108,28 +135,28 @@ export class AssetRepository implements IAssetRepository {
         isOffline,
         isArchived,
         livePhotoVideoId: isMotion ? Not(IsNull()) : undefined,
-        encodedVideoPath: isEncoded ? Not(IsNull()) : undefined,
+        originalFileName,
+        originalPath,
+        resizePath,
+        webpPath,
+        encodedVideoPath: encodedVideoPath ?? (isEncoded ? Not(IsNull()) : undefined),
         createdAt: OptionalBetween(createdAfter, createdBefore),
         updatedAt: OptionalBetween(updatedAfter, updatedBefore),
         deletedAt: OptionalBetween(trashedAfter, trashedBefore),
         fileCreatedAt: OptionalBetween(takenAfter, takenBefore),
+        exifInfo: Object.keys(exifWhere).length > 0 ? exifWhere : undefined,
       },
       _.isUndefined,
     );
 
-    const builder = this.repository
-      .createQueryBuilder('asset')
-      .where(where)
-      .skip(size * (page - 1))
-      .take(size)
-      .orderBy('asset.fileCreatedAt', order ?? 'DESC');
-
-    if (withStacked) {
-      builder.leftJoinAndSelect('asset.stack', 'stack');
-    }
+    const builder = this.repository.createQueryBuilder('asset');
 
     if (withExif) {
-      builder.leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+      if (_withExif) {
+        builder.leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+      } else {
+        builder.leftJoin('asset.exifInfo', 'exifInfo');
+      }
     }
 
     if (withPeople) {
@@ -137,9 +164,19 @@ export class AssetRepository implements IAssetRepository {
       builder.leftJoinAndSelect('faces.person', 'person');
     }
 
+    if (withStacked) {
+      builder.leftJoinAndSelect('asset.stack', 'stack');
+    }
+
     if (withDeleted) {
       builder.withDeleted();
     }
+
+    builder
+      .where(where)
+      .skip(size * (page - 1))
+      .take(size)
+      .orderBy('asset.fileCreatedAt', order ?? 'DESC');
 
     return builder.getMany();
   }

@@ -42,6 +42,20 @@ export interface AssetSearchOptions {
   takenBefore?: Date;
   takenAfter?: Date;
 
+  originalFileName?: string;
+  originalPath?: string;
+  resizePath?: string;
+  webpPath?: string;
+  encodedVideoPath?: string;
+
+  city?: string;
+  state?: string;
+  country?: string;
+  make?: string;
+  model?: string;
+  lensModel?: string;
+
+  /** defaults to 'DESC' */
   order?: 'ASC' | 'DESC';
 
   /** defaults to 1 */

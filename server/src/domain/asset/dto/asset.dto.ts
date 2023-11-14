@@ -94,6 +94,50 @@ export class AssetSearchDto {
   @QueryDate({ optional: true })
   takenAfter?: Date;
 
+  @IsString()
+  @Optional()
+  originalFileName?: string;
+
+  @IsString()
+  @Optional()
+  originalPath?: string;
+
+  @IsString()
+  @Optional()
+  resizePath?: string;
+
+  @IsString()
+  @Optional()
+  webpPath?: string;
+
+  @IsString()
+  @Optional()
+  encodedVideoPath?: string;
+
+  @IsString()
+  @Optional()
+  city?: string;
+
+  @IsString()
+  @Optional()
+  state?: string;
+
+  @IsString()
+  @Optional()
+  country?: string;
+
+  @IsString()
+  @Optional()
+  make?: string;
+
+  @IsString()
+  @Optional()
+  model?: string;
+
+  @IsString()
+  @Optional()
+  lensModel?: string;
+
   @IsEnum(AssetOrder)
   @Optional()
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
