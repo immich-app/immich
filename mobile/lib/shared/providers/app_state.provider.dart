@@ -45,12 +45,14 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
     _wasPaused = false;
 
     final isAuthenticated = _ref.read(authenticationProvider).isAuthenticated;
-    final permission = _ref.read(galleryPermissionNotifier);
 
-    // Needs to be logged in and have gallery permissions
-    if (isAuthenticated && (permission.isGranted || permission.isLimited)) {
-      _ref.read(backupProvider.notifier).resumeBackup();
-      _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+    // Needs to be logged in
+    if (isAuthenticated) {
+      final permission = _ref.watch(galleryPermissionNotifier);
+      if (permission.isGranted || permission.isLimited) {
+        _ref.read(backupProvider.notifier).resumeBackup();
+        _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+      }
       _ref.read(serverInfoProvider.notifier).getServerVersion();
       switch (_ref.read(tabProvider)) {
         case TabEnum.home:

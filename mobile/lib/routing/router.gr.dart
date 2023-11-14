@@ -17,14 +17,14 @@ class _$AppRouter extends RootStackRouter {
     GlobalKey<NavigatorState>? navigatorKey,
     required this.authGuard,
     required this.duplicateGuard,
-    required this.galleryPermissionGuard,
+    required this.backupPermissionGuard,
   }) : super(navigatorKey);
 
   final AuthGuard authGuard;
 
   final DuplicateGuard duplicateGuard;
 
-  final GalleryPermissionGuard galleryPermissionGuard;
+  final BackupPermissionGuard backupPermissionGuard;
 
   @override
   final Map<String, PageFactory> pagesMap = {
@@ -414,7 +414,6 @@ class _$AppRouter extends RootStackRouter {
           guards: [
             authGuard,
             duplicateGuard,
-            galleryPermissionGuard,
           ],
           children: [
             RouteConfig(
@@ -461,7 +460,6 @@ class _$AppRouter extends RootStackRouter {
           guards: [
             authGuard,
             duplicateGuard,
-            galleryPermissionGuard,
           ],
         ),
         RouteConfig(
@@ -478,6 +476,7 @@ class _$AppRouter extends RootStackRouter {
           guards: [
             authGuard,
             duplicateGuard,
+            backupPermissionGuard,
           ],
         ),
         RouteConfig(
