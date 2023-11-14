@@ -1,10 +1,3 @@
-<script lang="ts" context="module">
-  export type PersonToCreate = {
-    thumbnail: string;
-    id: string;
-  };
-</script>
-
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
@@ -22,27 +15,29 @@
   import { websocketStore } from '$lib/stores/websocket';
 
   export let assetId: string;
+
   let numberOfPersonToCreate = 0;
   let numberOfAssetFaceGenerated = 0;
 
   let peopleWithFaces: AssetFaceResponseDto[] = [];
-  let searchedPeople: PersonResponseDto[] = [];
-  let searchWord: string;
-
-  let searchFaces = false;
-  let searchName = '';
-
-  let allPeople: PersonResponseDto[] = [];
-  let editedPerson: number;
   let selectedPersonToReassign: (PersonResponseDto | null)[];
-  let selectedPersonToCreate: (PersonToCreate | null)[];
+  let selectedPersonToCreate: (string | null)[];
+
+  let editedPersonIndex: number;
+
+  let isShowLoadingDone = false;
+  let isShowLoadingNewPerson = false;
+  let isShowLoadingPeople = false;
+  let isShowLoadingSearch = false;
 
   let showSeletecFaces = false;
-  let showLoadingDone = false;
 
-  let isSearchingPeople = false;
-  let isCreatingPerson = false;
-  let isShowLoadingPeople = false;
+  let searchedPeople: PersonResponseDto[] = [];
+  let searchWord: string;
+  let searchFaces = false;
+  let searchName = '';
+  let allPeople: PersonResponseDto[] = [];
+
   let doneTimeout: NodeJS.Timeout;
 
   const { onPersonThumbnail } = websocketStore;
@@ -76,20 +71,21 @@
       allPeople = data.people;
       const result = await api.personApi.getFaces({ id: assetId });
       peopleWithFaces = result.data;
-      selectedPersonToCreate = new Array<PersonToCreate | null>(peopleWithFaces.length);
+      selectedPersonToCreate = new Array<string | null>(peopleWithFaces.length);
       selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
-
-      clearTimeout(timeout);
     } catch (error) {
       handleError(error, "Can't get faces");
+    } finally {
+      clearTimeout(timeout);
     }
+    isShowLoadingPeople = false;
   });
 
   const searchPeople = async () => {
     if ((searchedPeople.length < 20 && searchName.startsWith(searchWord)) || searchName === '') {
       return;
     }
-    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    const timeout = setTimeout(() => (isShowLoadingSearch = true), 100);
     try {
       const { data } = await api.searchApi.searchPerson({ name: searchName });
       searchedPeople = data;
@@ -100,17 +96,16 @@
       clearTimeout(timeout);
     }
 
-    isSearchingPeople = false;
+    isShowLoadingSearch = false;
   };
 
-  function initInput(element: HTMLInputElement) {
+  const initInput = (element: HTMLInputElement) => {
     element.focus();
-  }
+  };
 
   const handleBackButton = () => {
     searchName = '';
     searchFaces = false;
-    selectedPersonToCreate = new Array<PersonToCreate | null>(peopleWithFaces.length);
     if (showSeletecFaces) {
       showSeletecFaces = false;
     } else {
@@ -166,7 +161,7 @@
   };
 
   const handleEditFaces = async () => {
-    doneTimeout = setTimeout(() => (showLoadingDone = true), 100);
+    doneTimeout = setTimeout(() => (isShowLoadingDone = true), 100);
     const numberOfChanges =
       selectedPersonToCreate.filter((person) => person !== null).length +
       selectedPersonToReassign.filter((person) => person !== null).length;
@@ -196,6 +191,8 @@
       }
     }
 
+    isShowLoadingDone = false;
+
     if (numberOfPersonToCreate === 0) {
       clearTimeout(doneTimeout);
       dispatch('refresh');
@@ -203,31 +200,30 @@
   };
 
   const handleCreatePerson = async () => {
-    const timeout = setTimeout(() => (isCreatingPerson = true), 100);
-    for (let i = 0; i < peopleWithFaces.length; i++) {
-      if (peopleWithFaces[i].id === peopleWithFaces[editedPerson].id) {
-        const newFeaturePhoto = await zoomImageToBase64(peopleWithFaces[i]);
+    const timeout = setTimeout(() => (isShowLoadingNewPerson = true), 100);
+    const personToUpdate = peopleWithFaces.find((person) => person.id === peopleWithFaces[editedPersonIndex].id);
 
-        if (newFeaturePhoto) {
-          selectedPersonToCreate[i] = { thumbnail: newFeaturePhoto, id: peopleWithFaces[i].id };
-        }
+    if (personToUpdate) {
+      const newFeaturePhoto = await zoomImageToBase64(personToUpdate);
 
-        break;
+      if (newFeaturePhoto) {
+        selectedPersonToCreate[peopleWithFaces.indexOf(personToUpdate)] = newFeaturePhoto;
       }
     }
     clearTimeout(timeout);
+    isShowLoadingNewPerson = false;
     showSeletecFaces = false;
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
     if (person) {
-      selectedPersonToReassign[editedPerson] = person;
+      selectedPersonToReassign[editedPersonIndex] = person;
       showSeletecFaces = false;
     }
   };
 
   const handlePersonPicker = async (index: number) => {
-    editedPerson = index;
+    editedPersonIndex = index;
     showSeletecFaces = true;
   };
 </script>
@@ -248,7 +244,7 @@
       </button>
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Edit faces</p>
     </div>
-    {#if !showLoadingDone}
+    {#if !isShowLoadingDone}
       <button
         class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
         on:click={() => handleEditFaces()}
@@ -281,7 +277,7 @@
                 <ImageThumbnail
                   curve
                   shadow
-                  url={selectedPersonToCreate[index]?.thumbnail ||
+                  url={selectedPersonToCreate[index] ||
                     api.getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || person.person.id)}
                   altText={person.person?.name || ''}
                   title={person.person?.name || ''}
@@ -289,7 +285,7 @@
                   heightStyle="90px"
                   thumbhash={null}
                 />
-                {#if !selectedPersonToCreate[index]?.thumbnail}
+                {#if !selectedPersonToCreate[index]}
                   <p class="relative mt-1 truncate font-medium" title={person.person?.name}>
                     {#if selectedPersonToReassign[index]?.id}
                       {selectedPersonToReassign[index]?.name}
@@ -355,7 +351,7 @@
               <Icon path={mdiMagnify} size="24" />
             </div>
           </button>
-          {#if !isCreatingPerson}
+          {#if !isShowLoadingNewPerson}
             <button
               class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
               on:click={() => handleCreatePerson()}
@@ -389,7 +385,7 @@
             on:input={searchPeople}
             use:initInput
           />
-          {#if isSearchingPeople}
+          {#if isShowLoadingSearch}
             <div>
               <LoadingSpinner />
             </div>
@@ -410,7 +406,7 @@
       <div class="immich-scrollbar mt-4 flex flex-wrap gap-2 overflow-y-auto">
         {#if searchName == ''}
           {#each allPeople as person (person.id)}
-            {#if person.id !== peopleWithFaces[editedPerson].person?.id}
+            {#if person.id !== peopleWithFaces[editedPersonIndex].person?.id}
               <div class="w-fit">
                 <button class="w-[90px]" on:click={() => handleReassignFace(person)}>
                   <ImageThumbnail
@@ -431,7 +427,7 @@
           {/each}
         {:else}
           {#each searchedPeople as person (person.id)}
-            {#if person.id !== peopleWithFaces[editedPerson].person?.id}
+            {#if person.id !== peopleWithFaces[editedPersonIndex].person?.id}
               <div class="w-fit">
                 <button class="w-[90px]" on:click={() => handleReassignFace(person)}>
                   <ImageThumbnail
