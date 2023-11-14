@@ -1,6 +1,6 @@
 import { AlbumResponseDto, IAssetRepository, LoginResponseDto, SharedLinkResponseDto } from '@app/domain';
 import { SharedLinkController } from '@app/immich';
-import { SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
+import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub, uuidStub } from '@test/fixtures';
