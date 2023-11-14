@@ -28,13 +28,10 @@ enum AppStateEnum {
 }
 
 class AppStateNotiifer extends StateNotifier<AppStateEnum> {
-  final Ref ref;
+  final Ref _ref;
+  bool _wasPaused = false;
 
-  AppStateNotiifer(this.ref) : super(AppStateEnum.active);
-
-  void updateAppState(AppStateEnum appState) {
-    state = appState;
-  }
+  AppStateNotiifer(this._ref) : super(AppStateEnum.active);
 
   AppStateEnum getAppState() {
     return state;
@@ -43,65 +40,72 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
   void handleAppResume() {
     state = AppStateEnum.resumed;
 
-    var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
-    final permission = ref.watch(galleryPermissionNotifier);
+    // no need to resume because app was never really paused
+    if (!_wasPaused) return;
+    _wasPaused = false;
+
+    final isAuthenticated = _ref.read(authenticationProvider).isAuthenticated;
+    final permission = _ref.read(galleryPermissionNotifier);
 
     // Needs to be logged in and have gallery permissions
     if (isAuthenticated && (permission.isGranted || permission.isLimited)) {
-      ref.read(backupProvider.notifier).resumeBackup();
-      ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-      ref.read(serverInfoProvider.notifier).getServerVersion();
-      switch (ref.read(tabProvider)) {
+      _ref.read(backupProvider.notifier).resumeBackup();
+      _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+      _ref.read(serverInfoProvider.notifier).getServerVersion();
+      switch (_ref.read(tabProvider)) {
         case TabEnum.home:
-          ref.read(assetProvider.notifier).getAllAsset();
-          ref.read(assetProvider.notifier).getPartnerAssets();
+          _ref.read(assetProvider.notifier).getAllAsset();
+          _ref.read(assetProvider.notifier).getPartnerAssets();
         case TabEnum.search:
         // nothing to do
         case TabEnum.sharing:
-          ref.read(assetProvider.notifier).getPartnerAssets();
-          ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+          _ref.read(assetProvider.notifier).getPartnerAssets();
+          _ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         case TabEnum.library:
-          ref.read(albumProvider.notifier).getAllAlbums();
+          _ref.read(albumProvider.notifier).getAllAlbums();
       }
     }
 
-    ref.watch(websocketProvider.notifier).connect();
+    _ref.read(websocketProvider.notifier).connect();
 
-    ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+    _ref.read(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
-    ref
-        .watch(notificationPermissionProvider.notifier)
+    _ref
+        .read(notificationPermissionProvider.notifier)
         .getNotificationPermission();
-    ref.watch(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
+    _ref.read(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
 
-    ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
+    _ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
-    ref.invalidate(memoryFutureProvider);
+    _ref.invalidate(memoryFutureProvider);
   }
 
   void handleAppInactivity() {
     state = AppStateEnum.inactive;
-
-    // Do not handle inactivity if manual upload is in progress
-    if (ref.watch(backupProvider.notifier).backupProgress !=
-        BackUpProgressEnum.manualInProgress) {
-      ImmichLogger().flush();
-      ref.read(websocketProvider.notifier).disconnect();
-      ref.read(backupProvider.notifier).cancelBackup();
-    }
+    // do not stop/clean up anything on inactivity: issued on every orientation change
   }
 
   void handleAppPause() {
     state = AppStateEnum.paused;
+    _wasPaused = true;
+    // Do not cancel backup if manual upload is in progress
+    if (_ref.read(backupProvider.notifier).backupProgress !=
+        BackUpProgressEnum.manualInProgress) {
+      _ref.read(backupProvider.notifier).cancelBackup();
+    }
+    _ref.read(websocketProvider.notifier).disconnect();
+    ImmichLogger().flush();
   }
 
   void handleAppDetached() {
     state = AppStateEnum.detached;
-    ref.watch(manualUploadProvider.notifier).cancelBackup();
+    // no guarantee this is called at all
+    _ref.read(manualUploadProvider.notifier).cancelBackup();
   }
 
   void handleAppHidden() {
     state = AppStateEnum.hidden;
+    // do not stop/clean up anything on inactivity: issued on every orientation change
   }
 }
 

@@ -7,7 +7,7 @@ from zipfile import BadZipFile
 import orjson
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
-from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile  # type: ignore
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from starlette.formparsers import MultiPartParser
 
 from app.models.base import InferenceModel
