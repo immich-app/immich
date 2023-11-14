@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -9,7 +8,6 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_list_tile.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class BackupAlbumSelectionPage extends HookConsumerWidget {
   const BackupAlbumSelectionPage({Key? key}) : super(key: key);
@@ -91,19 +89,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
     buildSelectedAlbumNameChip() {
       return selectedBackupAlbums.map((album) {
-        void removeSelection() {
-          if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
-            ImmichToast.show(
-              context: context,
-              msg: "backup_err_only_album".tr(),
-              toastType: ToastType.error,
-              gravity: ToastGravity.BOTTOM,
-            );
-            return;
-          }
-
-          ref.watch(backupProvider.notifier).removeAlbumForBackup(album);
-        }
+        void removeSelection() =>
+            ref.read(backupProvider.notifier).removeAlbumForBackup(album);
 
         return Padding(
           padding: const EdgeInsets.only(right: 8.0),
@@ -249,47 +236,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       ...buildSelectedAlbumNameChip(),
                       ...buildExcludedAlbumNameChip(),
                     ],
-                  ),
-                ),
-
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                  child: Card(
-                    margin: const EdgeInsets.all(0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: isDarkTheme
-                            ? const Color.fromARGB(255, 0, 0, 0)
-                            : const Color.fromARGB(255, 235, 235, 235),
-                        width: 1,
-                      ),
-                    ),
-                    elevation: 0,
-                    borderOnForeground: false,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          visualDensity: VisualDensity.compact,
-                          title: const Text(
-                            "backup_album_selection_page_total_assets",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ).tr(),
-                          trailing: Text(
-                            ref
-                                .watch(backupProvider)
-                                .allUniqueAssets
-                                .length
-                                .toString(),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
 

@@ -2,8 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_logo.dart';
@@ -18,13 +16,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
     final PermissionStatus permission = ref.watch(galleryPermissionNotifier);
 
     // Navigate to the main Tab Controller when permission is granted
-    void goToHome() {
-      // Resume backup (if enable) then navigate
-      ref.watch(backupProvider.notifier).resumeBackup().catchError((error) {
-        debugPrint('PermissionOnboardingPage error: $error');
-      });
-      context.autoReplace(const TabControllerRoute());
-    }
+    void goToBackup() => context.autoReplace(const BackupControllerRoute());
 
     // When the permission is denied, we show a request permission page
     buildRequestPermission() {
@@ -46,7 +38,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
               if (permission.isGranted) {
                 // If permission is limited, we will show the limited
                 // permission page
-                goToHome();
+                goToBackup();
               }
             }),
             child: const Text(
@@ -71,7 +63,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
           ).tr(),
           const SizedBox(height: 18),
           ElevatedButton(
-            onPressed: () => goToHome(),
+            onPressed: () => goToBackup(),
             child: const Text('permission_onboarding_get_started').tr(),
           ),
         ],
@@ -106,7 +98,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
           ),
           const SizedBox(height: 8.0),
           TextButton(
-            onPressed: () => goToHome(),
+            onPressed: () => goToBackup(),
             child: const Text(
               'permission_onboarding_continue_anyway',
             ).tr(),
@@ -181,11 +173,8 @@ class PermissionOnboardingPage extends HookConsumerWidget {
                   ),
                 ),
                 TextButton(
-                  child: const Text('permission_onboarding_log_out').tr(),
-                  onPressed: () {
-                    ref.read(authenticationProvider.notifier).logout();
-                    context.autoReplace(const LoginRoute());
-                  },
+                  child: const Text('permission_onboarding_back').tr(),
+                  onPressed: () => context.autoPop(),
                 ),
               ],
             ),

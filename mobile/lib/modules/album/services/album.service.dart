@@ -67,6 +67,10 @@ class AlbumService {
       final List<String> selectedIds =
           await _backupService.selectedAlbumsQuery().idProperty().findAll();
       if (selectedIds.isEmpty) {
+        final numLocal = await _db.albums.where().localIdIsNotNull().count();
+        if (numLocal > 0) {
+          _syncService.removeAllLocalAlbumsAndAssets();
+        }
         return false;
       }
       final List<AssetPathEntity> onDevice =
