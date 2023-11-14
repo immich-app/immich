@@ -24,6 +24,7 @@
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+  export let albumId: string | null = null;
 
   let textarea: HTMLTextAreaElement;
   let description: string;
@@ -138,7 +139,7 @@
       <div class="mt-4 flex flex-wrap gap-2">
         {#each people as person (person.id)}
           <a
-            href="/people/{person.id}?previousRoute={AppRoute.PHOTOS}"
+            href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
             class="w-[90px]"
             on:click={() => dispatch('close-viewer')}
           >
