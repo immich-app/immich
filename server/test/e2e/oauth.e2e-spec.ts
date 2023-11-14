@@ -22,10 +22,6 @@ describe(`${OAuthController.name} (e2e)`, () => {
   });
 
   describe('POST /oauth/authorize', () => {
-    beforeEach(async () => {
-      await db.reset();
-    });
-
     it(`should throw an error if a redirect uri is not provided`, async () => {
       const { status, body } = await request(server).post('/oauth/authorize').send({});
       expect(status).toBe(400);
