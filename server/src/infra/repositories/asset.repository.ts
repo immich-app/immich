@@ -118,7 +118,7 @@ export class AssetRepository implements IAssetRepository {
       _.isUndefined,
     );
 
-    const withExif = Object.keys(exifWhere).length > 0 || _withExif !== undefined;
+    const withExif = Object.keys(exifWhere).length > 0 || _withExif;
 
     const where = _.omitBy(
       {
@@ -134,12 +134,12 @@ export class AssetRepository implements IAssetRepository {
         isReadOnly,
         isOffline,
         isArchived,
-        livePhotoVideoId: isMotion ? Not(IsNull()) : undefined,
+        livePhotoVideoId: isMotion && Not(IsNull()),
         originalFileName,
         originalPath,
         resizePath,
         webpPath,
-        encodedVideoPath: encodedVideoPath ?? (isEncoded ? Not(IsNull()) : undefined),
+        encodedVideoPath: encodedVideoPath ?? (isEncoded && Not(IsNull())),
         createdAt: OptionalBetween(createdAfter, createdBefore),
         updatedAt: OptionalBetween(updatedAfter, updatedBefore),
         deletedAt: OptionalBetween(trashedAfter, trashedBefore),
