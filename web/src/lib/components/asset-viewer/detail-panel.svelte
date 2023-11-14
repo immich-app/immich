@@ -20,9 +20,11 @@
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Map from '../shared-components/map/map.svelte';
+  import { AppRoute } from '$lib/constants';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+  export let albumId: string | null = null;
 
   let textarea: HTMLTextAreaElement;
   let description: string;
@@ -136,7 +138,11 @@
 
       <div class="mt-4 flex flex-wrap gap-2">
         {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
+          <a
+            href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
+            class="w-[90px]"
+            on:click={() => dispatch('close-viewer')}
+          >
             <ImageThumbnail
               curve
               shadow
