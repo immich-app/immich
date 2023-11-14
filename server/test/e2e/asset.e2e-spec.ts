@@ -172,6 +172,65 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(status).toBe(401);
     });
 
+    const badTests = [
+      //
+      {
+        should: 'should reject page as a string',
+        query: { page: 'abc' },
+        expected: ['page must not be less than 1', 'page must be an integer number'],
+      },
+      {
+        should: 'should reject page as a decimal',
+        query: { page: 1.5 },
+        expected: ['page must be an integer number'],
+      },
+      {
+        should: 'should reject page as a negative number',
+        query: { page: -10 },
+        expected: ['page must not be less than 1'],
+      },
+      {
+        should: 'should reject page as 0',
+        query: { page: 0 },
+        expected: ['page must not be less than 1'],
+      },
+      {
+        should: 'should reject size as a string',
+        query: { size: 'abc' },
+        expected: ['size must not be less than 1', 'size must be an integer number'],
+      },
+      {
+        should: 'should reject an invalid size',
+        query: { size: -1.5 },
+        expected: ['size must not be less than 1', 'size must be an integer number'],
+      },
+      ...[
+        'isArchived',
+        'isFavorite',
+        'isReadOnly',
+        'isExternal',
+        'isEncoded',
+        'isMotion',
+        'isOffline',
+        'isVisible',
+      ].map((value) => ({
+        should: `should reject ${value} not a boolean`,
+        query: { [value]: 'immich' },
+        expected: [`${value} must be a boolean value`],
+      })),
+    ];
+
+    for (const { should, query, expected } of badTests) {
+      it(should, async () => {
+        const { status, body } = await request(server)
+          .get('/assets')
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .query(query);
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest(expected));
+      });
+    }
+
     const searchTests = [
       {
         should: 'should only return my own assets',

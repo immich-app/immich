@@ -1,7 +1,7 @@
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsPositive, IsString, Min } from 'class-validator';
 import { Optional, QueryBoolean, QueryDate, ValidateUUID } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
@@ -144,11 +144,13 @@ export class AssetSearchDto {
   order?: AssetOrder;
 
   @IsInt()
+  @Min(1)
   @Type(() => Number)
   @Optional()
   page?: number;
 
   @IsInt()
+  @Min(1)
   @Type(() => Number)
   @Optional()
   size?: number;
