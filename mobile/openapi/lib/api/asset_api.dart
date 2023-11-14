@@ -1532,10 +1532,32 @@ class AssetApi {
   ///
   /// * [DateTime] takenAfter:
   ///
+  /// * [String] originalFileName:
+  ///
+  /// * [String] originalPath:
+  ///
+  /// * [String] resizePath:
+  ///
+  /// * [String] webpPath:
+  ///
+  /// * [String] encodedVideoPath:
+  ///
+  /// * [String] city:
+  ///
+  /// * [String] state:
+  ///
+  /// * [String] country:
+  ///
+  /// * [String] make:
+  ///
+  /// * [String] model:
+  ///
+  /// * [String] lensModel:
+  ///
   /// * [num] page:
   ///
   /// * [num] size:
-  Future<Response> searchAssetsWithHttpInfo({ String? id, String? libraryId, AssetTypeEnum? type, AssetOrder? order, String? deviceAssetId, String? deviceId, String? checksum, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, bool? withDeleted, bool? withStacked, bool? withExif, bool? withPeople, DateTime? createdBefore, DateTime? createdAfter, DateTime? updatedBefore, DateTime? updatedAfter, DateTime? trashedBefore, DateTime? trashedAfter, DateTime? takenBefore, DateTime? takenAfter, num? page, num? size, }) async {
+  Future<Response> searchAssetsWithHttpInfo({ String? id, String? libraryId, AssetTypeEnum? type, AssetOrder? order, String? deviceAssetId, String? deviceId, String? checksum, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, bool? withDeleted, bool? withStacked, bool? withExif, bool? withPeople, DateTime? createdBefore, DateTime? createdAfter, DateTime? updatedBefore, DateTime? updatedAfter, DateTime? trashedBefore, DateTime? trashedAfter, DateTime? takenBefore, DateTime? takenAfter, String? originalFileName, String? originalPath, String? resizePath, String? webpPath, String? encodedVideoPath, String? city, String? state, String? country, String? make, String? model, String? lensModel, num? page, num? size, }) async {
     // ignore: prefer_const_declarations
     final path = r'/assets';
 
@@ -1627,6 +1649,39 @@ class AssetApi {
     if (takenAfter != null) {
       queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
     }
+    if (originalFileName != null) {
+      queryParams.addAll(_queryParams('', 'originalFileName', originalFileName));
+    }
+    if (originalPath != null) {
+      queryParams.addAll(_queryParams('', 'originalPath', originalPath));
+    }
+    if (resizePath != null) {
+      queryParams.addAll(_queryParams('', 'resizePath', resizePath));
+    }
+    if (webpPath != null) {
+      queryParams.addAll(_queryParams('', 'webpPath', webpPath));
+    }
+    if (encodedVideoPath != null) {
+      queryParams.addAll(_queryParams('', 'encodedVideoPath', encodedVideoPath));
+    }
+    if (city != null) {
+      queryParams.addAll(_queryParams('', 'city', city));
+    }
+    if (state != null) {
+      queryParams.addAll(_queryParams('', 'state', state));
+    }
+    if (country != null) {
+      queryParams.addAll(_queryParams('', 'country', country));
+    }
+    if (make != null) {
+      queryParams.addAll(_queryParams('', 'make', make));
+    }
+    if (model != null) {
+      queryParams.addAll(_queryParams('', 'model', model));
+    }
+    if (lensModel != null) {
+      queryParams.addAll(_queryParams('', 'lensModel', lensModel));
+    }
     if (page != null) {
       queryParams.addAll(_queryParams('', 'page', page));
     }
@@ -1704,11 +1759,33 @@ class AssetApi {
   ///
   /// * [DateTime] takenAfter:
   ///
+  /// * [String] originalFileName:
+  ///
+  /// * [String] originalPath:
+  ///
+  /// * [String] resizePath:
+  ///
+  /// * [String] webpPath:
+  ///
+  /// * [String] encodedVideoPath:
+  ///
+  /// * [String] city:
+  ///
+  /// * [String] state:
+  ///
+  /// * [String] country:
+  ///
+  /// * [String] make:
+  ///
+  /// * [String] model:
+  ///
+  /// * [String] lensModel:
+  ///
   /// * [num] page:
   ///
   /// * [num] size:
-  Future<List<AssetResponseDto>?> searchAssets({ String? id, String? libraryId, AssetTypeEnum? type, AssetOrder? order, String? deviceAssetId, String? deviceId, String? checksum, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, bool? withDeleted, bool? withStacked, bool? withExif, bool? withPeople, DateTime? createdBefore, DateTime? createdAfter, DateTime? updatedBefore, DateTime? updatedAfter, DateTime? trashedBefore, DateTime? trashedAfter, DateTime? takenBefore, DateTime? takenAfter, num? page, num? size, }) async {
-    final response = await searchAssetsWithHttpInfo( id: id, libraryId: libraryId, type: type, order: order, deviceAssetId: deviceAssetId, deviceId: deviceId, checksum: checksum, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, withDeleted: withDeleted, withStacked: withStacked, withExif: withExif, withPeople: withPeople, createdBefore: createdBefore, createdAfter: createdAfter, updatedBefore: updatedBefore, updatedAfter: updatedAfter, trashedBefore: trashedBefore, trashedAfter: trashedAfter, takenBefore: takenBefore, takenAfter: takenAfter, page: page, size: size, );
+  Future<List<AssetResponseDto>?> searchAssets({ String? id, String? libraryId, AssetTypeEnum? type, AssetOrder? order, String? deviceAssetId, String? deviceId, String? checksum, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, bool? withDeleted, bool? withStacked, bool? withExif, bool? withPeople, DateTime? createdBefore, DateTime? createdAfter, DateTime? updatedBefore, DateTime? updatedAfter, DateTime? trashedBefore, DateTime? trashedAfter, DateTime? takenBefore, DateTime? takenAfter, String? originalFileName, String? originalPath, String? resizePath, String? webpPath, String? encodedVideoPath, String? city, String? state, String? country, String? make, String? model, String? lensModel, num? page, num? size, }) async {
+    final response = await searchAssetsWithHttpInfo( id: id, libraryId: libraryId, type: type, order: order, deviceAssetId: deviceAssetId, deviceId: deviceId, checksum: checksum, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, withDeleted: withDeleted, withStacked: withStacked, withExif: withExif, withPeople: withPeople, createdBefore: createdBefore, createdAfter: createdAfter, updatedBefore: updatedBefore, updatedAfter: updatedAfter, trashedBefore: trashedBefore, trashedAfter: trashedAfter, takenBefore: takenBefore, takenAfter: takenAfter, originalFileName: originalFileName, originalPath: originalPath, resizePath: resizePath, webpPath: webpPath, encodedVideoPath: encodedVideoPath, city: city, state: state, country: country, make: make, model: model, lensModel: lensModel, page: page, size: size, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -1479,7 +1479,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **searchAssets**
-> List<AssetResponseDto> searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, page, size)
+> List<AssetResponseDto> searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, originalFileName, originalPath, resizePath, webpPath, encodedVideoPath, city, state, country, make, model, lensModel, page, size)
 
 
 
@@ -1529,11 +1529,22 @@ final trashedBefore = 2013-10-20T19:20:30+01:00; // DateTime |
 final trashedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
 final takenBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
 final takenAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
+final originalFileName = originalFileName_example; // String | 
+final originalPath = originalPath_example; // String | 
+final resizePath = resizePath_example; // String | 
+final webpPath = webpPath_example; // String | 
+final encodedVideoPath = encodedVideoPath_example; // String | 
+final city = city_example; // String | 
+final state = state_example; // String | 
+final country = country_example; // String | 
+final make = make_example; // String | 
+final model = model_example; // String | 
+final lensModel = lensModel_example; // String | 
 final page = 8.14; // num | 
 final size = 8.14; // num | 
 
 try {
-    final result = api_instance.searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, page, size);
+    final result = api_instance.searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, originalFileName, originalPath, resizePath, webpPath, encodedVideoPath, city, state, country, make, model, lensModel, page, size);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->searchAssets: $e\n');
@@ -1571,6 +1582,17 @@ Name | Type | Description  | Notes
  **trashedAfter** | **DateTime**|  | [optional] 
  **takenBefore** | **DateTime**|  | [optional] 
  **takenAfter** | **DateTime**|  | [optional] 
+ **originalFileName** | **String**|  | [optional] 
+ **originalPath** | **String**|  | [optional] 
+ **resizePath** | **String**|  | [optional] 
+ **webpPath** | **String**|  | [optional] 
+ **encodedVideoPath** | **String**|  | [optional] 
+ **city** | **String**|  | [optional] 
+ **state** | **String**|  | [optional] 
+ **country** | **String**|  | [optional] 
+ **make** | **String**|  | [optional] 
+ **model** | **String**|  | [optional] 
+ **lensModel** | **String**|  | [optional] 
  **page** | **num**|  | [optional] 
  **size** | **num**|  | [optional] 
 

@@ -7811,12 +7811,23 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {string} [trashedAfter] 
          * @param {string} [takenBefore] 
          * @param {string} [takenAfter] 
+         * @param {string} [originalFileName] 
+         * @param {string} [originalPath] 
+         * @param {string} [resizePath] 
+         * @param {string} [webpPath] 
+         * @param {string} [encodedVideoPath] 
+         * @param {string} [city] 
+         * @param {string} [state] 
+         * @param {string} [country] 
+         * @param {string} [make] 
+         * @param {string} [model] 
+         * @param {string} [lensModel] 
          * @param {number} [page] 
          * @param {number} [size] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchAssets: async (id?: string, libraryId?: string, type?: AssetTypeEnum, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, page?: number, size?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        searchAssets: async (id?: string, libraryId?: string, type?: AssetTypeEnum, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, originalFileName?: string, originalPath?: string, resizePath?: string, webpPath?: string, encodedVideoPath?: string, city?: string, state?: string, country?: string, make?: string, model?: string, lensModel?: string, page?: number, size?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/assets`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7960,6 +7971,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['takenAfter'] = (takenAfter as any instanceof Date) ?
                     (takenAfter as any).toISOString() :
                     takenAfter;
+            }
+
+            if (originalFileName !== undefined) {
+                localVarQueryParameter['originalFileName'] = originalFileName;
+            }
+
+            if (originalPath !== undefined) {
+                localVarQueryParameter['originalPath'] = originalPath;
+            }
+
+            if (resizePath !== undefined) {
+                localVarQueryParameter['resizePath'] = resizePath;
+            }
+
+            if (webpPath !== undefined) {
+                localVarQueryParameter['webpPath'] = webpPath;
+            }
+
+            if (encodedVideoPath !== undefined) {
+                localVarQueryParameter['encodedVideoPath'] = encodedVideoPath;
+            }
+
+            if (city !== undefined) {
+                localVarQueryParameter['city'] = city;
+            }
+
+            if (state !== undefined) {
+                localVarQueryParameter['state'] = state;
+            }
+
+            if (country !== undefined) {
+                localVarQueryParameter['country'] = country;
+            }
+
+            if (make !== undefined) {
+                localVarQueryParameter['make'] = make;
+            }
+
+            if (model !== undefined) {
+                localVarQueryParameter['model'] = model;
+            }
+
+            if (lensModel !== undefined) {
+                localVarQueryParameter['lensModel'] = lensModel;
             }
 
             if (page !== undefined) {
@@ -8628,13 +8683,24 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {string} [trashedAfter] 
          * @param {string} [takenBefore] 
          * @param {string} [takenAfter] 
+         * @param {string} [originalFileName] 
+         * @param {string} [originalPath] 
+         * @param {string} [resizePath] 
+         * @param {string} [webpPath] 
+         * @param {string} [encodedVideoPath] 
+         * @param {string} [city] 
+         * @param {string} [state] 
+         * @param {string} [country] 
+         * @param {string} [make] 
+         * @param {string} [model] 
+         * @param {string} [lensModel] 
          * @param {number} [page] 
          * @param {number} [size] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async searchAssets(id?: string, libraryId?: string, type?: AssetTypeEnum, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, page?: number, size?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, page, size, options);
+        async searchAssets(id?: string, libraryId?: string, type?: AssetTypeEnum, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, originalFileName?: string, originalPath?: string, resizePath?: string, webpPath?: string, encodedVideoPath?: string, city?: string, state?: string, country?: string, make?: string, model?: string, lensModel?: string, page?: number, size?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, originalFileName, originalPath, resizePath, webpPath, encodedVideoPath, city, state, country, make, model, lensModel, page, size, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8943,7 +9009,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         searchAssets(requestParameters: AssetApiSearchAssetsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.searchAssets(requestParameters.id, requestParameters.libraryId, requestParameters.type, requestParameters.order, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.checksum, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.withDeleted, requestParameters.withStacked, requestParameters.withExif, requestParameters.withPeople, requestParameters.createdBefore, requestParameters.createdAfter, requestParameters.updatedBefore, requestParameters.updatedAfter, requestParameters.trashedBefore, requestParameters.trashedAfter, requestParameters.takenBefore, requestParameters.takenAfter, requestParameters.page, requestParameters.size, options).then((request) => request(axios, basePath));
+            return localVarFp.searchAssets(requestParameters.id, requestParameters.libraryId, requestParameters.type, requestParameters.order, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.checksum, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.withDeleted, requestParameters.withStacked, requestParameters.withExif, requestParameters.withPeople, requestParameters.createdBefore, requestParameters.createdAfter, requestParameters.updatedBefore, requestParameters.updatedAfter, requestParameters.trashedBefore, requestParameters.trashedAfter, requestParameters.takenBefore, requestParameters.takenAfter, requestParameters.originalFileName, requestParameters.originalPath, requestParameters.resizePath, requestParameters.webpPath, requestParameters.encodedVideoPath, requestParameters.city, requestParameters.state, requestParameters.country, requestParameters.make, requestParameters.model, requestParameters.lensModel, requestParameters.page, requestParameters.size, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9736,6 +9802,83 @@ export interface AssetApiSearchAssetsRequest {
 
     /**
      * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly originalFileName?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly originalPath?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly resizePath?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly webpPath?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly encodedVideoPath?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly city?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly state?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly country?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly make?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly model?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly lensModel?: string
+
+    /**
+     * 
      * @type {number}
      * @memberof AssetApiSearchAssets
      */
@@ -10237,7 +10380,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public searchAssets(requestParameters: AssetApiSearchAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).searchAssets(requestParameters.id, requestParameters.libraryId, requestParameters.type, requestParameters.order, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.checksum, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.withDeleted, requestParameters.withStacked, requestParameters.withExif, requestParameters.withPeople, requestParameters.createdBefore, requestParameters.createdAfter, requestParameters.updatedBefore, requestParameters.updatedAfter, requestParameters.trashedBefore, requestParameters.trashedAfter, requestParameters.takenBefore, requestParameters.takenAfter, requestParameters.page, requestParameters.size, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).searchAssets(requestParameters.id, requestParameters.libraryId, requestParameters.type, requestParameters.order, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.checksum, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.withDeleted, requestParameters.withStacked, requestParameters.withExif, requestParameters.withPeople, requestParameters.createdBefore, requestParameters.createdAfter, requestParameters.updatedBefore, requestParameters.updatedAfter, requestParameters.trashedBefore, requestParameters.trashedAfter, requestParameters.takenBefore, requestParameters.takenAfter, requestParameters.originalFileName, requestParameters.originalPath, requestParameters.resizePath, requestParameters.webpPath, requestParameters.encodedVideoPath, requestParameters.city, requestParameters.state, requestParameters.country, requestParameters.make, requestParameters.model, requestParameters.lensModel, requestParameters.page, requestParameters.size, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
