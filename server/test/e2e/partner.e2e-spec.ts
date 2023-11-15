@@ -1,28 +1,9 @@
 import { LoginResponseDto, PartnerDirection } from '@app/domain';
 import { PartnerController } from '@app/immich';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub } from '@test/fixtures';
+import { errorStub, userDto } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
-
-const user1Dto = {
-  email: 'user1@immich.app',
-  password: 'Password123',
-  name: 'User 1',
-};
-
-const user2Dto = {
-  email: 'user2@immich.app',
-  password: 'Password123',
-  name: 'User 2',
-};
-
-const user3Dto = {
-  email: 'user3@immich.app',
-  password: 'Password123',
-  name: 'User 3',
-};
 
 describe(`${PartnerController.name} (e2e)`, () => {
   let server: any;
@@ -33,20 +14,20 @@ describe(`${PartnerController.name} (e2e)`, () => {
   beforeAll(async () => {
     [server] = await testApp.create();
 
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     const admin = await api.authApi.adminLogin(server);
 
     await Promise.all([
-      api.userApi.create(server, admin.accessToken, user1Dto),
-      api.userApi.create(server, admin.accessToken, user2Dto),
-      api.userApi.create(server, admin.accessToken, user3Dto),
+      api.userApi.create(server, admin.accessToken, userDto.user1),
+      api.userApi.create(server, admin.accessToken, userDto.user2),
+      api.userApi.create(server, admin.accessToken, userDto.user3),
     ]);
 
     [user1, user2, user3] = await Promise.all([
-      api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password }),
-      api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password }),
-      api.authApi.login(server, { email: user3Dto.email, password: user3Dto.password }),
+      api.authApi.login(server, userDto.user1),
+      api.authApi.login(server, userDto.user2),
+      api.authApi.login(server, userDto.user3),
     ]);
 
     await Promise.all([

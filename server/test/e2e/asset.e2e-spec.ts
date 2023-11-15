@@ -14,23 +14,11 @@ import { AssetEntity, AssetType, LibraryType, SharedLinkType } from '@app/infra/
 import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import { errorStub, uuidStub } from '@test/fixtures';
+import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import { randomBytes } from 'crypto';
 import { DateTime } from 'luxon';
 import request from 'supertest';
-
-const user1Dto = {
-  email: 'user1@immich.app',
-  password: 'Password123',
-  name: 'User 1',
-};
-
-const user2Dto = {
-  email: 'user2@immich.app',
-  password: 'Password123',
-  name: 'User 2',
-};
 
 const today = DateTime.fromObject({ year: 2023, month: 11, day: 3 });
 const yesterday = today.minus({ days: 1 });
@@ -104,13 +92,13 @@ describe(`${AssetController.name} (e2e)`, () => {
     const admin = await api.authApi.adminLogin(server);
 
     await Promise.all([
-      api.userApi.create(server, admin.accessToken, user1Dto),
-      api.userApi.create(server, admin.accessToken, user2Dto),
+      api.userApi.create(server, admin.accessToken, userDto.user1),
+      api.userApi.create(server, admin.accessToken, userDto.user2),
     ]);
 
     [user1, user2] = await Promise.all([
-      api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password }),
-      api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password }),
+      api.authApi.login(server, userDto.user1),
+      api.authApi.login(server, userDto.user2),
     ]);
 
     const [user1Libraries, user2Libraries] = await Promise.all([

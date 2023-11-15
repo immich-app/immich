@@ -3,8 +3,7 @@ import { AlbumController } from '@app/immich';
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { SharedLinkType } from '@app/infra/entities';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub, uuidStub } from '@test/fixtures';
+import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
@@ -33,26 +32,18 @@ describe(`${AlbumController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
 
     await Promise.all([
-      api.userApi.create(server, admin.accessToken, {
-        email: 'user1@immich.app',
-        password: 'Password123',
-        name: 'User 1',
-      }),
-      api.userApi.create(server, admin.accessToken, {
-        email: 'user2@immich.app',
-        password: 'Password123',
-        name: 'User 2',
-      }),
+      api.userApi.create(server, admin.accessToken, userDto.user1),
+      api.userApi.create(server, admin.accessToken, userDto.user2),
     ]);
 
     [user1, user2] = await Promise.all([
-      api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' }),
-      api.authApi.login(server, { email: 'user2@immich.app', password: 'Password123' }),
+      api.authApi.login(server, userDto.user1),
+      api.authApi.login(server, userDto.user2),
     ]);
 
     user1Asset = await api.assetApi.upload(server, user1.accessToken, 'example');

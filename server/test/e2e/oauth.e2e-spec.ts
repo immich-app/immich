@@ -1,6 +1,5 @@
 import { OAuthController } from '@app/immich';
 import { api } from '@test/api';
-import { db } from '@test/db';
 import { errorStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
@@ -17,7 +16,7 @@ describe(`${OAuthController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
   });
 
