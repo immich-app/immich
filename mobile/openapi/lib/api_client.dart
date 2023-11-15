@@ -233,6 +233,8 @@ class ApiClient {
           return AssetJobNameTypeTransformer().decode(value);
         case 'AssetJobsDto':
           return AssetJobsDto.fromJson(value);
+        case 'AssetOrder':
+          return AssetOrderTypeTransformer().decode(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetStatsResponseDto':
@@ -483,6 +485,8 @@ class ApiClient {
           return UpdateUserDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
+        case 'UserAvatarColor':
+          return UserAvatarColorTypeTransformer().decode(value);
         case 'UserDto':
           return UserDto.fromJson(value);
         case 'UserResponseDto':
