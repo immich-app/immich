@@ -89,31 +89,25 @@ export class PersonService {
     const newPerson = await this.repository.create({ ownerId: authUser.id });
     for (const data of dto.data) {
       await this.access.requirePermission(authUser, Permission.PERSON_CREATE, data.assetFaceId);
-      try {
-        const face = await this.repository.getFaceById(data.assetFaceId);
 
-        await this.repository.reassignFace(face.id, newPerson.id);
+      const face = await this.repository.getFaceById(data.assetFaceId);
 
-        await this.repository.update({
+      await this.repository.reassignFace(face.id, newPerson.id);
+
+      await this.repository.update({
+        id: newPerson.id,
+        faceAssetId: face.id,
+      });
+
+      await this.jobRepository.queue({
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: {
           id: newPerson.id,
-          faceAssetId: face.id,
-        });
+        },
+      });
 
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_PERSON_THUMBNAIL,
-          data: {
-            id: newPerson.id,
-          },
-        });
-
-        if (face.person && face.person.faceAssetId === face.id) {
-          changeFeaturePhoto.push(face.person?.id);
-        }
-        if (!face) {
-          throw new BadRequestException('Invalid assetId for feature face');
-        }
-      } catch (error: Error | any) {
-        this.logger.error(`Unable to create a new person`, error?.stack);
+      if (face.person && face.person.faceAssetId === face.id) {
+        changeFeaturePhoto.push(face.person?.id);
       }
     }
 
@@ -129,18 +123,15 @@ export class PersonService {
     const changeFeaturePhoto: string[] = [];
     for (const data of dto.data) {
       await this.access.requirePermission(authUser, Permission.PERSON_REASSIGN, data.assetFaceId);
-      try {
-        const face = await this.repository.getFaceById(data.assetFaceId);
-        if (face.person && face.person.faceAssetId === face.id) {
-          changeFeaturePhoto.push(face.person.id);
-        }
 
-        await this.repository.reassignFace(face.id, personId);
-
-        result.push(await this.findOrFail(personId).then(mapPerson));
-      } catch (error: Error | any) {
-        this.logger.error(`Unable to un-merge asset ${data.assetFaceId} to ${personId}`, error?.stack);
+      const face = await this.repository.getFaceById(data.assetFaceId);
+      if (face.person && face.person.faceAssetId === face.id) {
+        changeFeaturePhoto.push(face.person.id);
       }
+
+      await this.repository.reassignFace(face.id, personId);
+
+      result.push(await this.findOrFail(personId).then(mapPerson));
     }
     await this.createNewFeaturePhoto(changeFeaturePhoto);
     return result;
