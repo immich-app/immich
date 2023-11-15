@@ -4,8 +4,7 @@ import { UserEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub, userSignupStub, userStub } from '@test/fixtures';
+import { errorStub, userDto, userSignupStub, userStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 import { Repository } from 'typeorm';
@@ -28,17 +27,12 @@ describe(`${UserController.name}`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
 
     userService = app.get<UserService>(UserService);
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('GET /user', () => {
@@ -74,11 +68,7 @@ describe(`${UserController.name}`, () => {
     });
 
     it('should include deleted users', async () => {
-      const user1 = await api.userApi.create(server, accessToken, {
-        email: `user1@immich.app`,
-        password: 'Password123',
-        name: `User 1`,
-      });
+      const user1 = await api.userApi.create(server, accessToken, userDto.user1);
 
       await api.userApi.delete(server, accessToken, user1.id);
 
@@ -86,6 +76,7 @@ describe(`${UserController.name}`, () => {
         .get(`/user`)
         .query({ isAll: false })
         .set('Authorization', `Bearer ${accessToken}`);
+
       expect(status).toBe(200);
       expect(body).toHaveLength(2);
       expect(body[0]).toMatchObject({ id: user1.id, email: 'user1@immich.app', deletedAt: expect.any(String) });

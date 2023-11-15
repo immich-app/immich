@@ -13,6 +13,7 @@ part of openapi.api;
 class UserResponseDto {
   /// Returns a new [UserResponseDto] instance.
   UserResponseDto({
+    required this.avatarColor,
     required this.createdAt,
     required this.deletedAt,
     required this.email,
@@ -27,6 +28,8 @@ class UserResponseDto {
     required this.storageLabel,
     required this.updatedAt,
   });
+
+  UserAvatarColor avatarColor;
 
   DateTime createdAt;
 
@@ -62,6 +65,7 @@ class UserResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
+     other.avatarColor == avatarColor &&
      other.createdAt == createdAt &&
      other.deletedAt == deletedAt &&
      other.email == email &&
@@ -79,6 +83,7 @@ class UserResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (avatarColor.hashCode) +
     (createdAt.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
@@ -94,10 +99,11 @@ class UserResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'avatarColor'] = this.avatarColor;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
@@ -138,6 +144,7 @@ class UserResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserResponseDto(
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         createdAt: mapDateTime(json, r'createdAt', '')!,
         deletedAt: mapDateTime(json, r'deletedAt', ''),
         email: mapValueOfType<String>(json, r'email')!,
@@ -198,6 +205,7 @@ class UserResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'avatarColor',
     'createdAt',
     'deletedAt',
     'email',

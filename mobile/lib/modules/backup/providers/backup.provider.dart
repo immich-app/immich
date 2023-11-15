@@ -89,7 +89,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     state = state
         .copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, album});
-    _updateBackupAssetCount();
   }
 
   void addExcludedAlbumForBackup(AvailableAlbum album) {
@@ -98,7 +97,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
     state = state
         .copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, album});
-    _updateBackupAssetCount();
   }
 
   void removeAlbumForBackup(AvailableAlbum album) {
@@ -107,7 +105,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     currentSelectedAlbums.removeWhere((a) => a == album);
 
     state = state.copyWith(selectedBackupAlbums: currentSelectedAlbums);
-    _updateBackupAssetCount();
   }
 
   void removeExcludedAlbumForBackup(AvailableAlbum album) {
@@ -116,7 +113,20 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     currentExcludedAlbums.removeWhere((a) => a == album);
 
     state = state.copyWith(excludedBackupAlbums: currentExcludedAlbums);
-    _updateBackupAssetCount();
+  }
+
+  Future<void> backupAlbumSelectionDone() {
+    if (state.selectedBackupAlbums.isEmpty) {
+      // disable any backup
+      cancelBackup();
+      setAutoBackup(false);
+      configureBackgroundBackup(
+        enabled: false,
+        onError: (msg) {},
+        onBatteryInfo: () {},
+      );
+    }
+    return _updateBackupAssetCount();
   }
 
   void setAutoBackup(bool enabled) {
@@ -249,30 +259,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final List<BackupAlbum> selectedBackupAlbums =
         await _backupService.selectedAlbumsQuery().findAll();
 
-    // First time backup - set isAll album is the default one for backup.
-    if (selectedBackupAlbums.isEmpty) {
-      log.info("First time backup; setup 'Recent(s)' album as default");
-
-      // Get album that contains all assets
-      final list = await PhotoManager.getAssetPathList(
-        hasAll: true,
-        onlyAll: true,
-        type: RequestType.common,
-      );
-
-      if (list.isEmpty) {
-        return;
-      }
-      AssetPathEntity albumHasAllAssets = list.first;
-
-      final ba = BackupAlbum(
-        albumHasAllAssets.id,
-        DateTime.fromMillisecondsSinceEpoch(0),
-        BackupSelection.select,
-      );
-      await _db.writeTxn(() => _db.backupAlbums.put(ba));
-    }
-
     // Generate AssetPathEntity from id to add to local state
     final Set<AvailableAlbum> selectedAlbums = {};
     for (final BackupAlbum ba in selectedBackupAlbums) {
@@ -362,7 +348,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         allUniqueAssets: {},
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
-      return;
     } else {
       state = state.copyWith(
         allAssetsInDatabase: allAssetsInDatabase,
@@ -373,8 +358,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Save to persistent storage
     await _updatePersistentAlbumsSelection();
-
-    return;
   }
 
   /// Get all necessary information for calculating the available albums,

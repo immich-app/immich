@@ -16,6 +16,11 @@ void main() {
   // final instance = PartnerResponseDto();
 
   group('test PartnerResponseDto', () {
+    // UserAvatarColor avatarColor
+    test('to test the property `avatarColor`', () async {
+      // TODO
+    });
+
     // DateTime createdAt
     test('to test the property `createdAt`', () async {
       // TODO

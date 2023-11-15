@@ -93,8 +93,21 @@ export class UserService {
     authUser: AuthUserDto,
     fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
+    const { profileImagePath: oldpath } = await this.findOrFail(authUser.id, { withDeleted: false });
     const updatedUser = await this.userRepository.update(authUser.id, { profileImagePath: fileInfo.path });
+    if (oldpath !== '') {
+      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldpath] } });
+    }
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
+  }
+
+  async deleteProfileImage(authUser: AuthUserDto): Promise<void> {
+    const user = await this.findOrFail(authUser.id, { withDeleted: false });
+    if (user.profileImagePath === '') {
+      throw new BadRequestException("Can't delete a missing profile Image");
+    }
+    await this.userRepository.update(authUser.id, { profileImagePath: '' });
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 
   async getProfileImage(id: string): Promise<ImmichReadStream> {
@@ -111,7 +124,7 @@ export class UserService {
       throw new BadRequestException('Admin account does not exist');
     }
 
-    const providedPassword = await ask(admin);
+    const providedPassword = await ask(mapUser(admin));
     const password = providedPassword || randomBytes(24).toString('base64').replace(/\W/g, '');
 
     await this.userCore.updateUser(admin, admin.id, { password });

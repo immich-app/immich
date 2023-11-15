@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
-class GalleryPermissionGuard extends AutoRouteGuard {
+class BackupPermissionGuard extends AutoRouteGuard {
   final GalleryPermissionNotifier _permission;
 
-  GalleryPermissionGuard(this._permission);
+  BackupPermissionGuard(this._permission);
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
@@ -13,7 +13,7 @@ class GalleryPermissionGuard extends AutoRouteGuard {
     if (p) {
       resolver.next(true);
     } else {
-      router.replaceAll([const PermissionOnboardingRoute()]);
+      router.push(const PermissionOnboardingRoute());
     }
   }
 }

@@ -90,6 +90,9 @@ class SyncService {
   Future<bool> syncNewAssetToDb(Asset newAsset) =>
       _lock.run(() => _syncNewAssetToDb(newAsset));
 
+  Future<bool> removeAllLocalAlbumsAndAssets() =>
+      _lock.run(_removeAllLocalAlbumsAndAssets);
+
   // private methods:
 
   /// Syncs users from the server to the local database
@@ -755,6 +758,23 @@ class SyncService {
         !a.lastModified!.isAtSameMomentAs(b.modifiedAt) ||
         await a.assetCountAsync !=
             (await _db.eTags.getById(a.eTagKeyAssetCount))?.assetCount;
+  }
+
+  Future<bool> _removeAllLocalAlbumsAndAssets() async {
+    try {
+      final assets = await _db.assets.where().localIdIsNotNull().findAll();
+      final (toDelete, toUpdate) =
+          _handleAssetRemoval(assets, [], remote: false);
+      await _db.writeTxn(() async {
+        await _db.assets.deleteAll(toDelete);
+        await _db.assets.putAll(toUpdate);
+        await _db.albums.where().localIdIsNotNull().deleteAll();
+      });
+      return true;
+    } catch (e) {
+      _log.severe("Failed to remove all local albums and assets: $e");
+      return false;
+    }
   }
 }
 

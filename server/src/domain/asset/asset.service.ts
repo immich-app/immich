@@ -30,6 +30,8 @@ import {
   AssetIdsDto,
   AssetJobName,
   AssetJobsDto,
+  AssetOrder,
+  AssetSearchDto,
   AssetStatsDto,
   DownloadArchiveInfo,
   DownloadInfoDto,
@@ -89,6 +91,34 @@ export class AssetService {
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
+  }
+
+  search(authUser: AuthUserDto, dto: AssetSearchDto) {
+    let checksum: Buffer | undefined = undefined;
+
+    if (dto.checksum) {
+      const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
+      checksum = Buffer.from(dto.checksum, encoding);
+    }
+
+    const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
+    const order = dto.order ? enumToOrder[dto.order] : undefined;
+
+    return this.assetRepository
+      .search({
+        ...dto,
+        order,
+        checksum,
+        ownerId: authUser.id,
+      })
+      .then((assets) =>
+        assets.map((asset) =>
+          mapAsset(asset, {
+            stripMetadata: false,
+            withStack: true,
+          }),
+        ),
+      );
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {

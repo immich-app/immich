@@ -1,5 +1,23 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserAvatarColor, UserEntity } from '@app/infra/entities';
 import { authStub } from './auth.stub';
+
+export const userDto = {
+  user1: {
+    email: 'user1@immich.app',
+    password: 'Password123',
+    name: 'User 1',
+  },
+  user2: {
+    email: 'user2@immich.app',
+    password: 'Password123',
+    name: 'User 2',
+  },
+  user3: {
+    email: 'user3@immich.app',
+    password: 'Password123',
+    name: 'User 3',
+  },
+};
 
 export const userStub = {
   admin: Object.freeze<UserEntity>({
@@ -17,6 +35,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -33,6 +52,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   user2: Object.freeze<UserEntity>({
     ...authStub.user2,
@@ -49,6 +69,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -65,6 +86,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   externalPath1: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -81,6 +103,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   externalPath2: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -97,6 +120,7 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   profilePath: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -113,5 +137,6 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
 };

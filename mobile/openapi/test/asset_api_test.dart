@@ -152,6 +152,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AssetResponseDto>> searchAssets({ String id, String libraryId, AssetTypeEnum type, AssetOrder order, String deviceAssetId, String deviceId, String checksum, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isOffline, bool isReadOnly, bool isVisible, bool withDeleted, bool withStacked, bool withExif, bool withPeople, DateTime createdBefore, DateTime createdAfter, DateTime updatedBefore, DateTime updatedAfter, DateTime trashedBefore, DateTime trashedAfter, DateTime takenBefore, DateTime takenAfter, String originalFileName, String originalPath, String resizePath, String webpPath, String encodedVideoPath, String city, String state, String country, String make, String model, String lensModel, num page, num size }) async
+    test('test searchAssets', () async {
+      // TODO
+    });
+
     //Future<MultipartFile> serveFile(String id, { bool isThumb, bool isWeb, String key }) async
     test('test serveFile', () async {
       // TODO

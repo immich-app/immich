@@ -733,6 +733,7 @@
     >
       <DetailPanel
         {asset}
+        albumId={album?.id}
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
         on:close-viewer={handleCloseViewer}

@@ -3,7 +3,6 @@ import { PersonController } from '@app/immich';
 import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
@@ -27,7 +26,7 @@ describe(`${PersonController.name}`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;

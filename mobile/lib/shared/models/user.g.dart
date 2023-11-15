@@ -17,53 +17,59 @@ const UserSchema = CollectionSchema(
   name: r'User',
   id: -7838171048429979076,
   properties: {
-    r'email': PropertySchema(
+    r'avatarColor': PropertySchema(
       id: 0,
+      name: r'avatarColor',
+      type: IsarType.byte,
+      enumMap: _UseravatarColorEnumValueMap,
+    ),
+    r'email': PropertySchema(
+      id: 1,
       name: r'email',
       type: IsarType.string,
     ),
     r'id': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'id',
       type: IsarType.string,
     ),
     r'inTimeline': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'inTimeline',
       type: IsarType.bool,
     ),
     r'isAdmin': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isAdmin',
       type: IsarType.bool,
     ),
     r'isPartnerSharedBy': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'isPartnerSharedBy',
       type: IsarType.bool,
     ),
     r'isPartnerSharedWith': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'isPartnerSharedWith',
       type: IsarType.bool,
     ),
     r'memoryEnabled': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'memoryEnabled',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'name',
       type: IsarType.string,
     ),
     r'profileImagePath': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'profileImagePath',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -130,16 +136,17 @@ void _userSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.email);
-  writer.writeString(offsets[1], object.id);
-  writer.writeBool(offsets[2], object.inTimeline);
-  writer.writeBool(offsets[3], object.isAdmin);
-  writer.writeBool(offsets[4], object.isPartnerSharedBy);
-  writer.writeBool(offsets[5], object.isPartnerSharedWith);
-  writer.writeBool(offsets[6], object.memoryEnabled);
-  writer.writeString(offsets[7], object.name);
-  writer.writeString(offsets[8], object.profileImagePath);
-  writer.writeDateTime(offsets[9], object.updatedAt);
+  writer.writeByte(offsets[0], object.avatarColor.index);
+  writer.writeString(offsets[1], object.email);
+  writer.writeString(offsets[2], object.id);
+  writer.writeBool(offsets[3], object.inTimeline);
+  writer.writeBool(offsets[4], object.isAdmin);
+  writer.writeBool(offsets[5], object.isPartnerSharedBy);
+  writer.writeBool(offsets[6], object.isPartnerSharedWith);
+  writer.writeBool(offsets[7], object.memoryEnabled);
+  writer.writeString(offsets[8], object.name);
+  writer.writeString(offsets[9], object.profileImagePath);
+  writer.writeDateTime(offsets[10], object.updatedAt);
 }
 
 User _userDeserialize(
@@ -149,16 +156,19 @@ User _userDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = User(
-    email: reader.readString(offsets[0]),
-    id: reader.readString(offsets[1]),
-    inTimeline: reader.readBoolOrNull(offsets[2]) ?? false,
-    isAdmin: reader.readBool(offsets[3]),
-    isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
-    isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
-    memoryEnabled: reader.readBoolOrNull(offsets[6]) ?? true,
-    name: reader.readString(offsets[7]),
-    profileImagePath: reader.readStringOrNull(offsets[8]) ?? '',
-    updatedAt: reader.readDateTime(offsets[9]),
+    avatarColor:
+        _UseravatarColorValueEnumMap[reader.readByteOrNull(offsets[0])] ??
+            AvatarColorEnum.primary,
+    email: reader.readString(offsets[1]),
+    id: reader.readString(offsets[2]),
+    inTimeline: reader.readBoolOrNull(offsets[3]) ?? false,
+    isAdmin: reader.readBool(offsets[4]),
+    isPartnerSharedBy: reader.readBoolOrNull(offsets[5]) ?? false,
+    isPartnerSharedWith: reader.readBoolOrNull(offsets[6]) ?? false,
+    memoryEnabled: reader.readBoolOrNull(offsets[7]) ?? true,
+    name: reader.readString(offsets[8]),
+    profileImagePath: reader.readStringOrNull(offsets[9]) ?? '',
+    updatedAt: reader.readDateTime(offsets[10]),
   );
   return object;
 }
@@ -171,29 +181,57 @@ P _userDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (_UseravatarColorValueEnumMap[reader.readByteOrNull(offset)] ??
+          AvatarColorEnum.primary) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
+      return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
-    case 4:
       return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 4:
+      return (reader.readBool(offset)) as P;
     case 5:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 6:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 8:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readString(offset)) as P;
     case 9:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 10:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _UseravatarColorEnumValueMap = {
+  'primary': 0,
+  'pink': 1,
+  'red': 2,
+  'yellow': 3,
+  'blue': 4,
+  'green': 5,
+  'purple': 6,
+  'orange': 7,
+  'gray': 8,
+  'amber': 9,
+};
+const _UseravatarColorValueEnumMap = {
+  0: AvatarColorEnum.primary,
+  1: AvatarColorEnum.pink,
+  2: AvatarColorEnum.red,
+  3: AvatarColorEnum.yellow,
+  4: AvatarColorEnum.blue,
+  5: AvatarColorEnum.green,
+  6: AvatarColorEnum.purple,
+  7: AvatarColorEnum.orange,
+  8: AvatarColorEnum.gray,
+  9: AvatarColorEnum.amber,
+};
 
 Id _userGetId(User object) {
   return object.isarId;
@@ -382,6 +420,59 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
 }
 
 extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorEqualTo(
+      AvatarColorEnum value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'avatarColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorGreaterThan(
+    AvatarColorEnum value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'avatarColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorLessThan(
+    AvatarColorEnum value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'avatarColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorBetween(
+    AvatarColorEnum lower,
+    AvatarColorEnum upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'avatarColor',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> emailEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1167,6 +1258,18 @@ extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
 }
 
 extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
+  QueryBuilder<User, User, QAfterSortBy> sortByAvatarColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByAvatarColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'email', Sort.asc);
@@ -1289,6 +1392,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
 }
 
 extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
+  QueryBuilder<User, User, QAfterSortBy> thenByAvatarColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByAvatarColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> thenByEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'email', Sort.asc);
@@ -1423,6 +1538,12 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
 }
 
 extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
+  QueryBuilder<User, User, QDistinct> distinctByAvatarColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'avatarColor');
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByEmail(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1493,6 +1614,12 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');
+    });
+  }
+
+  QueryBuilder<User, AvatarColorEnum, QQueryOperations> avatarColorProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'avatarColor');
     });
   }
 

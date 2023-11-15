@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -74,23 +73,10 @@ class AlbumInfoListTile extends HookConsumerWidget {
         if (isExcluded) {
           // Remove from exclude album list
           ref
-              .watch(backupProvider.notifier)
+              .read(backupProvider.notifier)
               .removeExcludedAlbumForBackup(albumInfo);
         } else {
           // Add to exclude album list
-          if (ref.watch(backupProvider).selectedBackupAlbums.length == 1 &&
-              ref
-                  .watch(backupProvider)
-                  .selectedBackupAlbums
-                  .contains(albumInfo)) {
-            ImmichToast.show(
-              context: context,
-              msg: "backup_err_only_album".tr(),
-              toastType: ToastType.error,
-              gravity: ToastGravity.BOTTOM,
-            );
-            return;
-          }
 
           if (albumInfo.id == 'isAll' || albumInfo.name == 'Recents') {
             ImmichToast.show(
@@ -103,7 +89,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
           }
 
           ref
-              .watch(backupProvider.notifier)
+              .read(backupProvider.notifier)
               .addExcludedAlbumForBackup(albumInfo);
         }
       },
@@ -113,19 +99,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
         onTap: () {
           HapticFeedback.selectionClick();
           if (isSelected) {
-            if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
-              ImmichToast.show(
-                context: context,
-                msg: "backup_err_only_album".tr(),
-                toastType: ToastType.error,
-                gravity: ToastGravity.BOTTOM,
-              );
-              return;
-            }
-
-            ref.watch(backupProvider.notifier).removeAlbumForBackup(albumInfo);
+            ref.read(backupProvider.notifier).removeAlbumForBackup(albumInfo);
           } else {
-            ref.watch(backupProvider.notifier).addAlbumForBackup(albumInfo);
+            ref.read(backupProvider.notifier).addAlbumForBackup(albumInfo);
           }
         },
         leading: ClipRRect(

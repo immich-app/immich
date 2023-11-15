@@ -56,7 +56,7 @@
               >✓</span
             >
           {:else}
-            <UserAvatar {user} size="lg" autoColor />
+            <UserAvatar {user} size="lg" />
           {/if}
 
           <div class="text-left">
