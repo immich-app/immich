@@ -26,7 +26,7 @@
     "@floating-ui/dom": "^1.5.1",
     "@sveltejs/adapter-node": "^1.2.0",
     "@sveltejs/kit": "^1.20.4",
-    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/svelte": "^4.0.3",
     "@types/cookie": "^0.5.1",
     "@types/dom-to-image": "^2.6.4",
