@@ -78,7 +78,7 @@ services:
     env_file:
       - .env
     ports:
-      - 3000:3000
+      - 2283:3000
       - 24678:24678
     volumes:
       - ../web:/usr/src/app
@@ -138,23 +138,6 @@ services:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
-
-  immich-proxy:
-    container_name: immich_proxy
-    image: immich-proxy-dev:latest
-    environment:
-      # Make sure these values get passed through from the env file
-      - IMMICH_SERVER_URL
-      - IMMICH_WEB_URL
-    build:
-      context: ../nginx
-      dockerfile: Dockerfile
-    ports:
-      - 2283:8080
-    depends_on:
-      - immich-server
-      - immich-web
-    restart: unless-stopped
 
 volumes:
   model-cache:

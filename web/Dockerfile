@@ -27,18 +27,14 @@ FROM builder AS prod
 RUN npm run build
 RUN npm prune --omit=dev
 
-FROM base
+FROM ghcr.io/nginxinc/nginx-unprivileged:1.25.1-alpine3.17@sha256:c38e27fdba47f725f49177b88fdd1fd2feef11b13dc11dea3695c3feb2c6d96d
 
-ENV NODE_ENV=production
+COPY LICENSE /licenses/LICENSE.txt
+COPY LICENSE /LICENSE
 
-WORKDIR /usr/src/app
+COPY nginx/10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
+COPY nginx/15-set-env-variables.envsh /docker-entrypoint.d
 
-COPY --from=prod /usr/src/app/node_modules ./node_modules
-COPY --from=prod /usr/src/app/build ./build
+COPY nginx/templates/ /etc/nginx/templates
 
-COPY package.json package-lock.json ./
-COPY entrypoint.sh ./
-
-ENTRYPOINT ["tini", "--", "/bin/sh"]
-
-CMD ["entrypoint.sh"]
+COPY --from=prod /usr/src/app/build /usr/share/nginx/html

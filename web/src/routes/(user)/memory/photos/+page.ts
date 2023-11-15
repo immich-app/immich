@@ -1,17 +1,9 @@
-import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
 import { authenticate } from '$lib/utils/auth';
+import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async () => {
-  const user = await authenticate();
-
-  goto(AppRoute.SEARCH);
-
-  return {
-    user,
-    meta: {
-      title: 'Search',
-    },
-  };
+  await authenticate();
+  throw redirect(302, AppRoute.MEMORY);
 };

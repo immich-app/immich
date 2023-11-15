@@ -6,12 +6,12 @@ import type { PageLoad } from './$types';
 export const load: PageLoad = async () => {
   const user = await authenticate();
 
-  goto(AppRoute.SEARCH);
+  goto(AppRoute.PHOTOS);
 
   return {
     user,
     meta: {
-      title: 'Search',
+      title: 'Photos',
     },
   };
 };
