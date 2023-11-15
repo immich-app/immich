@@ -15,7 +15,7 @@ import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub, uuidStub } from '@test/fixtures';
-import { db, testApp } from '@test/test-utils';
+import { testApp } from '@test/test-utils';
 import { randomBytes } from 'crypto';
 import { DateTime } from 'luxon';
 import request from 'supertest';
@@ -98,7 +98,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     [server, app] = await testApp.create();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
 
-    await db.reset();
+    await testApp.reset();
 
     await api.authApi.adminSignUp(server);
     const admin = await api.authApi.adminLogin(server);
@@ -122,7 +122,32 @@ describe(`${AssetController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset({ entities: [AssetEntity] });
+    await testApp.reset({ entities: [AssetEntity] });
+
+    [asset1, asset2, asset3, asset4, asset5] = await Promise.all([
+      createAsset(user1, new Date('1970-01-01')),
+      createAsset(user1, new Date('1970-02-10')),
+      createAsset(user1, new Date('1970-02-11'), {
+        isFavorite: true,
+        isArchived: true,
+        isExternal: true,
+        isReadOnly: true,
+        type: AssetType.VIDEO,
+        fileCreatedAt: yesterday.toJSDate(),
+        fileModifiedAt: yesterday.toJSDate(),
+        createdAt: yesterday.toJSDate(),
+        updatedAt: yesterday.toJSDate(),
+        localDateTime: yesterday.toJSDate(),
+      }),
+      createAsset(user2, new Date('1970-01-01')),
+      createAsset(user1, new Date('1970-01-01'), {
+        deletedAt: yesterday.toJSDate(),
+      }),
+    ]);
+  });
+
+  beforeEach(async () => {
+    await testApp.reset({ entities: [AssetEntity] });
 
     [asset1, asset2, asset3, asset4, asset5] = await Promise.all([
       createAsset(user1, new Date('1970-01-01')),

@@ -6,24 +6,29 @@ import { errorStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
+const user1Dto = {
+  email: 'user1@immich.app',
+  password: 'Password123',
+  name: 'User 1',
+};
+
 describe(`${ServerInfoController.name} (e2e)`, () => {
   let server: any;
-  let accessToken: string;
-  let loginResponse: LoginResponseDto;
+  let admin: LoginResponseDto;
+  let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
     [server] = await testApp.create();
+
+    await db.reset();
+    await api.authApi.adminSignUp(server);
+    admin = await api.authApi.adminLogin(server);
+    await api.userApi.create(server, admin.accessToken, user1Dto);
+    nonAdmin = await api.authApi.login(server, user1Dto);
   });
 
   afterAll(async () => {
     await testApp.teardown();
-  });
-
-  beforeEach(async () => {
-    await db.reset();
-    await api.authApi.adminSignUp(server);
-    loginResponse = await api.authApi.adminLogin(server);
-    accessToken = loginResponse.accessToken;
   });
 
   describe('GET /server-info', () => {
@@ -34,7 +39,9 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     });
 
     it('should return the disk information', async () => {
-      const { status, body } = await request(server).get('/server-info').set('Authorization', `Bearer ${accessToken}`);
+      const { status, body } = await request(server)
+        .get('/server-info')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
         diskAvailable: expect.any(String),
@@ -110,12 +117,9 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     });
 
     it('should only work for admins', async () => {
-      const loginDto = { email: 'test@immich.app', password: 'Immich123' };
-      await api.userApi.create(server, accessToken, { ...loginDto, name: 'test' });
-      const { accessToken: userAccessToken } = await api.authApi.login(server, loginDto);
       const { status, body } = await request(server)
         .get('/server-info/statistics')
-        .set('Authorization', `Bearer ${userAccessToken}`);
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
       expect(status).toBe(403);
       expect(body).toEqual(errorStub.forbidden);
     });
@@ -123,7 +127,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     it('should return the server stats', async () => {
       const { status, body } = await request(server)
         .get('/server-info/statistics')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
         photos: 0,
@@ -133,7 +137,14 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
             photos: 0,
             usage: 0,
             userName: 'Immich Admin',
-            userId: loginResponse.userId,
+            userId: admin.userId,
+            videos: 0,
+          },
+          {
+            photos: 0,
+            usage: 0,
+            userName: 'User 1',
+            userId: nonAdmin.userId,
             videos: 0,
           },
         ],
