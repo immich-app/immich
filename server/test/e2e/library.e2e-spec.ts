@@ -2,27 +2,15 @@ import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { api } from '@test/api';
-import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, db, restoreTempFolder, testApp } from '@test/test-utils';
+import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from '@test/test-utils';
 import * as fs from 'fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
-import { errorStub, uuidStub } from '../fixtures';
+import { errorStub, userDto, uuidStub } from '../fixtures';
 
 describe(`${LibraryController.name} (e2e)`, () => {
   let server: any;
   let admin: LoginResponseDto;
-
-  const user1Dto = {
-    email: 'user1@immich.app',
-    password: 'Password123',
-    name: 'User 1',
-  };
-
-  const user2Dto = {
-    email: 'user2@immich.app',
-    password: 'Password123',
-    name: 'User 2',
-  };
 
   beforeAll(async () => {
     [server] = await testApp.create({ jobs: true });
@@ -34,7 +22,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
@@ -195,8 +183,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it('should allow a user to create a library', async () => {
-      await api.userApi.create(server, admin.accessToken, user1Dto);
-      const user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
+      await api.userApi.create(server, admin.accessToken, userDto.user1);
+      const user1 = await api.authApi.login(server, userDto.user1);
 
       const { status, body } = await request(server)
         .post('/library')
@@ -337,11 +325,15 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it("should not allow getting another user's library", async () => {
-      await api.userApi.create(server, admin.accessToken, user1Dto);
-      const user1 = await api.authApi.login(server, { email: user1Dto.email, password: user1Dto.password });
+      await Promise.all([
+        api.userApi.create(server, admin.accessToken, userDto.user1),
+        api.userApi.create(server, admin.accessToken, userDto.user2),
+      ]);
 
-      await api.userApi.create(server, admin.accessToken, user2Dto);
-      const user2 = await api.authApi.login(server, { email: user2Dto.email, password: user2Dto.password });
+      const [user1, user2] = await Promise.all([
+        api.authApi.login(server, userDto.user1),
+        api.authApi.login(server, userDto.user2),
+      ]);
 
       const library = await api.libraryApi.create(server, user1.accessToken, { type: LibraryType.EXTERNAL });
 

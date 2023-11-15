@@ -3,8 +3,7 @@ import { ActivityController } from '@app/immich';
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { ActivityEntity } from '@app/infra/entities';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub, uuidStub } from '@test/fixtures';
+import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
@@ -17,14 +16,13 @@ describe(`${ActivityController.name} (e2e)`, () => {
 
   beforeAll(async () => {
     [server] = await testApp.create();
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
     asset = await api.assetApi.upload(server, admin.accessToken, 'example');
 
-    const credentials = { email: 'user1@immich.app', password: 'Password123' };
-    await api.userApi.create(server, admin.accessToken, { ...credentials, name: 'User 1' });
-    nonOwner = await api.authApi.login(server, credentials);
+    await api.userApi.create(server, admin.accessToken, userDto.user1);
+    nonOwner = await api.authApi.login(server, userDto.user1);
 
     album = await api.albumApi.create(server, admin.accessToken, {
       albumName: 'Album 1',

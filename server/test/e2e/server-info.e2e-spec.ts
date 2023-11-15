@@ -1,16 +1,9 @@
 import { LoginResponseDto } from '@app/domain';
 import { ServerInfoController } from '@app/immich';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub } from '@test/fixtures';
+import { errorStub, userDto } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
-
-const user1Dto = {
-  email: 'user1@immich.app',
-  password: 'Password123',
-  name: 'User 1',
-};
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
   let server: any;
@@ -20,11 +13,11 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
   beforeAll(async () => {
     [server] = await testApp.create();
 
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
-    await api.userApi.create(server, admin.accessToken, user1Dto);
-    nonAdmin = await api.authApi.login(server, user1Dto);
+    await api.userApi.create(server, admin.accessToken, userDto.user1);
+    nonAdmin = await api.authApi.login(server, userDto.user1);
   });
 
   afterAll(async () => {

@@ -1,7 +1,7 @@
 import { LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { api } from '@test/api';
-import { IMMICH_TEST_ASSET_PATH, db, runAllTests, testApp } from '@test/test-utils';
+import { IMMICH_TEST_ASSET_PATH, runAllTests, testApp } from '@test/test-utils';
 
 describe(`Supported file formats (e2e)`, () => {
   let server: any;
@@ -176,7 +176,7 @@ describe(`Supported file formats (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
     await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');

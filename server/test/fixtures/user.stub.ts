@@ -1,6 +1,24 @@
 import { UserAvatarColor, UserEntity } from '@app/infra/entities';
 import { authStub } from './auth.stub';
 
+export const userDto = {
+  user1: {
+    email: 'user1@immich.app',
+    password: 'Password123',
+    name: 'User 1',
+  },
+  user2: {
+    email: 'user2@immich.app',
+    password: 'Password123',
+    name: 'User 2',
+  },
+  user3: {
+    email: 'user3@immich.app',
+    password: 'Password123',
+    name: 'User 3',
+  },
+};
+
 export const userStub = {
   admin: Object.freeze<UserEntity>({
     ...authStub.admin,

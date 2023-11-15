@@ -1,6 +1,5 @@
 import { AuthController } from '@app/immich';
 import { api } from '@test/api';
-import { db } from '@test/db';
 import {
   adminSignupStub,
   changePasswordStub,
@@ -49,7 +48,7 @@ describe(`${AuthController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     const response = await api.authApi.adminLogin(server);
     accessToken = response.accessToken;
@@ -57,7 +56,7 @@ describe(`${AuthController.name} (e2e)`, () => {
 
   describe('POST /auth/admin-sign-up', () => {
     beforeEach(async () => {
-      await db.reset();
+      await testApp.reset();
     });
 
     const invalid = [
