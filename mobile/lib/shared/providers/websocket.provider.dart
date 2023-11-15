@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -130,6 +131,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_asset_trash', _handleServerUpdates);
         socket.on('on_asset_restore', _handleServerUpdates);
         socket.on('on_asset_update', _handleServerUpdates);
+        socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
@@ -203,6 +205,36 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   void _handleOnAssetDelete(dynamic data) {
     addPendingChange(PendingAction.assetDelete, data);
     _debounce(handlePendingChanges);
+  }
+
+  _handleReleaseUpdates(dynamic data) {
+    // Json guard
+    if (data is! Map) {
+      return;
+    }
+
+    final json = data.cast<String, dynamic>();
+    final serverVersionJson =
+        json.containsKey('serverVersion') ? json['serverVersion'] : null;
+    final releaseVersionJson =
+        json.containsKey('releaseVersion') ? json['releaseVersion'] : null;
+    if (serverVersionJson == null || releaseVersionJson == null) {
+      return;
+    }
+
+    final serverVersionDto =
+        ServerVersionResponseDto.fromJson(serverVersionJson);
+    final releaseVersionDto =
+        ServerVersionResponseDto.fromJson(releaseVersionJson);
+    if (serverVersionDto == null || releaseVersionDto == null) {
+      return;
+    }
+
+    final serverVersion = ServerVersion.fromDto(serverVersionDto);
+    final releaseVersion = ServerVersion.fromDto(releaseVersionDto);
+    _ref
+        .read(serverInfoProvider.notifier)
+        .handleNewRelease(serverVersion, releaseVersion);
   }
 }
 

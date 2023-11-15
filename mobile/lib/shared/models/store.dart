@@ -153,7 +153,6 @@ enum StoreKey<T> {
   backupRequireWifi<bool>(6, type: bool),
   backupRequireCharging<bool>(7, type: bool),
   backupTriggerDelay<int>(8, type: int),
-  githubReleaseInfo<String>(9, type: String),
   serverUrl<String>(10, type: String),
   accessToken<String>(11, type: String),
   serverEndpoint<String>(12, type: String),

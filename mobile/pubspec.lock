@@ -346,7 +346,7 @@ packages:
     source: hosted
     version: "0.0.2"
   executor_lib:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: executor_lib
       sha256: "544889daa5726462657dab6410b75f2f8e3a77479d85b307a25c346e243bc38e"
@@ -1562,7 +1562,7 @@ packages:
     source: hosted
     version: "1.0.0"
   vector_tile_renderer:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: vector_tile_renderer
       sha256: de212da0f5e48107d3b763a940a428eb1f49d8a4664d41ac0b654f77209a2d0b
