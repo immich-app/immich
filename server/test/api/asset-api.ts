@@ -6,12 +6,20 @@ import request from 'supertest';
 
 type UploadDto = Partial<CreateAssetDto> & { content?: Buffer };
 
+const asset = {
+  deviceAssetId: 'test-1',
+  deviceId: 'test',
+  fileCreatedAt: new Date(),
+  fileModifiedAt: new Date(),
+};
+
 export const assetApi = {
   create: async (
     server: any,
     accessToken: string,
-    dto: Omit<CreateAssetDto, 'assetData'>,
+    dto?: Omit<CreateAssetDto, 'assetData'>,
   ): Promise<AssetResponseDto> => {
+    dto = dto || asset;
     const { status, body } = await request(server)
       .post(`/asset/upload`)
       .field('deviceAssetId', dto.deviceAssetId)
