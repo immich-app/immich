@@ -6,7 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 class ScaffoldErrorBody extends StatelessWidget {
   final IconData icon;
 
-  const ScaffoldErrorBody({this.icon = Icons.ac_unit, super.key});
+  const ScaffoldErrorBody({this.icon = Icons.error_outline, super.key});
 
   @override
   Widget build(BuildContext context) {
