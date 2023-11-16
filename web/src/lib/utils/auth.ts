@@ -31,4 +31,4 @@ export const authenticate = async (options?: AuthOptions) => {
   return user;
 };
 
-export const isLoggedIn = async () => getUser().then((user) => !!user);
+export const isLoggedIn = async () => getAuthUser().then((user) => !!user);
