@@ -16,6 +16,7 @@ import {
   AlbumController,
   AppController,
   AssetController,
+  AssetsController,
   AuditController,
   AuthController,
   JobController,
@@ -41,6 +42,7 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
   ],
   controllers: [
     ActivityController,
+    AssetsController,
     AssetController,
     AssetControllerV1,
     AppController,

@@ -116,6 +116,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**restoreTrash**](doc//AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
+*AssetApi* | [**searchAssets**](doc//AssetApi.md#searchassets) | **GET** /assets | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 *AssetApi* | [**updateAssets**](doc//AssetApi.md#updateassets) | **PUT** /asset | 
@@ -229,6 +230,7 @@ Class | Method | HTTP request | Description
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetJobName](doc//AssetJobName.md)
  - [AssetJobsDto](doc//AssetJobsDto.md)
+ - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)

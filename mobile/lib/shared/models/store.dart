@@ -44,6 +44,7 @@ class Store {
 
   /// Stores the value synchronously in the cache and asynchronously in the DB
   static Future<void> put<T>(StoreKey<T> key, T value) {
+    if (_cache[key.id] == value) return Future.value();
     _cache[key.id] = value;
     return _db.writeTxn(
       () async => _db.storeValues.put(await StoreValue._of(value, key)),
@@ -52,6 +53,7 @@ class Store {
 
   /// Removes the value synchronously from the cache and asynchronously from the DB
   static Future<void> delete<T>(StoreKey<T> key) {
+    if (_cache[key.id] == null) return Future.value();
     _cache[key.id] = null;
     return _db.writeTxn(() => _db.storeValues.delete(key.id));
   }

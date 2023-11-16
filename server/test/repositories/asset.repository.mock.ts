@@ -31,5 +31,6 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getTimeBuckets: jest.fn(),
     restoreAll: jest.fn(),
     softDeleteAll: jest.fn(),
+    search: jest.fn(),
   };
 };

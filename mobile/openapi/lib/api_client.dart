@@ -225,6 +225,8 @@ class ApiClient {
           return AssetJobNameTypeTransformer().decode(value);
         case 'AssetJobsDto':
           return AssetJobsDto.fromJson(value);
+        case 'AssetOrder':
+          return AssetOrderTypeTransformer().decode(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetStatsResponseDto':
