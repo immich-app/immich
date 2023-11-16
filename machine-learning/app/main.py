@@ -40,7 +40,7 @@ def init_state() -> None:
     app.state.thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
     app.state.lock = threading.Lock()
     app.state.last_called = None
-    if settings.model_ttl > 0 and settings.ttl_poll_s > 0:
+    if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
         asyncio.ensure_future(idle_shutdown_task())
     log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
 
@@ -143,4 +143,4 @@ async def idle_shutdown_task() -> None:
                 loop.stop()
             except asyncio.CancelledError:
                 pass
-        await asyncio.sleep(settings.ttl_poll_s)
+        await asyncio.sleep(settings.model_ttl_poll_s)
