@@ -6,14 +6,12 @@
     "immich": "./dist/index.js"
   },
   "dependencies": {
-    "axios": "^1.4.0",
+    "axios": "^1.6.2",
     "byte-size": "^8.1.1",
     "cli-progress": "^3.12.0",
     "commander": "^11.0.0",
     "form-data": "^4.0.0",
     "glob": "^10.3.1",
-    "picomatch": "^2.3.1",
-    "systeminformation": "^5.18.4",
     "yaml": "^2.3.1"
   },
   "devDependencies": {
