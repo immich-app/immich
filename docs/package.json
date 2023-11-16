@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^2.4.1",
-    "@tsconfig/docusaurus": "^1.0.5",
+    "@tsconfig/docusaurus": "^2.0.0",
     "prettier": "^2.8.8",
     "typescript": "^5.1.6"
   },
