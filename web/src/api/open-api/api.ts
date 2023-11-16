@@ -1953,16 +1953,16 @@ export interface JobCountsDto {
 export const JobName = {
     ThumbnailGeneration: 'thumbnailGeneration',
     MetadataExtraction: 'metadataExtraction',
-    Library: 'library',
-    Sidecar: 'sidecar',
-    ObjectTagging: 'objectTagging',
-    ClipEncoding: 'clipEncoding',
-    RecognizeFaces: 'recognizeFaces',
     VideoConversion: 'videoConversion',
+    ObjectTagging: 'objectTagging',
+    RecognizeFaces: 'recognizeFaces',
+    ClipEncoding: 'clipEncoding',
+    BackgroundTask: 'backgroundTask',
     StorageTemplateMigration: 'storageTemplateMigration',
     Migration: 'migration',
-    BackgroundTask: 'backgroundTask',
-    Search: 'search'
+    Search: 'search',
+    Sidecar: 'sidecar',
+    Library: 'library'
 } as const;
 
 export type JobName = typeof JobName[keyof typeof JobName];
