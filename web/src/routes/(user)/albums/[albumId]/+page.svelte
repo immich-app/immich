@@ -119,8 +119,6 @@
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   afterNavigate(({ from }) => {
-    assetViewingStore.showAssetViewer(false);
-
     let url: string | undefined = from?.url.pathname;
 
     if (from?.route.id === '/(user)/search') {

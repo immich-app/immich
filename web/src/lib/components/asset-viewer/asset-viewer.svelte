@@ -440,6 +440,10 @@
     const { albumName }: { albumName: string } = event.detail;
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
       const album = response.data;
+
+      // turn off the asset viewer
+      assetViewingStore.showAssetViewer(false);
+
       goto('/albums/' + album.id);
     });
   };

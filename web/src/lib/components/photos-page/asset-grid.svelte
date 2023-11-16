@@ -68,13 +68,13 @@
 
     // permanent url code
     // subscribe to the viewer to know when it closes - redirect back to /photos
-    showAssetViewer.subscribe((value) => {
+    const unsubState = showAssetViewer.subscribe((value) => {
       if (!value) {
         updateAssetQuery();
       }
     });
     // when the asset changes - redirect to it's ID
-    viewingAsset.subscribe(async (value) => {
+    const unsubAsset = viewingAsset.subscribe((value) => {
       if (value) {
         updateAssetQuery(value);
       }
@@ -85,6 +85,12 @@
     if (assetId) {
       assetViewingStore.setAssetId(assetId);
     }
+
+    // unsubscribe
+    return () => {
+      unsubAsset();
+      unsubState();
+    };
   });
 
   onDestroy(() => {
