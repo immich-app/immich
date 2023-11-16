@@ -14,6 +14,9 @@ const port = Number(process.env.SERVER_PORT) || 3001;
 export async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: getLogLevels() });
 
+  app.useStaticAssets('www');
+  app.setGlobalPrefix('api');
+
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.set('etag', 'strong');
   app.use(cookieParser());

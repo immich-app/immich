@@ -1,13 +1,13 @@
 import featurePanelUrl from '$lib/assets/feature-panel.png';
+import { getAuthUser } from '$lib/utils/auth';
 import { api, ThumbnailFormat } from '@api';
 import { error } from '@sveltejs/kit';
 import type { AxiosError } from 'axios';
 import type { PageLoad } from './$types';
-import { authenticate } from '$lib/utils/auth';
 
 export const load = (async ({ params }) => {
   const { key } = params;
-  const user = authenticate();
+  const user = await getAuthUser();
 
   try {
     const { data: sharedLink } = await api.sharedLinkApi.getMySharedLink({ key });

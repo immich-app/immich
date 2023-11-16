@@ -6,7 +6,7 @@ export interface AuthOptions {
   admin?: true;
 }
 
-const getUser = async () => {
+export const getAuthUser = async () => {
   try {
     const { data: user } = await api.userApi.getMyUserInfo();
     return user;
@@ -19,7 +19,7 @@ const getUser = async () => {
 export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
 
-  const user = await getUser();
+  const user = await getAuthUser();
   if (!user) {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }

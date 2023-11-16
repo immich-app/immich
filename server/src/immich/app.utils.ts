@@ -56,6 +56,12 @@ const patchOpenAPI = (document: OpenAPIObject) => {
     document.components.schemas = sortKeys(document.components.schemas);
   }
 
+  for (const [key, value] of Object.entries(document.paths)) {
+    const newKey = key.replace('/api', '');
+    delete document.paths[key];
+    document.paths[newKey] = value;
+  }
+
   for (const path of Object.values(document.paths)) {
     const operations = {
       get: path.get,

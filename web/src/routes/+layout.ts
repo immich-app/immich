@@ -18,5 +18,8 @@ export const load = (async () => {
 
   return {
     user,
+    meta: {
+      title: 'Immich',
+    },
   };
 }) satisfies LayoutLoad;

@@ -3,7 +3,7 @@ import { AppRoute } from '$lib/constants';
 import { authenticate } from '$lib/utils/auth';
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async () => {
+export const load = (async () => {
   const user = await authenticate();
 
   goto(AppRoute.PHOTOS);
@@ -14,4 +14,4 @@ export const load: PageLoad = async () => {
       title: 'Photos',
     },
   };
-};
+}) satisfies PageLoad;

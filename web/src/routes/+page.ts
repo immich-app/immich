@@ -4,6 +4,9 @@ import { api } from '../api';
 import { isLoggedIn } from '../lib/utils/auth';
 import type { PageLoad } from './$types';
 
+export const ssr = false;
+export const csr = true;
+
 export const load = (async () => {
   const authenticated = await isLoggedIn();
   if (authenticated) {

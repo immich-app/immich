@@ -17,7 +17,6 @@ const config = {
         secure: true,
         changeOrigin: true,
         logLevel: 'debug',
-        rewrite: (path) => path.replace(/^\/api/, ''),
         ws: true,
       },
     },
