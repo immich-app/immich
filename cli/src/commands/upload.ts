@@ -73,9 +73,7 @@ export default class Upload extends BaseCommand {
           skipUpload = checkResponse.data.results[0].action === 'reject';
         }
 
-        if (skipUpload) {
-          asset.skipped = true;
-        } else {
+        if (!skipUpload) {
           if (!options.dryRun) {
             const res = await this.immichApi.assetApi.uploadFile(asset.getUploadFileRequest());
 
@@ -92,13 +90,12 @@ export default class Upload extends BaseCommand {
               await this.immichApi.albumApi.addAssetsToAlbum({ id: album.id, bulkIdsDto: { ids: [res.data.id] } });
             }
           }
-        }
 
-        sizeSoFar += asset.fileSize;
-        if (!asset.skipped) {
           totalSizeUploaded += asset.fileSize;
           uploadCounter++;
         }
+
+        sizeSoFar += asset.fileSize;
 
         uploadProgress.update(sizeSoFar, { value_formatted: byteSize(sizeSoFar) });
       }

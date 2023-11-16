@@ -15,7 +15,6 @@ export class Asset {
   sidecarData?: File;
   sidecarPath?: string;
   fileSize!: number;
-  skipped = false;
   albumName?: string;
 
   constructor(path: string, deviceId: string) {
