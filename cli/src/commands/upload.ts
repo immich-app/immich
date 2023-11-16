@@ -1,7 +1,5 @@
 import { Asset } from '../cores/models/asset';
-import { CrawlService, UploadService } from '../services';
-import * as si from 'systeminformation';
-import FormData from 'form-data';
+import { CrawlService } from '../services';
 import { UploadOptionsDto } from '../cores/dto/upload-options-dto';
 import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
 
@@ -9,16 +7,22 @@ import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
 
+interface IFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  buffer: Buffer;
+  size: number;
+}
+
 export default class Upload extends BaseCommand {
-  private uploadService!: UploadService;
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
     await this.connect();
 
-    const uuid = await si.uuid();
-    this.deviceId = uuid.os || 'CLI';
-    this.uploadService = new UploadService(this.immichApi.apiConfiguration);
+    const deviceId = 'CLI';
 
     const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
 
@@ -36,7 +40,7 @@ export default class Upload extends BaseCommand {
       return;
     }
 
-    const assetsToUpload = crawledFiles.map((path) => new Asset(path));
+    const assetsToUpload = crawledFiles.map((path) => new Asset(path, deviceId));
 
     const uploadProgress = new cliProgress.SingleBar(
       {
@@ -68,37 +72,22 @@ export default class Upload extends BaseCommand {
           filename: asset.path,
         });
 
-        await asset.readData();
-
         let skipUpload = false;
         if (!options.skipHash) {
-          const checksum = await asset.hash();
+          const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
 
-          const checkResponse = await this.uploadService.checkIfAssetAlreadyExists(asset.path, checksum);
+          const checkResponse = await this.immichApi.assetApi.checkBulkUpload({
+            assetBulkUploadCheckDto,
+          });
+
           skipUpload = checkResponse.data.results[0].action === 'reject';
         }
 
         if (skipUpload) {
           asset.skipped = true;
         } else {
-          const uploadFormData = new FormData();
-
-          uploadFormData.append('deviceAssetId', asset.deviceAssetId);
-          uploadFormData.append('deviceId', this.deviceId);
-          uploadFormData.append('fileCreatedAt', asset.fileCreatedAt);
-          uploadFormData.append('fileModifiedAt', asset.fileModifiedAt);
-          uploadFormData.append('isFavorite', String(false));
-          uploadFormData.append('assetData', asset.assetData, { filename: asset.path });
-
-          if (asset.sidecarData) {
-            uploadFormData.append('sidecarData', asset.sidecarData, {
-              filename: asset.sidecarPath,
-              contentType: 'application/xml',
-            });
-          }
-
           if (!options.dryRun) {
-            const res = await this.uploadService.upload(uploadFormData);
+            const res = await this.immichApi.assetApi.uploadFile(asset.getUploadFileRequest());
 
             if (options.album && asset.albumName) {
               let album = existingAlbums.find((album) => album.albumName === asset.albumName);

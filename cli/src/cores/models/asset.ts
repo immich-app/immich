@@ -1,26 +1,25 @@
 import * as fs from 'fs';
 import { basename } from 'node:path';
 import crypto from 'crypto';
+import { AssetApiUploadFileRequest } from 'src/api/open-api';
 
 export class Asset {
-  public path: string;
+  readonly path: string;
+  readonly deviceId!: string;
 
-  public assetData?: fs.ReadStream;
-  public deviceAssetId?: string;
-  public fileCreatedAt?: string;
-  public fileModifiedAt?: string;
-  public sidecarData?: Buffer;
-  public sidecarPath?: string;
-  public fileSize!: number;
-  public skipped = false;
-  public albumName?: string;
+  assetData?: File;
+  deviceAssetId?: string;
+  fileCreatedAt?: string;
+  fileModifiedAt?: string;
+  sidecarData?: File;
+  sidecarPath?: string;
+  fileSize!: number;
+  skipped = false;
+  albumName?: string;
 
-  constructor(path: string) {
+  constructor(path: string, deviceId: string) {
     this.path = path;
-  }
-
-  async readData() {
-    this.assetData = fs.createReadStream(this.path);
+    this.deviceId = deviceId;
   }
 
   async process() {
@@ -31,13 +30,37 @@ export class Asset {
     this.fileSize = stats.size;
     this.albumName = this.extractAlbumName();
 
+    this.assetData = await this.getFileObject(this.path);
+
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
     try {
       fs.accessSync(sideCarPath, fs.constants.R_OK);
-      this.sidecarData = await fs.promises.readFile(sideCarPath);
-      this.sidecarPath = sideCarPath;
+      this.sidecarData = await this.getFileObject(sideCarPath);
     } catch (error) {}
+  }
+
+  getUploadFileRequest(): AssetApiUploadFileRequest {
+    if (!this.assetData) throw new Error('Asset data not set');
+    if (!this.deviceAssetId) throw new Error('Device asset id not set');
+    if (!this.fileCreatedAt) throw new Error('File created at not set');
+    if (!this.fileModifiedAt) throw new Error('File modified at not set');
+    if (!this.deviceId) throw new Error('Device id not set');
+
+    return {
+      assetData: this.assetData,
+      deviceAssetId: this.deviceAssetId,
+      deviceId: this.deviceId,
+      fileCreatedAt: this.fileCreatedAt,
+      fileModifiedAt: this.fileModifiedAt,
+      isFavorite: false,
+      sidecarData: this.sidecarData,
+    };
+  }
+
+  private async getFileObject(path: string): Promise<File> {
+    const buffer = await fs.promises.readFile(path);
+    return new File([buffer], basename(path));
   }
 
   async delete(): Promise<void> {
