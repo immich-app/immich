@@ -35,7 +35,6 @@ program
 program
   .command('server-info')
   .description('Display server information')
-
   .action(async () => {
     await new ServerInfo().run();
   });

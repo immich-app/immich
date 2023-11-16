@@ -7,15 +7,6 @@ import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
 
-interface IFile {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  buffer: Buffer;
-  size: number;
-}
-
 export default class Upload extends BaseCommand {
   uploadLength!: number;
 
@@ -25,7 +16,6 @@ export default class Upload extends BaseCommand {
     const deviceId = 'CLI';
 
     const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
-
     const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
 
     const crawlOptions = new CrawlOptionsDto();
