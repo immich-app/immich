@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JobName } from '../job';
 import { CommunicationEvent, ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
-import { SystemConfigThemeDto } from './dto/system-config-theme.dto';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -29,11 +28,6 @@ export class SystemConfigService {
 
   get config$() {
     return this.core.config$;
-  }
-
-  async getTheme(): Promise<SystemConfigThemeDto> {
-    const { theme } = await this.core.getConfig();
-    return theme;
   }
 
   async getConfig(): Promise<SystemConfigDto> {
@@ -86,5 +80,10 @@ export class SystemConfigService {
     }
 
     return JSON.parse(await this.repository.readFile(`./assets/style-${theme}.json`));
+  }
+
+  async getCustomCss(): Promise<string> {
+    const { theme } = await this.core.getConfig();
+    return theme.customCss;
   }
 }

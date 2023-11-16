@@ -45,17 +45,6 @@ services:
       - .env
     restart: always
 
-  immich-web:
-    container_name: immich_web
-    image: ghcr.io/immich-app/immich-web:${IMMICH_VERSION:-release}
-    env_file:
-      - .env
-    ports:
-      - 2283:8080
-    depends_on:
-      - immich-server
-    restart: always
-
   typesense:
     container_name: immich_typesense
     image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd

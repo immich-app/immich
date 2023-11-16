@@ -1,17 +1,7 @@
-import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
-import { authenticate } from '$lib/utils/auth';
+import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
-  const user = await authenticate();
-
-  goto(AppRoute.PHOTOS);
-
-  return {
-    user,
-    meta: {
-      title: 'Photos',
-    },
-  };
+  throw redirect(302, AppRoute.PHOTOS);
 }) satisfies PageLoad;

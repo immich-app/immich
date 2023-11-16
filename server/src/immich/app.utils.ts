@@ -13,6 +13,7 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { NextFunction, Request, Response } from 'express';
 import { writeFileSync } from 'fs';
 import path from 'path';
 
@@ -57,7 +58,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
   }
 
   for (const [key, value] of Object.entries(document.paths)) {
-    const newKey = key.replace('/api', '');
+    const newKey = key.replace('/api/', '/');
     delete document.paths[key];
     document.paths[newKey] = value;
   }
@@ -98,6 +99,14 @@ const patchOpenAPI = (document: OpenAPIObject) => {
   }
 
   return document;
+};
+
+export const indexFallback = (excludePaths: string[]) => (req: Request, res: Response, next: NextFunction) => {
+  if (req.url.startsWith('/api') || req.method.toLowerCase() !== 'get' || excludePaths.indexOf(req.url) !== -1) {
+    next();
+  } else {
+    res.sendFile('/www/index.html', { root: process.cwd() });
+  }
 };
 
 export const useSwagger = (app: INestApplication, isDev: boolean) => {

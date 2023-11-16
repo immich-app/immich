@@ -29,7 +29,6 @@ jobs:
         include:
           - primary-name: "immich-server"
           - primary-name: "immich-machine-learning"
-          - primary-name: "immich-web"
     env:
       # Requires a personal access token with the OAuth scope delete:packages
       TOKEN: ${{ secrets.PACKAGE_DELETE_TOKEN }}
@@ -58,7 +57,6 @@ jobs:
         include:
           - primary-name: "immich-server"
           - primary-name: "immich-machine-learning"
-          - primary-name: "immich-web"
           - primary-name: "immich-build-cache"
     env:
       # Requires a personal access token with the OAuth scope delete:packages

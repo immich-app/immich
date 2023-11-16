@@ -63,21 +63,6 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `MACHINE_LEARNING_HOST` | Machine Learning Host | `0.0.0.0` | machine learning |
 | `MACHINE_LEARNING_PORT` | Machine Learning Port |  `3003`   | machine learning |
 
-## URLs
-
-| Variable                   | Description             |           Default           | Services   |
-| :------------------------- | :---------------------- | :-------------------------: | :--------- |
-| `IMMICH_WEB_URL`           | Immich Web URL          |  `http://immich-web:3000`   | proxy      |
-| `IMMICH_SERVER_URL`        | Immich Server URL       | `http://immich-server:3001` | web, proxy |
-| `PUBLIC_IMMICH_SERVER_URL` | Public Immich URL       | `http://immich-server:3001` | web        |
-| `IMMICH_API_URL_EXTERNAL`  | Immich API URL External |           `/api`            | web        |
-
-:::info
-
-The above paths are modifying the internal paths of the containers.
-
-:::
-
 ## Database
 
 | Variable      | Description       |   Default   | Services              |
