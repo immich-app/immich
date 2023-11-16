@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { basename } from 'node:path';
 import crypto from 'crypto';
 import { AssetApiUploadFileRequest } from 'src/api/open-api';
+import Os from 'os';
 
 export class Asset {
   readonly path: string;
@@ -82,6 +83,10 @@ export class Asset {
   }
 
   private extractAlbumName(): string {
-    return this.path.split('/').slice(-2)[0];
+    if (Os.platform() === 'win32') {
+      return this.path.split('\\').slice(-2)[0];
+    } else {
+      return this.path.split('/').slice(-2)[0];
+    }
   }
 }
