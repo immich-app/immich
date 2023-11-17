@@ -21,7 +21,7 @@ jobs:
           submodules: "recursive"
 
       - name: Run e2e tests
-        run: docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+        run: docker compose -f ./docker/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
   doc-tests:
     name: Run documentation checks
@@ -122,20 +122,8 @@ jobs:
         with:
           submodules: "recursive"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20.9
-
-      - name: Run npm install in CLI
-        run: npm ci
-
-      - name: Run npm install in server
-        run: npm ci
-        working-directory: ./server
-
       - name: Run e2e tests
-        run: npm run test:e2e
-        if: ${{ !cancelled() }}
+        run: docker compose -f ./docker/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
   web-unit-tests:
     name: Run web unit test suites and checks

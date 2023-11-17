@@ -96,9 +96,11 @@ export const testApp = {
     await db.reset(options);
   },
   teardown: async () => {
-    await app.get(AppService).teardown();
+    if (app) {
+      await app.get(AppService).teardown();
+      await app.close();
+    }
     await db.disconnect();
-    await app.close();
   },
 };
 

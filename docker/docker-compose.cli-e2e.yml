@@ -1,0 +1,34 @@
+version: "3.8"
+
+name: "immich-test-cli-e2e"
+
+services:
+  immich-cli:
+    image: immich-cli-dev:latest
+    build:
+      context: ../cli
+      dockerfile: Dockerfile
+      target: builder
+    command: npm run test:e2e
+    volumes:
+      - ../cli:/usr/src/app
+      - ../server:/usr/src/server
+      - /usr/src/app/node_modules
+    environment:
+      - DB_HOSTNAME=database
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE_NAME=e2e_test
+      - IMMICH_RUN_ALL_TESTS=true
+    depends_on:
+      - database
+
+  database:
+    image: postgres:14-alpine@sha256:50d9be76e9a90da4c781554955e0ffc79d9d5c4226838e64b36aacc97cbc35ad
+    command: -c fsync=off
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: e2e_test
+    logging:
+      driver: none
