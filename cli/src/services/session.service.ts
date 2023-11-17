@@ -3,7 +3,6 @@ import yaml from 'yaml';
 import path from 'node:path';
 import { ImmichApi } from '../api/client';
 import { LoginError } from '../cores/errors/login-error';
-import { config } from 'node:process';
 import os from 'os';
 
 export class SessionService {
@@ -11,12 +10,16 @@ export class SessionService {
   readonly authPath!: string;
   private api!: ImmichApi;
 
-  constructor() {
-    const configDir = process.env.IMMICH_CONFIG_DIR;
-
+  constructor(configDir?: string) {
     if (!configDir) {
-      const userHomeDir = os.homedir();
-      this.configDir = path.join(userHomeDir, '.config/immich/');
+      configDir = process.env.IMMICH_CONFIG_DIR;
+
+      if (!configDir) {
+        const userHomeDir = os.homedir();
+        this.configDir = path.join(userHomeDir, '.config/immich/');
+      } else {
+        this.configDir = configDir;
+      }
     } else {
       this.configDir = configDir;
     }

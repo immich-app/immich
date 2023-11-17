@@ -79,7 +79,7 @@ export const testApp = {
       .compile();
 
     app = await moduleFixture.createNestApplication().init();
-    app.listen(0);
+    await app.listen(0);
 
     if (jobs) {
       await app.get(AppService).init();

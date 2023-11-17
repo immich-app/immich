@@ -13,7 +13,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    server = await testApp.create({ jobs: true, listen: false });
+    [server] = await testApp.create({ jobs: true });
   });
 
   afterAll(async () => {

@@ -28,8 +28,7 @@ describe('SessionService', () => {
   });
 
   beforeEach(() => {
-    const configDir = '/config';
-    sessionService = new SessionService(configDir);
+    sessionService = new SessionService();
   });
 
   it('should connect to immich', async () => {
