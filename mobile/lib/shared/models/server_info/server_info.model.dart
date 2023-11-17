@@ -5,43 +5,52 @@ import 'package:immich_mobile/shared/models/server_info/server_version.model.dar
 
 class ServerInfo {
   final ServerVersion serverVersion;
+  final ServerVersion latestVersion;
   final ServerFeatures serverFeatures;
   final ServerConfig serverConfig;
   final ServerDiskInfo serverDiskInfo;
   final bool isVersionMismatch;
+  final bool isNewReleaseAvailable;
   final String versionMismatchErrorMessage;
 
   ServerInfo({
     required this.serverVersion,
+    required this.latestVersion,
     required this.serverFeatures,
     required this.serverConfig,
-    required this.isVersionMismatch,
     required this.serverDiskInfo,
+    required this.isVersionMismatch,
+    required this.isNewReleaseAvailable,
     required this.versionMismatchErrorMessage,
   });
 
   ServerInfo copyWith({
     ServerVersion? serverVersion,
+    ServerVersion? latestVersion,
     ServerFeatures? serverFeatures,
     ServerConfig? serverConfig,
     ServerDiskInfo? serverDiskInfo,
     bool? isVersionMismatch,
+    bool? isNewReleaseAvailable,
     String? versionMismatchErrorMessage,
   }) {
     return ServerInfo(
       serverVersion: serverVersion ?? this.serverVersion,
+      latestVersion: latestVersion ?? this.latestVersion,
       serverFeatures: serverFeatures ?? this.serverFeatures,
       serverConfig: serverConfig ?? this.serverConfig,
+      serverDiskInfo: serverDiskInfo ?? this.serverDiskInfo,
       isVersionMismatch: isVersionMismatch ?? this.isVersionMismatch,
+      isNewReleaseAvailable:
+          isNewReleaseAvailable ?? this.isNewReleaseAvailable,
       versionMismatchErrorMessage:
           versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
-      serverDiskInfo: serverDiskInfo ?? this.serverDiskInfo,
     );
   }
 
   @override
   String toString() {
-    return 'ServerInfo(serverVersion: $serverVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, isVersionMismatch: $isVersionMismatch, versionMismatchErrorMessage: $versionMismatchErrorMessage, serverDiskInfo: $serverDiskInfo)';
+    return 'ServerInfo(serverVersion: $serverVersion, latestVersion: $latestVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, serverDiskInfo: $serverDiskInfo, isVersionMismatch: $isVersionMismatch, isNewReleaseAvailable: $isNewReleaseAvailable, versionMismatchErrorMessage: $versionMismatchErrorMessage)';
   }
 
   @override
@@ -50,20 +59,24 @@ class ServerInfo {
 
     return other is ServerInfo &&
         other.serverVersion == serverVersion &&
+        other.latestVersion == latestVersion &&
         other.serverFeatures == serverFeatures &&
         other.serverConfig == serverConfig &&
         other.serverDiskInfo == serverDiskInfo &&
         other.isVersionMismatch == isVersionMismatch &&
+        other.isNewReleaseAvailable == isNewReleaseAvailable &&
         other.versionMismatchErrorMessage == versionMismatchErrorMessage;
   }
 
   @override
   int get hashCode {
     return serverVersion.hashCode ^
+        latestVersion.hashCode ^
         serverFeatures.hashCode ^
         serverConfig.hashCode ^
+        serverDiskInfo.hashCode ^
         isVersionMismatch.hashCode ^
-        versionMismatchErrorMessage.hashCode ^
-        serverDiskInfo.hashCode;
+        isNewReleaseAvailable.hashCode ^
+        versionMismatchErrorMessage.hashCode;
   }
 }

@@ -50,7 +50,9 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
           backgroundColor: Colors.transparent,
           alignment: Alignment.bottomRight,
-          isLabelVisible: serverInfoState.isVersionMismatch,
+          isLabelVisible: serverInfoState.isVersionMismatch ||
+              ((user?.isAdmin ?? false) &&
+                  serverInfoState.isNewReleaseAvailable),
           offset: const Offset(2, 2),
           child: user == null
               ? const Icon(

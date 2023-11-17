@@ -18,6 +18,11 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
               minor: 0,
               patch: 0,
             ),
+            latestVersion: const ServerVersion(
+              major: 0,
+              minor: 0,
+              patch: 0,
+            ),
             serverFeatures: const ServerFeatures(
               map: true,
               trash: true,
@@ -32,6 +37,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
               diskUsagePercentage: 0,
             ),
             isVersionMismatch: false,
+            isNewReleaseAvailable: false,
             versionMismatchErrorMessage: "",
           ),
         );
@@ -55,6 +61,10 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
       return;
     }
 
+    await _checkServerVersionMismatch(serverVersion);
+  }
+
+  _checkServerVersionMismatch(ServerVersion serverVersion) async {
     state = state.copyWith(serverVersion: serverVersion);
 
     var packageInfo = await PackageInfo.fromPlatform();
@@ -67,7 +77,15 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
         versionMismatchErrorMessage:
             "Server is out of date. Please update to the latest major version.",
       );
+      return;
+    }
 
+    if (appVersion["major"]! < serverVersion.major) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage:
+            "Mobile App is out of date. Please update to the latest major version.",
+      );
       return;
     }
 
@@ -75,15 +93,42 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
       state = state.copyWith(
         isVersionMismatch: true,
         versionMismatchErrorMessage:
-            "Server is out of date. Consider updating to the latest minor version.",
+            "Server is out of date. Please update to the latest minor version.",
       );
+      return;
+    }
 
+    if (appVersion["minor"]! < serverVersion.minor) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage:
+            "Mobile App is out of date. Please update to the latest minor version.",
+      );
       return;
     }
 
     state = state.copyWith(
       isVersionMismatch: false,
       versionMismatchErrorMessage: "",
+    );
+  }
+
+  handleNewRelease(
+    ServerVersion serverVersion,
+    ServerVersion latestVersion,
+  ) {
+    // Update local server version
+    _checkServerVersionMismatch(serverVersion);
+
+    final majorEqual = latestVersion.major == serverVersion.major;
+    final minorEqual = majorEqual && latestVersion.minor == serverVersion.minor;
+    final newVersionAvailable = latestVersion.major > serverVersion.major ||
+        (majorEqual && latestVersion.minor > serverVersion.minor) ||
+        (minorEqual && latestVersion.patch > serverVersion.patch);
+
+    state = state.copyWith(
+      latestVersion: latestVersion,
+      isNewReleaseAvailable: newVersionAvailable,
     );
   }
 
@@ -120,5 +165,5 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
 final serverInfoProvider =
     StateNotifierProvider<ServerInfoNotifier, ServerInfo>((ref) {
-  return ServerInfoNotifier(ref.watch(serverInfoServiceProvider));
+  return ServerInfoNotifier(ref.read(serverInfoServiceProvider));
 });
