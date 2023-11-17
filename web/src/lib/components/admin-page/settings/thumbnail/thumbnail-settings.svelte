@@ -106,6 +106,7 @@
             options={[
               { value: 2160, text: '4K' },
               { value: 1440, text: '1440p' },
+              { value: 1080, text: '1080p' },
               { value: 720, text: '720p' },
             ]}
             name="resolution"
