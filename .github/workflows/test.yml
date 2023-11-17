@@ -119,6 +119,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
 
       - name: Run npm install in CLI
         run: npm ci
