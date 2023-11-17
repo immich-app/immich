@@ -122,6 +122,10 @@ jobs:
         with:
           submodules: "recursive"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.9
+
       - name: Run npm install in CLI
         run: npm ci
 
