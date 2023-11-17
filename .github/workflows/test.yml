@@ -120,8 +120,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run npm install
+      - name: Run npm install in CLI
         run: npm ci
+
+      - name: Run npm install in server
+        run: npm ci
+        working-directory: ../server
 
       - name: Run e2e tests
         run: npm run test:e2e
