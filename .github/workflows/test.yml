@@ -76,7 +76,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   cli-unit-tests:
-    name: Run cli test suites
+    name: Run cli unit tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -103,6 +103,24 @@ jobs:
 
       - name: Run unit tests & coverage
         run: npm run test:cov
+        if: ${{ !cancelled() }}
+
+  cli-e2e-tests:
+    name: Run cli e2e tests
+    runs-on: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: ./cli
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run e2e tests
+        run: npm run test:e2e
         if: ${{ !cancelled() }}
 
   web-unit-tests:
