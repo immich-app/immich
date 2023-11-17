@@ -91,6 +91,7 @@
               { value: 720, text: '720p' },
               { value: 480, text: '480p' },
               { value: 250, text: '250p' },
+              { value: 200, text: '200p' },
             ]}
             name="resolution"
             isEdited={thumbnailConfig.webpSize !== savedConfig.webpSize}
@@ -105,6 +106,8 @@
             options={[
               { value: 2160, text: '4K' },
               { value: 1440, text: '1440p' },
+              { value: 1080, text: '1080p' },
+              { value: 720, text: '720p' },
             ]}
             name="resolution"
             isEdited={thumbnailConfig.jpegSize !== savedConfig.jpegSize}
