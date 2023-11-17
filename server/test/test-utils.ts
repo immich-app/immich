@@ -57,7 +57,7 @@ interface TestAppOptions {
 let app: INestApplication;
 
 export const testApp = {
-  create: async (options?: TestAppOptions): Promise<[any, INestApplication]> => {
+  create: async (options?: TestAppOptions): Promise<INestApplication> => {
     const { jobs } = options || { jobs: false };
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
@@ -85,12 +85,11 @@ export const testApp = {
       await app.get(AppService).init();
     }
 
-    const httpServer = app.getHttpServer();
-    const port = httpServer.address().port;
+    const port = app.getHttpServer().address().port;
     const protocol = app instanceof Server ? 'https' : 'http';
     process.env.IMMICH_INSTANCE_URL = protocol + '://127.0.0.1:' + port;
 
-    return [httpServer, app];
+    return app;
   },
   reset: async (options?: ResetOptions) => {
     await db.reset(options);

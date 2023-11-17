@@ -19,7 +19,7 @@ describe(`CLI (e2e)`, () => {
   let apiKey: APIKeyCreateResponseDto;
 
   beforeAll(async () => {
-    [server] = await testApp.create({ jobs: true });
+    server = (await testApp.create({ jobs: true })).getHttpServer();
   });
 
   afterAll(async () => {
@@ -47,6 +47,12 @@ describe(`CLI (e2e)`, () => {
       await new Upload().run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(assets.length).toBeGreaterThan(4);
+    });
+
+    it('should create album from folder name', async () => {
+      await new Upload().run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true, album: true });
+      const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
+      expect(albums.length).toEqual(1);
     });
   });
 });

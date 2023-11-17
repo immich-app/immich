@@ -48,7 +48,7 @@ export default async () => {
 
   process.env.NODE_ENV = 'development';
   process.env.TYPESENSE_ENABLED = 'false';
-  process.env.IMMICH_MACHINE_LEARNING_ENABLED = 'false';
   process.env.IMMICH_TEST_ENV = 'true';
+  process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/immich-e2e-config.json`);
   process.env.TZ = 'Z';
 };

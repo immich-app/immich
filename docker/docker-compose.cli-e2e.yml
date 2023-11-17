@@ -6,8 +6,8 @@ services:
   immich-cli:
     image: immich-cli-dev:latest
     build:
-      context: ../cli
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: cli/Dockerfile
       target: builder
     command: npm run test:e2e
     volumes:

@@ -1,8 +1,8 @@
 FROM ghcr.io/immich-app/base-server-dev:20231109 as builder
 
-COPY package.json package-lock.json ./
+COPY cli/package.json cli/package-lock.json ./
 RUN npm ci
-COPY . .
+COPY cli .
 
 
 FROM builder as prod
@@ -18,12 +18,12 @@ ENV NODE_ENV=production
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
-COPY ./assets ./assets
+COPY server/assets ./assets
 
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
-COPY package.json package-lock.json ./
-COPY start*.sh ./
+COPY server/package.json server/package-lock.json ./
+COPY server/start*.sh ./
 
 RUN npm link && npm cache clean --force
 VOLUME /usr/src/app/upload

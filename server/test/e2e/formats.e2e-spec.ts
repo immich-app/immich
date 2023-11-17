@@ -168,7 +168,7 @@ describe(`Supported file formats (e2e)`, () => {
   const testsToRun = formatTests.filter((formatTest) => formatTest.runTest);
 
   beforeAll(async () => {
-    [server] = await testApp.create({ jobs: true });
+    server = (await testApp.create({ jobs: true })).getHttpServer();
   });
 
   afterAll(async () => {

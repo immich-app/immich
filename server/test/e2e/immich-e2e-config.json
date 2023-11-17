@@ -1,0 +1,8 @@
+{
+  "reverseGeocoding": {
+    "enabled": false
+  },
+  "machineLearning": {
+    "enabled": false
+  }
+}
