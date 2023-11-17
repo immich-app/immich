@@ -303,8 +303,6 @@ class ApiClient {
           return FileReportFixDto.fromJson(value);
         case 'FileReportItemDto':
           return FileReportItemDto.fromJson(value);
-        case 'ImportAssetDto':
-          return ImportAssetDto.fromJson(value);
         case 'JobCommand':
           return JobCommandTypeTransformer().decode(value);
         case 'JobCommandDto':
@@ -379,8 +377,6 @@ class ApiClient {
           return ScanLibraryDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
-        case 'SearchAssetDto':
-          return SearchAssetDto.fromJson(value);
         case 'SearchAssetResponseDto':
           return SearchAssetResponseDto.fromJson(value);
         case 'SearchExploreItem':

@@ -70,7 +70,6 @@ doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
 doc/FileReportFixDto.md
 doc/FileReportItemDto.md
-doc/ImportAssetDto.md
 doc/JobApi.md
 doc/JobCommand.md
 doc/JobCommandDto.md
@@ -114,7 +113,6 @@ doc/RecognitionConfig.md
 doc/ScanLibraryDto.md
 doc/SearchAlbumResponseDto.md
 doc/SearchApi.md
-doc/SearchAssetDto.md
 doc/SearchAssetResponseDto.md
 doc/SearchExploreItem.md
 doc/SearchExploreResponseDto.md
@@ -265,7 +263,6 @@ lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
 lib/model/file_report_fix_dto.dart
 lib/model/file_report_item_dto.dart
-lib/model/import_asset_dto.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts_dto.dart
@@ -303,7 +300,6 @@ lib/model/reaction_type.dart
 lib/model/recognition_config.dart
 lib/model/scan_library_dto.dart
 lib/model/search_album_response_dto.dart
-lib/model/search_asset_dto.dart
 lib/model/search_asset_response_dto.dart
 lib/model/search_explore_item.dart
 lib/model/search_explore_response_dto.dart
@@ -429,7 +425,6 @@ test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart
 test/file_report_fix_dto_test.dart
 test/file_report_item_dto_test.dart
-test/import_asset_dto_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
 test/job_command_test.dart
@@ -473,7 +468,6 @@ test/recognition_config_test.dart
 test/scan_library_dto_test.dart
 test/search_album_response_dto_test.dart
 test/search_api_test.dart
-test/search_asset_dto_test.dart
 test/search_asset_response_dto_test.dart
 test/search_explore_item_test.dart
 test/search_explore_response_dto_test.dart
