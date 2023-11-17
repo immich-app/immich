@@ -4,10 +4,8 @@ import {
   AuthUserDto,
   getLivePhotoMotionFilename,
   IAccessRepository,
-  ICryptoRepository,
   IJobRepository,
   ILibraryRepository,
-  IStorageRepository,
   JobName,
   mapAsset,
   mimeTypes,
@@ -16,14 +14,7 @@ import {
   UploadFile,
 } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { Response as Res, Response } from 'express';
 import { constants } from 'fs';
 import fs from 'fs/promises';
@@ -34,7 +25,7 @@ import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
+import { CreateAssetDto } from './dto/create-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
@@ -60,10 +51,8 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.access = AccessCore.create(accessRepository);
@@ -118,59 +107,6 @@ export class AssetService {
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw error;
-    }
-  }
-
-  public async importFile(authUser: AuthUserDto, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
-    dto = {
-      ...dto,
-      assetPath: path.resolve(dto.assetPath),
-      sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
-    };
-
-    if (!mimeTypes.isAsset(dto.assetPath)) {
-      throw new BadRequestException(`Unsupported file type ${dto.assetPath}`);
-    }
-
-    if (dto.sidecarPath && !mimeTypes.isSidecar(dto.sidecarPath)) {
-      throw new BadRequestException(`Unsupported sidecar file type`);
-    }
-
-    for (const filepath of [dto.assetPath, dto.sidecarPath]) {
-      if (!filepath) {
-        continue;
-      }
-
-      const exists = await this.storageRepository.checkFileExists(filepath, constants.R_OK);
-      if (!exists) {
-        throw new BadRequestException('File does not exist');
-      }
-    }
-
-    if (!authUser.externalPath || !dto.assetPath.match(new RegExp(`^${authUser.externalPath}`))) {
-      throw new BadRequestException("File does not exist within user's external path");
-    }
-
-    const assetFile: UploadFile = {
-      checksum: await this.cryptoRepository.hashFile(dto.assetPath),
-      originalPath: dto.assetPath,
-      originalName: path.parse(dto.assetPath).name,
-    };
-
-    try {
-      const libraryId = await this.getLibraryId(authUser, dto.libraryId);
-      await this.access.requirePermission(authUser, Permission.ASSET_UPLOAD, libraryId);
-      const asset = await this.assetCore.create(authUser, { ...dto, libraryId }, assetFile, undefined, dto.sidecarPath);
-      return { id: asset.id, duplicate: false };
-    } catch (error: QueryFailedError | Error | any) {
-      // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
-        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
-        return { id: duplicate.id, duplicate: true };
-      }
-
-      this.logger.error(`Error importing file ${error}`, error?.stack);
-      throw new BadRequestException(`Error importing file`, `${error}`);
     }
   }
 
