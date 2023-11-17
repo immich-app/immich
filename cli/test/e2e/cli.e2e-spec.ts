@@ -43,12 +43,8 @@ describe(`CLI (e2e)`, () => {
   });
 
   describe('upload', () => {
-    it('should upload an asset', async () => {
-      await fs.promises.cp(`${IMMICH_TEST_ASSET_PATH}/albums/nature`, `${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`, {
-        recursive: true,
-      });
-
-      await new Upload().run([`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`], {});
+    it('should upload a folder recursively', async () => {
+      await new Upload().run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(assets.length).toBeGreaterThan(4);
     });
