@@ -369,8 +369,6 @@ class ApiClient {
           return ScanLibraryDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
-        case 'SearchAssetDto':
-          return SearchAssetDto.fromJson(value);
         case 'SearchAssetResponseDto':
           return SearchAssetResponseDto.fromJson(value);
         case 'SearchExploreItem':
