@@ -13,6 +13,7 @@ import { PersonEntity } from './person.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { SystemConfigEntity } from './system-config.entity';
+import { SystemMetadataEntity } from './system-metadata.entity';
 import { TagEntity } from './tag.entity';
 import { UserTokenEntity } from './user-token.entity';
 import { UserEntity } from './user.entity';
@@ -32,6 +33,7 @@ export * from './person.entity';
 export * from './shared-link.entity';
 export * from './smart-info.entity';
 export * from './system-config.entity';
+export * from './system-metadata.entity';
 export * from './tag.entity';
 export * from './user-token.entity';
 export * from './user.entity';
@@ -51,6 +53,7 @@ export const databaseEntities = [
   SharedLinkEntity,
   SmartInfoEntity,
   SystemConfigEntity,
+  SystemMetadataEntity,
   TagEntity,
   UserEntity,
   UserTokenEntity,
