@@ -119,7 +119,7 @@
   "cache_settings_tile_title": "Local Storage",
   "cache_settings_title": "Impostazioni della Cache",
   "change_password_form_confirm_password": "Conferma Password ",
-  "change_password_form_description": "Ciao {firstName} {lastName},\n\nQuesto è la prima volta che accedi al sistema oppure è stato fatto una richiesta di cambiare la password. Per favore inserisca la nuova password qui sotto",
+  "change_password_form_description": "Ciao {name},\n\nQuesto è la prima volta che accedi al sistema oppure è stato fatto una richiesta di cambiare la password. Per favore inserisca la nuova password qui sotto",
   "change_password_form_new_password": "Nuova Password",
   "change_password_form_password_mismatch": "Le password non coincidono",
   "change_password_form_reenter_new_password": "Inserisci ancora la nuova password ",
