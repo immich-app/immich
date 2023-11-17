@@ -1,4 +1,4 @@
-import { ICryptoRepository, IJobRepository, ILibraryRepository, IStorageRepository, JobName } from '@app/domain';
+import { IJobRepository, ILibraryRepository, JobName } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
@@ -7,10 +7,8 @@ import {
   authStub,
   fileStub,
   newAccessRepositoryMock,
-  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
-  newStorageRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
 import { QueryFailedError } from 'typeorm';
@@ -87,9 +85,7 @@ describe('AssetService', () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
-  let storageMock: jest.Mocked<IStorageRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
 
   beforeEach(() => {
@@ -109,12 +105,10 @@ describe('AssetService', () => {
     };
 
     accessMock = newAccessRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
-    storageMock = newStorageRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
 
-    sut = new AssetService(accessMock, assetRepositoryMock, cryptoMock, jobMock, libraryMock, storageMock);
+    sut = new AssetService(accessMock, assetRepositoryMock, jobMock, libraryMock);
 
     when(assetRepositoryMock.get)
       .calledWith(assetStub.livePhotoStillAsset.id)
@@ -164,7 +158,6 @@ describe('AssetService', () => {
         name: JobName.DELETE_FILES,
         data: { files: ['fake_path/asset_1.jpeg', undefined, undefined] },
       });
-      expect(storageMock.moveFile).not.toHaveBeenCalled();
     });
 
     it('should handle a live photo', async () => {
@@ -234,47 +227,6 @@ describe('AssetService', () => {
       });
 
       expect(assetRepositoryMock.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.id, [file1, file2]);
-    });
-  });
-
-  describe('importFile', () => {
-    it('should handle a file import', async () => {
-      assetRepositoryMock.create.mockResolvedValue(assetStub.image);
-      storageMock.checkFileExists.mockResolvedValue(true);
-      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
-
-      await expect(
-        sut.importFile(authStub.external1, {
-          ..._getCreateAssetDto(),
-          assetPath: '/data/user1/fake_path/asset_1.jpeg',
-          isReadOnly: true,
-          libraryId: 'library-id',
-        }),
-      ).resolves.toEqual({ duplicate: false, id: 'asset-id' });
-
-      expect(assetRepositoryMock.create).toHaveBeenCalled();
-    });
-
-    it('should handle a duplicate if originalPath already exists', async () => {
-      const error = new QueryFailedError('', [], '');
-      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
-
-      assetRepositoryMock.create.mockRejectedValue(error);
-      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetStub.image]);
-      storageMock.checkFileExists.mockResolvedValue(true);
-      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
-      cryptoMock.hashFile.mockResolvedValue(Buffer.from('file hash', 'utf8'));
-
-      await expect(
-        sut.importFile(authStub.external1, {
-          ..._getCreateAssetDto(),
-          assetPath: '/data/user1/fake_path/asset_1.jpeg',
-          isReadOnly: true,
-          libraryId: 'library-id',
-        }),
-      ).resolves.toEqual({ duplicate: true, id: 'asset-id' });
-
-      expect(assetRepositoryMock.create).toHaveBeenCalled();
     });
   });
 
