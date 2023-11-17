@@ -13,7 +13,7 @@ import {
   newStorageRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
-import { QueryFailedError, Repository } from 'typeorm';
+import { QueryFailedError } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
 import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
@@ -85,7 +85,6 @@ const _getAssets = () => {
 
 describe('AssetService', () => {
   let sut: AssetService;
-  let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let accessMock: IAccessRepositoryMock;
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
@@ -115,7 +114,7 @@ describe('AssetService', () => {
     storageMock = newStorageRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
 
-    sut = new AssetService(accessMock, assetRepositoryMock, a, cryptoMock, jobMock, libraryMock, storageMock);
+    sut = new AssetService(accessMock, assetRepositoryMock, cryptoMock, jobMock, libraryMock, storageMock);
 
     when(assetRepositoryMock.get)
       .calledWith(assetStub.livePhotoStillAsset.id)

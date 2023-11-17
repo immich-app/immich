@@ -27,7 +27,6 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
@@ -142,15 +141,6 @@ export class AssetController {
   @Get('/search-terms')
   getAssetSearchTerms(@AuthUser() authUser: AuthUserDto): Promise<string[]> {
     return this.assetService.getAssetSearchTerm(authUser);
-  }
-
-  @Post('/search')
-  @HttpCode(HttpStatus.OK)
-  searchAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: SearchAssetDto,
-  ): Promise<AssetResponseDto[]> {
-    return this.assetService.searchAsset(authUser, dto);
   }
 
   /**

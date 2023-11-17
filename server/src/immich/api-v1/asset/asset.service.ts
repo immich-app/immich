@@ -24,12 +24,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Response as Res, Response } from 'express';
 import { constants } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
-import { QueryFailedError, Repository } from 'typeorm';
+import { QueryFailedError } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
@@ -37,7 +36,6 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import {
@@ -62,7 +60,6 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
@@ -283,30 +280,6 @@ export class AssetService {
     });
 
     return Array.from(possibleSearchTerm).filter((x) => x != null && x != '');
-  }
-
-  async searchAsset(authUser: AuthUserDto, searchAssetDto: SearchAssetDto): Promise<AssetResponseDto[]> {
-    const query = `
-    SELECT a.*
-    FROM assets a
-             LEFT JOIN smart_info si ON a.id = si."assetId"
-             LEFT JOIN exif e ON a.id = e."assetId"
-
-    WHERE a."ownerId" = $1
-       AND
-       (
-         TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
-         TO_TSVECTOR('english', ARRAY_TO_STRING(si.objects, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
-         e."exifTextSearchableColumn" @@ PLAINTO_TSQUERY('english', $2)
-        );
-    `;
-
-    const searchResults: AssetEntity[] = await this.assetRepository.query(query, [
-      authUser.id,
-      searchAssetDto.searchTerm,
-    ]);
-
-    return searchResults.map((asset) => mapAsset(asset));
   }
 
   async getCuratedLocation(authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
