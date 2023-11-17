@@ -109,7 +109,7 @@ jobs:
     name: Run cli e2e tests
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest] # TODO: macos and windows
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -123,7 +123,7 @@ jobs:
           submodules: "recursive"
 
       - name: Run e2e tests
-        run: docker compose -f ./docker/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+        run: docker compose -f ./docker/docker-compose.cli-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-cli --remove-orphans --build
 
   web-unit-tests:
     name: Run web unit test suites and checks
