@@ -24,10 +24,9 @@ import { AssetService } from './asset.service';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
+import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
@@ -82,20 +81,6 @@ export class AssetController {
     return responseDto;
   }
 
-  @Post('import')
-  async importFile(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(new ValidationPipe({ transform: true })) dto: ImportAssetDto,
-    @Response({ passthrough: true }) res: Res,
-  ): Promise<AssetFileUploadResponseDto> {
-    const responseDto = await this.assetService.importFile(authUser, dto);
-    if (responseDto.duplicate) {
-      res.status(200);
-    }
-
-    return responseDto;
-  }
-
   @SharedLinkRoute()
   @Get('/file/:id')
   @ApiOkResponse({
@@ -142,15 +127,6 @@ export class AssetController {
   @Get('/search-terms')
   getAssetSearchTerms(@AuthUser() authUser: AuthUserDto): Promise<string[]> {
     return this.assetService.getAssetSearchTerm(authUser);
-  }
-
-  @Post('/search')
-  @HttpCode(HttpStatus.OK)
-  searchAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: SearchAssetDto,
-  ): Promise<AssetResponseDto[]> {
-    return this.assetService.searchAsset(authUser, dto);
   }
 
   /**

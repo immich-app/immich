@@ -173,4 +173,16 @@
   <div class="mb-6 mt-auto">
     <StatusBox />
   </div>
+
+  {#if $page.data.user.isAdmin}
+    <!-- TODO REMOVE IN 1.88 -->
+    <div class="bg-red-100 dark:bg-gray-900 ml-4 mb-4 p-5 text-sm dark:text-red-300 rounded-2xl">
+      <p>
+        The upcoming release <span class="font-mono">v1.88.0</span> will include breaking change in the way Immich
+        deploy its application. Please read the following
+        <a href="https://github.com/immich-app/immich/discussions/5086" class="underline">annoucement</a> to make sure you
+        are ready for the update.
+      </p>
+    </div>
+  {/if}
 </SideBarSection>

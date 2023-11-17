@@ -1485,48 +1485,6 @@
         ]
       }
     },
-    "/asset/import": {
-      "post": {
-        "operationId": "importFile",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ImportAssetDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetFileUploadResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/jobs": {
       "post": {
         "operationId": "runAssetJobs",
@@ -1744,51 +1702,6 @@
         },
         "responses": {
           "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
-    "/asset/search": {
-      "post": {
-        "operationId": "searchAsset",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SearchAssetDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
             "description": ""
           }
         },
@@ -7829,64 +7742,6 @@
         ],
         "type": "object"
       },
-      "ImportAssetDto": {
-        "properties": {
-          "assetPath": {
-            "type": "string"
-          },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "duration": {
-            "type": "string"
-          },
-          "fileCreatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "fileModifiedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "isArchived": {
-            "type": "boolean"
-          },
-          "isExternal": {
-            "type": "boolean"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "isOffline": {
-            "type": "boolean"
-          },
-          "isReadOnly": {
-            "default": true,
-            "type": "boolean"
-          },
-          "isVisible": {
-            "type": "boolean"
-          },
-          "libraryId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "sidecarPath": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetPath",
-          "deviceAssetId",
-          "deviceId",
-          "fileCreatedAt",
-          "fileModifiedAt"
-        ],
-        "type": "object"
-      },
       "JobCommand": {
         "enum": [
           "start",
@@ -8623,17 +8478,6 @@
           "count",
           "items",
           "facets"
-        ],
-        "type": "object"
-      },
-      "SearchAssetDto": {
-        "properties": {
-          "searchTerm": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "searchTerm"
         ],
         "type": "object"
       },
