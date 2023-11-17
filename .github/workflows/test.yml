@@ -107,7 +107,11 @@ jobs:
 
   cli-e2e-tests:
     name: Run cli e2e tests
-    runs-on: [ubuntu-latest, windows-latest]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: ./cli
