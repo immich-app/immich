@@ -3,35 +3,51 @@ import yaml from 'yaml';
 import path from 'node:path';
 import { ImmichApi } from '../api/client';
 import { LoginError } from '../cores/errors/login-error';
+import { config } from 'node:process';
+import os from 'os';
 
 export class SessionService {
-  readonly configDir: string;
+  readonly configDir!: string;
   readonly authPath!: string;
   private api!: ImmichApi;
 
-  constructor(configDir: string) {
-    this.configDir = configDir;
+  constructor() {
+    const configDir = process.env.IMMICH_CONFIG_DIR;
+
+    if (!configDir) {
+      const userHomeDir = os.homedir();
+      this.configDir = path.join(userHomeDir, '.config/immich/');
+    } else {
+      this.configDir = configDir;
+    }
+
     this.authPath = path.join(this.configDir, 'auth.yml');
   }
 
   public async connect(): Promise<ImmichApi> {
-    await fs.promises.access(this.authPath, fs.constants.F_OK).catch((error) => {
-      if (error.code === 'ENOENT') {
-        throw new LoginError('No auth file exist. Please login first');
+    let instanceUrl = process.env.IMMICH_INSTANCE_URL;
+    let apiKey = process.env.IMMICH_API_KEY;
+
+    if (!instanceUrl || !apiKey) {
+      await fs.promises.access(this.authPath, fs.constants.F_OK).catch((error) => {
+        if (error.code === 'ENOENT') {
+          throw new LoginError('No auth file exist. Please login first');
+        }
+      });
+
+      const data: string = await fs.promises.readFile(this.authPath, 'utf8');
+      const parsedConfig = yaml.parse(data);
+
+      instanceUrl = parsedConfig.instanceUrl;
+      apiKey = parsedConfig.apiKey;
+
+      if (!instanceUrl) {
+        throw new LoginError('Instance URL missing in auth config file ' + this.authPath);
       }
-    });
 
-    const data: string = await fs.promises.readFile(this.authPath, 'utf8');
-    const parsedConfig = yaml.parse(data);
-    const instanceUrl: string = parsedConfig.instanceUrl;
-    const apiKey: string = parsedConfig.apiKey;
-
-    if (!instanceUrl) {
-      throw new LoginError('Instance URL missing in auth config file ' + this.authPath);
-    }
-
-    if (!apiKey) {
-      throw new LoginError('API key missing in auth config file ' + this.authPath);
+      if (!apiKey) {
+        throw new LoginError('API key missing in auth config file ' + this.authPath);
+      }
     }
 
     this.api = new ImmichApi(instanceUrl, apiKey);

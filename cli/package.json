@@ -15,6 +15,7 @@
     "yaml": "^2.3.1"
   },
   "devDependencies": {
+    "@nestjs/common": "^10.2.8",
     "@testcontainers/postgresql": "^10.2.2",
     "@types/byte-size": "^8.1.0",
     "@types/chai": "^4.3.5",

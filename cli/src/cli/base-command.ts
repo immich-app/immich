@@ -3,7 +3,6 @@ import path from 'node:path';
 import { SessionService } from '../services/session.service';
 import { LoginError } from '../cores/errors/login-error';
 import { exit } from 'node:process';
-import os from 'os';
 import { ServerVersionResponseDto, UserResponseDto } from 'src/api/open-api';
 
 export abstract class BaseCommand {
@@ -12,14 +11,8 @@ export abstract class BaseCommand {
   protected user!: UserResponseDto;
   protected serverVersion!: ServerVersionResponseDto;
 
-  protected configDir;
-  protected authPath;
-
   constructor() {
-    const userHomeDir = os.homedir();
-    this.configDir = path.join(userHomeDir, '.config/immich/');
-    this.sessionService = new SessionService(this.configDir);
-    this.authPath = path.join(this.configDir, 'auth.yml');
+    this.sessionService = new SessionService();
   }
 
   public async connect(): Promise<void> {

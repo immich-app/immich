@@ -9,10 +9,14 @@ import {
 import { LoginResponseDto } from 'src/api/open-api';
 import ServerInfo from 'src/commands/server-info';
 import Upload from 'src/commands/upload';
+import { INestApplication } from '@nestjs/common';
+import { Http2SecureServer } from 'http2';
+import { APIKeyCreateResponseDto } from '@app/domain';
 
 describe(`CLI (e2e)`, () => {
   let server: any;
   let admin: LoginResponseDto;
+  let apiKey: APIKeyCreateResponseDto;
 
   beforeAll(async () => {
     [server] = await testApp.create({ jobs: true });
@@ -28,6 +32,8 @@ describe(`CLI (e2e)`, () => {
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
+    apiKey = await api.apiKeyApi.createApiKey(server, admin.accessToken);
+    process.env.IMMICH_API_KEY = apiKey.secret;
   });
 
   describe('server-info', () => {
@@ -44,7 +50,7 @@ describe(`CLI (e2e)`, () => {
 
       await new Upload().run([`${IMMICH_TEST_ASSET_TEMP_PATH}/albums/nature`], {});
       const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      console.log(assets);
+      expect(assets.length).toBeGreaterThan(4);
     });
   });
 });

@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as fs from 'fs';
 import path from 'path';
+import { Server } from 'tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../src/microservices/app.service';
 
@@ -78,12 +79,18 @@ export const testApp = {
       .compile();
 
     app = await moduleFixture.createNestApplication().init();
+    app.listen(0);
 
     if (jobs) {
       await app.get(AppService).init();
     }
 
-    return [app.getHttpServer(), app];
+    const httpServer = app.getHttpServer();
+    const port = httpServer.address().port;
+    const protocol = app instanceof Server ? 'https' : 'http';
+    process.env.IMMICH_INSTANCE_URL = protocol + '://127.0.0.1:' + port;
+
+    return [httpServer, app];
   },
   reset: async (options?: ResetOptions) => {
     await db.reset(options);
