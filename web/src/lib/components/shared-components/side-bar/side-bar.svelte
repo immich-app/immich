@@ -41,8 +41,6 @@
   const isPhotosSelected = $page.route.id === '/(user)/photos';
   const isSharingSelected = $page.route.id === '/(user)/sharing';
   const isTrashSelected = $page.route.id === '/(user)/trash';
-
-  console.log();
 </script>
 
 <SideBarSection>
