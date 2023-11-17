@@ -112,9 +112,6 @@ jobs:
         os: [ubuntu-latest] # TODO: macos and windows
 
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: ./cli
 
     steps:
       - name: Checkout code
