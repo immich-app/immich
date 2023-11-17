@@ -115,7 +115,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**restoreAssets**](doc//AssetApi.md#restoreassets) | **POST** /asset/restore | 
 *AssetApi* | [**restoreTrash**](doc//AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
-*AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**searchAssets**](doc//AssetApi.md#searchassets) | **GET** /assets | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
@@ -302,7 +301,6 @@ Class | Method | HTTP request | Description
  - [RecognitionConfig](doc//RecognitionConfig.md)
  - [ScanLibraryDto](doc//ScanLibraryDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
- - [SearchAssetDto](doc//SearchAssetDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
  - [SearchExploreItem](doc//SearchExploreItem.md)
  - [SearchExploreResponseDto](doc//SearchExploreResponseDto.md)

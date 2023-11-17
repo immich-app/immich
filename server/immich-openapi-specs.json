@@ -1763,51 +1763,6 @@
         ]
       }
     },
-    "/asset/search": {
-      "post": {
-        "operationId": "searchAsset",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SearchAssetDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/search-terms": {
       "get": {
         "operationId": "getAssetSearchTerms",
@@ -8343,17 +8298,6 @@
           "count",
           "items",
           "facets"
-        ],
-        "type": "object"
-      },
-      "SearchAssetDto": {
-        "properties": {
-          "searchTerm": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "searchTerm"
         ],
         "type": "object"
       },

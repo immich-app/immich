@@ -109,7 +109,6 @@ doc/RecognitionConfig.md
 doc/ScanLibraryDto.md
 doc/SearchAlbumResponseDto.md
 doc/SearchApi.md
-doc/SearchAssetDto.md
 doc/SearchAssetResponseDto.md
 doc/SearchExploreItem.md
 doc/SearchExploreResponseDto.md
@@ -293,7 +292,6 @@ lib/model/reaction_type.dart
 lib/model/recognition_config.dart
 lib/model/scan_library_dto.dart
 lib/model/search_album_response_dto.dart
-lib/model/search_asset_dto.dart
 lib/model/search_asset_response_dto.dart
 lib/model/search_explore_item.dart
 lib/model/search_explore_response_dto.dart
@@ -458,7 +456,6 @@ test/recognition_config_test.dart
 test/scan_library_dto_test.dart
 test/search_album_response_dto_test.dart
 test/search_api_test.dart
-test/search_asset_dto_test.dart
 test/search_asset_response_dto_test.dart
 test/search_explore_item_test.dart
 test/search_explore_response_dto_test.dart

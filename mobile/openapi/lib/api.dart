@@ -140,7 +140,6 @@ part 'model/reaction_type.dart';
 part 'model/recognition_config.dart';
 part 'model/scan_library_dto.dart';
 part 'model/search_album_response_dto.dart';
-part 'model/search_asset_dto.dart';
 part 'model/search_asset_response_dto.dart';
 part 'model/search_explore_item.dart';
 part 'model/search_explore_response_dto.dart';
