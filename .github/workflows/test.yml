@@ -125,7 +125,7 @@ jobs:
 
       - name: Run npm install in server
         run: npm ci
-        working-directory: ../server
+        working-directory: ./server
 
       - name: Run e2e tests
         run: npm run test:e2e
