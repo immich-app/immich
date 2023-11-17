@@ -111,7 +111,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getTimeBucket**](doc//AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
-*AssetApi* | [**importFile**](doc//AssetApi.md#importfile) | **POST** /asset/import | 
 *AssetApi* | [**restoreAssets**](doc//AssetApi.md#restoreassets) | **POST** /asset/restore | 
 *AssetApi* | [**restoreTrash**](doc//AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
@@ -264,7 +263,6 @@ Class | Method | HTTP request | Description
  - [FileReportDto](doc//FileReportDto.md)
  - [FileReportFixDto](doc//FileReportFixDto.md)
  - [FileReportItemDto](doc//FileReportItemDto.md)
- - [ImportAssetDto](doc//ImportAssetDto.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCountsDto](doc//JobCountsDto.md)
