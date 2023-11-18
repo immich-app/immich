@@ -121,12 +121,13 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
             authState.name,
             style: context.textTheme.titleMedium?.copyWith(
               color: context.primaryColor,
+              fontWeight: FontWeight.w500,
             ),
           ),
           subtitle: Text(
             authState.userEmail,
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: context.textTheme.bodyMedium?.color?.withAlpha(200),
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.textTheme.bodySmall?.color?.withAlpha(200),
             ),
           ),
         ),

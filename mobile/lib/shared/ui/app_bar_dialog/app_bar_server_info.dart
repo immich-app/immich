@@ -65,7 +65,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                   style: TextStyle(
                     fontSize: 11,
                     color: context.primaryColor,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -87,7 +87,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         style: TextStyle(
                           fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -128,7 +128,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         style: TextStyle(
                           fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -171,7 +171,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         style: TextStyle(
                           fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -241,7 +241,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                             style: TextStyle(
                               fontSize: titleFontSize,
                               color: context.textTheme.labelSmall?.color,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],

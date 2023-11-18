@@ -150,6 +150,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               "backup_controller_page_server_storage",
               style: context.textTheme.titleSmall?.copyWith(
                 color: context.primaryColor,
+                fontWeight: FontWeight.w500,
               ),
             ).tr(),
             isThreeLine: true,
