@@ -99,7 +99,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: tensorchord/pgvecto-rs
+    image: tensorchord/pgvecto-rs:pg14-v0.1.8-amd64
     env_file:
       - .env
     environment:
