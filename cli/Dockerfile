@@ -1,9 +1,14 @@
 FROM ghcr.io/immich-app/base-server-dev:20231109 as builder
 
-COPY cli/package.json cli/package-lock.json ./
+WORKDIR /usr/src/app/server
+COPY server/package.json server/package-lock.json ./
 RUN npm ci
-COPY cli .
+COPY ./server/ .
 
+WORKDIR /usr/src/app/cli
+COPY cli/package.json cli/package-lock.json cli/test/ ./
+RUN npm ci
+COPY ./cli/ .
 
 FROM builder as prod
 
@@ -13,19 +18,7 @@ RUN npm prune --omit=dev --omit=optional
 
 FROM ghcr.io/immich-app/base-server-prod:20231109
 
-ENV NODE_ENV=production
 
-COPY --from=prod /usr/src/app/node_modules ./node_modules
-COPY --from=prod /usr/src/app/dist ./dist
-COPY --from=prod /usr/src/app/bin ./bin
-COPY server/assets ./assets
-
-COPY LICENSE /licenses/LICENSE.txt
-COPY LICENSE /LICENSE
-COPY server/package.json server/package-lock.json ./
-COPY server/start*.sh ./
-
-RUN npm link && npm cache clean --force
 VOLUME /usr/src/app/upload
 
 EXPOSE 3001

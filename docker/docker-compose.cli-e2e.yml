@@ -9,10 +9,9 @@ services:
       context: ../
       dockerfile: cli/Dockerfile
       target: builder
+    working_dir: /usr/src/app/cli
     command: npm run test:e2e
     volumes:
-      - ../cli:/usr/src/app
-      - ../server:/usr/src/server
       - /usr/src/app/node_modules
     environment:
       - DB_HOSTNAME=database
