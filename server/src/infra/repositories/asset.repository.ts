@@ -695,7 +695,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getAssetIdByCity(
-    userId: string,
+    ownerId: string,
     { minAssetsPerField, maxFields }: AssetExploreFieldOptions,
   ): Promise<SearchExploreItem<string>> {
     const cte = this.exifRepository
@@ -706,7 +706,7 @@ export class AssetRepository implements IAssetRepository {
       .orderBy('random()')
       .limit(maxFields);
   
-    const items = await this.getBuilder({ userId, exifInfo: false, assetType: AssetType.IMAGE, isArchived: false })
+    const items = await this.getBuilder({ userIds: [ownerId], exifInfo: false, assetType: AssetType.IMAGE, isArchived: false })
       .select('c.city', 'value')
       .addSelect('asset.id', 'data')
       .distinctOn(['c.city'])
@@ -720,7 +720,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getAssetIdByTag(
-    userId: string,
+    ownerId: string,
     { minAssetsPerField, maxFields }: AssetExploreFieldOptions,
   ): Promise<SearchExploreItem<string>> {
     const cte = this.smartInfoRepository
@@ -731,7 +731,7 @@ export class AssetRepository implements IAssetRepository {
       .orderBy('random()')
       .limit(maxFields);
 
-    const items = await this.getBuilder({ userId, exifInfo: false, assetType: AssetType.IMAGE, isArchived: false })
+    const items = await this.getBuilder({ userIds: [ownerId], exifInfo: false, assetType: AssetType.IMAGE, isArchived: false })
       .select('unnest(si.tags)', 'value')
       .addSelect('asset.id', 'data')
       .distinctOn(['unnest(si.tags)'])
