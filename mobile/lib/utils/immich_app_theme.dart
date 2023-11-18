@@ -38,11 +38,11 @@ ThemeData immichLightTheme = ThemeData(
   hintColor: Colors.indigo,
   focusColor: Colors.indigo,
   splashColor: Colors.indigo.withOpacity(0.15),
-  fontFamily: 'WorkSans',
+  fontFamily: 'Overpass',
   scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Overpass',
       color: Colors.indigo,
       fontWeight: FontWeight.bold,
     ),
@@ -50,7 +50,7 @@ ThemeData immichLightTheme = ThemeData(
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: const TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Overpass',
       color: Colors.indigo,
       fontWeight: FontWeight.bold,
       fontSize: 18,
@@ -160,10 +160,10 @@ ThemeData immichDarkTheme = ThemeData(
   primaryColor: immichDarkThemePrimaryColor,
   scaffoldBackgroundColor: immichDarkBackgroundColor,
   hintColor: Colors.grey[600],
-  fontFamily: 'WorkSans',
+  fontFamily: 'Overpass',
   snackBarTheme: SnackBarThemeData(
     contentTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Overpass',
       color: immichDarkThemePrimaryColor,
       fontWeight: FontWeight.bold,
     ),
@@ -176,7 +176,7 @@ ThemeData immichDarkTheme = ThemeData(
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Overpass',
       color: immichDarkThemePrimaryColor,
       fontWeight: FontWeight.bold,
       fontSize: 18,

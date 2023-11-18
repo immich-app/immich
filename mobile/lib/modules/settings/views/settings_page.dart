@@ -27,10 +27,6 @@ class SettingsPage extends HookConsumerWidget {
         centerTitle: false,
         title: const Text(
           'setting_pages_app_bar_settings',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
         ).tr(),
       ),
       body: ListView(

@@ -73,7 +73,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                       : 'album_thumbnail_card_items'
                           .tr(args: ['${album.assetCount}']),
                   style: TextStyle(
-                    fontFamily: 'WorkSans',
+                    fontFamily: 'Overpass',
                     fontSize: 12,
                     color: isDarkTheme ? Colors.white : Colors.black,
                   ),

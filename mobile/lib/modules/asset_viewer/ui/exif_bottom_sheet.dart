@@ -206,7 +206,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: textColor,
-                    fontFamily: 'WorkSans',
+                    fontFamily: 'Overpass',
                   ),
                   children: [
                     if (exifInfo != null && exifInfo.city != null)
