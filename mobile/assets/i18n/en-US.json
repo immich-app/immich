@@ -292,6 +292,7 @@
   "server_info_box_app_version": "App Version",
   "server_info_box_server_url": "Server URL",
   "server_info_box_server_version": "Server Version",
+  "server_info_box_latest_release":"Latest Version",
   "setting_image_viewer_help": "The detail viewer loads the small thumbnail first, then loads the medium-size preview (if enabled), finally loads the original (if enabled).",
   "setting_image_viewer_original_subtitle": "Enable to load the original full-resolution image (large!). Disable to reduce data usage (both network and on device cache).",
   "setting_image_viewer_original_title": "Load original image",

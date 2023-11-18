@@ -785,15 +785,20 @@ class SyncService {
   bool? remote,
   int Function(Asset, Asset) compare = Asset.compareByChecksum,
 }) {
+  // fast paths for trivial cases: reduces memory usage during initial sync etc.
+  if (assets.isEmpty && inDb.isEmpty) {
+    return const ([], [], []);
+  } else if (assets.isEmpty && remote == null) {
+    // remove all from database
+    return (const [], const [], inDb);
+  } else if (inDb.isEmpty) {
+    // add all assets
+    return (assets, const [], const []);
+  }
+
   final List<Asset> toAdd = [];
   final List<Asset> toUpdate = [];
   final List<Asset> toRemove = [];
-  if (assets.isEmpty || inDb.isEmpty) {
-    // fast path for trivial cases: halfes memory usage during initial sync
-    return assets.isEmpty
-        ? (toAdd, toUpdate, inDb) // remove all from DB
-        : (assets, toUpdate, toRemove); // add all assets
-  }
   diffSortedListsSync(
     inDb,
     assets,
