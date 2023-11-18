@@ -26,7 +26,7 @@ import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
 import type { ApiParams } from './types';
 
-export class ImmichApi {
+class ImmichApi {
   public activityApi: ActivityApi;
   public albumApi: AlbumApi;
   public libraryApi: LibraryApi;

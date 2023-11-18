@@ -12,6 +12,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
+    ports:
+      - 2283:3001
     depends_on:
       - redis
       - database
@@ -45,13 +47,6 @@ services:
       - .env
     restart: always
 
-  immich-web:
-    container_name: immich_web
-    image: ghcr.io/immich-app/immich-web:${IMMICH_VERSION:-release}
-    env_file:
-      - .env
-    restart: always
-
   typesense:
     container_name: immich_typesense
     image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
@@ -80,16 +75,6 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    restart: always
-
-  immich-proxy:
-    container_name: immich_proxy
-    image: ghcr.io/immich-app/immich-proxy:${IMMICH_VERSION:-release}
-    ports:
-      - 2283:8080
-    depends_on:
-      - immich-server
-      - immich-web
     restart: always
 
 volumes:

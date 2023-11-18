@@ -1,4 +1,4 @@
 node_modules/
-upload/
-dist/
-
+coverage/
+.svelte-kit
+build/

@@ -11,7 +11,6 @@ import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/tab.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -69,8 +68,6 @@ class AppStateNotiifer extends StateNotifier<AppStateEnum> {
     }
 
     _ref.read(websocketProvider.notifier).connect();
-
-    _ref.read(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     _ref
         .read(notificationPermissionProvider.notifier)

@@ -52,7 +52,7 @@ If you only want to do web development connected to an existing, remote backend,
 3. Start the web development server
 
 ```
-PUBLIC_IMMICH_SERVER_URL=https://demo.immich.app/api npm run dev
+IMMICH_SERVER_URL=https://demo.immich.app/api npm run dev
 ```
 
 ## IDE setup

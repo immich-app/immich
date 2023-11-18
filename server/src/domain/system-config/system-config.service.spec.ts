@@ -306,9 +306,9 @@ describe(SystemConfigService.name, () => {
     });
   });
 
-  describe('getTheme', () => {
+  describe('getCustomCss', () => {
     it('should return the default theme', async () => {
-      await expect(sut.getTheme()).resolves.toEqual(defaults.theme);
+      await expect(sut.getCustomCss()).resolves.toEqual(defaults.theme.customCss);
     });
   });
 });

@@ -122,28 +122,6 @@ TYPESENSE_API_KEY=some-random-text
 
 PUBLIC_LOGIN_PAGE_MESSAGE="My Family Photos and Videos Backup Server"
 
-####################################################################################
-# Alternative Service Addresses - Optional
-#
-# This is an advanced feature for users who may be running their immich services on different hosts.
-# It will not change which address or port that services bind to within their containers, but it will change where other services look for their peers.
-# Note: immich-microservices is bound to 3002, but no references are made
-####################################################################################
-
-IMMICH_WEB_URL=http://immich-web:3000
-IMMICH_SERVER_URL=http://immich-server:3001
-
-####################################################################################
-# Alternative API's External Address - Optional
-#
-# This is an advanced feature used to control the public server endpoint returned to clients during Well-known discovery.
-# You should only use this if you want mobile apps to access the immich API over a custom URL. Do not include trailing slash.
-# NOTE: At this time, the web app will not be affected by this setting and will continue to use the relative path: /api
-# Examples: http://localhost:3001, http://immich-api.example.com, etc
-####################################################################################
-
-#IMMICH_API_URL_EXTERNAL=http://localhost:3001
-
 ###################################################################################
 # Immich Version - Optional
 #
