@@ -19,26 +19,6 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { api } from '@api';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiOpenInNew } from '@mdi/js';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-
-  // remove after v1.87 is released
-  let isOutdated = false;
-  const handleCheckOutdated = async () => {
-    try {
-      let response = await api.serverInfoApi.getServerVersion();
-      if (!response.headers['content-type'].startsWith('application/json')) {
-        api.setBaseUrl('/api/api');
-        response = await api.serverInfoApi.getServerVersion();
-      }
-      if (response.data.major === 1 && response.data.minor >= 88) {
-        isOutdated = true;
-      }
-    } catch {
-      // noop
-    }
-  };
 
   let showNavigationLoadingBar = false;
   export let data: LayoutData;
@@ -68,8 +48,6 @@
   });
 
   onMount(async () => {
-    handleCheckOutdated();
-
     if ($page.route.id?.startsWith('/auth') === false) {
       openWebsocketConnection();
     }
@@ -132,35 +110,7 @@
   </FullscreenContainer>
 </noscript>
 
-{#if isOutdated}
-  <FullscreenContainer title="Notice">
-    <section class="text-center text-immich-primary dark:text-immich-dark-primary flex flex-col gap-2">
-      <p>
-        This container (<span>immich-web</span>) is no longer in use.
-      </p>
-      <p>
-        Please read the announcement about the breaking changes released in <code>v1.88.0</code> and update your configuration
-        accordingly.
-      </p>
-
-      <a
-        href="https://github.com/immich-app/immich/discussions/5086"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="mt-4"
-      >
-        <Button fullwidth color="primary">
-          <span class="flex gap-2 items-center text-md">
-            View Announcement
-            <Icon path={mdiOpenInNew} />
-          </span>
-        </Button>
-      </a>
-    </section>
-  </FullscreenContainer>
-{:else}
-  <slot {albumId} />
-{/if}
+<slot {albumId} />
 
 {#if showNavigationLoadingBar}
   <NavigationLoadingBar />
