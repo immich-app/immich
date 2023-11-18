@@ -196,6 +196,7 @@ export interface IAssetRepository {
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
+  search(options: AssetSearchOptions): Promise<AssetEntity[]>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   searchMetadata(query: string, userId: string, options: MetadataSearchOptions): Promise<AssetEntity[]>;
