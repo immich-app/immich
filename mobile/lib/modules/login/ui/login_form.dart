@@ -358,7 +358,7 @@ class LoginForm extends HookConsumerWidget {
             TextButton.icon(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => serverEndpoint.value = null,
-              label: const Text('Back'),
+              label: const Text('login_form_back_button_text').tr(),
             ),
           ],
         ),
