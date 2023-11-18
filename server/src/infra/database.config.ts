@@ -33,7 +33,7 @@ export async function initDataSource(): Promise<DataSource> {
   const dataSource = await new DataSource(databaseConfig).initialize();
   
   const hasVectorExtension = (await dataSource.query(
-    `SELECT * FROM pg_extension WHERE name = 'vectors'`,
+    `SELECT * FROM pg_available_extensions WHERE name = 'vectors'`,
   )).length > 0;
 
   if (hasVectorExtension) {

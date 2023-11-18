@@ -5,11 +5,11 @@ export class UsePgVectors1699746198141 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     const faceDimQuery = await queryRunner.query(`
-      SELECT CARDINALITY(embedding) as dimsize
+      SELECT CARDINALITY(embedding::real[]) as dimsize
       FROM asset_faces
       LIMIT 1`);
     const clipDimQuery = await queryRunner.query(`
-      SELECT CARDINALITY("clipEmbedding") as dimsize
+      SELECT CARDINALITY("clipEmbedding"::real[]) as dimsize
       FROM smart_info
       LIMIT 1`);
 
