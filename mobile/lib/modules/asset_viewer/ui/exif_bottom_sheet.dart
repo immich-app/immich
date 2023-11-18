@@ -391,9 +391,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                     buildDragHeader(),
                     buildDate(),
                     assetWithExif.when(
-                      data: (data) => asset.isRemote
-                          ? DescriptionInput(asset: data)
-                          : const SizedBox(),
+                      data: (data) => DescriptionInput(asset: data),
                       error: (error, stackTrace) => Icon(
                         Icons.image_not_supported_outlined,
                         color: context.primaryColor,
