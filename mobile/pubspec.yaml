@@ -126,7 +126,9 @@ flutter:
           weight: 600
         - asset: fonts/overpass/Overpass-Bold.ttf
           weight: 700
-
+    - family: OverpassMono
+      fonts:
+        - asset: fonts/overpass/OverpassMono.ttf
 
 flutter_icons:
   image_path_android: "assets/immich-logo-no-outline.png"
