@@ -24,7 +24,10 @@
   export let data: LayoutData;
   let albumId: string | undefined;
 
-  if ($page.route.id?.startsWith('/(user)/share/[key]')) {
+  const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
+  const isAuthRoute = (route?: string) => route?.startsWith('/auth');
+
+  if (isSharedLinkRoute($page.route?.id)) {
     api.setKey($page.params.key);
   }
 
@@ -32,11 +35,11 @@
     const fromRoute = from?.route?.id || '';
     const toRoute = to?.route?.id || '';
 
-    if (fromRoute.startsWith('/auth') && !toRoute.startsWith('/auth')) {
+    if (isAuthRoute(fromRoute) && !isAuthRoute(toRoute)) {
       openWebsocketConnection();
     }
 
-    if (!fromRoute.startsWith('/auth') && toRoute.startsWith('/auth')) {
+    if (!isAuthRoute(fromRoute) && isAuthRoute(toRoute)) {
       closeWebsocketConnection();
     }
 
@@ -80,7 +83,6 @@
 <svelte:head>
   <title>{$page.data.meta?.title || 'Web'} - Immich</title>
   <link rel="manifest" href="/manifest.json" />
-  <link rel="stylesheet" href="/custom.css" />
   <meta name="theme-color" content="currentColor" />
   <FaviconHeader />
   <AppleHeader />

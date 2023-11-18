@@ -24,16 +24,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - context: "web"
-            image: "immich-web"
-            platforms: "linux/amd64,linux/arm64"
           - context: "machine-learning"
+            file: "machine-learning/Dockerfile"
             image: "immich-machine-learning"
             platforms: "linux/amd64,linux/arm64"
-          - context: "nginx"
-            image: "immich-proxy"
-            platforms: "linux/amd64,linux/arm64"
-          - context: "server"
+          - context: "."
+            file: "server/Dockerfile"
             image: "immich-server"
             platforms: "linux/arm64,linux/amd64"
 
@@ -103,6 +99,7 @@ jobs:
         uses: docker/build-push-action@v5.0.0
         with:
           context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           platforms: ${{ matrix.platforms }}
           # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
