@@ -110,6 +110,8 @@
   </FullscreenContainer>
 </noscript>
 
+<slot {albumId} />
+
 {#if showNavigationLoadingBar}
   <NavigationLoadingBar />
 {/if}
