@@ -91,7 +91,7 @@
   "backup_controller_page_status_on": "Automatic foreground backup is on",
   "backup_controller_page_storage_format": "{} of {} used",
   "backup_controller_page_to_backup": "Albums to be backup",
-  "backup_controller_page_total": "TOTAL",
+  "backup_controller_page_total": "Total",
   "backup_controller_page_total_sub": "All unique photos and videos from selected albums",
   "backup_controller_page_turn_off": "Turn off foreground backup",
   "backup_controller_page_turn_on": "Turn on foreground backup",

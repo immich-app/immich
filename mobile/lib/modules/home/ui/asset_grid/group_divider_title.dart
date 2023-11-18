@@ -61,8 +61,9 @@ class GroupDividerTitle extends HookConsumerWidget {
                 ? context.textTheme.bodyLarge?.copyWith(
                     fontSize: 24.0,
                   )
-                : context.textTheme.bodyMedium?.copyWith(
-                    color: context.textTheme.bodyMedium?.color?.withAlpha(250),
+                : context.textTheme.labelLarge?.copyWith(
+                    color: context.textTheme.labelLarge?.color?.withAlpha(250),
+                    fontWeight: FontWeight.w500,
                   ),
           ),
           const Spacer(),
