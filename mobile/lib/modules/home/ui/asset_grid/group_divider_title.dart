@@ -59,10 +59,9 @@ class GroupDividerTitle extends HookConsumerWidget {
             text,
             style: groupBy.value == GroupAssetsBy.month
                 ? context.textTheme.bodyLarge?.copyWith(
-                    fontSize: 20.0,
-                    color: context.primaryColor,
+                    fontSize: 24.0,
                   )
-                : context.textTheme.labelLarge?.copyWith(
+                : context.textTheme.bodyLarge?.copyWith(
                     color: context.textTheme.labelLarge?.color?.withAlpha(250),
                   ),
           ),

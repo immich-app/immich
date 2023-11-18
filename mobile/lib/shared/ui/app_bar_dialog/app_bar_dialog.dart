@@ -72,14 +72,14 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         leading: SizedBox(
           child: Icon(
             icon,
-            color: theme.textTheme.titleSmall?.color?.withAlpha(200),
+            color: theme.textTheme.labelLarge?.color?.withAlpha(250),
             size: 20,
           ),
         ),
         title: Text(
           text,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: theme.textTheme.titleSmall?.color?.withAlpha(200),
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: theme.textTheme.labelLarge?.color?.withAlpha(250),
           ),
         ).tr(),
         onTap: onTap,

@@ -18,8 +18,8 @@ class AppBarServerInfo extends HookConsumerWidget {
     ServerInfo serverInfoState = ref.watch(serverInfoProvider);
 
     final appInfo = useState({});
-    const titleFontSize = 13.0;
-    const contentFontSize = 11.0;
+    const titleFontSize = 12.0;
+    const contentFontSize = 10.0;
 
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
