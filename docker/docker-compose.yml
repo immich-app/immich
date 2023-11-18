@@ -5,7 +5,7 @@ version: "3.8"
 #
 # https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 #
-# The the compose file on main may not be compatible with the latest release.
+# The compose file on main may not be compatible with the latest release.
 #
 
 name: immich
