@@ -35,6 +35,12 @@ export const showBoundingBox = (
   const { width, height } = getContainedSize(photoViewer);
 
   for (const face of faces) {
+    /*
+     *
+     * Create the coordinates of the box based on the displayed image.
+     * The coordinates must take into account margins due to the 'object-fit: contain;' css property of the photo-viewer.
+     *
+     */
     const coordinates = {
       x1:
         (width / face.imageWidth) * zoom.currentZoom * face.boundingBoxX1 +

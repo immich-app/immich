@@ -29,11 +29,12 @@
   export let albums: AlbumResponseDto[] = [];
   export let albumId: string | null = null;
 
+  let showAssetPath = false;
   let textarea: HTMLTextAreaElement;
   let description: string;
   let showEditFaces = false;
-
   let previousId: string;
+
   $: {
     if (!previousId) {
       previousId = asset.id;
@@ -111,7 +112,6 @@
     }
   };
 
-  let showAssetPath = false;
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 </script>
 

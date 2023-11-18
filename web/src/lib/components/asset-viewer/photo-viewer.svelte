@@ -18,11 +18,17 @@
 
   let imgElement: HTMLDivElement;
   let assetData: string;
-
   let abortController: AbortController;
   let hasZoomed = false;
   let copyImageToClipboard: (src: string) => Promise<Blob>;
   let canCopyImagesToClipboard: () => boolean;
+
+  $: if (imgElement) {
+    createZoomImageWheel(imgElement, {
+      maxZoom: 10,
+      wheelZoomRatio: 0.2,
+    });
+  }
 
   onMount(async () => {
     // Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
@@ -114,13 +120,6 @@
       loadAssetData({ loadOriginal: true });
     }
   });
-
-  $: if (imgElement) {
-    createZoomImageWheel(imgElement, {
-      maxZoom: 10,
-      wheelZoomRatio: 0.2,
-    });
-  }
 </script>
 
 <svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />

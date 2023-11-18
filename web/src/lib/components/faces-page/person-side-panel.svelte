@@ -16,28 +16,31 @@
 
   export let assetId: string;
 
+  // keep track of the changes
   let numberOfPersonToCreate = 0;
   let numberOfAssetFaceGenerated = 0;
 
+  // faces
   let peopleWithFaces: AssetFaceResponseDto[] = [];
   let selectedPersonToReassign: (PersonResponseDto | null)[];
   let selectedPersonToCreate: (string | null)[];
 
-  let editedPersonIndex: number;
-
+  // loading spinners
   let isShowLoadingDone = false;
   let isShowLoadingNewPerson = false;
   let isShowLoadingPeople = false;
   let isShowLoadingSearch = false;
 
+  // search people
+  let editedPersonIndex: number;
   let showSeletecFaces = false;
-
   let searchedPeople: PersonResponseDto[] = [];
   let searchWord: string;
   let searchFaces = false;
   let searchName = '';
   let allPeople: PersonResponseDto[] = [];
 
+  // timers
   let loaderLoadingDoneTimeout: NodeJS.Timeout;
   let automaticRefreshTimeout: NodeJS.Timeout;
 
