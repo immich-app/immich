@@ -14,17 +14,12 @@ class AssetListSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     return ExpansionTile(
       textColor: context.primaryColor,
-      title: const Text(
+      title: Text(
         'asset_list_settings_title',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         'asset_list_settings_subtitle',
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: const [
         TilesPerRow(),
