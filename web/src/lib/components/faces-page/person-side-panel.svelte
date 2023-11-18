@@ -38,7 +38,8 @@
   let searchName = '';
   let allPeople: PersonResponseDto[] = [];
 
-  let doneTimeout: NodeJS.Timeout;
+  let loaderLoadingDoneTimeout: NodeJS.Timeout;
+  let automaticRefreshTimeout: NodeJS.Timeout;
 
   const { onPersonThumbnail } = websocketStore;
   const dispatch = createEventDispatcher();
@@ -58,8 +59,9 @@
   }
 
   $: {
-    if (numberOfPersonToCreate === numberOfAssetFaceGenerated && doneTimeout) {
-      clearTimeout(doneTimeout);
+    if (numberOfPersonToCreate === numberOfAssetFaceGenerated && loaderLoadingDoneTimeout && automaticRefreshTimeout) {
+      clearTimeout(loaderLoadingDoneTimeout);
+      clearTimeout(automaticRefreshTimeout);
       dispatch('refresh');
     }
   }
@@ -161,7 +163,7 @@
   };
 
   const handleEditFaces = async () => {
-    doneTimeout = setTimeout(() => (isShowLoadingDone = true), 100);
+    loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), 100);
     const numberOfChanges =
       selectedPersonToCreate.filter((person) => person !== null).length +
       selectedPersonToReassign.filter((person) => person !== null).length;
@@ -192,10 +194,11 @@
     }
 
     isShowLoadingDone = false;
-
     if (numberOfPersonToCreate === 0) {
-      clearTimeout(doneTimeout);
+      clearTimeout(loaderLoadingDoneTimeout);
       dispatch('refresh');
+    } else {
+      automaticRefreshTimeout = setTimeout(() => dispatch('refresh'), 15000);
     }
   };
 
