@@ -7,7 +7,6 @@ export class AddFaceEmbeddingIndex1699746444644 implements MigrationInterface {
     await queryRunner.query(`
         CREATE INDEX IF NOT EXISTS face_index ON asset_faces
         USING vectors (embedding cosine_ops) WITH (options = $$
-        capacity = 2097152
         [indexing.hnsw]
         m = 16
         ef_construction = 300

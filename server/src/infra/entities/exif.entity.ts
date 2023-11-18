@@ -98,6 +98,7 @@ export class ExifEntity {
   @Column({
     type: 'tsvector',
     generatedType: 'STORED',
+    select: false,
     asExpression: `TO_TSVECTOR('english',
                          COALESCE(make, '') || ' ' ||
                          COALESCE(model, '') || ' ' ||

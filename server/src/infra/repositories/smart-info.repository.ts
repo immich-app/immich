@@ -20,16 +20,22 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   async searchByEmbedding({ ownerId, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
-    let results: AssetEntity[] = await this.assetRepository.createQueryBuilder('a')
+    const query: string = this.assetRepository.createQueryBuilder('a')
     .innerJoin('a.smartSearch', 's')
     .where('a.ownerId = :ownerId')
     .leftJoinAndSelect('a.exifInfo', 'e')
     .orderBy('s.embedding <=> :embedding')
     .setParameters({ embedding: asVector(embedding), ownerId })
     .limit(numResults)
-    .getMany();
+    .getSql();
 
-    return results;
+    const queryWithK = `
+      BEGIN;
+      SET LOCAL vectors.k = ${numResults};
+      ${query};
+      COMMIT;
+    `
+    return this.assetRepository.create(await this.assetRepository.manager.query(queryWithK));
   }
 
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
@@ -70,7 +76,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
         CREATE INDEX clip_index ON smart_search
         USING vectors (embedding dot_ops) WITH (options = $$
-        capacity = 2097152
         [indexing.hnsw]
         m = 16
         ef_construction = 300

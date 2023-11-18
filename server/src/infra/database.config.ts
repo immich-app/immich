@@ -39,6 +39,9 @@ export async function initDataSource(): Promise<DataSource> {
   if (hasVectorExtension) {
     const dataSourceVector = await new DataSource(databaseConfigVector).initialize();
     await dataSourceVector.runMigrations();
+
+    await dataSourceVector.query(`SET vectors.enable_prefilter = on`);
+
     await dataSourceVector.destroy();
   }
 
