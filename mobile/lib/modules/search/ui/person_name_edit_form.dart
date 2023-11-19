@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -27,15 +28,15 @@ class PersonNameEditForm extends HookConsumerWidget {
 
     return AlertDialog(
       title: const Text(
-        "Add a name",
+        "search_page_person_add_name_dialog_title",
         style: TextStyle(fontWeight: FontWeight.bold),
-      ),
+      ).tr(),
       content: SingleChildScrollView(
         child: TextFormField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Name',
+          decoration: InputDecoration(
+            hintText: 'search_page_person_add_name_dialog_hint'.tr(),
           ),
         ),
       ),
@@ -49,12 +50,12 @@ class PersonNameEditForm extends HookConsumerWidget {
             );
           },
           child: Text(
-            "Cancel",
+            "search_page_person_add_name_dialog_cancel",
             style: TextStyle(
               color: Colors.red[300],
               fontWeight: FontWeight.bold,
             ),
-          ),
+          ).tr(),
         ),
         TextButton(
           onPressed: () {
@@ -70,12 +71,12 @@ class PersonNameEditForm extends HookConsumerWidget {
             );
           },
           child: Text(
-            "Save",
+            "search_page_person_add_name_dialog_save",
             style: TextStyle(
               color: context.primaryColor,
               fontWeight: FontWeight.bold,
             ),
-          ),
+          ).tr(),
         ),
       ],
     );
