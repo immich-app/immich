@@ -6,7 +6,7 @@ RUN npm ci
 COPY ./server/ .
 
 WORKDIR /usr/src/app/cli
-COPY cli/package.json cli/package-lock.json cli/test/ ./
+COPY cli/package.json cli/package-lock.json ./
 RUN npm ci
 COPY ./cli/ .
 
@@ -15,9 +15,7 @@ FROM builder as prod
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
-
 FROM ghcr.io/immich-app/base-server-prod:20231109
-
 
 VOLUME /usr/src/app/upload
 

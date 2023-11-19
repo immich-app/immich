@@ -1,5 +1,5 @@
 .vscode/
-cli/
+cli/node_modules
 design/
 docker/
 docs/
