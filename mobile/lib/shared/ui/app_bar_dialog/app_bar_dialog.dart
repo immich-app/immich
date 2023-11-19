@@ -148,8 +148,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             ),
             title: Text(
               "backup_controller_page_server_storage",
-              style: context.textTheme.titleSmall?.copyWith(
-                color: context.primaryColor,
+              style: context.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
             ).tr(),

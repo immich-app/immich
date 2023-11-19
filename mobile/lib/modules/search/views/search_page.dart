@@ -33,7 +33,7 @@ class SearchPage extends HookConsumerWidget {
     double imageSize = math.min(context.width / 3, 150);
 
     TextStyle categoryTitleStyle = const TextStyle(
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       fontSize: 14.0,
     );
 
@@ -164,7 +164,9 @@ class SearchPage extends HookConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'search_page_your_activity',
-                    style: context.textTheme.titleSmall,
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                 ),
                 ListTile(
@@ -194,11 +196,15 @@ class SearchPage extends HookConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     'search_page_categories',
-                    style: context.textTheme.titleSmall,
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                 ),
                 ListTile(
-                  title: Text('search_page_screenshots', style: categoryTitleStyle).tr(),
+                  title:
+                      Text('search_page_screenshots', style: categoryTitleStyle)
+                          .tr(),
                   leading: Icon(
                     Icons.screenshot,
                     color: categoryIconColor,
@@ -263,7 +269,7 @@ class CategoryDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.only(
-        left: 72,
+        left: 56,
         right: 16,
       ),
       child: Divider(

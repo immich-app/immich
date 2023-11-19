@@ -19,7 +19,7 @@ class AppBarServerInfo extends HookConsumerWidget {
 
     final appInfo = useState({});
     const titleFontSize = 12.0;
-    const contentFontSize = 10.0;
+    const contentFontSize = 11.0;
 
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -103,7 +103,6 @@ class AppBarServerInfo extends HookConsumerWidget {
                           color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
-                          fontFamily: "OverpassMono",
                         ),
                       ),
                     ),
@@ -146,7 +145,6 @@ class AppBarServerInfo extends HookConsumerWidget {
                           color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
-                          fontFamily: "OverpassMono",
                         ),
                       ),
                     ),
@@ -203,7 +201,6 @@ class AppBarServerInfo extends HookConsumerWidget {
                                 ?.withOpacity(0.5),
                             fontWeight: FontWeight.bold,
                             overflow: TextOverflow.ellipsis,
-                            fontFamily: "OverpassMono",
                           ),
                           textAlign: TextAlign.end,
                         ),
@@ -261,7 +258,6 @@ class AppBarServerInfo extends HookConsumerWidget {
                           color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
-                          fontFamily: "OverpassMono",
                         ),
                       ),
                     ),

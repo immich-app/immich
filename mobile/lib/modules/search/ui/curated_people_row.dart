@@ -84,8 +84,7 @@ class CuratedPeopleRow extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
                         "Add name",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                        style: context.textTheme.labelLarge?.copyWith(
                           color: context.primaryColor,
                         ),
                       ),
@@ -98,10 +97,7 @@ class CuratedPeopleRow extends StatelessWidget {
                       person.label,
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13.0,
-                      ),
+                      style: context.textTheme.labelLarge,
                     ),
                   ),
               ],
