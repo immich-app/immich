@@ -61,9 +61,15 @@ IMMICH_SERVER_URL=https://demo.immich.app/api npm run dev
 
 Setting these in the IDE give a better developer experience, auto-formatting code on save, and providing instant feedback on lint issues.
 
+### Dart Code Metris
+
+The mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation. Please refer to the [Getting Started](https://dcm.dev/docs/getting-started/#installation) page for more information on setting up DCM
+
+Note: Activating the license is not required.
+
 ### VSCode
 
-Install `Flutter`, `Prettier`, `ESLint` and `Svelte` extensions.
+Install `Flutter`, `DCM`, `Prettier`, `ESLint` and `Svelte` extensions.
 
 in User `settings.json` (`cmd + shift + p` and search for `Open User Settings JSON`) add the following:
 
