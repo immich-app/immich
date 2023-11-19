@@ -68,35 +68,33 @@ class PersonResultPage extends HookConsumerWidget {
     }
 
     buildTitleBlock() {
-      if (name.value == "") {
-        return GestureDetector(
-          onTap: showEditNameDialog,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'search_page_person_add_name_title',
-                style: context.textTheme.titleSmall?.copyWith(
-                  color: context.themeData.colorScheme.secondary,
-                ),
-              ).tr(),
-              Text(
-                'search_page_person_add_name_subtitle',
-                style: context.textTheme.labelSmall,
-              ).tr(),
-            ],
-          ),
-        );
-      }
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            name.value,
-            style: context.textTheme.titleLarge,
-          ),
-        ],
+      return GestureDetector(
+        onTap: showEditNameDialog,
+        child: name.value.isEmpty
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'search_page_person_add_name_title',
+                    style: context.textTheme.titleSmall?.copyWith(
+                      color: context.themeData.colorScheme.secondary,
+                    ),
+                  ).tr(),
+                  Text(
+                    'search_page_person_add_name_subtitle',
+                    style: context.textTheme.labelSmall,
+                  ).tr(),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name.value,
+                    style: context.textTheme.titleLarge,
+                  ),
+                ],
+              ),
       );
     }
 
