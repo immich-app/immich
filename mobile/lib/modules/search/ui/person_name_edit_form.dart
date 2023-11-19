@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -24,58 +25,55 @@ class PersonNameEditForm extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = useTextEditingController(text: personName);
+    final isError = useState(false);
 
     return AlertDialog(
       title: const Text(
-        "Add a name",
+        "search_page_person_add_name_dialog_title",
         style: TextStyle(fontWeight: FontWeight.bold),
-      ),
+      ).tr(),
       content: SingleChildScrollView(
         child: TextFormField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Name',
+          decoration: InputDecoration(
+            hintText: 'search_page_person_add_name_dialog_hint'.tr(),
+            border: const OutlineInputBorder(),
+            errorText: isError.value ? 'Error occured' : null,
           ),
         ),
       ),
       actions: [
         TextButton(
-          style: TextButton.styleFrom(),
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true)
-                .pop<PersonNameEditFormResult>(
-              PersonNameEditFormResult(false, ''),
-            );
-          },
+          onPressed: () => context.pop(
+            PersonNameEditFormResult(false, ''),
+          ),
           child: Text(
-            "Cancel",
+            "search_page_person_add_name_dialog_cancel",
             style: TextStyle(
               color: Colors.red[300],
               fontWeight: FontWeight.bold,
             ),
-          ),
+          ).tr(),
         ),
         TextButton(
-          onPressed: () {
-            ref.read(
-              updatePersonNameProvider(
-                UpdatePersonName(personId, controller.text),
-              ),
+          onPressed: () async {
+            isError.value = false;
+            final result = await ref.read(
+              updatePersonNameProvider(personId, controller.text).future,
             );
-
-            Navigator.of(context, rootNavigator: true)
-                .pop<PersonNameEditFormResult>(
-              PersonNameEditFormResult(true, controller.text),
-            );
+            isError.value = !result;
+            if (result) {
+              context.pop(PersonNameEditFormResult(true, controller.text));
+            }
           },
           child: Text(
-            "Save",
+            "search_page_person_add_name_dialog_save",
             style: TextStyle(
               color: context.primaryColor,
               fontWeight: FontWeight.bold,
             ),
-          ),
+          ).tr(),
         ),
       ],
     );
