@@ -122,7 +122,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         title: Text(
           album.owner.value?.name ?? "",
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w500,
           ),
         ),
         subtitle: Text(
@@ -150,7 +150,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
             title: Text(
               user.name,
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
@@ -207,12 +207,12 @@ class AlbumOptionsPage extends HookConsumerWidget {
               dense: true,
               title: Text(
                 "shared_album_activity_setting_title",
-                style: context.textTheme.labelLarge
+                style: context.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w600),
               ).tr(),
               subtitle: Text(
                 "shared_album_activity_setting_subtitle",
-                style: context.textTheme.labelMedium,
+                style: context.textTheme.labelLarge,
               ).tr(),
             ),
           buildSectionTitle("shared_album_section_people_title".tr()),
