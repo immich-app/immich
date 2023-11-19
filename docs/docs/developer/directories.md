@@ -17,6 +17,5 @@ Our [GitHub Repository](https://github.com/immich-app/immich) is a [monorepo](ht
 | `machine-learning/` | Source code for the `immich-machine-learning` docker image           |
 | `misc/release/`     | Scripts for version pumps and draft releases                         |
 | `mobile/`           | Source code for the mobile app, both Android and iOS                 |
-| `nginx/`            | Source code for the `immich-proxy` docker image                      |
 | `server/`           | Source code for the `immich-server` docker image                     |
-| `web/`              | Source code for the `immich-web` docker image                        |
+| `web/`              | Source code for the `web`                                            |

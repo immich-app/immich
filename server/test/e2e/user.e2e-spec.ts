@@ -4,8 +4,7 @@ import { UserEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub, userSignupStub, userStub } from '@test/fixtures';
+import { errorStub, userDto, userSignupStub, userStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 import { Repository } from 'typeorm';
@@ -28,17 +27,12 @@ describe(`${UserController.name}`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
 
     userService = app.get<UserService>(UserService);
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('GET /user', () => {
@@ -59,8 +53,7 @@ describe(`${UserController.name}`, () => {
       const user1 = await api.userApi.create(server, accessToken, {
         email: `user1@immich.app`,
         password: 'Password123',
-        firstName: `User 1`,
-        lastName: 'Test',
+        name: `User 1`,
       });
 
       await api.userApi.delete(server, accessToken, user1.id);
@@ -75,12 +68,7 @@ describe(`${UserController.name}`, () => {
     });
 
     it('should include deleted users', async () => {
-      const user1 = await api.userApi.create(server, accessToken, {
-        email: `user1@immich.app`,
-        password: 'Password123',
-        firstName: `User 1`,
-        lastName: 'Test',
-      });
+      const user1 = await api.userApi.create(server, accessToken, userDto.user1);
 
       await api.userApi.delete(server, accessToken, user1.id);
 
@@ -88,6 +76,7 @@ describe(`${UserController.name}`, () => {
         .get(`/user`)
         .query({ isAll: false })
         .set('Authorization', `Bearer ${accessToken}`);
+
       expect(status).toBe(200);
       expect(body).toHaveLength(2);
       expect(body[0]).toMatchObject({ id: user1.id, email: 'user1@immich.app', deletedAt: expect.any(String) });
@@ -149,8 +138,7 @@ describe(`${UserController.name}`, () => {
           isAdmin: true,
           email: 'user1@immich.app',
           password: 'Password123',
-          firstName: 'Immich',
-          lastName: 'User',
+          name: 'Immich',
         })
         .set('Authorization', `Bearer ${accessToken}`);
       expect(body).toMatchObject({
@@ -167,8 +155,7 @@ describe(`${UserController.name}`, () => {
         .send({
           email: 'no-memories@immich.app',
           password: 'Password123',
-          firstName: 'No Memories',
-          lastName: 'User',
+          name: 'No Memories',
           memoriesEnabled: false,
         })
         .set('Authorization', `Bearer ${accessToken}`);
@@ -186,8 +173,7 @@ describe(`${UserController.name}`, () => {
     beforeEach(async () => {
       userToDelete = await api.userApi.create(server, accessToken, {
         email: userStub.user1.email,
-        firstName: userStub.user1.firstName,
-        lastName: userStub.user1.lastName,
+        name: userStub.user1.name,
         password: 'superSecurePassword',
       });
     });
@@ -246,8 +232,7 @@ describe(`${UserController.name}`, () => {
       const user = await api.userApi.create(server, accessToken, {
         email: 'user1@immich.app',
         password: 'Password123',
-        firstName: 'Immich',
-        lastName: 'User',
+        name: 'Immich User',
       });
 
       const { status, body } = await request(server)
@@ -284,15 +269,13 @@ describe(`${UserController.name}`, () => {
       const before = await api.userApi.get(server, accessToken, loginResponse.userId);
       const after = await api.userApi.update(server, accessToken, {
         id: before.id,
-        firstName: 'First Name',
-        lastName: 'Last Name',
+        name: 'Name',
       });
 
       expect(after).toEqual({
         ...before,
         updatedAt: expect.any(String),
-        firstName: 'First Name',
-        lastName: 'Last Name',
+        name: 'Name',
       });
       expect(before.updatedAt).not.toEqual(after.updatedAt);
     });

@@ -38,6 +38,11 @@ export class TimeBucketDto {
   @IsBoolean()
   @Transform(toBoolean)
   withStacked?: boolean;
+
+  @Optional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  withPartners?: boolean;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {

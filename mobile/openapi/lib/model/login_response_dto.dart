@@ -14,9 +14,8 @@ class LoginResponseDto {
   /// Returns a new [LoginResponseDto] instance.
   LoginResponseDto({
     required this.accessToken,
-    required this.firstName,
     required this.isAdmin,
-    required this.lastName,
+    required this.name,
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.userEmail,
@@ -25,11 +24,9 @@ class LoginResponseDto {
 
   String accessToken;
 
-  String firstName;
-
   bool isAdmin;
 
-  String lastName;
+  String name;
 
   String profileImagePath;
 
@@ -42,9 +39,8 @@ class LoginResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginResponseDto &&
      other.accessToken == accessToken &&
-     other.firstName == firstName &&
      other.isAdmin == isAdmin &&
-     other.lastName == lastName &&
+     other.name == name &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
      other.userEmail == userEmail &&
@@ -54,23 +50,21 @@ class LoginResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (accessToken.hashCode) +
-    (firstName.hashCode) +
     (isAdmin.hashCode) +
-    (lastName.hashCode) +
+    (name.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
     (userEmail.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'LoginResponseDto[accessToken=$accessToken, firstName=$firstName, isAdmin=$isAdmin, lastName=$lastName, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
+  String toString() => 'LoginResponseDto[accessToken=$accessToken, isAdmin=$isAdmin, name=$name, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accessToken'] = this.accessToken;
-      json[r'firstName'] = this.firstName;
       json[r'isAdmin'] = this.isAdmin;
-      json[r'lastName'] = this.lastName;
+      json[r'name'] = this.name;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
       json[r'userEmail'] = this.userEmail;
@@ -87,9 +81,8 @@ class LoginResponseDto {
 
       return LoginResponseDto(
         accessToken: mapValueOfType<String>(json, r'accessToken')!,
-        firstName: mapValueOfType<String>(json, r'firstName')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
+        name: mapValueOfType<String>(json, r'name')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         userEmail: mapValueOfType<String>(json, r'userEmail')!,
@@ -142,9 +135,8 @@ class LoginResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'accessToken',
-    'firstName',
     'isAdmin',
-    'lastName',
+    'name',
     'profileImagePath',
     'shouldChangePassword',
     'userEmail',

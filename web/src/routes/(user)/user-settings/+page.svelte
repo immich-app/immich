@@ -9,7 +9,7 @@
 <UserPageLayout user={data.user} title={data.meta.title}>
   <section class="mx-4 flex place-content-center">
     <div class="w-full max-w-3xl">
-      <UserSettingsList user={data.user} keys={data.keys} devices={data.devices} partners={data.partners} />
+      <UserSettingsList user={data.user} keys={data.keys} devices={data.devices} />
     </div>
   </section>
 </UserPageLayout>

@@ -1,6 +1,7 @@
+import { UserAvatarColor } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { Optional, toEmail, toSanitized } from '../../domain.util';
 
 export class UpdateUserDto {
@@ -17,12 +18,7 @@ export class UpdateUserDto {
   @Optional()
   @IsString()
   @IsNotEmpty()
-  firstName?: string;
-
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  lastName?: string;
+  name?: string;
 
   @Optional()
   @IsString()
@@ -49,4 +45,9 @@ export class UpdateUserDto {
   @Optional()
   @IsBoolean()
   memoriesEnabled?: boolean;
+
+  @Optional()
+  @IsEnum(UserAvatarColor)
+  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
+  avatarColor?: UserAvatarColor;
 }

@@ -328,7 +328,7 @@ export class SystemConfigCore {
         }
 
         if (!_.isEmpty(file)) {
-          throw new Error(`Unknown keys found: ${file}`);
+          throw new Error(`Unknown keys found: ${JSON.stringify(file)}`);
         }
 
         this.configCache = overrides;

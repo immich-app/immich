@@ -25,6 +25,8 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
         _albumService.refreshRemoteAlbums(isShared: false),
       ]);
 
+  Future<void> getDeviceAlbums() => _albumService.refreshDeviceAlbums();
+
   Future<bool> deleteAlbum(Album album) => _albumService.deleteAlbum(album);
 
   Future<Album?> createAlbum(

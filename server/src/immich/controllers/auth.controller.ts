@@ -12,6 +12,7 @@ import {
   SignUpDto,
   UserResponseDto,
   ValidateAccessTokenResponseDto,
+  mapUser,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -71,7 +72,7 @@ export class AuthController {
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
   changePassword(@AuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
-    return this.service.changePassword(authUser, dto);
+    return this.service.changePassword(authUser, dto).then(mapUser);
   }
 
   @Post('logout')

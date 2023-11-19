@@ -160,11 +160,13 @@
 
             <SettingSelect
               label="FACIAL RECOGNITION MODEL"
-              desc="Smaller models are faster and use less memory, but perform worse. Note that you must re-run the Recognize Faces job for all images upon changing a model."
+              desc="Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Recognize Faces job for all images upon changing a model."
               name="facial-recognition-model"
               bind:value={machineLearningConfig.facialRecognition.modelName}
               options={[
+                { value: 'antelopev2', text: 'antelopev2' },
                 { value: 'buffalo_l', text: 'buffalo_l' },
+                { value: 'buffalo_m', text: 'buffalo_m' },
                 { value: 'buffalo_s', text: 'buffalo_s' },
               ]}
               disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.facialRecognition.enabled}

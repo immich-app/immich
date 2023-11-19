@@ -40,12 +40,25 @@ class SplashScreenPage extends HookConsumerWidget {
           log.severe(e);
         }
 
-        isSuccess =
-            await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
-                  accessToken: accessToken,
-                  serverUrl: serverUrl,
-                  offlineLogin: deviceIsOffline,
-                );
+        try {
+          isSuccess = await ref
+              .read(authenticationProvider.notifier)
+              .setSuccessLoginInfo(
+                accessToken: accessToken,
+                serverUrl: serverUrl,
+                offlineLogin: deviceIsOffline,
+              );
+        } catch (error, stackTrace) {
+          ref.read(authenticationProvider.notifier).logout();
+
+          log.severe(
+            'Cannot set success login info: $error',
+            error,
+            stackTrace,
+          );
+
+          context.autoPush(const LoginRoute());
+        }
       }
 
       // If the device is offline and there is a currentUser stored locallly

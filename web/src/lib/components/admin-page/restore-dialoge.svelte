@@ -16,6 +16,6 @@
 
 <ConfirmDialogue title="Restore User" confirmText="Continue" confirmColor="green" on:confirm={restoreUser} on:cancel>
   <svelte:fragment slot="prompt">
-    <p><b>{user.firstName} {user.lastName}</b>'s account will be restored.</p>
+    <p><b>{user.name}</b>'s account will be restored.</p>
   </svelte:fragment>
 </ConfirmDialogue>

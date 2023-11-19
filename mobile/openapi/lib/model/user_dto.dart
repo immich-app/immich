@@ -13,49 +13,49 @@ part of openapi.api;
 class UserDto {
   /// Returns a new [UserDto] instance.
   UserDto({
+    required this.avatarColor,
     required this.email,
-    required this.firstName,
     required this.id,
-    required this.lastName,
+    required this.name,
     required this.profileImagePath,
   });
 
-  String email;
+  UserAvatarColor avatarColor;
 
-  String firstName;
+  String email;
 
   String id;
 
-  String lastName;
+  String name;
 
   String profileImagePath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserDto &&
+     other.avatarColor == avatarColor &&
      other.email == email &&
-     other.firstName == firstName &&
      other.id == id &&
-     other.lastName == lastName &&
+     other.name == name &&
      other.profileImagePath == profileImagePath;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (avatarColor.hashCode) +
     (email.hashCode) +
-    (firstName.hashCode) +
     (id.hashCode) +
-    (lastName.hashCode) +
+    (name.hashCode) +
     (profileImagePath.hashCode);
 
   @override
-  String toString() => 'UserDto[email=$email, firstName=$firstName, id=$id, lastName=$lastName, profileImagePath=$profileImagePath]';
+  String toString() => 'UserDto[avatarColor=$avatarColor, email=$email, id=$id, name=$name, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'avatarColor'] = this.avatarColor;
       json[r'email'] = this.email;
-      json[r'firstName'] = this.firstName;
       json[r'id'] = this.id;
-      json[r'lastName'] = this.lastName;
+      json[r'name'] = this.name;
       json[r'profileImagePath'] = this.profileImagePath;
     return json;
   }
@@ -68,10 +68,10 @@ class UserDto {
       final json = value.cast<String, dynamic>();
 
       return UserDto(
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
-        firstName: mapValueOfType<String>(json, r'firstName')!,
         id: mapValueOfType<String>(json, r'id')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
+        name: mapValueOfType<String>(json, r'name')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
     }
@@ -120,10 +120,10 @@ class UserDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'avatarColor',
     'email',
-    'firstName',
     'id',
-    'lastName',
+    'name',
     'profileImagePath',
   };
 }

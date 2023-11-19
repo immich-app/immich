@@ -34,36 +34,8 @@ class SyncService {
 
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
-  Future<bool> syncUsersFromServer(List<User> users) async {
-    users.sortBy((u) => u.id);
-    final dbUsers = await _db.users.where().sortById().findAll();
-    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
-    final List<int> toDelete = [];
-    final List<User> toUpsert = [];
-    final changes = diffSortedListsSync(
-      users,
-      dbUsers,
-      compare: (User a, User b) => a.id.compareTo(b.id),
-      both: (User a, User b) {
-        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
-            a.isPartnerSharedBy != b.isPartnerSharedBy ||
-            a.isPartnerSharedWith != b.isPartnerSharedWith) {
-          toUpsert.add(a);
-          return true;
-        }
-        return false;
-      },
-      onlyFirst: (User a) => toUpsert.add(a),
-      onlySecond: (User b) => toDelete.add(b.isarId),
-    );
-    if (changes) {
-      await _db.writeTxn(() async {
-        await _db.users.deleteAll(toDelete);
-        await _db.users.putAll(toUpsert);
-      });
-    }
-    return changes;
-  }
+  Future<bool> syncUsersFromServer(List<User> users) =>
+      _lock.run(() => _syncUsersFromServer(users));
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
@@ -118,7 +90,43 @@ class SyncService {
   Future<bool> syncNewAssetToDb(Asset newAsset) =>
       _lock.run(() => _syncNewAssetToDb(newAsset));
 
+  Future<bool> removeAllLocalAlbumsAndAssets() =>
+      _lock.run(_removeAllLocalAlbumsAndAssets);
+
   // private methods:
+
+  /// Syncs users from the server to the local database
+  /// Returns `true`if there were any changes
+  Future<bool> _syncUsersFromServer(List<User> users) async {
+    users.sortBy((u) => u.id);
+    final dbUsers = await _db.users.where().sortById().findAll();
+    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
+    final List<int> toDelete = [];
+    final List<User> toUpsert = [];
+    final changes = diffSortedListsSync(
+      users,
+      dbUsers,
+      compare: (User a, User b) => a.id.compareTo(b.id),
+      both: (User a, User b) {
+        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
+            a.isPartnerSharedBy != b.isPartnerSharedBy ||
+            a.isPartnerSharedWith != b.isPartnerSharedWith) {
+          toUpsert.add(a);
+          return true;
+        }
+        return false;
+      },
+      onlyFirst: (User a) => toUpsert.add(a),
+      onlySecond: (User b) => toDelete.add(b.isarId),
+    );
+    if (changes) {
+      await _db.writeTxn(() async {
+        await _db.users.deleteAll(toDelete);
+        await _db.users.putAll(toUpsert);
+      });
+    }
+    return changes;
+  }
 
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> _syncNewAssetToDb(Asset a) async {
@@ -751,6 +759,23 @@ class SyncService {
         await a.assetCountAsync !=
             (await _db.eTags.getById(a.eTagKeyAssetCount))?.assetCount;
   }
+
+  Future<bool> _removeAllLocalAlbumsAndAssets() async {
+    try {
+      final assets = await _db.assets.where().localIdIsNotNull().findAll();
+      final (toDelete, toUpdate) =
+          _handleAssetRemoval(assets, [], remote: false);
+      await _db.writeTxn(() async {
+        await _db.assets.deleteAll(toDelete);
+        await _db.assets.putAll(toUpdate);
+        await _db.albums.where().localIdIsNotNull().deleteAll();
+      });
+      return true;
+    } catch (e) {
+      _log.severe("Failed to remove all local albums and assets: $e");
+      return false;
+    }
+  }
 }
 
 /// Returns a triple(toAdd, toUpdate, toRemove)
@@ -760,15 +785,20 @@ class SyncService {
   bool? remote,
   int Function(Asset, Asset) compare = Asset.compareByChecksum,
 }) {
+  // fast paths for trivial cases: reduces memory usage during initial sync etc.
+  if (assets.isEmpty && inDb.isEmpty) {
+    return const ([], [], []);
+  } else if (assets.isEmpty && remote == null) {
+    // remove all from database
+    return (const [], const [], inDb);
+  } else if (inDb.isEmpty) {
+    // add all assets
+    return (assets, const [], const []);
+  }
+
   final List<Asset> toAdd = [];
   final List<Asset> toUpdate = [];
   final List<Asset> toRemove = [];
-  if (assets.isEmpty || inDb.isEmpty) {
-    // fast path for trivial cases: halfes memory usage during initial sync
-    return assets.isEmpty
-        ? (toAdd, toUpdate, inDb) // remove all from DB
-        : (assets, toUpdate, toRemove); // add all assets
-  }
   diffSortedListsSync(
     inDb,
     assets,

@@ -6,15 +6,25 @@
   import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
+  import { slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline } from '@mdi/js';
+  import {
+    mdiCalendar,
+    mdiCameraIris,
+    mdiClose,
+    mdiImageOutline,
+    mdiMapMarkerOutline,
+    mdiInformationOutline,
+  } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Map from '../shared-components/map/map.svelte';
+  import { AppRoute } from '$lib/constants';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+  export let albumId: string | null = null;
 
   let textarea: HTMLTextAreaElement;
   let description: string;
@@ -77,6 +87,9 @@
       console.error(error);
     }
   };
+
+  let showAssetPath = false;
+  const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -125,7 +138,11 @@
 
       <div class="mt-4 flex flex-wrap gap-2">
         {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
+          <a
+            href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
+            class="w-[90px]"
+            on:click={() => dispatch('close-viewer')}
+          >
             <ImageThumbnail
               curve
               shadow
@@ -215,8 +232,15 @@
         <div><Icon path={mdiImageOutline} size="24" /></div>
 
         <div>
-          <p class="break-all">
-            {getAssetFilename(asset)}
+          <p class="break-all flex place-items-center gap-2">
+            {#if isOwner}
+              {asset.originalFileName}
+              <button title="Show File Location" on:click={toggleAssetPath}>
+                <Icon path={mdiInformationOutline} />
+              </button>
+            {:else}
+              {getAssetFilename(asset)}
+            {/if}
           </p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
@@ -230,6 +254,11 @@
             {/if}
             <p>{asByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
           </div>
+          {#if showAssetPath}
+            <p class="text-xs opacity-50 break-all" transition:slide={{ duration: 250 }}>
+              {asset.originalPath}
+            </p>
+          {/if}
         </div>
       </div>
     {/if}
@@ -310,13 +339,12 @@
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
-        <UserAvatar user={asset.owner} size="md" autoColor />
+        <UserAvatar user={asset.owner} size="md" />
       </div>
 
       <div class="mb-auto mt-auto">
         <p>
-          {asset.owner.firstName}
-          {asset.owner.lastName}
+          {asset.owner.name}
         </p>
       </div>
     </div>

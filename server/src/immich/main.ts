@@ -6,7 +6,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { useSwagger } from './app.utils';
+import { indexFallback, useSwagger } from './app.utils';
 
 const logger = new Logger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;
@@ -23,6 +23,11 @@ export async function bootstrap() {
   }
   app.useWebSocketAdapter(new RedisIoAdapter(app));
   useSwagger(app, isDev);
+
+  const excludePaths = ['/.well-known/immich', '/custom.css'];
+  app.setGlobalPrefix('api', { exclude: excludePaths });
+  app.useStaticAssets('www');
+  app.use(indexFallback(excludePaths));
 
   const server = await app.listen(port);
   server.requestTimeout = 30 * 60 * 1000;

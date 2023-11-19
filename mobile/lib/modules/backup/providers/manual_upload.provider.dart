@@ -274,7 +274,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     // The app is currently in background. Perform the necessary cleanups which
     // are on-hold for upload completion
     if (appState != AppStateEnum.active && appState != AppStateEnum.resumed) {
-      ref.read(appStateProvider.notifier).handleAppInactivity();
+      ref.read(backupProvider.notifier).cancelBackup();
     }
   }
 

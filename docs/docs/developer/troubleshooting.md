@@ -13,7 +13,3 @@ Running Immich on Windows can be frustrating and there are lots of ways it can g
 ### NTFS Mounted Volumes
 
 The docker-compose.dev.yml and docker-compose.prod.yml use volume mounts for the postgres database. On start-up, postgres will try to `chown` the data directory, but fail. See [this post](https://forums.docker.com/t/data-directory-var-lib-postgresql-data-pgdata-has-wrong-ownership/17963/24) for more information about this issue and possible solutions.
-
-### `Cannot read properties of null (reading 'split')`
-
-This error occurs when trying to access the app via port `3000` instead of `2283`. During development `immich-proxy` runs on port 2283, while `immich-web` runs on `3000`.

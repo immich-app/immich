@@ -16,9 +16,11 @@ import {
   ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
+  IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
   ImmichReadStream,
+  TimeBucketOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import { SystemConfigCore } from '../system-config';
@@ -28,6 +30,8 @@ import {
   AssetIdsDto,
   AssetJobName,
   AssetJobsDto,
+  AssetOrder,
+  AssetSearchDto,
   AssetStatsDto,
   DownloadArchiveInfo,
   DownloadInfoDto,
@@ -83,9 +87,38 @@ export class AssetService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
+  }
+
+  search(authUser: AuthUserDto, dto: AssetSearchDto) {
+    let checksum: Buffer | undefined = undefined;
+
+    if (dto.checksum) {
+      const encoding = dto.checksum.length === 28 ? 'base64' : 'hex';
+      checksum = Buffer.from(dto.checksum, encoding);
+    }
+
+    const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
+    const order = dto.order ? enumToOrder[dto.order] : undefined;
+
+    return this.assetRepository
+      .search({
+        ...dto,
+        order,
+        checksum,
+        ownerId: authUser.id,
+      })
+      .then((assets) =>
+        assets.map((asset) =>
+          mapAsset(asset, {
+            stripMetadata: false,
+            withStack: true,
+          }),
+        ),
+      );
   }
 
   canUploadFile({ authUser, fieldName, file }: UploadRequest): true {
@@ -187,11 +220,25 @@ export class AssetService {
         await this.access.requirePermission(authUser, Permission.ARCHIVE_READ, [dto.userId]);
       }
     }
+
+    if (dto.withPartners) {
+      const requestedArchived = dto.isArchived === true || dto.isArchived === undefined;
+      const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
+      const requestedTrash = dto.isTrashed === true;
+
+      if (requestedArchived || requestedFavorite || requestedTrash) {
+        throw new BadRequestException(
+          'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        );
+      }
+    }
   }
 
   async getTimeBuckets(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    return this.assetRepository.getTimeBuckets(dto);
+    const timeBucketOptions = await this.buildTimeBucketOptions(authUser, dto);
+
+    return this.assetRepository.getTimeBuckets(timeBucketOptions);
   }
 
   async getTimeBucket(
@@ -199,7 +246,8 @@ export class AssetService {
     dto: TimeBucketAssetDto,
   ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
     await this.timeBucketChecks(authUser, dto);
-    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, dto);
+    const timeBucketOptions = await this.buildTimeBucketOptions(authUser, dto);
+    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
     if (authUser.isShowMetadata) {
       return assets.map((asset) => mapAsset(asset, { withStack: true }));
     } else {
@@ -207,6 +255,25 @@ export class AssetService {
     }
   }
 
+  async buildTimeBucketOptions(authUser: AuthUserDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
+    const { userId, ...options } = dto;
+    let userIds: string[] | undefined = undefined;
+
+    if (userId) {
+      userIds = [userId];
+
+      if (dto.withPartners) {
+        const partners = await this.partnerRepository.getAll(authUser.id);
+        const partnersIds = partners
+          .filter((partner) => partner.sharedBy && partner.sharedWith && partner.inTimeline)
+          .map((partner) => partner.sharedById);
+
+        userIds.push(...partnersIds);
+      }
+    }
+
+    return { ...options, userIds };
+  }
   async downloadFile(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
     await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, id);
 

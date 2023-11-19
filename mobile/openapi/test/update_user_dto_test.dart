@@ -16,6 +16,11 @@ void main() {
   // final instance = UpdateUserDto();
 
   group('test UpdateUserDto', () {
+    // UserAvatarColor avatarColor
+    test('to test the property `avatarColor`', () async {
+      // TODO
+    });
+
     // String email
     test('to test the property `email`', () async {
       // TODO
@@ -23,11 +28,6 @@ void main() {
 
     // String externalPath
     test('to test the property `externalPath`', () async {
-      // TODO
-    });
-
-    // String firstName
-    test('to test the property `firstName`', () async {
       // TODO
     });
 
@@ -41,13 +41,13 @@ void main() {
       // TODO
     });
 
-    // String lastName
-    test('to test the property `lastName`', () async {
+    // bool memoriesEnabled
+    test('to test the property `memoriesEnabled`', () async {
       // TODO
     });
 
-    // bool memoriesEnabled
-    test('to test the property `memoriesEnabled`', () async {
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

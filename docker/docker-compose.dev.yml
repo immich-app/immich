@@ -6,31 +6,34 @@ version: "3.8"
 
 name: immich-dev
 
+x-server-build: &server-common
+  image: immich-server-dev:latest
+  build:
+    context: ../
+    dockerfile: server/Dockerfile
+    target: dev
+  volumes:
+    - ../server:/usr/src/app
+    - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+    - /usr/src/app/node_modules
+    - /etc/localtime:/etc/localtime:ro
+  env_file:
+    - .env
+  environment:
+    - NODE_ENV=development
+  ulimits:
+    nofile:
+      soft: 1048576
+      hard: 1048576
+
 services:
   immich-server:
     container_name: immich_server
-    image: immich-server-dev:latest
-    build:
-      context: ../server
-      dockerfile: Dockerfile
-      target: builder
     command: npm run start:debug immich
-    volumes:
-      - ../server:/usr/src/app
-      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-      - /usr/src/app/node_modules
-      - /etc/localtime:/etc/localtime:ro
+    <<: *server-common
     ports:
       - 3001:3001
       - 9230:9230
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-    ulimits:
-      nofile:
-        soft: 1048576
-        hard: 1048576
     depends_on:
       - redis
       - database
@@ -38,30 +41,13 @@ services:
 
   immich-microservices:
     container_name: immich_microservices
-    image: immich-microservices:latest
+    command: npm run start:debug microservices
+    <<: *server-common
     # extends:
     #   file: hwaccel.yml
     #   service: hwaccel
-    build:
-      context: ../server
-      dockerfile: Dockerfile
-      target: builder
-    command: npm run start:debug microservices
-    volumes:
-      - ../server:/usr/src/app
-      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-      - /usr/src/app/node_modules
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
     ports:
       - 9231:9230
-    environment:
-      - NODE_ENV=development
-    ulimits:
-      nofile:
-        soft: 1048576
-        hard: 1048576
     depends_on:
       - database
       - immich-server
@@ -73,12 +59,11 @@ services:
     build:
       context: ../web
       dockerfile: Dockerfile
-      target: dev
     command: npm run dev --host
     env_file:
       - .env
     ports:
-      - 3000:3000
+      - 2283:3000
       - 24678:24678
     volumes:
       - ../web:/usr/src/app
@@ -123,11 +108,11 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:70a7a5b641117670beae0d80658430853896b5ef269ccf00d1827427e3263fa3
+    image: redis:6.2-alpine@sha256:80cc8518800438c684a53ed829c621c94afd1087aaeb59b0d4343ed3e7bcf6c5
 
   database:
     container_name: immich_postgres
-    image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    image: postgres:14-alpine@sha256:50d9be76e9a90da4c781554955e0ffc79d9d5c4226838e64b36aacc97cbc35ad
     env_file:
       - .env
     environment:
@@ -138,23 +123,6 @@ services:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
-
-  immich-proxy:
-    container_name: immich_proxy
-    image: immich-proxy-dev:latest
-    environment:
-      # Make sure these values get passed through from the env file
-      - IMMICH_SERVER_URL
-      - IMMICH_WEB_URL
-    build:
-      context: ../nginx
-      dockerfile: Dockerfile
-    ports:
-      - 2283:8080
-    depends_on:
-      - immich-server
-      - immich-web
-    restart: unless-stopped
 
 volumes:
   model-cache:

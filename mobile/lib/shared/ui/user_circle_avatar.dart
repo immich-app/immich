@@ -13,48 +13,31 @@ class UserCircleAvatar extends ConsumerWidget {
   final User user;
   double radius;
   double size;
-  bool useRandomBackgroundColor;
 
   UserCircleAvatar({
     super.key,
     this.radius = 22,
     this.size = 44,
-    this.useRandomBackgroundColor = false,
     required this.user,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final randomColors = [
-      Colors.red[200],
-      Colors.blue[200],
-      Colors.green[200],
-      Colors.yellow[200],
-      Colors.purple[200],
-      Colors.orange[200],
-      Colors.pink[200],
-      Colors.teal[200],
-      Colors.indigo[200],
-      Colors.cyan[200],
-      Colors.brown[200],
-    ];
-
     final profileImageUrl =
         '${Store.get(StoreKey.serverEndpoint)}/user/profile-image/${user.id}?d=${Random().nextInt(1024)}';
 
     final textIcon = Text(
-      user.firstName[0].toUpperCase(),
+      user.name[0].toUpperCase(),
       style: TextStyle(
         fontWeight: FontWeight.bold,
-        color: context.colorScheme.onInverseSurface,
+        fontSize: 16,
+        color: context.colorScheme.surface,
       ),
     );
     return CircleAvatar(
-      backgroundColor: useRandomBackgroundColor
-          ? randomColors[Random().nextInt(randomColors.length)]
-          : context.primaryColor,
+      backgroundColor: user.avatarColor.toColor(),
       radius: radius,
-      child: user.profileImagePath == ""
+      child: user.profileImagePath.isEmpty
           ? textIcon
           : ClipRRect(
               borderRadius: BorderRadius.circular(50),

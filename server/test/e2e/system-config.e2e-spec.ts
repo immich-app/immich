@@ -1,27 +1,27 @@
 import { LoginResponseDto } from '@app/domain';
 import { SystemConfigController } from '@app/immich';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub } from '@test/fixtures';
+import { errorStub, userDto } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${SystemConfigController.name} (e2e)`, () => {
   let server: any;
   let admin: LoginResponseDto;
+  let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
     [server] = await testApp.create();
+
+    await testApp.reset();
+    await api.authApi.adminSignUp(server);
+    admin = await api.authApi.adminLogin(server);
+    await api.userApi.create(server, admin.accessToken, userDto.user1);
+    nonAdmin = await api.authApi.login(server, userDto.user1);
   });
 
   afterAll(async () => {
     await testApp.teardown();
-  });
-
-  beforeEach(async () => {
-    await db.reset();
-    await api.authApi.adminSignUp(server);
-    admin = await api.authApi.adminLogin(server);
   });
 
   describe('GET /system-config/map/style.json', () => {
@@ -61,17 +61,10 @@ describe(`${SystemConfigController.name} (e2e)`, () => {
     });
 
     it('should not require admin authentication', async () => {
-      const credentials = { email: 'user1@immich.app', password: 'Password123' };
-      await api.userApi.create(server, admin.accessToken, {
-        ...credentials,
-        firstName: 'User 1',
-        lastName: 'Test',
-      });
-      const { accessToken } = await api.authApi.login(server, credentials);
       const { status, body } = await request(server)
         .get('/system-config/map/style.json')
         .query({ theme: 'dark' })
-        .set('Authorization', `Bearer ${accessToken}`);
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual(expect.objectContaining({ id: 'immich-map-dark' }));
     });

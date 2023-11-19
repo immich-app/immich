@@ -96,7 +96,7 @@
           <tr
             class="flex h-[50px] w-full place-items-center text-center odd:bg-immich-gray even:bg-immich-bg odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50"
           >
-            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userFirstName} {user.userLastName}</td>
+            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userName}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.photos.toLocaleString($locale)}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.videos.toLocaleString($locale)}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm">{asByteUnitString(user.usage, $locale)}</td>

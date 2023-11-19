@@ -198,7 +198,7 @@ class SearchPage extends HookConsumerWidget {
                   ).tr(),
                 ),
                 ListTile(
-                  title: Text('Screenshots', style: categoryTitleStyle).tr(),
+                  title: Text('search_page_screenshots', style: categoryTitleStyle).tr(),
                   leading: Icon(
                     Icons.screenshot,
                     color: categoryIconColor,

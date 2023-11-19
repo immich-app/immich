@@ -40,6 +40,8 @@ export enum Permission {
   PERSON_READ = 'person.read',
   PERSON_WRITE = 'person.write',
   PERSON_MERGE = 'person.merge',
+
+  PARTNER_UPDATE = 'partner.update',
 }
 
 let instance: AccessCore | null;
@@ -241,6 +243,9 @@ export class AccessCore {
 
       case Permission.PERSON_MERGE:
         return this.repository.person.hasOwnerAccess(authUser.id, id);
+
+      case Permission.PARTNER_UPDATE:
+        return this.repository.partner.hasUpdateAccess(authUser.id, id);
 
       default:
         return false;

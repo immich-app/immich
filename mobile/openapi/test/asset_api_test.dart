@@ -110,12 +110,12 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> getTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, String key }) async
+    //Future<List<AssetResponseDto>> getTimeBucket(TimeBucketSize size, String timeBucket, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, bool withPartners, String key }) async
     test('test getTimeBucket', () async {
       // TODO
     });
 
-    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, String key }) async
+    //Future<List<TimeBucketResponseDto>> getTimeBuckets(TimeBucketSize size, { String userId, String albumId, String personId, bool isArchived, bool isFavorite, bool isTrashed, bool withStacked, bool withPartners, String key }) async
     test('test getTimeBuckets', () async {
       // TODO
     });
@@ -124,11 +124,6 @@ void main() {
     //
     //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
     test('test getUserAssetsByDeviceId', () async {
-      // TODO
-    });
-
-    //Future<AssetFileUploadResponseDto> importFile(ImportAssetDto importAssetDto) async
-    test('test importFile', () async {
       // TODO
     });
 
@@ -147,8 +142,8 @@ void main() {
       // TODO
     });
 
-    //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
-    test('test searchAsset', () async {
+    //Future<List<AssetResponseDto>> searchAssets({ String id, String libraryId, AssetTypeEnum type, AssetOrder order, String deviceAssetId, String deviceId, String checksum, bool isArchived, bool isEncoded, bool isExternal, bool isFavorite, bool isMotion, bool isOffline, bool isReadOnly, bool isVisible, bool withDeleted, bool withStacked, bool withExif, bool withPeople, DateTime createdBefore, DateTime createdAfter, DateTime updatedBefore, DateTime updatedAfter, DateTime trashedBefore, DateTime trashedAfter, DateTime takenBefore, DateTime takenAfter, String originalFileName, String originalPath, String resizePath, String webpPath, String encodedVideoPath, String city, String state, String country, String make, String model, String lensModel, num page, num size }) async
+    test('test searchAssets', () async {
       // TODO
     });
 

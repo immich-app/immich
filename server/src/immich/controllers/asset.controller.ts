@@ -4,6 +4,7 @@ import {
   AssetIdsDto,
   AssetJobsDto,
   AssetResponseDto,
+  AssetSearchDto,
   AssetService,
   AssetStatsDto,
   AssetStatsResponseDto,
@@ -41,6 +42,19 @@ import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile } from '../app.utils';
 import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
+
+@ApiTags('Asset')
+@Controller('assets')
+@Authenticated()
+@UseValidation()
+export class AssetsController {
+  constructor(private service: AssetService) {}
+
+  @Get()
+  searchAssets(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    return this.service.search(authUser, dto);
+  }
+}
 
 @ApiTags('Asset')
 @Controller(Route.ASSET)

@@ -8,15 +8,15 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**avatarColor** | [**UserAvatarColor**](UserAvatarColor.md) |  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **deletedAt** | [**DateTime**](DateTime.md) |  | 
 **email** | **String** |  | 
 **externalPath** | **String** |  | 
-**firstName** | **String** |  | 
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | 
-**lastName** | **String** |  | 
 **memoriesEnabled** | **bool** |  | [optional] 
+**name** | **String** |  | 
 **oauthId** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 

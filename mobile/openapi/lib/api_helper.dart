@@ -58,6 +58,9 @@ String parameterToString(dynamic value) {
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
+  if (value is AssetOrder) {
+    return AssetOrderTypeTransformer().encode(value).toString();
+  }
   if (value is AssetTypeEnum) {
     return AssetTypeEnumTypeTransformer().encode(value).toString();
   }
@@ -126,6 +129,9 @@ String parameterToString(dynamic value) {
   }
   if (value is TranscodePolicy) {
     return TranscodePolicyTypeTransformer().encode(value).toString();
+  }
+  if (value is UserAvatarColor) {
+    return UserAvatarColorTypeTransformer().encode(value).toString();
   }
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();

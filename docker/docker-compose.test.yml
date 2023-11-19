@@ -6,9 +6,9 @@ services:
   immich-server:
     image: immich-server-dev:latest
     build:
-      context: ../server
-      dockerfile: Dockerfile
-      target: builder
+      context: ../
+      dockerfile: server/Dockerfile
+      target: dev
     command: npm run test:e2e
     volumes:
       - ../server:/usr/src/app
@@ -23,7 +23,7 @@ services:
       - database
 
   database:
-    image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    image: postgres:14-alpine@sha256:50d9be76e9a90da4c781554955e0ffc79d9d5c4226838e64b36aacc97cbc35ad
     command: -c fsync=off
     environment:
       POSTGRES_PASSWORD: postgres

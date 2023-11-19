@@ -10,11 +10,11 @@
 
   export let onStack: OnStack | undefined = undefined;
 
-  const { getAssets, clearSelect } = getAssetControlContext();
+  const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleStack = async () => {
     try {
-      const assets = Array.from(getAssets());
+      const assets = Array.from(getOwnedAssets());
       const parent = assets.at(0);
 
       if (parent == undefined) {
