@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -52,9 +53,9 @@ class PersonResultPage extends HookConsumerWidget {
                 ListTile(
                   leading: const Icon(Icons.edit_outlined),
                   title: const Text(
-                    'Edit name',
+                    'search_page_person_edit_name',
                     style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  ).tr(),
                   onTap: showEditNameDialog,
                 ),
               ],
@@ -72,15 +73,15 @@ class PersonResultPage extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Add a name',
+                'search_page_person_add_name_title',
                 style: context.textTheme.titleSmall?.copyWith(
                   color: context.themeData.colorScheme.secondary,
                 ),
-              ),
+              ).tr(),
               Text(
-                'Find them fast by name with search',
+                'search_page_person_add_name_subtitle',
                 style: context.textTheme.labelSmall,
-              ),
+              ).tr(),
             ],
           ),
         );

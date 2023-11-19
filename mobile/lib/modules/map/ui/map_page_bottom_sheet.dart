@@ -176,7 +176,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
 
     Widget buildDragHandle(ScrollController scrollController) {
       final textToDisplay = assetsInBound.value.isNotEmpty
-          ? "${assetsInBound.value.length} photo${assetsInBound.value.length > 1 ? "s" : ""}"
+          ? "map_assets_in_bounds".plural(assetsInBound.value.length)
           : "map_no_assets_in_bounds".tr();
       final dragHandle = Container(
         height: 60,
