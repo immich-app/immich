@@ -56,7 +56,7 @@ const items: Item[] = [
     title: 'CLI v2',
     release: 'v1.88.0',
     tag: 'v1.88.0',
-    date: new Date(2023, 11, 19),
+    date: new Date(2023, 10, 19),
     dateType: DateType.RELEASE,
   },
   {
