@@ -41,10 +41,7 @@ class LocalStorageSettings extends HookConsumerWidget {
             style: context.textTheme.titleSmall,
           ).tr(args: ["${cacheItemCount.value}"]),
           subtitle: const Text(
-            "Photos and videos that are black listed by the app",
-            style: TextStyle(
-              fontSize: 13,
-            ),
+            "cache_settings_duplicated_assets_subtitle",
           ).tr(),
           trailing: TextButton(
             onPressed: cacheItemCount.value > 0 ? clearCache : null,
