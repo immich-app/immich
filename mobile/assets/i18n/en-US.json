@@ -224,7 +224,7 @@
   "login_password_changed_success": "Password updated successfully",
   "map_assets_in_bounds": {
     "one": "{} photo",
-    "many": "{} photos"
+    "other": "{} photos"
   },
   "map_cannot_get_user_location": "Cannot get user's location",
   "map_location_dialog_cancel": "Cancel",
