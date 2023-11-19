@@ -194,9 +194,9 @@ class LibraryPage extends HookConsumerWidget {
             child: Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13.0,
-                color: isDarkTheme ? Colors.white : Colors.grey[800],
+                color: context.isDarkTheme
+                    ? Colors.white
+                    : Colors.black.withAlpha(200),
               ),
             ),
           ),

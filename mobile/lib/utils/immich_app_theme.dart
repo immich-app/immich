@@ -125,9 +125,9 @@ ThemeData immichLightTheme = ThemeData(
     surfaceTintColor: Colors.transparent,
     labelTextStyle: MaterialStatePropertyAll(
       TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[700],
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: Colors.grey[800],
       ),
     ),
   ),
@@ -249,9 +249,9 @@ ThemeData immichDarkTheme = ThemeData(
     surfaceTintColor: Colors.transparent,
     labelTextStyle: MaterialStatePropertyAll(
       TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[500],
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: Colors.grey[300],
       ),
     ),
   ),

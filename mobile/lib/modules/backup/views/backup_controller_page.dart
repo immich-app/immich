@@ -213,9 +213,8 @@ class BackupControllerPage extends HookConsumerWidget {
                       .setAutoBackup(!isAutoBackup),
                   child: Text(
                     backupBtnText,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                    style: context.textTheme.labelLarge?.copyWith(
+                      color: context.isDarkTheme ? Colors.black : Colors.white,
                     ),
                   ),
                 ),
@@ -426,9 +425,8 @@ class BackupControllerPage extends HookConsumerWidget {
                     isBackgroundEnabled
                         ? "backup_controller_page_background_turn_off"
                         : "backup_controller_page_background_turn_on",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                    style: context.textTheme.labelLarge?.copyWith(
+                      color: context.isDarkTheme ? Colors.black : Colors.white,
                     ),
                   ).tr(),
                 ),
