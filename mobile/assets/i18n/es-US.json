@@ -1,6 +1,7 @@
 {
   "add_to_album_bottom_sheet_added": "Agregado a {album}",
   "add_to_album_bottom_sheet_already_exists": "Ya se encuentra en {album}",
+  "advanced_settings_log_level_title": "Nivel de registro: {}",
   "advanced_settings_prefer_remote_subtitle": "Algunos dispositivos tardan mucho en cargar las miniaturas de recursos encontrados en el dispositivo. Activa esta opción para cargar imágenes remotas en su lugar.",
   "advanced_settings_prefer_remote_title": "Preferir imágenes remotas",
   "advanced_settings_self_signed_ssl_subtitle": "Omite la verificación del certificado SSL para la URL del servidor. Requerido para certificados autofirmados.",
@@ -221,6 +222,10 @@
   "login_form_server_error": "No se pudo conectar al servidor.",
   "login_password_changed_error": "Hubo un error al actualizar tu contraseña",
   "login_password_changed_success": "Contraseña actualizada exitosamente",
+  "map_assets_in_bounds": {
+    "one": "{} foto",
+    "other": "{} fotos"
+  },
   "map_cannot_get_user_location": "No se puede obtener la ubicación del usuario",
   "map_location_dialog_cancel": "Cancelar",
   "map_location_dialog_yes": "Sí",
@@ -230,6 +235,15 @@
   "map_no_location_permission_content": "Se necesita permiso de ubicación para mostrar recursos desde tu ubicación actual. ¿Quieres permitirlo ahora?",
   "map_no_location_permission_title": "Permiso de ubicación denegado",
   "map_settings_dark_mode": "Modo oscuro",
+  "map_settings_date_range_option_all": "Todo",
+  "map_settings_date_range_option_days": {
+    "one": "Últimas 24 horas",
+    "other": "Últimos {} días"
+  },
+  "map_settings_date_range_option_years": {
+    "one": "Último año",
+    "other": "Últimos {} años"
+  },
   "map_settings_dialog_cancel": "Cancelar",
   "map_settings_dialog_save": "Guardar",
   "map_settings_dialog_title": "Configuración del mapa",
