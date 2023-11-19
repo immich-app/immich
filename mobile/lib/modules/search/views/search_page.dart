@@ -33,8 +33,8 @@ class SearchPage extends HookConsumerWidget {
     double imageSize = math.min(context.width / 3, 150);
 
     TextStyle categoryTitleStyle = const TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 14.0,
+      fontWeight: FontWeight.w500,
+      fontSize: 15.0,
     );
 
     Color categoryIconColor = context.isDarkTheme ? Colors.white : Colors.black;

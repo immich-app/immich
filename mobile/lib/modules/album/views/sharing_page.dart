@@ -81,18 +81,19 @@ class SharingPage extends HookConsumerWidget {
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.bodyLarge?.copyWith(
                   color: context.primaryColor,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               subtitle: isOwner
                   ? Text(
                       'album_thumbnail_owned'.tr(),
-                      style: context.textTheme.bodySmall,
+                      style: context.textTheme.bodyMedium,
                     )
                   : album.ownerName != null
                       ? Text(
                           'album_thumbnail_shared_by'
                               .tr(args: [album.ownerName!]),
-                          style: context.textTheme.bodySmall,
+                          style: context.textTheme.bodyMedium,
                         )
                       : null,
               onTap: () {

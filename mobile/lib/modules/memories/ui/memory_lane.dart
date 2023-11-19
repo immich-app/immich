@@ -71,7 +71,7 @@ class MemoryLane extends HookConsumerWidget {
                                   child: Text(
                                     memory.title,
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w500,
                                       color: Colors.white,
                                       fontSize: 14,
                                     ),
