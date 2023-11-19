@@ -1,24 +1,28 @@
-A command-line interface for interfacing with Immich
+A command-line interface for interfacing with the self-hosted photo manager [Immich](https://immich.app/).
 
-# Getting started
+# Installing
 
-    $ ts-node cli/src
+To use the cli, run
 
-To start using the CLI, you need to login with an API key first:
+    $ npm install @immich/cli
 
-    $ ts-node cli/src login-key https://your-immich-instance/api your-api-key
+# Usage
 
-NOTE: This will store your api key under ~/.config/immich/auth.yml
+To use the CLI, you need to login with an API key first:
 
-Next, you can run commands:
+    $ immich login-key https://your-immich-instance/api your-api-key
 
-    $ ts-node cli/src server-info
+NOTE: This will store your api key in cleartext under ~/.config/immich/auth.yml
+
+Next, you can run commands, for example:
+
+    $ immich server-info
 
 When you're done, log out to remove the credentials from your filesystem
 
-    $ ts-node cli/src logout
+    $ immich logout
 
-# Usage
+# Commands
 
 ```
 Usage: immich [options] [command]
@@ -30,9 +34,9 @@ Options:
 
 Commands:
   upload [options] [paths...]       Upload assets
-  import [options] [paths...]       Import existing assets
   server-info                       Display server information
   login-key [instanceUrl] [apiKey]  Login using an API key
+  logout                            Remove stored credentials
   help [command]                    display help for command
 ```
 
@@ -40,7 +44,21 @@ Commands:
 
 - Sidecar should check both .jpg.xmp and .xmp
 - Sidecar check could be case-insensitive
+- Use the SDK for all api calls. We currently use raw axos http calls
+- Use list of supported files from server via api
 
-# Known issues
+# For developers
 
-- Upload can't use sdk due to multiple issues
+To run the Immich CLI from source, run the following in the cli folder:
+
+    $ npm run build
+    $ ts-node .
+
+You'll need ts-node, the easiest way to install it is to use npm:
+
+    $ npm i -g ts-node
+
+You can also build and install the CLI using
+
+    $ npm run build
+    $ npm install -g .

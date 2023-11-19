@@ -1,14 +1,17 @@
 {
-  "name": "immich-cli",
+  "name": "@immich/cli",
+  "version": "2.0.0",
+  "main": "dist/index.js",
+  "bin": {
+    "immich": "./dist/index.js"
+  },
   "dependencies": {
-    "axios": "^1.4.0",
+    "axios": "^1.6.2",
     "byte-size": "^8.1.1",
     "cli-progress": "^3.12.0",
     "commander": "^11.0.0",
     "form-data": "^4.0.0",
     "glob": "^10.3.1",
-    "picomatch": "^2.3.1",
-    "systeminformation": "^5.18.4",
     "yaml": "^2.3.1"
   },
   "devDependencies": {
@@ -45,7 +48,9 @@
     "prepack": "yarn build ",
     "test": "jest",
     "test:cov": "jest --coverage",
-    "format": "prettier --check ."
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "check": "tsc --noEmit"
   },
   "jest": {
     "clearMocks": true,
@@ -62,6 +67,9 @@
     "collectCoverageFrom": [
       "<rootDir>/src/**/*.(t|j)s"
     ],
+    "moduleNameMapper": {
+      "^@api(|/.*)$": "<rootDir>/src/api/$1"
+    },
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"
   }
