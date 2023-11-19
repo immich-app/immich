@@ -1,5 +1,13 @@
 version: "3.8"
 
+#
+# WARNING: Make sure to use the docker-compose.yml of the current release:
+#
+# https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+#
+# The compose file on main may not be compatible with the latest release.
+#
+
 name: immich
 
 services:
@@ -12,6 +20,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
+    ports:
+      - 2283:3001
     depends_on:
       - redis
       - database
@@ -45,13 +55,6 @@ services:
       - .env
     restart: always
 
-  immich-web:
-    container_name: immich_web
-    image: ghcr.io/immich-app/immich-web:${IMMICH_VERSION:-release}
-    env_file:
-      - .env
-    restart: always
-
   typesense:
     container_name: immich_typesense
     image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
@@ -66,7 +69,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:3995fe6ea6a619313e31046bd3c8643f9e70f8f2b294ff82659d409b47d06abb
+    image: redis:6.2-alpine@sha256:80cc8518800438c684a53ed829c621c94afd1087aaeb59b0d4343ed3e7bcf6c5
     restart: always
 
   database:
@@ -80,16 +83,6 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    restart: always
-
-  immich-proxy:
-    container_name: immich_proxy
-    image: ghcr.io/immich-app/immich-proxy:${IMMICH_VERSION:-release}
-    ports:
-      - 2283:8080
-    depends_on:
-      - immich-server
-      - immich-web
     restart: always
 
 volumes:

@@ -6,9 +6,9 @@ services:
   immich-server:
     image: immich-server-dev:latest
     build:
-      context: ../server
-      dockerfile: Dockerfile
-      target: builder
+      context: ../
+      dockerfile: server/Dockerfile
+      target: dev
     command: npm run test:e2e
     volumes:
       - ../server:/usr/src/app

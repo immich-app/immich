@@ -137,7 +137,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         serverInfoState.serverVersion.major > 0
                             ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
-                            : "?",
+                            : "--",
                         style: TextStyle(
                           fontSize: 11,
                           color: context.textTheme.labelSmall?.color
@@ -201,6 +201,61 @@ class AppBarServerInfo extends HookConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           textAlign: TextAlign.end,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Divider(
+                  color: Color.fromARGB(101, 201, 201, 201),
+                  thickness: 1,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: Row(
+                        children: [
+                          if (serverInfoState.isNewReleaseAvailable)
+                            const Padding(
+                              padding: EdgeInsets.only(right: 5.0),
+                              child: Icon(
+                                Icons.info,
+                                color: Color.fromARGB(255, 243, 188, 106),
+                                size: 12,
+                              ),
+                            ),
+                          Text(
+                            "server_info_box_latest_release".tr(),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: context.textTheme.labelSmall?.color,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10.0),
+                      child: Text(
+                        serverInfoState.latestVersion.major > 0
+                            ? "${serverInfoState.latestVersion.major}.${serverInfoState.latestVersion.minor}.${serverInfoState.latestVersion.patch}"
+                            : "--",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: context.textTheme.labelSmall?.color
+                              ?.withOpacity(0.5),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

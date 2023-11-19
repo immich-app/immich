@@ -76,18 +76,21 @@ class MapSettingsDialog extends HookConsumerWidget {
           showRelativeDate.value = value!;
         },
         dropdownMenuEntries: [
-          const DropdownMenuEntry(value: 0, label: "All"),
-          const DropdownMenuEntry(
+          DropdownMenuEntry(
+            value: 0,
+            label: "map_settings_date_range_option_all".tr(),
+          ),
+          DropdownMenuEntry(
             value: 1,
-            label: "Past 24 hours",
+            label: "map_settings_date_range_option_days".plural(1),
           ),
-          const DropdownMenuEntry(
+          DropdownMenuEntry(
             value: 7,
-            label: "Past 7 days",
+            label: "map_settings_date_range_option_days".plural(7),
           ),
-          const DropdownMenuEntry(
+          DropdownMenuEntry(
             value: 30,
-            label: "Past 30 days",
+            label: "map_settings_date_range_option_days".plural(30),
           ),
           DropdownMenuEntry(
             value: now
@@ -102,7 +105,7 @@ class MapSettingsDialog extends HookConsumerWidget {
                   ),
                 )
                 .inDays,
-            label: "Past year",
+            label: "map_settings_date_range_option_years".plural(1),
           ),
           DropdownMenuEntry(
             value: now
@@ -117,7 +120,7 @@ class MapSettingsDialog extends HookConsumerWidget {
                   ),
                 )
                 .inDays,
-            label: "Past 3 years",
+            label: "map_settings_date_range_option_years".plural(3),
           ),
         ],
       );

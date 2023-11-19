@@ -127,11 +127,6 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> importFile(ImportAssetDto importAssetDto) async
-    test('test importFile', () async {
-      // TODO
-    });
-
     //Future restoreAssets(BulkIdsDto bulkIdsDto) async
     test('test restoreAssets', () async {
       // TODO
@@ -144,11 +139,6 @@ void main() {
 
     //Future runAssetJobs(AssetJobsDto assetJobsDto) async
     test('test runAssetJobs', () async {
-      // TODO
-    });
-
-    //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
-    test('test searchAsset', () async {
       // TODO
     });
 

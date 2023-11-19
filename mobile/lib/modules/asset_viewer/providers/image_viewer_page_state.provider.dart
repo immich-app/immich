@@ -68,7 +68,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
                 gravity: ToastGravity.BOTTOM,
               );
             }
-            context.pop();
+            buildContext.pop();
           },
         );
         return const ShareDialog();

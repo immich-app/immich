@@ -70,23 +70,3 @@ export class CreateAssetDto extends CreateAssetBase {
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   [UploadFieldName.SIDECAR_DATA]?: any;
 }
-
-export class ImportAssetDto extends CreateAssetBase {
-  @Optional()
-  @IsBoolean()
-  @Transform(toBoolean)
-  isReadOnly?: boolean = true;
-
-  @ValidateUUID()
-  @Optional()
-  libraryId?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  assetPath!: string;
-
-  @IsString()
-  @Optional()
-  @IsNotEmpty()
-  sidecarPath?: string;
-}

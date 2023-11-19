@@ -26,11 +26,9 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
-import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -45,7 +43,12 @@ void main() async {
   await initApp();
   await migrateDatabaseIfNeeded(db);
   HttpOverrides.global = HttpSSLCertOverride();
-  runApp(getMainWidget(db));
+  runApp(
+    ProviderScope(
+      overrides: [dbProvider.overrideWithValue(db)],
+      child: getMainWidget(),
+    ),
+  );
 }
 
 Future<void> initApp() async {
@@ -105,16 +108,13 @@ Future<Isar> loadDb() async {
   return db;
 }
 
-Widget getMainWidget(Isar db) {
+Widget getMainWidget() {
   return EasyLocalization(
     supportedLocales: locales,
     path: translationsPath,
     useFallbackTranslations: true,
     fallbackLocale: locales.first,
-    child: ProviderScope(
-      overrides: [dbProvider.overrideWithValue(db)],
-      child: const ImmichApp(),
-    ),
+    child: const ImmichApp(),
   );
 }
 
@@ -196,7 +196,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   Widget build(BuildContext context) {
     var router = ref.watch(appRouterProvider);
-    ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,
@@ -217,7 +216,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
             ),
           ),
           const ImmichLoadingOverlay(),
-          const VersionAnnouncementOverlay(),
         ],
       ),
     );

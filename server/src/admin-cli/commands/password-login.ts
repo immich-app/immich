@@ -15,7 +15,7 @@ export class EnablePasswordLoginCommand extends CommandRunner {
     const config = await this.configService.getConfig();
     config.passwordLogin.enabled = true;
     await this.configService.updateConfig(config);
-    await axios.post('http://localhost:3001/refresh-config');
+    await axios.post('http://localhost:3001/api/refresh-config');
     console.log('Password login has been enabled.');
   }
 }
@@ -33,7 +33,7 @@ export class DisablePasswordLoginCommand extends CommandRunner {
     const config = await this.configService.getConfig();
     config.passwordLogin.enabled = false;
     await this.configService.updateConfig(config);
-    await axios.post('http://localhost:3001/refresh-config');
+    await axios.post('http://localhost:3001/api/refresh-config');
     console.log('Password login has been disabled.');
   }
 }
