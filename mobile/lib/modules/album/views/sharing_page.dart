@@ -79,26 +79,20 @@ class SharingPage extends HookConsumerWidget {
                 album.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color:
-                      context.isDarkTheme ? context.primaryColor : Colors.black,
+                style: context.textTheme.titleSmall?.copyWith(
+                  color: context.primaryColor,
                 ),
               ),
               subtitle: isOwner
                   ? Text(
                       'album_thumbnail_owned'.tr(),
-                      style: const TextStyle(
-                        fontSize: 12.0,
-                      ),
+                      style: context.textTheme.bodySmall,
                     )
                   : album.ownerName != null
                       ? Text(
                           'album_thumbnail_shared_by'
                               .tr(args: [album.ownerName!]),
-                          style: const TextStyle(
-                            fontSize: 12.0,
-                          ),
+                          style: context.textTheme.bodySmall,
                         )
                       : null,
               onTap: () {
@@ -236,9 +230,11 @@ class SharingPage extends HookConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.all(12),
               sliver: SliverToBoxAdapter(
-                child: const Text(
+                child: Text(
                   "partner_page_title",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ).tr(),
               ),
             ),
@@ -246,10 +242,10 @@ class SharingPage extends HookConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.all(12),
             sliver: SliverToBoxAdapter(
-              child: const Text(
+              child: Text(
                 "sharing_page_album",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
               ).tr(),
             ),

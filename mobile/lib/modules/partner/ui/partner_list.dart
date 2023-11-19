@@ -35,8 +35,7 @@ class PartnerList extends HookConsumerWidget {
       ),
       trailing: Text(
         "View all",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
+        style: context.textTheme.labelLarge?.copyWith(
           color: context.primaryColor,
         ),
       ),
