@@ -14,8 +14,9 @@ dependencies:
 
   path_provider_ios:
   photo_manager: ^2.7.2
-  flutter_hooks: ^0.18.6
-  hooks_riverpod: ^2.2.0
+  flutter_hooks: ^0.20.3
+  hooks_riverpod: ^2.4.0
+  riverpod_annotation: ^2.3.0
   cached_network_image: ^3.2.2
   flutter_cache_manager: ^3.3.0
   intl: ^0.18.0
@@ -86,6 +87,9 @@ dev_dependencies:
   mockito: ^5.3.2
   integration_test:
     sdk: flutter
+  custom_lint: ^0.5.6
+  riverpod_lint: ^2.1.0
+  riverpod_generator: ^2.3.3
 
 flutter:
   uses-material-design: true

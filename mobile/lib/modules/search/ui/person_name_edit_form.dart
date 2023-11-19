@@ -25,6 +25,7 @@ class PersonNameEditForm extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = useTextEditingController(text: personName);
+    final isError = useState(false);
 
     return AlertDialog(
       title: const Text(
@@ -37,18 +38,16 @@ class PersonNameEditForm extends HookConsumerWidget {
           autofocus: true,
           decoration: InputDecoration(
             hintText: 'search_page_person_add_name_dialog_hint'.tr(),
+            border: const OutlineInputBorder(),
+            errorText: isError.value ? 'Error occured' : null,
           ),
         ),
       ),
       actions: [
         TextButton(
-          style: TextButton.styleFrom(),
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true)
-                .pop<PersonNameEditFormResult>(
-              PersonNameEditFormResult(false, ''),
-            );
-          },
+          onPressed: () => context.pop(
+            PersonNameEditFormResult(false, ''),
+          ),
           child: Text(
             "search_page_person_add_name_dialog_cancel",
             style: TextStyle(
@@ -58,17 +57,15 @@ class PersonNameEditForm extends HookConsumerWidget {
           ).tr(),
         ),
         TextButton(
-          onPressed: () {
-            ref.read(
-              updatePersonNameProvider(
-                UpdatePersonName(personId, controller.text),
-              ),
+          onPressed: () async {
+            isError.value = false;
+            final result = await ref.read(
+              updatePersonNameProvider(personId, controller.text).future,
             );
-
-            Navigator.of(context, rootNavigator: true)
-                .pop<PersonNameEditFormResult>(
-              PersonNameEditFormResult(true, controller.text),
-            );
+            isError.value = !result;
+            if (result) {
+              context.pop(PersonNameEditFormResult(true, controller.text));
+            }
           },
           child: Text(
             "search_page_person_add_name_dialog_save",

@@ -77,15 +77,7 @@ class SearchPage extends HookConsumerWidget {
           loading: () => const Center(child: ImmichLoadingIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
           data: (people) => CuratedPeopleRow(
-            content: people
-                .map(
-                  (person) => CuratedContent(
-                    id: person.id,
-                    label: person.name,
-                  ),
-                )
-                .take(12)
-                .toList(),
+            content: people.take(12).toList(),
             onTap: (content, index) {
               context.autoPush(
                 PersonResultRoute(
