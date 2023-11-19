@@ -129,11 +129,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
           album.owner.value?.email ?? "",
           style: TextStyle(color: Colors.grey[500]),
         ),
-        trailing: const Text(
+        trailing: Text(
           "shared_album_section_people_owner_label",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: context.textTheme.labelLarge,
         ).tr(),
       );
     }
@@ -210,10 +208,12 @@ class AlbumOptionsPage extends HookConsumerWidget {
               title: Text(
                 "shared_album_activity_setting_title",
                 style: context.textTheme.labelLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ).tr(),
-              subtitle:
-                  const Text("shared_album_activity_setting_subtitle").tr(),
+              subtitle: Text(
+                "shared_album_activity_setting_subtitle",
+                style: context.textTheme.labelMedium,
+              ).tr(),
             ),
           buildSectionTitle("shared_album_section_people_title".tr()),
           buildOwnerInfo(),
