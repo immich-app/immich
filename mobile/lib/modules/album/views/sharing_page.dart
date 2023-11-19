@@ -131,8 +131,8 @@ class SharingPage extends HookConsumerWidget {
                   "sharing_silver_appbar_create_shared_album",
                   maxLines: 1,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
                   ),
                 ).tr(),
               ),
@@ -148,8 +148,8 @@ class SharingPage extends HookConsumerWidget {
                 label: const Text(
                   "sharing_silver_appbar_shared_links",
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
                   ),
                   maxLines: 1,
                 ).tr(),
