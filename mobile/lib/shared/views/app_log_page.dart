@@ -16,7 +16,6 @@ class AppLogPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final immichLogger = ImmichLogger();
     final logMessages = useState(immichLogger.messages);
-    final isDarkTheme = context.isDarkTheme;
 
     Widget colorStatusIndicator(Color color) {
       return Column(
@@ -39,12 +38,13 @@ class AppLogPage extends HookConsumerWidget {
         case LogLevel.INFO:
           return colorStatusIndicator(context.primaryColor);
         case LogLevel.SEVERE:
-          return colorStatusIndicator(Colors.redAccent);
-
+          return colorStatusIndicator(context.redColor);
         case LogLevel.WARNING:
-          return colorStatusIndicator(Colors.orangeAccent);
+          return colorStatusIndicator(context.orangeColor);
         default:
-          return colorStatusIndicator(Colors.grey);
+          return colorStatusIndicator(
+            context.colorScheme.onSurfaceVariant.withAlpha(150),
+          );
       }
     }
 
@@ -53,15 +53,11 @@ class AppLogPage extends HookConsumerWidget {
         case LogLevel.INFO:
           return Colors.transparent;
         case LogLevel.SEVERE:
-          return isDarkTheme
-              ? Colors.redAccent.withOpacity(0.25)
-              : Colors.redAccent.withOpacity(0.075);
+          return context.redColor.withAlpha(50);
         case LogLevel.WARNING:
-          return isDarkTheme
-              ? Colors.orangeAccent.withOpacity(0.25)
-              : Colors.orangeAccent.withOpacity(0.075);
+          return context.orangeColor.withAlpha(50);
         default:
-          return context.primaryColor.withOpacity(0.1);
+          return context.primaryColor.withAlpha(50);
       }
     }
 
@@ -116,7 +112,7 @@ class AppLogPage extends HookConsumerWidget {
         separatorBuilder: (context, index) {
           return Divider(
             height: 0,
-            color: isDarkTheme ? Colors.white70 : Colors.grey[600],
+            color: context.themeData.dividerColor,
           );
         },
         itemCount: logMessages.value.length,
@@ -139,7 +135,7 @@ class AppLogPage extends HookConsumerWidget {
                   TextSpan(
                     text: "#$index ",
                     style: TextStyle(
-                      color: isDarkTheme ? Colors.white70 : Colors.grey[600],
+                      color: context.themeData.dividerColor,
                       fontSize: 14.0,
                       fontWeight: FontWeight.bold,
                     ),
@@ -158,7 +154,7 @@ class AppLogPage extends HookConsumerWidget {
               "[${logMessage.context1}] Logged on ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)}",
               style: TextStyle(
                 fontSize: 12.0,
-                color: Colors.grey[600],
+                color: context.themeData.hintColor,
               ),
             ),
             leading: buildLeadingIcon(logMessage.level),

@@ -81,8 +81,7 @@ class SharingPage extends HookConsumerWidget {
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color:
-                      context.isDarkTheme ? context.primaryColor : Colors.black,
+                  color: context.primaryColor,
                 ),
               ),
               subtitle: isOwner
@@ -172,8 +171,8 @@ class SharingPage extends HookConsumerWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              side: const BorderSide(
-                color: Colors.grey,
+              side: BorderSide(
+                color: context.themeData.hintColor,
                 width: 0.5,
               ),
             ),

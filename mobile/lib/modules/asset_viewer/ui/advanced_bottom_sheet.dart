@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 
 class AdvancedBottomSheet extends HookConsumerWidget {
   final Asset assetDetail;
@@ -24,57 +25,50 @@ class AdvancedBottomSheet extends HookConsumerWidget {
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 8.0),
           child: LayoutBuilder(
-            builder: (context, constraints) {
+            builder: (ctx, constraints) {
               // One column
               return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 32.0),
-                  const Align(
-                    child: Text(
-                      "ADVANCED INFO",
-                      style: TextStyle(fontSize: 12.0),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 15, bottom: 10),
+                    child: CustomDraggingHandle(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: TextButton.icon(
+                      label: Text(
+                        "ADVANCED INFO",
+                        style: context.textTheme.displaySmall,
+                      ),
+                      icon: Icon(
+                        Icons.copy,
+                        size: 16.0,
+                        color: context.primaryColor,
+                      ),
+                      onPressed: () {
+                        Clipboard.setData(
+                          ClipboardData(text: assetDetail.toString()),
+                        ).then((_) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            const SnackBar(
+                              content: Text("Copied to clipboard"),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        });
+                      },
                     ),
                   ),
-                  const SizedBox(height: 32.0),
                   Container(
                     decoration: BoxDecoration(
-                      color: context.isDarkTheme
-                          ? Colors.grey[900]
-                          : Colors.grey[200],
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                        right: 16.0,
-                        left: 16,
-                        top: 8,
-                        bottom: 16,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: ListView(
                         shrinkWrap: true,
                         children: [
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: IconButton(
-                              onPressed: () {
-                                Clipboard.setData(
-                                  ClipboardData(text: assetDetail.toString()),
-                                ).then((_) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Copied to clipboard"),
-                                    ),
-                                  );
-                                });
-                              },
-                              icon: Icon(
-                                Icons.copy,
-                                size: 16.0,
-                                color: context.primaryColor,
-                              ),
-                            ),
-                          ),
                           SelectableText(
                             assetDetail.toString(),
                             style: const TextStyle(

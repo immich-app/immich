@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/utils/immich_app_theme.dart';
 
 extension ContextHelper on BuildContext {
   // Returns the current size from MediaQuery
@@ -32,6 +34,12 @@ extension ContextHelper on BuildContext {
   // Current ColorScheme used
   ColorScheme get colorScheme => themeData.colorScheme;
 
+  // Red Accent harmonized with primary color
+  Color get redColor => redAccent.harmonizeWith(primaryColor);
+
+  // Orange Accent harmonized with primary color
+  Color get orangeColor => orangeAccent.harmonizeWith(primaryColor);
+
   // Pop-out from the current context with optional result
   void pop<T>([T? result]) => Navigator.of(this).pop(result);
 
@@ -45,7 +53,7 @@ extension ContextHelper on BuildContext {
   ) =>
       AutoRouter.of(this).navigate(route);
 
-// Auto-Push replace route from the current context
+  // Auto-Push replace route from the current context
   Future<T?> autoReplace<T extends Object?>(PageRouteInfo<dynamic> route) =>
       AutoRouter.of(this).replace(route);
 

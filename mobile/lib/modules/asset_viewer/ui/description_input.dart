@@ -20,7 +20,6 @@ class DescriptionInput extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textColor = context.isDarkTheme ? Colors.white : Colors.black;
     final controller = useTextEditingController();
     final focusNode = useFocusNode();
     final isFocus = useState(false);
@@ -68,7 +67,7 @@ class DescriptionInput extends HookConsumerWidget {
         },
         icon: Icon(
           Icons.cancel_rounded,
-          color: Colors.grey[500],
+          color: context.themeData.hintColor,
         ),
         splashRadius: 10,
       );
@@ -102,7 +101,7 @@ class DescriptionInput extends HookConsumerWidget {
         hintStyle: TextStyle(
           fontWeight: FontWeight.normal,
           fontSize: 12,
-          color: textColor.withOpacity(0.5),
+          color: context.colorScheme.onSurface.withOpacity(0.5),
         ),
         suffixIcon: suffixIcon,
       ),

@@ -125,6 +125,8 @@ class MapPageState extends ConsumerState<MapPage> {
     final refetchMarkers = useState(true);
     final isLoading =
         ref.watch(mapStateNotifier.select((state) => state.isLoading));
+    final mapStyle =
+        ref.watch(mapStateNotifier.select((state) => state.mapStyle));
     final maxZoom = ref.read(mapStateNotifier.notifier).maxZoom;
     final zoomLevel = math.min(maxZoom, 14.0);
     final themeData = isDarkTheme ? immichDarkTheme : immichLightTheme;
@@ -440,7 +442,7 @@ class MapPageState extends ConsumerState<MapPage> {
           extendBodyBehindAppBar: true,
           body: Stack(
             children: [
-              if (!isLoading)
+              if (!isLoading || mapStyle != null)
                 FlutterMap(
                   mapController: mapController,
                   options: MapOptions(
@@ -465,7 +467,7 @@ class MapPageState extends ConsumerState<MapPage> {
                     markerLayer,
                   ],
                 ),
-              if (!isLoading)
+              if (!isLoading || mapStyle != null)
                 MapPageBottomSheet(
                   mapPageEventStream: mapPageEventSC.stream,
                   bottomSheetEventSC: bottomSheetEventSC,
@@ -474,10 +476,13 @@ class MapPageState extends ConsumerState<MapPage> {
                   isDarkTheme: isDarkTheme,
                 ),
               if (showLoadingIndicator.value || isLoading)
-                Positioned(
-                  top: context.height * 0.35,
-                  left: context.width * 0.425,
-                  child: const ImmichLoadingIndicator(),
+                IgnorePointer(
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: context.colorScheme.surface.withAlpha(70),
+                    child: const Center(child: ImmichLoadingIndicator()),
+                  ),
                 ),
             ],
           ),

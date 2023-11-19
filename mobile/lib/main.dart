@@ -216,7 +216,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
               navigatorObservers: () => [TabNavigationObserver(ref: ref)],
             ),
           ),
-          const ImmichLoadingOverlay(),
+          ImmichLoadingOverlay(
+            darkTheme: immichDarkTheme,
+            theme: immichLightTheme,
+          ),
           const VersionAnnouncementOverlay(),
         ],
       ),

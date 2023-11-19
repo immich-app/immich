@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/widgetref_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -19,7 +20,6 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
-import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
   final int albumId;
@@ -33,6 +33,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     final userId = ref.watch(authenticationProvider).userId;
     final selection = useState<Set<Asset>>({});
     final multiSelectEnabled = useState(false);
+    final immichOverlayController = ref.useProcessingOverlay();
 
     useEffect(
       () {
@@ -78,7 +79,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       if (returnPayload != null) {
         // Check if there is new assets add
         if (returnPayload.selectedAssets.isNotEmpty) {
-          ImmichLoadingOverlayController.appLoader.show();
+          immichOverlayController.value = true;
 
           var addAssetsResult =
               await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
@@ -91,7 +92,7 @@ class AlbumViewerPage extends HookConsumerWidget {
             ref.invalidate(albumDetailProvider(albumId));
           }
 
-          ImmichLoadingOverlayController.appLoader.hide();
+          immichOverlayController.value = false;
         }
       }
     }
@@ -102,7 +103,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
 
       if (sharedUserIds != null) {
-        ImmichLoadingOverlayController.appLoader.show();
+        immichOverlayController.value = true;
 
         var isSuccess = await ref
             .watch(albumServiceProvider)
@@ -112,7 +113,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           ref.invalidate(albumDetailProvider(album.id));
         }
 
-        ImmichLoadingOverlayController.appLoader.hide();
+        immichOverlayController.value = false;
       }
     }
 

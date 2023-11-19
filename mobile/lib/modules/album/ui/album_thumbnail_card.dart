@@ -23,8 +23,6 @@ class AlbumThumbnailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var isDarkTheme = context.isDarkTheme;
-
     return LayoutBuilder(
       builder: (context, constraints) {
         var cardSize = constraints.maxWidth;
@@ -83,7 +81,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'WorkSans',
                     fontSize: 12,
-                    color: isDarkTheme ? Colors.white : Colors.black,
+                    color: context.colorScheme.onSurface,
                   ),
                 ),
                 if (owner != null) const TextSpan(text: ' · '),
@@ -124,9 +122,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                           album.name,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: isDarkTheme
-                                ? context.primaryColor
-                                : Colors.black,
+                            color: context.primaryColor,
                           ),
                         ),
                       ),

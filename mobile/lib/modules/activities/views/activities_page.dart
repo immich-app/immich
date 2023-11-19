@@ -50,9 +50,8 @@ class ActivitiesPage extends HookConsumerWidget {
     );
 
     buildTitleWithTimestamp(Activity activity, {bool leftAlign = true}) {
-      final textColor = context.isDarkTheme ? Colors.white : Colors.black;
-      final textStyle = context.textTheme.bodyMedium
-          ?.copyWith(color: textColor.withOpacity(0.6));
+      final textStyle = context.textTheme.bodyMedium?.copyWith(
+          color: context.textTheme.bodyMedium?.color?.withOpacity(0.6));
 
       return Row(
         mainAxisAlignment: leftAlign
@@ -150,14 +149,14 @@ class ActivitiesPage extends HookConsumerWidget {
                 },
               ),
             ),
-            suffixIconColor: liked ? Colors.red[700] : null,
+            suffixIconColor: liked ? context.redColor : null,
             hintText: isReadOnly
                 ? 'shared_album_activities_input_disable'.tr()
                 : 'shared_album_activities_input_hint'.tr(),
             hintStyle: TextStyle(
               fontWeight: FontWeight.normal,
               fontSize: 14,
-              color: Colors.grey[600],
+              color: context.themeData.hintColor,
             ),
           ),
           onEditingComplete: () async {
@@ -200,27 +199,31 @@ class ActivitiesPage extends HookConsumerWidget {
         onDismissed: (direction) async =>
             await ref.read(provider.notifier).removeActivity(activity.id),
         background: Container(
-          color: canDelete ? Colors.red[400] : Colors.grey[600],
+          color: canDelete
+              ? context.colorScheme.error
+              : context.themeData.disabledColor,
           alignment: AlignmentDirectional.centerStart,
           child: canDelete
-              ? const Padding(
-                  padding: EdgeInsets.all(15),
+              ? Padding(
+                  padding: const EdgeInsets.all(15),
                   child: Icon(
                     Icons.delete_sweep_rounded,
-                    color: Colors.black,
+                    color: context.colorScheme.surface,
                   ),
                 )
               : null,
         ),
         secondaryBackground: Container(
-          color: canDelete ? Colors.red[400] : Colors.grey[600],
+          color: canDelete
+              ? context.colorScheme.error
+              : context.themeData.disabledColor,
           alignment: AlignmentDirectional.centerEnd,
           child: canDelete
-              ? const Padding(
-                  padding: EdgeInsets.all(15),
+              ? Padding(
+                  padding: const EdgeInsets.all(15),
                   child: Icon(
                     Icons.delete_sweep_rounded,
-                    color: Colors.black,
+                    color: context.colorScheme.surface,
                   ),
                 )
               : null,
@@ -288,7 +291,7 @@ class ActivitiesPage extends HookConsumerWidget {
                                   alignment: Alignment.center,
                                   child: Icon(
                                     Icons.favorite_rounded,
-                                    color: Colors.red[700],
+                                    color: context.redColor,
                                   ),
                                 ),
                                 title: buildTitleWithTimestamp(activity),

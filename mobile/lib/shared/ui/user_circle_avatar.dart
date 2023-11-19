@@ -46,7 +46,7 @@ class UserCircleAvatar extends ConsumerWidget {
       user.firstName[0].toUpperCase(),
       style: TextStyle(
         fontWeight: FontWeight.bold,
-        color: context.isDarkTheme ? Colors.black : Colors.white,
+        color: context.colorScheme.onInverseSurface,
       ),
     );
     return CircleAvatar(

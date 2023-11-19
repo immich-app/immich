@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/widgetref_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
@@ -49,7 +50,7 @@ class HomePage extends HookConsumerWidget {
 
     final tipOneOpacity = useState(0.0);
     final refreshCount = useState(0);
-    final processing = useState(false);
+    final processing = ref.useProcessingOverlay();
 
     useEffect(
       () {
@@ -363,7 +364,6 @@ class HomePage extends HookConsumerWidget {
                 selectionAssetState: selectionAssetState.value,
                 onStack: onStack,
               ),
-            if (processing.value) const Center(child: ImmichLoadingIndicator()),
           ],
         ),
       );

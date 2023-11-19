@@ -101,9 +101,8 @@ class LibraryPage extends HookConsumerWidget {
                   ),
                   Text(
                     option,
-                    style: TextStyle(
+                    style: context.textTheme.displaySmall?.copyWith(
                       color: selected ? context.primaryColor : null,
-                      fontSize: 12.0,
                     ),
                   ),
                 ],
@@ -244,8 +243,8 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  buildLibraryNavButton(
-                      "library_page_favorites".tr(), Icons.favorite_border, () {
+                  buildLibraryNavButton("library_page_favorites".tr(),
+                      Icons.favorite_outline_rounded, () {
                     context.autoNavigate(const FavoritesRoute());
                   }),
                   const SizedBox(width: 12.0),

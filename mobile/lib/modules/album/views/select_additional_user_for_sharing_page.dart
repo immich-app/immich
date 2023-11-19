@@ -29,9 +29,11 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: context.primaryColor,
-          child: const Icon(
+          radius: 22,
+          child: Icon(
             Icons.check_rounded,
-            size: 25,
+            color: context.colorScheme.surface,
+            size: 24,
           ),
         );
       } else {
@@ -49,14 +51,10 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Chip(
-              backgroundColor: context.primaryColor.withOpacity(0.15),
+              backgroundColor: context.colorScheme.primaryContainer,
               label: Text(
                 user.email,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: context.textTheme.displaySmall,
               ),
             ),
           ),
@@ -72,9 +70,9 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
             padding: const EdgeInsets.all(16.0),
             child: Text(
               'select_additional_user_for_sharing_page_suggestions'.tr(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey,
+                color: context.themeData.hintColor,
                 fontWeight: FontWeight.bold,
               ),
             ),

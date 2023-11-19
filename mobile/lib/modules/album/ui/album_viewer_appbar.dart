@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/widgetref_extensions.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
@@ -14,7 +15,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumViewerAppbar extends HookConsumerWidget
     implements PreferredSizeWidget {
@@ -43,6 +43,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
+    final immichOverlayController = ref.useProcessingOverlay();
     final comments = album.shared
         ? ref.watch(
             activityStatisticsStateProvider(
@@ -52,7 +53,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         : 0;
 
     deleteAlbum() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      immichOverlayController.value = true;
 
       final bool success;
       if (album.shared) {
@@ -74,7 +75,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       }
 
-      ImmichLoadingOverlayController.appLoader.hide();
+      immichOverlayController.value = false;
     }
 
     Future<void> showConfirmationDialog() async {
@@ -107,7 +108,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   'Confirm',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: !context.isDarkTheme ? Colors.red : Colors.red[300],
+                    color: context.colorScheme.error,
                   ),
                 ),
               ),
@@ -122,7 +123,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void onLeaveAlbumPressed() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      immichOverlayController.value = true;
 
       bool isSuccess =
           await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(album);
@@ -140,11 +141,11 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       }
 
-      ImmichLoadingOverlayController.appLoader.hide();
+      immichOverlayController.value = false;
     }
 
     void onRemoveFromAlbumPressed() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      immichOverlayController.value = true;
 
       bool isSuccess =
           await ref.watch(sharedAlbumProvider.notifier).removeAssetFromAlbum(
@@ -167,7 +168,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       }
 
-      ImmichLoadingOverlayController.appLoader.hide();
+      immichOverlayController.value = false;
     }
 
     void handleShareAssets(
@@ -198,9 +199,9 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void onShareAssetsTo() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      immichOverlayController.value = true;
       handleShareAssets(ref, context, selected);
-      ImmichLoadingOverlayController.appLoader.hide();
+      immichOverlayController.value = false;
     }
 
     buildBottomSheetActions() {

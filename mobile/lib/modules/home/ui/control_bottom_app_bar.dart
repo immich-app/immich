@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/color_extensions.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
@@ -128,7 +129,8 @@ class ControlBottomAppBar extends ConsumerWidget {
         ScrollController scrollController,
       ) {
         return Card(
-          elevation: 18.0,
+          elevation: 2,
+          color: context.colorScheme.surface.lighten(15),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(12),

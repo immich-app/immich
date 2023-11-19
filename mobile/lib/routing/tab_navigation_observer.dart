@@ -22,14 +22,6 @@ class TabNavigationObserver extends AutoRouterObserver {
   });
 
   @override
-  void didInitTabRoute(TabPageRoute route, TabPageRoute? previousRoute) {
-    // Perform tasks on first navigation to SearchRoute
-    if (route.name == 'SearchRoute') {
-      // ref.refresh(getCuratedLocationProvider);
-    }
-  }
-
-  @override
   Future<void> didChangeTabRoute(
     TabPageRoute route,
     TabPageRoute previousRoute,

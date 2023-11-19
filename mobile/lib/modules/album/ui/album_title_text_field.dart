@@ -20,8 +20,6 @@ class AlbumTitleTextField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkTheme = context.isDarkTheme;
-
     return TextField(
       onChanged: (v) {
         if (v.isEmpty) {
@@ -33,9 +31,8 @@ class AlbumTitleTextField extends ConsumerWidget {
         ref.watch(albumTitleProvider.notifier).setAlbumTitle(v);
       },
       focusNode: albumTitleTextFieldFocusNode,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 28,
-        color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
         fontWeight: FontWeight.bold,
       ),
       controller: albumTitleController,
@@ -70,15 +67,10 @@ class AlbumTitleTextField extends ConsumerWidget {
           borderRadius: BorderRadius.circular(10),
         ),
         hintText: 'share_add_title'.tr(),
-        hintStyle: TextStyle(
+        hintStyle: const TextStyle(
           fontSize: 28,
-          color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
           fontWeight: FontWeight.bold,
         ),
-        focusColor: Colors.grey[300],
-        fillColor: isDarkTheme
-            ? const Color.fromARGB(255, 32, 33, 35)
-            : Colors.grey[200],
         filled: isAlbumTitleTextFieldFocus.value,
       ),
     );

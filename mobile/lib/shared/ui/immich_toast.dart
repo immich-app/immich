@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/color_extensions.dart';
 
 enum ToastType { info, success, error }
 
@@ -9,7 +10,7 @@ class ImmichToast {
     required BuildContext context,
     required String msg,
     ToastType toastType = ToastType.info,
-    ToastGravity gravity = ToastGravity.TOP,
+    ToastGravity gravity = ToastGravity.BOTTOM,
     int durationInSecond = 3,
   }) {
     final fToast = FToast();
@@ -18,7 +19,7 @@ class ImmichToast {
     Color getColor(ToastType type, BuildContext context) {
       switch (type) {
         case ToastType.info:
-          return context.primaryColor;
+          return const Color.fromARGB(255, 48, 111, 220);
         case ToastType.success:
           return const Color.fromARGB(255, 78, 140, 124);
         case ToastType.error:
@@ -26,41 +27,39 @@ class ImmichToast {
       }
     }
 
-    Icon getIcon(ToastType type) {
+    IconData getIcon(ToastType type) {
       switch (type) {
         case ToastType.info:
-          return Icon(
-            Icons.info_outline_rounded,
-            color: context.primaryColor,
-          );
-        case ToastType.success:
-          return const Icon(
-            Icons.check_circle_rounded,
-            color: Color.fromARGB(255, 78, 140, 124),
-          );
+          return Icons.info_outline_rounded;
         case ToastType.error:
-          return const Icon(
-            Icons.error_outline_rounded,
-            color: Color.fromARGB(255, 240, 162, 156),
-          );
+          return Icons.check_circle_outline_rounded;
+        case ToastType.success:
+          return Icons.report_problem_outlined;
       }
     }
 
     fToast.showToast(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5.0),
-          color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[50],
+          color: context.colorScheme.inverseSurface,
           border: Border.all(
-            color: Colors.black12,
+            color: context.colorScheme.inverseSurface,
             width: 1,
           ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            getIcon(toastType),
+            Padding(
+              padding: const EdgeInsets.only(left: 15, right: 5),
+              child: Icon(
+                getIcon(toastType),
+                color: getColor(toastType, context),
+              ),
+            ),
             const SizedBox(
               width: 12.0,
             ),
@@ -68,8 +67,7 @@ class ImmichToast {
               child: Text(
                 msg,
                 style: TextStyle(
-                  color: getColor(toastType, context),
-                  fontWeight: FontWeight.bold,
+                  color: context.colorScheme.onInverseSurface,
                   fontSize: 15,
                 ),
               ),

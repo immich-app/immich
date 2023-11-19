@@ -15,13 +15,13 @@ class ImmichLoadingIndicator extends StatelessWidget {
       height: 60,
       width: 60,
       decoration: BoxDecoration(
-        color: context.primaryColor.withAlpha(200),
+        color: context.primaryColor,
         borderRadius: BorderRadius.circular(borderRadius ?? 10),
       ),
       padding: const EdgeInsets.all(15),
-      child: const CircularProgressIndicator(
-        color: Colors.white,
-        strokeWidth: 2,
+      child: CircularProgressIndicator(
+        color: context.colorScheme.onPrimary,
+        strokeWidth: 3,
       ),
     );
   }

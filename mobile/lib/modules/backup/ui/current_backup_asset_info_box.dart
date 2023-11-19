@@ -61,7 +61,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     Widget buildAssetInfoTable() {
       return Table(
         border: TableBorder.all(
-          color: context.themeData.primaryColorLight,
+          color: context.colorScheme.onSurfaceVariant,
           width: 1,
         ),
         children: [

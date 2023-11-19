@@ -173,3 +173,6 @@ ThemeData getThemeForScheme(ColorScheme scheme) {
 
 ThemeData immichLightTheme = getThemeForScheme(_lightColorScheme);
 ThemeData immichDarkTheme = getThemeForScheme(_darkColorScheme);
+
+const redAccent = Colors.redAccent;
+const orangeAccent = Colors.orangeAccent;

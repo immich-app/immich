@@ -60,6 +60,7 @@ dependencies:
   wakelock_plus: ^1.1.1
   flutter_local_notifications: ^15.1.0+1
   timezone: ^0.9.2
+  dynamic_color: ^1.6.8
 
   openapi:
     path: openapi

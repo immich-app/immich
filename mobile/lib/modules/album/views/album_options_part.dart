@@ -4,6 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/color_extensions.dart';
+import 'package:immich_mobile/extensions/widgetref_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -11,7 +13,6 @@ import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
-import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumOptionsPage extends HookConsumerWidget {
   final Album album;
@@ -25,6 +26,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final userId = ref.watch(authenticationProvider).userId;
     final activityEnabled = useState(album.activityEnabled);
     final isOwner = owner?.id == userId;
+    final immichOverlayController = ref.useProcessingOverlay();
 
     void showErrorMessage() {
       Navigator.pop(context);
@@ -37,7 +39,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     }
 
     void leaveAlbum() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      immichOverlayController.value = true;
 
       try {
         final isSuccess =
@@ -54,11 +56,11 @@ class AlbumOptionsPage extends HookConsumerWidget {
         showErrorMessage();
       }
 
-      ImmichLoadingOverlayController.appLoader.hide();
+      immichOverlayController.value = false;
     }
 
     void removeUserFromAlbum(User user) async {
-      ImmichLoadingOverlayController.appLoader.show();
+      immichOverlayController.value = true;
 
       try {
         await ref
@@ -71,7 +73,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       }
 
       Navigator.pop(context);
-      ImmichLoadingOverlayController.appLoader.hide();
+      immichOverlayController.value = false;
     }
 
     void handleUserClick(User user) {
@@ -131,7 +133,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         ),
         subtitle: Text(
           album.owner.value?.email ?? "",
-          style: TextStyle(color: Colors.grey[500]),
+          style: TextStyle(color: context.colorScheme.onSurface.darken(40)),
         ),
         trailing: const Text(
           "Owner",
@@ -162,7 +164,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
             ),
             subtitle: Text(
               user.email,
-              style: TextStyle(color: Colors.grey[500]),
+              style: TextStyle(color: context.colorScheme.onSurface.darken(40)),
             ),
             trailing: userId == user.id || isOwner
                 ? const Icon(Icons.more_horiz_rounded)
@@ -208,9 +210,6 @@ class AlbumOptionsPage extends HookConsumerWidget {
                   album.activityEnabled = value;
                 }
               },
-              activeColor: activityEnabled.value
-                  ? context.primaryColor
-                  : context.themeData.disabledColor,
               dense: true,
               title: Text(
                 "shared_album_activity_setting_title",

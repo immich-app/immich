@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/widgetref_extensions.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/trash/providers/trashed_asset.provider.dart';
@@ -11,7 +12,6 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class TrashPage extends HookConsumerWidget {
@@ -24,7 +24,7 @@ class TrashPage extends HookConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
     final selectionEnabledHook = useState(false);
     final selection = useState(<Asset>{});
-    final processing = useState(false);
+    final processing = ref.useProcessingOverlay();
 
     void selectionListener(
       bool multiselect,
@@ -267,8 +267,6 @@ class TrashPage extends HookConsumerWidget {
                     ),
                   ),
                   if (selectionEnabledHook.value) buildBottomBar(),
-                  if (processing.value)
-                    const Center(child: ImmichLoadingIndicator()),
                 ],
               ),
       ),

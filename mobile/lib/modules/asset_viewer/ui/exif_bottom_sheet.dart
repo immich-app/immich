@@ -112,7 +112,7 @@ class ExifBottomSheet extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assetWithExif = ref.watch(assetDetailProvider(asset));
     final exifInfo = (assetWithExif.value ?? asset).exifInfo;
-    var textColor = context.isDarkTheme ? Colors.white : Colors.black;
+    var textColor = context.colorScheme.onSurface;
 
     buildMap() {
       return Padding(
