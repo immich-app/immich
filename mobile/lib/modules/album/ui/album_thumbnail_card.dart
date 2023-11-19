@@ -72,13 +72,13 @@ class AlbumThumbnailCard extends StatelessWidget {
                           .tr(args: ['${album.assetCount}'])
                       : 'album_thumbnail_card_items'
                           .tr(args: ['${album.assetCount}']),
-                  style: context.textTheme.labelLarge,
+                  style: context.textTheme.bodyMedium,
                 ),
                 if (owner != null) const TextSpan(text: ' · '),
                 if (owner != null)
                   TextSpan(
                     text: owner,
-                    style: context.textTheme.labelSmall,
+                    style: context.textTheme.bodyMedium,
                   ),
               ],
             ),
@@ -110,8 +110,9 @@ class AlbumThumbnailCard extends StatelessWidget {
                         width: cardSize,
                         child: Text(
                           album.name,
-                          style: context.textTheme.titleSmall?.copyWith(
+                          style: context.textTheme.bodyMedium?.copyWith(
                             color: context.primaryColor,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

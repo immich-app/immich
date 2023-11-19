@@ -79,7 +79,7 @@ class SharingPage extends HookConsumerWidget {
                 album.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: context.textTheme.titleSmall?.copyWith(
+                style: context.textTheme.bodyLarge?.copyWith(
                   color: context.primaryColor,
                 ),
               ),
