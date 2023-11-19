@@ -27,7 +27,7 @@ void handleShareAssets(
               gravity: ToastGravity.BOTTOM,
             );
           }
-          context.pop();
+          buildContext.pop();
         },
       );
       return const ShareDialog();
