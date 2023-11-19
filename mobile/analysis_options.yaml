@@ -36,6 +36,9 @@ analyzer:
     - openapi/
     - openapi/test/
     - lib/generated_plugin_registrant.dart
+  
+plugins:
+  - custom_lint
 
 dart_code_metrics:
   metrics:

@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:isar/isar.dart';
 // ignore: depend_on_referenced_packages
@@ -40,7 +42,12 @@ class ImmichTestHelper {
     await Store.clear();
     await db.writeTxn(() => db.clear());
     // Load main Widget
-    await tester.pumpWidget(app.getMainWidget(db));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [dbProvider.overrideWithValue(db)],
+        child: app.getMainWidget(),
+      ),
+    );
     // Post run tasks
     await EasyLocalization.ensureInitialized();
   }

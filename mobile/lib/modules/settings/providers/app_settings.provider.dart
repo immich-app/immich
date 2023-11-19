@@ -1,4 +1,8 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final appSettingsServiceProvider = Provider((ref) => AppSettingsService());
+part 'app_settings.provider.g.dart';
+
+@Riverpod(keepAlive: true)
+AppSettingsService appSettingsService(AppSettingsServiceRef ref) =>
+    AppSettingsService();
