@@ -65,7 +65,7 @@
     "glob": "^10.3.3",
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
-    "immich": "^0.41.0",
+    "@immich/cli": "^2.0.3",
     "ioredis": "^5.3.2",
     "joi": "^17.10.0",
     "local-reverse-geocoder": "0.16.5",
