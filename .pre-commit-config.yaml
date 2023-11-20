@@ -1,0 +1,28 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [ --fix=lf ]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.6
+    hooks:
+      - id: ruff
+        args: [ ./machine-learning, --fix ]
+      - id: ruff-format
+        args: [ ./machine-learning ]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        args: [ ./server, --write ]
+      - id: prettier
+        args: [ ./web, --write ]
+  - repo: https://github.com/python-poetry/poetry
+    rev: "1.7.1"
+    hooks:
+      - id: poetry-lock
+        args: [ -C, ./machine-learning ]
