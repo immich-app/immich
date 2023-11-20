@@ -7,6 +7,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/ari', extension: '.ari' },
     { mimetype: 'image/arw', extension: '.arw' },
     { mimetype: 'image/avif', extension: '.avif' },
+    { mimetype: 'image/bmp', extension: '.bmp' },
     { mimetype: 'image/cap', extension: '.cap' },
     { mimetype: 'image/cin', extension: '.cin' },
     { mimetype: 'image/cr2', extension: '.cr2' },
