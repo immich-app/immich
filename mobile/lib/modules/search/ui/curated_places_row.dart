@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
@@ -64,18 +65,18 @@ class CuratedPlacesRow extends CuratedRow {
                   ),
                 ),
               ),
-              const Align(
+              Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    "Your Map",
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: const Text(
+                    "search_page_your_map",
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
-                  ),
+                  ).tr(),
                 ),
               ),
             ],

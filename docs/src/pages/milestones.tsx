@@ -3,6 +3,7 @@ import {
   mdiAndroid,
   mdiAppleIos,
   mdiArchiveOutline,
+  mdiBash,
   mdiBookSearchOutline,
   mdiCakeVariant,
   mdiCheckAll,
@@ -49,6 +50,15 @@ import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiBash,
+    description: 'Version 2 of the Immich CLI is released, replacing the legacy v1 CLI.',
+    title: 'CLI v2',
+    release: 'v1.88.0',
+    tag: 'v1.88.0',
+    date: new Date(2023, 10, 19),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiStar,
     description: 'Reach 20K Stars on GitHub!',

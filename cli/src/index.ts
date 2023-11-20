@@ -1,7 +1,10 @@
+#! /usr/bin/env node
+
 import { program, Option } from 'commander';
 import Upload from './commands/upload';
 import ServerInfo from './commands/server-info';
 import LoginKey from './commands/login/key';
+import Logout from './commands/logout';
 
 program.name('immich').description('Immich command line interface');
 
@@ -13,6 +16,11 @@ program
   .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS'))
   .addOption(new Option('-h, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
   .addOption(
+    new Option('-a, --album', 'Automatically create albums based on folder name')
+      .env('IMMICH_AUTO_CREATE_ALBUM')
+      .default(false),
+  )
+  .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")
       .env('IMMICH_DRY_RUN')
       .default(false),
@@ -20,33 +28,13 @@ program
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action(async (paths, options) => {
-    options.excludePatterns = options.ignore;
-    await new Upload().run(paths, options);
-  });
-
-program
-  .command('import')
-  .description('Import existing assets')
-  .usage('[options] [paths...]')
-  .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
-  .addOption(
-    new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")
-      .env('IMMICH_DRY_RUN')
-      .default(false),
-  )
-  .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS').default(false))
-  .addOption(new Option('--no-read-only', 'Import files without read-only protection, allowing Immich to manage them'))
-  .argument('[paths...]', 'One or more paths to assets to be imported')
-  .action(async (paths, options) => {
-    options.import = true;
-    options.excludePatterns = options.ignore;
+    options.exclusionPatterns = options.ignore;
     await new Upload().run(paths, options);
   });
 
 program
   .command('server-info')
   .description('Display server information')
-
   .action(async () => {
     await new ServerInfo().run();
   });
@@ -58,6 +46,13 @@ program
   .argument('[apiKey]')
   .action(async (paths, options) => {
     await new LoginKey().run(paths, options);
+  });
+
+program
+  .command('logout')
+  .description('Remove stored credentials')
+  .action(async () => {
+    await new Logout().run();
   });
 
 program.parse(process.argv);
