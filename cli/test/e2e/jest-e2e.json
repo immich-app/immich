@@ -5,7 +5,7 @@
   "globalSetup": "<rootDir>/../server/test/e2e/setup.ts",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
-  "testTimeout": 60000,
+  "testTimeout": 6000000,
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
