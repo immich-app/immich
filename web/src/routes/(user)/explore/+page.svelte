@@ -37,7 +37,7 @@
   $: {
     if (innerWidth && screenSize) {
       // Set the number of faces according to the screen size and the div size
-      MAX_ITEMS = screenSize < 768 ? Math.floor(innerWidth / 96) : Math.floor(innerWidth / 112);
+      MAX_ITEMS = screenSize < 768 ? Math.floor(innerWidth / 96) : Math.floor(innerWidth / 120);
     }
   }
 </script>
