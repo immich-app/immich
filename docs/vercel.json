@@ -24,6 +24,6 @@
     { "source": "/docs/features/server-commands", "destination": "/docs/administration/server-commands" },
     { "source": "/docs/features/storage-template", "destination": "/docs/administration/storage-template" },
     { "source": "/docs/features/user-management", "destination": "/docs/administration/user-management" },
-    { "source": "/docs/developer/contributing", "destination": "/docs/developer/pr-checklist" },
+    { "source": "/docs/developer/contributing", "destination": "/docs/developer/pr-checklist" }
   ]
 }
