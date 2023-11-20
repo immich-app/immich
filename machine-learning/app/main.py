@@ -24,7 +24,7 @@ from .schemas import (
     TextResponse,
 )
 
-MultiPartParser.max_file_size = 2**24  # spools to disk if payload is 16 MiB or larger
+MultiPartParser.max_file_size = 2**26  # spools to disk if payload is 64 MiB or larger
 app = FastAPI()
 
 
