@@ -103,7 +103,7 @@ part 'model/download_info_dto.dart';
 part 'model/download_response_dto.dart';
 part 'model/entity_type.dart';
 part 'model/exif_response_dto.dart';
-part 'model/faces_dto.dart';
+part 'model/face_dto.dart';
 part 'model/file_checksum_dto.dart';
 part 'model/file_checksum_response_dto.dart';
 part 'model/file_report_dto.dart';

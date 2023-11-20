@@ -110,7 +110,6 @@ export class AssetFaceUpdateItem {
   @IsString()
   personId!: string;
 
-  @Optional()
   @IsString()
   assetId!: string;
 }

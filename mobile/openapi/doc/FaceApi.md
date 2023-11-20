@@ -69,7 +69,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **reassignFacesById**
-> List<PersonResponseDto> reassignFacesById(id, facesDto)
+> PersonResponseDto reassignFacesById(id, faceDto)
 
 
 
@@ -93,10 +93,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = FaceApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final facesDto = FacesDto(); // FacesDto | 
+final faceDto = FaceDto(); // FaceDto | 
 
 try {
-    final result = api_instance.reassignFacesById(id, facesDto);
+    final result = api_instance.reassignFacesById(id, faceDto);
     print(result);
 } catch (e) {
     print('Exception when calling FaceApi->reassignFacesById: $e\n');
@@ -108,11 +108,11 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
- **facesDto** | [**FacesDto**](FacesDto.md)|  | 
+ **faceDto** | [**FaceDto**](FaceDto.md)|  | 
 
 ### Return type
 
-[**List<PersonResponseDto>**](PersonResponseDto.md)
+[**PersonResponseDto**](PersonResponseDto.md)
 
 ### Authorization
 

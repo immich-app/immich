@@ -3236,7 +3236,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FacesDto"
+                "$ref": "#/components/schemas/FaceDto"
               }
             }
           },
@@ -3247,10 +3247,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/PersonResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PersonResponseDto"
                 }
               }
             },
@@ -7698,18 +7695,15 @@
         },
         "type": "object"
       },
-      "FacesDto": {
+      "FaceDto": {
         "properties": {
-          "ids": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
+          "id": {
+            "format": "uuid",
+            "type": "string"
           }
         },
         "required": [
-          "ids"
+          "id"
         ],
         "type": "object"
       },

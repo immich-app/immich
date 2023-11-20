@@ -73,14 +73,14 @@ class FaceApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [FacesDto] facesDto (required):
-  Future<Response> reassignFacesByIdWithHttpInfo(String id, FacesDto facesDto,) async {
+  /// * [FaceDto] faceDto (required):
+  Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/face'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = facesDto;
+    Object? postBody = faceDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -104,9 +104,9 @@ class FaceApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [FacesDto] facesDto (required):
-  Future<List<PersonResponseDto>?> reassignFacesById(String id, FacesDto facesDto,) async {
-    final response = await reassignFacesByIdWithHttpInfo(id, facesDto,);
+  /// * [FaceDto] faceDto (required):
+  Future<PersonResponseDto?> reassignFacesById(String id, FaceDto faceDto,) async {
+    final response = await reassignFacesByIdWithHttpInfo(id, faceDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -114,11 +114,8 @@ class FaceApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PersonResponseDto>') as List)
-        .cast<PersonResponseDto>()
-        .toList();
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PersonResponseDto',) as PersonResponseDto;
+    
     }
     return null;
   }

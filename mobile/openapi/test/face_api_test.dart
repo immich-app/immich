@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<PersonResponseDto>> reassignFacesById(String id, FacesDto facesDto) async
+    //Future<PersonResponseDto> reassignFacesById(String id, FaceDto faceDto) async
     test('test reassignFacesById', () async {
       // TODO
     });

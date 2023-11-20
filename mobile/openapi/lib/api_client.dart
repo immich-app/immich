@@ -293,8 +293,8 @@ class ApiClient {
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
-        case 'FacesDto':
-          return FacesDto.fromJson(value);
+        case 'FaceDto':
+          return FaceDto.fromJson(value);
         case 'FileChecksumDto':
           return FileChecksumDto.fromJson(value);
         case 'FileChecksumResponseDto':

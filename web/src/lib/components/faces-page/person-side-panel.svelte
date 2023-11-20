@@ -180,14 +180,14 @@
           if (personId) {
             await api.faceApi.reassignFacesById({
               id: personId,
-              facesDto: { ids: [peopleWithFaces[i].id] },
+              faceDto: { id: peopleWithFaces[i].id },
             });
           } else if (selectedPersonToCreate[i]) {
             const { data } = await api.personApi.createPerson();
             numberOfPersonToCreate.push(data.id);
             await api.faceApi.reassignFacesById({
               id: data.id,
-              facesDto: { ids: [peopleWithFaces[i].id] },
+              faceDto: { id: data.id },
             });
           }
         }

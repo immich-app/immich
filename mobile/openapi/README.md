@@ -266,7 +266,7 @@ Class | Method | HTTP request | Description
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [EntityType](doc//EntityType.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
- - [FacesDto](doc//FacesDto.md)
+ - [FaceDto](doc//FaceDto.md)
  - [FileChecksumDto](doc//FileChecksumDto.md)
  - [FileChecksumResponseDto](doc//FileChecksumResponseDto.md)
  - [FileReportDto](doc//FileReportDto.md)

@@ -464,7 +464,7 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       await expect(
         sut.reassignFacesById(authStub.admin, personStub.noName.id, {
-          ids: [faceStub.face1.id],
+          id: faceStub.face1.id,
         }),
       ).resolves.toEqual([
         {
