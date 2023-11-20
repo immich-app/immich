@@ -54,7 +54,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                   fontFamily: 'SnowburstOne',
                   fontWeight: FontWeight.bold,
                   color: context.primaryColor,
-                  fontSize: 15,
+                  fontSize: 16,
                 ),
               ),
             ),
@@ -72,14 +72,15 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         leading: SizedBox(
           child: Icon(
             icon,
-            color: theme.textTheme.labelMedium?.color,
+            color: theme.textTheme.labelLarge?.color?.withAlpha(250),
             size: 20,
           ),
         ),
         title: Text(
           text,
-          style:
-              theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: theme.textTheme.labelLarge?.color?.withAlpha(250),
+          ),
         ).tr(),
         onTap: onTap,
       );
@@ -145,9 +146,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               Icons.storage_rounded,
               color: theme.primaryColor,
             ),
-            title: const Text(
+            title: Text(
               "backup_controller_page_server_storage",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: context.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
             ).tr(),
             isThreeLine: true,
             subtitle: Padding(
@@ -230,7 +233,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       clipBehavior: Clip.hardEdge,
       alignment: Alignment.topCenter,
       insetPadding: EdgeInsets.only(
-        top: isHorizontal ? 20 : 60,
+        top: isHorizontal ? 20 : 40,
         left: horizontalPadding,
         right: horizontalPadding,
         bottom: isHorizontal ? 20 : 100,

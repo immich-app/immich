@@ -40,10 +40,14 @@ class SettingsSwitchListTile extends StatelessWidget {
       dense: true,
       title: Text(
         title,
-        style:
-            context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+        style: context.textTheme.titleSmall,
       ),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
+      subtitle: subtitle != null
+          ? Text(
+              subtitle!,
+              style: context.textTheme.bodyMedium,
+            )
+          : null,
     );
   }
 }

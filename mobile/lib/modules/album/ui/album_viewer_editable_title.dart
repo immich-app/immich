@@ -44,7 +44,7 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
         }
       },
       focusNode: titleFocusNode,
-      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      style: context.textTheme.headlineMedium,
       controller: titleTextEditController,
       onTap: () {
         FocusScope.of(context).requestFocus(titleFocusNode);

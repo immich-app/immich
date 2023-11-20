@@ -125,10 +125,8 @@ class LibraryPage extends HookConsumerWidget {
             ),
             Text(
               options[selectedAlbumSortOrder.value],
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
+              style: context.textTheme.labelLarge?.copyWith(
                 color: context.primaryColor,
-                fontSize: 12.0,
               ),
             ),
           ],
@@ -172,11 +170,9 @@ class LibraryPage extends HookConsumerWidget {
                   top: 8.0,
                   bottom: 16,
                 ),
-                child: const Text(
+                child: Text(
                   'library_page_new_album',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: context.textTheme.labelLarge,
                 ).tr(),
               ),
             ],
@@ -198,9 +194,9 @@ class LibraryPage extends HookConsumerWidget {
             child: Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13.0,
-                color: isDarkTheme ? Colors.white : Colors.grey[800],
+                color: context.isDarkTheme
+                    ? Colors.white
+                    : Colors.black.withAlpha(200),
               ),
             ),
           ),
@@ -278,9 +274,11 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'library_page_albums',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                   buildSortButton(),
                 ],
@@ -326,9 +324,11 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'library_page_device_albums',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                 ],
               ),

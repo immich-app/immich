@@ -31,8 +31,8 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
       }
 
       final userImage = UserCircleAvatar(
-        radius: 20,
-        size: 40,
+        radius: 22,
+        size: 44,
         user: user,
       );
 
@@ -119,16 +119,15 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
           ),
           title: Text(
             authState.name,
-            style: TextStyle(
+            style: context.textTheme.titleMedium?.copyWith(
               color: context.primaryColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontWeight: FontWeight.w500,
             ),
           ),
           subtitle: Text(
             authState.userEmail,
-            style: context.textTheme.labelMedium?.copyWith(
-              fontSize: 12,
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.textTheme.bodySmall?.color?.withAlpha(200),
             ),
           ),
         ),

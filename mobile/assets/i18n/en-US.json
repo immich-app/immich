@@ -224,7 +224,7 @@
   "login_password_changed_success": "Password updated successfully",
   "map_assets_in_bounds": {
     "one": "{} photo",
-    "many": "{} photos"
+    "other": "{} photos"
   },
   "map_cannot_get_user_location": "Cannot get user's location",
   "map_location_dialog_cancel": "Cancel",
@@ -396,7 +396,7 @@
   "sharing_page_album": "Shared albums",
   "sharing_page_description": "Create shared albums to share photos and videos with people in your network.",
   "sharing_page_empty_list": "EMPTY LIST",
-  "sharing_silver_appbar_create_shared_album": "Create shared album",
+  "sharing_silver_appbar_create_shared_album": "New shared album",
   "sharing_silver_appbar_shared_links": "Shared links",
   "sharing_silver_appbar_share_partner": "Share with partner",
   "tab_controller_nav_library": "Library",

@@ -188,9 +188,9 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               "backup_controller_page_uploading_file_info",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: context.textTheme.titleSmall,
             ).tr(),
             if (ref.watch(errorBackupListProvider).isNotEmpty) buildErrorChip(),
           ],

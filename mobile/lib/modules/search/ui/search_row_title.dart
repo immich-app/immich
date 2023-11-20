@@ -27,16 +27,16 @@ class SearchRowTitle extends StatelessWidget {
         children: [
           Text(
             title,
-            style: context.textTheme.titleSmall,
+            style: context.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
           ),
           TextButton(
             onPressed: onViewAllPressed,
             child: Text(
               'search_page_view_all_button',
-              style: TextStyle(
+              style: context.textTheme.labelLarge?.copyWith(
                 color: context.primaryColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 14.0,
               ),
             ).tr(),
           ),

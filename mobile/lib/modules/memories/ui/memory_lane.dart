@@ -48,7 +48,7 @@ class MemoryLane extends HookConsumerWidget {
                                 clipBehavior: Clip.hardEdge,
                                 child: ColorFiltered(
                                   colorFilter: ColorFilter.mode(
-                                    Colors.black.withOpacity(0.1),
+                                    Colors.black.withOpacity(0.2),
                                     BlendMode.darken,
                                   ),
                                   child: ImmichImage(
@@ -71,9 +71,9 @@ class MemoryLane extends HookConsumerWidget {
                                   child: Text(
                                     memory.title,
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       color: Colors.white,
-                                      fontSize: 14,
+                                      fontSize: 15,
                                     ),
                                   ),
                                 ),
