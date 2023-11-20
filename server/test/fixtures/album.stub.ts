@@ -116,7 +116,7 @@ export const albumStub = {
     isActivityEnabled: true,
     startDate: assetStub.withLocation.fileCreatedAt,
     endDate: assetStub.image.fileCreatedAt,
-    assetCount: 0,
+    assetCount: 2,
   }),
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -173,7 +173,7 @@ export const albumStub = {
     isActivityEnabled: true,
     startDate: assetStub.image.fileCreatedAt,
     endDate: assetStub.image.fileCreatedAt,
-    assetCount: 0,
+    assetCount: 1,
   }),
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',

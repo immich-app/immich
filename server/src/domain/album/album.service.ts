@@ -66,8 +66,6 @@ export class AlbumService {
       albums = await this.albumRepository.getOwned(ownerId);
     }
 
-    // Get asset count for each album. Then map the result to an object:
-    // { [albumId]: assetCount }
     return Promise.all(
       albums.map(async (album) => {
         const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);

@@ -68,7 +68,6 @@ describe(AlbumService.name, () => {
 
     it('gets list of albums that have a specific asset', async () => {
       albumMock.getByAssetId.mockResolvedValue([albumStub.oneAsset]);
-      albumMock.getAssetCountForIds.mockResolvedValue([{ albumId: albumStub.oneAsset.id, assetCount: 1 }]);
       albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
       const result = await sut.getAll(authStub.admin, { assetId: albumStub.oneAsset.id });
