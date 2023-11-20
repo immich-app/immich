@@ -45,17 +45,12 @@ class AdvancedSettings extends HookConsumerWidget {
 
     return ExpansionTile(
       textColor: context.primaryColor,
-      title: const Text(
+      title: Text(
         "advanced_settings_tile_title",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         "advanced_settings_tile_subtitle",
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         SettingsSwitchListTile(
@@ -68,11 +63,10 @@ class AdvancedSettings extends HookConsumerWidget {
         ),
         ListTile(
           dense: true,
-          title: Text(
-            // Not translated because the levels are only English
-            "Log level: $logLevel",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          title: const Text(
+            "advanced_settings_log_level_title",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).tr(args: [logLevel]),
           subtitle: Slider(
             value: levelId.value.toDouble(),
             onChanged: (double v) => levelId.value = v.toInt(),

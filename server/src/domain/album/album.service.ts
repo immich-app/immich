@@ -87,7 +87,7 @@ export class AlbumService {
     );
   }
 
-  async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto) {
+  async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
     return mapAlbum(await this.findOrFail(id, { withAssets: true }), !dto.withoutAssets);

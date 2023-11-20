@@ -12,9 +12,9 @@ sidebar_position: 7
 | ![cloud-cross](/img/cloud-off.svg) | Asset is only available locally and has not yet been backed up                                                                                  |
 | ![cloud-done](/img/cloud-done.svg) | Asset was uploaded from this device and is now backed up in the cloud/server and still available in original on the device                      |
 
-### How can I sync an existing directory with Immich's server?
+### Can I add my existing photo library?
 
-Immich doesn't have two-way synchronization ([yet](https://github.com/immich-app/immich/discussions/1006)), but the [command line tool](/docs/features/bulk-upload.md) can bulk upload items from a directory to Immich.
+Yes, with an [external library](/docs/features/libraries.md).
 
 ### Why are only photos and not videos being uploaded to Immich?
 

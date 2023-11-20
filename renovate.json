@@ -21,6 +21,15 @@
       "matchFileNames": ["web/**"],
       "groupName": "web",
       "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchFileNames": ["machine-learning/**"],
+      "groupName": "machine-learning",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchFileNames": [".github/**"],
+      "groupName": "github-actions"
     }
   ],
   "ignoreDeps": [
@@ -29,5 +38,5 @@
     "vector_map_tiles",
     "flutter_map",
     "flutter_map_heatmap"
-  ],
+  ]
 }

@@ -16,7 +16,7 @@ class AlbumActionOutlinedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
+      padding: const EdgeInsets.only(right: 16.0),
       child: OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
@@ -32,13 +32,13 @@ class AlbumActionOutlinedButton extends StatelessWidget {
         ),
         icon: Icon(
           iconData,
-          size: 15,
+          size: 18,
           color: context.primaryColor,
         ),
         label: Text(
           labelText,
-          style: context.textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: context.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w600,
           ),
         ),
         onPressed: onPressed,

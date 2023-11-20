@@ -37,12 +37,9 @@ class TilesPerRow extends HookConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ListTile(
-          title: const Text(
+          title: Text(
             "theme_setting_asset_list_tiles_per_row_title",
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: context.textTheme.labelLarge,
           ).tr(args: ["${itemsValue.value.toInt()}"]),
         ),
         Slider(

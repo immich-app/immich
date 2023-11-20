@@ -43,7 +43,12 @@ void main() async {
   await initApp();
   await migrateDatabaseIfNeeded(db);
   HttpOverrides.global = HttpSSLCertOverride();
-  runApp(getMainWidget(db));
+  runApp(
+    ProviderScope(
+      overrides: [dbProvider.overrideWithValue(db)],
+      child: getMainWidget(),
+    ),
+  );
 }
 
 Future<void> initApp() async {
@@ -103,16 +108,13 @@ Future<Isar> loadDb() async {
   return db;
 }
 
-Widget getMainWidget(Isar db) {
+Widget getMainWidget() {
   return EasyLocalization(
     supportedLocales: locales,
     path: translationsPath,
     useFallbackTranslations: true,
     fallbackLocale: locales.first,
-    child: ProviderScope(
-      overrides: [dbProvider.overrideWithValue(db)],
-      child: const ImmichApp(),
-    ),
+    child: const ImmichApp(),
   );
 }
 

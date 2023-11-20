@@ -74,8 +74,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["major"]! > serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage:
-            "Server is out of date. Please update to the latest major version.",
+        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_major".tr(),
       );
       return;
     }
@@ -83,8 +82,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["major"]! < serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage:
-            "Mobile App is out of date. Please update to the latest major version.",
+        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_major".tr(),
       );
       return;
     }
@@ -92,8 +90,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["minor"]! > serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage:
-            "Server is out of date. Please update to the latest minor version.",
+        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_minor".tr(),
       );
       return;
     }
@@ -101,8 +98,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["minor"]! < serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage:
-            "Mobile App is out of date. Please update to the latest minor version.",
+        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_minor".tr(),
       );
       return;
     }

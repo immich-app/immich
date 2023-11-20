@@ -13,7 +13,7 @@ RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
 # web build
-FROM node:20.8-alpine3.18 as web
+FROM node:20.9-alpine3.18 as web
 
 WORKDIR /usr/src/app
 COPY web/package.json web/package-lock.json ./

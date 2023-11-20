@@ -222,10 +222,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 26,
-          fontWeight: FontWeight.bold,
-          color: context.textTheme.displayLarge?.color,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

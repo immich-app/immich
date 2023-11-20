@@ -153,10 +153,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
                   album.name,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: context.textTheme.headlineMedium,
                 ),
               ),
       );
@@ -191,10 +188,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         ),
         child: Text(
           dateRangeText,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+          style: context.textTheme.labelLarge,
         ),
       );
     }

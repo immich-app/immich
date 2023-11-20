@@ -1,1 +1,1 @@
-export * from './crawled-asset';
+export * from './asset';

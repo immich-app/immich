@@ -80,25 +80,20 @@ class SharingPage extends HookConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color:
-                      context.isDarkTheme ? context.primaryColor : Colors.black,
+                  color: context.primaryColor,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               subtitle: isOwner
                   ? Text(
                       'album_thumbnail_owned'.tr(),
-                      style: const TextStyle(
-                        fontSize: 12.0,
-                      ),
+                      style: context.textTheme.bodyMedium,
                     )
                   : album.ownerName != null
                       ? Text(
                           'album_thumbnail_shared_by'
                               .tr(args: [album.ownerName!]),
-                          style: const TextStyle(
-                            fontSize: 12.0,
-                          ),
+                          style: context.textTheme.bodyMedium,
                         )
                       : null,
               onTap: () {
@@ -137,8 +132,8 @@ class SharingPage extends HookConsumerWidget {
                   "sharing_silver_appbar_create_shared_album",
                   maxLines: 1,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
                   ),
                 ).tr(),
               ),
@@ -154,8 +149,8 @@ class SharingPage extends HookConsumerWidget {
                 label: const Text(
                   "sharing_silver_appbar_shared_links",
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
                   ),
                   maxLines: 1,
                 ).tr(),
@@ -236,9 +231,11 @@ class SharingPage extends HookConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.all(12),
               sliver: SliverToBoxAdapter(
-                child: const Text(
+                child: Text(
                   "partner_page_title",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ).tr(),
               ),
             ),
@@ -246,10 +243,10 @@ class SharingPage extends HookConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.all(12),
             sliver: SliverToBoxAdapter(
-              child: const Text(
+              child: Text(
                 "sharing_page_album",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
               ).tr(),
             ),

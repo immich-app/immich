@@ -27,35 +27,26 @@ class LocalStorageSettings extends HookConsumerWidget {
 
     return ExpansionTile(
       textColor: context.primaryColor,
-      title: const Text(
+      title: Text(
         "cache_settings_tile_title",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         "cache_settings_tile_subtitle",
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         ListTile(
           title: Text(
-            "Duplicated Assets (${cacheItemCount.value})",
-            style: context.textTheme.labelLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ).tr(),
+            "cache_settings_duplicated_assets_title",
+            style: context.textTheme.titleSmall,
+          ).tr(args: ["${cacheItemCount.value}"]),
           subtitle: const Text(
-            "Photos and videos that are black listed by the app",
-            style: TextStyle(
-              fontSize: 13,
-            ),
+            "cache_settings_duplicated_assets_subtitle",
           ).tr(),
           trailing: TextButton(
             onPressed: cacheItemCount.value > 0 ? clearCache : null,
             child: Text(
-              "CLEAR",
+              "cache_settings_duplicated_assets_clear_button",
               style: TextStyle(
                 fontSize: 12,
                 color: cacheItemCount.value > 0 ? Colors.red : Colors.grey,

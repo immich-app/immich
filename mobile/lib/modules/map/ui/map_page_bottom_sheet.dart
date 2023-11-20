@@ -176,10 +176,10 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
 
     Widget buildDragHandle(ScrollController scrollController) {
       final textToDisplay = assetsInBound.value.isNotEmpty
-          ? "${assetsInBound.value.length} photo${assetsInBound.value.length > 1 ? "s" : ""}"
+          ? "map_assets_in_bounds".plural(assetsInBound.value.length)
           : "map_no_assets_in_bounds".tr();
       final dragHandle = Container(
-        height: 60,
+        height: 70,
         width: double.infinity,
         decoration: BoxDecoration(
           color: isDarkTheme ? Colors.grey[900] : Colors.grey[100],
@@ -195,11 +195,7 @@ class AssetsInBoundBottomSheetState extends ConsumerState<MapPageBottomSheet> {
                 const SizedBox(height: 15),
                 Text(
                   textToDisplay,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: context.textTheme.displayLarge?.color,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: context.textTheme.bodyLarge,
                 ),
                 Divider(
                   height: 10,
