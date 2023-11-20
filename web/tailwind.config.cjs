@@ -25,6 +25,7 @@ module.exports = {
       },
       fontFamily: {
         'immich-title': ['Snowburst One', 'cursive'],
+        'immich-mono': ['Overpass Mono', 'monospace'],
       },
       spacing: {
         18: '4.5rem',
