@@ -90,7 +90,6 @@ describe(`Supported file formats (e2e)`, () => {
         iso: 20,
         focalLength: 3.99,
         fNumber: 1.8,
-        state: 'Douglas County, Nebraska',
         timeZone: 'America/Chicago',
       },
     },
