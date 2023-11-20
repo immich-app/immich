@@ -40,7 +40,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
     assets: assets.map((asset) => mapAsset(asset)),
-    album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
+    album: sharedLink.album?.id ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
