@@ -91,7 +91,8 @@ class AlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.person_remove_rounded),
-            title: const Text("shared_album_section_people_remove_user").tr(),
+            title: const Text("shared_album_section_people_action_remove_user")
+                .tr(),
             onTap: () => removeUserFromAlbum(user),
           ),
         ];
@@ -127,7 +128,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         ),
         subtitle: Text(
           album.owner.value?.email ?? "",
-          style: TextStyle(color: Colors.grey[500]),
+          style: TextStyle(color: Colors.grey[600]),
         ),
         trailing: Text(
           "shared_album_section_people_owner_label",
@@ -155,7 +156,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
             ),
             subtitle: Text(
               user.email,
-              style: TextStyle(color: Colors.grey[500]),
+              style: TextStyle(color: Colors.grey[600]),
             ),
             trailing: userId == user.id || isOwner
                 ? const Icon(Icons.more_horiz_rounded)
@@ -208,11 +209,13 @@ class AlbumOptionsPage extends HookConsumerWidget {
               title: Text(
                 "shared_album_activity_setting_title",
                 style: context.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                    ?.copyWith(fontWeight: FontWeight.w500),
               ).tr(),
               subtitle: Text(
                 "shared_album_activity_setting_subtitle",
-                style: context.textTheme.labelLarge,
+                style: context.textTheme.labelLarge?.copyWith(
+                  color: context.textTheme.labelLarge?.color?.withAlpha(175),
+                ),
               ).tr(),
             ),
           buildSectionTitle("shared_album_section_people_title".tr()),

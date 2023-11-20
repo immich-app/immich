@@ -67,12 +67,10 @@ class SharedLinkPage extends HookConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 30.0),
-            child: const Text(
+            child: Text(
               "shared_link_manage_links",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: context.textTheme.labelLarge?.color?.withAlpha(200),
               ),
             ).tr(),
           ),
