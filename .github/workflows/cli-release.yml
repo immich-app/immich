@@ -5,6 +5,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cli
+
     steps:
       - uses: actions/checkout@v2
       # Setup .npmrc file to publish to npm
