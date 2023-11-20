@@ -63,6 +63,7 @@ const image: Record<string, string[]> = {
   '.ari': ['image/ari', 'image/x-arriflex-ari'],
   '.arw': ['image/arw', 'image/x-sony-arw'],
   '.avif': ['image/avif'],
+  '.bmp': ['image/bmp'],
   '.cap': ['image/cap', 'image/x-phaseone-cap'],
   '.cin': ['image/cin', 'image/x-phantom-cin'],
   '.cr2': ['image/cr2', 'image/x-canon-cr2'],
