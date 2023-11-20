@@ -1,10 +1,12 @@
 {
   "name": "@immich/cli",
-  "version": "2.0.0",
+  "version": "2.0.3",
+  "description": "Command Line Interface (CLI) for Immich",
   "main": "dist/index.js",
   "bin": {
     "immich": "./dist/index.js"
   },
+  "license": "MIT",
   "dependencies": {
     "axios": "^1.6.2",
     "byte-size": "^8.1.1",
@@ -27,7 +29,7 @@
     "@typescript-eslint/parser": "^5.48.1",
     "chai": "^4.3.7",
     "eslint": "^8.43.0",
-    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-jest": "^27.2.2",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-unicorn": "^47.0.0",
@@ -45,7 +47,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
-    "prepack": "yarn build ",
+    "prepack": "npm run build",
     "test": "jest",
     "test:cov": "jest --coverage",
     "format": "prettier --check .",
@@ -72,5 +74,10 @@
     },
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/immich-app/immich.git",
+    "directory": "cli"
   }
 }
