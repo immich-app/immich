@@ -50,7 +50,8 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --max-warnings 0",
+    "lint:fix": "npm run lint -- --fix",
     "prepack": "npm run build",
     "test": "jest",
     "test:cov": "jest --coverage",
