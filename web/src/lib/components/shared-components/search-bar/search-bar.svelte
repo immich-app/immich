@@ -118,7 +118,7 @@
         transition:fly={{ y: 25, duration: 250 }}
         class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300"
       >
-        <div class="flex px-5 pt-5 text-left text-xs">
+        <div class="flex px-5 pt-5 text-left text-sm">
           <p>
             Smart search is enabled by default, to search for metadata use the syntax <span
               class="rounded-lg bg-gray-100 p-2 font-mono font-semibold leading-7 text-immich-primary dark:bg-gray-900 dark:text-immich-dark-primary"
@@ -142,7 +142,7 @@
 
         {#each $savedSearchTerms as savedSearchTerm, i (i)}
           <div
-            class="flex w-full items-center justify-between text-xs text-black hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-500/10"
+            class="flex w-full items-center justify-between text-sm text-black hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-500/10"
           >
             <div class="relative w-full items-center">
               <button
