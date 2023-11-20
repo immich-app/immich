@@ -1,4 +1,4 @@
-import { AlbumAsset, AlbumAssetCount, AlbumAssets, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
+import { AlbumAsset, AlbumAssets, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
@@ -57,28 +57,6 @@ export class AlbumRepository implements IAlbumRepository {
       relations: { owner: true, sharedUsers: true },
       order: { createdAt: 'DESC' },
     });
-  }
-
-  async getAssetCountForIds(ids: string[]): Promise<AlbumAssetCount[]> {
-    // Guard against running invalid query when ids list is empty.
-    if (!ids.length) {
-      return [];
-    }
-
-    // Only possible with query builder because of GROUP BY.
-    const countByAlbums = await this.repository
-      .createQueryBuilder('album')
-      .select('album.id')
-      .addSelect('COUNT(albums_assets.assetsId)', 'asset_count')
-      .leftJoin('albums_assets_assets', 'albums_assets', 'albums_assets.albumsId = album.id')
-      .where('album.id IN (:...ids)', { ids })
-      .groupBy('album.id')
-      .getRawMany();
-
-    return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
-      albumId: albumCount['album_id'],
-      assetCount: Number(albumCount['asset_count']),
-    }));
   }
 
   /**
