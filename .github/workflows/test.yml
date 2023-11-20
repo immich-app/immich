@@ -86,8 +86,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run npm install
+      - name: Run npm install in CLI
         run: npm ci
+
+      - uses: chill-viking/npm-ci@latest
+        name: Run npm install in server
+        with:
+          working_directory: "../server"
 
       - name: Run linter
         run: npm run lint
