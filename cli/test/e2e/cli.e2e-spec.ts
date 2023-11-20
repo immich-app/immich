@@ -38,7 +38,15 @@ describe(`CLI (e2e)`, () => {
 
   describe('server-info', () => {
     it('should show server version', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
       await new ServerInfo().run();
+
+      expect(consoleSpy.mock.calls).toEqual([
+        [expect.stringMatching(new RegExp('Server is running version \\d+.\\d+.\\d+'))],
+        [expect.stringMatching('Supported image types: .*')],
+        [expect.stringMatching('Supported video types: .*')],
+        ['Images: 0, Videos: 0, Total: 0'],
+      ]);
     });
   });
 
