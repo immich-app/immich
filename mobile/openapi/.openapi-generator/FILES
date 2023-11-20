@@ -65,6 +65,8 @@ doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/EntityType.md
 doc/ExifResponseDto.md
+doc/FaceApi.md
+doc/FacesDto.md
 doc/FileChecksumDto.md
 doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
@@ -183,6 +185,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/audit_api.dart
 lib/api/authentication_api.dart
+lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
 lib/api/o_auth_api.dart
@@ -258,6 +261,7 @@ lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
+lib/model/faces_dto.dart
 lib/model/file_checksum_dto.dart
 lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
@@ -420,6 +424,8 @@ test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/entity_type_test.dart
 test/exif_response_dto_test.dart
+test/face_api_test.dart
+test/faces_dto_test.dart
 test/file_checksum_dto_test.dart
 test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart

@@ -16,11 +16,6 @@ void main() {
   // final instance = AssetFaceUpdateItem();
 
   group('test AssetFaceUpdateItem', () {
-    // String assetFaceId
-    test('to test the property `assetFaceId`', () async {
-      // TODO
-    });
-
     // String assetId
     test('to test the property `assetId`', () async {
       // TODO

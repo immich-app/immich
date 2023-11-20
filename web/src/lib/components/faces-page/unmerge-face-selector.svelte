@@ -26,10 +26,10 @@
 
   let dispatch = createEventDispatcher();
 
-  const data: AssetFaceUpdateItem[] = [];
+  const selectedPeople: AssetFaceUpdateItem[] = [];
 
   for (const assetId of assetIds) {
-    data.push({ assetId, personId });
+    selectedPeople.push({ assetId, personId });
   }
 
   onMount(async () => {
@@ -57,13 +57,15 @@
 
   const handleCreate = async () => {
     const timeout = setTimeout(() => (showLoadingSpinnerCreate = true), 100);
-    console.log(data);
-    console.log(data[0].assetId);
+
     try {
       disableButtons = true;
-      await api.personApi.createPerson({
-        assetFaceUpdateDto: { data: data },
+      const { data } = await api.personApi.createPerson();
+      await api.personApi.reassignFaces({
+        id: data.id,
+        assetFaceUpdateDto: { data: selectedPeople },
       });
+
       notificationController.show({
         message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to a new person`,
         type: NotificationType.Info,
@@ -85,7 +87,7 @@
       if (selectedPerson) {
         await api.personApi.reassignFaces({
           id: selectedPerson.id,
-          assetFaceUpdateDto: { data: data },
+          assetFaceUpdateDto: { data: selectedPeople },
         });
         notificationController.show({
           message: `Re-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''} to ${

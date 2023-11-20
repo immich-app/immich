@@ -8,9 +8,8 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**assetFaceId** | **String** |  | [optional] 
-**assetId** | **String** |  | [optional] 
-**personId** | **String** |  | [optional] 
+**assetId** | **String** |  | 
+**personId** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

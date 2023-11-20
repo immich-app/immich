@@ -1,5 +1,4 @@
 import {
-  AssetFaceResponseDto,
   AssetFaceUpdateDto,
   AssetResponseDto,
   AuthUserDto,
@@ -46,13 +45,8 @@ export class PersonController {
   }
 
   @Post()
-  createPerson(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetFaceUpdateDto): Promise<PersonResponseDto> {
-    return this.service.createPerson(authUser, dto);
-  }
-
-  @Get('faces/:id')
-  getFaces(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetFaceResponseDto[]> {
-    return this.service.getFacesById(authUser, id);
+  createPerson(@AuthUser() authUser: AuthUserDto): Promise<PersonResponseDto> {
+    return this.service.createPerson(authUser);
   }
 
   @Put()

@@ -17,18 +17,13 @@ void main() {
   // final instance = PersonApi();
 
   group('tests for PersonApi', () {
-    //Future<PersonResponseDto> createPerson(AssetFaceUpdateDto assetFaceUpdateDto) async
+    //Future<PersonResponseDto> createPerson() async
     test('test createPerson', () async {
       // TODO
     });
 
     //Future<PeopleResponseDto> getAllPeople({ bool withHidden }) async
     test('test getAllPeople', () async {
-      // TODO
-    });
-
-    //Future<List<AssetFaceResponseDto>> getFaces(String id) async
-    test('test getFaces', () async {
       // TODO
     });
 

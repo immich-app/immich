@@ -380,25 +380,24 @@ describe(PersonService.name, () => {
   });
 
   describe('reassignFaces', () => {
-    it('should throw an error when personId is invalid', async () => {
+    it('should throw an error if user has no access to the person', async () => {
       accessMock.person.hasOwnerAccess.mockResolvedValue(false);
 
       await expect(
         sut.reassignFaces(authStub.admin, personStub.noName.id, {
-          data: [{ assetFaceId: 'asset-face-1' }],
+          data: [{ personId: 'asset-face-1', assetId: '' }],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(jobMock.queue).not.toHaveBeenCalledWith();
     });
     it('should reassign a face', async () => {
       accessMock.person.hasOwnerAccess.mockResolvedValue(true);
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(true);
-      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
       await expect(
         sut.reassignFaces(authStub.admin, personStub.noName.id, {
-          data: [{ assetFaceId: personStub.withName.id }],
+          data: [{ personId: personStub.withName.id, assetId: assetStub.image.id }],
         }),
       ).resolves.toEqual([
         {
@@ -411,23 +410,13 @@ describe(PersonService.name, () => {
       ]);
       expect(jobMock.queue).not.toHaveBeenCalledWith();
     });
-    it('should throw an error if the faceId is invalid ', async () => {
-      personMock.create.mockResolvedValue(personStub.primaryPerson);
-      personMock.getFaceById.mockRejectedValue(new Error(''));
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(true);
-      await expect(
-        sut.reassignFaces(authStub.admin, personStub.noName.id, {
-          data: [{ assetFaceId: 'asset-face-1' }],
-        }),
-      ).rejects.toBeInstanceOf(Error);
-    });
   });
 
   describe('getFacesById', () => {
     it('should get the bounding boxes for an asset', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
-      await expect(sut.getFacesById(authStub.admin, faceStub.face1.assetId)).resolves.toStrictEqual([
+      await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
         {
           id: faceStub.face1.id,
           imageHeight: faceStub.face1.imageHeight,
@@ -449,7 +438,7 @@ describe(PersonService.name, () => {
     it('should reject if the user has not access to the asset', async () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
-      await expect(sut.getFacesById(authStub.admin, faceStub.primaryFace1.assetId)).rejects.toBeInstanceOf(
+      await expect(sut.getFacesById(authStub.admin, { id: faceStub.primaryFace1.assetId })).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
@@ -466,40 +455,37 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('reassignFacesById', () => {
+    it('should create a new person', async () => {
+      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(true);
+      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      personMock.reassignFace.mockResolvedValue(1);
+      personMock.getById.mockResolvedValue(personStub.noName);
+      await expect(
+        sut.reassignFacesById(authStub.admin, personStub.noName.id, {
+          ids: [faceStub.face1.id],
+        }),
+      ).resolves.toEqual([
+        {
+          birthDate: personStub.noName.birthDate,
+          isHidden: personStub.noName.isHidden,
+          id: personStub.noName.id,
+          name: personStub.noName.name,
+          thumbnailPath: personStub.noName.thumbnailPath,
+        },
+      ]);
+      expect(jobMock.queue).not.toHaveBeenCalledWith();
+    });
+  });
+
   describe('createPerson', () => {
     it('should create a new person', async () => {
       personMock.create.mockResolvedValue(personStub.primaryPerson);
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       accessMock.person.hasFaceOwnerAccess.mockResolvedValue(true);
 
-      await expect(
-        sut.createPerson(authStub.admin, {
-          data: [{ assetFaceId: faceStub.face1.id }],
-        }),
-      ).resolves.toBe(personStub.primaryPerson);
-      expect(jobMock.queue).toHaveBeenCalled();
-    });
-    it('should throw an error when personId is invalid', async () => {
-      personMock.create.mockResolvedValue(personStub.primaryPerson);
-      personMock.getFaceById.mockResolvedValue(faceStub.face1);
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(false);
-
-      await expect(
-        sut.createPerson(authStub.admin, {
-          data: [{ assetFaceId: faceStub.face1.id }],
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-    it('should throw an error if the faceId is invalid ', async () => {
-      personMock.create.mockResolvedValue(personStub.primaryPerson);
-      personMock.getFaceById.mockRejectedValue(new Error(''));
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(true);
-
-      await expect(
-        sut.createPerson(authStub.admin, {
-          data: [{ assetFaceId: faceStub.face1.id }],
-        }),
-      ).rejects.toBeInstanceOf(Error);
+      await expect(sut.createPerson(authStub.admin)).resolves.toBe(personStub.primaryPerson);
     });
   });
 

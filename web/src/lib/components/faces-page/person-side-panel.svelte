@@ -17,8 +17,8 @@
   export let assetId: string;
 
   // keep track of the changes
-  let numberOfPersonToCreate = 0;
-  let numberOfAssetFaceGenerated = 0;
+  let numberOfPersonToCreate: string[] = [];
+  let numberOfAssetFaceGenerated: string[] = [];
 
   // faces
   let peopleWithFaces: AssetFaceResponseDto[] = [];
@@ -51,18 +51,18 @@
   $onPersonThumbnail = '';
 
   $: {
-    if (selectedPersonToCreate) {
-      numberOfPersonToCreate = selectedPersonToCreate.filter((person) => person !== null).length;
-    }
-  }
-  $: {
     if ($onPersonThumbnail) {
-      numberOfAssetFaceGenerated++;
+      numberOfAssetFaceGenerated.push($onPersonThumbnail);
     }
   }
 
   $: {
-    if (numberOfPersonToCreate === numberOfAssetFaceGenerated && loaderLoadingDoneTimeout && automaticRefreshTimeout) {
+    if (
+      isEqual(numberOfPersonToCreate, numberOfAssetFaceGenerated) &&
+      loaderLoadingDoneTimeout &&
+      automaticRefreshTimeout &&
+      selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
+    ) {
       clearTimeout(loaderLoadingDoneTimeout);
       clearTimeout(automaticRefreshTimeout);
       dispatch('refresh');
@@ -74,7 +74,7 @@
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: true });
       allPeople = data.people;
-      const result = await api.personApi.getFaces({ id: assetId });
+      const result = await api.faceApi.getFaces({ id: assetId });
       peopleWithFaces = result.data;
       selectedPersonToCreate = new Array<string | null>(peopleWithFaces.length);
       selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
@@ -85,6 +85,8 @@
     }
     isShowLoadingPeople = false;
   });
+
+  const isEqual = (a: string[], b: string[]) => JSON.stringify(a.sort()) === JSON.stringify(b.sort());
 
   const searchPeople = async () => {
     if ((searchedPeople.length < 20 && searchName.startsWith(searchWord)) || searchName === '') {
@@ -176,13 +178,16 @@
           const personId = selectedPersonToReassign[i]?.id;
 
           if (personId) {
-            await api.personApi.reassignFaces({
+            await api.faceApi.reassignFacesById({
               id: personId,
-              assetFaceUpdateDto: { data: [{ assetFaceId: peopleWithFaces[i].id }] },
+              facesDto: { ids: [peopleWithFaces[i].id] },
             });
           } else if (selectedPersonToCreate[i]) {
-            await api.personApi.createPerson({
-              assetFaceUpdateDto: { data: [{ assetFaceId: peopleWithFaces[i].id }] },
+            const { data } = await api.personApi.createPerson();
+            numberOfPersonToCreate.push(data.id);
+            await api.faceApi.reassignFacesById({
+              id: data.id,
+              facesDto: { ids: [peopleWithFaces[i].id] },
             });
           }
         }
@@ -197,7 +202,7 @@
     }
 
     isShowLoadingDone = false;
-    if (numberOfPersonToCreate === 0) {
+    if (numberOfPersonToCreate.length === 0) {
       clearTimeout(loaderLoadingDoneTimeout);
       dispatch('refresh');
     } else {

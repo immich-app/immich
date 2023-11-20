@@ -11,7 +11,6 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createPerson**](PersonApi.md#createperson) | **POST** /person | 
 [**getAllPeople**](PersonApi.md#getallpeople) | **GET** /person | 
-[**getFaces**](PersonApi.md#getfaces) | **GET** /person/faces/{id} | 
 [**getPerson**](PersonApi.md#getperson) | **GET** /person/{id} | 
 [**getPersonAssets**](PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
 [**getPersonStatistics**](PersonApi.md#getpersonstatistics) | **GET** /person/{id}/statistics | 
@@ -23,7 +22,7 @@ Method | HTTP request | Description
 
 
 # **createPerson**
-> PersonResponseDto createPerson(assetFaceUpdateDto)
+> PersonResponseDto createPerson()
 
 
 
@@ -46,10 +45,9 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = PersonApi();
-final assetFaceUpdateDto = AssetFaceUpdateDto(); // AssetFaceUpdateDto | 
 
 try {
-    final result = api_instance.createPerson(assetFaceUpdateDto);
+    final result = api_instance.createPerson();
     print(result);
 } catch (e) {
     print('Exception when calling PersonApi->createPerson: $e\n');
@@ -57,10 +55,7 @@ try {
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **assetFaceUpdateDto** | [**AssetFaceUpdateDto**](AssetFaceUpdateDto.md)|  | 
+This endpoint does not need any parameter.
 
 ### Return type
 
@@ -72,7 +67,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -120,61 +115,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**PeopleResponseDto**](PeopleResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getFaces**
-> List<AssetFaceResponseDto> getFaces(id)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = PersonApi();
-final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-
-try {
-    final result = api_instance.getFaces(id);
-    print(result);
-} catch (e) {
-    print('Exception when calling PersonApi->getFaces: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **id** | **String**|  | 
-
-### Return type
-
-[**List<AssetFaceResponseDto>**](AssetFaceResponseDto.md)
 
 ### Authorization
 
