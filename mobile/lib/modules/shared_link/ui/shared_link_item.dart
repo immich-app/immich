@@ -148,8 +148,8 @@ class SharedLinkItem extends ConsumerWidget {
           label: Text(
             labelText,
             style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
               color: isDarkMode ? Colors.black : Colors.white,
             ),
           ),

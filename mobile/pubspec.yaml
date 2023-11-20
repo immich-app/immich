@@ -97,27 +97,28 @@ flutter:
     - assets/
     - assets/i18n/
   fonts:
-    - family: WorkSans
-      fonts:
-        - asset: fonts/WorkSans.ttf
-        - asset: fonts/WorkSans-Italic.ttf
-          style: italic
-        # - asset: fonts/WorkSans-Medium.ttf
-        #   weight: 500
-        # - asset: fonts/WorkSans-SemiBold.ttf
-        #   weight: 600
-        # - asset: fonts/WorkSans-Bold.ttf
-        #   weight: 700
-        # - asset: fonts/WorkSans-ExtraBold.ttf
-        #   weight: 800
-        # - asset: fonts/WorkSans-Black.ttf
-        #   weight: 900
     - family: SnowburstOne
       fonts:
         - asset: fonts/SnowburstOne.ttf
     - family: Inconsolata
       fonts:
         - asset: fonts/Inconsolata-Regular.ttf
+    - family: Overpass
+      fonts:
+        - asset: fonts/overpass/Overpass-Regular.ttf
+          weight: 400
+        - asset: fonts/overpass/Overpass-Italic.ttf
+          style: italic
+        - asset: fonts/overpass/Overpass-Medium.ttf
+          weight: 500
+        - asset: fonts/overpass/Overpass-SemiBold.ttf
+          weight: 600
+        - asset: fonts/overpass/Overpass-Bold.ttf
+          weight: 700
+    - family: OverpassMono
+      fonts:
+        - asset: fonts/overpass/OverpassMono.ttf
+
 flutter_icons:
   image_path_android: "assets/immich-logo-no-outline.png"
   image_path_ios: "assets/immich-logo-no-outline.png"

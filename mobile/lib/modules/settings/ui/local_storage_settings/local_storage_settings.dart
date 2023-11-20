@@ -27,30 +27,21 @@ class LocalStorageSettings extends HookConsumerWidget {
 
     return ExpansionTile(
       textColor: context.primaryColor,
-      title: const Text(
+      title: Text(
         "cache_settings_tile_title",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         "cache_settings_tile_subtitle",
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         ListTile(
           title: Text(
             "cache_settings_duplicated_assets_title",
-            style: context.textTheme.labelLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: context.textTheme.titleSmall,
           ).tr(args: ["${cacheItemCount.value}"]),
           subtitle: const Text(
             "cache_settings_duplicated_assets_subtitle",
-            style: TextStyle(
-              fontSize: 13,
-            ),
           ).tr(),
           trailing: TextButton(
             onPressed: cacheItemCount.value > 0 ? clearCache : null,

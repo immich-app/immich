@@ -28,22 +28,19 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
 
     return ExpansionTile(
       textColor: context.primaryColor,
-      title: const Text(
+      title: Text(
         'theme_setting_image_viewer_quality_title',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         'theme_setting_image_viewer_quality_subtitle',
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         ListTile(
-          title: const Text('setting_image_viewer_help').tr(),
-          dense: true,
+          title: Text(
+            'setting_image_viewer_help',
+            style: context.textTheme.bodyMedium,
+          ).tr(),
         ),
         SettingsSwitchListTile(
           appSettingService: settings,

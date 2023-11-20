@@ -210,7 +210,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             leading: const Icon(Icons.ios_share_rounded),
             title: const Text(
               'album_viewer_appbar_share_to',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.w500),
             ).tr(),
             onTap: () => onShareAssetsTo(),
           ),
@@ -219,7 +219,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   leading: const Icon(Icons.delete_sweep_rounded),
                   title: const Text(
                     'album_viewer_appbar_share_remove',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.w500),
                   ).tr(),
                   onTap: () => onRemoveFromAlbumPressed(),
                 )
@@ -232,7 +232,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   leading: const Icon(Icons.delete_forever_rounded),
                   title: const Text(
                     'album_viewer_appbar_share_delete',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.w500),
                   ).tr(),
                   onTap: () => onDeleteAlbumPressed(),
                 )
@@ -240,7 +240,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                   leading: const Icon(Icons.person_remove_rounded),
                   title: const Text(
                     'album_viewer_appbar_share_leave',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.w500),
                   ).tr(),
                   onTap: () => onLeaveAlbumPressed(),
                 ),
@@ -258,7 +258,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           },
           title: const Text(
             "album_viewer_page_share_add_users",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
         ListTile(
@@ -269,7 +269,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           },
           title: const Text(
             "control_bottom_app_bar_share",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
         ListTile(
@@ -277,7 +277,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           onTap: () => context.autoNavigate(AlbumOptionsRoute(album: album)),
           title: const Text(
             "translated_text_options",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
       ];
@@ -291,7 +291,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           },
           title: const Text(
             "share_add_photos",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
       ];

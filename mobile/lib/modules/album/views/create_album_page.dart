@@ -94,10 +94,7 @@ class CreateAlbumPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 200, left: 18),
             child: Text(
               'create_shared_album_page_share_add_assets',
-              style: context.textTheme.displayMedium?.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.normal,
-              ),
+              style: context.textTheme.labelLarge,
             ).tr(),
           ),
         );
@@ -119,7 +116,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                 side: BorderSide(
                   color: context.isDarkTheme
                       ? const Color.fromARGB(255, 63, 63, 63)
-                      : const Color.fromARGB(255, 206, 206, 206),
+                      : const Color.fromARGB(255, 129, 129, 129),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
@@ -134,9 +131,8 @@ class CreateAlbumPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
                   'create_shared_album_page_share_select_photos',
-                  style: context.textTheme.labelLarge?.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: context.primaryColor,
                   ),
                 ).tr(),
               ),
@@ -222,11 +218,8 @@ class CreateAlbumPage extends HookConsumerWidget {
           },
           icon: const Icon(Icons.close_rounded),
         ),
-        title: Text(
+        title: const Text(
           'share_create_album',
-          style: context.textTheme.displayMedium?.copyWith(
-            color: context.primaryColor,
-          ),
         ).tr(),
         actions: [
           if (isSharedAlbum)

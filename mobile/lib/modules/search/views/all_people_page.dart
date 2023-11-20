@@ -15,13 +15,8 @@ class AllPeoplePage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'all_people_page_title',
-          style: TextStyle(
-            color: context.primaryColor,
-            fontWeight: FontWeight.bold,
-            fontSize: 16.0,
-          ),
         ).tr(),
         leading: IconButton(
           onPressed: () => context.autoPop(),

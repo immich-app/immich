@@ -18,6 +18,8 @@ class AppBarServerInfo extends HookConsumerWidget {
     ServerInfo serverInfoState = ref.watch(serverInfoProvider);
 
     final appInfo = useState({});
+    const titleFontSize = 12.0;
+    const contentFontSize = 11.0;
 
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -63,7 +65,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                   style: TextStyle(
                     fontSize: 11,
                     color: context.primaryColor,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -83,9 +85,9 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         "server_info_box_app_version".tr(),
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -97,7 +99,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: contentFontSize,
                           color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
@@ -123,9 +125,9 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         "server_info_box_server_version".tr(),
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -139,7 +141,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                             ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
                             : "--",
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: contentFontSize,
                           color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
@@ -165,9 +167,9 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         "server_info_box_server_url".tr(),
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: titleFontSize,
                           color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -194,7 +196,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                         child: Text(
                           getServerUrl() ?? '--',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: contentFontSize,
                             color: context.textTheme.labelSmall?.color
                                 ?.withOpacity(0.5),
                             fontWeight: FontWeight.bold,
@@ -234,9 +236,9 @@ class AppBarServerInfo extends HookConsumerWidget {
                           Text(
                             "server_info_box_latest_release".tr(),
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: titleFontSize,
                               color: context.textTheme.labelSmall?.color,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -252,7 +254,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                             ? "${serverInfoState.latestVersion.major}.${serverInfoState.latestVersion.minor}.${serverInfoState.latestVersion.patch}"
                             : "--",
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: contentFontSize,
                           color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,

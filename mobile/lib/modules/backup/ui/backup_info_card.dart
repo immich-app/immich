@@ -28,17 +28,17 @@ class BackupInfoCard extends StatelessWidget {
       elevation: 0,
       borderOnForeground: false,
       child: ListTile(
-        minVerticalPadding: 15,
+        minVerticalPadding: 18,
         isThreeLine: true,
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: context.textTheme.titleMedium,
         ),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 4.0, right: 18.0),
           child: Text(
             subtitle,
-            style: const TextStyle(fontSize: 12),
+            style: context.textTheme.bodyMedium,
           ),
         ),
         trailing: Column(
@@ -46,9 +46,12 @@ class BackupInfoCard extends StatelessWidget {
           children: [
             Text(
               info,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: context.textTheme.titleLarge,
             ),
-            const Text("backup_info_card_assets").tr(),
+            Text(
+              "backup_info_card_assets",
+              style: context.textTheme.labelLarge,
+            ).tr(),
           ],
         ),
       ),
