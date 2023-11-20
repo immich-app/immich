@@ -77,7 +77,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/immich-app/immich",
+    "url": "git+https://github.com/immich-app/immich.git",
     "directory": "cli"
   }
 }
