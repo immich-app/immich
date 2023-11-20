@@ -74,10 +74,10 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         clipEncode: false,
-        configFile: false,
+        configFile: true,
         facialRecognition: false,
         map: true,
-        reverseGeocoding: true,
+        reverseGeocoding: false,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,

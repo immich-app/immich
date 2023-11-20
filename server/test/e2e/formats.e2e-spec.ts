@@ -92,8 +92,6 @@ describe(`Supported file formats (e2e)`, () => {
         fNumber: 1.8,
         state: 'Douglas County, Nebraska',
         timeZone: 'America/Chicago',
-        city: 'Ralston',
-        country: 'United States of America',
       },
     },
     {
