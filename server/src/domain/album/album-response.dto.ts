@@ -52,7 +52,7 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean): AlbumRespons
     startDate: entity.startDate ? entity.startDate : undefined,
     endDate: entity.endDate ? entity.endDate : undefined,
     assets: (withAssets ? assets : []).map((asset) => mapAsset(asset)),
-    assetCount: entity.assets?.length || 0,
+    assetCount: entity.assetCount,
     isActivityEnabled: entity.isActivityEnabled,
   };
 };

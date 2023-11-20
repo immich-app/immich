@@ -82,7 +82,7 @@
         return orderBy(albums, [(album) => new Date(album.createdAt)], [reverse ? 'desc' : 'asc']);
       },
     },
-    mostOld: {
+    mostRecent: {
       title: 'Most recent photo',
       sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]',
@@ -102,7 +102,7 @@
         });
       },
     },
-    mostRecent: {
+    mostOld: {
       title: 'Oldest photo',
       sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]',

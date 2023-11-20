@@ -63,21 +63,31 @@ export class AlbumEntity {
 
   @VirtualColumn({
     query: (alias) => `
-    (SELECT MIN(assets."fileCreatedAt") 
+    SELECT MIN(assets."fileCreatedAt") 
     FROM "assets" assets
     JOIN "albums_assets_assets" aa ON aa."assetsId" = assets.id
-    WHERE aa."albumsId" = ${alias}.id)
+    WHERE aa."albumsId" = ${alias}.id
     `,
   })
   startDate!: Date | null;
 
   @VirtualColumn({
     query: (alias) => `
-    (SELECT MAX(assets."fileCreatedAt") 
+    SELECT MAX(assets."fileCreatedAt") 
     FROM "assets" assets
     JOIN "albums_assets_assets" aa ON aa."assetsId" = assets.id
-    WHERE aa."albumsId" = ${alias}.id)
+    WHERE aa."albumsId" = ${alias}.id
     `,
   })
   endDate!: Date | null;
+
+  @VirtualColumn({
+    query: (alias) => `
+    SELECT COUNT(assets."id") 
+    FROM "assets" assets
+    JOIN "albums_assets_assets" aa ON aa."assetsId" = assets.id
+    WHERE aa."albumsId" = ${alias}.id
+    `,
+  })
+  assetCount!: number;
 }

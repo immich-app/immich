@@ -181,6 +181,9 @@ export const sharedLinkStub = {
       sharedUsers: [],
       sharedLinks: [],
       isActivityEnabled: true,
+      startDate: today,
+      endDate: today,
+      assetCount: 1,
       assets: [
         {
           id: 'id_1',

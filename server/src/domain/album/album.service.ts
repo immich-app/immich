@@ -68,19 +68,12 @@ export class AlbumService {
 
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
-    const albumsAssetCount = await this.albumRepository.getAssetCountForIds(albums.map((album) => album.id));
-    const albumsAssetCountObj = albumsAssetCount.reduce((obj: Record<string, number>, { albumId, assetCount }) => {
-      obj[albumId] = assetCount;
-      return obj;
-    }, {});
-
     return Promise.all(
       albums.map(async (album) => {
         const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          assetCount: albumsAssetCountObj[album.id],
           lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
         };
       }),
