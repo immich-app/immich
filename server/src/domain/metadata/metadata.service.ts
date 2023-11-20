@@ -39,7 +39,7 @@ interface DirectoryEntry {
 type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
   ExifEntity,
   'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
->;
+> & { dateTimeOriginal: Date };
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
 const tzOffset = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.tzoffsetMinutes : null);
@@ -181,7 +181,7 @@ export class MetadataService {
     await this.applyReverseGeocoding(asset, exifData);
     await this.assetRepository.upsertExif(exifData);
 
-    const dateTimeOriginal = exifDate(firstDateTime(tags as Tags)) ?? exifData.dateTimeOriginal;
+    const dateTimeOriginal = exifData.dateTimeOriginal;
     let localDateTime = dateTimeOriginal ?? undefined;
 
     const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
