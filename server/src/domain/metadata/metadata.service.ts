@@ -340,6 +340,31 @@ export class MetadataService {
     const stats = await this.storageRepository.stat(asset.originalPath);
     const mediaTags = await this.repository.getExifTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
+
+    const dateDateSidecarTags = firstDateTime(sidecarTags as Tags, [
+      'SubSecDateTimeOriginal',
+      'DateTimeOriginal',
+      'SubSecCreateDate',
+      'CreationDate',
+      'CreateDate',
+      'SubSecMediaCreateDate',
+      'MediaCreateDate',
+      'DateTimeCreated',
+    ]);
+
+    if (dateDateSidecarTags && mediaTags) {
+      // remove time from mediaTags, since sidecarTags has a more accurate time
+
+      mediaTags.SubSecDateTimeOriginal = undefined;
+      mediaTags.DateTimeOriginal = undefined;
+      mediaTags.SubSecCreateDate = undefined;
+      mediaTags.CreationDate = undefined;
+      mediaTags.CreateDate = undefined;
+      mediaTags.SubSecMediaCreateDate = undefined;
+      mediaTags.MediaCreateDate = undefined;
+      mediaTags.DateTimeCreated = undefined;
+    }
+
     const tags = { ...mediaTags, ...sidecarTags };
 
     this.logger.verbose('Exif Tags', tags);
