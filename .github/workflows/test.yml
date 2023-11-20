@@ -21,7 +21,7 @@ jobs:
           submodules: "recursive"
 
       - name: Run e2e tests
-        run: docker compose -f ./docker/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+        run: make test-server-e2e
 
   doc-tests:
     name: Run documentation checks
@@ -125,7 +125,7 @@ jobs:
           submodules: "recursive"
 
       - name: Run e2e tests
-        run: docker compose -f ./docker/docker-compose.cli-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-cli --remove-orphans --build
+        run: make test-cli-e2e
 
   web-unit-tests:
     name: Run web unit test suites and checks
