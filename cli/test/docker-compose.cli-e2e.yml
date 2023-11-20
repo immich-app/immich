@@ -1,18 +1,16 @@
-version: "3.8"
+version: '3.8'
 
-name: "immich-test-e2e"
+name: 'immich-test-cli-e2e'
 
 services:
-  immich-server:
-    image: immich-server-dev:latest
+  immich-cli:
+    image: immich-cli-dev:latest
     build:
-      context: ../
-      dockerfile: server/Dockerfile
-      target: dev
+      context: ../../
+      dockerfile: cli/Dockerfile
+      target: test
+    working_dir: /usr/src/app/cli
     command: npm run test:e2e
-    volumes:
-      - ../server:/usr/src/app
-      - /usr/src/app/node_modules
     environment:
       - DB_HOSTNAME=database
       - DB_USERNAME=postgres

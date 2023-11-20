@@ -1,15 +1,14 @@
-version: "3.8"
+version: '3.8'
 
-name: "immich-test-cli-e2e"
+name: 'immich-test-e2e'
 
 services:
-  immich-cli:
-    image: immich-cli-dev:latest
+  immich-server:
+    image: immich-server-dev:latest
     build:
-      context: ../
-      dockerfile: cli/Dockerfile
-      target: builder
-    working_dir: /usr/src/app/cli
+      context: ../../
+      dockerfile: server/Dockerfile
+      target: dev
     command: npm run test:e2e
     volumes:
       - /usr/src/app/node_modules
