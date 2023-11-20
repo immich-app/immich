@@ -18,14 +18,15 @@
 </a>
 <br/>
 <p align="center">
-  <a href="README_zh_CN.md">中文</a>
-  <a href="README_tr_TR.md">Türkçe</a>
+  <a href="README.md">English</a>
   <a href="README_ca_ES.md">Català</a>
   <a href="README_es_ES.md">Español</a>
-  <a href="README_fr_FR.md">Français</a>
-  <a href="README_nl_NL.md">Nederlands</a>
-  <a href="README_ja_JP.md">日本語</a>
   <a href="README_it_IT.md">Italiano</a>
+  <a href="README_ja_JP.md">日本語</a>
+  <a href="README_ko_KR.md">한국어</a>
+  <a href="README_nl_NL.md">Nederlands</a>
+  <a href="README_tr_TR.md">Türkçe</a>
+  <a href="README_zh_CN.md">中文</a>
 </p>
 
 ## Clause de non-responsabilité
