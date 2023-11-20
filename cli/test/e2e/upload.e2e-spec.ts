@@ -1,23 +1,13 @@
 import { api } from '@test/api';
-import * as fs from 'fs';
-import {
-  IMMICH_TEST_ASSET_PATH,
-  IMMICH_TEST_ASSET_TEMP_PATH,
-  restoreTempFolder,
-  testApp,
-} from 'immich/test/test-utils';
+import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from 'immich/test/test-utils';
 import { LoginResponseDto } from 'src/api/open-api';
-import ServerInfo from 'src/commands/server-info';
 import Upload from 'src/commands/upload';
-import { INestApplication } from '@nestjs/common';
-import { Http2SecureServer } from 'http2';
 import { APIKeyCreateResponseDto } from '@app/domain';
 
 describe(`upload (e2e)`, () => {
   let server: any;
   let admin: LoginResponseDto;
   let apiKey: APIKeyCreateResponseDto;
-  const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
   beforeAll(async () => {
     server = (await testApp.create({ jobs: true })).getHttpServer();
