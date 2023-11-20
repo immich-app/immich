@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   e2e-tests:
-    name: Run end-to-end test suites
+    name: Run server end-to-end tests
     runs-on: ubuntu-latest
 
     steps:
@@ -46,7 +46,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   server-unit-tests:
-    name: Run server unit test suites and checks
+    name: Run server checks and unit tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -76,7 +76,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   cli-unit-tests:
-    name: Run cli unit tests
+    name: Run cli checks and unit tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -111,7 +111,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   cli-e2e-tests:
-    name: Run cli e2e tests
+    name: Run CLI end-to-end tests
     strategy:
       matrix:
         os: [ubuntu-latest] # TODO: macos and windows
