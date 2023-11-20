@@ -1,10 +1,12 @@
 {
   "name": "@immich/cli",
-  "version": "2.0.0",
+  "version": "2.0.3",
+  "description": "Command Line Interface (CLI) for Immich",
   "main": "dist/index.js",
   "bin": {
     "immich": "./dist/index.js"
   },
+  "license": "MIT",
   "dependencies": {
     "axios": "^1.6.2",
     "byte-size": "^8.1.1",
@@ -45,7 +47,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
-    "prepack": "yarn build ",
+    "prepack": "npm run build",
     "test": "jest",
     "test:cov": "jest --coverage",
     "format": "prettier --check .",
