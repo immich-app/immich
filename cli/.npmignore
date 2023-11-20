@@ -1,2 +1,12 @@
-dist/
-node_modules/
+**/*.spec.js
+test/**
+upload/**
+.editorconfig
+.eslintignore
+.eslintrc.js
+.prettierignore
+.prettierrc
+package-lock.json
+testSetup.js
+tsconfig.json
+tsconfig.build.json
