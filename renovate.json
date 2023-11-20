@@ -3,6 +3,11 @@
   "extends": ["config:base"],
   "packageRules": [
     {
+      "matchFileNames": ["cli/**"],
+      "groupName": "@immich/cli",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
       "matchFileNames": ["mobile/**"],
       "groupName": "mobile",
       "matchUpdateTypes": ["minor", "patch"]
