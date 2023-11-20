@@ -251,6 +251,7 @@ export class AccessCore {
 
       case Permission.PERSON_REASSIGN:
         return this.repository.person.hasFaceOwnerAccess(authUser.id, id);
+
       case Permission.PARTNER_UPDATE:
         return this.repository.partner.hasUpdateAccess(authUser.id, id);
 

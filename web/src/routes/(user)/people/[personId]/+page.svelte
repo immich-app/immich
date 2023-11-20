@@ -398,7 +398,7 @@
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
-        <MenuOption text="Unmerge assets" on:click={handleReassignAssets} />
+        <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}

@@ -45,7 +45,7 @@ export class PersonController {
     return this.service.reassignFaces(authUser, id, dto);
   }
 
-  @Post('')
+  @Post()
   createPerson(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetFaceUpdateDto): Promise<PersonResponseDto> {
     return this.service.createPerson(authUser, dto);
   }
