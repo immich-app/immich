@@ -341,7 +341,7 @@ export class MetadataService {
     const mediaTags = await this.repository.getExifTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
 
-    const dateDateSidecarTags = firstDateTime(sidecarTags as Tags, [
+    const tagKeys = [
       'SubSecDateTimeOriginal',
       'DateTimeOriginal',
       'SubSecCreateDate',
@@ -350,19 +350,15 @@ export class MetadataService {
       'SubSecMediaCreateDate',
       'MediaCreateDate',
       'DateTimeCreated',
-    ]);
+    ];
+
+    const dateDateSidecarTags = firstDateTime(sidecarTags as Tags, tagKeys);
 
     if (dateDateSidecarTags && mediaTags) {
       // remove time from mediaTags, since sidecarTags has a more accurate time
-
-      mediaTags.SubSecDateTimeOriginal = undefined;
-      mediaTags.DateTimeOriginal = undefined;
-      mediaTags.SubSecCreateDate = undefined;
-      mediaTags.CreationDate = undefined;
-      mediaTags.CreateDate = undefined;
-      mediaTags.SubSecMediaCreateDate = undefined;
-      mediaTags.MediaCreateDate = undefined;
-      mediaTags.DateTimeCreated = undefined;
+      tagKeys.forEach((key) => {
+        delete (mediaTags as any)[key];
+      });
     }
 
     const tags = { ...mediaTags, ...sidecarTags };
