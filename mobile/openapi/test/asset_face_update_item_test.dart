@@ -21,6 +21,16 @@ void main() {
       // TODO
     });
 
+    // String assetId
+    test('to test the property `assetId`', () async {
+      // TODO
+    });
+
+    // String personId
+    test('to test the property `personId`', () async {
+      // TODO
+    });
+
 
   });
 

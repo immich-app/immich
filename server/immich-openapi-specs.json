@@ -6705,11 +6705,14 @@
         "properties": {
           "assetFaceId": {
             "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "personId": {
+            "type": "string"
           }
         },
-        "required": [
-          "assetFaceId"
-        ],
         "type": "object"
       },
       "AssetFaceWithoutPersonResponseDto": {

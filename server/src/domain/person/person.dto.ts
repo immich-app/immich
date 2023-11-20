@@ -107,9 +107,17 @@ export class AssetFaceUpdateDto {
 }
 
 export class AssetFaceUpdateItem {
+  @Optional()
   @IsString()
-  @IsNotEmpty()
-  assetFaceId!: string;
+  assetFaceId?: string;
+
+  @Optional()
+  @IsString()
+  personId?: string;
+
+  @Optional()
+  @IsString()
+  assetId?: string;
 }
 
 export class PersonStatisticsResponseDto {

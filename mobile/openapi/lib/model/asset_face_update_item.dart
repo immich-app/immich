@@ -13,26 +13,68 @@ part of openapi.api;
 class AssetFaceUpdateItem {
   /// Returns a new [AssetFaceUpdateItem] instance.
   AssetFaceUpdateItem({
-    required this.assetFaceId,
+    this.assetFaceId,
+    this.assetId,
+    this.personId,
   });
 
-  String assetFaceId;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? assetFaceId;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? assetId;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? personId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceUpdateItem &&
-     other.assetFaceId == assetFaceId;
+     other.assetFaceId == assetFaceId &&
+     other.assetId == assetId &&
+     other.personId == personId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetFaceId.hashCode);
+    (assetFaceId == null ? 0 : assetFaceId!.hashCode) +
+    (assetId == null ? 0 : assetId!.hashCode) +
+    (personId == null ? 0 : personId!.hashCode);
 
   @override
-  String toString() => 'AssetFaceUpdateItem[assetFaceId=$assetFaceId]';
+  String toString() => 'AssetFaceUpdateItem[assetFaceId=$assetFaceId, assetId=$assetId, personId=$personId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.assetFaceId != null) {
       json[r'assetFaceId'] = this.assetFaceId;
+    } else {
+    //  json[r'assetFaceId'] = null;
+    }
+    if (this.assetId != null) {
+      json[r'assetId'] = this.assetId;
+    } else {
+    //  json[r'assetId'] = null;
+    }
+    if (this.personId != null) {
+      json[r'personId'] = this.personId;
+    } else {
+    //  json[r'personId'] = null;
+    }
     return json;
   }
 
@@ -44,7 +86,9 @@ class AssetFaceUpdateItem {
       final json = value.cast<String, dynamic>();
 
       return AssetFaceUpdateItem(
-        assetFaceId: mapValueOfType<String>(json, r'assetFaceId')!,
+        assetFaceId: mapValueOfType<String>(json, r'assetFaceId'),
+        assetId: mapValueOfType<String>(json, r'assetId'),
+        personId: mapValueOfType<String>(json, r'personId'),
       );
     }
     return null;
@@ -92,7 +136,6 @@ class AssetFaceUpdateItem {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'assetFaceId',
   };
 }
 

@@ -647,7 +647,19 @@ export interface AssetFaceUpdateItem {
      * @type {string}
      * @memberof AssetFaceUpdateItem
      */
-    'assetFaceId': string;
+    'assetFaceId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFaceUpdateItem
+     */
+    'assetId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetFaceUpdateItem
+     */
+    'personId'?: string;
 }
 /**
  * 

@@ -4,6 +4,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
+  import UnMergeFaceSelector from '$lib/components/faces-page/unmerge-face-selector.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
@@ -47,6 +48,7 @@
     MERGE_FACES = 'merge-faces',
     SUGGEST_MERGE = 'suggest-merge',
     BIRTH_DATE = 'birth-date',
+    UNASSIGN_ASSETS = 'unassign-faces',
   }
 
   let assetStore = new AssetStore({
@@ -161,6 +163,16 @@
       refreshAssetGrid = !refreshAssetGrid;
     }
   });
+
+  const handleUnmerge = () => {
+    $assetStore.removeAssets(Array.from($selectedAssets).map((a) => a.id));
+    assetInteractionStore.clearMultiselect();
+    viewMode = ViewMode.VIEW_ASSETS;
+  };
+
+  const handleReassignAssets = () => {
+    viewMode = ViewMode.UNASSIGN_ASSETS;
+  };
 
   const hideFace = async () => {
     try {
@@ -340,6 +352,15 @@
   };
 </script>
 
+{#if viewMode === ViewMode.UNASSIGN_ASSETS}
+  <UnMergeFaceSelector
+    assetIds={Array.from($selectedAssets).map((a) => a.id)}
+    personId={data.person.id}
+    on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    on:confirm={handleUnmerge}
+  />
+{/if}
+
 {#if viewMode === ViewMode.SUGGEST_MERGE}
   <MergeSuggestionModal
     {personMerge1}
@@ -377,6 +398,7 @@
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
+        <MenuOption text="Unmerge assets" on:click={handleReassignAssets} />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}
