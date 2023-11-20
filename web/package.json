@@ -38,7 +38,7 @@
     "autoprefixer": "^10.4.13",
     "babel-jest": "^29.4.3",
     "eslint": "^8.34.0",
-    "eslint-config-prettier": "^8.6.0",
+    "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-svelte": "^2.30.0",
     "factory.ts": "^1.3.0",
     "identity-obj-proxy": "^3.0.0",
