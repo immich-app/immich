@@ -74,5 +74,10 @@
     },
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/immich-app/immich.git",
+    "directory": "cli"
   }
 }
