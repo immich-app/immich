@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import { basename } from 'node:path';
 import crypto from 'crypto';
-import { AssetApiUploadFileRequest } from 'src/api/open-api';
 import Os from 'os';
+import FormData from 'form-data';
 
 export class Asset {
   readonly path: string;
@@ -40,22 +40,32 @@ export class Asset {
     } catch (error) {}
   }
 
-  getUploadFileRequest(): AssetApiUploadFileRequest {
+  getUploadFormData(): FormData {
     if (!this.assetData) throw new Error('Asset data not set');
     if (!this.deviceAssetId) throw new Error('Device asset id not set');
     if (!this.fileCreatedAt) throw new Error('File created at not set');
     if (!this.fileModifiedAt) throw new Error('File modified at not set');
     if (!this.deviceId) throw new Error('Device id not set');
 
-    return {
+    const data: any = {
       assetData: this.assetData as any,
       deviceAssetId: this.deviceAssetId,
       deviceId: this.deviceId,
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
-      isFavorite: false,
-      sidecarData: this.sidecarData as any,
+      isFavorite: String(false),
     };
+    const formData = new FormData();
+
+    for (const prop in data) {
+      formData.append(prop, data[prop]);
+    }
+
+    if (this.sidecarData) {
+      formData.append('sidecarData', this.sidecarData);
+    }
+
+    return formData;
   }
 
   private getReadStream(path: string): fs.ReadStream {

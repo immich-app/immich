@@ -6,6 +6,8 @@ import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
 import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
+import axios, { AxiosRequestConfig } from 'axios';
+import FormData from 'form-data';
 
 export default class Upload extends BaseCommand {
   uploadLength!: number;
@@ -75,7 +77,8 @@ export default class Upload extends BaseCommand {
 
         if (!skipUpload) {
           if (!options.dryRun) {
-            const res = await this.immichApi.assetApi.uploadFile(asset.getUploadFileRequest());
+            const formData = asset.getUploadFormData();
+            const res = await this.uploadAsset(formData);
 
             if (options.album && asset.albumName) {
               let album = existingAlbums.find((album) => album.albumName === asset.albumName);
@@ -133,5 +136,25 @@ export default class Upload extends BaseCommand {
         console.log('Deletion complete');
       }
     }
+  }
+
+  private async uploadAsset(data: FormData): Promise<axios.AxiosResponse> {
+    const url = this.immichApi.apiConfiguration.instanceUrl + '/asset/upload';
+
+    const config: AxiosRequestConfig = {
+      method: 'post',
+      maxRedirects: 0,
+      url,
+      headers: {
+        'x-api-key': this.immichApi.apiConfiguration.apiKey,
+        ...data.getHeaders(),
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      data,
+    };
+
+    const res = await axios(config);
+    return res;
   }
 }
