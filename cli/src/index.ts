@@ -5,16 +5,17 @@ import Upload from './commands/upload';
 import ServerInfo from './commands/server-info';
 import LoginKey from './commands/login/key';
 import Logout from './commands/logout';
+import { version } from '../package.json';
+
 import path from 'node:path';
 import os from 'os';
-import { cliVersion } from './constants';
 
 const userHomeDir = os.homedir();
 const configDir = path.join(userHomeDir, '.config/immich/');
 
 const program = new Command()
   .name('immich')
-  .version(cliVersion.toString())
+  .version(version)
   .description('Command line interface for Immich')
   .addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDir));
 

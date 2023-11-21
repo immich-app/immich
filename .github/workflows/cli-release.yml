@@ -10,7 +10,7 @@ jobs:
         working-directory: ./cli
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:

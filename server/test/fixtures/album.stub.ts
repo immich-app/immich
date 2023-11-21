@@ -19,9 +19,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    startDate: null,
-    endDate: null,
-    assetCount: 0,
   }),
   sharedWithUser: Object.freeze<AlbumEntity>({
     id: 'album-2',
@@ -38,9 +35,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [userStub.user1],
     isActivityEnabled: true,
-    startDate: null,
-    endDate: null,
-    assetCount: 0,
   }),
   sharedWithMultiple: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -57,9 +51,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [userStub.user1, userStub.user2],
     isActivityEnabled: true,
-    startDate: null,
-    endDate: null,
-    assetCount: 0,
   }),
   sharedWithAdmin: Object.freeze<AlbumEntity>({
     id: 'album-3',
@@ -76,9 +67,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [userStub.admin],
     isActivityEnabled: true,
-    startDate: null,
-    endDate: null,
-    assetCount: 0,
   }),
   oneAsset: Object.freeze<AlbumEntity>({
     id: 'album-4',
@@ -95,9 +83,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    startDate: assetStub.image.fileCreatedAt,
-    endDate: assetStub.image.fileCreatedAt,
-    assetCount: 1,
   }),
   twoAssets: Object.freeze<AlbumEntity>({
     id: 'album-4a',
@@ -114,9 +99,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    startDate: assetStub.withLocation.fileCreatedAt,
-    endDate: assetStub.image.fileCreatedAt,
-    assetCount: 2,
   }),
   emptyWithInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -133,9 +115,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    startDate: null,
-    endDate: null,
-    assetCount: 0,
   }),
   emptyWithValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-5',
@@ -152,9 +131,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    startDate: null,
-    endDate: null,
-    assetCount: 0,
   }),
   oneAssetInvalidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -171,9 +147,6 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    startDate: assetStub.image.fileCreatedAt,
-    endDate: assetStub.image.fileCreatedAt,
-    assetCount: 1,
   }),
   oneAssetValidThumbnail: Object.freeze<AlbumEntity>({
     id: 'album-6',
@@ -190,8 +163,5 @@ export const albumStub = {
     sharedLinks: [],
     sharedUsers: [],
     isActivityEnabled: true,
-    startDate: assetStub.image.fileCreatedAt,
-    endDate: assetStub.image.fileCreatedAt,
-    assetCount: 1,
   }),
 };
