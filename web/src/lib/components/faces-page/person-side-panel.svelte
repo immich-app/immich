@@ -54,7 +54,7 @@
     if ($onPersonThumbnail) {
       numberOfAssetFaceGenerated.push($onPersonThumbnail);
       if (
-        isEqual(numberOfPersonToCreate, numberOfAssetFaceGenerated) &&
+        isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
         loaderLoadingDoneTimeout &&
         automaticRefreshTimeout &&
         selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
