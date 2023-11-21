@@ -30,13 +30,13 @@ export class Asset {
     this.fileSize = stats.size;
     this.albumName = this.extractAlbumName();
 
-    this.assetData = this.getFileObject(this.path);
+    this.assetData = this.getReadStream(this.path);
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
     try {
       fs.accessSync(sideCarPath, fs.constants.R_OK);
-      this.sidecarData = this.getFileObject(sideCarPath);
+      this.sidecarData = this.getReadStream(sideCarPath);
     } catch (error) {}
   }
 
@@ -58,7 +58,7 @@ export class Asset {
     };
   }
 
-  private getFileObject(path: string): fs.ReadStream {
+  private getReadStream(path: string): fs.ReadStream {
     return fs.createReadStream(path);
   }
 
