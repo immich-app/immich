@@ -81,7 +81,8 @@ export class AlbumService {
   async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
-    return mapAlbum(await this.findOrFail(id, { withAssets: true }), !dto.withoutAssets);
+    const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
+    return mapAlbum(await this.findOrFail(id, { withAssets }), !dto.withoutAssets);
   }
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
