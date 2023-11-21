@@ -17,6 +17,7 @@
     "strict": true,
     "target": "es2020",
     "preserveValueImports": false,
+    "baseUrl": ".",
     "paths": {
       "$lib": [
         "./src/lib"
@@ -28,7 +29,7 @@
         "./src/api"
       ],
       "@test-data": [
-        "./src/test-data"
+        "./src/test-data/*"
       ]
     }
   }

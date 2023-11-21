@@ -19,43 +19,27 @@ export class UsePgVectors1699746198141 implements MigrationInterface {
     await queryRunner.query('DROP EXTENSION IF EXISTS vectors');
     await queryRunner.query('CREATE EXTENSION vectors');
 
+    await queryRunner.query(`ALTER TABLE asset_faces ALTER COLUMN embedding TYPE vector(${faceDimSize})`);
     await queryRunner.query(`
-      BEGIN;
-
-      ALTER TABLE asset_faces ALTER COLUMN embedding TYPE vector(${faceDimSize});
-
       CREATE TABLE smart_search (
         "assetId"  uuid PRIMARY KEY NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
-        embedding  vector(${clipDimSize}) NOT NULL );
-
+        embedding  vector(${clipDimSize}) NOT NULL )`);
+    await queryRunner.query(`
       INSERT INTO smart_search("assetId", embedding)
         SELECT si."assetId", si."clipEmbedding"
         FROM smart_info si
-        WHERE "clipEmbedding" IS NOT NULL;
-
-      ALTER TABLE smart_info DROP COLUMN "clipEmbedding";
-
-      COMMIT;
-    `);
+        WHERE "clipEmbedding" IS NOT NULL`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE asset_faces ALTER COLUMN embedding TYPE real array`);
+    await queryRunner.query(`ALTER TABLE smart_info ADD COLUMN IF NOT EXISTS "clipEmbedding" TYPE real array`);
     await queryRunner.query(`
-      BEGIN;
-
-      ALTER TABLE asset_faces ALTER COLUMN embedding TYPE real array;
-
-      ALTER TABLE smart_info ADD COLUMN IF NOT EXISTS "clipEmbedding" TYPE real array;
-
-      INSERT INTO smart_info
-        ("assetId", "clipEmbedding")
-        SELECT s."assetId", s.embedding
-        FROM smart_search s
-        ON CONFLICT (s."assetId") DO UPDATE SET "clipEmbedding" = s.embedding;
-      
-      DROP TABLE IF EXISTS smart_search;
-
-      COMMIT;
-    `);
+    INSERT INTO smart_info
+      ("assetId", "clipEmbedding")
+      SELECT s."assetId", s.embedding
+      FROM smart_search s
+      ON CONFLICT (s."assetId") DO UPDATE SET "clipEmbedding" = s.embedding`);
+    await queryRunner.query(`DROP TABLE IF EXISTS smart_search`);
   }
 }
