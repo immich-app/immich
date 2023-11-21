@@ -58,7 +58,7 @@ describe(AlbumService.name, () => {
   describe('getAll', () => {
     it('gets list of albums for auth user', async () => {
       albumMock.getOwned.mockResolvedValue([albumStub.empty, albumStub.sharedWithUser]);
-      albumMock.getAssetCountForIds.mockResolvedValue([
+      albumMock.getMetadataForIds.mockResolvedValue([
         { albumId: albumStub.empty.id, assetCount: 0, startDate: undefined, endDate: undefined },
         { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: undefined, endDate: undefined },
       ]);
@@ -72,7 +72,7 @@ describe(AlbumService.name, () => {
 
     it('gets list of albums that have a specific asset', async () => {
       albumMock.getByAssetId.mockResolvedValue([albumStub.oneAsset]);
-      albumMock.getAssetCountForIds.mockResolvedValue([
+      albumMock.getMetadataForIds.mockResolvedValue([
         {
           albumId: albumStub.oneAsset.id,
           assetCount: 1,
@@ -90,7 +90,7 @@ describe(AlbumService.name, () => {
 
     it('gets list of albums that are shared', async () => {
       albumMock.getShared.mockResolvedValue([albumStub.sharedWithUser]);
-      albumMock.getAssetCountForIds.mockResolvedValue([
+      albumMock.getMetadataForIds.mockResolvedValue([
         { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: undefined, endDate: undefined },
       ]);
       albumMock.getInvalidThumbnail.mockResolvedValue([]);
@@ -103,7 +103,7 @@ describe(AlbumService.name, () => {
 
     it('gets list of albums that are NOT shared', async () => {
       albumMock.getNotShared.mockResolvedValue([albumStub.empty]);
-      albumMock.getAssetCountForIds.mockResolvedValue([
+      albumMock.getMetadataForIds.mockResolvedValue([
         { albumId: albumStub.empty.id, assetCount: 0, startDate: undefined, endDate: undefined },
       ]);
       albumMock.getInvalidThumbnail.mockResolvedValue([]);
@@ -117,7 +117,7 @@ describe(AlbumService.name, () => {
 
   it('counts assets correctly', async () => {
     albumMock.getOwned.mockResolvedValue([albumStub.oneAsset]);
-    albumMock.getAssetCountForIds.mockResolvedValue([
+    albumMock.getMetadataForIds.mockResolvedValue([
       {
         albumId: albumStub.oneAsset.id,
         assetCount: 1,
@@ -136,7 +136,7 @@ describe(AlbumService.name, () => {
 
   it('updates the album thumbnail by listing all albums', async () => {
     albumMock.getOwned.mockResolvedValue([albumStub.oneAssetInvalidThumbnail]);
-    albumMock.getAssetCountForIds.mockResolvedValue([
+    albumMock.getMetadataForIds.mockResolvedValue([
       {
         albumId: albumStub.oneAssetInvalidThumbnail.id,
         assetCount: 1,
@@ -157,7 +157,7 @@ describe(AlbumService.name, () => {
 
   it('removes the thumbnail for an empty album', async () => {
     albumMock.getOwned.mockResolvedValue([albumStub.emptyWithInvalidThumbnail]);
-    albumMock.getAssetCountForIds.mockResolvedValue([
+    albumMock.getMetadataForIds.mockResolvedValue([
       {
         albumId: albumStub.emptyWithInvalidThumbnail.id,
         assetCount: 1,

@@ -69,8 +69,8 @@ export class AlbumService {
 
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
-    const albumsAssetCount = await this.albumRepository.getAssetCountForIds(albums.map((album) => album.id));
-    const albumsAssetCountObj: Record<string, AlbumAssetCount> = albumsAssetCount.reduce(
+    const albumMetadataForIds = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
+    const albumMetadataForIdsObj: Record<string, AlbumAssetCount> = albumMetadataForIds.reduce(
       (obj: Record<string, AlbumAssetCount>, { albumId, assetCount, startDate, endDate }) => {
         obj[albumId] = {
           albumId,
@@ -89,9 +89,9 @@ export class AlbumService {
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          startDate: albumsAssetCountObj[album.id].startDate,
-          endDate: albumsAssetCountObj[album.id].endDate,
-          assetCount: albumsAssetCountObj[album.id].assetCount,
+          startDate: albumMetadataForIdsObj[album.id].startDate,
+          endDate: albumMetadataForIdsObj[album.id].endDate,
+          assetCount: albumMetadataForIdsObj[album.id].assetCount,
           lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
         };
       }),
@@ -101,7 +101,8 @@ export class AlbumService {
   async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
-    return mapAlbum(await this.findOrFail(id, { withAssets: true }), !dto.withoutAssets);
+    const withAssets = dto.withoutAssets === undefined ? false : !dto.withoutAssets;
+    return mapAlbum(await this.findOrFail(id, { withAssets }), withAssets);
   }
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {

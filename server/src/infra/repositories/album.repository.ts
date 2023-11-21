@@ -59,7 +59,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  async getAssetCountForIds(ids: string[]): Promise<AlbumAssetCount[]> {
+  async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (!ids.length) {
       return [];
