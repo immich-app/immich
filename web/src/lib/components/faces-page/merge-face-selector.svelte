@@ -33,6 +33,18 @@
   $: unselectedPeople = people.filter(
     (source) => !selectedPeople.some((selected) => selected.id === source.id) && source.id !== person.id,
   );
+  $: {
+    if (people) {
+      people = !name
+        ? peopleCopy
+        : people
+            .filter((person: PersonResponseDto) => {
+              const nameParts = person.name.split(' ');
+              return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
+            })
+            .slice(0, 10);
+    }
+  }
 
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople({ withHidden: false });
@@ -44,13 +56,15 @@
     dispatch('go-back');
   };
 
-  const searchPeople = async () => {
+  const searchPeople = async (force: boolean) => {
     if (name === '') {
       people = peopleCopy;
       return;
     }
-    if (people.length < 20 && name.startsWith(searchWord)) {
-      return;
+    if (!force) {
+      if (people.length < 20 && name.startsWith(searchWord)) {
+        return;
+      }
     }
     const timeout = setTimeout(() => (isSearchingPeople = true), 100);
     try {
@@ -169,8 +183,8 @@
         class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 pt-8 px-8 pb-10 dark:bg-immich-dark-gray"
         style:max-height={screenHeight - 200 - 200 + 'px'}
       >
-        <div class="flex w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-4">
-          <button on:click={searchPeople}>
+        <div class="flex w-40 sm:w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-2">
+          <button on:click={() => searchPeople(true)} class="w-fit">
             <div>
               <Icon path={mdiMagnify} />
             </div>
@@ -182,7 +196,7 @@
             type="text"
             placeholder="Search names"
             bind:value={name}
-            on:input={searchPeople}
+            on:input={() => searchPeople(false)}
           />
           {#if isSearchingPeople}
             <div class="flex place-items-center">
