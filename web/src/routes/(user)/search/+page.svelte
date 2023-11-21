@@ -70,7 +70,7 @@
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
-    if (from && from.route.id !== $page.route.id) {
+    if (from?.url && from.route.id !== $page.route.id) {
       previousRoute = from.url.href;
     }
 
@@ -145,7 +145,7 @@
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      {#if data.results?.assets?.items.length > 0}
+      {#if searchResultAssets.length > 0}
         <div class="pl-4">
           <GalleryViewer assets={searchResultAssets} bind:selectedAssets showArchiveIcon={true} />
         </div>
