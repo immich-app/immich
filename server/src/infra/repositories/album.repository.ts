@@ -56,6 +56,7 @@ export class AlbumRepository implements IAlbumRepository {
       ],
       relations: { owner: true, sharedUsers: true },
       order: { createdAt: 'DESC' },
+      relationLoadStrategy: 'query',
     });
   }
 
@@ -91,6 +92,7 @@ export class AlbumRepository implements IAlbumRepository {
       relations: { sharedUsers: true, sharedLinks: true, owner: true },
       where: { ownerId },
       order: { createdAt: 'DESC' },
+      relationLoadStrategy: 'query',
     });
   }
 
@@ -106,6 +108,7 @@ export class AlbumRepository implements IAlbumRepository {
         { ownerId, sharedUsers: { id: Not(IsNull()) } },
       ],
       order: { createdAt: 'DESC' },
+      relationLoadStrategy: 'query',
     });
   }
 
@@ -117,6 +120,7 @@ export class AlbumRepository implements IAlbumRepository {
       relations: { sharedUsers: true, sharedLinks: true, owner: true },
       where: { ownerId, sharedUsers: { id: IsNull() }, sharedLinks: { id: IsNull() } },
       order: { createdAt: 'DESC' },
+      relationLoadStrategy: 'query',
     });
   }
 
