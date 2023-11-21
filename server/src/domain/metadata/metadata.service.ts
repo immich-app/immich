@@ -25,6 +25,18 @@ import {
 import { StorageCore } from '../storage';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
 
+/** look for a date from these tags (in order) */
+const EXIF_DATE_TAGS: Array<keyof Tags> = [
+  'SubSecDateTimeOriginal',
+  'DateTimeOriginal',
+  'SubSecCreateDate',
+  'CreationDate',
+  'CreateDate',
+  'SubSecMediaCreateDate',
+  'MediaCreateDate',
+  'DateTimeCreated',
+];
+
 interface DirectoryItem {
   Length?: number;
   Mime: string;
@@ -341,24 +353,12 @@ export class MetadataService {
     const mediaTags = await this.repository.getExifTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
 
-    const timeTagKeys = [
-      'SubSecDateTimeOriginal',
-      'DateTimeOriginal',
-      'SubSecCreateDate',
-      'CreationDate',
-      'CreateDate',
-      'SubSecMediaCreateDate',
-      'MediaCreateDate',
-      'DateTimeCreated',
-    ];
-
-    const dateDateSidecarTags = firstDateTime(sidecarTags as Tags, timeTagKeys as any);
-
-    if (dateDateSidecarTags && mediaTags) {
-      // remove time from mediaTags, since sidecarTags has a more accurate time
-      timeTagKeys.forEach((key) => {
-        delete (mediaTags as any)[key];
-      });
+    // ensure date from sidecar is used if present
+    const hasDateOverride = !!this.getDateTimeOriginal(sidecarTags);
+    if (mediaTags && hasDateOverride) {
+      for (const tag of EXIF_DATE_TAGS) {
+        delete mediaTags[tag];
+      }
     }
 
     const tags = { ...mediaTags, ...sidecarTags };
@@ -371,7 +371,7 @@ export class MetadataService {
         assetId: asset.id,
         bitsPerSample: this.getBitsPerSample(tags),
         colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal: exifDate(firstDateTime(tags as Tags, timeTagKeys as any)) ?? asset.fileCreatedAt,
+        dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
         exposureTime: tags.ExposureTime ?? null,
@@ -394,6 +394,13 @@ export class MetadataService {
       },
       tags,
     };
+  }
+
+  private getDateTimeOriginal(tags: ImmichTags | Tags | null) {
+    if (!tags) {
+      return null;
+    }
+    return exifDate(firstDateTime(tags as Tags, EXIF_DATE_TAGS));
   }
 
   private getBitsPerSample(tags: ImmichTags): number | null {
