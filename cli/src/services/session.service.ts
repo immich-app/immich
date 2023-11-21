@@ -3,7 +3,6 @@ import yaml from 'yaml';
 import path from 'node:path';
 import { ImmichApi } from '../api/client';
 import { LoginError } from '../cores/errors/login-error';
-import os from 'os';
 
 export class SessionService {
   readonly configDir!: string;
@@ -12,7 +11,7 @@ export class SessionService {
 
   constructor(configDir: string) {
     this.configDir = configDir;
-    this.authPath = path.join(configDir, 'auth.yml');
+    this.authPath = path.join(configDir, '/auth.yml');
   }
 
   public async connect(): Promise<ImmichApi> {
@@ -66,10 +65,6 @@ export class SessionService {
       }
     }
 
-    if (!fs.existsSync(this.configDir)) {
-      console.error('waah');
-    }
-
     fs.writeFileSync(this.authPath, yaml.stringify({ instanceUrl, apiKey }));
 
     console.log('Wrote auth info to ' + this.authPath);
@@ -89,7 +84,7 @@ export class SessionService {
     });
 
     if (pingResponse.res !== 'pong') {
-      throw new Error('Unexpected ping reply');
+      throw new Error(`Could not parse response. Is Immich listening on ${this.api.apiConfiguration.instanceUrl}?`);
     }
   }
 }

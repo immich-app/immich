@@ -73,7 +73,8 @@
       "^.+\\.ts$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "<rootDir>/src/**/*.(t|j)s"
+      "<rootDir>/src/**/*.(t|j)s",
+      "!**/open-api/**"
     ],
     "moduleNameMapper": {
       "^@api(|/.*)$": "<rootDir>/src/api/$1",

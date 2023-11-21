@@ -11,7 +11,7 @@ describe(`login-key (e2e)`, () => {
   let admin: LoginResponseDto;
   let apiKey: APIKeyCreateResponseDto;
   let instanceUrl: string;
-  const consoleSpy = spyOnConsole();
+  spyOnConsole();
 
   beforeAll(async () => {
     server = (await testApp.create({ jobs: true })).getHttpServer();
@@ -37,7 +37,7 @@ describe(`login-key (e2e)`, () => {
   });
 
   it('should error when providing an invalid API key', async () => {
-    expect(async () => await new LoginKey(CLI_BASE_OPTIONS).run(instanceUrl, 'invalid')).rejects.toThrow(
+    await expect(async () => await new LoginKey(CLI_BASE_OPTIONS).run(instanceUrl, 'invalid')).rejects.toThrow(
       new LoginError(`Failed to connect to server ${instanceUrl}: Request failed with status code 401`),
     );
   });
