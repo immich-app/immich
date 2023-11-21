@@ -15,7 +15,7 @@ const configDir = path.join(userHomeDir, '.config/immich/');
 const program = new Command()
   .name('immich')
   .version(cliVersion.toString())
-  .description('Immich command line interface')
+  .description('Command line interface for Immich')
   .addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDir));
 
 program
