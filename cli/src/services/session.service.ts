@@ -10,21 +10,9 @@ export class SessionService {
   readonly authPath!: string;
   private api!: ImmichApi;
 
-  constructor(configDir?: string) {
-    if (!configDir) {
-      configDir = process.env.IMMICH_CONFIG_DIR;
-
-      if (!configDir) {
-        const userHomeDir = os.homedir();
-        this.configDir = path.join(userHomeDir, '.config/immich/');
-      } else {
-        this.configDir = configDir;
-      }
-    } else {
-      this.configDir = configDir;
-    }
-
-    this.authPath = path.join(this.configDir, 'auth.yml');
+  constructor(configDir: string) {
+    this.configDir = configDir;
+    this.authPath = path.join(configDir, 'auth.yml');
   }
 
   public async connect(): Promise<ImmichApi> {

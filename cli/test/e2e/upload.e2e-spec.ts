@@ -3,11 +3,13 @@ import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from 'immich/test/
 import { LoginResponseDto } from 'src/api/open-api';
 import Upload from 'src/commands/upload';
 import { APIKeyCreateResponseDto } from '@app/domain';
+import { CLI_BASE_OPTIONS, spyOnConsole } from 'test/cli-test-utils';
 
 describe(`upload (e2e)`, () => {
   let server: any;
   let admin: LoginResponseDto;
   let apiKey: APIKeyCreateResponseDto;
+  spyOnConsole();
 
   beforeAll(async () => {
     server = (await testApp.create({ jobs: true })).getHttpServer();
@@ -28,13 +30,16 @@ describe(`upload (e2e)`, () => {
   });
 
   it('should upload a folder recursively', async () => {
-    await new Upload().run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
+    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
     const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
     expect(assets.length).toBeGreaterThan(4);
   });
 
   it('should create album from folder name', async () => {
-    await new Upload().run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true, album: true });
+    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
+      recursive: true,
+      album: true,
+    });
     const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
     expect(albums.length).toEqual(1);
   });

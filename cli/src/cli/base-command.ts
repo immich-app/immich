@@ -3,6 +3,7 @@ import { SessionService } from '../services/session.service';
 import { LoginError } from '../cores/errors/login-error';
 import { exit } from 'node:process';
 import { ServerVersionResponseDto, UserResponseDto } from 'src/api/open-api';
+import { BaseOptionsDto } from 'src/cores/dto/base-options-dto';
 
 export abstract class BaseCommand {
   protected sessionService!: SessionService;
@@ -10,8 +11,11 @@ export abstract class BaseCommand {
   protected user!: UserResponseDto;
   protected serverVersion!: ServerVersionResponseDto;
 
-  constructor() {
-    this.sessionService = new SessionService();
+  constructor(options: BaseOptionsDto) {
+    if (!options.config) {
+      throw new Error('Config directory is required');
+    }
+    this.sessionService = new SessionService(options.config);
   }
 
   public async connect(): Promise<void> {

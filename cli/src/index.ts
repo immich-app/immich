@@ -1,12 +1,20 @@
 #! /usr/bin/env node
 
-import { program, Option } from 'commander';
+import { Option, Command } from 'commander';
 import Upload from './commands/upload';
 import ServerInfo from './commands/server-info';
 import LoginKey from './commands/login/key';
 import Logout from './commands/logout';
+import path from 'node:path';
+import os from 'os';
 
-program.name('immich').description('Immich command line interface');
+const userHomeDir = os.homedir();
+const configDir = path.join(userHomeDir, '.config/immich/');
+
+const program = new Command();
+program.name('immich');
+program.description('Immich command line interface');
+program.addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDir));
 
 program
   .command('upload')
@@ -29,14 +37,14 @@ program
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action(async (paths, options) => {
     options.exclusionPatterns = options.ignore;
-    await new Upload().run(paths, options);
+    await new Upload(program.opts()).run(paths, options);
   });
 
 program
   .command('server-info')
   .description('Display server information')
   .action(async () => {
-    await new ServerInfo().run();
+    await new ServerInfo(program.opts()).run();
   });
 
 program
@@ -45,14 +53,14 @@ program
   .argument('[instanceUrl]')
   .argument('[apiKey]')
   .action(async (paths, options) => {
-    await new LoginKey().run(paths, options);
+    await new LoginKey(program.opts()).run(paths, options);
   });
 
 program
   .command('logout')
   .description('Remove stored credentials')
   .action(async () => {
-    await new Logout().run();
+    await new Logout(program.opts()).run();
   });
 
 program.parse(process.argv);
