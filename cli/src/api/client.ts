@@ -11,6 +11,7 @@ import {
   UserApi,
 } from './open-api';
 import { ApiConfiguration } from '../cores/api-configuration';
+import FormData from 'form-data';
 
 export class ImmichApi {
   public userApi: UserApi;
@@ -35,6 +36,7 @@ export class ImmichApi {
           'x-api-key': apiKey,
         },
       },
+      formDataCtor: FormData,
     });
 
     this.userApi = new UserApi(this.config);
