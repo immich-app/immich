@@ -4,7 +4,7 @@
   "description": "Command Line Interface (CLI) for Immich",
   "main": "dist/index.js",
   "bin": {
-    "immich": "./dist/index.js"
+    "immich": "./dist/src/index.js"
   },
   "license": "MIT",
   "dependencies": {
