@@ -12,15 +12,21 @@
   import { handleError } from '$lib/utils/handle-error';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
-  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
+  import { mdiCallMerge, mdiMagnify, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { cloneDeep } from 'lodash-es';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
+  let peopleCopy: PersonResponseDto[] = [];
   let selectedPeople: PersonResponseDto[] = [];
   let screenHeight: number;
   let isShowConfirmation = false;
+  let name = '';
+  let searchWord: string;
+  let isSearchingPeople = false;
   let dispatch = createEventDispatcher();
 
   $: hasSelection = selectedPeople.length > 0;
@@ -31,10 +37,33 @@
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople({ withHidden: false });
     people = data.people;
+    peopleCopy = cloneDeep(people);
   });
 
   const onClose = () => {
     dispatch('go-back');
+  };
+
+  const searchPeople = async () => {
+    if (name === '') {
+      people = peopleCopy;
+      return;
+    }
+    if (people.length < 20 && name.startsWith(searchWord)) {
+      return;
+    }
+    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    try {
+      const { data } = await api.searchApi.searchPerson({ name });
+      people = data;
+      searchWord = name;
+    } catch (error) {
+      handleError(error, "Can't search people");
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    isSearchingPeople = false;
   };
 
   const handleSwapPeople = () => {
@@ -137,9 +166,30 @@
         </div>
       </div>
       <div
-        class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-immich-dark-gray"
+        class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 pt-8 px-8 pb-10 dark:bg-immich-dark-gray"
         style:max-height={screenHeight - 200 - 200 + 'px'}
       >
+        <div class="flex w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-4">
+          <button on:click={searchPeople}>
+            <div>
+              <Icon path={mdiMagnify} />
+            </div>
+          </button>
+          <!-- svelte-ignore a11y-autofocus -->
+          <input
+            autofocus
+            class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
+            type="text"
+            placeholder="Search names"
+            bind:value={name}
+            on:input={searchPeople}
+          />
+          {#if isSearchingPeople}
+            <div class="flex place-items-center">
+              <LoadingSpinner />
+            </div>
+          {/if}
+        </div>
         <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
           {#each unselectedPeople as person (person.id)}
             <FaceThumbnail {person} on:click={() => onSelect(person)} circle border selectable />
