@@ -22,5 +22,6 @@ export const newAlbumRepositoryMock = (): jest.Mocked<IAlbumRepository> => {
     update: jest.fn(),
     delete: jest.fn(),
     updateThumbnails: jest.fn(),
+    getVirtualColumns: jest.fn(),
   };
 };

@@ -79,6 +79,7 @@ describe(AlbumService.name, () => {
     it('gets list of albums that are shared', async () => {
       albumMock.getShared.mockResolvedValue([albumStub.sharedWithUser]);
       albumMock.getInvalidThumbnail.mockResolvedValue([]);
+      albumMock.getVirtualColumns.mockResolvedValue(albumStub.sharedWithUser);
 
       const result = await sut.getAll(authStub.admin, { shared: true });
       expect(result).toHaveLength(1);

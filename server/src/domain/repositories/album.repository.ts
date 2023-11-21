@@ -2,11 +2,6 @@ import { AlbumEntity } from '@app/infra/entities';
 
 export const IAlbumRepository = 'IAlbumRepository';
 
-export interface AlbumAssetCount {
-  albumId: string;
-  assetCount: number;
-}
-
 export interface AlbumInfoOptions {
   withAssets: boolean;
 }
@@ -42,4 +37,5 @@ export interface IAlbumRepository {
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   delete(album: AlbumEntity): Promise<void>;
   updateThumbnails(): Promise<number | undefined>;
+  getVirtualColumns(id: string): Promise<AlbumEntity>;
 }

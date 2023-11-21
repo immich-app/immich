@@ -1,7 +1,16 @@
 import { AlbumAsset, AlbumAssets, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindOptionsOrder,
+  FindOptionsRelations,
+  FindOptionsSelect,
+  In,
+  IsNull,
+  Not,
+  Repository,
+} from 'typeorm';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
 
@@ -96,11 +105,27 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  getVirtualColumns(id: string): Promise<AlbumEntity> {
+    const withVirtualColumns = this.repository.metadata.columns
+      .filter((column) => column.isVirtualProperty)
+      .map((column) => column.propertyName) as FindOptionsSelect<AlbumEntity>;
+
+    return this.repository.findOneOrFail({
+      select: withVirtualColumns,
+      where: { id },
+    });
+  }
+
   /**
    * Get albums shared with and shared by owner.
    */
   getShared(ownerId: string): Promise<AlbumEntity[]> {
+    const withoutVirtualColumns = this.repository.metadata.columns
+      .filter((column) => !column.isVirtualProperty)
+      .map((column) => column.propertyName) as FindOptionsSelect<AlbumEntity>;
+
     return this.repository.find({
+      select: withoutVirtualColumns,
       relations: { sharedUsers: true, sharedLinks: true, owner: true },
       where: [
         { sharedUsers: { id: ownerId } },

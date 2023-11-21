@@ -60,6 +60,11 @@ export class AlbumService {
       albums = await this.albumRepository.getByAssetId(ownerId, assetId);
     } else if (shared === true) {
       albums = await this.albumRepository.getShared(ownerId);
+      for (let i = 0; i < albums.length; i++) {
+        const album = albums[i];
+        const { assetCount, startDate, endDate } = await this.albumRepository.getVirtualColumns(album.id);
+        albums[i] = { ...album, assetCount, startDate, endDate };
+    }
     } else if (shared === false) {
       albums = await this.albumRepository.getNotShared(ownerId);
     } else {
