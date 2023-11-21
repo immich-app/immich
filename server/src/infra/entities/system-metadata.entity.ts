@@ -9,6 +9,10 @@ export class SystemMetadataEntity {
   value!: { [key: string]: unknown };
 }
 
-enum MetadataKey {}
+export enum SystemMetadataKey {
+  REVERSE_GEOCODING_STATE = 'reverse-geocoding-state',
+}
 
-export interface Metadata extends Record<MetadataKey, { [key: string]: unknown }> {}
+export interface SystemMetadata extends Record<SystemMetadataKey, { [key: string]: unknown }> {
+  [SystemMetadataKey.REVERSE_GEOCODING_STATE]: { lastUpdate?: string; lastImportFileName?: string };
+}
