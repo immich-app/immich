@@ -8,6 +8,8 @@ export class SessionService {
   readonly configDir: string;
   readonly authPath!: string;
   private api!: ImmichApi;
+  public instanceUrl: string | undefined;
+  public apiKey: string | undefined;
 
   constructor(configDir: string) {
     this.configDir = configDir;
@@ -35,6 +37,8 @@ export class SessionService {
     }
 
     this.api = new ImmichApi(instanceUrl, apiKey);
+    this.instanceUrl = instanceUrl;
+    this.apiKey = apiKey;
 
     await this.ping();
 
