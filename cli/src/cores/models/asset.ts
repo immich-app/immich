@@ -8,11 +8,11 @@ export class Asset {
   readonly path: string;
   readonly deviceId!: string;
 
-  assetData?: File;
+  assetData?: fs.ReadStream;
   deviceAssetId?: string;
   fileCreatedAt?: string;
   fileModifiedAt?: string;
-  sidecarData?: File;
+  sidecarData?: fs.ReadStream;
   sidecarPath?: string;
   fileSize!: number;
   albumName?: string;
@@ -30,13 +30,13 @@ export class Asset {
     this.fileSize = stats.size;
     this.albumName = this.extractAlbumName();
 
-    this.assetData = await this.getFileObject(this.path);
+    this.assetData = this.getReadStream(this.path);
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
     try {
       fs.accessSync(sideCarPath, fs.constants.R_OK);
-      this.sidecarData = await this.getFileObject(sideCarPath);
+      this.sidecarData = this.getReadStream(sideCarPath);
     } catch (error) {}
   }
 
@@ -48,19 +48,18 @@ export class Asset {
     if (!this.deviceId) throw new Error('Device id not set');
 
     return {
-      assetData: this.assetData,
+      assetData: this.assetData as any,
       deviceAssetId: this.deviceAssetId,
       deviceId: this.deviceId,
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
       isFavorite: false,
-      sidecarData: this.sidecarData,
+      sidecarData: this.sidecarData as any,
     };
   }
 
-  private async getFileObject(path: string): Promise<File> {
-    const buffer = await fs.promises.readFile(path);
-    return new File([buffer], basename(path));
+  private getReadStream(path: string): fs.ReadStream {
+    return fs.createReadStream(path);
   }
 
   async delete(): Promise<void> {
