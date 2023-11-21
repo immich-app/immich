@@ -17,8 +17,6 @@
     "yaml": "^2.3.1"
   },
   "devDependencies": {
-    "@nestjs/common": "^10.2.8",
-    "@testcontainers/postgresql": "^10.2.2",
     "@types/byte-size": "^8.1.0",
     "@types/chai": "^4.3.5",
     "@types/cli-progress": "^3.11.0",
@@ -42,7 +40,6 @@
     "jest-mock-axios": "^4.7.2",
     "jest-when": "^3.5.2",
     "mock-fs": "^5.2.0",
-    "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.5.3",
