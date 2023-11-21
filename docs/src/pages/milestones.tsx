@@ -53,7 +53,8 @@ import Timeline, { DateType, Item } from '../components/timeline';
 const items: Item[] = [
   {
     icon: mdiVectorCombine,
-    description: 'The serving of the web app is merged into the server image, allowing us to remove two containers from the stack.',
+    description:
+      'The serving of the web app is merged into the server image, allowing us to remove two containers from the stack.',
     title: 'Container consolidation',
     release: 'v1.88.0',
     tag: 'v1.88.0',
