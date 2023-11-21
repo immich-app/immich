@@ -2,9 +2,9 @@
   "name": "@immich/cli",
   "version": "2.0.4",
   "description": "Command Line Interface (CLI) for Immich",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "bin": {
-    "immich": "./dist/index.js"
+    "immich": "./dist/src/index.js"
   },
   "license": "MIT",
   "dependencies": {

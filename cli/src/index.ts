@@ -7,14 +7,16 @@ import LoginKey from './commands/login/key';
 import Logout from './commands/logout';
 import path from 'node:path';
 import os from 'os';
+import { cliVersion } from './constants';
 
 const userHomeDir = os.homedir();
 const configDir = path.join(userHomeDir, '.config/immich/');
 
-const program = new Command();
-program.name('immich');
-program.description('Immich command line interface');
-program.addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDir));
+const program = new Command()
+  .name('immich')
+  .version(cliVersion.toString())
+  .description('Immich command line interface')
+  .addOption(new Option('-d, --config', 'Configuration directory').env('IMMICH_CONFIG_DIR').default(configDir));
 
 program
   .command('upload')
