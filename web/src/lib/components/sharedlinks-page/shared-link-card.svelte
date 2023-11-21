@@ -7,7 +7,6 @@
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
-  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 
   export let link: SharedLinkResponseDto;
 
@@ -61,28 +60,18 @@
   class="flex w-full gap-4 border-b border-gray-200 py-4 transition-all hover:border-immich-primary dark:border-gray-600 dark:text-immich-gray dark:hover:border-immich-dark-primary"
 >
   <div>
-    {#if (link?.album?.assetCount && link?.album?.assetCount > 0) || link.assets.length > 0}
-      {#await getAssetInfo()}
-        <LoadingSpinner />
-      {:then asset}
-        <img
-          id={asset.id}
-          src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
-          alt={asset.id}
-          class="h-[100px] w-[100px] rounded-lg object-cover"
-          loading="lazy"
-          draggable="false"
-        />
-      {/await}
-    {:else}
+    {#await getAssetInfo()}
+      <LoadingSpinner />
+    {:then asset}
       <img
-        src={noThumbnailUrl}
-        alt={'Album without assets'}
+        id={asset.id}
+        src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
+        alt={asset.id}
         class="h-[100px] w-[100px] rounded-lg object-cover"
         loading="lazy"
         draggable="false"
       />
-    {/if}
+    {/await}
   </div>
 
   <div class="flex flex-col justify-between">
