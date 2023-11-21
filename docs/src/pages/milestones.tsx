@@ -16,6 +16,7 @@ import {
   mdiFile,
   mdiFileSearch,
   mdiFolder,
+  mdiForum,
   mdiHeart,
   mdiImage,
   mdiImageAlbum,
@@ -68,6 +69,15 @@ const items: Item[] = [
     release: 'v1.88.0',
     tag: 'v1.88.0',
     date: new Date(2023, 10, 19),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiForum,
+    description: 'Comment a photo or a video in a shared album',
+    title: 'Activity',
+    release: 'v1.84.0',
+    tag: 'v1.84.0',
+    date: new Date(2023, 10, 1),
     dateType: DateType.RELEASE,
   },
   {
