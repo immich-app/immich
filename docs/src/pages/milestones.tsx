@@ -42,6 +42,7 @@ import {
   mdiText,
   mdiThemeLightDark,
   mdiTrashCanOutline,
+  mdiVectorCombine,
   mdiVideo,
   mdiWeb,
 } from '@mdi/js';
@@ -50,6 +51,15 @@ import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiVectorCombine,
+    description: 'The serving of the web app is merged into the server image, allowing us to remove two containers from the stack.',
+    title: 'Container consolidation',
+    release: 'v1.88.0',
+    tag: 'v1.88.0',
+    date: new Date(2023, 10, 20),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiBash,
     description: 'Version 2 of the Immich CLI is released, replacing the legacy v1 CLI.',
