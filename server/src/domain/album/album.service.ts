@@ -64,7 +64,7 @@ export class AlbumService {
         const album = albums[i];
         const { assetCount, startDate, endDate } = await this.albumRepository.getVirtualColumns(album.id);
         albums[i] = { ...album, assetCount, startDate, endDate };
-    }
+      }
     } else if (shared === false) {
       albums = await this.albumRepository.getNotShared(ownerId);
     } else {
