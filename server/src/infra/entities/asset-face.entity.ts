@@ -14,7 +14,7 @@ export class AssetFaceEntity {
   @Column({ nullable: true, type: 'uuid' })
   personId!: string | null;
 
-  @Column({ type: 'float4', array: true })
+  @Column({ type: 'float4', array: true, select: false })
   embedding!: number[];
 
   @Column({ default: 0, type: 'int' })

@@ -13,6 +13,7 @@ export class SmartSearchEntity {
   @Column({
     type: 'float4',
     array: true,
+    select: false,
   })
   embedding!: number[];
 }

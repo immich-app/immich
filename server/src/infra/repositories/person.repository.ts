@@ -15,11 +15,17 @@ import { asVector } from '../infra.utils';
 import { dataSource } from '..';
 
 export class PersonRepository implements IPersonRepository {
+  private readonly faceColumns: string[];
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
-  ) {}
+  ) {
+    this.faceColumns = this.assetFaceRepository.manager.connection
+      .getMetadata(AssetFaceEntity).ownColumns
+      .map((column) => column.propertyName)
+      .filter((propertyName) => propertyName !== 'embedding');
+  }
 
   /**
    * Before reassigning faces, delete potential key violations
@@ -245,12 +251,14 @@ export class PersonRepository implements IPersonRepository {
   async searchByEmbedding({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
     const cte = this.assetFaceRepository.createQueryBuilder('faces')
       .select('1 + (faces.embedding <=> :embedding)', 'distance')
-      .leftJoinAndSelect('faces.asset', 'asset')
+      .innerJoin('faces.asset', 'asset')
       .where('asset.ownerId = :ownerId')
       .orderBy(`faces.embedding <=> :embedding`)
       .setParameters({ownerId, embedding: asVector(embedding)})
       .limit(numResults);
-    
+
+    this.faceColumns.forEach((col) => cte.addSelect(`faces.${col} AS "${col}"`));
+
     const res = await dataSource.createQueryBuilder()
       .select('res.*')
       .addCommonTableExpression(cte, 'cte')
