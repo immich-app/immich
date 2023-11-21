@@ -11,7 +11,7 @@ import {
   UserApi,
 } from './open-api';
 import { ApiConfiguration } from '../cores/api-configuration';
-import { UploadApi } from './uploadApi';
+import FormData from 'form-data';
 
 export class ImmichApi {
   public userApi: UserApi;
@@ -22,7 +22,6 @@ export class ImmichApi {
   public serverInfoApi: ServerInfoApi;
   public jobApi: JobApi;
   public keyApi: APIKeyApi;
-  public uploadApi: UploadApi;
   public systemConfigApi: SystemConfigApi;
 
   private readonly config;
@@ -37,9 +36,9 @@ export class ImmichApi {
           'x-api-key': apiKey,
         },
       },
+      formDataCtor: FormData,
     });
 
-    this.uploadApi = new UploadApi(this.config);
     this.userApi = new UserApi(this.config);
     this.albumApi = new AlbumApi(this.config);
     this.assetApi = new AssetApi(this.config);

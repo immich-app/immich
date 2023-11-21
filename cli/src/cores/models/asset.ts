@@ -1,18 +1,18 @@
 import * as fs from 'fs';
 import { basename } from 'node:path';
 import crypto from 'crypto';
-import { AssetApiUploadFileRequest } from 'src/api/open-api';
 import Os from 'os';
+import FormData from 'form-data';
 
 export class Asset {
   readonly path: string;
   readonly deviceId!: string;
 
-  assetData?: File;
+  assetData?: fs.ReadStream;
   deviceAssetId?: string;
   fileCreatedAt?: string;
   fileModifiedAt?: string;
-  sidecarData?: File;
+  sidecarData?: fs.ReadStream;
   sidecarPath?: string;
   fileSize!: number;
   albumName?: string;
@@ -29,36 +29,45 @@ export class Asset {
     this.fileSize = stats.size;
     this.albumName = this.extractAlbumName();
 
-    this.assetData = await this.getFileObject(this.path);
+    this.assetData = this.getReadStream(this.path);
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
     try {
       fs.accessSync(sideCarPath, fs.constants.R_OK);
-      this.sidecarData = await this.getFileObject(sideCarPath);
+      this.sidecarData = this.getReadStream(sideCarPath);
     } catch (error) {}
   }
 
-  getUploadFileRequest(): AssetApiUploadFileRequest {
+  getUploadFormData(): FormData {
     if (!this.assetData) throw new Error('Asset data not set');
     if (!this.deviceAssetId) throw new Error('Device asset id not set');
     if (!this.fileCreatedAt) throw new Error('File created at not set');
     if (!this.fileModifiedAt) throw new Error('File modified at not set');
 
-    return {
-      assetData: this.assetData,
+    const data: any = {
+      assetData: this.assetData as any,
       deviceAssetId: this.deviceAssetId,
       deviceId: 'CLI',
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
-      isFavorite: false,
-      sidecarData: this.sidecarData,
+      isFavorite: String(false),
     };
+    const formData = new FormData();
+
+    for (const prop in data) {
+      formData.append(prop, data[prop]);
+    }
+
+    if (this.sidecarData) {
+      formData.append('sidecarData', this.sidecarData);
+    }
+
+    return formData;
   }
 
-  private async getFileObject(path: string): Promise<File> {
-    const buffer = await fs.promises.readFile(path);
-    return new File([buffer], basename(path));
+  private getReadStream(path: string): fs.ReadStream {
+    return fs.createReadStream(path);
   }
 
   async delete(): Promise<void> {
