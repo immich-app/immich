@@ -6,7 +6,6 @@ import fs from 'node:fs';
 import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
-import { file } from 'mock-fs/lib/filesystem';
 
 export default class Upload extends BaseCommand {
   uploadLength!: number;
@@ -25,7 +24,6 @@ export default class Upload extends BaseCommand {
     const files: string[] = [];
 
     for (const pathArgument of paths) {
-      let isFile = false;
       const fileStat = await fs.promises.lstat(pathArgument);
 
       if (fileStat.isFile()) {
