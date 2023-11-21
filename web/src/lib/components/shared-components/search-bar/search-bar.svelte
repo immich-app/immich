@@ -33,7 +33,7 @@
 
     showBigSearchBar = false;
     $isSearchEnabled = false;
-    goto(`${AppRoute.SEARCH}?${params}`);
+    goto(`${AppRoute.SEARCH}?${params}`, { invalidateAll: true });
   }
 
   const clearSearchTerm = (searchTerm: string) => {
