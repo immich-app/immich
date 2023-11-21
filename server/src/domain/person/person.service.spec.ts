@@ -392,22 +392,16 @@ describe(PersonService.name, () => {
     });
     it('should reassign a face', async () => {
       accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      personMock.getById.mockResolvedValue(personStub.withName);
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       personMock.reassignFace.mockResolvedValue(1);
-      personMock.getById.mockResolvedValue(personStub.noName);
+      personMock.getRandomFace.mockResolvedValue(null);
       await expect(
         sut.reassignFaces(authStub.admin, personStub.noName.id, {
           data: [{ personId: personStub.withName.id, assetId: assetStub.image.id }],
         }),
-      ).resolves.toEqual([
-        {
-          birthDate: personStub.noName.birthDate,
-          isHidden: personStub.noName.isHidden,
-          id: personStub.noName.id,
-          name: personStub.noName.name,
-          thumbnailPath: personStub.noName.thumbnailPath,
-        },
-      ]);
+      ).resolves.toEqual([personStub.withName]);
+
       expect(jobMock.queue).not.toHaveBeenCalledWith();
     });
   });
@@ -462,6 +456,7 @@ describe(PersonService.name, () => {
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
+      personMock.getRandomFace.mockResolvedValue(null);
       await expect(
         sut.reassignFacesById(authStub.admin, personStub.noName.id, {
           id: faceStub.face1.id,
@@ -473,6 +468,7 @@ describe(PersonService.name, () => {
         name: personStub.noName.name,
         thumbnailPath: personStub.noName.thumbnailPath,
       });
+
       expect(jobMock.queue).not.toHaveBeenCalledWith();
     });
   });

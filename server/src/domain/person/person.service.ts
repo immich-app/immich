@@ -90,7 +90,7 @@ export class PersonService {
 
   async reassignFaces(authUser: AuthUserDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
-    const person = await await this.findOrFail(personId);
+    const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
     for (const data of dto.data) {
@@ -107,7 +107,7 @@ export class PersonService {
         await this.repository.reassignFace(face.id, personId);
       }
 
-      result.push(await this.findOrFail(personId).then(mapPerson));
+      result.push(person);
     }
     await this.createNewFeaturePhoto(changeFeaturePhoto);
     return result;
@@ -118,8 +118,8 @@ export class PersonService {
 
     await this.access.requirePermission(authUser, Permission.PERSON_CREATE, dto.id);
     const face = await this.repository.getFaceById(dto.id);
-    const person = await await this.findOrFail(personId);
-    let changeFaceFeature: string[] = [];
+    const person = await this.findOrFail(personId);
+    const changeFaceFeature: string[] = [];
     if (person.faceAssetId === null) {
       changeFaceFeature.push(person.id);
     }
