@@ -9,9 +9,11 @@ export class Asset {
   readonly deviceId!: string;
 
   assetData?: fs.ReadStream;
+  assetData?: fs.ReadStream;
   deviceAssetId?: string;
   fileCreatedAt?: string;
   fileModifiedAt?: string;
+  sidecarData?: fs.ReadStream;
   sidecarData?: fs.ReadStream;
   sidecarPath?: string;
   fileSize!: number;
@@ -48,7 +50,7 @@ export class Asset {
     if (!this.deviceId) throw new Error('Device id not set');
 
     const data: any = {
-      assetData: this.assetData,
+      assetData: this.assetData as any,
       deviceAssetId: this.deviceAssetId,
       deviceId: this.deviceId,
       fileCreatedAt: this.fileCreatedAt,
