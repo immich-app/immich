@@ -5,6 +5,7 @@ import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from '../asset';
 import { AuthUserDto } from '../auth';
 import { JobName } from '../job';
 import {
+  AlbumAssetCount,
   AlbumInfoOptions,
   IAccessRepository,
   IAlbumRepository,
@@ -69,10 +70,18 @@ export class AlbumService {
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
     const albumsAssetCount = await this.albumRepository.getAssetCountForIds(albums.map((album) => album.id));
-    const albumsAssetCountObj = albumsAssetCount.reduce((obj: Record<string, number>, { albumId, assetCount }) => {
-      obj[albumId] = assetCount;
-      return obj;
-    }, {});
+    const albumsAssetCountObj: Record<string, AlbumAssetCount> = albumsAssetCount.reduce(
+      (obj: Record<string, AlbumAssetCount>, { albumId, assetCount, startDate, endDate }) => {
+        obj[albumId] = {
+          albumId,
+          assetCount,
+          startDate,
+          endDate,
+        };
+        return obj;
+      },
+      {},
+    );
 
     return Promise.all(
       albums.map(async (album) => {
@@ -80,7 +89,9 @@ export class AlbumService {
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          assetCount: albumsAssetCountObj[album.id],
+          startDate: albumsAssetCountObj[album.id].startDate,
+          endDate: albumsAssetCountObj[album.id].endDate,
+          assetCount: albumsAssetCountObj[album.id].assetCount,
           lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
         };
       }),

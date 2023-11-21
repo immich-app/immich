@@ -69,8 +69,11 @@ export class AlbumRepository implements IAlbumRepository {
     const countByAlbums = await this.repository
       .createQueryBuilder('album')
       .select('album.id')
-      .addSelect('COUNT(albums_assets.assetsId)', 'asset_count')
-      .leftJoin('albums_assets_assets', 'albums_assets', 'albums_assets.albumsId = album.id')
+      .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
+      .addSelect('MAX(assets.fileCreatedAt)', 'end_date')
+      .addSelect('COUNT(album_assets.assetsId)', 'asset_count')
+      .leftJoin('albums_assets_assets', 'album_assets', 'album_assets.albumsId = album.id')
+      .leftJoin('assets', 'assets', 'assets.id = album_assets.assetsId')
       .where('album.id IN (:...ids)', { ids })
       .groupBy('album.id')
       .getRawMany();
@@ -78,6 +81,8 @@ export class AlbumRepository implements IAlbumRepository {
     return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
       albumId: albumCount['album_id'],
       assetCount: Number(albumCount['asset_count']),
+      startDate: albumCount['end_date'] ? new Date(albumCount['start_date']) : undefined,
+      endDate: albumCount['end_date'] ? new Date(albumCount['end_date']) : undefined,
     }));
   }
 

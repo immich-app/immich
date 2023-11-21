@@ -5,6 +5,8 @@ export const IAlbumRepository = 'IAlbumRepository';
 export interface AlbumAssetCount {
   albumId: string;
   assetCount: number;
+  startDate: Date | undefined;
+  endDate: Date | undefined;
 }
 
 export interface AlbumInfoOptions {
