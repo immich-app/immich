@@ -53,7 +53,7 @@ export class Asset {
       deviceId: this.deviceId,
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
-      isFavorite: String(false) as any,
+      isFavorite: false,
       sidecarData: this.sidecarData as any,
     };
   }
