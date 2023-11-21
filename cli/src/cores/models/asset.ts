@@ -9,11 +9,9 @@ export class Asset {
   readonly deviceId!: string;
 
   assetData?: fs.ReadStream;
-  assetData?: fs.ReadStream;
   deviceAssetId?: string;
   fileCreatedAt?: string;
   fileModifiedAt?: string;
-  sidecarData?: fs.ReadStream;
   sidecarData?: fs.ReadStream;
   sidecarPath?: string;
   fileSize!: number;
