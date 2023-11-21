@@ -134,7 +134,7 @@
         {#if segment.hasLabel}
           <div
             aria-label={segment.timeGroup + ' ' + segment.count}
-            class="absolute right-0 z-10 pr-5 text-[12px] dark:text-immich-dark-fg font-immich-mono font-semibold"
+            class="absolute right-0 z-10 pr-5 text-[12px] dark:text-immich-dark-fg font-immich-mono"
           >
             {segment.date.year}
           </div>
