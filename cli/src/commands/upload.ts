@@ -2,18 +2,17 @@ import { Asset } from '../cores/models/asset';
 import { CrawlService } from '../services';
 import { UploadOptionsDto } from '../cores/dto/upload-options-dto';
 import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
-
+import fs from 'node:fs';
 import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
+import { file } from 'mock-fs/lib/filesystem';
 
 export default class Upload extends BaseCommand {
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
     await this.connect();
-
-    const deviceId = 'CLI';
 
     const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
     const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
@@ -23,14 +22,27 @@ export default class Upload extends BaseCommand {
     crawlOptions.recursive = options.recursive;
     crawlOptions.exclusionPatterns = options.exclusionPatterns;
 
+    const files: string[] = [];
+
+    for (const pathArgument of paths) {
+      let isFile = false;
+      const fileStat = await fs.promises.lstat(pathArgument);
+
+      if (fileStat.isFile()) {
+        files.push(pathArgument);
+      }
+    }
+
     const crawledFiles: string[] = await crawlService.crawl(crawlOptions);
+
+    crawledFiles.push(...files);
 
     if (crawledFiles.length === 0) {
       console.log('No assets found, exiting');
       return;
     }
 
-    const assetsToUpload = crawledFiles.map((path) => new Asset(path, deviceId));
+    const assetsToUpload = crawledFiles.map((path) => new Asset(path));
 
     const uploadProgress = new cliProgress.SingleBar(
       {
