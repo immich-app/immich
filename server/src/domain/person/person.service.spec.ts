@@ -466,15 +466,13 @@ describe(PersonService.name, () => {
         sut.reassignFacesById(authStub.admin, personStub.noName.id, {
           id: faceStub.face1.id,
         }),
-      ).resolves.toEqual([
-        {
-          birthDate: personStub.noName.birthDate,
-          isHidden: personStub.noName.isHidden,
-          id: personStub.noName.id,
-          name: personStub.noName.name,
-          thumbnailPath: personStub.noName.thumbnailPath,
-        },
-      ]);
+      ).resolves.toEqual({
+        birthDate: personStub.noName.birthDate,
+        isHidden: personStub.noName.isHidden,
+        id: personStub.noName.id,
+        name: personStub.noName.name,
+        thumbnailPath: personStub.noName.thumbnailPath,
+      });
       expect(jobMock.queue).not.toHaveBeenCalledWith();
     });
   });

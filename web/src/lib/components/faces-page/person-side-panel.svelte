@@ -187,7 +187,7 @@
             numberOfPersonToCreate.push(data.id);
             await api.faceApi.reassignFacesById({
               id: data.id,
-              faceDto: { id: data.id },
+              faceDto: { id: peopleWithFaces[i].id },
             });
           }
         }
