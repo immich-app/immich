@@ -11,6 +11,7 @@ import {
   UserApi,
 } from './open-api';
 import { ApiConfiguration } from '../cores/api-configuration';
+import { UploadApi } from './uploadApi';
 
 export class ImmichApi {
   public userApi: UserApi;
@@ -21,6 +22,7 @@ export class ImmichApi {
   public serverInfoApi: ServerInfoApi;
   public jobApi: JobApi;
   public keyApi: APIKeyApi;
+  public uploadApi: UploadApi;
   public systemConfigApi: SystemConfigApi;
 
   private readonly config;
@@ -37,6 +39,7 @@ export class ImmichApi {
       },
     });
 
+    this.uploadApi = new UploadApi(this.config);
     this.userApi = new UserApi(this.config);
     this.albumApi = new AlbumApi(this.config);
     this.assetApi = new AssetApi(this.config);
