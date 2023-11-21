@@ -42,7 +42,7 @@
       segment.timeGroup = bucket.bucketDate;
       segment.date = fromLocalDateTime(segment.timeGroup);
 
-      if (prev && prev!.date.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
+      if (prev?.date.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
         prev.hasLabel = true;
         height = 0;
       }
