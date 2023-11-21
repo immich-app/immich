@@ -66,7 +66,7 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     // Only possible with query builder because of GROUP BY.
-    const countByAlbums = await this.repository
+    const albumMetadatas = await this.repository
       .createQueryBuilder('album')
       .select('album.id')
       .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
@@ -78,11 +78,11 @@ export class AlbumRepository implements IAlbumRepository {
       .groupBy('album.id')
       .getRawMany();
 
-    return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
-      albumId: albumCount['album_id'],
-      assetCount: Number(albumCount['asset_count']),
-      startDate: albumCount['end_date'] ? new Date(albumCount['start_date']) : undefined,
-      endDate: albumCount['end_date'] ? new Date(albumCount['end_date']) : undefined,
+    return albumMetadatas.map<AlbumAssetCount>((metadatas) => ({
+      albumId: metadatas['album_id'],
+      assetCount: Number(metadatas['asset_count']),
+      startDate: metadatas['end_date'] ? new Date(metadatas['start_date']) : undefined,
+      endDate: metadatas['end_date'] ? new Date(metadatas['end_date']) : undefined,
     }));
   }
 
