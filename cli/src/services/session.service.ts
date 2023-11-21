@@ -32,11 +32,11 @@ export class SessionService {
       apiKey = parsedConfig.apiKey;
 
       if (!instanceUrl) {
-        throw new LoginError('Instance URL missing in auth config file ' + this.authPath);
+        throw new LoginError(`Instance URL missing in auth config file ${this.authPath}`);
       }
 
       if (!apiKey) {
-        throw new LoginError('API key missing in auth config file ' + this.authPath);
+        throw new LoginError(`API key missing in auth config file ${this.authPath}`);
       }
     }
 

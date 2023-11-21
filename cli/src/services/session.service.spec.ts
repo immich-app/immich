@@ -47,7 +47,7 @@ describe('SessionService', () => {
   });
 
   it('should connect to immich', async () => {
-    createTestAuthFile(
+    await createTestAuthFile(
       JSON.stringify({
         apiKey: TEST_IMMICH_API_KEY,
         instanceUrl: TEST_IMMICH_INSTANCE_URL,
@@ -65,7 +65,7 @@ describe('SessionService', () => {
   });
 
   it('should error if auth file is missing instance URl', async () => {
-    createTestAuthFile(
+    await createTestAuthFile(
       JSON.stringify({
         apiKey: TEST_IMMICH_API_KEY,
       }),
@@ -77,17 +77,15 @@ describe('SessionService', () => {
   });
 
   it('should error if auth file is missing api key', async () => {
-    createTestAuthFile(
+    await createTestAuthFile(
       JSON.stringify({
-        apiKey: TEST_IMMICH_API_KEY,
         instanceUrl: TEST_IMMICH_INSTANCE_URL,
       }),
     );
 
-    await sessionService.connect().catch((error) => {
-      expect(error).toBeInstanceOf(LoginError);
-      expect(error.message).toEqual('API key missing in auth config file /config/auth.yml');
-    });
+    await expect(sessionService.connect()).rejects.toThrow(
+      new LoginError(`API key missing in auth config file ${TEST_AUTH_FILE}`),
+    );
   });
 
   it('should create auth file when logged in', async () => {
@@ -100,7 +98,7 @@ describe('SessionService', () => {
   });
 
   it('should delete auth file when logging out', async () => {
-    createTestAuthFile(
+    await createTestAuthFile(
       JSON.stringify({
         apiKey: TEST_IMMICH_API_KEY,
         instanceUrl: TEST_IMMICH_INSTANCE_URL,
@@ -108,10 +106,10 @@ describe('SessionService', () => {
     );
     await sessionService.logout();
 
-    await fs.promises.access('/auth.yml', fs.constants.F_OK).catch((error) => {
+    await fs.promises.access(TEST_AUTH_FILE, fs.constants.F_OK).catch((error) => {
       expect(error.message).toContain('ENOENT');
     });
 
-    expect(consoleSpy.mock.calls).toEqual([['Removed auth file /tmp/immich/auth.yml']]);
+    expect(consoleSpy.mock.calls).toEqual([[`Removed auth file ${TEST_AUTH_FILE}`]]);
   });
 });

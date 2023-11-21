@@ -11,7 +11,15 @@ export const CLI_BASE_OPTIONS: BaseOptionsDto = { config: TEST_CONFIG_DIR };
 
 export const spyOnConsole = () => jest.spyOn(console, 'log').mockImplementation();
 
-export const createTestAuthFile = (contents: string) => {
+export const createTestAuthFile = async (contents: string) => {
+  if (!fs.existsSync(TEST_CONFIG_DIR)) {
+    // Create config folder if it doesn't exist
+    const created = await fs.promises.mkdir(TEST_CONFIG_DIR, { recursive: true });
+    if (!created) {
+      throw new Error(`Failed to create config folder ${TEST_CONFIG_DIR}`);
+    }
+  }
+
   fs.writeFileSync(TEST_AUTH_FILE, contents);
 };
 
