@@ -90,13 +90,16 @@ export class PersonService {
 
   async reassignFaces(authUser: AuthUserDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
-
+    const person = await await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
     for (const data of dto.data) {
       const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
       for (const face of faces) {
+        if (person.faceAssetId === null) {
+          changeFeaturePhoto.push(person.id);
+        }
         if (face.person && face.person.faceAssetId === face.id) {
           changeFeaturePhoto.push(face.person.id);
         }
@@ -111,18 +114,24 @@ export class PersonService {
   }
 
   async reassignFacesById(authUser: AuthUserDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    console.log(dto);
     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
 
     await this.access.requirePermission(authUser, Permission.PERSON_CREATE, dto.id);
     const face = await this.repository.getFaceById(dto.id);
-
+    const person = await await this.findOrFail(personId);
+    let changeFaceFeature: string[] = [];
+    if (person.faceAssetId === null) {
+      changeFaceFeature.push(person.id);
+    }
     if (face.person && face.person.faceAssetId === face.id) {
-      await this.createNewFeaturePhoto([face.person.id]);
+      changeFaceFeature.push(face.person.id);
     }
 
     await this.repository.reassignFace(face.id, personId);
 
+    if (changeFaceFeature) {
+      await this.createNewFeaturePhoto(changeFaceFeature);
+    }
     return await this.findOrFail(personId).then(mapPerson);
   }
 
@@ -134,9 +143,7 @@ export class PersonService {
 
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
     this.logger.debug(
-      `Changing feature photos for ${changeFeaturePhoto.length} : ${
-        changeFeaturePhoto.length > 1 ? 'person' : 'people'
-      }`,
+      `Changing feature photos for ${changeFeaturePhoto.length} ${changeFeaturePhoto.length > 1 ? 'people' : 'person'}`,
     );
     for (const personId of changeFeaturePhoto) {
       const assetFace = await this.repository.getRandomFace(personId);

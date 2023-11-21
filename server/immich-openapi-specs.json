@@ -3218,7 +3218,9 @@
         "tags": [
           "Face"
         ]
-      },
+      }
+    },
+    "/face/{id}/reassign": {
       "put": {
         "operationId": "reassignFacesById",
         "parameters": [

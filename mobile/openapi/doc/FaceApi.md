@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getFaces**](FaceApi.md#getfaces) | **GET** /face | 
-[**reassignFacesById**](FaceApi.md#reassignfacesbyid) | **PUT** /face | 
+[**reassignFacesById**](FaceApi.md#reassignfacesbyid) | **PUT** /face/{id}/reassign | 
 
 
 # **getFaces**

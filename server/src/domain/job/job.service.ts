@@ -181,9 +181,10 @@ export class JobService {
 
       case JobName.GENERATE_PERSON_THUMBNAIL:
         const { id } = item.data;
+        console.log('strang', id);
         const person = await this.personRepository.getById(id);
         if (person) {
-          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, person.ownerId, id);
+          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, person.ownerId, person.id);
         }
         break;
 

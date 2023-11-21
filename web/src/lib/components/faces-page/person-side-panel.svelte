@@ -53,19 +53,16 @@
   $: {
     if ($onPersonThumbnail) {
       numberOfAssetFaceGenerated.push($onPersonThumbnail);
-    }
-  }
-
-  $: {
-    if (
-      isEqual(numberOfPersonToCreate, numberOfAssetFaceGenerated) &&
-      loaderLoadingDoneTimeout &&
-      automaticRefreshTimeout &&
-      selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
-    ) {
-      clearTimeout(loaderLoadingDoneTimeout);
-      clearTimeout(automaticRefreshTimeout);
-      dispatch('refresh');
+      if (
+        isEqual(numberOfPersonToCreate, numberOfAssetFaceGenerated) &&
+        loaderLoadingDoneTimeout &&
+        automaticRefreshTimeout &&
+        selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
+      ) {
+        clearTimeout(loaderLoadingDoneTimeout);
+        clearTimeout(automaticRefreshTimeout);
+        dispatch('refresh');
+      }
     }
   }
 
@@ -86,7 +83,9 @@
     isShowLoadingPeople = false;
   });
 
-  const isEqual = (a: string[], b: string[]) => JSON.stringify(a.sort()) === JSON.stringify(b.sort());
+  const isEqual = (a: string[], b: string[]): boolean => {
+    return b.every((valueB) => a.includes(valueB));
+  };
 
   const searchPeople = async () => {
     if ((searchedPeople.length < 20 && searchName.startsWith(searchWord)) || searchName === '') {
