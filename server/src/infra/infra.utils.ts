@@ -33,4 +33,5 @@ export async function paginate<Entity extends ObjectLiteral>(
   return { items, hasNextPage };
 }
 
-export const asVector = (embedding: number[]) => `[${embedding.join(',')}]`;
+export const asVector = (embedding: number[], escape = false) =>
+  escape ? `'[${embedding.join(',')}]'` : `[${embedding.join(',')}]`;

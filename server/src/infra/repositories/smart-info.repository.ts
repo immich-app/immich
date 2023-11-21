@@ -13,28 +13,30 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   private curDimSize: number | undefined;
 
   constructor(
-      @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
-      @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-        @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>) {
+    @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
+    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
+  ) {
     this.lock = new AsyncLock();
   }
 
   async searchByEmbedding({ ownerId, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
-    const query: string = this.assetRepository.createQueryBuilder('a')
-    .innerJoin('a.smartSearch', 's')
-    .where('a.ownerId = :ownerId')
-    .leftJoinAndSelect('a.exifInfo', 'e')
-    .orderBy('s.embedding <=> :embedding')
-    .setParameters({ embedding: asVector(embedding), ownerId })
-    .limit(numResults)
-    .getSql();
+    const query: string = this.assetRepository
+      .createQueryBuilder('a')
+      .innerJoin('a.smartSearch', 's')
+      .where('a.ownerId = :ownerId')
+      .leftJoinAndSelect('a.exifInfo', 'e')
+      .orderBy('s.embedding <=> :embedding')
+      .setParameters({ embedding: asVector(embedding), ownerId })
+      .limit(numResults)
+      .getSql();
 
     const queryWithK = `
       BEGIN;
       SET LOCAL vectors.k = ${numResults};
       ${query};
       COMMIT;
-    `
+    `;
     return this.assetRepository.create(await this.assetRepository.manager.query(queryWithK));
   }
 
@@ -51,9 +53,15 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   private async upsertEmbedding(assetId: string, embedding: number[]): Promise<void> {
-    await this.smartSearchRepository.manager.query(
-      `INSERT INTO smart_search ($1, $2) ON CONFLICT ("assetId") SET embedding = $2`,
-      [assetId, asVector(embedding)],
+    if (this.lock.isBusy('updateDimSizeLock')) {
+      this.logger.log('Waiting for CLIP dimension size update to finish');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return this.upsertEmbedding(assetId, embedding);
+    }
+
+    await this.smartSearchRepository.upsert(
+      { assetId, embedding: () => asVector(embedding, true) },
+      { conflictPaths: ['assetId'] },
     );
   }
 
@@ -67,7 +75,8 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
       this.logger.log(`Updating CLIP dimension size to ${dimSize}`);
 
-      await this.smartSearchRepository.manager.query(`
+      try {
+        await this.smartSearchRepository.manager.query(`
         BEGIN;
 
         ALTER TABLE smart_search
@@ -75,7 +84,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         ADD COLUMN embedding vector(${dimSize});
 
         CREATE INDEX clip_index ON smart_search
-        USING vectors (embedding dot_ops) WITH (options = $$
+        USING vectors (embedding cosine_ops) WITH (options = $$
         [indexing.hnsw]
         m = 16
         ef_construction = 300
@@ -83,6 +92,10 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
         COMMIT;
       `);
+      } catch (err) {
+        this.logger.error(`Failed to update CLIP dimension size to ${dimSize}: ${err}`);
+        this.smartSearchRepository.manager.query('ROLLBACK');
+      }
 
       this.curDimSize = dimSize;
       this.logger.log(`Successfully updated CLIP dimension size to ${dimSize}`);

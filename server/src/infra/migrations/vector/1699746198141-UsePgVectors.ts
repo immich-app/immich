@@ -19,7 +19,10 @@ export class UsePgVectors1699746198141 implements MigrationInterface {
     await queryRunner.query('DROP EXTENSION IF EXISTS vectors');
     await queryRunner.query('CREATE EXTENSION vectors');
 
-    await queryRunner.query(`ALTER TABLE asset_faces ALTER COLUMN embedding TYPE vector(${faceDimSize})`);
+    await queryRunner.query(`
+      ALTER TABLE asset_faces 
+        ALTER COLUMN embedding SET NOT NULL,
+        ALTER COLUMN embedding TYPE vector(${faceDimSize})`);
     await queryRunner.query(`
       CREATE TABLE smart_search (
         "assetId"  uuid PRIMARY KEY NOT NULL REFERENCES assets(id) ON DELETE CASCADE,

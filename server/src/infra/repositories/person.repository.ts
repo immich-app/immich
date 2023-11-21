@@ -12,6 +12,7 @@ import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { asVector } from '../infra.utils';
+import { dataSource } from '..';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -222,11 +223,7 @@ export class PersonRepository implements IPersonRepository {
       throw new Error('Person ID is required to create a face');
     }
     const { embedding, ...face } = entity;
-    await this.assetFaceRepository.save(face);
-    await this.assetFaceRepository.manager.query(
-      `UPDATE "asset_faces" SET "embedding" = ${asVector(embedding)} WHERE "assetId" = $1 AND "personId" = $2`,
-      [entity.assetId, entity.personId],
-    );
+    await this.assetFaceRepository.insert({ ...face, embedding: () => asVector(embedding, true) });
     return this.assetFaceRepository.findOneByOrFail({ assetId: entity.assetId, personId: entity.personId });
   }
 
@@ -245,18 +242,22 @@ export class PersonRepository implements IPersonRepository {
     return this.assetFaceRepository.findOneBy({ personId });
   }
 
-  searchByEmbedding({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
-    let query = this.assetFaceRepository
-      .createQueryBuilder('faces')
+  async searchByEmbedding({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
+    const cte = this.assetFaceRepository.createQueryBuilder('faces')
+      .select('1 + (faces.embedding <=> :embedding)', 'distance')
       .leftJoinAndSelect('faces.asset', 'asset')
-      .where('asset.ownerId = :ownerId', { ownerId })
-      .orderBy(`faces.embedding <=> ${asVector(embedding)}`)
+      .where('asset.ownerId = :ownerId')
+      .orderBy(`faces.embedding <=> :embedding`)
+      .setParameters({ownerId, embedding: asVector(embedding)})
       .limit(numResults);
+    
+    const res = await dataSource.createQueryBuilder()
+      .select('res.*')
+      .addCommonTableExpression(cte, 'cte')
+      .from('cte', 'res')
+      .where('res.distance <= :maxDistance', { maxDistance })
+      .getRawMany();
 
-    if (maxDistance) {
-      query = query.andWhere(`(faces.embedding <=> ${asVector(embedding)}) <= :maxDistance`, { maxDistance });
-    }
-
-    return query.getMany();
+    return this.assetFaceRepository.create(res);
   }
 }
