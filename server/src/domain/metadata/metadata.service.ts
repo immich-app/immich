@@ -352,7 +352,7 @@ export class MetadataService {
       'DateTimeCreated',
     ];
 
-    const dateDateSidecarTags = firstDateTime(sidecarTags as Tags, tagKeys);
+    const dateDateSidecarTags = firstDateTime(sidecarTags as Tags, tagKeys as any);
 
     if (dateDateSidecarTags && mediaTags) {
       // remove time from mediaTags, since sidecarTags has a more accurate time
@@ -371,19 +371,7 @@ export class MetadataService {
         assetId: asset.id,
         bitsPerSample: this.getBitsPerSample(tags),
         colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal:
-          exifDate(
-            firstDateTime(tags as Tags, [
-              'SubSecDateTimeOriginal',
-              'DateTimeOriginal',
-              'SubSecCreateDate',
-              'CreationDate',
-              'CreateDate',
-              'SubSecMediaCreateDate',
-              'MediaCreateDate',
-              'DateTimeCreated',
-            ]),
-          ) ?? asset.fileCreatedAt,
+        dateTimeOriginal: exifDate(firstDateTime(tags as Tags, tagKeys as any)) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
         exposureTime: tags.ExposureTime ?? null,
