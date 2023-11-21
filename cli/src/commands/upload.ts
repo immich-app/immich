@@ -139,14 +139,14 @@ export default class Upload extends BaseCommand {
   }
 
   private async uploadAsset(data: FormData): Promise<axios.AxiosResponse> {
-    const url = this.sessionService.instanceUrl + '/asset/upload';
+    const url = this.immichApi.apiConfiguration.instanceUrl + '/asset/upload';
 
     const config: AxiosRequestConfig = {
       method: 'post',
       maxRedirects: 0,
       url,
       headers: {
-        'x-api-key': this.sessionService.apiKey,
+        'x-api-key': this.immichApi.apiConfiguration.apiKey,
         ...data.getHeaders(),
       },
       maxContentLength: Infinity,
