@@ -24,7 +24,6 @@ services:
     depends_on:
       - redis
       - database
-      - typesense
 
   immich-microservices:
     container_name: immich_microservices
