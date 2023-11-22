@@ -566,4 +566,41 @@ describe(MetadataService.name, () => {
       });
     });
   });
+
+  describe('handleSidecarWrite', () => {
+    it('should skip assets that do not exist anymore', async () => {
+      assetMock.getByIds.mockResolvedValue([]);
+      await expect(sut.handleSidecarWrite({ id: 'asset-123' })).resolves.toBe(false);
+      expect(metadataMock.writeTags).not.toHaveBeenCalled();
+    });
+
+    it('should skip jobs with not metadata', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      await expect(sut.handleSidecarWrite({ id: assetStub.sidecar.id })).resolves.toBe(true);
+      expect(metadataMock.writeTags).not.toHaveBeenCalled();
+    });
+
+    it('should write tags', async () => {
+      const description = 'this is a description';
+      const gps = 12;
+      const date = '2023-11-22T04:56:12.196Z';
+
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      await expect(
+        sut.handleSidecarWrite({
+          id: assetStub.sidecar.id,
+          description,
+          latitude: gps,
+          longitude: gps,
+          dateTimeOriginal: date,
+        }),
+      ).resolves.toBe(true);
+      expect(metadataMock.writeTags).toHaveBeenCalledWith(assetStub.sidecar.sidecarPath, {
+        ImageDescription: description,
+        CreationDate: date,
+        GPSLatitude: gps,
+        GPSLongitude: gps,
+      });
+    });
+  });
 });

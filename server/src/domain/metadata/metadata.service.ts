@@ -254,7 +254,7 @@ export class MetadataService {
 
   async handleSidecarWrite(job: ISidecarWriteJob) {
     const { id, description, dateTimeOriginal, latitude, longitude } = job;
-    const asset = await this.assetRepository.getById(id);
+    const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return false;
     }
