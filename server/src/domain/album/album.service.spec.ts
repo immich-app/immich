@@ -442,20 +442,36 @@ describe(AlbumService.name, () => {
     it('should get a shared album', async () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      albumMock.getMetadataForIds.mockResolvedValue([
+        {
+          albumId: albumStub.oneAsset.id,
+          assetCount: 1,
+          startDate: new Date('1970-01-01'),
+          endDate: new Date('1970-01-01'),
+        },
+      ]);
 
       await sut.get(authStub.admin, albumStub.oneAsset.id, {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id, { withAssets: true });
+      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id, { withAssets: false });
       expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, albumStub.oneAsset.id);
     });
 
     it('should get a shared album via a shared link', async () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasSharedLinkAccess.mockResolvedValue(true);
+      albumMock.getMetadataForIds.mockResolvedValue([
+        {
+          albumId: albumStub.oneAsset.id,
+          assetCount: 1,
+          startDate: new Date('1970-01-01'),
+          endDate: new Date('1970-01-01'),
+        },
+      ]);
 
       await sut.get(authStub.adminSharedLink, 'album-123', {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true });
+      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: false });
       expect(accessMock.album.hasSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLinkId,
         'album-123',
@@ -465,10 +481,18 @@ describe(AlbumService.name, () => {
     it('should get a shared album via shared with user', async () => {
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       accessMock.album.hasSharedAlbumAccess.mockResolvedValue(true);
+      albumMock.getMetadataForIds.mockResolvedValue([
+        {
+          albumId: albumStub.oneAsset.id,
+          assetCount: 1,
+          startDate: new Date('1970-01-01'),
+          endDate: new Date('1970-01-01'),
+        },
+      ]);
 
       await sut.get(authStub.user1, 'album-123', {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true });
+      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: false });
       expect(accessMock.album.hasSharedAlbumAccess).toHaveBeenCalledWith(authStub.user1.id, 'album-123');
     });
 
