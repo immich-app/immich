@@ -19,6 +19,7 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { page } from '$app/stores';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -47,11 +48,49 @@
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
 
+  const updateAssetQuery = (asset?: AssetResponseDto) => {
+    let query = new URLSearchParams($page.url.searchParams.toString());
+
+    if (asset) {
+      query.set('asset', asset.id);
+    } else {
+      query.delete('asset');
+    }
+
+    goto(`?${query.toString()}`, { keepFocus: true, replaceState: true, noScroll: true });
+  };
+
   onMount(async () => {
     showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
     assetStore.connect();
     await assetStore.init(viewport);
+
+    // permanent url code
+    // subscribe to the viewer to know when it closes - redirect back to /photos
+    const unsubState = showAssetViewer.subscribe((value) => {
+      if (!value) {
+        updateAssetQuery();
+      }
+    });
+    // when the asset changes - redirect to it's ID
+    const unsubAsset = viewingAsset.subscribe((value) => {
+      if (value) {
+        updateAssetQuery(value);
+      }
+    });
+
+    // initial ID setting - for example, when refreshing the page with a url param already set
+    const assetId = $page.url.searchParams.get('asset');
+    if (assetId) {
+      assetViewingStore.setAssetId(assetId);
+    }
+
+    // unsubscribe
+    return () => {
+      unsubAsset();
+      unsubState();
+    };
   });
 
   onDestroy(() => {
