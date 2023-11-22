@@ -84,8 +84,8 @@ class ImageViewerService {
         }
         return entity != null;
       }
-    } catch (e) {
-      debugPrint("Error saving file $e");
+    } catch (error, stack) {
+      _log.severe("Error saving file ${error.toString()}", error, stack);
       return false;
     }
   }
