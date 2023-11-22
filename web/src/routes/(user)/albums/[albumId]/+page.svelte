@@ -123,7 +123,7 @@
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
 
-    let url: string | undefined = from?.url.pathname;
+    let url: string | undefined = from?.url?.pathname;
 
     if (from?.route.id === '/(user)/search') {
       url = from.url.href;
