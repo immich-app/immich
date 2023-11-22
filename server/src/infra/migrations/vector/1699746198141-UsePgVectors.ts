@@ -23,10 +23,12 @@ export class UsePgVectors1699746198141 implements MigrationInterface {
       ALTER TABLE asset_faces 
         ALTER COLUMN embedding SET NOT NULL,
         ALTER COLUMN embedding TYPE vector(${faceDimSize})`);
+
     await queryRunner.query(`
       CREATE TABLE smart_search (
         "assetId"  uuid PRIMARY KEY NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
         embedding  vector(${clipDimSize}) NOT NULL )`);
+
     await queryRunner.query(`
       INSERT INTO smart_search("assetId", embedding)
         SELECT si."assetId", si."clipEmbedding"
@@ -44,5 +46,6 @@ export class UsePgVectors1699746198141 implements MigrationInterface {
       FROM smart_search s
       ON CONFLICT (s."assetId") DO UPDATE SET "clipEmbedding" = s.embedding`);
     await queryRunner.query(`DROP TABLE IF EXISTS smart_search`);
+    await queryRunner.query('DROP EXTENSION IF EXISTS vectors');
   }
 }

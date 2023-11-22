@@ -9,7 +9,6 @@ import {
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { dataSource } from '..';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { asVector, isValidInteger } from '../infra.utils';
@@ -259,7 +258,7 @@ export class PersonRepository implements IPersonRepository {
     }
 
     let results: AssetFaceEntity[] = [];
-    this.assetRepository.manager.transaction(async (manager) => {
+    await this.assetRepository.manager.transaction(async (manager) => {
       await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
@@ -272,7 +271,7 @@ export class PersonRepository implements IPersonRepository {
 
       this.faceColumns.forEach((col) => cte.addSelect(`faces.${col} AS "${col}"`));
 
-      results = await dataSource
+      results = await manager
         .createQueryBuilder()
         .select('res.*')
         .addCommonTableExpression(cte, 'cte')

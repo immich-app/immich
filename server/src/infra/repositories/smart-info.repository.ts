@@ -26,7 +26,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     }
 
     let results: AssetEntity[] = [];
-    this.assetRepository.manager.transaction(async (manager) => {
+    await this.assetRepository.manager.transaction(async (manager) => {
       await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       results = await manager
         .createQueryBuilder(AssetEntity, 'a')
@@ -46,19 +46,22 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     await this.repository.upsert(smartInfo, { conflictPaths: ['assetId'] });
     if (!smartInfo.assetId || !embedding) return;
 
-    try {
-      await this.upsertEmbedding(smartInfo.assetId, embedding);
-    } catch (e) {
-      await this.updateDimSize(embedding.length);
-      await this.upsertEmbedding(smartInfo.assetId, embedding);
-    }
+    await this.upsertEmbedding(smartInfo.assetId, embedding);
   }
 
   private async upsertEmbedding(assetId: string, embedding: number[]): Promise<void> {
-    if (this.lock.isBusy('updateDimSizeLock')) {
-      this.logger.log('Waiting for CLIP dimension size update to finish');
+    if (this.lock.isBusy('updateDimSize')) {
+      this.logger.debug('Waiting for CLIP dimension size update to finish');
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return this.upsertEmbedding(assetId, embedding);
+    }
+
+    if (this.curDimSize == null) {
+      await this.getDimSize();
+    }
+
+    if (this.curDimSize !== embedding.length) {
+      await this.updateDimSize(embedding.length);
     }
 
     await this.smartSearchRepository.upsert(
@@ -67,44 +70,52 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     );
   }
 
-  /*
-   * note: never use this with user input
-   * this does not parameterize the query because it is not possible to parameterize the column type
-   */
   private async updateDimSize(dimSize: number): Promise<void> {
     if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
-    await this.lock.acquire('updateDimSizeLock', async () => {
+    await this.lock.acquire('updateDimSize', async () => {
       if (this.curDimSize === dimSize) return;
 
       this.logger.log(`Updating CLIP dimension size to ${dimSize}`);
 
-      try {
-        await this.smartSearchRepository.manager.query(`
-        BEGIN;
+      await this.smartSearchRepository.manager.transaction(async (manager) => {
+        await manager.query(`DROP TABLE smart_search`);
 
-        ALTER TABLE smart_search
-        DROP COLUMN embedding,
-        ADD COLUMN embedding vector(${dimSize});
+        await manager.query(`
+          CREATE TABLE smart_search (
+            "assetId"  uuid PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
+            embedding  vector(${dimSize}) NOT NULL )`);
 
+        await manager.query(`
         CREATE INDEX clip_index ON smart_search
-        USING vectors (embedding cosine_ops) WITH (options = $$
-        [indexing.hnsw]
-        m = 16
-        ef_construction = 300
-        $$);
-
-        COMMIT;
-      `);
-      } catch (err) {
-        this.logger.error(`Failed to update CLIP dimension size to ${dimSize}: ${err}`);
-        this.smartSearchRepository.manager.query('ROLLBACK');
-      }
+          USING vectors (embedding cosine_ops) WITH (options = $$
+          [indexing.hnsw]
+          m = 16
+          ef_construction = 300
+          $$)`);
+      });
 
       this.curDimSize = dimSize;
       this.logger.log(`Successfully updated CLIP dimension size to ${dimSize}`);
+    });
+  }
+
+  private async getDimSize(): Promise<void> {
+    await this.lock.acquire('getDimSize', async () => {
+      if (this.curDimSize != null) return;
+
+      const res = await this.smartSearchRepository.manager.query(`
+        SELECT atttypmod as dimsize
+        FROM pg_attribute f
+          JOIN pg_class c ON c.oid = f.attrelid
+        WHERE c.relkind = 'r'::char
+          AND f.attnum > 0
+          AND c.relname = 'smart_search'
+          AND f.attname = 'embedding'`);
+      this.curDimSize = res?.[0]?.['dimsize'] ?? 512;
+      this.logger.log(`CLIP dimension size is ${this.curDimSize}`);
     });
   }
 }

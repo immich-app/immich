@@ -36,7 +36,7 @@ export async function paginate<Entity extends ObjectLiteral>(
 export const asVector = (embedding: number[], quote = false) =>
   quote ? `'[${embedding.join(',')}]'` : `[${embedding.join(',')}]`;
 
-export const isValidInteger = (value: number, options: {min?: number, max?: number}): boolean => {
+export const isValidInteger = (value: number, options: {min?: number, max?: number}): value is number => {
   const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
   return Number.isInteger(value) && value >= min && value <= max;
 }
