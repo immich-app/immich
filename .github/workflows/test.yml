@@ -86,7 +86,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run npm install in CLI
+      - name: Run npm install in cli
         run: npm ci
 
       - uses: chill-viking/npm-ci@latest
@@ -111,7 +111,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   cli-e2e-tests:
-    name: Run CLI end-to-end tests
+    name: Run cli end-to-end tests
     strategy:
       matrix:
         os: [ubuntu-latest] # TODO: macos and windows
