@@ -33,3 +33,9 @@ export interface IBulkEntityJob extends IBaseJob {
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
 }
+
+export interface ISidecarWriteJob extends IEntityJob {
+  dateTimeOriginal?: string;
+  latitude?: number;
+  longitude?: number;
+}

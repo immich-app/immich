@@ -1,7 +1,7 @@
 import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from '@app/domain';
 import { REVERSE_GEOCODING_DUMP_DIRECTORY } from '@app/infra';
 import { Injectable, Logger } from '@nestjs/common';
-import { DefaultReadTaskOptions, exiftool } from 'exiftool-vendored';
+import { DefaultReadTaskOptions, Tags, exiftool } from 'exiftool-vendored';
 import { readdir, rm } from 'fs/promises';
 import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
@@ -76,7 +76,7 @@ export class MetadataRepository implements IMetadataRepository {
     return { country, state, city };
   }
 
-  getExifTags(path: string): Promise<ImmichTags | null> {
+  readTags(path: string): Promise<ImmichTags | null> {
     return exiftool
       .read(path, undefined, {
         ...DefaultReadTaskOptions,
@@ -92,5 +92,9 @@ export class MetadataRepository implements IMetadataRepository {
         this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
         return null;
       }) as Promise<ImmichTags | null>;
+  }
+
+  async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+    await exiftool.write(path, tags, ['-overwrite_original']);
   }
 }

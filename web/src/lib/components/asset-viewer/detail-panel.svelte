@@ -10,17 +10,24 @@
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import {
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
+    mdiPencil,
     mdiImageOutline,
     mdiMapMarkerOutline,
     mdiInformationOutline,
   } from '@mdi/js';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
   import Icon from '$lib/components/elements/icon.svelte';
   import Map from '../shared-components/map/map.svelte';
   import { AppRoute } from '$lib/constants';
+  import ChangeLocation from '../shared-components/change-location.svelte';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -90,6 +97,45 @@
 
   let showAssetPath = false;
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
+
+  let isShowChangeDate = false;
+
+  async function handleConfirmChangeDate(event: CustomEvent<string>) {
+    isShowChangeDate = false;
+    if (asset.exifInfo) {
+      asset.exifInfo.dateTimeOriginal = event.detail;
+    }
+    try {
+      await api.assetApi.updateAsset({
+        id: asset.id,
+        updateAssetDto: {
+          dateTimeOriginal: event.detail,
+        },
+      });
+      notificationController.show({ message: 'Metadata updated please reload to apply', type: NotificationType.Info });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  let isShowChangeLocation = false;
+
+  async function handleConfirmChangeLocation(event: CustomEvent<{ lng: number; lat: number }>) {
+    isShowChangeLocation = false;
+
+    try {
+      await api.assetApi.updateAsset({
+        id: asset.id,
+        updateAssetDto: {
+          latitude: event.detail.lat,
+          longitude: event.detail.lng,
+        },
+      });
+      notificationController.show({ message: 'Metadata updated please reload to apply', type: NotificationType.Info });
+    } catch (error) {
+      console.error(error);
+    }
+  }
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -195,37 +241,101 @@
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
-      <div class="flex gap-4 py-4">
-        <div>
-          <Icon path={mdiCalendar} size="24" />
-        </div>
+      <div
+        class="flex justify-between gap-4 py-4 hover:bg-gray-200 hover:text-black cursor-pointer"
+        on:click={() => (isShowChangeDate = true)}
+        on:keydown={(event) => event.key === 'Enter' && (isShowChangeDate = true)}
+        tabindex="0"
+        role="button"
+      >
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
 
-        <div>
-          <p>
-            {assetDateTimeOriginal.toLocaleString(
-              {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              },
-              { locale: $locale },
-            )}
-          </p>
-          <div class="flex gap-2 text-sm">
+          <div>
             <p>
               {assetDateTimeOriginal.toLocaleString(
                 {
-                  weekday: 'short',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  timeZoneName: 'longOffset',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
                 },
                 { locale: $locale },
               )}
             </p>
+            <div class="flex gap-2 text-sm">
+              <p>
+                {assetDateTimeOriginal.toLocaleString(
+                  {
+                    weekday: 'short',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZoneName: 'longOffset',
+                  },
+                  { locale: $locale },
+                )}
+              </p>
+            </div>
           </div>
         </div>
-      </div>{/if}
+        <button class="focus:outline-none">
+          <Icon path={mdiPencil} size="24" />
+        </button>
+      </div>
+    {:else}
+      <div
+        class="flex justify-between gap-4 py-4 hover:bg-gray-200 hover:text-black cursor-pointer"
+        on:click={() => (isShowChangeDate = true)}
+        on:keydown={(event) => event.key === 'Enter' && (isShowChangeDate = true)}
+        tabindex="0"
+        role="button"
+      >
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
+
+          <div>
+            <p>No date available for this asset, click to add one.</p>
+          </div>
+        </div>
+        <button class="focus:outline-none">
+          <Icon path={mdiPencil} size="24" />
+        </button>
+      </div>
+    {/if}
+
+    {#if isShowChangeDate}
+      {#if asset.exifInfo?.dateTimeOriginal}
+        {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+          zone: asset.exifInfo.timeZone ?? undefined,
+        })}
+        <ChangeDate
+          title="Change Date"
+          confirmText="Confirm"
+          initialDate={assetDateTimeOriginal}
+          on:confirm={handleConfirmChangeDate}
+          on:cancel={() => (isShowChangeDate = false)}
+        >
+          <svelte:fragment slot="prompt">
+            <p>Please select a new date:</p>
+          </svelte:fragment>
+        </ChangeDate>
+      {:else}
+        <ChangeDate
+          title="Change Date"
+          confirmText="Confirm"
+          initialDate={DateTime.now()}
+          on:confirm={handleConfirmChangeDate}
+          on:cancel={() => (isShowChangeDate = false)}
+        >
+          <svelte:fragment slot="prompt">
+            <p>Please select a new date:</p>
+          </svelte:fragment>
+        </ChangeDate>
+      {/if}
+    {/if}
 
     {#if asset.exifInfo?.fileSizeInByte}
       <div class="flex gap-4 py-4">
@@ -293,7 +403,13 @@
     {/if}
 
     {#if asset.exifInfo?.city}
-      <div class="flex gap-4 py-4">
+      <div
+        class="flex justify-between gap-4 py-4 hover:bg-gray-200 hover:text-black cursor-pointer"
+        on:click={() => (isShowChangeLocation = true)}
+        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
+        tabindex="0"
+        role="button"
+      >
         <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
 
         <div>
@@ -309,7 +425,57 @@
             </div>
           {/if}
         </div>
+
+        <button class="focus:outline-none">
+          <Icon path={mdiPencil} size="24" />
+        </button>
       </div>
+    {:else}
+      <div
+        class="flex justify-between gap-4 py-4 hover:bg-gray-200 hover:text-black cursor-pointer"
+        on:click={() => (isShowChangeLocation = true)}
+        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
+        tabindex="0"
+        role="button"
+      >
+        <div class="flex gap-4">
+          <div>
+            <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+          </div>
+
+          <div>
+            <p>No location available for this asset, click to add one.</p>
+          </div>
+        </div>
+        <button class="focus:outline-none">
+          <Icon path={mdiPencil} size="24" />
+        </button>
+      </div>
+    {/if}
+    {#if isShowChangeLocation}
+      {#if latlng}
+        <ChangeLocation
+          confirmText="Confirm"
+          location={latlng}
+          id_asset={asset.id}
+          on:confirm={handleConfirmChangeLocation}
+          on:cancel={() => (isShowChangeLocation = false)}
+        >
+          <svelte:fragment slot="prompt">
+            <p>Please select a new location:</p>
+          </svelte:fragment>
+        </ChangeLocation>
+      {:else}
+        <ChangeLocation
+          confirmText="Confirm"
+          on:confirm={handleConfirmChangeLocation}
+          on:cancel={() => (isShowChangeLocation = false)}
+        >
+          <svelte:fragment slot="prompt">
+            <p>Please select a new location:</p>
+          </svelte:fragment>
+        </ChangeLocation>
+      {/if}
     {/if}
   </div>
 </section>

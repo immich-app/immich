@@ -28,6 +28,14 @@
   export let zoom: number | undefined = undefined;
   export let center: LngLatLike | undefined = undefined;
   export let simplified = false;
+  export let clickable = false;
+
+  let map: maplibregl.Map;
+  let marker: maplibregl.Marker | null = null;
+
+  $: if (map) {
+    map.on('click', handleMapClick);
+  }
 
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
@@ -36,7 +44,10 @@
     return data as StyleSpecification;
   })();
 
-  const dispatch = createEventDispatcher<{ selected: string[] }>();
+  const dispatch = createEventDispatcher<{
+    selected: string[];
+    clickedPoint: { lat: number; lng: number };
+  }>();
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
@@ -63,6 +74,19 @@
     });
   }
 
+  function handleMapClick(event: maplibregl.MapMouseEvent) {
+    if (clickable) {
+      const { lng, lat } = event.lngLat;
+      dispatch('clickedPoint', { lng, lat });
+
+      if (marker) {
+        marker.remove();
+      }
+
+      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+    }
+  }
+
   type FeaturePoint = Feature<Point, { id: string }>;
 
   const asFeature = (marker: MapMarkerResponseDto): FeaturePoint => {
@@ -87,7 +111,7 @@
 </script>
 
 {#await style then style}
-  <MapLibre {style} class="h-full" {center} {zoom} attributionControl={false} diffStyleUpdates={true} let:map>
+  <MapLibre {style} class="h-full" {center} {zoom} attributionControl={false} diffStyleUpdates={true} let:map bind:map>
     <NavigationControl position="top-left" showCompass={!simplified} />
     {#if !simplified}
       <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} />

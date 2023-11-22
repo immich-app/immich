@@ -13,12 +13,23 @@ part of openapi.api;
 class AssetBulkUpdateDto {
   /// Returns a new [AssetBulkUpdateDto] instance.
   AssetBulkUpdateDto({
+    this.dateTimeOriginal,
     this.ids = const [],
     this.isArchived,
     this.isFavorite,
+    this.latitude,
+    this.longitude,
     this.removeParent,
     this.stackParentId,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? dateTimeOriginal;
 
   List<String> ids;
 
@@ -44,6 +55,22 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  num? latitude;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? longitude;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? removeParent;
 
   ///
@@ -56,26 +83,37 @@ class AssetBulkUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
+     other.dateTimeOriginal == dateTimeOriginal &&
      other.ids == ids &&
      other.isArchived == isArchived &&
      other.isFavorite == isFavorite &&
+     other.latitude == latitude &&
+     other.longitude == longitude &&
      other.removeParent == removeParent &&
      other.stackParentId == stackParentId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
     (ids.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (latitude == null ? 0 : latitude!.hashCode) +
+    (longitude == null ? 0 : longitude!.hashCode) +
     (removeParent == null ? 0 : removeParent!.hashCode) +
     (stackParentId == null ? 0 : stackParentId!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, removeParent=$removeParent, stackParentId=$stackParentId]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, removeParent=$removeParent, stackParentId=$stackParentId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.dateTimeOriginal != null) {
+      json[r'dateTimeOriginal'] = this.dateTimeOriginal;
+    } else {
+    //  json[r'dateTimeOriginal'] = null;
+    }
       json[r'ids'] = this.ids;
     if (this.isArchived != null) {
       json[r'isArchived'] = this.isArchived;
@@ -86,6 +124,16 @@ class AssetBulkUpdateDto {
       json[r'isFavorite'] = this.isFavorite;
     } else {
     //  json[r'isFavorite'] = null;
+    }
+    if (this.latitude != null) {
+      json[r'latitude'] = this.latitude;
+    } else {
+    //  json[r'latitude'] = null;
+    }
+    if (this.longitude != null) {
+      json[r'longitude'] = this.longitude;
+    } else {
+    //  json[r'longitude'] = null;
     }
     if (this.removeParent != null) {
       json[r'removeParent'] = this.removeParent;
@@ -108,11 +156,18 @@ class AssetBulkUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return AssetBulkUpdateDto(
+        dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
         ids: json[r'ids'] is List
             ? (json[r'ids'] as List).cast<String>()
             : const [],
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        latitude: json[r'latitude'] == null
+            ? null
+            : num.parse(json[r'latitude'].toString()),
+        longitude: json[r'longitude'] == null
+            ? null
+            : num.parse(json[r'longitude'].toString()),
         removeParent: mapValueOfType<bool>(json, r'removeParent'),
         stackParentId: mapValueOfType<String>(json, r'stackParentId'),
       );

@@ -2,6 +2,8 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
@@ -40,6 +42,8 @@
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
       <DownloadAction menuItem />
       <ArchiveAction menuItem unarchive={isAllArchive} />
+      <ChangeDate menuItem />
+      <ChangeLocation menuItem />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}

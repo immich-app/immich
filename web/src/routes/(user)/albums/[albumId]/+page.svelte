@@ -11,6 +11,8 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location.svelte';
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
@@ -446,6 +448,8 @@
           {/if}
           {#if isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+            <ChangeDate menuItem />
+            <ChangeLocation menuItem />
           {/if}
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
