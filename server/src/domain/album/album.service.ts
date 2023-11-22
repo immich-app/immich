@@ -102,7 +102,26 @@ export class AlbumService {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
     const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
-    return mapAlbum(await this.findOrFail(id, { withAssets }), withAssets);
+    const album = await this.findOrFail(id, { withAssets });
+    const albumMetadataForIds = await this.albumRepository.getMetadataForIds([album.id]);
+    const albumMetadataForIdsObj: Record<string, AlbumAssetCount> = albumMetadataForIds.reduce(
+      (obj: Record<string, AlbumAssetCount>, { albumId, assetCount, startDate, endDate }) => {
+        obj[albumId] = {
+          albumId,
+          assetCount,
+          startDate,
+          endDate,
+        };
+        return obj;
+      },
+      {},
+    );
+    return {
+      ...mapAlbum(album, withAssets),
+      startDate: albumMetadataForIdsObj[album.id].startDate,
+      endDate: albumMetadataForIdsObj[album.id].endDate,
+      assetCount: albumMetadataForIdsObj[album.id].assetCount,
+    };
   }
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
