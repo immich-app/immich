@@ -103,24 +103,13 @@ export class AlbumService {
     await this.albumRepository.updateThumbnails();
     const withAssets = dto.withoutAssets === undefined ? false : !dto.withoutAssets;
     const album = await this.findOrFail(id, { withAssets });
-    const albumMetadataForIds = await this.albumRepository.getMetadataForIds([album.id]);
-    const albumMetadataForIdsObj: Record<string, AlbumAssetCount> = albumMetadataForIds.reduce(
-      (obj: Record<string, AlbumAssetCount>, { albumId, assetCount, startDate, endDate }) => {
-        obj[albumId] = {
-          albumId,
-          assetCount,
-          startDate,
-          endDate,
-        };
-        return obj;
-      },
-      {},
-    );
+    const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
+
     return {
       ...mapAlbum(album, withAssets),
-      startDate: albumMetadataForIdsObj[album.id].startDate,
-      endDate: albumMetadataForIdsObj[album.id].endDate,
-      assetCount: albumMetadataForIdsObj[album.id].assetCount,
+      startDate: albumMetadataForIds.startDate,
+      endDate: albumMetadataForIds.endDate,
+      assetCount: albumMetadataForIds.assetCount,
     };
   }
 
