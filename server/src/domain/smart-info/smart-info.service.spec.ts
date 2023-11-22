@@ -195,10 +195,12 @@ describe(SmartInfoService.name, () => {
         { imagePath: 'path/to/resize.ext' },
         { enabled: true, modelName: 'ViT-B-32__openai' },
       );
-      expect(smartMock.upsert).toHaveBeenCalledWith({
-        assetId: 'asset-1',
-        clipEmbedding: [0.01, 0.02, 0.03],
-      });
+      expect(smartMock.upsert).toHaveBeenCalledWith(
+        {
+          assetId: 'asset-1',
+        },
+        [0.01, 0.02, 0.03],
+      );
     });
   });
 });
