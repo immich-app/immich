@@ -25,6 +25,7 @@
   <a href="README_it_IT.md">Italiano</a>
   <a href="README_ja_JP.md">日本語</a>
   <a href="README_ko_KR.md">한국어</a>
+  <a href="README_de_DE.md">Deutsch</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
 </p>
