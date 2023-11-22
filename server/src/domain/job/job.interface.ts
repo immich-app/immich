@@ -35,6 +35,7 @@ export interface IDeleteFilesJob extends IBaseJob {
 }
 
 export interface ISidecarWriteJob extends IEntityJob {
+  description?: string;
   dateTimeOriginal?: string;
   latitude?: number;
   longitude?: number;

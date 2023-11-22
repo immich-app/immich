@@ -700,6 +700,54 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(status).toEqual(200);
     });
 
+    it('should update date time original', async () => {
+      const { status, body } = await request(server)
+        .put(`/asset/${asset1.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ dateTimeOriginal: '2023-11-19T18:11:00.000-07:00' });
+
+      expect(body).toMatchObject({
+        id: asset1.id,
+        exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00.000Z' }),
+      });
+      expect(status).toEqual(200);
+    });
+
+    it('should reject invalid gps coordinates', async () => {
+      for (const test of [
+        { latitude: 12 },
+        { longitude: 12 },
+        { latitude: 12, longitude: 'abc' },
+        { latitude: 'abc', longitude: 12 },
+        { latitude: null, longitude: 12 },
+        { latitude: 12, longitude: null },
+        { latitude: 91, longitude: 12 },
+        { latitude: -91, longitude: 12 },
+        { latitude: 12, longitude: -181 },
+        { latitude: 12, longitude: 181 },
+      ]) {
+        const { status, body } = await request(server)
+          .put(`/asset/${asset1.id}`)
+          .send(test)
+          .set('Authorization', `Bearer ${user1.accessToken}`);
+        expect(status).toBe(400);
+        expect(body).toEqual(errorStub.badRequest());
+      }
+    });
+
+    it('should update gps data', async () => {
+      const { status, body } = await request(server)
+        .put(`/asset/${asset1.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ latitude: 12, longitude: 12 });
+
+      expect(body).toMatchObject({
+        id: asset1.id,
+        exifInfo: expect.objectContaining({ latitude: 12, longitude: 12 }),
+      });
+      expect(status).toEqual(200);
+    });
+
     it('should set the description', async () => {
       const { status, body } = await request(server)
         .put(`/asset/${asset1.id}`)

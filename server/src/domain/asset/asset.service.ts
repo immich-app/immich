@@ -586,15 +586,11 @@ export class AssetService {
     }
   }
 
-  private async updateMetadata(dto: ISidecarWriteJob & { description?: string }) {
+  private async updateMetadata(dto: ISidecarWriteJob) {
     const { id, description, dateTimeOriginal, latitude, longitude } = dto;
-
-    if (description !== undefined) {
-      await this.assetRepository.upsertExif({ assetId: id, description });
-    }
-
-    const writes = _.omitBy({ dateTimeOriginal, latitude, longitude }, _.isUndefined);
+    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
+      await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
     }
   }

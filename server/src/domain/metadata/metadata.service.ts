@@ -253,15 +253,16 @@ export class MetadataService {
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob) {
-    const { id, dateTimeOriginal, latitude, longitude } = job;
+    const { id, description, dateTimeOriginal, latitude, longitude } = job;
     const asset = await this.assetRepository.getById(id);
     if (!asset) {
       return false;
     }
 
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
-    const exif = _.omitBy(
+    const exif = _.omitBy<Tags>(
       {
+        ImageDescription: description,
         CreationDate: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
