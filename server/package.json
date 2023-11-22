@@ -81,7 +81,6 @@
     "ua-parser-js": "^1.0.35"
   },
   "devDependencies": {
-    "@esbuild/linux-x64": "^0.19.5",
     "@nestjs/cli": "^10.1.16",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.2.2",
