@@ -375,7 +375,7 @@ export class PersonService {
 
     const results: BulkIdResponseDto[] = [];
 
-    const allowedIds = await this.access.getAllowedIds(authUser, Permission.PERSON_MERGE, new Set(mergeIds));
+    const allowedIds = await this.access.checkAccess(authUser, Permission.PERSON_MERGE, mergeIds);
 
     for (const mergeId of mergeIds) {
       const hasAccess = allowedIds.has(mergeId);

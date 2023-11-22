@@ -68,39 +68,16 @@ export class AccessCore {
     return authUser;
   }
 
-  async requirePermission(authUser: AuthUserDto, permission: Permission, ids: string[] | string) {
-    const hasAccess = await this.hasPermission(authUser, permission, ids);
-    if (!hasAccess) {
-      throw new BadRequestException(`Not found or no ${permission} access`);
-    }
-  }
-
-  /**
-   * Check if user has any of the given permissions, for any of the given ids.
-   * It returns true if the user has access to any of the ids, for any of the given permissions.
-   *
-   * @returns boolean
-   */
-  async hasAny(authUser: AuthUserDto, permissions: Array<{ permission: Permission; ids: Set<string> }>) {
-    for (const { permission, ids } of permissions) {
-      const allowedIds = await this.getAllowedIds(authUser, permission, ids);
-      if (allowedIds.size > 0) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /**
    * Check if user has access to all ids, for the given permission.
-   * It only returns true if user has access to all specified ids.
-   *
-   * @returns boolean
+   * Throws error if user does not have access to any of the ids.
    */
-  async hasPermission(authUser: AuthUserDto, permission: Permission, ids: string[] | string) {
-    const idSet = Array.isArray(ids) ? new Set(ids) : new Set([ids]);
-    const allowedIds = await this.getAllowedIds(authUser, permission, idSet);
-    return idSet.size === allowedIds.size;
+  async requirePermission(authUser: AuthUserDto, permission: Permission, ids: string[] | string) {
+    ids = Array.isArray(ids) ? ids : [ids];
+    const allowedIds = await this.checkAccess(authUser, permission, ids);
+    if (new Set(ids).size !== allowedIds.size) {
+      throw new BadRequestException(`Not found or no ${permission} access`);
+    }
   }
 
   /**
@@ -109,19 +86,19 @@ export class AccessCore {
    *
    * @returns Set<string>
    */
-  async getAllowedIds(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
-    if (ids.size === 0) {
+  async checkAccess(authUser: AuthUserDto, permission: Permission, ids: Set<string> | string[]) {
+    const idSet = Array.isArray(ids) ? new Set(ids) : ids;
+    if (idSet.size === 0) {
       return new Set();
     }
 
     const isSharedLink = authUser.isPublicUser ?? false;
-
     return isSharedLink
-      ? await this.getAllowedIdsSharedLinkAccess(authUser, permission, ids)
-      : await this.getAllowedIdsOtherAccess(authUser, permission, ids);
+      ? await this.checkAccessSharedLink(authUser, permission, idSet)
+      : await this.checkAccessOther(authUser, permission, idSet);
   }
 
-  private async getAllowedIdsSharedLinkAccess(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
+  private async checkAccessSharedLink(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
     const allowedIds = new Set();
     for (const id of ids) {
       const hasAccess = await this.hasSharedLinkAccess(authUser, permission, id);
@@ -132,7 +109,7 @@ export class AccessCore {
     return allowedIds;
   }
 
-  // TODO: Migrate logic to getAllowedIdsSharedLinkAccess to evaluate permissions in bulk.
+  // TODO: Migrate logic to checkAccessSharedLink to evaluate permissions in bulk.
   private async hasSharedLinkAccess(authUser: AuthUserDto, permission: Permission, id: string) {
     const sharedLinkId = authUser.sharedLinkId;
     if (!sharedLinkId) {
@@ -167,7 +144,7 @@ export class AccessCore {
     }
   }
 
-  private async getAllowedIdsOtherAccess(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
+  private async checkAccessOther(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
     const allowedIds = new Set();
     for (const id of ids) {
       const hasAccess = await this.hasOtherAccess(authUser, permission, id);
@@ -178,7 +155,7 @@ export class AccessCore {
     return allowedIds;
   }
 
-  // TODO: Migrate logic to getAllowedIdsOtherAccess to evaluate permissions in bulk.
+  // TODO: Migrate logic to checkAccessOther to evaluate permissions in bulk.
   private async hasOtherAccess(authUser: AuthUserDto, permission: Permission, id: string) {
     switch (permission) {
       // uses album id

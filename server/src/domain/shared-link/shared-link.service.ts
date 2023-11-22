@@ -120,8 +120,8 @@ export class SharedLinkService {
     }
 
     const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
-    const notPresentAssetIds = new Set(dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId)));
-    const allowedAssetIds = await this.access.getAllowedIds(authUser, Permission.ASSET_SHARE, notPresentAssetIds);
+    const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
+    const allowedAssetIds = await this.access.checkAccess(authUser, Permission.ASSET_SHARE, notPresentAssetIds);
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
