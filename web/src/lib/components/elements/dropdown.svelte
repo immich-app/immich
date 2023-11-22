@@ -29,10 +29,13 @@
     icon?: string;
   };
 
-  let showMenu = false;
+  export let showMenu = false;
+  export let controlable = false;
 
   const handleClickOutside = () => {
-    showMenu = false;
+    if(!controlable){
+      showMenu = false;
+    }
   };
 
   const handleSelectOption = (option: T) => {

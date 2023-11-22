@@ -29,12 +29,25 @@
   let selectedTimezone = initialOption?.offset || null;
   let disabled = false;
 
+  let searchQuery = '';
+  let filteredTimezones: ZoneOption[] = timezones;
+
+  const updateSearchQuery = (event: Event) => {
+    searchQuery = (event.target as HTMLInputElement).value;
+    filterTimezones();
+  };
+
+  const filterTimezones = () => {
+    filteredTimezones = timezones.filter((timezone) =>
+      timezone.zone.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
+
   const dispatch = createEventDispatcher<{
     cancel: void;
     confirm: string;
   }>();
 
-  const handleSelect = (item: ZoneOption) => (selectedTimezone = item.offset);
   const handleCancel = () => dispatch('cancel');
   const handleConfirm = () => {
     let date = DateTime.fromISO(selectedDate);
@@ -53,6 +66,21 @@
       event.stopPropagation();
     }
   };
+  let isDropdownOpen = false;
+
+  const openDropdown = () => {
+    isDropdownOpen = true;
+  };
+
+  const closeDropdown = () => {
+    isDropdownOpen = false;
+  };
+
+  const handleSelectTz = (item: ZoneOption) => {
+    selectedTimezone = item.offset;
+    closeDropdown();
+  };
+  
 </script>
 <div role="presentation" on:keydown={handleKeydown}>
   <ConfirmDialogue
@@ -77,12 +105,25 @@
       </div>
       <div class="flex flex-col w-full">
         <label for="timezone">Timezone</label>
-        <Dropdown
-          selectedOption={initialOption}
-          options={timezones}
-          render={(item) => (item ? `${item.zone} (${item.offset})` : '(not selected)')}
-          on:select={({ detail: item }) => handleSelect(item)}
-        />
+        <div class="relative">
+          <input
+            class="immich-form-label text-sm mt-2 w-full text-black"
+            id="timezoneSearch"
+            type="text"
+            placeholder="Search timezone..."
+            bind:value={searchQuery}
+            on:input={updateSearchQuery}
+            on:focus={openDropdown}
+          />
+          <Dropdown
+            selectedOption={initialOption}
+            options={filteredTimezones}
+            render={(item) => (item ? `${item.zone} (${item.offset})` : '(not selected)')}
+            on:select={({ detail: item }) => handleSelectTz(item)}
+            controlable = {true}
+            bind:showMenu={isDropdownOpen}
+          />
+        </div>
       </div>
     </div>
   </ConfirmDialogue>
