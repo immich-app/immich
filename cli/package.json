@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Command Line Interface (CLI) for Immich",
   "main": "dist/src/index.js",
   "bin": {
