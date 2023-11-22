@@ -107,7 +107,6 @@
 
     try {
       await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
-      notificationController.show({ message: 'Metadata updated please reload to apply', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to change date');
     }
@@ -237,11 +236,12 @@
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
       <div
-        class="flex justify-between gap-4 py-4 hover:bg-gray-200 hover:text-black cursor-pointer"
+        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
         on:click={() => (isShowChangeDate = true)}
         on:keydown={(event) => event.key === 'Enter' && (isShowChangeDate = true)}
         tabindex="0"
         role="button"
+        title="Edit date"
       >
         <div class="flex gap-4">
           <div>
@@ -275,28 +275,27 @@
           </div>
         </div>
         <button class="focus:outline-none">
-          <Icon path={mdiPencil} size="24" />
+          <Icon path={mdiPencil} size="20" />
         </button>
       </div>
     {:else}
       <div
-        class="flex justify-between gap-4 py-4 hover:bg-gray-200 hover:text-black cursor-pointer"
+        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
         on:click={() => (isShowChangeDate = true)}
         on:keydown={(event) => event.key === 'Enter' && (isShowChangeDate = true)}
         tabindex="0"
         role="button"
+        title="Add date"
       >
         <div class="flex gap-4">
           <div>
             <Icon path={mdiCalendar} size="24" />
           </div>
 
-          <div>
-            <p>No date available for this asset, click to add one.</p>
-          </div>
+          <p>Add a date</p>
         </div>
         <button class="focus:outline-none">
-          <Icon path={mdiPencil} size="24" />
+          <Icon path={mdiPencil} size="20" />
         </button>
       </div>
     {/if}
@@ -381,52 +380,54 @@
 
     {#if asset.exifInfo?.city}
       <div
-        class="flex justify-between gap-4 py-4 hover:bg-gray-200 hover:text-black cursor-pointer"
+        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
         on:click={() => (isShowChangeLocation = true)}
         on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
         tabindex="0"
         role="button"
+        title="Edit location"
       >
-        <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+        <div class="flex gap-4">
+          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
 
-        <div>
-          <p>{asset.exifInfo.city}</p>
-          {#if asset.exifInfo?.state}
-            <div class="flex gap-2 text-sm">
-              <p>{asset.exifInfo.state}</p>
-            </div>
-          {/if}
-          {#if asset.exifInfo?.country}
-            <div class="flex gap-2 text-sm">
-              <p>{asset.exifInfo.country}</p>
-            </div>
-          {/if}
+          <div>
+            <p>{asset.exifInfo.city}</p>
+            {#if asset.exifInfo?.state}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.state}</p>
+              </div>
+            {/if}
+            {#if asset.exifInfo?.country}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.country}</p>
+              </div>
+            {/if}
+          </div>
         </div>
 
-        <button class="focus:outline-none">
-          <Icon path={mdiPencil} size="24" />
-        </button>
+        <div>
+          <Icon path={mdiPencil} size="20" />
+        </div>
       </div>
     {:else}
       <div
-        class="flex justify-between gap-4 py-4 hover:bg-gray-200 hover:text-black cursor-pointer"
+        class="flex justify-between place-items-start gap-4 py-4 rounded-lg pr-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
         on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
         tabindex="0"
         role="button"
+        title="Add location"
       >
         <div class="flex gap-4">
           <div>
             <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
           </div>
 
-          <div>
-            <p>No location available for this asset, click to add one.</p>
-          </div>
+          <p>Add a location</p>
         </div>
-        <button class="focus:outline-none">
-          <Icon path={mdiPencil} size="24" />
-        </button>
+        <div class="focus:outline-none">
+          <Icon path={mdiPencil} size="20" />
+        </div>
       </div>
     {/if}
     {#if isShowChangeLocation}
