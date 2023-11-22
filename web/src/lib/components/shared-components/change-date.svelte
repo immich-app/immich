@@ -1,3 +1,11 @@
+<script lang="ts" context="module">
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  declare namespace Intl {
+    type Key = 'calendar' | 'collation' | 'currency' | 'numberingSystem' | 'timeZone' | 'unit';
+    function supportedValuesOf(input: Key): string[];
+  }
+</script>
+
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { DateTime } from 'luxon';
@@ -10,9 +18,10 @@
     offset: string;
   }
 
-  const timezones: ZoneOption[] = (Intl as any)
-    .supportedValuesOf('timeZone')
-    .map((zone: string) => ({ zone, offset: 'UTC' + DateTime.local({ zone }).toFormat('ZZ') }));
+  const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone').map((zone: string) => ({
+    zone,
+    offset: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
+  }));
 
   const initialOption = timezones.find((item) => item.offset === 'UTC' + initialDate.toFormat('ZZ'));
 
