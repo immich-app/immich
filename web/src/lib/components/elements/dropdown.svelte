@@ -33,7 +33,7 @@
   export let controlable = false;
 
   const handleClickOutside = () => {
-    if(!controlable){
+    if (!controlable) {
       showMenu = false;
     }
   };

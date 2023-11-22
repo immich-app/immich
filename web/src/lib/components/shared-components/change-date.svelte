@@ -38,9 +38,7 @@
   };
 
   const filterTimezones = () => {
-    filteredTimezones = timezones.filter((timezone) =>
-      timezone.zone.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    filteredTimezones = timezones.filter((timezone) => timezone.zone.toLowerCase().includes(searchQuery.toLowerCase()));
   };
 
   const dispatch = createEventDispatcher<{
@@ -80,8 +78,8 @@
     selectedTimezone = item.offset;
     closeDropdown();
   };
-  
 </script>
+
 <div role="presentation" on:keydown={handleKeydown}>
   <ConfirmDialogue
     confirmColor="primary"
@@ -120,7 +118,7 @@
             options={filteredTimezones}
             render={(item) => (item ? `${item.zone} (${item.offset})` : '(not selected)')}
             on:select={({ detail: item }) => handleSelectTz(item)}
-            controlable = {true}
+            controlable={true}
             bind:showMenu={isDropdownOpen}
           />
         </div>
