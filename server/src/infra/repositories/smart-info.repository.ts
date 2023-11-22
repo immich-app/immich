@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { Repository } from 'typeorm';
 import { AssetEntity, SmartInfoEntity, SmartSearchEntity } from '../entities';
-import { asVector } from '../infra.utils';
+import { asVector, isValidInteger } from '../infra.utils';
 
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {
@@ -21,23 +21,25 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   async searchByEmbedding({ ownerId, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
-    const query: string = this.assetRepository
-      .createQueryBuilder('a')
-      .innerJoin('a.smartSearch', 's')
-      .where('a.ownerId = :ownerId')
-      .leftJoinAndSelect('a.exifInfo', 'e')
-      .orderBy('s.embedding <=> :embedding')
-      .setParameters({ embedding: asVector(embedding), ownerId })
-      .limit(numResults)
-      .getSql();
+    if (!isValidInteger(numResults, { min: 1 })) {
+      throw new Error(`Invalid value for 'numResults': ${numResults}`);
+    }
 
-    const queryWithK = `
-      BEGIN;
-      SET LOCAL vectors.k = ${numResults};
-      ${query};
-      COMMIT;
-    `;
-    return this.assetRepository.create(await this.assetRepository.manager.query(queryWithK));
+    let results: AssetEntity[] = [];
+    this.assetRepository.manager.transaction(async (manager) => {
+      await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
+      results = await manager
+        .createQueryBuilder(AssetEntity, 'a')
+        .innerJoin('a.smartSearch', 's')
+        .where('a.ownerId = :ownerId')
+        .leftJoinAndSelect('a.exifInfo', 'e')
+        .orderBy('s.embedding <=> :embedding')
+        .setParameters({ ownerId, embedding: asVector(embedding) })
+        .limit(numResults)
+        .getMany();
+    });
+
+    return results;
   }
 
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
@@ -70,6 +72,10 @@ export class SmartInfoRepository implements ISmartInfoRepository {
    * this does not parameterize the query because it is not possible to parameterize the column type
    */
   private async updateDimSize(dimSize: number): Promise<void> {
+    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
+      throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
+    }
+
     await this.lock.acquire('updateDimSizeLock', async () => {
       if (this.curDimSize === dimSize) return;
 
