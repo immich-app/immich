@@ -183,10 +183,9 @@ export class AlbumService {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
     const existingAssetIds = await this.albumRepository.getAssetIds(id, dto.ids);
-    const allowedAssetIds = new Set([
-      ...(await this.access.checkAccess(authUser, Permission.ALBUM_REMOVE_ASSET, existingAssetIds)),
-      ...(await this.access.checkAccess(authUser, Permission.ASSET_SHARE, existingAssetIds)),
-    ]);
+    const canRemove = await this.access.checkAccess(authUser, Permission.ALBUM_REMOVE_ASSET, existingAssetIds);
+    const canShare = await this.access.checkAccess(authUser, Permission.ASSET_SHARE, existingAssetIds);
+    const allowedAssetIds = new Set([...canRemove, ...canShare]);
 
     const results: BulkIdResponseDto[] = [];
     for (const assetId of dto.ids) {
