@@ -280,7 +280,7 @@ export class MetadataService {
       await this.assetRepository.save({ id, sidecarPath });
     }
 
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: id } });
+    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
 
     return true;
   }

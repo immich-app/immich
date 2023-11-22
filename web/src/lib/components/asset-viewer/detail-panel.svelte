@@ -28,6 +28,7 @@
   import Map from '../shared-components/map/map.svelte';
   import { AppRoute } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
+  import { handleError } from '../../utils/handle-error';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -86,9 +87,7 @@
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
-        updateAssetDto: {
-          description: description,
-        },
+        updateAssetDto: { description },
       });
     } catch (error) {
       console.error(error);
@@ -100,40 +99,36 @@
 
   let isShowChangeDate = false;
 
-  async function handleConfirmChangeDate(event: CustomEvent<string>) {
+  async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
     if (asset.exifInfo) {
-      asset.exifInfo.dateTimeOriginal = event.detail;
+      asset.exifInfo.dateTimeOriginal = dateTimeOriginal;
     }
+
     try {
-      await api.assetApi.updateAsset({
-        id: asset.id,
-        updateAssetDto: {
-          dateTimeOriginal: event.detail,
-        },
-      });
+      await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
       notificationController.show({ message: 'Metadata updated please reload to apply', type: NotificationType.Info });
     } catch (error) {
-      console.error(error);
+      handleError(error, 'Unable to change date');
     }
   }
 
   let isShowChangeLocation = false;
 
-  async function handleConfirmChangeLocation(event: CustomEvent<{ lng: number; lat: number }>) {
+  async function handleConfirmChangeLocation(gps: { lng: number; lat: number }) {
     isShowChangeLocation = false;
 
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
         updateAssetDto: {
-          latitude: event.detail.lat,
-          longitude: event.detail.lng,
+          latitude: gps.lat,
+          longitude: gps.lng,
         },
       });
       notificationController.show({ message: 'Metadata updated please reload to apply', type: NotificationType.Info });
     } catch (error) {
-      console.error(error);
+      handleError(error, 'Unable to change location');
     }
   }
 </script>
@@ -307,34 +302,16 @@
     {/if}
 
     {#if isShowChangeDate}
-      {#if asset.exifInfo?.dateTimeOriginal}
-        {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-          zone: asset.exifInfo.timeZone ?? undefined,
-        })}
-        <ChangeDate
-          title="Change Date"
-          confirmText="Confirm"
-          initialDate={assetDateTimeOriginal}
-          on:confirm={handleConfirmChangeDate}
-          on:cancel={() => (isShowChangeDate = false)}
-        >
-          <svelte:fragment slot="prompt">
-            <p>Please select a new date:</p>
-          </svelte:fragment>
-        </ChangeDate>
-      {:else}
-        <ChangeDate
-          title="Change Date"
-          confirmText="Confirm"
-          initialDate={DateTime.now()}
-          on:confirm={handleConfirmChangeDate}
-          on:cancel={() => (isShowChangeDate = false)}
-        >
-          <svelte:fragment slot="prompt">
-            <p>Please select a new date:</p>
-          </svelte:fragment>
-        </ChangeDate>
-      {/if}
+      {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
+        ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+            zone: asset.exifInfo.timeZone ?? undefined,
+          })
+        : DateTime.now()}
+      <ChangeDate
+        initialDate={assetDateTimeOriginal}
+        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
+        on:cancel={() => (isShowChangeDate = false)}
+      />
     {/if}
 
     {#if asset.exifInfo?.fileSizeInByte}
@@ -453,29 +430,11 @@
       </div>
     {/if}
     {#if isShowChangeLocation}
-      {#if latlng}
-        <ChangeLocation
-          confirmText="Confirm"
-          location={latlng}
-          id_asset={asset.id}
-          on:confirm={handleConfirmChangeLocation}
-          on:cancel={() => (isShowChangeLocation = false)}
-        >
-          <svelte:fragment slot="prompt">
-            <p>Please select a new location:</p>
-          </svelte:fragment>
-        </ChangeLocation>
-      {:else}
-        <ChangeLocation
-          confirmText="Confirm"
-          on:confirm={handleConfirmChangeLocation}
-          on:cancel={() => (isShowChangeLocation = false)}
-        >
-          <svelte:fragment slot="prompt">
-            <p>Please select a new location:</p>
-          </svelte:fragment>
-        </ChangeLocation>
-      {/if}
+      <ChangeLocation
+        {asset}
+        on:confirm={({ detail: gps }) => handleConfirmChangeLocation(gps)}
+        on:cancel={() => (isShowChangeLocation = false)}
+      />
     {/if}
   </div>
 </section>
