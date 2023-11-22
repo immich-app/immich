@@ -48,36 +48,42 @@
       dispatch('confirm', value);
     }
   };
+  const handleKeydown = (event: KeyboardEvent) => {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      event.stopPropagation();
+    }
+  };
 </script>
-
-<ConfirmDialogue
-  confirmColor="primary"
-  cancelColor="secondary"
-  title="Change Date"
-  prompt="Please select a new date:"
-  {disabled}
-  on:confirm={handleConfirm}
-  on:cancel={handleCancel}
->
-  <div class="flex flex-col text-md px-4 py-5 text-center gap-2" slot="prompt">
-    <div class="mt-2" />
-    <div class="flex flex-col">
-      <label for="datetime">Date and Time</label>
-      <input
-        class="immich-form-label text-sm mt-2 w-full text-black"
-        id="datetime"
-        type="datetime-local"
-        bind:value={selectedDate}
-      />
+<div role="presentation" on:keydown={handleKeydown}>
+  <ConfirmDialogue
+    confirmColor="primary"
+    cancelColor="secondary"
+    title="Change Date"
+    prompt="Please select a new date:"
+    {disabled}
+    on:confirm={handleConfirm}
+    on:cancel={handleCancel}
+  >
+    <div class="flex flex-col text-md px-4 py-5 text-center gap-2" slot="prompt">
+      <div class="mt-2" />
+      <div class="flex flex-col">
+        <label for="datetime">Date and Time</label>
+        <input
+          class="immich-form-label text-sm mt-2 w-full text-black"
+          id="datetime"
+          type="datetime-local"
+          bind:value={selectedDate}
+        />
+      </div>
+      <div class="flex flex-col w-full">
+        <label for="timezone">Timezone</label>
+        <Dropdown
+          selectedOption={initialOption}
+          options={timezones}
+          render={(item) => (item ? `${item.zone} (${item.offset})` : '(not selected)')}
+          on:select={({ detail: item }) => handleSelect(item)}
+        />
+      </div>
     </div>
-    <div class="flex flex-col w-full">
-      <label for="timezone">Timezone</label>
-      <Dropdown
-        selectedOption={initialOption}
-        options={timezones}
-        render={(item) => (item ? `${item.zone} (${item.offset})` : '(not selected)')}
-        on:select={({ detail: item }) => handleSelect(item)}
-      />
-    </div>
-  </div>
-</ConfirmDialogue>
+  </ConfirmDialogue>
+</div>
