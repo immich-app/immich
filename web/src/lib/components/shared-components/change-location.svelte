@@ -29,7 +29,7 @@
   };
 
   const handleConfirm = () => {
-    dispatch('confirm', { lat, lng });
+    dispatch('confirm', point);
   };
 </script>
 

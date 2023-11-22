@@ -21,6 +21,7 @@
       .map((a) => a.id);
 
     try {
+      
       await api.assetApi.updateAssets({
         assetBulkUpdateDto: {
           ids,
