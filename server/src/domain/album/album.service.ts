@@ -153,6 +153,8 @@ export class AlbumService {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
     const existingAssetIds = await this.albumRepository.getAssetIds(id, dto.ids);
+    const notPresentAssetIds = dto.ids.filter((id) => !existingAssetIds.has(id));
+    const allowedAssetIds = await this.access.checkAccess(authUser, Permission.ASSET_SHARE, notPresentAssetIds);
 
     const results: BulkIdResponseDto[] = [];
     for (const assetId of dto.ids) {
@@ -162,7 +164,7 @@ export class AlbumService {
         continue;
       }
 
-      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_SHARE, assetId);
+      const hasAccess = allowedAssetIds.has(assetId);
       if (!hasAccess) {
         results.push({ id: assetId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
@@ -190,6 +192,9 @@ export class AlbumService {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
 
     const existingAssetIds = await this.albumRepository.getAssetIds(id, dto.ids);
+    const canRemove = await this.access.checkAccess(authUser, Permission.ALBUM_REMOVE_ASSET, existingAssetIds);
+    const canShare = await this.access.checkAccess(authUser, Permission.ASSET_SHARE, existingAssetIds);
+    const allowedAssetIds = new Set([...canRemove, ...canShare]);
 
     const results: BulkIdResponseDto[] = [];
     for (const assetId of dto.ids) {
@@ -199,10 +204,7 @@ export class AlbumService {
         continue;
       }
 
-      const hasAccess = await this.access.hasAny(authUser, [
-        { permission: Permission.ALBUM_REMOVE_ASSET, id: assetId },
-        { permission: Permission.ASSET_SHARE, id: assetId },
-      ]);
+      const hasAccess = allowedAssetIds.has(assetId);
       if (!hasAccess) {
         results.push({ id: assetId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
