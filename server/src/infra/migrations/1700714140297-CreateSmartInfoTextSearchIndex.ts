@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateSmartInfoTextSearchIndex1696876192604 implements MigrationInterface {
-  name = 'CreateSmartInfoTextSearchIndex1696876192604';
+export class CreateSmartInfoTextSearchIndex1700714140297 implements MigrationInterface {
+  name = 'CreateSmartInfoTextSearchIndex1700714140297';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`

@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddCLIPEmbeddingIndex1699746301742 implements MigrationInterface {
-  name = 'AddCLIPEmbeddingIndex1699746301742';
+export class AddFaceEmbeddingIndex1700714033632 implements MigrationInterface {
+  name = 'AddFaceEmbeddingIndex1700714033632';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-        CREATE INDEX IF NOT EXISTS clip_index ON smart_search
+        CREATE INDEX IF NOT EXISTS face_index ON asset_faces
         USING vectors (embedding cosine_ops) WITH (options = $$
         [indexing.hnsw]
         m = 16
@@ -14,6 +14,6 @@ export class AddCLIPEmbeddingIndex1699746301742 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX IF EXISTS clip_index`);
+    await queryRunner.query(`DROP INDEX IF EXISTS face_index`);
   }
 }

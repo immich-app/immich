@@ -29,6 +29,9 @@ export async function bootstrap() {
   app.useStaticAssets('www');
   app.use(indexFallback(excludePaths));
 
+  if (!dataSource.isInitialized) {
+    await dataSource.initialize();
+  }
   await dataSource.query(`SET vectors.enable_prefilter = on`);
 
   const server = await app.listen(port);
