@@ -5,6 +5,7 @@
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
+  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import type { LayoutData } from './$types';
@@ -120,6 +121,7 @@
 
 <DownloadPanel />
 <UploadPanel />
+<UpdatePanel />
 <NotificationList />
 
 {#if data.user?.isAdmin}

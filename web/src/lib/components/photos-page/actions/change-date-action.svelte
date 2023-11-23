@@ -24,7 +24,7 @@
       await api.assetApi.updateAssets({
         assetBulkUpdateDto: { ids, dateTimeOriginal },
       });
-      notificationController.show({ message: 'Metadata updated please reload to apply', type: NotificationType.Info });
+      notificationController.show({ message: 'Updating date please wait', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to change date');
     }

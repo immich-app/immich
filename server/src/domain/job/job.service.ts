@@ -215,6 +215,14 @@ export class JobService {
           this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
       }
+
+      case JobName.SIDECAR_WRITE: {
+        const [asset] = await this.assetRepository.getByIds([item.data.id]);
+        if (asset) {
+          this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
+        }
+        break;
+      }
     }
 
     // In addition to the above jobs, all of these should queue `SEARCH_INDEX_ASSET`

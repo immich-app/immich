@@ -3,8 +3,8 @@
   import { page } from '$app/stores';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
-  import ChangeDate from '$lib/components/photos-page/actions/change-date.svelte';
-  import ChangeLocation from '$lib/components/photos-page/actions/change-location.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-location-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-datetion-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';

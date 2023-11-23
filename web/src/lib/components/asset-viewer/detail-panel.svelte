@@ -125,7 +125,6 @@
           longitude: gps.lng,
         },
       });
-      notificationController.show({ message: 'Metadata updated please reload to apply', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to change location');
     }
