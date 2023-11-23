@@ -20,9 +20,9 @@ import { ExifEntity } from './exif.entity';
 import { LibraryEntity } from './library.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
+import { SmartSearchEntity } from './smart-search.entity';
 import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
-import { SmartSearchEntity } from '.';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 

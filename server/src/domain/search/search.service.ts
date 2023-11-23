@@ -18,7 +18,6 @@ import { SearchResponseDto } from './response-dto';
 
 @Injectable()
 export class SearchService {
-  private timer: NodeJS.Timeout | null = null;
   private logger = new Logger(SearchService.name);
   private configCore: SystemConfigCore;
 

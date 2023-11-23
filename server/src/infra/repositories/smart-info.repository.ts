@@ -89,12 +89,12 @@ export class SmartInfoRepository implements ISmartInfoRepository {
             embedding  vector(${dimSize}) NOT NULL )`);
 
         await manager.query(`
-        CREATE INDEX clip_index ON smart_search
-          USING vectors (embedding cosine_ops) WITH (options = $$
-          [indexing.hnsw]
-          m = 16
-          ef_construction = 300
-          $$)`);
+          CREATE INDEX clip_index ON smart_search
+            USING vectors (embedding cosine_ops) WITH (options = $$
+            [indexing.hnsw]
+            m = 16
+            ef_construction = 300
+            $$)`);
       });
 
       this.curDimSize = dimSize;

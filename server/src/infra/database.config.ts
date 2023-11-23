@@ -29,8 +29,13 @@ export const databaseConfigVector: PostgresConnectionOptions = {
   migrations: [__dirname + '/migrations/vector/*.{js,ts}'],
 };
 
-export async function initDataSource(): Promise<DataSource> {
-  const dataSource = await new DataSource(databaseConfig).initialize();
+// this export is used by TypeORM commands in package.json#scripts
+export let dataSource = new DataSource(databaseConfig);
+
+export async function runVectorMigrations(): Promise<void> {
+  if (!dataSource.isInitialized) {
+    dataSource = await dataSource.initialize();
+  }
   
   const hasVectorExtension = (await dataSource.query(
     `SELECT * FROM pg_available_extensions WHERE name = 'vectors'`,
@@ -44,12 +49,4 @@ export async function initDataSource(): Promise<DataSource> {
 
     await dataSourceVector.destroy();
   }
-
-  return dataSource;
 }
-
-// this export is used by TypeORM commands in package.json#scripts
-export let dataSource: DataSource;
-(async () => {
-  dataSource = await initDataSource();
-})();

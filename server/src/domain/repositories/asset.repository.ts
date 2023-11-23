@@ -1,7 +1,7 @@
+import { SearchExploreItem } from '@app/domain';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
-import { SearchExploreItem } from '../repositories';
 
 export type AssetStats = Record<AssetType, number>;
 

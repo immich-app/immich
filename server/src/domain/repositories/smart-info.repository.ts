@@ -1,5 +1,5 @@
+import { Embedding, EmbeddingSearch } from '@app/domain';
 import { AssetEntity, SmartInfoEntity } from '@app/infra/entities';
-import { Embedding, EmbeddingSearch } from '../repositories';
 
 export const ISmartInfoRepository = 'ISmartInfoRepository';
 
