@@ -293,12 +293,21 @@ class BackupService {
           if (entity.isLivePhoto) {
             var livePhotoRawUploadData = await _getLivePhotoFile(entity);
             if (livePhotoRawUploadData != null) {
-              req.files.removeWhere((data) => data.field == "assetData");
-              req.files.add(livePhotoRawUploadData);
+              var livePhotoReq = MultipartRequest(
+                req.method,
+                req.url,
+                onProgress: req.onProgress,
+              )
+                ..headers.addAll(req.headers)
+                ..fields.addAll(req.fields);
+
+              livePhotoReq.files.add(livePhotoRawUploadData);
               // Send live photo only if the non-motion part is successful
               if (response.statusCode == 200 || response.statusCode == 201) {
-                response =
-                    await httpClient.send(req, cancellationToken: cancelToken);
+                response = await httpClient.send(
+                  livePhotoReq,
+                  cancellationToken: cancelToken,
+                );
               }
             }
           }
