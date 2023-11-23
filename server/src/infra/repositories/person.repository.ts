@@ -227,8 +227,10 @@ export class PersonRepository implements IPersonRepository {
     if (!entity.personId) {
       throw new Error('Person ID is required to create a face');
     }
-    const { embedding, ...face } = entity;
-    await this.assetFaceRepository.insert({ ...face, embedding: () => asVector(embedding, true) });
+    if (!entity.embedding) {
+      throw new Error('Embedding is required to create a face');
+    }
+    await this.assetFaceRepository.insert({ ...entity, embedding: () => asVector(entity.embedding, true) });
     return this.assetFaceRepository.findOneByOrFail({ assetId: entity.assetId, personId: entity.personId });
   }
 

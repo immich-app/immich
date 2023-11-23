@@ -20,6 +20,7 @@ export const db = {
       await dataSource.initialize();
     }
 
+    await dataSource.query(`SET vectors.enable_prefilter = on`);
     await dataSource.transaction(async (em) => {
       const entities = options?.entities || [];
       const tableNames =

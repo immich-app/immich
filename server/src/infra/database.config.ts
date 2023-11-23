@@ -23,30 +23,5 @@ export const databaseConfig: PostgresConnectionOptions = {
   ...urlOrParts,
 };
 
-export const databaseConfigVector: PostgresConnectionOptions = {
-  ...databaseConfig,
-  migrationsRun: false,
-  migrations: [__dirname + '/migrations/vector/*.{js,ts}'],
-};
-
 // this export is used by TypeORM commands in package.json#scripts
-export let dataSource = new DataSource(databaseConfig);
-
-export async function runVectorMigrations(): Promise<void> {
-  if (!dataSource.isInitialized) {
-    dataSource = await dataSource.initialize();
-  }
-  
-  const hasVectorExtension = (await dataSource.query(
-    `SELECT * FROM pg_available_extensions WHERE name = 'vectors'`,
-  )).length > 0;
-
-  if (hasVectorExtension) {
-    const dataSourceVector = await new DataSource(databaseConfigVector).initialize();
-    await dataSourceVector.runMigrations();
-
-    await dataSourceVector.query(`SET vectors.enable_prefilter = on`);
-
-    await dataSourceVector.destroy();
-  }
-}
+export const dataSource = new DataSource(databaseConfig);
