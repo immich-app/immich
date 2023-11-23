@@ -14,7 +14,7 @@
   let expirationCountdown: luxon.DurationObjectUnits;
   const dispatch = createEventDispatcher();
 
-  const getAssetInfo = async (): Promise<AssetResponseDto> => {
+  const getThumbnail = async (): Promise<AssetResponseDto> => {
     let assetId = '';
 
     if (link.album?.albumThumbnailAssetId) {
@@ -62,7 +62,7 @@
 >
   <div>
     {#if link?.album?.albumThumbnailAssetId || link.assets.length > 0}
-      {#await getAssetInfo()}
+      {#await getThumbnail()}
         <LoadingSpinner />
       {:then asset}
         <img
