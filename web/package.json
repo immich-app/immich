@@ -49,7 +49,7 @@
     "prettier-plugin-svelte": "^2.10.1",
     "svelte": "^4.0.5",
     "svelte-check": "^3.4.3",
-    "svelte-jester": "^2.3.2",
+    "svelte-jester": "^3.0.0",
     "svelte-preprocess": "^5.0.3",
     "tailwind-merge": "^1.14.0",
     "tailwindcss": "^3.2.7",
@@ -73,7 +73,7 @@
     "maplibre-gl": "^3.6.0",
     "socket.io-client": "^4.6.1",
     "svelte-loading-spinners": "^0.3.4",
-    "svelte-local-storage-store": "^0.5.0",
+    "svelte-local-storage-store": "^0.6.0",
     "svelte-maplibre": "^0.7.0",
     "thumbhash": "^0.1.1"
   }

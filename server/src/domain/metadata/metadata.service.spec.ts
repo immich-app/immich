@@ -14,6 +14,7 @@ import {
 import { randomBytes } from 'crypto';
 import { Stats } from 'fs';
 import { constants } from 'fs/promises';
+import { when } from 'jest-when';
 import { JobName, QueueName } from '../job';
 import {
   IAlbumRepository,
@@ -246,6 +247,30 @@ describe(MetadataService.name, () => {
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
       expect(assetMock.upsertExif).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should handle a date in a sidecar file', async () => {
+      const originalDate = new Date('2023-11-21T16:13:17.517Z');
+      const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      when(metadataMock.getExifTags)
+        .calledWith(assetStub.sidecar.originalPath)
+        // higher priority tag
+        .mockResolvedValue({ CreationDate: originalDate.toISOString() });
+      when(metadataMock.getExifTags)
+        .calledWith(assetStub.sidecar.sidecarPath as string)
+        // lower priority tag, but in sidecar
+        .mockResolvedValue({ CreateDate: sidecarDate.toISOString() });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: sidecarDate }));
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetStub.image.id,
+        duration: null,
+        fileCreatedAt: sidecarDate,
+        localDateTime: sidecarDate,
+      });
     });
 
     it('should handle lists of numbers', async () => {

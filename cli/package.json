@@ -1,12 +1,16 @@
 {
   "name": "@immich/cli",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Command Line Interface (CLI) for Immich",
   "main": "dist/index.js",
   "bin": {
-    "immich": "./dist/index.js"
+    "immich": "./dist/src/index.js"
   },
   "license": "MIT",
+  "keywords": [
+    "immich",
+    "cli"
+  ],
   "dependencies": {
     "axios": "^1.6.2",
     "byte-size": "^8.1.1",
@@ -31,8 +35,8 @@
     "eslint": "^8.43.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-jest": "^27.2.2",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-unicorn": "^47.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-unicorn": "^49.0.0",
     "jest": "^29.5.0",
     "jest-extended": "^4.0.0",
     "jest-message-util": "^29.5.0",
@@ -77,7 +81,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/immich-app/immich.git",
+    "url": "github:immich-app/immich",
     "directory": "cli"
   }
 }

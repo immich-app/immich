@@ -68,40 +68,48 @@ export class AccessCore {
     return authUser;
   }
 
+  /**
+   * Check if user has access to all ids, for the given permission.
+   * Throws error if user does not have access to any of the ids.
+   */
   async requirePermission(authUser: AuthUserDto, permission: Permission, ids: string[] | string) {
-    const hasAccess = await this.hasPermission(authUser, permission, ids);
-    if (!hasAccess) {
+    ids = Array.isArray(ids) ? ids : [ids];
+    const allowedIds = await this.checkAccess(authUser, permission, ids);
+    if (new Set(ids).size !== allowedIds.size) {
       throw new BadRequestException(`Not found or no ${permission} access`);
     }
   }
 
-  async hasAny(authUser: AuthUserDto, permissions: Array<{ permission: Permission; id: string }>) {
-    for (const { permission, id } of permissions) {
-      const hasAccess = await this.hasPermission(authUser, permission, id);
-      if (hasAccess) {
-        return true;
-      }
+  /**
+   * Return ids that user has access to, for the given permission.
+   * Check is done for each id, and only allowed ids are returned.
+   *
+   * @returns Set<string>
+   */
+  async checkAccess(authUser: AuthUserDto, permission: Permission, ids: Set<string> | string[]) {
+    const idSet = Array.isArray(ids) ? new Set(ids) : ids;
+    if (idSet.size === 0) {
+      return new Set();
     }
-    return false;
-  }
-
-  async hasPermission(authUser: AuthUserDto, permission: Permission, ids: string[] | string) {
-    ids = Array.isArray(ids) ? ids : [ids];
 
     const isSharedLink = authUser.isPublicUser ?? false;
-
-    for (const id of ids) {
-      const hasAccess = isSharedLink
-        ? await this.hasSharedLinkAccess(authUser, permission, id)
-        : await this.hasOtherAccess(authUser, permission, id);
-      if (!hasAccess) {
-        return false;
-      }
-    }
-
-    return true;
+    return isSharedLink
+      ? await this.checkAccessSharedLink(authUser, permission, idSet)
+      : await this.checkAccessOther(authUser, permission, idSet);
   }
 
+  private async checkAccessSharedLink(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
+    const allowedIds = new Set();
+    for (const id of ids) {
+      const hasAccess = await this.hasSharedLinkAccess(authUser, permission, id);
+      if (hasAccess) {
+        allowedIds.add(id);
+      }
+    }
+    return allowedIds;
+  }
+
+  // TODO: Migrate logic to checkAccessSharedLink to evaluate permissions in bulk.
   private async hasSharedLinkAccess(authUser: AuthUserDto, permission: Permission, id: string) {
     const sharedLinkId = authUser.sharedLinkId;
     if (!sharedLinkId) {
@@ -136,6 +144,18 @@ export class AccessCore {
     }
   }
 
+  private async checkAccessOther(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
+    const allowedIds = new Set();
+    for (const id of ids) {
+      const hasAccess = await this.hasOtherAccess(authUser, permission, id);
+      if (hasAccess) {
+        allowedIds.add(id);
+      }
+    }
+    return allowedIds;
+  }
+
+  // TODO: Migrate logic to checkAccessOther to evaluate permissions in bulk.
   private async hasOtherAccess(authUser: AuthUserDto, permission: Permission, id: string) {
     switch (permission) {
       // uses album id
