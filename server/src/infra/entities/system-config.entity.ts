@@ -67,6 +67,8 @@ export enum SystemConfigKey {
 
   REVERSE_GEOCODING_ENABLED = 'reverseGeocoding.enabled',
   REVERSE_GEOCODING_CITIES_FILE_OVERRIDE = 'reverseGeocoding.citiesFileOverride',
+  REVERSE_GEOCODING_USE_CUSTOM_SERVICE = 'reverseGeocoding.useCustomService',
+  REVERSE_GEOCODING_CUSTOM_ENDPOINT = 'reverseGeocoding.customEndpoint',
 
   NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
 
@@ -201,6 +203,8 @@ export interface SystemConfig {
   reverseGeocoding: {
     enabled: boolean;
     citiesFileOverride: CitiesFile;
+    useCustomService: boolean;
+    customEndpoint: string;
   };
   oauth: {
     enabled: boolean;

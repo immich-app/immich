@@ -40,6 +40,8 @@
           reverseGeocoding: {
             enabled: config.reverseGeocoding.enabled,
             citiesFileOverride: config.reverseGeocoding.citiesFileOverride,
+            useCustomService: config.reverseGeocoding.useCustomService,
+            customEndpoint: config.reverseGeocoding.customEndpoint,
           },
         },
       });
@@ -132,6 +134,14 @@
                 bind:checked={config.reverseGeocoding.enabled}
               />
 
+              <SettingSwitch
+                title="Custom Service Endpoint"
+                subtitle="Use an external service to reverse geocode"
+                disabled={disabled || !config.reverseGeocoding.enabled}
+                bind:checked={config.reverseGeocoding.useCustomService}
+                isEdited={config.reverseGeocoding.useCustomService !== savedConfig.reverseGeocoding.useCustomService}
+              />
+
               <hr />
 
               <SettingSelect
@@ -145,9 +155,18 @@
                   { value: CitiesFile.Cities5000, text: 'Cities with more than 5000 people' },
                   { value: CitiesFile.Cities15000, text: 'Cities with more than 15000 people' },
                 ]}
-                disabled={disabled || !config.reverseGeocoding.enabled}
+                disabled={disabled || !config.reverseGeocoding.enabled || config.reverseGeocoding.useCustomService}
                 isEdited={config.reverseGeocoding.citiesFileOverride !==
                   savedConfig.reverseGeocoding.citiesFileOverride}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label="Custom Service URL"
+                desc="(Optional) URL of the geocode server"
+                bind:value={config.reverseGeocoding.customEndpoint}
+                disabled={disabled || !config.reverseGeocoding.enabled || !config.reverseGeocoding.useCustomService}
+                isEdited={config.reverseGeocoding.customEndpoint !== savedConfig.reverseGeocoding.customEndpoint}
               />
             </div></SettingAccordion
           >

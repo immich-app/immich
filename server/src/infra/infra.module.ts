@@ -24,6 +24,7 @@ import {
   ITagRepository,
   IUserRepository,
   IUserTokenRepository,
+  SystemConfigCore,
   immichAppConfig,
 } from '@app/domain';
 import { BullModule } from '@nestjs/bullmq';
@@ -61,6 +62,7 @@ import {
   UserRepository,
   UserTokenRepository,
 } from './repositories';
+import { MetadataExternalRepository } from './repositories/metadata-external.repository';
 
 const providers: Provider[] = [
   { provide: IActivityRepository, useClass: ActivityRepository },
@@ -74,7 +76,21 @@ const providers: Provider[] = [
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
-  { provide: IMetadataRepository, useClass: MetadataRepository },
+  {
+    provide: IMetadataRepository,
+    useFactory: async (configRepository: ISystemConfigRepository) => {
+      const config = SystemConfigCore.create(configRepository);
+      const { reverseGeocoding } = await config.getConfig();
+      const { useCustomService } = reverseGeocoding;
+
+      if (!useCustomService) {
+        return new MetadataRepository();
+      }
+
+      return new MetadataExternalRepository();
+    },
+    inject: [ISystemConfigRepository],
+  },
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },

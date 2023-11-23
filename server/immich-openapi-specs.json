@@ -9070,13 +9070,21 @@
           "citiesFileOverride": {
             "$ref": "#/components/schemas/CitiesFile"
           },
+          "customEndpoint": {
+            "type": "string"
+          },
           "enabled": {
+            "type": "boolean"
+          },
+          "useCustomService": {
             "type": "boolean"
           }
         },
         "required": [
           "citiesFileOverride",
-          "enabled"
+          "enabled",
+          "useCustomService",
+          "customEndpoint"
         ],
         "type": "object"
       },

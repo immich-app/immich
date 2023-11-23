@@ -86,6 +86,8 @@ export const defaults = Object.freeze<SystemConfig>({
   reverseGeocoding: {
     enabled: true,
     citiesFileOverride: CitiesFile.CITIES_500,
+    useCustomService: false,
+    customEndpoint: '',
   },
   oauth: {
     enabled: false,

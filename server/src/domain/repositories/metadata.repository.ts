@@ -30,8 +30,12 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
   Duration?: number | ExifDuration;
 }
 
+export type MetadataInitOptions = Partial<InitOptions> & {
+  customEndpoint?: string;
+};
+
 export interface IMetadataRepository {
-  init(options: Partial<InitOptions>): Promise<void>;
+  init(options: MetadataInitOptions): Promise<void>;
   teardown(): Promise<void>;
   reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult>;
   deleteCache(): Promise<void>;

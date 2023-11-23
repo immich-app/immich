@@ -103,7 +103,7 @@ export class MetadataService {
     }
 
     const { reverseGeocoding } = await this.configCore.getConfig();
-    const { citiesFileOverride } = reverseGeocoding;
+    const { citiesFileOverride, customEndpoint } = reverseGeocoding;
 
     if (!reverseGeocoding.enabled) {
       return;
@@ -117,7 +117,7 @@ export class MetadataService {
       }
 
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.repository.init({ citiesFileOverride });
+      await this.repository.init({ citiesFileOverride, customEndpoint });
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log(`Initialized local reverse geocoder with ${citiesFileOverride}`);

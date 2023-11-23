@@ -1,11 +1,11 @@
-import { GeoPoint, IMetadataRepository, ImmichTags, ReverseGeocodeResult } from '@app/domain';
+import { GeoPoint, IMetadataRepository, ImmichTags, MetadataInitOptions, ReverseGeocodeResult } from '@app/domain';
 import { REVERSE_GEOCODING_DUMP_DIRECTORY } from '@app/infra';
 import { Injectable, Logger } from '@nestjs/common';
 import { DefaultReadTaskOptions, exiftool } from 'exiftool-vendored';
 import { readdir, rm } from 'fs/promises';
 import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
-import geocoder, { AddressObject, InitOptions } from 'local-reverse-geocoder';
+import geocoder, { AddressObject } from 'local-reverse-geocoder';
 import path from 'path';
 import { promisify } from 'util';
 
@@ -26,7 +26,10 @@ const lookup = promisify<GeoPoint[], number, AddressObject[][]>(geocoder.lookUp)
 export class MetadataRepository implements IMetadataRepository {
   private logger = new Logger(MetadataRepository.name);
 
-  async init(options: Partial<InitOptions>): Promise<void> {
+  async init(options: MetadataInitOptions): Promise<void> {
+    // drop the customEndpoint field since it does not belong to geocoder
+    delete options.customEndpoint;
+
     return new Promise<void>((resolve) => {
       geocoder.init(
         {
