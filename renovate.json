@@ -35,6 +35,10 @@
     {
       "matchFileNames": [".github/**"],
       "groupName": "github-actions"
+    },
+    {
+      "groupName": "base-image",
+      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"]
     }
   ],
   "ignoreDeps": [
