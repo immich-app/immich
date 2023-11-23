@@ -275,13 +275,6 @@ class BackupService {
 
           req.files.add(assetRawUploadData);
 
-          if (entity.isLivePhoto) {
-            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
-            if (livePhotoRawUploadData != null) {
-              req.files.add(livePhotoRawUploadData);
-            }
-          }
-
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,
@@ -295,6 +288,20 @@ class BackupService {
 
           var response =
               await httpClient.send(req, cancellationToken: cancelToken);
+
+          // Send live photo separately
+          if (entity.isLivePhoto) {
+            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
+            if (livePhotoRawUploadData != null) {
+              req.files.removeWhere((data) => data.field == "assetData");
+              req.files.add(livePhotoRawUploadData);
+              // Send live photo only if the non-motion part is successful
+              if (response.statusCode == 200 || response.statusCode == 201) {
+                response =
+                    await httpClient.send(req, cancellationToken: cancelToken);
+              }
+            }
+          }
 
           if (response.statusCode == 200) {
             // asset is a duplicate (already exists on the server)
@@ -353,7 +360,7 @@ class BackupService {
       var fileStream = motionFile.openRead();
       String fileName = p.basename(motionFile.path);
       return http.MultipartFile(
-        "livePhotoData",
+        "assetData",
         fileStream,
         motionFile.lengthSync(),
         filename: fileName,
