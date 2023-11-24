@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20231109 as dev
+FROM ghcr.io/immich-app/base-server-dev:20231123 as dev
 
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
@@ -23,7 +23,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20231109
+FROM ghcr.io/immich-app/base-server-prod:20231123
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
