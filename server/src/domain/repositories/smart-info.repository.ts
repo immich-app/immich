@@ -1,9 +1,18 @@
-import { Embedding, EmbeddingSearch } from '@app/domain';
-import { AssetEntity, SmartInfoEntity } from '@app/infra/entities';
+import { AssetEntity, AssetFaceEntity, SmartInfoEntity } from '@app/infra/entities';
 
 export const ISmartInfoRepository = 'ISmartInfoRepository';
 
+export type Embedding = number[]; 
+
+export interface EmbeddingSearch {
+  ownerId: string;
+  embedding: Embedding;
+  numResults: number;
+  maxDistance?: number;
+}
+
 export interface ISmartInfoRepository {
-  searchByEmbedding(search: EmbeddingSearch): Promise<AssetEntity[]>;
+  searchCLIP(search: EmbeddingSearch): Promise<AssetEntity[]>;
+  searchFaces(search: EmbeddingSearch): Promise<AssetFaceEntity[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }

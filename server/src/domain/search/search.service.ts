@@ -67,7 +67,7 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        assets = await this.smartInfoRepository.searchByEmbedding({ ownerId: authUser.id, embedding, numResults: 100 });
+        assets = await this.smartInfoRepository.searchCLIP({ ownerId: authUser.id, embedding, numResults: 100 });
         break;
       case SearchStrategy.TEXT:
         assets = await this.assetRepository.searchMetadata(query, authUser.id, { numResults: 250 });

@@ -1,6 +1,5 @@
 import {
   AssetFaceId,
-  EmbeddingSearch,
   IPersonRepository,
   PersonNameSearchOptions,
   PersonSearchOptions,
@@ -11,20 +10,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { asVector, isValidInteger } from '../infra.utils';
+import { asVector } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
-  private readonly faceColumns: string[];
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
-  ) {
-    this.faceColumns = this.assetFaceRepository.manager.connection
-      .getMetadata(AssetFaceEntity)
-      .ownColumns.map((column) => column.propertyName)
-      .filter((propertyName) => propertyName !== 'embedding');
-  }
+  ) {}
 
   /**
    * Before reassigning faces, delete potential key violations
@@ -247,41 +240,5 @@ export class PersonRepository implements IPersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ personId });
-  }
-
-  async searchByEmbedding({
-    ownerId,
-    embedding,
-    numResults,
-    maxDistance,
-  }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
-    if (!isValidInteger(numResults, { min: 1 })) {
-      throw new Error(`Invalid value for 'numResults': ${numResults}`);
-    }
-
-    let results: AssetFaceEntity[] = [];
-    await this.assetRepository.manager.transaction(async (manager) => {
-      await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
-      const cte = manager
-        .createQueryBuilder(AssetFaceEntity, 'faces')
-        .select('1 + (faces.embedding <=> :embedding)', 'distance')
-        .innerJoin('faces.asset', 'asset')
-        .where('asset.ownerId = :ownerId')
-        .orderBy(`faces.embedding <=> :embedding`)
-        .setParameters({ ownerId, embedding: asVector(embedding) })
-        .limit(numResults);
-
-      this.faceColumns.forEach((col) => cte.addSelect(`faces.${col} AS "${col}"`));
-
-      results = await manager
-        .createQueryBuilder()
-        .select('res.*')
-        .addCommonTableExpression(cte, 'cte')
-        .from('cte', 'res')
-        .where('res.distance <= :maxDistance', { maxDistance })
-        .getRawMany();
-    });
-
-    return this.assetFaceRepository.create(results);
   }
 }

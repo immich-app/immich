@@ -13,6 +13,7 @@ import {
   newMoveRepositoryMock,
   newPersonRepositoryMock,
   newSearchRepositoryMock,
+  newSmartInfoRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   personStub,
@@ -27,6 +28,7 @@ import {
   IMoveRepository,
   IPersonRepository,
   ISearchRepository,
+  ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
   WithoutProperty,
@@ -70,8 +72,8 @@ describe(PersonService.name, () => {
   let mediaMock: jest.Mocked<IMediaRepository>;
   let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
   let sut: PersonService;
 
   beforeEach(async () => {
@@ -83,8 +85,8 @@ describe(PersonService.name, () => {
     moveMock = newMoveRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     personMock = newPersonRepositoryMock();
-    searchMock = newSearchRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    smartInfoMock = newSmartInfoRepositoryMock();
     sut = new PersonService(
       accessMock,
       assetMock,
@@ -92,10 +94,10 @@ describe(PersonService.name, () => {
       moveMock,
       mediaMock,
       personMock,
-      searchMock,
       configMock,
       storageMock,
       jobMock,
+      smartInfoMock
     );
 
     mediaMock.crop.mockResolvedValue(croppedFace);
@@ -591,7 +593,7 @@ describe(PersonService.name, () => {
 
     it('should match existing people', async () => {
       machineLearningMock.detectFaces.mockResolvedValue([detectFaceMock]);
-      personMock.searchByEmbedding.mockResolvedValue([faceStub.face1]);
+      smartInfoMock.searchFaces.mockResolvedValue([faceStub.face1]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
 
@@ -610,7 +612,7 @@ describe(PersonService.name, () => {
 
     it('should create a new person', async () => {
       machineLearningMock.detectFaces.mockResolvedValue([detectFaceMock]);
-      personMock.searchByEmbedding.mockResolvedValue([]);
+      smartInfoMock.searchFaces.mockResolvedValue([]);
       personMock.create.mockResolvedValue(personStub.noName);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       personMock.createFace.mockResolvedValue(faceStub.primaryFace1);

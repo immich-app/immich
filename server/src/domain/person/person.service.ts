@@ -18,7 +18,7 @@ import {
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
-  ISearchRepository,
+  ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
   ImmichReadStream,
@@ -56,10 +56,10 @@ export class PersonService {
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IPersonRepository) private repository: IPersonRepository,
-    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -315,7 +315,7 @@ export class PersonService {
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
     for (const { embedding, ...rest } of faces) {
-      const matches = await this.repository.searchByEmbedding({
+      const matches = await this.smartInfoRepository.searchFaces({
         ownerId: asset.ownerId,
         embedding,
         numResults: 1,
