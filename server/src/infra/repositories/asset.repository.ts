@@ -2,7 +2,6 @@ import {
   AssetBuilderOptions,
   AssetCreate,
   AssetExploreFieldOptions,
-  AssetExploreOptions,
   AssetSearchOptions,
   AssetStats,
   AssetStatsOptions,
@@ -361,16 +360,20 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string): Promise<AssetEntity | null> {
-    return this.repository.findOne({
-      where: { id },
-      relations: {
+  getById(id: string, relations: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null> {
+    if (!relations) {
+      relations = {
         faces: {
           person: true,
         },
         library: true,
         stack: true,
-      },
+      };
+    }
+
+    return this.repository.findOne({
+      where: { id },
+      relations,
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
     });
@@ -705,8 +708,13 @@ export class AssetRepository implements IAssetRepository {
       .having('count(city) >= :minAssetsPerField', { minAssetsPerField })
       .orderBy('random()')
       .limit(maxFields);
-  
-    const items = await this.getBuilder({ userIds: [ownerId], exifInfo: false, assetType: AssetType.IMAGE, isArchived: false })
+
+    const items = await this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: false,
+      assetType: AssetType.IMAGE,
+      isArchived: false,
+    })
       .select('c.city', 'value')
       .addSelect('asset.id', 'data')
       .distinctOn(['c.city'])
@@ -731,7 +739,12 @@ export class AssetRepository implements IAssetRepository {
       .orderBy('random()')
       .limit(maxFields);
 
-    const items = await this.getBuilder({ userIds: [ownerId], exifInfo: false, assetType: AssetType.IMAGE, isArchived: false })
+    const items = await this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: false,
+      assetType: AssetType.IMAGE,
+      isArchived: false,
+    })
       .select('unnest(si.tags)', 'value')
       .addSelect('asset.id', 'data')
       .distinctOn(['unnest(si.tags)'])
@@ -808,7 +821,10 @@ export class AssetRepository implements IAssetRepository {
       .innerJoin('smart_info', 'si', 'si."assetId" = assets."id"')
       .innerJoin('exif', 'e', 'assets."id" = e."assetId"')
       .where('a.ownerId = :ownerId', { ownerId })
-      .where('(e."exifTextSearchableColumn" || si."smartInfoTextSearchableColumn") @@ PLAINTO_TSQUERY(\'english\', :query)', { query })
+      .where(
+        '(e."exifTextSearchableColumn" || si."smartInfoTextSearchableColumn") @@ PLAINTO_TSQUERY(\'english\', :query)',
+        { query },
+      )
       .limit(numResults)
       .getRawMany();
 

@@ -35,7 +35,7 @@ export default async () => {
 
   if (process.env.DB_HOSTNAME === undefined) {
     // DB hostname not set which likely means we're not running e2e through docker compose. Start a local postgres container.
-    const pg = await new PostgreSqlContainer('postgres')
+    const pg = await new PostgreSqlContainer('tensorchord/pgvecto-rs:pg14-v0.1.10')
       .withExposedPorts(5432)
       .withDatabase('immich')
       .withUsername('postgres')

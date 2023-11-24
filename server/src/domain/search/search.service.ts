@@ -54,9 +54,15 @@ export class SearchService {
 
   async search(authUser: AuthUserDto, dto: SearchDto): Promise<SearchResponseDto> {
     const { machineLearning } = await this.configCore.getConfig();
-    const query = dto.q || dto.query || '*';
+    const query = dto.q || dto.query;
+    if (!query) {
+      throw new Error('Missing query');
+    }
     const hasClip = machineLearning.enabled && machineLearning.clip.enabled;
-    const strategy = dto.clip && hasClip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
+    if (dto.clip && !hasClip) {
+      throw new Error('CLIP is not enabled');
+    }
+    const strategy = dto.clip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
 
     let assets: AssetEntity[] = [];
 
@@ -74,7 +80,7 @@ export class SearchService {
       default:
         break;
     }
-
+    
     return {
       albums: {
         total: 0,

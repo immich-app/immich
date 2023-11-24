@@ -1,5 +1,5 @@
 import { SearchExploreItem } from '@app/domain';
-import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '@app/infra/entities';
 import { FindOptionsRelations } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 
@@ -173,7 +173,7 @@ export interface IAssetRepository {
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string, options?: AssetSearchOptions): Paginated<AssetEntity>;
-  getById(id: string): Promise<AssetEntity | null>;
+  getById(id: string, relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
   getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
   getRandom(userId: string, count: number): Promise<AssetEntity[]>;
