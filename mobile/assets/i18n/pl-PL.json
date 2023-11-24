@@ -119,7 +119,7 @@
   "cache_settings_tile_title": "Lokalny magazyn",
   "cache_settings_title": "Ustawienia Buforowania",
   "change_password_form_confirm_password": "Potwierdź Hasło",
-  "change_password_form_description": "Cześć {firstName} {lastName},\n\nPierwszy raz logujesz się do systemu, albo złożono prośbę o zmianę hasła. Wpisz poniżej nowe hasło.",
+  "change_password_form_description": "Cześć {name},\n\nPierwszy raz logujesz się do systemu, albo złożono prośbę o zmianę hasła. Wpisz poniżej nowe hasło.",
   "change_password_form_new_password": "Nowe Hasło",
   "change_password_form_password_mismatch": "Hasła nie są zgodne",
   "change_password_form_reenter_new_password": "Wprowadź ponownie Nowe Hasło",

@@ -119,7 +119,7 @@
   "cache_settings_tile_title": "Místní úložiště",
   "cache_settings_title": "Nastavení vyrovnávací paměti",
   "change_password_form_confirm_password": "Potvrďte heslo",
-  "change_password_form_description": "Dobrý den, {firstName} {lastName},\n\nje to buď poprvé, co se přihlašujete do systému, nebo byl vytvořen požadavek na změnu hesla. Níže zadejte nové heslo.",
+  "change_password_form_description": "Dobrý den, {name},\n\nje to buď poprvé, co se přihlašujete do systému, nebo byl vytvořen požadavek na změnu hesla. Níže zadejte nové heslo.",
   "change_password_form_new_password": "Nové heslo",
   "change_password_form_password_mismatch": "Hesla se neshodují",
   "change_password_form_reenter_new_password": "Znovu zadejte nové heslo",

@@ -119,7 +119,7 @@
   "cache_settings_tile_title": "Local Storage",
   "cache_settings_title": "Configuració de la memòria cau",
   "change_password_form_confirm_password": "Confirma la contrasenya",
-  "change_password_form_description": "Hi {firstName} {lastName},\n\nThis is either the first time you are signing into the system or a request has been made to change your password. Please enter the new password below.",
+  "change_password_form_description": "Hi {name},\n\nThis is either the first time you are signing into the system or a request has been made to change your password. Please enter the new password below.",
   "change_password_form_new_password": "New Password",
   "change_password_form_password_mismatch": "Passwords do not match",
   "change_password_form_reenter_new_password": "Re-enter New Password",

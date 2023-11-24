@@ -119,7 +119,7 @@
   "cache_settings_tile_title": "Local Storage",
   "cache_settings_title": "Kešdarbes iestatījumi",
   "change_password_form_confirm_password": "Apstiprināt Paroli",
-  "change_password_form_description": "Sveiki {FirstName} {LastName},\n\nŠī ir pirmā reize, kad pierakstāties sistēmā, vai arī ir iesniegts pieprasījums mainīt paroli. Lūdzu, zemāk ievadiet jauno paroli.",
+  "change_password_form_description": "Sveiki {name},\n\nŠī ir pirmā reize, kad pierakstāties sistēmā, vai arī ir iesniegts pieprasījums mainīt paroli. Lūdzu, zemāk ievadiet jauno paroli.",
   "change_password_form_new_password": "Jauna Parole",
   "change_password_form_password_mismatch": "Paroles nesakrīt",
   "change_password_form_reenter_new_password": "Atkārtoti ievadīt jaunu paroli",

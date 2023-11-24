@@ -119,7 +119,7 @@
   "cache_settings_tile_title": "Local Storage",
   "cache_settings_title": "ตั้งค่าแคช",
   "change_password_form_confirm_password": "ยืนยันรหัสผ่าน",
-  "change_password_form_description": "สวัสดี {firstName} {lastName},\n\nครั้งนี้อาจจะเป็นครั้งแรกที่คุณเข้าสู่ระบบ หรือมีคำขอเพื่อที่จะเปลี่ยนรหัสผ่านของคุI กรุณาเพิ่มรหัสผ่านใหม่ข้างล่าง",
+  "change_password_form_description": "สวัสดี {name},\n\nครั้งนี้อาจจะเป็นครั้งแรกที่คุณเข้าสู่ระบบ หรือมีคำขอเพื่อที่จะเปลี่ยนรหัสผ่านของคุI กรุณาเพิ่มรหัสผ่านใหม่ข้างล่าง",
   "change_password_form_new_password": "รหัสผ่านใหม่",
   "change_password_form_password_mismatch": "รหัสผ่านไม่ตรงกัน",
   "change_password_form_reenter_new_password": "กรอกรหัสผ่านใหม่",
