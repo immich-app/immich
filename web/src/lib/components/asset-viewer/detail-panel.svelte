@@ -20,12 +20,9 @@
     mdiMapMarkerOutline,
     mdiInformationOutline,
   } from '@mdi/js';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import Icon from '$lib/components/elements/icon.svelte';
   import Map from '../shared-components/map/map.svelte';
+  import { websocketStore } from '$lib/stores/websocket';
   import { AppRoute } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
@@ -59,6 +56,12 @@
   })();
 
   $: people = asset.people || [];
+
+  const subscribe = websocketStore.onAssetUpdate.subscribe(assetUpdate => {
+    if (assetUpdate && assetUpdate.id === asset.id) {
+      asset = assetUpdate;
+    } 
+  });
 
   const dispatch = createEventDispatcher();
 
@@ -101,10 +104,6 @@
 
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
-    if (asset.exifInfo) {
-      asset.exifInfo.dateTimeOriginal = dateTimeOriginal;
-    }
-
     try {
       await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {

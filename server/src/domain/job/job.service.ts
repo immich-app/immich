@@ -166,7 +166,12 @@ export class JobService {
         break;
 
       case JobName.METADATA_EXTRACTION:
+        const [asset] = await this.assetRepository.getByIds([item.data.id]);
+        if (asset) {
+          this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
+        }
         await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
+        
         break;
 
       case JobName.LINK_LIVE_PHOTOS:
@@ -214,14 +219,6 @@ export class JobService {
         if (asset) {
           this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
-      }
-
-      case JobName.SIDECAR_WRITE: {
-        const [asset] = await this.assetRepository.getByIds([item.data.id]);
-        if (asset) {
-          this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
-        }
-        break;
       }
     }
 
