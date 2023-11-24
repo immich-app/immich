@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -26,13 +27,13 @@ class SharedLinkItem extends ConsumerWidget {
   }
 
   Widget getExpiryDuration(bool isDarkMode) {
-    var expiresText = "Expires ∞";
+    var expiresText = "shared_link_expires_never".tr();
     if (sharedLink.expiresAt != null) {
       if (isExpired()) {
         return Text(
-          "Expired",
+          "shared_link_expired",
           style: TextStyle(color: Colors.red[300]),
-        );
+        ).tr();
       }
       final difference = sharedLink.expiresAt!.difference(DateTime.now());
       debugPrint("Difference: $difference");
@@ -41,13 +42,13 @@ class SharedLinkItem extends ConsumerWidget {
         if (difference.inHours % 24 > 12) {
           dayDifference += 1;
         }
-        expiresText = "in $dayDifference days";
+        expiresText = "shared_link_expires_days".plural(dayDifference);
       } else if (difference.inHours > 0) {
-        expiresText = "in ${difference.inHours} hours";
+        expiresText = "shared_link_expires_hours".plural(difference.inHours);
       } else if (difference.inMinutes > 0) {
-        expiresText = "in ${difference.inMinutes} minutes";
+        expiresText = "shared_link_expires_minutes".plural(difference.inMinutes);
       } else if (difference.inSeconds > 0) {
-        expiresText = "in ${difference.inSeconds} seconds";
+        expiresText = "shared_link_expires_seconds".plural(difference.inSeconds);
       }
     }
     return Text(
@@ -72,7 +73,7 @@ class SharedLinkItem extends ConsumerWidget {
           context: context,
           gravity: ToastGravity.BOTTOM,
           toastType: ToastType.error,
-          msg: 'Cannot fetch the server url',
+          msg: "shared_link_error_server_url_fetch".tr(),
         );
         return;
       }
@@ -83,11 +84,9 @@ class SharedLinkItem extends ConsumerWidget {
         ),
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Copied to clipboard",
-            ),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: const Text("shared_link_clipboard_copied_massage").tr(),
+            duration: const Duration(seconds: 2),
           ),
         );
       });
@@ -163,9 +162,9 @@ class SharedLinkItem extends ConsumerWidget {
     Widget buildBottomInfo() {
       return Row(
         children: [
-          if (sharedLink.allowUpload) buildInfoChip("Upload"),
-          if (sharedLink.allowDownload) buildInfoChip("Download"),
-          if (sharedLink.showMetadata) buildInfoChip("EXIF"),
+          if (sharedLink.allowUpload) buildInfoChip("shared_link_info_chip_upload".tr()),
+          if (sharedLink.allowDownload) buildInfoChip("shared_link_info_chip_download".tr()),
+          if (sharedLink.showMetadata) buildInfoChip("shared_link_info_chip_metadata".tr()),
         ],
       );
     }
