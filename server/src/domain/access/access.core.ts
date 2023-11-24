@@ -99,6 +99,24 @@ export class AccessCore {
   }
 
   private async checkAccessSharedLink(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
+    const sharedLinkId = authUser.sharedLinkId;
+    if (!sharedLinkId) {
+      return new Set();
+    }
+
+    switch (permission) {
+      case Permission.ASSET_UPLOAD:
+        return authUser.isAllowUpload ? ids : new Set();
+
+      case Permission.ALBUM_READ:
+        return await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids);
+
+      case Permission.ALBUM_DOWNLOAD:
+        return !!authUser.isAllowDownload
+          ? await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids)
+          : new Set();
+    }
+
     const allowedIds = new Set();
     for (const id of ids) {
       const hasAccess = await this.hasSharedLinkAccess(authUser, permission, id);
@@ -126,18 +144,9 @@ export class AccessCore {
       case Permission.ASSET_DOWNLOAD:
         return !!authUser.isAllowDownload && (await this.repository.asset.hasSharedLinkAccess(sharedLinkId, id));
 
-      case Permission.ASSET_UPLOAD:
-        return authUser.isAllowUpload;
-
       case Permission.ASSET_SHARE:
         // TODO: fix this to not use authUser.id for shared link access control
         return this.repository.asset.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ALBUM_READ:
-        return this.repository.album.hasSharedLinkAccess(sharedLinkId, id);
-
-      case Permission.ALBUM_DOWNLOAD:
-        return !!authUser.isAllowDownload && (await this.repository.album.hasSharedLinkAccess(sharedLinkId, id));
 
       default:
         return false;
@@ -145,6 +154,32 @@ export class AccessCore {
   }
 
   private async checkAccessOther(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
+    switch (permission) {
+      case Permission.ALBUM_READ: {
+        const isOwner = await this.repository.album.checkOwnerAccess(authUser.id, ids);
+        const isShared = await this.repository.album.checkSharedAlbumAccess(authUser.id, ids);
+        return new Set([...isOwner, ...isShared]);
+      }
+
+      case Permission.ALBUM_UPDATE:
+        return this.repository.album.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.ALBUM_DELETE:
+        return this.repository.album.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.ALBUM_SHARE:
+        return this.repository.album.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.ALBUM_DOWNLOAD: {
+        const isOwner = await this.repository.album.checkOwnerAccess(authUser.id, ids);
+        const isShared = await this.repository.album.checkSharedAlbumAccess(authUser.id, ids);
+        return new Set([...isOwner, ...isShared]);
+      }
+
+      case Permission.ALBUM_REMOVE_ASSET:
+        return this.repository.album.checkOwnerAccess(authUser.id, ids);
+    }
+
     const allowedIds = new Set();
     for (const id of ids) {
       const hasAccess = await this.hasOtherAccess(authUser, permission, id);
@@ -204,32 +239,8 @@ export class AccessCore {
           (await this.repository.asset.hasPartnerAccess(authUser.id, id))
         );
 
-      case Permission.ALBUM_READ:
-        return (
-          (await this.repository.album.hasOwnerAccess(authUser.id, id)) ||
-          (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
-        );
-
-      case Permission.ALBUM_UPDATE:
-        return this.repository.album.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ALBUM_DELETE:
-        return this.repository.album.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ALBUM_SHARE:
-        return this.repository.album.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ALBUM_DOWNLOAD:
-        return (
-          (await this.repository.album.hasOwnerAccess(authUser.id, id)) ||
-          (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
-        );
-
       case Permission.ASSET_UPLOAD:
         return this.repository.library.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ALBUM_REMOVE_ASSET:
-        return this.repository.album.hasOwnerAccess(authUser.id, id);
 
       case Permission.ARCHIVE_READ:
         return authUser.id === id;

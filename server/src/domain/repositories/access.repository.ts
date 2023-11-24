@@ -18,9 +18,9 @@ export interface IAccessRepository {
   };
 
   album: {
-    hasOwnerAccess(userId: string, albumId: string): Promise<boolean>;
-    hasSharedAlbumAccess(userId: string, albumId: string): Promise<boolean>;
-    hasSharedLinkAccess(sharedLinkId: string, albumId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, albumIds: Set<string>): Promise<Set<string>>;
+    checkSharedAlbumAccess(userId: string, albumIds: Set<string>): Promise<Set<string>>;
+    checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>>;
   };
 
   library: {
