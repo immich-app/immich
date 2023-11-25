@@ -97,31 +97,24 @@ export class MetadataService {
     this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
-  async init(deleteCache = false) {
+  async init() {
     if (!this.subscription) {
       this.subscription = this.configCore.config$.subscribe(() => this.init());
     }
 
     const { reverseGeocoding } = await this.configCore.getConfig();
-    const { citiesFileOverride } = reverseGeocoding;
+    const { enabled } = reverseGeocoding;
 
-    if (!reverseGeocoding.enabled) {
+    if (!enabled) {
       return;
     }
 
     try {
-      if (deleteCache) {
-        await this.repository.deleteCache();
-      } else if (this.oldCities && this.oldCities === citiesFileOverride) {
-        return;
-      }
-
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.repository.init({ citiesFileOverride });
+      await this.repository.init();
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
-      this.logger.log(`Initialized local reverse geocoder with ${citiesFileOverride}`);
-      this.oldCities = citiesFileOverride;
+      this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
@@ -258,8 +251,9 @@ export class MetadataService {
     }
 
     try {
-      const { city, state, country } = await this.repository.reverseGeocode({ latitude, longitude });
-      Object.assign(exifData, { city, state, country });
+      const reverseGeocode = await this.repository.reverseGeocode({ latitude, longitude });
+      if (!reverseGeocode) return;
+      Object.assign(exifData, reverseGeocode);
     } catch (error: Error | any) {
       this.logger.warn(
         `Unable to run reverse geocoding due to ${error} for asset ${asset.id} at ${asset.originalPath}`,

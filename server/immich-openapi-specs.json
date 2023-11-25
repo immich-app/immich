@@ -6989,15 +6989,6 @@
         ],
         "type": "object"
       },
-      "CitiesFile": {
-        "enum": [
-          "cities15000",
-          "cities5000",
-          "cities1000",
-          "cities500"
-        ],
-        "type": "string"
-      },
       "ClassificationConfig": {
         "properties": {
           "enabled": {
@@ -9112,15 +9103,11 @@
       },
       "SystemConfigReverseGeocodingDto": {
         "properties": {
-          "citiesFileOverride": {
-            "$ref": "#/components/schemas/CitiesFile"
-          },
           "enabled": {
             "type": "boolean"
           }
         },
         "required": [
-          "citiesFileOverride",
           "enabled"
         ],
         "type": "object"

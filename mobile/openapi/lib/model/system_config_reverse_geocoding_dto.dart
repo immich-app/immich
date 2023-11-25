@@ -13,31 +13,25 @@ part of openapi.api;
 class SystemConfigReverseGeocodingDto {
   /// Returns a new [SystemConfigReverseGeocodingDto] instance.
   SystemConfigReverseGeocodingDto({
-    required this.citiesFileOverride,
     required this.enabled,
   });
-
-  CitiesFile citiesFileOverride;
 
   bool enabled;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigReverseGeocodingDto &&
-     other.citiesFileOverride == citiesFileOverride &&
      other.enabled == enabled;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (citiesFileOverride.hashCode) +
     (enabled.hashCode);
 
   @override
-  String toString() => 'SystemConfigReverseGeocodingDto[citiesFileOverride=$citiesFileOverride, enabled=$enabled]';
+  String toString() => 'SystemConfigReverseGeocodingDto[enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'citiesFileOverride'] = this.citiesFileOverride;
       json[r'enabled'] = this.enabled;
     return json;
   }
@@ -50,7 +44,6 @@ class SystemConfigReverseGeocodingDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigReverseGeocodingDto(
-        citiesFileOverride: CitiesFile.fromJson(json[r'citiesFileOverride'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
       );
     }
@@ -99,7 +92,6 @@ class SystemConfigReverseGeocodingDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'citiesFileOverride',
     'enabled',
   };
 }

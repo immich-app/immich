@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
+    "@immich/cli": "^2.0.3",
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/common": "^10.2.2",
     "@nestjs/config": "^3.0.0",
@@ -65,10 +66,8 @@
     "glob": "^10.3.3",
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
-    "@immich/cli": "^2.0.3",
     "ioredis": "^5.3.2",
     "joi": "^17.10.0",
-    "local-reverse-geocoder": "0.16.5",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
     "mv": "^2.1.1",

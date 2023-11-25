@@ -4,13 +4,12 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, CitiesFile, SystemConfigDto } from '@api';
+  import { api, SystemConfigDto } from '@api';
   import { cloneDeep, isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import SettingAccordion from '../setting-accordion.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import SettingSelect from '../setting-select.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 
   export let config: SystemConfigDto; // this is the config that is being edited
@@ -39,7 +38,6 @@
           },
           reverseGeocoding: {
             enabled: config.reverseGeocoding.enabled,
-            citiesFileOverride: config.reverseGeocoding.citiesFileOverride,
           },
         },
       });
@@ -130,24 +128,6 @@
                 {disabled}
                 subtitle="Enable reverse geocoding"
                 bind:checked={config.reverseGeocoding.enabled}
-              />
-
-              <hr />
-
-              <SettingSelect
-                label="Precision"
-                desc="Set reverse geocoding precision"
-                name="reverse-geocoding-precision"
-                bind:value={config.reverseGeocoding.citiesFileOverride}
-                options={[
-                  { value: CitiesFile.Cities500, text: 'Cities with more than 500 people' },
-                  { value: CitiesFile.Cities1000, text: 'Cities with more than 1000 people' },
-                  { value: CitiesFile.Cities5000, text: 'Cities with more than 5000 people' },
-                  { value: CitiesFile.Cities15000, text: 'Cities with more than 15000 people' },
-                ]}
-                disabled={disabled || !config.reverseGeocoding.enabled}
-                isEdited={config.reverseGeocoding.citiesFileOverride !==
-                  savedConfig.reverseGeocoding.citiesFileOverride}
               />
             </div></SettingAccordion
           >

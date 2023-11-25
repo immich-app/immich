@@ -16,11 +16,6 @@ void main() {
   // final instance = SystemConfigReverseGeocodingDto();
 
   group('test SystemConfigReverseGeocodingDto', () {
-    // CitiesFile citiesFileOverride
-    test('to test the property `citiesFileOverride`', () async {
-      // TODO
-    });
-
     // bool enabled
     test('to test the property `enabled`', () async {
       // TODO

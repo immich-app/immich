@@ -244,7 +244,6 @@ Class | Method | HTTP request | Description
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
- - [CitiesFile](doc//CitiesFile.md)
  - [ClassificationConfig](doc//ClassificationConfig.md)
  - [Colorspace](doc//Colorspace.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
