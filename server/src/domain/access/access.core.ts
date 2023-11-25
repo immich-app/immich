@@ -1,4 +1,5 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { setDifference, setUnion } from '..';
 import { AuthUserDto } from '../auth';
 import { IAccessRepository } from '../repositories';
 
@@ -157,8 +158,8 @@ export class AccessCore {
     switch (permission) {
       case Permission.ALBUM_READ: {
         const isOwner = await this.repository.album.checkOwnerAccess(authUser.id, ids);
-        const isShared = await this.repository.album.checkSharedAlbumAccess(authUser.id, ids);
-        return new Set([...isOwner, ...isShared]);
+        const isShared = await this.repository.album.checkSharedAlbumAccess(authUser.id, setDifference(ids, isOwner));
+        return setUnion(isOwner, isShared);
       }
 
       case Permission.ALBUM_UPDATE:
@@ -172,8 +173,8 @@ export class AccessCore {
 
       case Permission.ALBUM_DOWNLOAD: {
         const isOwner = await this.repository.album.checkOwnerAccess(authUser.id, ids);
-        const isShared = await this.repository.album.checkSharedAlbumAccess(authUser.id, ids);
-        return new Set([...isOwner, ...isShared]);
+        const isShared = await this.repository.album.checkSharedAlbumAccess(authUser.id, setDifference(ids, isOwner));
+        return setUnion(isOwner, isShared);
       }
 
       case Permission.ALBUM_REMOVE_ASSET:
