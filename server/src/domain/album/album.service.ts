@@ -3,6 +3,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from '../access';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from '../asset';
 import { AuthUserDto } from '../auth';
+import { setUnion } from '../domain.util';
 import { JobName } from '../job';
 import {
   AlbumInfoOptions,
@@ -194,7 +195,7 @@ export class AlbumService {
     const existingAssetIds = await this.albumRepository.getAssetIds(id, dto.ids);
     const canRemove = await this.access.checkAccess(authUser, Permission.ALBUM_REMOVE_ASSET, existingAssetIds);
     const canShare = await this.access.checkAccess(authUser, Permission.ASSET_SHARE, existingAssetIds);
-    const allowedAssetIds = new Set([...canRemove, ...canShare]);
+    const allowedAssetIds = setUnion(canRemove, canShare);
 
     const results: BulkIdResponseDto[] = [];
     for (const assetId of dto.ids) {
