@@ -156,9 +156,17 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
 //       Proposal reference: https://github.com/tc39/proposal-set-methods
 
 export const setUnion = <T>(setA: Set<T>, setB: Set<T>): Set<T> => {
-  return new Set([...setA, ...setB]);
+  const union = new Set(setA);
+  for (const elem of setB) {
+    union.add(elem);
+  }
+  return union;
 };
 
 export const setDifference = <T>(setA: Set<T>, setB: Set<T>): Set<T> => {
-  return new Set([...setA].filter((x) => !setB.has(x)));
+  const difference = new Set(setA);
+  for (const elem of setB) {
+    difference.delete(elem);
+  }
+  return difference;
 };

@@ -1,9 +1,9 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { setUnion } from '..';
 import { AccessCore, Permission } from '../access';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from '../asset';
 import { AuthUserDto } from '../auth';
+import { setUnion } from '../domain.util';
 import { JobName } from '../job';
 import {
   AlbumInfoOptions,

@@ -222,9 +222,7 @@ export class AccessRepository implements IAccessRepository {
             ownerId: userId,
           },
         })
-        .then((albums) => {
-          return new Set(albums.map((album) => album.id));
-        });
+        .then((albums) => new Set(albums.map((album) => album.id)));
     },
 
     checkSharedAlbumAccess: async (userId: string, albumIds: Set<string>): Promise<Set<string>> => {
@@ -242,9 +240,7 @@ export class AccessRepository implements IAccessRepository {
             },
           },
         })
-        .then((albums) => {
-          return new Set(albums.map((album) => album.id));
-        });
+        .then((albums) => new Set(albums.map((album) => album.id)));
     },
 
     checkSharedLinkAccess: async (sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>> => {
@@ -260,9 +256,10 @@ export class AccessRepository implements IAccessRepository {
             albumId: In([...albumIds]),
           },
         })
-        .then((sharedLinks) => {
-          return new Set(sharedLinks.flatMap((sharedLink) => (!!sharedLink.albumId ? [sharedLink.albumId] : [])));
-        });
+        .then(
+          (sharedLinks) =>
+            new Set(sharedLinks.flatMap((sharedLink) => (!!sharedLink.albumId ? [sharedLink.albumId] : []))),
+        );
     },
   };
 

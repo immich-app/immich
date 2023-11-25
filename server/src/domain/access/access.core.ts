@@ -1,6 +1,6 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { setDifference, setUnion } from '..';
 import { AuthUserDto } from '../auth';
+import { setDifference, setUnion } from '../domain.util';
 import { IAccessRepository } from '../repositories';
 
 export enum Permission {
