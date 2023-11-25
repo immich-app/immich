@@ -1,4 +1,4 @@
-import { AssetType, CitiesFile, ExifEntity, SystemConfigKey } from '@app/infra/entities';
+import { AssetType, ExifEntity, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAlbumRepositoryMock,
@@ -78,10 +78,7 @@ describe(MetadataService.name, () => {
 
   describe('init', () => {
     beforeEach(async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true },
-        { key: SystemConfigKey.REVERSE_GEOCODING_CITIES_FILE_OVERRIDE, value: CitiesFile.CITIES_500 },
-      ]);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true }]);
 
       await sut.init();
     });
