@@ -2,7 +2,7 @@ import { GeodataAdmin1Entity } from '@app/infra/entities/geodata-admin1.entity';
 import { GeodataAdmin2Entity } from '@app/infra/entities/geodata-admin2.entity';
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
-@Entity('geodata_places')
+@Entity('geodata_places', { synchronize: false })
 export class GeodataPlacesEntity {
   @PrimaryColumn({ type: 'integer' })
   id!: number;
