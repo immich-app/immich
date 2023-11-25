@@ -192,13 +192,12 @@ class HomePage extends HookConsumerWidget {
               .deleteAssets(toDelete, force: !trashEnabled);
 
           final hasRemote = toDelete.any((a) => a.isRemote);
-          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
-          final trashOrRemoved =
-              !trashEnabled ? 'deleted permanently' : 'trashed';
+          final toastMessage =
+              !trashEnabled ? 'home_page_deleted_permanently' : 'home_page_deleted_to_trash';
           if (hasRemote) {
             ImmichToast.show(
               context: context,
-              msg: '${selection.value.length} $assetOrAssets $trashOrRemoved',
+              msg: toastMessage.plural(selection.value.length),
               gravity: ToastGravity.BOTTOM,
             );
           }

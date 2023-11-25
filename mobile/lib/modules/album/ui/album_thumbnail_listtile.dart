@@ -90,14 +90,12 @@ class AlbumThumbnailListTile extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        album.assetCount == 1
-                            ? 'album_thumbnail_card_item'
-                            : 'album_thumbnail_card_items',
-                        style: const TextStyle(
+                      const Text(
+                        'album_thumbnail_card_items',
+                        style: TextStyle(
                           fontSize: 12,
                         ),
-                      ).tr(args: ['${album.assetCount}']),
+                      ).plural(album.assetCount),
                       if (album.shared)
                         const Text(
                           'album_thumbnail_card_shared',

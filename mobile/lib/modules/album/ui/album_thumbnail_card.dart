@@ -67,11 +67,7 @@ class AlbumThumbnailCard extends StatelessWidget {
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: album.assetCount == 1
-                      ? 'album_thumbnail_card_item'
-                          .tr(args: ['${album.assetCount}'])
-                      : 'album_thumbnail_card_items'
-                          .tr(args: ['${album.assetCount}']),
+                  text: 'album_thumbnail_card_items'.plural(album.assetCount),
                   style: context.textTheme.bodyMedium,
                 ),
                 if (owner != null) const TextSpan(text: ' · '),

@@ -48,12 +48,13 @@ Future<void> handleArchiveAssets(
         .read(assetProvider.notifier)
         .toggleArchive(selection, shouldArchive);
 
-    final assetOrAssets = selection.length > 1 ? 'assets' : 'asset';
-    final archiveOrLibrary = shouldArchive ? 'archive' : 'library';
+    final toastMessage = shouldArchive
+        ? 'selection_handler_move_assets_to_archive'
+        : 'selection_handler_move_assets_to_library';
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: 'Moved ${selection.length} $assetOrAssets to $archiveOrLibrary',
+        msg: toastMessage.plural(selection.length),
         gravity: toastGravity,
       );
     }
@@ -72,14 +73,13 @@ Future<void> handleFavoriteAssets(
         .watch(assetProvider.notifier)
         .toggleFavorite(selection, shouldFavorite);
 
-    final assetOrAssets = selection.length > 1 ? 'assets' : 'asset';
     final toastMessage = shouldFavorite
-        ? 'Added ${selection.length} $assetOrAssets to favorites'
-        : 'Removed ${selection.length} $assetOrAssets from favorites';
+        ? 'selection_handler_add_assets_to_favorites'
+        : 'selection_handler_remove_assets_from_favorites';
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: toastMessage,
+        msg: toastMessage.plural(selection.length),
         gravity: ToastGravity.BOTTOM,
       );
     }

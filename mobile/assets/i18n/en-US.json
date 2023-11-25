@@ -12,8 +12,10 @@
   "advanced_settings_troubleshooting_title": "Troubleshooting",
   "album_info_card_backup_album_excluded": "EXCLUDED",
   "album_info_card_backup_album_included": "INCLUDED",
-  "album_thumbnail_card_item": "1 item",
-  "album_thumbnail_card_items": "{} items",
+  "album_thumbnail_card_items": {
+    "one": "{} item",
+    "other": "{} items"
+  },
   "album_thumbnail_card_shared": " · Shared",
   "album_thumbnail_owned": "Owned",
   "album_thumbnail_shared_by": "Shared by {}",
@@ -179,6 +181,14 @@
   "home_page_archive_err_partner": "Can not archive partner assets, skipping",
   "home_page_building_timeline": "Building the timeline",
   "home_page_delete_err_partner": "Can not delete partner assets, skipping",
+  "home_page_deleted_permanently": {
+    "one": "{} asset deleted permanently",
+    "other": "{} assets deleted permanently"
+  },
+  "home_page_deleted_to_trash": {
+    "one": "{} asset trashed",
+    "other": "{} assets trashed"
+  },
   "home_page_favorite_err_local": "Can not favorite local assets yet, skipping",
   "home_page_favorite_err_partner": "Can not favorite partner assets yet, skipping",
   "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).",
@@ -319,6 +329,22 @@
   "select_additional_user_for_sharing_page_suggestions": "Suggestions",
   "select_user_for_sharing_page_err_album": "Failed to create album",
   "select_user_for_sharing_page_share_suggestions": "Suggestions",
+  "selection_handler_add_assets_to_favorites": {
+    "one": "Added {} asset to favorites",
+    "other": "Added {} assets to favorites"
+  },
+  "selection_handler_move_assets_to_archive": {
+    "one": "Moved {} asset to archive",
+    "other": "Moved {} assets to archive"
+  },
+  "selection_handler_move_assets_to_library": {
+    "one": "Moved {} asset to library",
+    "other": "Moved {} assets to library"
+  },
+  "selection_handler_remove_assets_from_favorites": {
+    "one": "Removed {} asset from favorites",
+    "other": "Removed {} assets from favorites"
+  },
   "server_info_box_app_version": "App Version",
   "server_info_box_server_url": "Server URL",
   "server_info_box_server_version": "Server Version",
@@ -436,6 +462,14 @@
   "theme_setting_three_stage_loading_subtitle": "Three-stage loading might increase the loading performance but causes significantly higher network load",
   "theme_setting_three_stage_loading_title": "Enable three-stage loading",
   "translated_text_options": "Options",
+  "trash_page_assets_deleted": {
+    "one": "{} assets deleted permanently",
+    "other": "{} assets deleted permanently"
+  },
+  "trash_page_assets_restored": {
+    "one": "{} assets restored successfully",
+    "other": "{} assets restored successfully"
+  },
   "trash_page_delete": "Delete",
   "trash_page_delete_all": "Delete All",
   "trash_page_empty_trash_btn": "Empty trash",
