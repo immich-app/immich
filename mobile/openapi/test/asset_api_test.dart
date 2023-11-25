@@ -127,7 +127,7 @@ void main() {
       // TODO
     });
 
-    // DEPRECATED! Use /asset/device/:deviceId instead
+    // Use /asset/device/:deviceId instead - Remove in 1.92 release
     //
     //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
     test('test getUserAssetsByDeviceId', () async {

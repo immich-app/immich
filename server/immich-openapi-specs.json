@@ -2327,7 +2327,6 @@
     "/asset/{deviceId}": {
       "get": {
         "deprecated": true,
-        "description": "DEPRECATED! Use /asset/device/:deviceId instead",
         "operationId": "getUserAssetsByDeviceId",
         "parameters": [
           {
@@ -2365,6 +2364,7 @@
             "api_key": []
           }
         ],
+        "summary": "Use /asset/device/:deviceId instead - Remove in 1.92 release",
         "tags": [
           "Asset"
         ]

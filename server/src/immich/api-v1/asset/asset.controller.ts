@@ -147,10 +147,10 @@ export class AssetController {
   }
 
   /**
-   * DEPRECATED! Use /asset/device/:deviceId instead
+   * @deprecated Use /asset/device/:deviceId instead - Remove at 1.92 release
    */
   @Get('/:deviceId')
-  @ApiOperation({ deprecated: true })
+  @ApiOperation({ deprecated: true, summary: 'Use /asset/device/:deviceId instead - Remove in 1.92 release' })
   getUserAssetsByDeviceId(@AuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
     return this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
   }

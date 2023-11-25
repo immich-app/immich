@@ -1267,7 +1267,7 @@ class AssetApi {
     return null;
   }
 
-  /// DEPRECATED! Use /asset/device/:deviceId instead
+  /// Use /asset/device/:deviceId instead - Remove in 1.92 release
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -1300,7 +1300,7 @@ class AssetApi {
     );
   }
 
-  /// DEPRECATED! Use /asset/device/:deviceId instead
+  /// Use /asset/device/:deviceId instead - Remove in 1.92 release
   ///
   /// Parameters:
   ///

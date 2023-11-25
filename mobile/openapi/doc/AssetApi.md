@@ -29,7 +29,7 @@ Method | HTTP request | Description
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
 [**getTimeBucket**](AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | Use /asset/device/:deviceId instead - Remove in 1.92 release
 [**restoreAssets**](AssetApi.md#restoreassets) | **POST** /asset/restore | 
 [**restoreTrash**](AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 [**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
@@ -1212,9 +1212,7 @@ Name | Type | Description  | Notes
 # **getUserAssetsByDeviceId**
 > List<String> getUserAssetsByDeviceId(deviceId)
 
-
-
-DEPRECATED! Use /asset/device/:deviceId instead
+Use /asset/device/:deviceId instead - Remove in 1.92 release
 
 ### Example
 ```dart

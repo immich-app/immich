@@ -7519,7 +7519,8 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * DEPRECATED! Use /asset/device/:deviceId instead
+         * 
+         * @summary Use /asset/device/:deviceId instead - Remove in 1.92 release
          * @param {string} deviceId 
          * @param {*} [options] Override http request option.
          * @deprecated
@@ -8511,7 +8512,8 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * DEPRECATED! Use /asset/device/:deviceId instead
+         * 
+         * @summary Use /asset/device/:deviceId instead - Remove in 1.92 release
          * @param {string} deviceId 
          * @param {*} [options] Override http request option.
          * @deprecated
@@ -8855,7 +8857,8 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
-         * DEPRECATED! Use /asset/device/:deviceId instead
+         * 
+         * @summary Use /asset/device/:deviceId instead - Remove in 1.92 release
          * @param {AssetApiGetUserAssetsByDeviceIdRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @deprecated
@@ -10193,7 +10196,8 @@ export class AssetApi extends BaseAPI {
     }
 
     /**
-     * DEPRECATED! Use /asset/device/:deviceId instead
+     * 
+     * @summary Use /asset/device/:deviceId instead - Remove in 1.92 release
      * @param {AssetApiGetUserAssetsByDeviceIdRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @deprecated
