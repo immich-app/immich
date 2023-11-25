@@ -38,6 +38,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { DeviceIdDto } from '../api-v1/asset/dto/device-id.dto';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile } from '../app.utils';
 import { Route } from '../interceptors';
@@ -98,6 +99,14 @@ export class AssetController {
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   downloadFile(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.downloadFile(authUser, id).then(asStreamableFile);
+  }
+
+  /**
+   * Get all asset of a device that are in the database, ID only.
+   */
+  @Get('/device/:deviceId')
+  getAllUserAssetsByDeviceId(@AuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
+    return this.service.getUserAssetsByDeviceId(authUser, deviceId);
   }
 
   @Get('statistics')

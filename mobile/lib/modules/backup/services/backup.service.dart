@@ -42,6 +42,9 @@ class BackupService {
 
     try {
       return await _apiService.assetApi.getUserAssetsByDeviceId(deviceId);
+
+      // TODO! Start using this in 1.92.0
+      // return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
       return null;

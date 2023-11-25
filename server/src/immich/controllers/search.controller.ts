@@ -19,11 +19,6 @@ import { UseValidation } from '../app.utils';
 export class SearchController {
   constructor(private service: SearchService) {}
 
-  @Get('person')
-  searchPerson(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return this.service.searchPerson(authUser, dto);
-  }
-
   @Get()
   search(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
     return this.service.search(authUser, dto);
@@ -32,5 +27,10 @@ export class SearchController {
   @Get('explore')
   getExploreData(@AuthUser() authUser: AuthUserDto): Promise<SearchExploreResponseDto[]> {
     return this.service.getExploreData(authUser) as Promise<SearchExploreResponseDto[]>;
+  }
+
+  @Get('person')
+  searchPerson(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return this.service.searchPerson(authUser, dto);
   }
 }

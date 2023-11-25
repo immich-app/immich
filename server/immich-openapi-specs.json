@@ -1219,6 +1219,51 @@
         ]
       }
     },
+    "/asset/device/{deviceId}": {
+      "get": {
+        "description": "Get all asset of a device that are in the database, ID only.",
+        "operationId": "getAllUserAssetsByDeviceId",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/download/archive": {
       "post": {
         "operationId": "downloadArchive",
@@ -2281,7 +2326,7 @@
     },
     "/asset/{deviceId}": {
       "get": {
-        "description": "Get all asset of a device that are in the database, ID only.",
+        "deprecated": true,
         "operationId": "getUserAssetsByDeviceId",
         "parameters": [
           {
@@ -2289,7 +2334,6 @@
             "required": true,
             "in": "path",
             "schema": {
-              "format": "uuid",
               "type": "string"
             }
           }
@@ -2320,6 +2364,7 @@
             "api_key": []
           }
         ],
+        "summary": "Use /asset/device/:deviceId instead - Remove in 1.92 release",
         "tags": [
           "Asset"
         ]
