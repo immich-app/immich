@@ -6,7 +6,6 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
@@ -18,7 +17,6 @@ import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:cancellation_token_http/http.dart' as http;
@@ -42,20 +40,8 @@ class BackupService {
   Future<List<String>?> getDeviceBackupAsset() async {
     final String deviceId = Store.get(StoreKey.deviceId);
 
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final minorVersion = packageInfo.version.split(".")[1].toInt();
     try {
-      if (minorVersion >= 92) {
-        debugPrint(
-          "___________REMOVE getUserAssetsByDeviceId AFTER 1.92 RELEASE_____________________",
-        );
-      }
-
-      if (minorVersion > 88) {
-        return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
-      } else {
-        return await _apiService.assetApi.getUserAssetsByDeviceId(deviceId);
-      }
+      return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
