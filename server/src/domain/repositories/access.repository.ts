@@ -14,7 +14,7 @@ export interface IAccessRepository {
   };
 
   authDevice: {
-    hasOwnerAccess(userId: string, deviceId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, deviceIds: Set<string>): Promise<Set<string>>;
   };
 
   album: {
@@ -24,19 +24,19 @@ export interface IAccessRepository {
   };
 
   library: {
-    hasOwnerAccess(userId: string, libraryId: string): Promise<boolean>;
-    hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>>;
+    checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
 
   timeline: {
-    hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
+    checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
 
   person: {
-    hasOwnerAccess(userId: string, personId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, personIds: Set<string>): Promise<Set<string>>;
   };
 
   partner: {
-    hasUpdateAccess(userId: string, partnerId: string): Promise<boolean>;
+    checkUpdateAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
 }
