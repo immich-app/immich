@@ -452,7 +452,7 @@ describe(AlbumService.name, () => {
 
       await sut.get(authStub.admin, albumStub.oneAsset.id, {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id, { withAssets: false });
+      expect(albumMock.getById).toHaveBeenCalledWith(albumStub.oneAsset.id, { withAssets: true });
       expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.id,
         new Set([albumStub.oneAsset.id]),
@@ -473,7 +473,7 @@ describe(AlbumService.name, () => {
 
       await sut.get(authStub.adminSharedLink, 'album-123', {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: false });
+      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true });
       expect(accessMock.album.checkSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLinkId,
         new Set(['album-123']),
@@ -494,7 +494,7 @@ describe(AlbumService.name, () => {
 
       await sut.get(authStub.user1, 'album-123', {});
 
-      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: false });
+      expect(albumMock.getById).toHaveBeenCalledWith('album-123', { withAssets: true });
       expect(accessMock.album.checkSharedAlbumAccess).toHaveBeenCalledWith(authStub.user1.id, new Set(['album-123']));
     });
 
