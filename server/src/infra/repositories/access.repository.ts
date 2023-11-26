@@ -62,33 +62,52 @@ export class AccessRepository implements IAccessRepository {
       });
     },
   };
+
   library = {
-    hasOwnerAccess: (userId: string, libraryId: string): Promise<boolean> => {
-      return this.libraryRepository.exist({
-        where: {
-          id: libraryId,
-          ownerId: userId,
-        },
-      });
+    checkOwnerAccess: async (userId: string, libraryIds: Set<string>): Promise<Set<string>> => {
+      if (libraryIds.size === 0) {
+        return new Set();
+      }
+
+      return this.libraryRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...libraryIds]),
+            ownerId: userId,
+          },
+        })
+        .then((libraries) => new Set(libraries.map((library) => library.id)));
     },
-    hasPartnerAccess: (userId: string, partnerId: string): Promise<boolean> => {
-      return this.partnerRepository.exist({
-        where: {
-          sharedWithId: userId,
-          sharedById: partnerId,
-        },
-      });
+
+    checkPartnerAccess: async (userId: string, partnerIds: Set<string>): Promise<Set<string>> => {
+      if (partnerIds.size === 0) {
+        return new Set();
+      }
+
+      return this.partnerRepository
+        .createQueryBuilder('partner')
+        .select('partner.sharedById')
+        .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+        .andWhere('partner.sharedWithId = :userId', { userId })
+        .getMany()
+        .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
     },
   };
 
   timeline = {
-    hasPartnerAccess: (userId: string, partnerId: string): Promise<boolean> => {
-      return this.partnerRepository.exist({
-        where: {
-          sharedWithId: userId,
-          sharedById: partnerId,
-        },
-      });
+    checkPartnerAccess: async (userId: string, partnerIds: Set<string>): Promise<Set<string>> => {
+      if (partnerIds.size === 0) {
+        return new Set();
+      }
+
+      return this.partnerRepository
+        .createQueryBuilder('partner')
+        .select('partner.sharedById')
+        .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+        .andWhere('partner.sharedWithId = :userId', { userId })
+        .getMany()
+        .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
     },
   };
 
@@ -198,13 +217,20 @@ export class AccessRepository implements IAccessRepository {
   };
 
   authDevice = {
-    hasOwnerAccess: (userId: string, deviceId: string): Promise<boolean> => {
-      return this.tokenRepository.exist({
-        where: {
-          userId,
-          id: deviceId,
-        },
-      });
+    checkOwnerAccess: async (userId: string, deviceIds: Set<string>): Promise<Set<string>> => {
+      if (deviceIds.size === 0) {
+        return new Set();
+      }
+
+      return this.tokenRepository
+        .find({
+          select: { id: true },
+          where: {
+            userId,
+            id: In([...deviceIds]),
+          },
+        })
+        .then((tokens) => new Set(tokens.map((token) => token.id)));
     },
   };
 
@@ -264,24 +290,36 @@ export class AccessRepository implements IAccessRepository {
   };
 
   person = {
-    hasOwnerAccess: (userId: string, personId: string): Promise<boolean> => {
-      return this.personRepository.exist({
-        where: {
-          id: personId,
-          ownerId: userId,
-        },
-      });
+    checkOwnerAccess: async (userId: string, personIds: Set<string>): Promise<Set<string>> => {
+      if (personIds.size === 0) {
+        return new Set();
+      }
+
+      return this.personRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...personIds]),
+            ownerId: userId,
+          },
+        })
+        .then((persons) => new Set(persons.map((person) => person.id)));
     },
   };
 
   partner = {
-    hasUpdateAccess: (userId: string, partnerId: string): Promise<boolean> => {
-      return this.partnerRepository.exist({
-        where: {
-          sharedById: partnerId,
-          sharedWithId: userId,
-        },
-      });
+    checkUpdateAccess: async (userId: string, partnerIds: Set<string>): Promise<Set<string>> => {
+      if (partnerIds.size === 0) {
+        return new Set();
+      }
+
+      return this.partnerRepository
+        .createQueryBuilder('partner')
+        .select('partner.sharedById')
+        .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+        .andWhere('partner.sharedWithId = :userId', { userId })
+        .getMany()
+        .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
     },
   };
 }
