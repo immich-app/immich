@@ -179,6 +179,48 @@ export class AccessCore {
 
       case Permission.ALBUM_REMOVE_ASSET:
         return this.repository.album.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.ASSET_UPLOAD:
+        return this.repository.library.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.ARCHIVE_READ:
+        return ids.has(authUser.id) ? new Set([authUser.id]) : new Set();
+
+      case Permission.AUTH_DEVICE_DELETE:
+        return this.repository.authDevice.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.TIMELINE_READ: {
+        const isOwner = ids.has(authUser.id) ? new Set([authUser.id]) : new Set<string>();
+        const isPartner = await this.repository.timeline.checkPartnerAccess(authUser.id, setDifference(ids, isOwner));
+        return setUnion(isOwner, isPartner);
+      }
+
+      case Permission.TIMELINE_DOWNLOAD:
+        return ids.has(authUser.id) ? new Set([authUser.id]) : new Set();
+
+      case Permission.LIBRARY_READ: {
+        const isOwner = await this.repository.library.checkOwnerAccess(authUser.id, ids);
+        const isPartner = await this.repository.library.checkPartnerAccess(authUser.id, setDifference(ids, isOwner));
+        return setUnion(isOwner, isPartner);
+      }
+
+      case Permission.LIBRARY_UPDATE:
+        return this.repository.library.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.LIBRARY_DELETE:
+        return this.repository.library.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.PERSON_READ:
+        return this.repository.person.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.PERSON_WRITE:
+        return this.repository.person.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.PERSON_MERGE:
+        return this.repository.person.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.PARTNER_UPDATE:
+        return this.repository.partner.checkUpdateAccess(authUser.id, ids);
     }
 
     const allowedIds = new Set();
@@ -239,45 +281,6 @@ export class AccessCore {
           (await this.repository.asset.hasAlbumAccess(authUser.id, id)) ||
           (await this.repository.asset.hasPartnerAccess(authUser.id, id))
         );
-
-      case Permission.ASSET_UPLOAD:
-        return this.repository.library.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ARCHIVE_READ:
-        return authUser.id === id;
-
-      case Permission.AUTH_DEVICE_DELETE:
-        return this.repository.authDevice.hasOwnerAccess(authUser.id, id);
-
-      case Permission.TIMELINE_READ:
-        return authUser.id === id || (await this.repository.timeline.hasPartnerAccess(authUser.id, id));
-
-      case Permission.TIMELINE_DOWNLOAD:
-        return authUser.id === id;
-
-      case Permission.LIBRARY_READ:
-        return (
-          (await this.repository.library.hasOwnerAccess(authUser.id, id)) ||
-          (await this.repository.library.hasPartnerAccess(authUser.id, id))
-        );
-
-      case Permission.LIBRARY_UPDATE:
-        return this.repository.library.hasOwnerAccess(authUser.id, id);
-
-      case Permission.LIBRARY_DELETE:
-        return this.repository.library.hasOwnerAccess(authUser.id, id);
-
-      case Permission.PERSON_READ:
-        return this.repository.person.hasOwnerAccess(authUser.id, id);
-
-      case Permission.PERSON_WRITE:
-        return this.repository.person.hasOwnerAccess(authUser.id, id);
-
-      case Permission.PERSON_MERGE:
-        return this.repository.person.hasOwnerAccess(authUser.id, id);
-
-      case Permission.PARTNER_UPDATE:
-        return this.repository.partner.hasUpdateAccess(authUser.id, id);
 
       default:
         return false;
