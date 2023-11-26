@@ -201,7 +201,7 @@
 
       <div
         class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 pt-8 px-8 pb-10 dark:bg-immich-dark-gray"
-        style:max-height={screenHeight - 200 - 200 + 'px'}
+        style:max-height={screenHeight - 250 - 250 + 'px'}
       >
         <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
           {#each unselectedPeople as person (person.id)}
