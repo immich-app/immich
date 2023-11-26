@@ -12,7 +12,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
-  import { mdiCallMerge, mdiMagnify, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
+  import { mdiCallMerge, mdiClose, mdiMagnify, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { cloneDeep } from 'lodash-es';
@@ -42,6 +42,11 @@
 
   const onClose = () => {
     dispatch('go-back');
+  };
+
+  const resetSearch = () => {
+    name = '';
+    people = peopleCopy;
   };
 
   const searchPeople = async (force: boolean) => {
@@ -192,6 +197,11 @@
           bind:value={name}
           on:input={() => searchPeople(false)}
         />
+        {#if name}
+          <button on:click={resetSearch}>
+            <Icon path={mdiClose} />
+          </button>
+        {/if}
         {#if isSearchingPeople}
           <div class="flex place-items-center">
             <LoadingSpinner />
