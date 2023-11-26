@@ -92,16 +92,6 @@ export class AppService {
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
     });
 
-    process.on('uncaughtException', async (error: Error | any) => {
-      const isCsvError = error.code === 'CSV_RECORD_INCONSISTENT_FIELDS_LENGTH';
-      if (!isCsvError) {
-        throw error;
-      }
-
-      this.logger.warn('Geocoding csv parse error, trying again without cache...');
-      await this.metadataService.init(true);
-    });
-
     await this.metadataService.init();
     await this.searchService.init();
   }

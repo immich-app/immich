@@ -14,7 +14,7 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
@@ -147,9 +147,10 @@ export class AssetController {
   }
 
   /**
-   * Get all asset of a device that are in the database, ID only.
+   * @deprecated Use /asset/device/:deviceId instead - Remove at 1.92 release
    */
   @Get('/:deviceId')
+  @ApiOperation({ deprecated: true, summary: 'Use /asset/device/:deviceId instead - Remove in 1.92 release' })
   getUserAssetsByDeviceId(@AuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
     return this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
   }

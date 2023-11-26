@@ -1,5 +1,4 @@
 import { Tags } from 'exiftool-vendored';
-import { InitOptions } from 'local-reverse-geocoder';
 
 export const IMetadataRepository = 'IMetadataRepository';
 
@@ -31,9 +30,8 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
 }
 
 export interface IMetadataRepository {
-  init(options: Partial<InitOptions>): Promise<void>;
+  init(): Promise<void>;
   teardown(): Promise<void>;
-  reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult>;
-  deleteCache(): Promise<void>;
+  reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult | null>;
   getExifTags(path: string): Promise<ImmichTags | null>;
 }
