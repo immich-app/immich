@@ -25,7 +25,6 @@
   let screenHeight: number;
   let isShowConfirmation = false;
   let name = '';
-  let searchWord: string;
   let isSearchingPeople = false;
   let dispatch = createEventDispatcher();
 
@@ -67,7 +66,6 @@
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
-      searchWord = name;
     } catch (error) {
       handleError(error, "Can't search people");
     } finally {
