@@ -6,6 +6,7 @@ import { AuthUserDto } from '../auth';
 import { setUnion } from '../domain.util';
 import { JobName } from '../job';
 import {
+  AlbumAssetCount,
   AlbumInfoOptions,
   IAccessRepository,
   IAlbumRepository,
@@ -69,11 +70,19 @@ export class AlbumService {
 
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
-    const albumsAssetCount = await this.albumRepository.getAssetCountForIds(albums.map((album) => album.id));
-    const albumsAssetCountObj = albumsAssetCount.reduce((obj: Record<string, number>, { albumId, assetCount }) => {
-      obj[albumId] = assetCount;
-      return obj;
-    }, {});
+    const albumMetadataForIds = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
+    const albumMetadataForIdsObj: Record<string, AlbumAssetCount> = albumMetadataForIds.reduce(
+      (obj: Record<string, AlbumAssetCount>, { albumId, assetCount, startDate, endDate }) => {
+        obj[albumId] = {
+          albumId,
+          assetCount,
+          startDate,
+          endDate,
+        };
+        return obj;
+      },
+      {},
+    );
 
     return Promise.all(
       albums.map(async (album) => {
@@ -81,7 +90,9 @@ export class AlbumService {
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          assetCount: albumsAssetCountObj[album.id],
+          startDate: albumMetadataForIdsObj[album.id].startDate,
+          endDate: albumMetadataForIdsObj[album.id].endDate,
+          assetCount: albumMetadataForIdsObj[album.id].assetCount,
           lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
         };
       }),
@@ -91,7 +102,16 @@ export class AlbumService {
   async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
-    return mapAlbum(await this.findOrFail(id, { withAssets: true }), !dto.withoutAssets);
+    const withAssets = dto.withoutAssets === undefined ? false : !dto.withoutAssets;
+    const album = await this.findOrFail(id, { withAssets });
+    const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
+
+    return {
+      ...mapAlbum(album, withAssets),
+      startDate: albumMetadataForIds.startDate,
+      endDate: albumMetadataForIds.endDate,
+      assetCount: albumMetadataForIds.assetCount,
+    };
   }
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
