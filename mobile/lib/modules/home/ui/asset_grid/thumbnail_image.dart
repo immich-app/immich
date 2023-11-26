@@ -197,7 +197,9 @@ class ThumbnailImage extends StatelessWidget {
       },
       child: Stack(
         children: [
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.decelerate,
             decoration: BoxDecoration(
               border: multiselectEnabled && isSelected
                   ? Border.all(
