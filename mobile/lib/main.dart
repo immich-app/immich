@@ -159,9 +159,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       // Android 8 does not support transparent app bars
       final info = await DeviceInfoPlugin().androidInfo;
       if (info.version.sdkInt <= 26) {
-        overlayStyle = !context.isDarkTheme
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark;
+        overlayStyle = context.isDarkTheme
+            ? SystemUiOverlayStyle.dark
+            : SystemUiOverlayStyle.light;
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
@@ -171,10 +171,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   initState() {
     super.initState();
-    unawaited(initApp().then((_) => debugPrint("App Init Completed")));
+    initApp().then((_) => debugPrint("App Init Completed"));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
-      unawaited(ref.read(backgroundServiceProvider).resumeServiceIfEnabled());
+      ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
     });
   }
 

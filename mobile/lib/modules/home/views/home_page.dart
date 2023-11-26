@@ -57,9 +57,9 @@ class HomePage extends HookConsumerWidget {
       () {
         ref.read(websocketProvider.notifier).connect();
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
-        unawaited(ref.read(assetProvider.notifier).getPartnerAssets());
-        unawaited(ref.read(albumProvider.notifier).getAllAlbums());
-        unawaited(ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums());
+        ref.read(assetProvider.notifier).getPartnerAssets();
+        ref.read(albumProvider.notifier).getAllAlbums();
+        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.read(serverInfoProvider.notifier).getServerInfo();
 
         selectionEnabledHook.addListener(() {
@@ -213,12 +213,10 @@ class HomePage extends HookConsumerWidget {
         processing.value = true;
         selectionEnabledHook.value = false;
         try {
-          unawaited(
             ref.read(manualUploadProvider.notifier).uploadAssets(
                   context,
                   selection.value.where((a) => a.storage == AssetState.local),
-                ),
-          );
+                );
         } finally {
           processing.value = false;
         }
