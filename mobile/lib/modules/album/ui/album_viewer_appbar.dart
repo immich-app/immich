@@ -253,7 +253,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ListTile(
           leading: const Icon(Icons.person_add_alt_rounded),
           onTap: () {
-            Navigator.pop(context);
+            context.pop();
             onAddUsers!(album);
           },
           title: const Text(
@@ -265,7 +265,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           leading: const Icon(Icons.share_rounded),
           onTap: () {
             context.autoPush(SharedLinkEditRoute(albumId: album.remoteId));
-            Navigator.pop(context);
+            context.pop();
           },
           title: const Text(
             "control_bottom_app_bar_share",

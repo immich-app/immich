@@ -56,9 +56,9 @@ class HomePage extends HookConsumerWidget {
       () {
         ref.read(websocketProvider.notifier).connect();
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
-        ref.read(assetProvider.notifier).getPartnerAssets();
-        ref.read(albumProvider.notifier).getAllAlbums();
-        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+        unawaited(ref.read(assetProvider.notifier).getPartnerAssets());
+        unawaited(ref.read(albumProvider.notifier).getAllAlbums());
+        unawaited(ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums());
         ref.read(serverInfoProvider.notifier).getServerInfo();
 
         selectionEnabledHook.addListener(() {
@@ -212,10 +212,12 @@ class HomePage extends HookConsumerWidget {
         processing.value = true;
         selectionEnabledHook.value = false;
         try {
-          ref.read(manualUploadProvider.notifier).uploadAssets(
-                context,
-                selection.value.where((a) => a.storage == AssetState.local),
-              );
+          unawaited(
+            ref.read(manualUploadProvider.notifier).uploadAssets(
+                  context,
+                  selection.value.where((a) => a.storage == AssetState.local),
+                ),
+          );
         } finally {
           processing.value = false;
         }
@@ -323,16 +325,12 @@ class HomePage extends HookConsumerWidget {
         } else {
           refreshCount.value++;
           // set counter back to 0 if user does not request refresh again
-          Timer(const Duration(seconds: 4), () {
-            refreshCount.value = 0;
-          });
+          Timer(const Duration(seconds: 4), () => refreshCount.value = 0);
         }
       }
 
       buildLoadingIndicator() {
-        Timer(const Duration(seconds: 2), () {
-          tipOneOpacity.value = 1;
-        });
+        Timer(const Duration(seconds: 2), () => tipOneOpacity.value = 1);
 
         return Center(
           child: Column(

@@ -75,24 +75,21 @@ class AlbumViewerPage extends HookConsumerWidget {
         ),
       );
 
-      if (returnPayload != null) {
+      if (returnPayload != null && returnPayload.selectedAssets.isNotEmpty) {
         // Check if there is new assets add
-        if (returnPayload.selectedAssets.isNotEmpty) {
-          ImmichLoadingOverlayController.appLoader.show();
+        ImmichLoadingOverlayController.appLoader.show();
 
-          var addAssetsResult =
-              await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
-                    returnPayload.selectedAssets,
-                    albumInfo,
-                  );
+        var addAssetsResult =
+            await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
+                  returnPayload.selectedAssets,
+                  albumInfo,
+                );
 
-          if (addAssetsResult != null &&
-              addAssetsResult.successfullyAdded > 0) {
-            ref.invalidate(albumDetailProvider(albumId));
-          }
-
-          ImmichLoadingOverlayController.appLoader.hide();
+        if (addAssetsResult != null && addAssetsResult.successfullyAdded > 0) {
+          ref.invalidate(albumDetailProvider(albumId));
         }
+
+        ImmichLoadingOverlayController.appLoader.hide();
       }
     }
 
@@ -234,14 +231,12 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     onActivitiesPressed(Album album) {
       if (album.remoteId != null) {
-        context.autoPush(
-          ActivitiesRoute(
-            albumId: album.remoteId!,
-            appBarTitle: album.name,
-            isOwner: userId == album.ownerId,
-            isReadOnly: !album.activityEnabled,
-          ),
-        );
+        context.autoPush(ActivitiesRoute(
+          albumId: album.remoteId!,
+          appBarTitle: album.name,
+          isOwner: userId == album.ownerId,
+          isReadOnly: !album.activityEnabled,
+        ));
       }
     }
 
@@ -264,9 +259,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         data: (data) => WillPopScope(
           onWillPop: onWillPop,
           child: GestureDetector(
-            onTap: () {
-              titleFocusNode.unfocus();
-            },
+            onTap: () => titleFocusNode.unfocus(),
             child: ImmichAssetGrid(
               renderList: data.renderList,
               listener: selectionListener,
