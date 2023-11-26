@@ -28,6 +28,7 @@ import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -50,7 +51,7 @@ class HomePage extends HookConsumerWidget {
 
     final tipOneOpacity = useState(0.0);
     final refreshCount = useState(0);
-    final processing = useState(false);
+    final processing = useProcessingOverlay();
 
     useEffect(
       () {
@@ -413,7 +414,6 @@ class HomePage extends HookConsumerWidget {
                 selectionAssetState: selectionAssetState.value,
                 onStack: onStack,
               ),
-            if (processing.value) const Center(child: ImmichLoadingIndicator()),
           ],
         ),
       );

@@ -33,6 +33,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     final userId = ref.watch(authenticationProvider).userId;
     final selection = useState<Set<Asset>>({});
     final multiSelectEnabled = useState(false);
+    final isProcessing = useProcessingOverlay();
 
     useEffect(
       () {
@@ -77,7 +78,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
       if (returnPayload != null && returnPayload.selectedAssets.isNotEmpty) {
         // Check if there is new assets add
-        ImmichLoadingOverlayController.appLoader.show();
+        isProcessing.value = true;
 
         var addAssetsResult =
             await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
@@ -89,7 +90,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           ref.invalidate(albumDetailProvider(albumId));
         }
 
-        ImmichLoadingOverlayController.appLoader.hide();
+        isProcessing.value = false;
       }
     }
 
@@ -99,7 +100,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
 
       if (sharedUserIds != null) {
-        ImmichLoadingOverlayController.appLoader.show();
+        isProcessing.value = true;
 
         var isSuccess = await ref
             .watch(albumServiceProvider)
@@ -109,7 +110,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           ref.invalidate(albumDetailProvider(album.id));
         }
 
-        ImmichLoadingOverlayController.appLoader.hide();
+        isProcessing.value = false;
       }
     }
 
