@@ -56,16 +56,13 @@
     dispatch('go-back');
   };
 
-  const searchPeople = async (force: boolean) => {
+  const searchPeople = async () => {
+    console.log(name);
     if (name === '') {
       people = peopleCopy;
       return;
     }
-    if (!force) {
-      if (people.length < 20 && name.startsWith(searchWord)) {
-        return;
-      }
-    }
+
     const timeout = setTimeout(() => (isSearchingPeople = true), 100);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
@@ -179,31 +176,33 @@
           <FaceThumbnail {person} border circle selectable={false} thumbnailSize={180} />
         </div>
       </div>
+
+      <div
+        class="flex w-40 sm:w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-2 place-items-center"
+      >
+        <div class="w-fit">
+          <Icon path={mdiMagnify} size="24" />
+        </div>
+        <!-- svelte-ignore a11y-autofocus -->
+        <input
+          autofocus
+          class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
+          type="text"
+          placeholder="Search names"
+          bind:value={name}
+          on:input={() => searchPeople()}
+        />
+        {#if isSearchingPeople}
+          <div class="flex place-items-center">
+            <LoadingSpinner />
+          </div>
+        {/if}
+      </div>
+
       <div
         class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 pt-8 px-8 pb-10 dark:bg-immich-dark-gray"
         style:max-height={screenHeight - 200 - 200 + 'px'}
       >
-        <div class="flex w-40 sm:w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-2">
-          <button on:click={() => searchPeople(true)} class="w-fit">
-            <div>
-              <Icon path={mdiMagnify} />
-            </div>
-          </button>
-          <!-- svelte-ignore a11y-autofocus -->
-          <input
-            autofocus
-            class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
-            type="text"
-            placeholder="Search names"
-            bind:value={name}
-            on:input={() => searchPeople(false)}
-          />
-          {#if isSearchingPeople}
-            <div class="flex place-items-center">
-              <LoadingSpinner />
-            </div>
-          {/if}
-        </div>
         <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
           {#each unselectedPeople as person (person.id)}
             <FaceThumbnail {person} on:click={() => onSelect(person)} circle border selectable />
