@@ -414,6 +414,62 @@ class AssetApi {
     return null;
   }
 
+  /// Get all asset of a device that are in the database, ID only.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] deviceId (required):
+  Future<Response> getAllUserAssetsByDeviceIdWithHttpInfo(String deviceId,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/device/{deviceId}'
+      .replaceAll('{deviceId}', deviceId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get all asset of a device that are in the database, ID only.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] deviceId (required):
+  Future<List<String>?> getAllUserAssetsByDeviceId(String deviceId,) async {
+    final response = await getAllUserAssetsByDeviceIdWithHttpInfo(deviceId,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
+        .cast<String>()
+        .toList();
+
+    }
+    return null;
+  }
+
   /// Get a single asset's information
   ///
   /// Note: This method returns the HTTP [Response].
@@ -1211,7 +1267,7 @@ class AssetApi {
     return null;
   }
 
-  /// Get all asset of a device that are in the database, ID only.
+  /// Use /asset/device/:deviceId instead - Remove in 1.92 release
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -1244,7 +1300,7 @@ class AssetApi {
     );
   }
 
-  /// Get all asset of a device that are in the database, ID only.
+  /// Use /asset/device/:deviceId instead - Remove in 1.92 release
   ///
   /// Parameters:
   ///

@@ -390,6 +390,28 @@
   "shared_link_edit_show_meta": "Mostrar metadatos",
   "shared_link_edit_submit_button": "Actualizar enlace",
   "shared_link_empty": "No tienes ningún enlace compartido",
+  "shared_link_error_server_url_fetch": "No se puede obtener la URL del servidor",
+  "shared_link_expired": "Expirado",
+  "shared_link_expires_days": {
+    "one": "Expira en {} día",
+    "other": "Expira en {} días"
+  },
+  "shared_link_expires_hours": {
+    "one": "Expira en {} hora",
+    "other": "Expira en {} horas"
+  },
+  "shared_link_expires_minutes": {
+    "one": "Expira en {} minuto",
+    "other": "Expira en {} minutos"
+  },
+  "shared_link_expires_seconds": {
+    "one": "Expira en {} segundo",
+    "other": "Expira en {} segundos"
+  },
+  "shared_link_expires_never": "Sin expiración",
+  "shared_link_info_chip_download": "Descargar",
+  "shared_link_info_chip_metadata": "EXIF",
+  "shared_link_info_chip_upload": "Subir",
   "shared_link_manage_links": "Administrar enlaces compartidos",
   "share_done": "Hecho",
   "share_invite": "Invitar al álbum",

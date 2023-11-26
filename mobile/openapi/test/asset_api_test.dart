@@ -58,6 +58,13 @@ void main() {
       // TODO
     });
 
+    // Get all asset of a device that are in the database, ID only.
+    //
+    //Future<List<String>> getAllUserAssetsByDeviceId(String deviceId) async
+    test('test getAllUserAssetsByDeviceId', () async {
+      // TODO
+    });
+
     // Get a single asset's information
     //
     //Future<AssetResponseDto> getAssetById(String id, { String key }) async
@@ -120,7 +127,7 @@ void main() {
       // TODO
     });
 
-    // Get all asset of a device that are in the database, ID only.
+    // Use /asset/device/:deviceId instead - Remove in 1.92 release
     //
     //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
     test('test getUserAssetsByDeviceId', () async {

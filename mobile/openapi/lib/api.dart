@@ -83,7 +83,6 @@ part 'model/cq_mode.dart';
 part 'model/change_password_dto.dart';
 part 'model/check_existing_assets_dto.dart';
 part 'model/check_existing_assets_response_dto.dart';
-part 'model/cities_file.dart';
 part 'model/classification_config.dart';
 part 'model/colorspace.dart';
 part 'model/create_album_dto.dart';
