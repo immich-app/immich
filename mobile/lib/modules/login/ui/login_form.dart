@@ -48,7 +48,7 @@ class LoginForm extends HookConsumerWidget {
     /// Fetch the server login credential and enables oAuth login if necessary
     /// Returns true if successful, false otherwise
     Future<bool> getServerLoginCredential() async {
-      final serverUrl = serverEndpointController.text.trim();
+      final serverUrl = sanitizeUrl(serverEndpointController.text);
 
       // Guard empty URL
       if (serverUrl.isEmpty) {
@@ -144,7 +144,7 @@ class LoginForm extends HookConsumerWidget {
             await ref.read(authenticationProvider.notifier).login(
                   usernameController.text,
                   passwordController.text,
-                  serverEndpointController.text.trim(),
+                  sanitizeUrl(serverEndpointController.text),
                 );
         if (isAuthenticated) {
           // Resume backup (if enable) then navigate
@@ -181,7 +181,7 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         oAuthServerConfig = await oAuthService
-            .getOAuthServerConfig(serverEndpointController.text);
+            .getOAuthServerConfig(sanitizeUrl(serverEndpointController.text));
 
         isLoading.value = true;
       } catch (e) {
@@ -203,7 +203,7 @@ class LoginForm extends HookConsumerWidget {
               .watch(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
-                serverUrl: serverEndpointController.text,
+                serverUrl: sanitizeUrl(serverEndpointController.text),
               );
 
           if (isSuccess) {
@@ -299,7 +299,7 @@ class LoginForm extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              serverEndpointController.text,
+              sanitizeUrl(serverEndpointController.text),
               style: context.textTheme.displaySmall,
               textAlign: TextAlign.center,
             ),
