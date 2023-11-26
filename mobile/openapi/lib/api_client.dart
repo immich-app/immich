@@ -255,8 +255,6 @@ class ApiClient {
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':
           return CheckExistingAssetsResponseDto.fromJson(value);
-        case 'CitiesFile':
-          return CitiesFileTypeTransformer().decode(value);
         case 'ClassificationConfig':
           return ClassificationConfig.fromJson(value);
         case 'Colorspace':

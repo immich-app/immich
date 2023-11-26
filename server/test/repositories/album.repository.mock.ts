@@ -5,6 +5,7 @@ export const newAlbumRepositoryMock = (): jest.Mocked<IAlbumRepository> => {
     getById: jest.fn(),
     getByIds: jest.fn(),
     getByAssetId: jest.fn(),
+    getMetadataForIds: jest.fn(),
     getInvalidThumbnail: jest.fn(),
     getOwned: jest.fn(),
     getShared: jest.fn(),

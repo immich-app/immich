@@ -25,6 +25,18 @@ import {
 import { StorageCore } from '../storage';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
 
+/** look for a date from these tags (in order) */
+const EXIF_DATE_TAGS: Array<keyof Tags> = [
+  'SubSecDateTimeOriginal',
+  'DateTimeOriginal',
+  'SubSecCreateDate',
+  'CreationDate',
+  'CreateDate',
+  'SubSecMediaCreateDate',
+  'MediaCreateDate',
+  'DateTimeCreated',
+];
+
 interface DirectoryItem {
   Length?: number;
   Mime: string;
@@ -85,31 +97,24 @@ export class MetadataService {
     this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
-  async init(deleteCache = false) {
+  async init() {
     if (!this.subscription) {
       this.subscription = this.configCore.config$.subscribe(() => this.init());
     }
 
     const { reverseGeocoding } = await this.configCore.getConfig();
-    const { citiesFileOverride } = reverseGeocoding;
+    const { enabled } = reverseGeocoding;
 
-    if (!reverseGeocoding.enabled) {
+    if (!enabled) {
       return;
     }
 
     try {
-      if (deleteCache) {
-        await this.repository.deleteCache();
-      } else if (this.oldCities && this.oldCities === citiesFileOverride) {
-        return;
-      }
-
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.repository.init({ citiesFileOverride });
+      await this.repository.init();
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
-      this.logger.log(`Initialized local reverse geocoder with ${citiesFileOverride}`);
-      this.oldCities = citiesFileOverride;
+      this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
@@ -246,8 +251,9 @@ export class MetadataService {
     }
 
     try {
-      const { city, state, country } = await this.repository.reverseGeocode({ latitude, longitude });
-      Object.assign(exifData, { city, state, country });
+      const reverseGeocode = await this.repository.reverseGeocode({ latitude, longitude });
+      if (!reverseGeocode) return;
+      Object.assign(exifData, reverseGeocode);
     } catch (error: Error | any) {
       this.logger.warn(
         `Unable to run reverse geocoding due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
@@ -340,6 +346,15 @@ export class MetadataService {
     const stats = await this.storageRepository.stat(asset.originalPath);
     const mediaTags = await this.repository.getExifTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
+
+    // ensure date from sidecar is used if present
+    const hasDateOverride = !!this.getDateTimeOriginal(sidecarTags);
+    if (mediaTags && hasDateOverride) {
+      for (const tag of EXIF_DATE_TAGS) {
+        delete mediaTags[tag];
+      }
+    }
+
     const tags = { ...mediaTags, ...sidecarTags };
 
     this.logger.verbose('Exif Tags', tags);
@@ -350,19 +365,7 @@ export class MetadataService {
         assetId: asset.id,
         bitsPerSample: this.getBitsPerSample(tags),
         colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal:
-          exifDate(
-            firstDateTime(tags as Tags, [
-              'SubSecDateTimeOriginal',
-              'DateTimeOriginal',
-              'SubSecCreateDate',
-              'CreationDate',
-              'CreateDate',
-              'SubSecMediaCreateDate',
-              'MediaCreateDate',
-              'DateTimeCreated',
-            ]),
-          ) ?? asset.fileCreatedAt,
+        dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
         exposureTime: tags.ExposureTime ?? null,
@@ -385,6 +388,13 @@ export class MetadataService {
       },
       tags,
     };
+  }
+
+  private getDateTimeOriginal(tags: ImmichTags | Tags | null) {
+    if (!tags) {
+      return null;
+    }
+    return exifDate(firstDateTime(tags as Tags, EXIF_DATE_TAGS));
   }
 
   private getBitsPerSample(tags: ImmichTags): number | null {

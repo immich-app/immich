@@ -16,6 +16,7 @@ Method | HTTP request | Description
 [**downloadFile**](AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 [**emptyTrash**](AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
+[**getAllUserAssetsByDeviceId**](AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetStatistics**](AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
@@ -28,7 +29,7 @@ Method | HTTP request | Description
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
 [**getTimeBucket**](AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | Use /asset/device/:deviceId instead - Remove in 1.92 release
 [**restoreAssets**](AssetApi.md#restoreassets) | **POST** /asset/restore | 
 [**restoreTrash**](AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 [**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
@@ -431,6 +432,63 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**List<AssetResponseDto>**](AssetResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAllUserAssetsByDeviceId**
+> List<String> getAllUserAssetsByDeviceId(deviceId)
+
+
+
+Get all asset of a device that are in the database, ID only.
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final deviceId = deviceId_example; // String | 
+
+try {
+    final result = api_instance.getAllUserAssetsByDeviceId(deviceId);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getAllUserAssetsByDeviceId: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **deviceId** | **String**|  | 
+
+### Return type
+
+**List<String>**
 
 ### Authorization
 
@@ -1154,9 +1212,7 @@ Name | Type | Description  | Notes
 # **getUserAssetsByDeviceId**
 > List<String> getUserAssetsByDeviceId(deviceId)
 
-
-
-Get all asset of a device that are in the database, ID only.
+Use /asset/device/:deviceId instead - Remove in 1.92 release
 
 ### Example
 ```dart
@@ -1177,7 +1233,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final deviceId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final deviceId = deviceId_example; // String | 
 
 try {
     final result = api_instance.getUserAssetsByDeviceId(deviceId);

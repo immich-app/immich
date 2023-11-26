@@ -74,6 +74,3 @@ function parseTypeSenseConfig(): ConfigurationOptions {
 }
 
 export const typesenseConfig: ConfigurationOptions = parseTypeSenseConfig();
-
-export const REVERSE_GEOCODING_DUMP_DIRECTORY =
-  process.env.REVERSE_GEOCODING_DUMP_DIRECTORY || process.cwd() + '/.reverse-geocoding-dump/';

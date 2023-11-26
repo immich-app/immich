@@ -5,7 +5,7 @@ const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:3001/',
   secure: true,
   changeOrigin: true,
-  logLevel: 'debug',
+  logLevel: 'info',
   ws: true,
 };
 

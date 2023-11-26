@@ -375,10 +375,11 @@ export class PersonService {
 
     const results: BulkIdResponseDto[] = [];
 
-    for (const mergeId of mergeIds) {
-      const hasPermission = await this.access.hasPermission(authUser, Permission.PERSON_MERGE, mergeId);
+    const allowedIds = await this.access.checkAccess(authUser, Permission.PERSON_MERGE, mergeIds);
 
-      if (!hasPermission) {
+    for (const mergeId of mergeIds) {
+      const hasAccess = allowedIds.has(mergeId);
+      if (!hasAccess) {
         results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
