@@ -155,18 +155,35 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
 //       They should be replaced with native Set operations, when they are added to the language.
 //       Proposal reference: https://github.com/tc39/proposal-set-methods
 
-export const setUnion = <T>(setA: Set<T>, setB: Set<T>): Set<T> => {
-  const union = new Set(setA);
-  for (const elem of setB) {
-    union.add(elem);
+export const setUnion = <T>(...sets: Set<T>[]): Set<T> => {
+  const union = new Set(sets[0]);
+  for (const set of sets.slice(1)) {
+    for (const elem of set) {
+      union.add(elem);
+    }
   }
   return union;
 };
 
-export const setDifference = <T>(setA: Set<T>, setB: Set<T>): Set<T> => {
+export const setDifference = <T>(setA: Set<T>, ...sets: Set<T>[]): Set<T> => {
   const difference = new Set(setA);
-  for (const elem of setB) {
-    difference.delete(elem);
+  for (const set of sets) {
+    for (const elem of set) {
+      difference.delete(elem);
+    }
   }
   return difference;
+};
+
+export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
+  for (const elem of subset) {
+    if (!set.has(elem)) {
+      return false;
+    }
+  }
+  return true;
+};
+
+export const setIsEqual = <T>(setA: Set<T>, setB: Set<T>): boolean => {
+  return setA.size === setB.size && setIsSuperset(setA, setB);
 };

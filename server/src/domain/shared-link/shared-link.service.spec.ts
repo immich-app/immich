@@ -11,7 +11,6 @@ import {
   sharedLinkResponseStub,
   sharedLinkStub,
 } from '@test';
-import { when } from 'jest-when';
 import _ from 'lodash';
 import { AssetIdErrorReason } from '../asset';
 import { ICryptoRepository, ISharedLinkRepository } from '../repositories';
@@ -109,7 +108,6 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should require asset ownership to make an individual shared link', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
       await expect(
         sut.create(authStub.admin, { type: SharedLinkType.INDIVIDUAL, assetIds: ['asset-1'] }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -140,7 +138,7 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should create an individual shared link', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
       shareMock.create.mockResolvedValue(sharedLinkStub.individual);
 
       await sut.create(authStub.admin, {
@@ -151,7 +149,7 @@ describe(SharedLinkService.name, () => {
         allowUpload: true,
       });
 
-      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetStub.image.id);
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set([assetStub.image.id]));
       expect(shareMock.create).toHaveBeenCalledWith({
         type: SharedLinkType.INDIVIDUAL,
         userId: authStub.admin.id,
@@ -215,9 +213,7 @@ describe(SharedLinkService.name, () => {
     it('should add assets to a shared link', async () => {
       shareMock.get.mockResolvedValue(_.cloneDeep(sharedLinkStub.individual));
       shareMock.create.mockResolvedValue(sharedLinkStub.individual);
-
-      when(accessMock.asset.hasOwnerAccess).calledWith(authStub.admin.id, 'asset-2').mockResolvedValue(false);
-      when(accessMock.asset.hasOwnerAccess).calledWith(authStub.admin.id, 'asset-3').mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-3']));
 
       await expect(
         sut.addAssets(authStub.admin, 'link-1', { assetIds: [assetStub.image.id, 'asset-2', 'asset-3'] }),
@@ -227,7 +223,7 @@ describe(SharedLinkService.name, () => {
         { assetId: 'asset-3', success: true },
       ]);
 
-      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledTimes(2);
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledTimes(1);
       expect(shareMock.update).toHaveBeenCalledWith({
         ...sharedLinkStub.individual,
         assets: [assetStub.image, { id: 'asset-3' }],

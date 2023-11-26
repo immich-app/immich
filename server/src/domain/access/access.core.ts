@@ -1,6 +1,6 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
-import { setDifference, setUnion } from '../domain.util';
+import { setDifference, setIsEqual, setUnion } from '../domain.util';
 import { IAccessRepository } from '../repositories';
 
 export enum Permission {
@@ -76,7 +76,7 @@ export class AccessCore {
   async requirePermission(authUser: AuthUserDto, permission: Permission, ids: string[] | string) {
     ids = Array.isArray(ids) ? ids : [ids];
     const allowedIds = await this.checkAccess(authUser, permission, ids);
-    if (new Set(ids).size !== allowedIds.size) {
+    if (!setIsEqual(new Set(ids), allowedIds)) {
       throw new BadRequestException(`Not found or no ${permission} access`);
     }
   }
@@ -106,8 +106,23 @@ export class AccessCore {
     }
 
     switch (permission) {
+      case Permission.ASSET_READ:
+        return await this.repository.asset.checkSharedLinkAccess(sharedLinkId, ids);
+
+      case Permission.ASSET_VIEW:
+        return await this.repository.asset.checkSharedLinkAccess(sharedLinkId, ids);
+
+      case Permission.ASSET_DOWNLOAD:
+        return !!authUser.isAllowDownload
+          ? await this.repository.asset.checkSharedLinkAccess(sharedLinkId, ids)
+          : new Set();
+
       case Permission.ASSET_UPLOAD:
         return authUser.isAllowUpload ? ids : new Set();
+
+      case Permission.ASSET_SHARE:
+        // TODO: fix this to not use authUser.id for shared link access control
+        return await this.repository.asset.checkOwnerAccess(authUser.id, ids);
 
       case Permission.ALBUM_READ:
         return await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids);
@@ -116,46 +131,59 @@ export class AccessCore {
         return !!authUser.isAllowDownload
           ? await this.repository.album.checkSharedLinkAccess(sharedLinkId, ids)
           : new Set();
-    }
-
-    const allowedIds = new Set();
-    for (const id of ids) {
-      const hasAccess = await this.hasSharedLinkAccess(authUser, permission, id);
-      if (hasAccess) {
-        allowedIds.add(id);
-      }
-    }
-    return allowedIds;
-  }
-
-  // TODO: Migrate logic to checkAccessSharedLink to evaluate permissions in bulk.
-  private async hasSharedLinkAccess(authUser: AuthUserDto, permission: Permission, id: string) {
-    const sharedLinkId = authUser.sharedLinkId;
-    if (!sharedLinkId) {
-      return false;
-    }
-
-    switch (permission) {
-      case Permission.ASSET_READ:
-        return this.repository.asset.hasSharedLinkAccess(sharedLinkId, id);
-
-      case Permission.ASSET_VIEW:
-        return await this.repository.asset.hasSharedLinkAccess(sharedLinkId, id);
-
-      case Permission.ASSET_DOWNLOAD:
-        return !!authUser.isAllowDownload && (await this.repository.asset.hasSharedLinkAccess(sharedLinkId, id));
-
-      case Permission.ASSET_SHARE:
-        // TODO: fix this to not use authUser.id for shared link access control
-        return this.repository.asset.hasOwnerAccess(authUser.id, id);
 
       default:
-        return false;
+        return new Set();
     }
   }
 
   private async checkAccessOther(authUser: AuthUserDto, permission: Permission, ids: Set<string>) {
     switch (permission) {
+      case Permission.ASSET_READ: {
+        const isOwner = await this.repository.asset.checkOwnerAccess(authUser.id, ids);
+        const isAlbum = await this.repository.asset.checkAlbumAccess(authUser.id, setDifference(ids, isOwner));
+        const isPartner = await this.repository.asset.checkPartnerAccess(
+          authUser.id,
+          setDifference(ids, isOwner, isAlbum),
+        );
+        return setUnion(isOwner, isAlbum, isPartner);
+      }
+
+      case Permission.ASSET_SHARE: {
+        const isOwner = await this.repository.asset.checkOwnerAccess(authUser.id, ids);
+        const isPartner = await this.repository.asset.checkPartnerAccess(authUser.id, setDifference(ids, isOwner));
+        return setUnion(isOwner, isPartner);
+      }
+
+      case Permission.ASSET_VIEW: {
+        const isOwner = await this.repository.asset.checkOwnerAccess(authUser.id, ids);
+        const isAlbum = await this.repository.asset.checkAlbumAccess(authUser.id, setDifference(ids, isOwner));
+        const isPartner = await this.repository.asset.checkPartnerAccess(
+          authUser.id,
+          setDifference(ids, isOwner, isAlbum),
+        );
+        return setUnion(isOwner, isAlbum, isPartner);
+      }
+
+      case Permission.ASSET_DOWNLOAD: {
+        const isOwner = await this.repository.asset.checkOwnerAccess(authUser.id, ids);
+        const isAlbum = await this.repository.asset.checkAlbumAccess(authUser.id, setDifference(ids, isOwner));
+        const isPartner = await this.repository.asset.checkPartnerAccess(
+          authUser.id,
+          setDifference(ids, isOwner, isAlbum),
+        );
+        return setUnion(isOwner, isAlbum, isPartner);
+      }
+
+      case Permission.ASSET_UPDATE:
+        return await this.repository.asset.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.ASSET_DELETE:
+        return await this.repository.asset.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.ASSET_RESTORE:
+        return await this.repository.asset.checkOwnerAccess(authUser.id, ids);
+
       case Permission.ALBUM_READ: {
         const isOwner = await this.repository.album.checkOwnerAccess(authUser.id, ids);
         const isShared = await this.repository.album.checkSharedAlbumAccess(authUser.id, setDifference(ids, isOwner));
@@ -163,13 +191,13 @@ export class AccessCore {
       }
 
       case Permission.ALBUM_UPDATE:
-        return this.repository.album.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.album.checkOwnerAccess(authUser.id, ids);
 
       case Permission.ALBUM_DELETE:
-        return this.repository.album.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.album.checkOwnerAccess(authUser.id, ids);
 
       case Permission.ALBUM_SHARE:
-        return this.repository.album.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.album.checkOwnerAccess(authUser.id, ids);
 
       case Permission.ALBUM_DOWNLOAD: {
         const isOwner = await this.repository.album.checkOwnerAccess(authUser.id, ids);
@@ -178,16 +206,16 @@ export class AccessCore {
       }
 
       case Permission.ALBUM_REMOVE_ASSET:
-        return this.repository.album.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.album.checkOwnerAccess(authUser.id, ids);
 
       case Permission.ASSET_UPLOAD:
-        return this.repository.library.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.library.checkOwnerAccess(authUser.id, ids);
 
       case Permission.ARCHIVE_READ:
         return ids.has(authUser.id) ? new Set([authUser.id]) : new Set();
 
       case Permission.AUTH_DEVICE_DELETE:
-        return this.repository.authDevice.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.authDevice.checkOwnerAccess(authUser.id, ids);
 
       case Permission.TIMELINE_READ: {
         const isOwner = ids.has(authUser.id) ? new Set([authUser.id]) : new Set<string>();
@@ -205,22 +233,22 @@ export class AccessCore {
       }
 
       case Permission.LIBRARY_UPDATE:
-        return this.repository.library.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.library.checkOwnerAccess(authUser.id, ids);
 
       case Permission.LIBRARY_DELETE:
-        return this.repository.library.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.library.checkOwnerAccess(authUser.id, ids);
 
       case Permission.PERSON_READ:
-        return this.repository.person.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.person.checkOwnerAccess(authUser.id, ids);
 
       case Permission.PERSON_WRITE:
-        return this.repository.person.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.person.checkOwnerAccess(authUser.id, ids);
 
       case Permission.PERSON_MERGE:
-        return this.repository.person.checkOwnerAccess(authUser.id, ids);
+        return await this.repository.person.checkOwnerAccess(authUser.id, ids);
 
       case Permission.PARTNER_UPDATE:
-        return this.repository.partner.checkUpdateAccess(authUser.id, ids);
+        return await this.repository.partner.checkUpdateAccess(authUser.id, ids);
     }
 
     const allowedIds = new Set();
@@ -245,41 +273,6 @@ export class AccessCore {
         return (
           (await this.repository.activity.hasOwnerAccess(authUser.id, id)) ||
           (await this.repository.activity.hasAlbumOwnerAccess(authUser.id, id))
-        );
-
-      case Permission.ASSET_READ:
-        return (
-          (await this.repository.asset.hasOwnerAccess(authUser.id, id)) ||
-          (await this.repository.asset.hasAlbumAccess(authUser.id, id)) ||
-          (await this.repository.asset.hasPartnerAccess(authUser.id, id))
-        );
-      case Permission.ASSET_UPDATE:
-        return this.repository.asset.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ASSET_DELETE:
-        return this.repository.asset.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ASSET_RESTORE:
-        return this.repository.asset.hasOwnerAccess(authUser.id, id);
-
-      case Permission.ASSET_SHARE:
-        return (
-          (await this.repository.asset.hasOwnerAccess(authUser.id, id)) ||
-          (await this.repository.asset.hasPartnerAccess(authUser.id, id))
-        );
-
-      case Permission.ASSET_VIEW:
-        return (
-          (await this.repository.asset.hasOwnerAccess(authUser.id, id)) ||
-          (await this.repository.asset.hasAlbumAccess(authUser.id, id)) ||
-          (await this.repository.asset.hasPartnerAccess(authUser.id, id))
-        );
-
-      case Permission.ASSET_DOWNLOAD:
-        return (
-          (await this.repository.asset.hasOwnerAccess(authUser.id, id)) ||
-          (await this.repository.asset.hasAlbumAccess(authUser.id, id)) ||
-          (await this.repository.asset.hasPartnerAccess(authUser.id, id))
         );
 
       default:
