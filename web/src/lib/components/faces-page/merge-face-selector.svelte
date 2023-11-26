@@ -25,6 +25,7 @@
   let screenHeight: number;
   let isShowConfirmation = false;
   let name = '';
+  let searchWord: string;
   let isSearchingPeople = false;
   let dispatch = createEventDispatcher();
 
@@ -32,18 +33,6 @@
   $: unselectedPeople = people.filter(
     (source) => !selectedPeople.some((selected) => selected.id === source.id) && source.id !== person.id,
   );
-  $: {
-    if (people) {
-      people = !name
-        ? peopleCopy
-        : people
-            .filter((person: PersonResponseDto) => {
-              const nameParts = person.name.split(' ');
-              return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
-            })
-            .slice(0, 10);
-    }
-  }
 
   onMount(async () => {
     const { data } = await api.personApi.getAllPeople({ withHidden: false });
@@ -55,17 +44,28 @@
     dispatch('go-back');
   };
 
-  const searchPeople = async () => {
-    console.log(name);
+  const searchPeople = async (force: boolean) => {
     if (name === '') {
       people = peopleCopy;
       return;
+    }
+    if (!force) {
+      if (people.length < 20 && name.startsWith(searchWord)) {
+        people = peopleCopy
+          .filter((person: PersonResponseDto) => {
+            const nameParts = person.name.split(' ');
+            return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
+          })
+          .slice(0, 10);
+        return;
+      }
     }
 
     const timeout = setTimeout(() => (isSearchingPeople = true), 100);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
+      searchWord = name;
     } catch (error) {
       handleError(error, "Can't search people");
     } finally {
@@ -178,9 +178,11 @@
       <div
         class="flex w-40 sm:w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-2 place-items-center"
       >
-        <div class="w-fit">
-          <Icon path={mdiMagnify} size="24" />
-        </div>
+        <button on:click={() => searchPeople(true)}>
+          <div class="w-fit">
+            <Icon path={mdiMagnify} size="24" />
+          </div>
+        </button>
         <!-- svelte-ignore a11y-autofocus -->
         <input
           autofocus
@@ -188,7 +190,7 @@
           type="text"
           placeholder="Search names"
           bind:value={name}
-          on:input={() => searchPeople()}
+          on:input={() => searchPeople(false)}
         />
         {#if isSearchingPeople}
           <div class="flex place-items-center">
