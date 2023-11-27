@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
-  "minimumReleaseAge": 5,
+  "minimumReleaseAge": "5",
   "packageRules": [
     {
       "matchFileNames": ["cli/**"],
