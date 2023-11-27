@@ -377,7 +377,7 @@ describe(PersonService.name, () => {
 
   describe('reassignFaces', () => {
     it('should throw an error if user has no access to the person', async () => {
-      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set());
 
       await expect(
         sut.reassignFaces(authStub.admin, personStub.noName.id, {
@@ -387,7 +387,7 @@ describe(PersonService.name, () => {
       expect(jobMock.queue).not.toHaveBeenCalledWith();
     });
     it('should reassign a face', async () => {
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.withName.id]));
       personMock.getById.mockResolvedValue(personStub.withName);
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       personMock.reassignFace.mockResolvedValue(1);
@@ -447,8 +447,8 @@ describe(PersonService.name, () => {
 
   describe('reassignFacesById', () => {
     it('should create a new person', async () => {
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
+      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
@@ -473,7 +473,7 @@ describe(PersonService.name, () => {
     it('should create a new person', async () => {
       personMock.create.mockResolvedValue(personStub.primaryPerson);
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(true);
+      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
 
       await expect(sut.createPerson(authStub.admin)).resolves.toBe(personStub.primaryPerson);
     });

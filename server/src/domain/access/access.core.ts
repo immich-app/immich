@@ -213,22 +213,22 @@ export class AccessCore {
         return this.repository.library.checkOwnerAccess(authUser.id, ids);
 
       case Permission.PERSON_READ:
-        return this.repository.person.hasOwnerAccess(authUser.id, id);
+        return this.repository.person.checkOwnerAccess(authUser.id, ids);
 
       case Permission.PERSON_WRITE:
-        return this.repository.person.hasOwnerAccess(authUser.id, id);
+        return this.repository.person.checkOwnerAccess(authUser.id, ids);
 
       case Permission.PERSON_MERGE:
-        return this.repository.person.hasOwnerAccess(authUser.id, id);
+        return this.repository.person.checkOwnerAccess(authUser.id, ids);
 
       case Permission.PERSON_CREATE:
-        return this.repository.person.hasFaceOwnerAccess(authUser.id, id);
+        return this.repository.person.hasFaceOwnerAccess(authUser.id, ids);
 
       case Permission.PERSON_REASSIGN:
-        return this.repository.person.hasFaceOwnerAccess(authUser.id, id);
+        return this.repository.person.hasFaceOwnerAccess(authUser.id, ids);
 
       case Permission.PARTNER_UPDATE:
-        return this.repository.partner.hasUpdateAccess(authUser.id, id);
+        return this.repository.partner.checkUpdateAccess(authUser.id, ids);
     }
 
     const allowedIds = new Set();

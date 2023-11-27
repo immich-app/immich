@@ -33,7 +33,7 @@ export interface IAccessRepository {
   };
 
   person: {
-    hasFaceOwnerAccess(userId: string, assetFaceId: string): Promise<boolean>;
+    hasFaceOwnerAccess(userId: string, assetFaceId: Set<string>): Promise<Set<string>>;
     checkOwnerAccess(userId: string, personIds: Set<string>): Promise<Set<string>>;
   };
 

@@ -307,15 +307,21 @@ export class AccessRepository implements IAccessRepository {
         })
         .then((persons) => new Set(persons.map((person) => person.id)));
     },
-    hasFaceOwnerAccess: (userId: string, assetFaceId: string): Promise<boolean> => {
-      return this.assetFaceRepository.exist({
-        where: {
-          id: assetFaceId,
-          asset: {
-            ownerId: userId,
+    hasFaceOwnerAccess: async (userId: string, assetFaceIds: Set<string>): Promise<Set<string>> => {
+      if (assetFaceIds.size === 0) {
+        return new Set();
+      }
+      return this.assetFaceRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...assetFaceIds]),
+            asset: {
+              ownerId: userId,
+            },
           },
-        },
-      });
+        })
+        .then((faces) => new Set(faces.map((face) => face.id)));
     },
   };
 
