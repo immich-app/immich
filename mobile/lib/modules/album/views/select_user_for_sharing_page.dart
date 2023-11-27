@@ -166,7 +166,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: suggestedShareUsers.scaffoldBodyWhen(
+      body: suggestedShareUsers.widgetWhen(
         onData: (users) {
           return buildUserList(users);
         },

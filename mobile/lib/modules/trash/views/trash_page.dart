@@ -235,7 +235,7 @@ class TrashPage extends HookConsumerWidget {
         orElse: () => buildAppBar("?"),
         data: (data) => buildAppBar(data.totalAssets.toString()),
       ),
-      body: trashedAssets.scaffoldBodyWhen(
+      body: trashedAssets.widgetWhen(
         onData: (data) => data.isEmpty
             ? Center(
                 child: Text('trash_page_no_assets'.tr()),

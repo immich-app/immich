@@ -137,7 +137,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: suggestedShareUsers.scaffoldBodyWhen(
+      body: suggestedShareUsers.widgetWhen(
         onData: (users) {
           for (var sharedUsers in album.sharedUsers) {
             users.removeWhere(

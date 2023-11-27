@@ -260,7 +260,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
       ),
-      body: album.scaffoldBodyWhen(
+      body: album.widgetWhen(
         onData: (data) => WillPopScope(
           onWillPop: onWillPop,
           child: GestureDetector(

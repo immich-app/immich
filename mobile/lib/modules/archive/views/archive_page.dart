@@ -88,7 +88,7 @@ class ArchivePage extends HookConsumerWidget {
         data: (data) => buildAppBar(data.totalAssets.toString()),
         orElse: () => buildAppBar("?"),
       ),
-      body: archivedAssets.scaffoldBodyWhen(
+      body: archivedAssets.widgetWhen(
         onData: (data) => data.isEmpty
             ? Center(
                 child: Text('archive_page_no_archived_assets'.tr()),

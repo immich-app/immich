@@ -231,7 +231,7 @@ class ActivitiesPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(appBarTitle)),
-      body: activities.scaffoldBodyWhen(
+      body: activities.widgetWhen(
         onData: (data) {
           final liked = data.firstWhereOrNull(
             (a) =>

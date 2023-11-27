@@ -84,7 +84,7 @@ class FavoritesPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: buildAppBar(),
-      body: ref.watch(favoriteAssetsProvider).scaffoldBodyWhen(
+      body: ref.watch(favoriteAssetsProvider).widgetWhen(
             onData: (data) => data.isEmpty
                 ? Center(
                     child: Text('favorites_page_no_favorites'.tr()),

@@ -86,7 +86,7 @@ class AssetSelectionPage extends HookConsumerWidget {
             ),
         ],
       ),
-      body: renderList.scaffoldBodyWhen(
+      body: renderList.widgetWhen(
         onData: (data) => buildBody(data),
       ),
     );

@@ -71,7 +71,7 @@ class PartnerDetailPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: assets.scaffoldBodyWhen(
+      body: assets.widgetWhen(
         onData: (renderList) => renderList.isEmpty
             ? Padding(
                 padding: const EdgeInsets.all(16),
