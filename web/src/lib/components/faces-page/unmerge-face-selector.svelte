@@ -24,6 +24,10 @@
   let hasSelection = false;
   let screenHeight: number;
 
+  $: unselectedPeople = selectedPerson
+    ? people.filter((person) => selectedPerson && person.id !== selectedPerson.id)
+    : people;
+
   let dispatch = createEventDispatcher();
 
   const selectedPeople: AssetFaceUpdateItem[] = [];
@@ -174,7 +178,13 @@
           </div>
         </div>
       {/if}
-      <PeopleList {people} {screenHeight} on:select={({ detail }) => handleSelectedPerson(detail)} />
+      <PeopleList
+        people={unselectedPeople}
+        peopleCopy={unselectedPeople}
+        unselectedPeople={selectedPerson ? [selectedPerson] : []}
+        {screenHeight}
+        on:select={({ detail }) => handleSelectedPerson(detail)}
+      />
     </section>
   </section>
 </section>
