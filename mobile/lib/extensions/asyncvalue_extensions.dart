@@ -9,8 +9,8 @@ extension LogOnError<T> on AsyncValue<T> {
 
   Widget widgetWhen({
     Widget Function()? onLoading,
-    required Widget Function(T data) onData,
     Widget Function(Object? error, StackTrace? stack)? onError,
+    required Widget Function(T data) onData,
   }) {
     if (isLoading) {
       return onLoading?.call() ??
