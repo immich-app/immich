@@ -3,9 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { APIKeyEntity } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
-export class APIKeyRepository implements IKeyRepository {
+export class ApiKeyRepository implements IKeyRepository {
   constructor(@InjectRepository(APIKeyEntity) private repository: Repository<APIKeyEntity>) {}
 
   async create(dto: Partial<APIKeyEntity>): Promise<APIKeyEntity> {
@@ -21,6 +22,7 @@ export class APIKeyRepository implements IKeyRepository {
     await this.repository.delete({ userId, id });
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   getKey(hashedToken: string): Promise<APIKeyEntity | null> {
     return this.repository.findOne({
       select: {
@@ -35,10 +37,12 @@ export class APIKeyRepository implements IKeyRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   getById(userId: string, id: string): Promise<APIKeyEntity | null> {
     return this.repository.findOne({ where: { userId, id } });
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   getByUserId(userId: string): Promise<APIKeyEntity[]> {
     return this.repository.find({ where: { userId }, order: { createdAt: 'DESC' } });
   }

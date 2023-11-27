@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MoveEntity, PathType } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
 export class MoveRepository implements IMoveRepository {
@@ -12,6 +13,7 @@ export class MoveRepository implements IMoveRepository {
     return this.repository.save(entity);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByEntity(entityId: string, pathType: PathType): Promise<MoveEntity | null> {
     return this.repository.findOne({ where: { entityId, pathType } });
   }

@@ -3,11 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SharedLinkEntity } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
 export class SharedLinkRepository implements ISharedLinkRepository {
   constructor(@InjectRepository(SharedLinkEntity) private repository: Repository<SharedLinkEntity>) {}
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   get(userId: string, id: string): Promise<SharedLinkEntity | null> {
     return this.repository.findOne({
       where: {
@@ -39,6 +41,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getAll(userId: string): Promise<SharedLinkEntity[]> {
     return this.repository.find({
       where: {
@@ -56,6 +59,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.BUFFER] })
   async getByKey(key: Buffer): Promise<SharedLinkEntity | null> {
     return await this.repository.findOne({
       where: {
