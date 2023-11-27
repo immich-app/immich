@@ -7,13 +7,14 @@
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
+  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 
   export let link: SharedLinkResponseDto;
 
   let expirationCountdown: luxon.DurationObjectUnits;
   const dispatch = createEventDispatcher();
 
-  const getAssetInfo = async (): Promise<AssetResponseDto> => {
+  const getThumbnail = async (): Promise<AssetResponseDto> => {
     let assetId = '';
 
     if (link.album?.albumThumbnailAssetId) {
@@ -60,18 +61,28 @@
   class="flex w-full gap-4 border-b border-gray-200 py-4 transition-all hover:border-immich-primary dark:border-gray-600 dark:text-immich-gray dark:hover:border-immich-dark-primary"
 >
   <div>
-    {#await getAssetInfo()}
-      <LoadingSpinner />
-    {:then asset}
+    {#if link?.album?.albumThumbnailAssetId || link.assets.length > 0}
+      {#await getThumbnail()}
+        <LoadingSpinner />
+      {:then asset}
+        <img
+          id={asset.id}
+          src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
+          alt={asset.id}
+          class="h-[100px] w-[100px] rounded-lg object-cover"
+          loading="lazy"
+          draggable="false"
+        />
+      {/await}
+    {:else}
       <img
-        id={asset.id}
-        src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
-        alt={asset.id}
+        src={noThumbnailUrl}
+        alt={'Album without assets'}
         class="h-[100px] w-[100px] rounded-lg object-cover"
         loading="lazy"
         draggable="false"
       />
-    {/await}
+    {/if}
   </div>
 
   <div class="flex flex-col justify-between">

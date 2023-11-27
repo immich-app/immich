@@ -119,15 +119,19 @@ export class SharedLinkService {
       throw new BadRequestException('Invalid shared link type');
     }
 
+    const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
+    const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
+    const allowedAssetIds = await this.access.checkAccess(authUser, Permission.ASSET_SHARE, notPresentAssetIds);
+
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const hasAsset = sharedLink.assets.find((asset) => asset.id === assetId);
+      const hasAsset = existingAssetIds.has(assetId);
       if (hasAsset) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.DUPLICATE });
         continue;
       }
 
-      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_SHARE, assetId);
+      const hasAccess = allowedAssetIds.has(assetId);
       if (!hasAccess) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NO_PERMISSION });
         continue;

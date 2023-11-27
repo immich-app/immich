@@ -347,14 +347,14 @@ describe(AssetService.name, () => {
 
   describe('getTimeBucket', () => {
     it('should return the assets for a album time bucket if user has album.read', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
       assetMock.getTimeBucket.mockResolvedValue([assetStub.image]);
 
       await expect(
         sut.getTimeBucket(authStub.admin, { size: TimeBucketSize.DAY, timeBucket: 'bucket', albumId: 'album-id' }),
       ).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'asset-id' })]));
 
-      expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-id');
+      expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['album-id']));
       expect(assetMock.getTimeBucket).toBeCalledWith('bucket', {
         size: TimeBucketSize.DAY,
         timeBucket: 'bucket',
@@ -546,7 +546,7 @@ describe(AssetService.name, () => {
     });
 
     it('should return a list of archives (albumId)', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-1']));
       assetMock.getByAlbumId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
@@ -554,12 +554,12 @@ describe(AssetService.name, () => {
 
       await expect(sut.getDownloadInfo(authStub.admin, { albumId: 'album-1' })).resolves.toEqual(downloadResponse);
 
-      expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-1');
+      expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['album-1']));
       expect(assetMock.getByAlbumId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, 'album-1');
     });
 
     it('should return a list of archives (userId)', async () => {
-      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.id]));
       assetMock.getByUserId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
@@ -575,7 +575,7 @@ describe(AssetService.name, () => {
     });
 
     it('should split archives by size', async () => {
-      accessMock.library.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.id]));
 
       assetMock.getByUserId.mockResolvedValue({
         items: [
@@ -1066,5 +1066,19 @@ describe(AssetService.name, () => {
         { stackParentId: 'new' },
       );
     });
+  });
+
+  it('get assets by device id', async () => {
+    const assets = [assetStub.image, assetStub.image1];
+
+    assetMock.getAllByDeviceId.mockImplementation(() =>
+      Promise.resolve<string[]>(Array.from(assets.map((asset) => asset.deviceAssetId))),
+    );
+
+    const deviceId = 'device-id';
+    const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
+
+    expect(result.length).toEqual(2);
+    expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
   });
 });

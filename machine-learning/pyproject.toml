@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "machine-learning"
-version = "1.87.0"
+version = "1.88.2"
 description = ""
 authors = ["Hau Tran <alex.tran1502@gmail.com>"]
 readme = "README.md"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "~3.11"
 torch = [
     {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=2.1.0", source = "pypi"},
     {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.1.0", source = "pytorch-cpu"}

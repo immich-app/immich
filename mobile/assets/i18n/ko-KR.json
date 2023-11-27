@@ -119,7 +119,7 @@
   "cache_settings_tile_title": "로컬 저장소",
   "cache_settings_title": "캐시 설정",
   "change_password_form_confirm_password": "비밀번호 확인",
-  "change_password_form_description": "{firstName} {lastName} 님, 안녕하세요.\n\n시스템에 처음 로그인했거나 비밀번호 변경 요청이 있었습니다. 아래에 새 비밀번호를 입력하세요.",
+  "change_password_form_description": "{name} 님, 안녕하세요.\n\n시스템에 처음 로그인했거나 비밀번호 변경 요청이 있었습니다. 아래에 새 비밀번호를 입력하세요.",
   "change_password_form_new_password": "새 비밀번호",
   "change_password_form_password_mismatch": "비밀번호가 일치하지 않습니다",
   "change_password_form_reenter_new_password": "새 비밀번호 재입력",

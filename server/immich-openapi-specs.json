@@ -1219,6 +1219,51 @@
         ]
       }
     },
+    "/asset/device/{deviceId}": {
+      "get": {
+        "description": "Get all asset of a device that are in the database, ID only.",
+        "operationId": "getAllUserAssetsByDeviceId",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/asset/download/archive": {
       "post": {
         "operationId": "downloadArchive",
@@ -2281,7 +2326,7 @@
     },
     "/asset/{deviceId}": {
       "get": {
-        "description": "Get all asset of a device that are in the database, ID only.",
+        "deprecated": true,
         "operationId": "getUserAssetsByDeviceId",
         "parameters": [
           {
@@ -2289,7 +2334,6 @@
             "required": true,
             "in": "path",
             "schema": {
-              "format": "uuid",
               "type": "string"
             }
           }
@@ -2320,6 +2364,7 @@
             "api_key": []
           }
         ],
+        "summary": "Use /asset/device/:deviceId instead - Remove in 1.92 release",
         "tags": [
           "Asset"
         ]
@@ -6234,7 +6279,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.87.0",
+    "version": "1.88.2",
     "contact": {}
   },
   "tags": [],
@@ -7233,15 +7278,6 @@
           "existingIds"
         ],
         "type": "object"
-      },
-      "CitiesFile": {
-        "enum": [
-          "cities15000",
-          "cities5000",
-          "cities1000",
-          "cities500"
-        ],
-        "type": "string"
       },
       "ClassificationConfig": {
         "properties": {
@@ -9405,15 +9441,11 @@
       },
       "SystemConfigReverseGeocodingDto": {
         "properties": {
-          "citiesFileOverride": {
-            "$ref": "#/components/schemas/CitiesFile"
-          },
           "enabled": {
             "type": "boolean"
           }
         },
         "required": [
-          "citiesFileOverride",
           "enabled"
         ],
         "type": "object"

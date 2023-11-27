@@ -76,13 +76,13 @@ class PersonResultPage extends HookConsumerWidget {
                 children: [
                   Text(
                     'search_page_person_add_name_title',
-                    style: context.textTheme.titleSmall?.copyWith(
-                      color: context.themeData.colorScheme.secondary,
+                    style: context.textTheme.titleMedium?.copyWith(
+                      color: context.primaryColor,
                     ),
                   ).tr(),
                   Text(
                     'search_page_person_add_name_subtitle',
-                    style: context.textTheme.labelSmall,
+                    style: context.textTheme.labelLarge,
                   ).tr(),
                 ],
               )

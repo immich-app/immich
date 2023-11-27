@@ -5,10 +5,10 @@
   export let option: Sort;
 
   const handleSort = () => {
-    if (albumViewSettings === option.sortTitle) {
+    if (albumViewSettings === option.title) {
       option.sortDesc = !option.sortDesc;
     } else {
-      albumViewSettings = option.sortTitle;
+      albumViewSettings = option.title;
     }
   };
 </script>
@@ -18,12 +18,12 @@
     class="rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
     on:click={() => handleSort()}
   >
-    {#if albumViewSettings === option.sortTitle}
+    {#if albumViewSettings === option.title}
       {#if option.sortDesc}
         &#8595;
       {:else}
         &#8593;
       {/if}
-    {/if}{option.table}</button
+    {/if}{option.title}</button
   ></th
 >

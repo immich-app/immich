@@ -42,6 +42,9 @@ class BackupService {
 
     try {
       return await _apiService.assetApi.getUserAssetsByDeviceId(deviceId);
+
+      // TODO! Start using this in 1.92.0
+      // return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
@@ -275,13 +278,6 @@ class BackupService {
 
           req.files.add(assetRawUploadData);
 
-          if (entity.isLivePhoto) {
-            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
-            if (livePhotoRawUploadData != null) {
-              req.files.add(livePhotoRawUploadData);
-            }
-          }
-
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,
@@ -295,6 +291,29 @@ class BackupService {
 
           var response =
               await httpClient.send(req, cancellationToken: cancelToken);
+
+          // Send live photo separately
+          if (entity.isLivePhoto) {
+            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
+            if (livePhotoRawUploadData != null) {
+              var livePhotoReq = MultipartRequest(
+                req.method,
+                req.url,
+                onProgress: req.onProgress,
+              )
+                ..headers.addAll(req.headers)
+                ..fields.addAll(req.fields);
+
+              livePhotoReq.files.add(livePhotoRawUploadData);
+              // Send live photo only if the non-motion part is successful
+              if (response.statusCode == 200 || response.statusCode == 201) {
+                response = await httpClient.send(
+                  livePhotoReq,
+                  cancellationToken: cancelToken,
+                );
+              }
+            }
+          }
 
           if (response.statusCode == 200) {
             // asset is a duplicate (already exists on the server)
@@ -353,7 +372,7 @@ class BackupService {
       var fileStream = motionFile.openRead();
       String fileName = p.basename(motionFile.path);
       return http.MultipartFile(
-        "livePhotoData",
+        "assetData",
         fileStream,
         motionFile.lengthSync(),
         filename: fileName,

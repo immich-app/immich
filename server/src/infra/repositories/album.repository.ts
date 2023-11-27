@@ -59,25 +59,30 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  async getAssetCountForIds(ids: string[]): Promise<AlbumAssetCount[]> {
+  async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (!ids.length) {
       return [];
     }
 
     // Only possible with query builder because of GROUP BY.
-    const countByAlbums = await this.repository
+    const albumMetadatas = await this.repository
       .createQueryBuilder('album')
       .select('album.id')
-      .addSelect('COUNT(albums_assets.assetsId)', 'asset_count')
-      .leftJoin('albums_assets_assets', 'albums_assets', 'albums_assets.albumsId = album.id')
+      .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
+      .addSelect('MAX(assets.fileCreatedAt)', 'end_date')
+      .addSelect('COUNT(album_assets.assetsId)', 'asset_count')
+      .leftJoin('albums_assets_assets', 'album_assets', 'album_assets.albumsId = album.id')
+      .leftJoin('assets', 'assets', 'assets.id = album_assets.assetsId')
       .where('album.id IN (:...ids)', { ids })
       .groupBy('album.id')
       .getRawMany();
 
-    return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
-      albumId: albumCount['album_id'],
-      assetCount: Number(albumCount['asset_count']),
+    return albumMetadatas.map<AlbumAssetCount>((metadatas) => ({
+      albumId: metadatas['album_id'],
+      assetCount: Number(metadatas['asset_count']),
+      startDate: metadatas['end_date'] ? new Date(metadatas['start_date']) : undefined,
+      endDate: metadatas['end_date'] ? new Date(metadatas['end_date']) : undefined,
     }));
   }
 

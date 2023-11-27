@@ -1,4 +1,4 @@
-import { AssetType, CitiesFile, ExifEntity, SystemConfigKey } from '@app/infra/entities';
+import { AssetType, ExifEntity, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAlbumRepositoryMock,
@@ -14,7 +14,8 @@ import {
 import { randomBytes } from 'crypto';
 import { Stats } from 'fs';
 import { constants } from 'fs/promises';
-import { JobName, QueueName } from '../job';
+import { when } from 'jest-when';
+import { JobName } from '../job';
 import {
   IAlbumRepository,
   IAssetRepository,
@@ -77,10 +78,7 @@ describe(MetadataService.name, () => {
 
   describe('init', () => {
     beforeEach(async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true },
-        { key: SystemConfigKey.REVERSE_GEOCODING_CITIES_FILE_OVERRIDE, value: CitiesFile.CITIES_500 },
-      ]);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true }]);
 
       await sut.init();
     });
@@ -89,41 +87,9 @@ describe(MetadataService.name, () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: false }]);
 
       await sut.init();
-      expect(metadataMock.deleteCache).not.toHaveBeenCalled();
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
       expect(metadataMock.init).toHaveBeenCalledTimes(1);
       expect(jobMock.resume).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return if deleteCache is false and the cities precision has not changed', async () => {
-      await sut.init();
-
-      expect(metadataMock.deleteCache).not.toHaveBeenCalled();
-      expect(jobMock.pause).toHaveBeenCalledTimes(1);
-      expect(metadataMock.init).toHaveBeenCalledTimes(1);
-      expect(jobMock.resume).toHaveBeenCalledTimes(1);
-    });
-
-    it('should re-init if deleteCache is false but the cities precision has changed', async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.REVERSE_GEOCODING_CITIES_FILE_OVERRIDE, value: CitiesFile.CITIES_1000 },
-      ]);
-
-      await sut.init();
-
-      expect(metadataMock.deleteCache).not.toHaveBeenCalled();
-      expect(jobMock.pause).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
-      expect(metadataMock.init).toHaveBeenCalledWith({ citiesFileOverride: CitiesFile.CITIES_1000 });
-      expect(jobMock.resume).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
-    });
-
-    it('should re-init and delete cache if deleteCache is true', async () => {
-      await sut.init(true);
-
-      expect(metadataMock.deleteCache).toHaveBeenCalled();
-      expect(jobMock.pause).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
-      expect(metadataMock.init).toHaveBeenCalledWith({ citiesFileOverride: CitiesFile.CITIES_500 });
-      expect(jobMock.resume).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
     });
   });
 
@@ -246,6 +212,30 @@ describe(MetadataService.name, () => {
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
       expect(assetMock.upsertExif).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should handle a date in a sidecar file', async () => {
+      const originalDate = new Date('2023-11-21T16:13:17.517Z');
+      const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      when(metadataMock.getExifTags)
+        .calledWith(assetStub.sidecar.originalPath)
+        // higher priority tag
+        .mockResolvedValue({ CreationDate: originalDate.toISOString() });
+      when(metadataMock.getExifTags)
+        .calledWith(assetStub.sidecar.sidecarPath as string)
+        // lower priority tag, but in sidecar
+        .mockResolvedValue({ CreateDate: sidecarDate.toISOString() });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: sidecarDate }));
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetStub.image.id,
+        duration: null,
+        fileCreatedAt: sidecarDate,
+        localDateTime: sidecarDate,
+      });
     });
 
     it('should handle lists of numbers', async () => {

@@ -7,6 +7,7 @@
   import { flip } from 'svelte/animate';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { onDestroy } from 'svelte';
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
@@ -80,6 +81,10 @@
     $showAssetViewer = false;
     history.pushState(null, '', `${$page.url.pathname}`);
   };
+
+  onDestroy(() => {
+    $showAssetViewer = false;
+  });
 </script>
 
 {#if assets.length > 0}

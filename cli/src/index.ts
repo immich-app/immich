@@ -5,8 +5,9 @@ import Upload from './commands/upload';
 import ServerInfo from './commands/server-info';
 import LoginKey from './commands/login/key';
 import Logout from './commands/logout';
+import { version } from '../package.json';
 
-program.name('immich').description('Immich command line interface');
+program.name('immich').description('Immich command line interface').version(version);
 
 program
   .command('upload')

@@ -246,7 +246,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
 
     it('should return album info for own album', async () => {
       const { status, body } = await request(server)
-        .get(`/album/${user1Albums[0].id}`)
+        .get(`/album/${user1Albums[0].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -255,11 +255,33 @@ describe(`${AlbumController.name} (e2e)`, () => {
 
     it('should return album info for shared album', async () => {
       const { status, body } = await request(server)
-        .get(`/album/${user2Albums[0].id}`)
+        .get(`/album/${user2Albums[0].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toEqual(user2Albums[0]);
+    });
+
+    it('should return album info with assets when withoutAssets is undefined', async () => {
+      const { status, body } = await request(server)
+        .get(`/album/${user1Albums[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(user1Albums[0]);
+    });
+
+    it('should return album info without assets when withoutAssets is true', async () => {
+      const { status, body } = await request(server)
+        .get(`/album/${user1Albums[0].id}?withoutAssets=true`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        ...user1Albums[0],
+        assets: [],
+        assetCount: 1,
+      });
     });
   });
 
