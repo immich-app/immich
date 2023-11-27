@@ -181,8 +181,8 @@
                   isDeleted(user)
                     ? 'bg-red-300 dark:bg-red-900'
                     : i % 2 == 0
-                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+                      ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                      : 'bg-immich-bg dark:bg-immich-dark-gray/50'
                 }`}
               >
                 <td class="w-4/12 text-ellipsis break-all px-2 text-sm">{user.email}</td>
@@ -247,8 +247,8 @@
                   isDeleted(user)
                     ? 'bg-red-300 dark:bg-red-900'
                     : i % 2 == 0
-                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+                      ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                      : 'bg-immich-bg dark:bg-immich-dark-gray/50'
                 }`}
               >
                 <td class="w-1/4 text-ellipsis break-words px-2 text-sm">{user.name}</td>
