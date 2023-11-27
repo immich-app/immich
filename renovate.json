@@ -1,40 +1,48 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
+  "minimumReleaseAge": 5,
   "packageRules": [
     {
       "matchFileNames": ["cli/**"],
       "groupName": "@immich/cli",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on monday"
     },
     {
       "matchFileNames": ["mobile/**"],
       "groupName": "mobile",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": ["server/**"],
       "groupName": "server",
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackagePrefixes": ["exiftool"]
+      "excludePackagePrefixes": ["exiftool"],
+      "schedule": "on wednesday"
     },
     {
       "groupName": "exiftool",
-      "matchPackagePrefixes": ["exiftool"]
+      "matchPackagePrefixes": ["exiftool"],
+      "schedule": "on monday"
     },
     {
       "matchFileNames": ["web/**"],
       "groupName": "web",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on thursday"
     },
     {
       "matchFileNames": ["machine-learning/**"],
       "groupName": "machine-learning",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on friday"
     },
     {
       "matchFileNames": [".github/**"],
-      "groupName": "github-actions"
+      "groupName": "github-actions",
+      "schedule": "on friday"
     },
     {
       "groupName": "base-image",
