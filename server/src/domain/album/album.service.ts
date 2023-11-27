@@ -102,7 +102,7 @@ export class AlbumService {
   async get(authUser: AuthUserDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
     await this.access.requirePermission(authUser, Permission.ALBUM_READ, id);
     await this.albumRepository.updateThumbnails();
-    const withAssets = dto.withoutAssets === undefined ? false : !dto.withoutAssets;
+    const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
     const album = await this.findOrFail(id, { withAssets });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
