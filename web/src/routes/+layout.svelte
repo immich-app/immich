@@ -121,7 +121,6 @@
 
 <DownloadPanel />
 <UploadPanel />
-<UpdatePanel />
 <NotificationList />
 
 {#if data.user?.isAdmin}
