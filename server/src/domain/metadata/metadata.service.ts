@@ -252,7 +252,9 @@ export class MetadataService {
 
     try {
       const reverseGeocode = await this.repository.reverseGeocode({ latitude, longitude });
-      if (!reverseGeocode) return;
+      if (!reverseGeocode) {
+        return;
+      }
       Object.assign(exifData, reverseGeocode);
     } catch (error: Error | any) {
       this.logger.warn(
