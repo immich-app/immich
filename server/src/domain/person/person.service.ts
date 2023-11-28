@@ -109,7 +109,9 @@ export class PersonService {
 
       result.push(person);
     }
-    await this.createNewFeaturePhoto(changeFeaturePhoto);
+    if (changeFeaturePhoto.length > 0) {
+      await this.createNewFeaturePhoto(changeFeaturePhoto);
+    }
     return result;
   }
 
@@ -119,19 +121,15 @@ export class PersonService {
     await this.access.requirePermission(authUser, Permission.PERSON_CREATE, dto.id);
     const face = await this.repository.getFaceById(dto.id);
     const person = await this.findOrFail(personId);
-    const changeFaceFeature: string[] = [];
-    if (person.faceAssetId === null) {
-      changeFaceFeature.push(person.id);
-    }
-    if (face.person && face.person.faceAssetId === face.id) {
-      changeFaceFeature.push(face.person.id);
-    }
 
     await this.repository.reassignFace(face.id, personId);
-
-    if (changeFaceFeature) {
-      await this.createNewFeaturePhoto(changeFaceFeature);
+    if (person.faceAssetId === null) {
+      await this.createNewFeaturePhoto([person.id]);
     }
+    if (face.person && face.person.faceAssetId === face.id) {
+      await this.createNewFeaturePhoto([face.person.id]);
+    }
+
     return await this.findOrFail(personId).then(mapPerson);
   }
 
