@@ -18,7 +18,11 @@ class Album {
     required this.name,
     required this.createdAt,
     required this.modifiedAt,
+    this.startDate,
+    this.endDate,
+    this.lastModifiedAssetTimestamp,
     required this.shared,
+    required this.activityEnabled,
   });
 
   Id id = Isar.autoIncrement;
@@ -29,7 +33,11 @@ class Album {
   String name;
   DateTime createdAt;
   DateTime modifiedAt;
+  DateTime? startDate;
+  DateTime? endDate;
+  DateTime? lastModifiedAssetTimestamp;
   bool shared;
+  bool activityEnabled;
   final IsarLink<User> owner = IsarLink<User>();
   final IsarLink<Asset> thumbnail = IsarLink<Asset>();
   final IsarLinks<User> sharedUsers = IsarLinks<User>();
@@ -60,18 +68,16 @@ class Album {
     }
 
     final name = <String>[];
-    if (owner.value?.firstName != null) {
-      name.add(owner.value!.firstName);
-    }
-    if (owner.value?.lastName != null) {
-      name.add(owner.value!.lastName);
+    if (owner.value?.name != null) {
+      name.add(owner.value!.name);
     }
 
     return name.join(' ');
   }
 
   Stream<void> watchRenderList(GroupAssetsBy groupAssetsBy) async* {
-    final query = assets.filter().sortByFileCreatedAtDesc();
+    final query =
+        assets.filter().isTrashedEqualTo(false).sortByFileCreatedAtDesc();
     _renderList = await RenderList.fromQuery(query, groupAssetsBy);
     yield _renderList;
     await for (final _ in query.watchLazy()) {
@@ -83,13 +89,23 @@ class Album {
   @override
   bool operator ==(other) {
     if (other is! Album) return false;
+
+    final lastModifiedAssetTimestampIsSetAndEqual =
+        lastModifiedAssetTimestamp != null &&
+                other.lastModifiedAssetTimestamp != null
+            ? lastModifiedAssetTimestamp!
+                .isAtSameMomentAs(other.lastModifiedAssetTimestamp!)
+            : true;
+
     return id == other.id &&
         remoteId == other.remoteId &&
         localId == other.localId &&
         name == other.name &&
         createdAt.isAtSameMomentAs(other.createdAt) &&
         modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
+        lastModifiedAssetTimestampIsSetAndEqual &&
         shared == other.shared &&
+        activityEnabled == other.activityEnabled &&
         owner.value == other.owner.value &&
         thumbnail.value == other.thumbnail.value &&
         sharedUsers.length == other.sharedUsers.length &&
@@ -105,7 +121,9 @@ class Album {
       name.hashCode ^
       createdAt.hashCode ^
       modifiedAt.hashCode ^
+      lastModifiedAssetTimestamp.hashCode ^
       shared.hashCode ^
+      activityEnabled.hashCode ^
       owner.value.hashCode ^
       thumbnail.value.hashCode ^
       sharedUsers.length.hashCode ^
@@ -117,6 +135,7 @@ class Album {
       createdAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
       modifiedAt: ape.lastModified?.toUtc() ?? DateTime.now().toUtc(),
       shared: false,
+      activityEnabled: false,
     );
     a.owner.value = Store.get(StoreKey.currentUser);
     a.localId = ape.id;
@@ -130,7 +149,11 @@ class Album {
       name: dto.albumName,
       createdAt: dto.createdAt,
       modifiedAt: dto.updatedAt,
+      lastModifiedAssetTimestamp: dto.lastModifiedAssetTimestamp,
       shared: dto.shared,
+      startDate: dto.startDate,
+      endDate: dto.endDate,
+      activityEnabled: dto.isActivityEnabled,
     );
     a.owner.value = await db.users.getById(dto.ownerId);
     if (dto.albumThumbnailAssetId != null) {

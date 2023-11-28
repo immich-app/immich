@@ -1,39 +1,43 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
 
-import 'package:immich_mobile/shared/models/server_info_state.model.dart';
+import 'package:immich_mobile/shared/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/server_info/server_config.model.dart';
+import 'package:immich_mobile/shared/models/server_info/server_features.model.dart';
+import 'package:immich_mobile/shared/models/server_info/server_version.model.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
+class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   ServerInfoNotifier(this._serverInfoService)
       : super(
-          ServerInfoState(
-            serverVersion: ServerVersionResponseDto(
+          ServerInfo(
+            serverVersion: const ServerVersion(
               major: 0,
-              patch_: 0,
               minor: 0,
+              patch: 0,
             ),
-            serverFeatures: ServerFeaturesDto(
-              clipEncode: true,
-              configFile: false,
-              facialRecognition: true,
+            latestVersion: const ServerVersion(
+              major: 0,
+              minor: 0,
+              patch: 0,
+            ),
+            serverFeatures: const ServerFeatures(
               map: true,
-              oauth: false,
-              oauthAutoLaunch: false,
-              passwordLogin: true,
-              search: true,
-              sidecar: true,
-              tagImage: true,
-              reverseGeocoding: true,
+              trash: true,
             ),
-            serverConfig: ServerConfigDto(
-              loginPageMessage: "",
-              mapTileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-              oauthButtonText: "",
+            serverConfig: const ServerConfig(
+              trashDays: 30,
+            ),
+            serverDiskInfo: const ServerDiskInfo(
+              diskAvailable: "0",
+              diskSize: "0",
+              diskUse: "0",
+              diskUsagePercentage: 0,
             ),
             isVersionMismatch: false,
+            isNewReleaseAvailable: false,
             versionMismatchErrorMessage: "",
           ),
         );
@@ -47,8 +51,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   }
 
   getServerVersion() async {
-    ServerVersionResponseDto? serverVersion =
-        await _serverInfoService.getServerVersion();
+    final serverVersion = await _serverInfoService.getServerVersion();
 
     if (serverVersion == null) {
       state = state.copyWith(
@@ -58,6 +61,10 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
       return;
     }
 
+    await _checkServerVersionMismatch(serverVersion);
+  }
+
+  _checkServerVersionMismatch(ServerVersion serverVersion) async {
     state = state.copyWith(serverVersion: serverVersion);
 
     var packageInfo = await PackageInfo.fromPlatform();
@@ -67,20 +74,32 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
     if (appVersion["major"]! > serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage:
-            "Server is out of date in major version. Some functionalities might not work correctly. Download and rebuild server",
+        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_major".tr(),
       );
+      return;
+    }
 
+    if (appVersion["major"]! < serverVersion.major) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_major".tr(),
+      );
       return;
     }
 
     if (appVersion["minor"]! > serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage:
-            "Server is out of date in minor version. Some functionalities might not work correctly. Consider download and rebuild server",
+        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_minor".tr(),
       );
+      return;
+    }
 
+    if (appVersion["minor"]! < serverVersion.minor) {
+      state = state.copyWith(
+        isVersionMismatch: true,
+        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_minor".tr(),
+      );
       return;
     }
 
@@ -90,9 +109,27 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
     );
   }
 
+  handleNewRelease(
+    ServerVersion serverVersion,
+    ServerVersion latestVersion,
+  ) {
+    // Update local server version
+    _checkServerVersionMismatch(serverVersion);
+
+    final majorEqual = latestVersion.major == serverVersion.major;
+    final minorEqual = majorEqual && latestVersion.minor == serverVersion.minor;
+    final newVersionAvailable = latestVersion.major > serverVersion.major ||
+        (majorEqual && latestVersion.minor > serverVersion.minor) ||
+        (minorEqual && latestVersion.patch > serverVersion.patch);
+
+    state = state.copyWith(
+      latestVersion: latestVersion,
+      isNewReleaseAvailable: newVersionAvailable,
+    );
+  }
+
   getServerFeatures() async {
-    ServerFeaturesDto? serverFeatures =
-        await _serverInfoService.getServerFeatures();
+    final serverFeatures = await _serverInfoService.getServerFeatures();
     if (serverFeatures == null) {
       return;
     }
@@ -100,7 +137,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
   }
 
   getServerConfig() async {
-    ServerConfigDto? serverConfig = await _serverInfoService.getServerConfig();
+    final serverConfig = await _serverInfoService.getServerConfig();
     if (serverConfig == null) {
       return;
     }
@@ -123,6 +160,6 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
 }
 
 final serverInfoProvider =
-    StateNotifierProvider<ServerInfoNotifier, ServerInfoState>((ref) {
-  return ServerInfoNotifier(ref.watch(serverInfoServiceProvider));
+    StateNotifierProvider<ServerInfoNotifier, ServerInfo>((ref) {
+  return ServerInfoNotifier(ref.read(serverInfoServiceProvider));
 });

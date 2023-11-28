@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigLibraryDto library_
+    test('to test the property `library_`', () async {
+      // TODO
+    });
+
     // SystemConfigMachineLearningDto machineLearning
     test('to test the property `machineLearning`', () async {
       // TODO
@@ -33,6 +38,11 @@ void main() {
 
     // SystemConfigMapDto map
     test('to test the property `map`', () async {
+      // TODO
+    });
+
+    // SystemConfigNewVersionCheckDto newVersionCheck
+    test('to test the property `newVersionCheck`', () async {
       // TODO
     });
 
@@ -56,8 +66,18 @@ void main() {
       // TODO
     });
 
+    // SystemConfigThemeDto theme
+    test('to test the property `theme`', () async {
+      // TODO
+    });
+
     // SystemConfigThumbnailDto thumbnail
     test('to test the property `thumbnail`', () async {
+      // TODO
+    });
+
+    // SystemConfigTrashDto trash
+    test('to test the property `trash`', () async {
       // TODO
     });
 

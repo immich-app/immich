@@ -19,7 +19,8 @@ class SharedLinkCreateDto {
     this.assetIds = const [],
     this.description,
     this.expiresAt,
-    this.showExif = true,
+    this.password,
+    this.showMetadata = true,
     required this.type,
   });
 
@@ -47,7 +48,15 @@ class SharedLinkCreateDto {
 
   DateTime? expiresAt;
 
-  bool showExif;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? password;
+
+  bool showMetadata;
 
   SharedLinkType type;
 
@@ -59,7 +68,8 @@ class SharedLinkCreateDto {
      other.assetIds == assetIds &&
      other.description == description &&
      other.expiresAt == expiresAt &&
-     other.showExif == showExif &&
+     other.password == password &&
+     other.showMetadata == showMetadata &&
      other.type == type;
 
   @override
@@ -71,11 +81,12 @@ class SharedLinkCreateDto {
     (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (showExif.hashCode) +
+    (password == null ? 0 : password!.hashCode) +
+    (showMetadata.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, showExif=$showExif, type=$type]';
+  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -97,7 +108,12 @@ class SharedLinkCreateDto {
     } else {
     //  json[r'expiresAt'] = null;
     }
-      json[r'showExif'] = this.showExif;
+    if (this.password != null) {
+      json[r'password'] = this.password;
+    } else {
+    //  json[r'password'] = null;
+    }
+      json[r'showMetadata'] = this.showMetadata;
       json[r'type'] = this.type;
     return json;
   }
@@ -118,7 +134,8 @@ class SharedLinkCreateDto {
             : const [],
         description: mapValueOfType<String>(json, r'description'),
         expiresAt: mapDateTime(json, r'expiresAt', ''),
-        showExif: mapValueOfType<bool>(json, r'showExif') ?? true,
+        password: mapValueOfType<String>(json, r'password'),
+        showMetadata: mapValueOfType<bool>(json, r'showMetadata') ?? true,
         type: SharedLinkType.fromJson(json[r'type'])!,
       );
     }

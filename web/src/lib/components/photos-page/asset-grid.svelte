@@ -8,7 +8,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AssetResponseDto } from '@api';
+  import type { AlbumResponseDto, AssetResponseDto, UserResponseDto } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -17,6 +17,7 @@
   import Scrollbar from '../shared-components/scrollbar/scrollbar.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
 
   export let isSelectionMode = false;
@@ -24,6 +25,13 @@
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
   export let removeAction: AssetAction | null = null;
+  export let withStacked = false;
+  export let isShared = false;
+  export let user: UserResponseDto | null = null;
+  export let album: AlbumResponseDto | null = null;
+
+  $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
+  export let forceDelete = false;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
@@ -34,6 +42,7 @@
   let showSkeleton = true;
 
   $: timelineY = element?.scrollTop || 0;
+  $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
@@ -41,6 +50,7 @@
   onMount(async () => {
     showSkeleton = false;
     document.addEventListener('keydown', onKeyboardPress);
+    assetStore.connect();
     await assetStore.init(viewport);
   });
 
@@ -52,6 +62,8 @@
     if ($showAssetViewer) {
       $showAssetViewer = false;
     }
+
+    assetStore.disconnect();
   });
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
@@ -319,7 +331,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden ml-4 mr-[60px] h-full overflow-y-auto pb-[60px]"
+  class="scrollbar-hidden h-full overflow-y-auto pb-[60px] {isEmpty ? 'm-0' : 'ml-4 mr-[60px]'}"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={element}
@@ -341,7 +353,7 @@
     <slot />
 
     <!-- (optional) empty placeholder -->
-    {#if $assetStore.initialized && $assetStore.buckets.length === 0}
+    {#if isEmpty}
       <slot name="empty" />
     {/if}
     <section id="virtual-timeline" style:height={$assetStore.timelineHeight + 'px'}>
@@ -357,6 +369,7 @@
           <div id={'bucket_' + bucket.bucketDate} style:height={bucket.bucketHeight + 'px'}>
             {#if intersecting}
               <AssetDateGroup
+                {withStacked}
                 {assetStore}
                 {assetInteractionStore}
                 {isSelectionMode}
@@ -381,8 +394,13 @@
 <Portal target="body">
   {#if $showAssetViewer}
     <AssetViewer
+      {user}
+      {withStacked}
       {assetStore}
       asset={$viewingAsset}
+      force={forceDelete || !isTrashEnabled}
+      {isShared}
+      {album}
       on:previous={() => handlePrevious()}
       on:next={() => handleNext()}
       on:close={() => handleClose()}
@@ -390,6 +408,7 @@
       on:unarchived={({ detail: asset }) => handleAction(asset, AssetAction.UNARCHIVE)}
       on:favorite={({ detail: asset }) => handleAction(asset, AssetAction.FAVORITE)}
       on:unfavorite={({ detail: asset }) => handleAction(asset, AssetAction.UNFAVORITE)}
+      on:unstack={() => handleClose()}
     />
   {/if}
 </Portal>

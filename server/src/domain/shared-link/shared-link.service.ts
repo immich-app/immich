@@ -1,12 +1,11 @@
 import { AssetEntity, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, IAccessRepository, Permission } from '../access';
+import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { AccessCore, Permission } from '../access';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
 import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithNoExif } from './shared-link-response.dto';
-import { SharedLinkCreateDto, SharedLinkEditDto } from './shared-link.dto';
-import { ISharedLinkRepository } from './shared-link.repository';
+import { IAccessRepository, ICryptoRepository, ISharedLinkRepository } from '../repositories';
+import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithoutMetadata } from './shared-link-response.dto';
+import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from './shared-link.dto';
 
 @Injectable()
 export class SharedLinkService {
@@ -17,15 +16,15 @@ export class SharedLinkService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISharedLinkRepository) private repository: ISharedLinkRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
   }
 
   getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
     return this.repository.getAll(authUser.id).then((links) => links.map(mapSharedLink));
   }
 
-  async getMine(authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
-    const { sharedLinkId: id, isPublicUser, isShowExif } = authUser;
+  async getMine(authUser: AuthUserDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
+    const { sharedLinkId: id, isPublicUser, isShowMetadata: isShowExif } = authUser;
 
     if (!isPublicUser || !id) {
       throw new ForbiddenException();
@@ -33,7 +32,15 @@ export class SharedLinkService {
 
     const sharedLink = await this.findOrFail(authUser, id);
 
-    return this.map(sharedLink, { withExif: isShowExif ?? true });
+    let newToken;
+    if (sharedLink.password) {
+      newToken = this.validateAndRefreshToken(sharedLink, dto);
+    }
+
+    return {
+      ...this.map(sharedLink, { withExif: isShowExif ?? true }),
+      token: newToken,
+    };
   }
 
   async get(authUser: AuthUserDto, id: string): Promise<SharedLinkResponseDto> {
@@ -67,10 +74,11 @@ export class SharedLinkService {
       albumId: dto.albumId || null,
       assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
       description: dto.description || null,
+      password: dto.password,
       expiresAt: dto.expiresAt || null,
       allowUpload: dto.allowUpload ?? true,
       allowDownload: dto.allowDownload ?? true,
-      showExif: dto.showExif ?? true,
+      showExif: dto.showMetadata ?? true,
     });
 
     return this.map(sharedLink, { withExif: true });
@@ -82,10 +90,11 @@ export class SharedLinkService {
       id,
       userId: authUser.id,
       description: dto.description,
-      expiresAt: dto.expiresAt,
+      password: dto.password,
+      expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
       allowUpload: dto.allowUpload,
       allowDownload: dto.allowDownload,
-      showExif: dto.showExif,
+      showExif: dto.showMetadata,
     });
     return this.map(sharedLink, { withExif: true });
   }
@@ -110,15 +119,19 @@ export class SharedLinkService {
       throw new BadRequestException('Invalid shared link type');
     }
 
+    const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
+    const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
+    const allowedAssetIds = await this.access.checkAccess(authUser, Permission.ASSET_SHARE, notPresentAssetIds);
+
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const hasAsset = sharedLink.assets.find((asset) => asset.id === assetId);
+      const hasAsset = existingAssetIds.has(assetId);
       if (hasAsset) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.DUPLICATE });
         continue;
       }
 
-      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_SHARE, assetId);
+      const hasAccess = allowedAssetIds.has(assetId);
       if (!hasAccess) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NO_PERMISSION });
         continue;
@@ -158,6 +171,19 @@ export class SharedLinkService {
   }
 
   private map(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
-    return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithNoExif(sharedLink);
+    return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
+  }
+
+  private validateAndRefreshToken(sharedLink: SharedLinkEntity, dto: SharedLinkPasswordDto): string {
+    const token = this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`);
+    const sharedLinkTokens = dto.token?.split(',') || [];
+    if (sharedLink.password !== dto.password && !sharedLinkTokens.includes(token)) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    if (!sharedLinkTokens.includes(token)) {
+      sharedLinkTokens.push(token);
+    }
+    return sharedLinkTokens.join(',');
   }
 }

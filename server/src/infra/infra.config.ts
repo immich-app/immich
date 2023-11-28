@@ -5,6 +5,10 @@ import { RedisOptions } from 'ioredis';
 import { ConfigurationOptions } from 'typesense/lib/Typesense/Configuration';
 
 function parseRedisConfig(): RedisOptions {
+  if (process.env.IMMICH_TEST_ENV == 'true') {
+    return {};
+  }
+
   const redisUrl = process.env.REDIS_URL;
   if (redisUrl && redisUrl.startsWith('ioredis://')) {
     try {
@@ -70,6 +74,3 @@ function parseTypeSenseConfig(): ConfigurationOptions {
 }
 
 export const typesenseConfig: ConfigurationOptions = parseTypeSenseConfig();
-
-export const REVERSE_GEOCODING_DUMP_DIRECTORY =
-  process.env.REVERSE_GEOCODING_DUMP_DIRECTORY || process.cwd() + '/.reverse-geocoding-dump/';

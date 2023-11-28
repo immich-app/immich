@@ -58,6 +58,9 @@ String parameterToString(dynamic value) {
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
+  if (value is AssetOrder) {
+    return AssetOrderTypeTransformer().encode(value).toString();
+  }
   if (value is AssetTypeEnum) {
     return AssetTypeEnumTypeTransformer().encode(value).toString();
   }
@@ -70,14 +73,8 @@ String parameterToString(dynamic value) {
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
   }
-  if (value is CitiesFile) {
-    return CitiesFileTypeTransformer().encode(value).toString();
-  }
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
-  }
-  if (value is DeleteAssetStatus) {
-    return DeleteAssetStatusTypeTransformer().encode(value).toString();
   }
   if (value is EntityType) {
     return EntityTypeTypeTransformer().encode(value).toString();
@@ -91,8 +88,23 @@ String parameterToString(dynamic value) {
   if (value is LibraryType) {
     return LibraryTypeTypeTransformer().encode(value).toString();
   }
+  if (value is MapTheme) {
+    return MapThemeTypeTransformer().encode(value).toString();
+  }
   if (value is ModelType) {
     return ModelTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is PathEntityType) {
+    return PathEntityTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is PathType) {
+    return PathTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is ReactionLevel) {
+    return ReactionLevelTypeTransformer().encode(value).toString();
+  }
+  if (value is ReactionType) {
+    return ReactionTypeTypeTransformer().encode(value).toString();
   }
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
@@ -114,6 +126,9 @@ String parameterToString(dynamic value) {
   }
   if (value is TranscodePolicy) {
     return TranscodePolicyTypeTransformer().encode(value).toString();
+  }
+  if (value is UserAvatarColor) {
+    return UserAvatarColorTypeTransformer().encode(value).toString();
   }
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();

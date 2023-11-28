@@ -1,4 +1,5 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { SharedLinkType } from '@app/infra/entities';
+import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
   albumStub,
@@ -12,9 +13,8 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import _ from 'lodash';
-import { SharedLinkType } from '../../infra/entities/shared-link.entity';
-import { AssetIdErrorReason, ICryptoRepository } from '../index';
-import { ISharedLinkRepository } from './shared-link.repository';
+import { AssetIdErrorReason } from '../asset';
+import { ICryptoRepository, ISharedLinkRepository } from '../repositories';
 import { SharedLinkService } from './shared-link.service';
 
 describe(SharedLinkService.name, () => {
@@ -48,21 +48,28 @@ describe(SharedLinkService.name, () => {
 
   describe('getMine', () => {
     it('should only work for a public user', async () => {
-      await expect(sut.getMine(authStub.admin)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.getMine(authStub.admin, {})).rejects.toBeInstanceOf(ForbiddenException);
       expect(shareMock.get).not.toHaveBeenCalled();
     });
 
     it('should return the shared link for the public user', async () => {
       const authDto = authStub.adminSharedLink;
       shareMock.get.mockResolvedValue(sharedLinkStub.valid);
-      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.valid);
+      await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.valid);
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
 
-    it('should return not return exif', async () => {
+    it('should not return metadata', async () => {
       const authDto = authStub.adminSharedLinkNoExif;
       shareMock.get.mockResolvedValue(sharedLinkStub.readonlyNoExif);
-      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.readonlyNoExif);
+      await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.readonlyNoMetadata);
+      expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
+    });
+
+    it('should throw an error for an password protected shared link', async () => {
+      const authDto = authStub.adminSharedLink;
+      shareMock.get.mockResolvedValue(sharedLinkStub.passwordRequired);
+      await expect(sut.getMine(authDto, {})).rejects.toBeInstanceOf(UnauthorizedException);
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
   });
@@ -90,7 +97,6 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should not allow non-owners to create album shared links', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       await expect(
         sut.create(authStub.admin, { type: SharedLinkType.ALBUM, assetIds: [], albumId: 'album-1' }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -110,12 +116,15 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should create an album shared link', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.oneAsset.id]));
       shareMock.create.mockResolvedValue(sharedLinkStub.valid);
 
       await sut.create(authStub.admin, { type: SharedLinkType.ALBUM, albumId: albumStub.oneAsset.id });
 
-      expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, albumStub.oneAsset.id);
+      expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.id,
+        new Set([albumStub.oneAsset.id]),
+      );
       expect(shareMock.create).toHaveBeenCalledWith({
         type: SharedLinkType.ALBUM,
         userId: authStub.admin.id,
@@ -137,7 +146,7 @@ describe(SharedLinkService.name, () => {
       await sut.create(authStub.admin, {
         type: SharedLinkType.INDIVIDUAL,
         assetIds: [assetStub.image.id],
-        showExif: true,
+        showMetadata: true,
         allowDownload: true,
         allowUpload: true,
       });

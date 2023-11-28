@@ -1,9 +1,9 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -23,13 +23,14 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final sharedUsers = useState(album.sharedUsers.toList());
     final owner = album.owner.value;
     final userId = ref.watch(authenticationProvider).userId;
+    final activityEnabled = useState(album.activityEnabled);
     final isOwner = owner?.id == userId;
 
     void showErrorMessage() {
       Navigator.pop(context);
       ImmichToast.show(
         context: context,
-        msg: "Error leaving/removing from album",
+        msg: "shared_album_section_people_action_error".tr(),
         toastType: ToastType.error,
         gravity: ToastGravity.BOTTOM,
       );
@@ -43,8 +44,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
             await ref.read(sharedAlbumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
-          AutoRouter.of(context)
-              .navigate(const TabControllerRoute(children: [SharingRoute()]));
+          context.autoNavigate(
+            const TabControllerRoute(children: [SharingRoute()]),
+          );
         } else {
           showErrorMessage();
         }
@@ -79,7 +81,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.exit_to_app_rounded),
-            title: const Text("Leave album"),
+            title: const Text("shared_album_section_people_action_leave").tr(),
             onTap: leaveAlbum,
           ),
         ];
@@ -89,14 +91,15 @@ class AlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.person_remove_rounded),
-            title: const Text("Remove user from album"),
+            title: const Text("shared_album_section_people_action_remove_user")
+                .tr(),
             onTap: () => removeUserFromAlbum(user),
           ),
         ];
       }
 
       showModalBottomSheet(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.scaffoldBackgroundColor,
         isScrollControlled: false,
         context: context,
         builder: (context) {
@@ -115,28 +118,22 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
     buildOwnerInfo() {
       return ListTile(
-        leading: owner != null
-            ? UserCircleAvatar(
-                user: owner,
-                useRandomBackgroundColor: true,
-              )
-            : const SizedBox(),
+        leading:
+            owner != null ? UserCircleAvatar(user: owner) : const SizedBox(),
         title: Text(
-          album.owner.value?.firstName ?? "",
+          album.owner.value?.name ?? "",
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w500,
           ),
         ),
         subtitle: Text(
           album.owner.value?.email ?? "",
-          style: TextStyle(color: Colors.grey[500]),
+          style: TextStyle(color: Colors.grey[600]),
         ),
-        trailing: const Text(
-          "Owner",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        trailing: Text(
+          "shared_album_section_people_owner_label",
+          style: context.textTheme.labelLarge,
+        ).tr(),
       );
     }
 
@@ -149,18 +146,17 @@ class AlbumOptionsPage extends HookConsumerWidget {
           return ListTile(
             leading: UserCircleAvatar(
               user: user,
-              useRandomBackgroundColor: true,
               radius: 22,
             ),
             title: Text(
-              user.firstName,
+              user.name,
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
               user.email,
-              style: TextStyle(color: Colors.grey[500]),
+              style: TextStyle(color: Colors.grey[600]),
             ),
             trailing: userId == user.id || isOwner
                 ? const Icon(Icons.more_horiz_rounded)
@@ -176,7 +172,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     buildSectionTitle(String text) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+        child: Text(text, style: context.textTheme.bodySmall),
       );
     }
 
@@ -185,7 +181,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
-            AutoRouter.of(context).pop(null);
+            context.autoPop(null);
           },
         ),
         centerTitle: true,
@@ -195,7 +191,34 @@ class AlbumOptionsPage extends HookConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildSectionTitle("PEOPLE"),
+          if (isOwner && album.shared)
+            SwitchListTile.adaptive(
+              value: activityEnabled.value,
+              onChanged: (bool value) async {
+                activityEnabled.value = value;
+                if (await ref
+                    .read(sharedAlbumProvider.notifier)
+                    .setActivityEnabled(album, value)) {
+                  album.activityEnabled = value;
+                }
+              },
+              activeColor: activityEnabled.value
+                  ? context.primaryColor
+                  : context.themeData.disabledColor,
+              dense: true,
+              title: Text(
+                "shared_album_activity_setting_title",
+                style: context.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ).tr(),
+              subtitle: Text(
+                "shared_album_activity_setting_subtitle",
+                style: context.textTheme.labelLarge?.copyWith(
+                  color: context.textTheme.labelLarge?.color?.withAlpha(175),
+                ),
+              ).tr(),
+            ),
+          buildSectionTitle("shared_album_section_people_title".tr()),
           buildOwnerInfo(),
           buildSharedUsersList(),
         ],

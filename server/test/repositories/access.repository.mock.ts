@@ -1,15 +1,27 @@
-import { IAccessRepository } from '@app/domain';
+import { AccessCore, IAccessRepository } from '@app/domain';
 
 export interface IAccessRepositoryMock {
+  activity: jest.Mocked<IAccessRepository['activity']>;
   asset: jest.Mocked<IAccessRepository['asset']>;
   album: jest.Mocked<IAccessRepository['album']>;
+  authDevice: jest.Mocked<IAccessRepository['authDevice']>;
   library: jest.Mocked<IAccessRepository['library']>;
   timeline: jest.Mocked<IAccessRepository['timeline']>;
   person: jest.Mocked<IAccessRepository['person']>;
+  partner: jest.Mocked<IAccessRepository['partner']>;
 }
 
-export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
+export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => {
+  if (reset) {
+    AccessCore.reset();
+  }
+
   return {
+    activity: {
+      hasOwnerAccess: jest.fn(),
+      hasAlbumOwnerAccess: jest.fn(),
+      hasCreateAccess: jest.fn(),
+    },
     asset: {
       hasOwnerAccess: jest.fn(),
       hasAlbumAccess: jest.fn(),
@@ -18,22 +30,30 @@ export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
     },
 
     album: {
-      hasOwnerAccess: jest.fn(),
-      hasSharedAlbumAccess: jest.fn(),
-      hasSharedLinkAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkSharedAlbumAccess: jest.fn().mockResolvedValue(new Set()),
+      checkSharedLinkAccess: jest.fn().mockResolvedValue(new Set()),
+    },
+
+    authDevice: {
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     library: {
-      hasOwnerAccess: jest.fn(),
-      hasPartnerAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     timeline: {
-      hasPartnerAccess: jest.fn(),
+      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     person: {
-      hasOwnerAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+    },
+
+    partner: {
+      checkUpdateAccess: jest.fn().mockResolvedValue(new Set()),
     },
   };
 };

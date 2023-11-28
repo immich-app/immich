@@ -21,7 +21,7 @@ export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  getAllForUser(@AuthUser() authUser: AuthUserDto): Promise<ResponseDto[]> {
+  getLibraries(@AuthUser() authUser: AuthUserDto): Promise<ResponseDto[]> {
     return this.service.getAllForUser(authUser);
   }
 

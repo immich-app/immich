@@ -51,8 +51,7 @@ immich-admin list-users
   {
     id: 'e65e6f88-2a30-4dbe-8dd9-1885f4889b53',
     email: 'immich@example.com.com',
-    firstName: 'Immich',
-    lastName: 'Admin',
+    name: 'Immich Admin',
     storageLabel: 'admin',
     externalPath: null,
     profileImagePath: 'upload/profile/e65e6f88-2a30-4dbe-8dd9-1885f4889b53/e65e6f88-2a30-4dbe-8dd9-1885f4889b53.jpg',

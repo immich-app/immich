@@ -1,22 +1,36 @@
-import { newStorageRepositoryMock, newSystemConfigRepositoryMock, newUserRepositoryMock } from '@test';
+import {
+  newCommunicationRepositoryMock,
+  newServerInfoRepositoryMock,
+  newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
+  newUserRepositoryMock,
+} from '@test';
 import { serverVersion } from '../domain.constant';
-import { ISystemConfigRepository } from '../index';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
+import {
+  ICommunicationRepository,
+  IServerInfoRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+} from '../repositories';
 import { ServerInfoService } from './server-info.service';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let serverInfoMock: jest.Mocked<IServerInfoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
+    serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new ServerInfoService(configMock, userMock, storageMock);
+    sut = new ServerInfoService(communicationMock, configMock, userMock, serverInfoMock, storageMock);
   });
 
   it('should work', () => {
@@ -159,6 +173,7 @@ describe(ServerInfoService.name, () => {
         sidecar: true,
         tagImage: true,
         configFile: false,
+        trash: true,
       });
       expect(configMock.load).toHaveBeenCalled();
     });
@@ -169,7 +184,7 @@ describe(ServerInfoService.name, () => {
       await expect(sut.getConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
-        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        trashDays: 30,
       });
       expect(configMock.load).toHaveBeenCalled();
     });
@@ -180,31 +195,28 @@ describe(ServerInfoService.name, () => {
       userMock.getUserStats.mockResolvedValue([
         {
           userId: 'user1',
-          userFirstName: '1',
-          userLastName: 'User',
+          userName: '1 User',
           photos: 10,
           videos: 11,
           usage: 12345,
         },
         {
           userId: 'user2',
-          userFirstName: '2',
-          userLastName: 'User',
+          userName: '2 User',
           photos: 10,
           videos: 20,
           usage: 123456,
         },
         {
           userId: 'user3',
-          userFirstName: '3',
-          userLastName: 'User',
+          userName: '3 User',
           photos: 100,
           videos: 0,
           usage: 987654,
         },
       ]);
 
-      await expect(sut.getStats()).resolves.toEqual({
+      await expect(sut.getStatistics()).resolves.toEqual({
         photos: 120,
         videos: 31,
         usage: 1123455,
@@ -212,25 +224,22 @@ describe(ServerInfoService.name, () => {
           {
             photos: 10,
             usage: 12345,
-            userFirstName: '1',
+            userName: '1 User',
             userId: 'user1',
-            userLastName: 'User',
             videos: 11,
           },
           {
             photos: 10,
             usage: 123456,
-            userFirstName: '2',
+            userName: '2 User',
             userId: 'user2',
-            userLastName: 'User',
             videos: 20,
           },
           {
             photos: 100,
             usage: 987654,
-            userFirstName: '3',
+            userName: '3 User',
             userId: 'user3',
-            userLastName: 'User',
             videos: 0,
           },
         ],

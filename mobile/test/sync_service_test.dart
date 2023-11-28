@@ -34,6 +34,8 @@ void main() {
       fileName: localId ?? remoteId ?? "",
       isFavorite: false,
       isArchived: false,
+      isTrashed: false,
+      stackCount: 0,
     );
   }
 
@@ -60,8 +62,7 @@ void main() {
       id: "1",
       updatedAt: DateTime.now(),
       email: "a@b.c",
-      firstName: "first",
-      lastName: "last",
+      name: "first last",
       isAdmin: false,
     );
     setUpAll(() async {

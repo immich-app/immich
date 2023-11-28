@@ -1,5 +1,6 @@
 import { FeatureFlags, IServerVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
+import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
 export class ServerPingResponse {
   @ApiResponseProperty({ type: String, example: 'pong' })
@@ -37,9 +38,7 @@ export class UsageByUserDto {
   @ApiProperty({ type: 'string' })
   userId!: string;
   @ApiProperty({ type: 'string' })
-  userFirstName!: string;
-  @ApiProperty({ type: 'string' })
-  userLastName!: string;
+  userName!: string;
   @ApiProperty({ type: 'integer' })
   photos!: number;
   @ApiProperty({ type: 'integer' })
@@ -79,10 +78,14 @@ export class ServerMediaTypesResponseDto {
   sidecar!: string[];
 }
 
+export class ServerThemeDto extends SystemConfigThemeDto {}
+
 export class ServerConfigDto {
   oauthButtonText!: string;
   loginPageMessage!: string;
-  mapTileUrl!: string;
+  @ApiProperty({ type: 'integer' })
+  trashDays!: number;
+  isInitialized!: boolean;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {
@@ -90,6 +93,7 @@ export class ServerFeaturesDto implements FeatureFlags {
   configFile!: boolean;
   facialRecognition!: boolean;
   map!: boolean;
+  trash!: boolean;
   reverseGeocoding!: boolean;
   oauth!: boolean;
   oauthAutoLaunch!: boolean;

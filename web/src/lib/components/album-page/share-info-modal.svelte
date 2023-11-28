@@ -3,7 +3,6 @@
   import { AlbumResponseDto, api, UserResponseDto } from '@api';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -11,6 +10,7 @@
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { getContextMenuPosition } from '../../utils/context-menu';
+  import { mdiDotsVertical } from '@mdi/js';
 
   export let album: AlbumResponseDto;
 
@@ -56,7 +56,7 @@
     try {
       await api.albumApi.removeUserFromAlbum({ id: album.id, userId });
       dispatch('remove', userId);
-      const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.firstName}`;
+      const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
     } catch (e) {
       handleError(e, 'Unable to remove user');
@@ -77,8 +77,8 @@
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
-          <UserAvatar user={album.owner} size="md" autoColor />
-          <p class="text-sm font-medium">{album.owner.firstName} {album.owner.lastName}</p>
+          <UserAvatar user={album.owner} size="md" />
+          <p class="text-sm font-medium">{album.owner.name}</p>
         </div>
 
         <div id="icon-{album.owner.id}" class="flex place-items-center">
@@ -90,8 +90,8 @@
           class="flex w-full place-items-center justify-between gap-4 p-5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <div class="flex place-items-center gap-4">
-            <UserAvatar {user} size="md" autoColor />
-            <p class="text-sm font-medium">{user.firstName} {user.lastName}</p>
+            <UserAvatar {user} size="md" />
+            <p class="text-sm font-medium">{user.name}</p>
           </div>
 
           <div id="icon-{user.id}" class="flex place-items-center">
@@ -99,7 +99,7 @@
               <div>
                 <CircleIconButton
                   on:click={(event) => showContextMenu(event, user)}
-                  logo={DotsVertical}
+                  icon={mdiDotsVertical}
                   backgroundColor="transparent"
                   hoverColor="#e2e7e9"
                   size="20"
@@ -138,7 +138,7 @@
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialogue
     title="Remove User?"
-    prompt="Are you sure you want to remove {selectedRemoveUser.firstName} {selectedRemoveUser.lastName}"
+    prompt="Are you sure you want to remove {selectedRemoveUser.name}"
     confirmText="Remove"
     on:confirm={handleRemoveUser}
     on:cancel={() => (selectedRemoveUser = null)}

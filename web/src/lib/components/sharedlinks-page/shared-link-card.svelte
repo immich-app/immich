@@ -1,21 +1,20 @@
 <script lang="ts">
   import { api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import OpenInNew from 'svelte-material-icons/OpenInNew.svelte';
-  import Delete from 'svelte-material-icons/TrashCanOutline.svelte';
-  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
-  import CircleEditOutline from 'svelte-material-icons/CircleEditOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import * as luxon from 'luxon';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
+  import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
+  import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 
   export let link: SharedLinkResponseDto;
 
   let expirationCountdown: luxon.DurationObjectUnits;
   const dispatch = createEventDispatcher();
 
-  const getAssetInfo = async (): Promise<AssetResponseDto> => {
+  const getThumbnail = async (): Promise<AssetResponseDto> => {
     let assetId = '';
 
     if (link.album?.albumThumbnailAssetId) {
@@ -62,18 +61,28 @@
   class="flex w-full gap-4 border-b border-gray-200 py-4 transition-all hover:border-immich-primary dark:border-gray-600 dark:text-immich-gray dark:hover:border-immich-dark-primary"
 >
   <div>
-    {#await getAssetInfo()}
-      <LoadingSpinner />
-    {:then asset}
+    {#if link?.album?.albumThumbnailAssetId || link.assets.length > 0}
+      {#await getThumbnail()}
+        <LoadingSpinner />
+      {:then asset}
+        <img
+          id={asset.id}
+          src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
+          alt={asset.id}
+          class="h-[100px] w-[100px] rounded-lg object-cover"
+          loading="lazy"
+          draggable="false"
+        />
+      {/await}
+    {:else}
       <img
-        id={asset.id}
-        src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
-        alt={asset.id}
+        src={noThumbnailUrl}
+        alt={'Album without assets'}
         class="h-[100px] w-[100px] rounded-lg object-cover"
         loading="lazy"
         draggable="false"
       />
-    {/await}
+    {/if}
   </div>
 
   <div class="flex flex-col justify-between">
@@ -110,7 +119,7 @@
               on:click={() => goto(`/share/${link.key}`)}
               on:keydown={() => goto(`/share/${link.key}`)}
             >
-              <OpenInNew />
+              <Icon path={mdiOpenInNew} />
             </div>
           {/if}
         </div>
@@ -136,11 +145,19 @@
         </div>
       {/if}
 
-      {#if link.showExif}
+      {#if link.showMetadata}
         <div
           class="flex w-[60px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
           EXIF
+        </div>
+      {/if}
+
+      {#if link.password}
+        <div
+          class="flex w-[100px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
+        >
+          Password
         </div>
       {/if}
     </div>
@@ -148,9 +165,9 @@
 
   <div class="flex flex-auto flex-col place-content-center place-items-end text-right">
     <div class="flex">
-      <CircleIconButton logo={Delete} on:click={() => dispatch('delete')} />
-      <CircleIconButton logo={CircleEditOutline} on:click={() => dispatch('edit')} />
-      <CircleIconButton logo={ContentCopy} on:click={() => dispatch('copy')} />
+      <CircleIconButton icon={mdiDelete} on:click={() => dispatch('delete')} />
+      <CircleIconButton icon={mdiCircleEditOutline} on:click={() => dispatch('edit')} />
+      <CircleIconButton icon={mdiContentCopy} on:click={() => dispatch('copy')} />
     </div>
   </div>
 </div>

@@ -6,6 +6,7 @@ import {
   IStorageRepository,
   mimeTypes,
 } from '@app/domain';
+import { Logger } from '@nestjs/common';
 import archiver from 'archiver';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs, { readdir, writeFile } from 'fs/promises';
@@ -17,6 +18,8 @@ import path from 'path';
 const moveFile = promisify<string, string, mv.Options>(mv);
 
 export class FilesystemProvider implements IStorageRepository {
+  private logger = new Logger(FilesystemProvider.name);
+
   createZipStream(): ImmichZipStream {
     const archive = archiver('zip', { store: true });
 
@@ -52,6 +55,8 @@ export class FilesystemProvider implements IStorageRepository {
   writeFile = writeFile;
 
   async moveFile(source: string, destination: string): Promise<void> {
+    this.logger.verbose(`Moving ${source} to ${destination}`);
+
     if (await this.checkFileExists(destination)) {
       throw new Error(`Destination file already exists: ${destination}`);
     }
@@ -111,24 +116,22 @@ export class FilesystemProvider implements IStorageRepository {
     };
   }
 
-  async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const pathsToCrawl = crawlOptions.pathsToCrawl;
-
-    let paths: string;
+  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
     if (!pathsToCrawl) {
-      // No paths to crawl, return empty list
-      return [];
-    } else if (pathsToCrawl.length === 1) {
-      paths = pathsToCrawl[0];
-    } else {
-      paths = '{' + pathsToCrawl.join(',') + '}';
+      return Promise.resolve([]);
     }
 
-    paths = paths + '/**/*{' + mimeTypes.getSupportedFileExtensions().join(',') + '}';
+    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
+    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
 
-    return (await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.exclusionPatterns })).map((assetPath) =>
-      path.normalize(assetPath),
-    );
+    return glob(`${base}/**/${extensions}`, {
+      absolute: true,
+      nocase: true,
+      nodir: true,
+      dot: includeHidden,
+      ignore: exclusionPatterns,
+    });
   }
 
   readdir = readdir;

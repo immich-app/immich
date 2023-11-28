@@ -1,9 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { mimeTypes, serverVersion } from '../domain.constant';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { DateTime } from 'luxon';
+import { ServerVersion, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IUserRepository, UserStatsQueryResponse } from '../user';
+import {
+  CommunicationEvent,
+  ICommunicationRepository,
+  IServerInfoRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  UserStatsQueryResponse,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigCore } from '../system-config';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -16,20 +25,24 @@ import {
 
 @Injectable()
 export class ServerInfoService {
+  private logger = new Logger(ServerInfoService.name);
   private configCore: SystemConfigCore;
-  private storageCore: StorageCore;
+  private releaseVersion = serverVersion;
+  private releaseVersionCheckedAt: DateTime | null = null;
 
   constructor(
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
-    this.storageCore = new StorageCore(storageRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.communicationRepository.addEventListener('connect', (userId) => this.handleConnect(userId));
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
-    const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
+    const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
@@ -57,28 +70,35 @@ export class ServerInfoService {
     return this.configCore.getFeatures();
   }
 
+  async getTheme() {
+    const { theme } = await this.configCore.getConfig();
+    return theme;
+  }
+
   async getConfig(): Promise<ServerConfigDto> {
     const config = await this.configCore.getConfig();
 
     // TODO move to system config
     const loginPageMessage = process.env.PUBLIC_LOGIN_PAGE_MESSAGE || '';
 
+    const isInitialized = await this.userRepository.hasAdmin();
+
     return {
       loginPageMessage,
-      mapTileUrl: config.map.tileUrl,
+      trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
+      isInitialized,
     };
   }
 
-  async getStats(): Promise<ServerStatsResponseDto> {
+  async getStatistics(): Promise<ServerStatsResponseDto> {
     const userStats: UserStatsQueryResponse[] = await this.userRepository.getUserStats();
     const serverStats = new ServerStatsResponseDto();
 
     for (const user of userStats) {
       const usage = new UsageByUserDto();
       usage.userId = user.userId;
-      usage.userFirstName = user.userFirstName;
-      usage.userLastName = user.userLastName;
+      usage.userName = user.userName;
       usage.photos = user.photos;
       usage.videos = user.videos;
       usage.usage = user.usage;
@@ -98,5 +118,57 @@ export class ServerInfoService {
       image: Object.keys(mimeTypes.image),
       sidecar: Object.keys(mimeTypes.sidecar),
     };
+  }
+
+  async handleVersionCheck(): Promise<boolean> {
+    try {
+      if (isDev) {
+        return true;
+      }
+
+      const { newVersionCheck } = await this.configCore.getConfig();
+      if (!newVersionCheck.enabled) {
+        return true;
+      }
+
+      // check once per hour (max)
+      if (this.releaseVersionCheckedAt && this.releaseVersionCheckedAt.diffNow().as('minutes') < 60) {
+        return true;
+      }
+
+      const githubRelease = await this.repository.getGitHubRelease();
+      const githubVersion = ServerVersion.fromString(githubRelease.tag_name);
+      const publishedAt = new Date(githubRelease.published_at);
+      this.releaseVersion = githubVersion;
+      this.releaseVersionCheckedAt = DateTime.now();
+
+      if (githubVersion.isNewerThan(serverVersion)) {
+        this.logger.log(`Found ${githubVersion.toString()}, released at ${publishedAt.toLocaleString()}`);
+        this.newReleaseNotification();
+      }
+    } catch (error: Error | any) {
+      this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
+    }
+
+    return true;
+  }
+
+  private async handleConnect(userId: string) {
+    this.communicationRepository.send(CommunicationEvent.SERVER_VERSION, userId, serverVersion);
+    this.newReleaseNotification(userId);
+  }
+
+  private newReleaseNotification(userId?: string) {
+    const event = CommunicationEvent.NEW_RELEASE;
+    const payload = {
+      isAvailable: this.releaseVersion.isNewerThan(serverVersion),
+      checkedAt: this.releaseVersionCheckedAt,
+      serverVersion,
+      releaseVersion: this.releaseVersion,
+    };
+
+    userId
+      ? this.communicationRepository.send(event, userId, payload)
+      : this.communicationRepository.broadcast(event, payload);
   }
 }

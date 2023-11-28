@@ -7,10 +7,8 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { api } from '@api';
-  import HeartMinusOutline from 'svelte-material-icons/HeartMinusOutline.svelte';
-  import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
-  import TimerSand from 'svelte-material-icons/TimerSand.svelte';
   import { OnFavorite, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
 
   export let onFavorite: OnFavorite | undefined = undefined;
 
@@ -18,18 +16,19 @@
   export let removeFavorite: boolean;
 
   $: text = removeFavorite ? 'Remove from Favorites' : 'Favorite';
-  $: logo = removeFavorite ? HeartMinusOutline : HeartOutline;
+  $: icon = removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline;
 
   let loading = false;
 
-  const { getAssets, clearSelect } = getAssetControlContext();
+  const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleFavorite = async () => {
     const isFavorite = !removeFavorite;
     loading = true;
 
     try {
-      const assets = Array.from(getAssets()).filter((asset) => asset.isFavorite !== isFavorite);
+      const assets = Array.from(getOwnedAssets()).filter((asset) => asset.isFavorite !== isFavorite);
+
       const ids = assets.map(({ id }) => id);
 
       if (ids.length > 0) {
@@ -62,8 +61,8 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title="Loading" logo={TimerSand} />
+    <CircleIconButton title="Loading" icon={mdiTimerSand} />
   {:else}
-    <CircleIconButton title={text} {logo} on:click={handleFavorite} />
+    <CircleIconButton title={text} {icon} on:click={handleFavorite} />
   {/if}
 {/if}

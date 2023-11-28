@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   JoinColumn,
@@ -14,6 +15,7 @@ import {
 } from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetFaceEntity } from './asset-face.entity';
+import { AssetJobStatusEntity } from './asset-job-status.entity';
 import { ExifEntity } from './exif.entity';
 import { LibraryEntity } from './library.entity';
 import { SharedLinkEntity } from './shared-link.entity';
@@ -30,6 +32,8 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_library_checksum';
 })
 @Index('IDX_day_of_month', { synchronize: false })
 @Index('IDX_month', { synchronize: false })
+@Index('IDX_originalPath_libraryId', ['originalPath', 'libraryId'])
+@Index(['stackParentId'])
 // For all assets, each originalpath must be unique per user and library
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -77,10 +81,13 @@ export class AssetEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
+  @DeleteDateColumn({ type: 'timestamptz', nullable: true })
+  deletedAt!: Date | null;
+
   @Column({ type: 'timestamptz' })
   fileCreatedAt!: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz' })
   localDateTime!: Date;
 
   @Column({ type: 'timestamptz' })
@@ -143,6 +150,19 @@ export class AssetEntity {
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.asset)
   faces!: AssetFaceEntity[];
+
+  @Column({ nullable: true })
+  stackParentId?: string | null;
+
+  @ManyToOne(() => AssetEntity, (asset) => asset.stack, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  @JoinColumn({ name: 'stackParentId' })
+  stackParent?: AssetEntity | null;
+
+  @OneToMany(() => AssetEntity, (asset) => asset.stackParent)
+  stack?: AssetEntity[];
+
+  @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
+  jobStatus?: AssetJobStatusEntity;
 }
 
 export enum AssetType {

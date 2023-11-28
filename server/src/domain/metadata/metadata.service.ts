@@ -4,14 +4,38 @@ import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import { Duration } from 'luxon';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
-import { ICryptoRepository } from '../crypto';
+import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { FeatureFlag, ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IMetadataRepository, ImmichTags } from './metadata.repository';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import {
+  ExifDuration,
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IMetadataRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichTags,
+  WithProperty,
+  WithoutProperty,
+} from '../repositories';
+import { StorageCore } from '../storage';
+import { FeatureFlag, SystemConfigCore } from '../system-config';
+
+/** look for a date from these tags (in order) */
+const EXIF_DATE_TAGS: Array<keyof Tags> = [
+  'SubSecDateTimeOriginal',
+  'DateTimeOriginal',
+  'SubSecCreateDate',
+  'CreationDate',
+  'CreateDate',
+  'SubSecMediaCreateDate',
+  'MediaCreateDate',
+  'DateTimeCreated',
+];
 
 interface DirectoryItem {
   Length?: number;
@@ -27,7 +51,7 @@ interface DirectoryEntry {
 type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
   ExifEntity,
   'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
->;
+> & { dateTimeOriginal: Date };
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
 const tzOffset = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.tzoffsetMinutes : null);
@@ -56,6 +80,7 @@ export class MetadataService {
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
   private oldCities?: string;
+  private subscription: Subscription | null = null;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -65,36 +90,39 @@ export class MetadataService {
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
-    this.storageCore = new StorageCore(storageRepository);
-    this.configCore = new SystemConfigCore(configRepository);
-    this.configCore.config$.subscribe(() => this.init());
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
-  async init(deleteCache = false) {
-    const { reverseGeocoding } = await this.configCore.getConfig();
-    const { citiesFileOverride } = reverseGeocoding;
+  async init() {
+    if (!this.subscription) {
+      this.subscription = this.configCore.config$.subscribe(() => this.init());
+    }
 
-    if (!reverseGeocoding.enabled) {
+    const { reverseGeocoding } = await this.configCore.getConfig();
+    const { enabled } = reverseGeocoding;
+
+    if (!enabled) {
       return;
     }
 
     try {
-      if (deleteCache) {
-        await this.repository.deleteCache();
-      } else if (this.oldCities && this.oldCities === citiesFileOverride) {
-        return;
-      }
-
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.repository.init({ citiesFileOverride });
+      await this.repository.init();
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
-      this.logger.log(`Initialized local reverse geocoder with ${citiesFileOverride}`);
-      this.oldCities = citiesFileOverride;
+      this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
+  }
+
+  async teardown() {
+    this.subscription?.unsubscribe();
+    await this.repository.teardown();
   }
 
   async handleLivePhotoLinking(job: IEntityJob) {
@@ -157,9 +185,10 @@ export class MetadataService {
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
     await this.assetRepository.upsertExif(exifData);
-    let localDateTime = exifData.dateTimeOriginal ?? undefined;
 
-    const dateTimeOriginal = exifDate(firstDateTime(tags as Tags)) ?? exifData.dateTimeOriginal;
+    const dateTimeOriginal = exifData.dateTimeOriginal;
+    let localDateTime = dateTimeOriginal ?? undefined;
+
     const timeZoneOffset = tzOffset(firstDateTime(tags as Tags)) ?? 0;
 
     if (dateTimeOriginal && timeZoneOffset) {
@@ -222,8 +251,9 @@ export class MetadataService {
     }
 
     try {
-      const { city, state, country } = await this.repository.reverseGeocode({ latitude, longitude });
-      Object.assign(exifData, { city, state, country });
+      const reverseGeocode = await this.repository.reverseGeocode({ latitude, longitude });
+      if (!reverseGeocode) return;
+      Object.assign(exifData, reverseGeocode);
     } catch (error: Error | any) {
       this.logger.warn(
         `Unable to run reverse geocoding due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
@@ -276,6 +306,9 @@ export class MetadataService {
       });
       const checksum = this.cryptoRepository.hashSha1(video);
 
+      const motionPath = StorageCore.getAndroidMotionPath(asset);
+      this.storageCore.ensureFolders(motionPath);
+
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
@@ -287,10 +320,10 @@ export class MetadataService {
           localDateTime: createdAt,
           checksum,
           ownerId: asset.ownerId,
-          originalPath: this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`),
+          originalPath: motionPath,
           originalFileName: asset.originalFileName,
           isVisible: false,
-          isReadOnly: true,
+          isReadOnly: false,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
@@ -313,6 +346,15 @@ export class MetadataService {
     const stats = await this.storageRepository.stat(asset.originalPath);
     const mediaTags = await this.repository.getExifTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
+
+    // ensure date from sidecar is used if present
+    const hasDateOverride = !!this.getDateTimeOriginal(sidecarTags);
+    if (mediaTags && hasDateOverride) {
+      for (const tag of EXIF_DATE_TAGS) {
+        delete mediaTags[tag];
+      }
+    }
+
     const tags = { ...mediaTags, ...sidecarTags };
 
     this.logger.verbose('Exif Tags', tags);
@@ -323,19 +365,7 @@ export class MetadataService {
         assetId: asset.id,
         bitsPerSample: this.getBitsPerSample(tags),
         colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal:
-          exifDate(
-            firstDateTime(tags as Tags, [
-              'SubSecDateTimeOriginal',
-              'DateTimeOriginal',
-              'SubSecCreateDate',
-              'CreationDate',
-              'CreateDate',
-              'SubSecMediaCreateDate',
-              'MediaCreateDate',
-              'DateTimeCreated',
-            ]),
-          ) ?? asset.fileCreatedAt,
+        dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
         exifImageHeight: validate(tags.ImageHeight),
         exifImageWidth: validate(tags.ImageWidth),
         exposureTime: tags.ExposureTime ?? null,
@@ -360,6 +390,13 @@ export class MetadataService {
     };
   }
 
+  private getDateTimeOriginal(tags: ImmichTags | Tags | null) {
+    if (!tags) {
+      return null;
+    }
+    return exifDate(firstDateTime(tags as Tags, EXIF_DATE_TAGS));
+  }
+
   private getBitsPerSample(tags: ImmichTags): number | null {
     const bitDepthTags = [
       tags.BitsPerSample,
@@ -378,7 +415,11 @@ export class MetadataService {
     return bitsPerSample;
   }
 
-  private getDuration(seconds?: number): string {
-    return Duration.fromObject({ seconds }).toFormat('hh:mm:ss.SSS');
+  private getDuration(seconds?: number | ExifDuration): string {
+    let _seconds = seconds as number;
+    if (typeof seconds === 'object') {
+      _seconds = seconds.Value * (seconds?.Scale || 1);
+    }
+    return Duration.fromObject({ seconds: _seconds }).toFormat('hh:mm:ss.SSS');
   }
 }

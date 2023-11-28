@@ -1,44 +1,40 @@
-import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final personServiceProvider = Provider(
-  (ref) => PersonService(
-    ref.watch(apiServiceProvider),
-  ),
-);
+part 'person.service.g.dart';
+
+@riverpod
+PersonService personService(PersonServiceRef ref) =>
+    PersonService(ref.read(apiServiceProvider));
 
 class PersonService {
+  final Logger _log = Logger("PersonService");
   final ApiService _apiService;
 
   PersonService(this._apiService);
 
-  Future<List<PersonResponseDto>?> getCuratedPeople() async {
+  Future<List<PersonResponseDto>> getCuratedPeople() async {
     try {
       final peopleResponseDto = await _apiService.personApi.getAllPeople();
-      return peopleResponseDto?.people;
-    } catch (e) {
-      debugPrint("Error [getCuratedPeople] ${e.toString()}");
-      return null;
+      return peopleResponseDto?.people ?? [];
+    } catch (error, stack) {
+      _log.severe("Error while fetching curated people", error, stack);
+      return [];
     }
   }
 
   Future<List<Asset>?> getPersonAssets(String id) async {
     try {
       final assets = await _apiService.personApi.getPersonAssets(id);
-
-      if (assets == null) {
-        return null;
-      }
-
-      return assets.map((e) => Asset.remote(e)).toList();
-    } catch (e) {
-      debugPrint("Error [getPersonAssets] ${e.toString()}");
-      return null;
+      return assets?.map((e) => Asset.remote(e)).toList();
+    } catch (error, stack) {
+      _log.severe("Error while fetching person assets", error, stack);
     }
+    return null;
   }
 
   Future<PersonResponseDto?> updateName(String id, String name) async {
@@ -49,9 +45,9 @@ class PersonService {
           name: name,
         ),
       );
-    } catch (e) {
-      debugPrint("Error [updateName] ${e.toString()}");
-      return null;
+    } catch (error, stack) {
+      _log.severe("Error while updating person name", error, stack);
     }
+    return null;
   }
 }

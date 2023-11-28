@@ -1,8 +1,7 @@
 import { AuthUserDto } from '@app/domain';
 
 export const adminSignupStub = {
-  firstName: 'Immich',
-  lastName: 'Admin',
+  name: 'Immich Admin',
   email: 'admin@immich.app',
   password: 'Password123',
 };
@@ -10,14 +9,6 @@ export const adminSignupStub = {
 export const userSignupStub = {
   ...adminSignupStub,
   memoriesEnabled: true,
-};
-
-export const signupResponseStub = {
-  id: expect.any(String),
-  email: 'admin@immich.app',
-  firstName: 'Immich',
-  lastName: 'Admin',
-  createdAt: expect.any(String),
 };
 
 export const loginStub = {
@@ -48,7 +39,7 @@ export const authStub = {
     isPublicUser: false,
     isAllowUpload: true,
     isAllowDownload: true,
-    isShowExif: true,
+    isShowMetadata: true,
     accessTokenId: 'token-id',
     externalPath: null,
   }),
@@ -59,7 +50,7 @@ export const authStub = {
     isPublicUser: false,
     isAllowUpload: true,
     isAllowDownload: true,
-    isShowExif: true,
+    isShowMetadata: true,
     accessTokenId: 'token-id',
     externalPath: null,
   }),
@@ -70,7 +61,7 @@ export const authStub = {
     isPublicUser: false,
     isAllowUpload: true,
     isAllowDownload: true,
-    isShowExif: true,
+    isShowMetadata: true,
     accessTokenId: 'token-id',
     externalPath: '/data/user1',
   }),
@@ -81,7 +72,7 @@ export const authStub = {
     isAllowUpload: true,
     isAllowDownload: true,
     isPublicUser: true,
-    isShowExif: true,
+    isShowMetadata: true,
     sharedLinkId: '123',
   }),
   adminSharedLinkNoExif: Object.freeze<AuthUserDto>({
@@ -91,7 +82,7 @@ export const authStub = {
     isAllowUpload: true,
     isAllowDownload: true,
     isPublicUser: true,
-    isShowExif: false,
+    isShowMetadata: false,
     sharedLinkId: '123',
   }),
   readonlySharedLink: Object.freeze<AuthUserDto>({
@@ -101,7 +92,7 @@ export const authStub = {
     isAllowUpload: false,
     isAllowDownload: false,
     isPublicUser: true,
-    isShowExif: true,
+    isShowMetadata: true,
     sharedLinkId: '123',
     accessTokenId: 'token-id',
   }),
@@ -111,9 +102,8 @@ export const loginResponseStub = {
   admin: {
     response: {
       accessToken: expect.any(String),
-      firstName: 'Immich',
+      name: 'Immich Admin',
       isAdmin: true,
-      lastName: 'Admin',
       profileImagePath: '',
       shouldChangePassword: true,
       userEmail: 'admin@immich.app',
@@ -125,8 +115,7 @@ export const loginResponseStub = {
       accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'user-id',
       userEmail: 'immich@test.com',
-      firstName: 'immich_first_name',
-      lastName: 'immich_last_name',
+      name: 'immich_name',
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,
@@ -141,8 +130,7 @@ export const loginResponseStub = {
       accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'user-id',
       userEmail: 'immich@test.com',
-      firstName: 'immich_first_name',
-      lastName: 'immich_last_name',
+      name: 'immich_name',
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,
@@ -157,8 +145,7 @@ export const loginResponseStub = {
       accessToken: 'cmFuZG9tLWJ5dGVz',
       userId: 'user-id',
       userEmail: 'immich@test.com',
-      firstName: 'immich_first_name',
-      lastName: 'immich_last_name',
+      name: 'immich_name',
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,

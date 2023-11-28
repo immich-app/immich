@@ -1,15 +1,13 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_list_tile.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class BackupAlbumSelectionPage extends HookConsumerWidget {
   const BackupAlbumSelectionPage({Key? key}) : super(key: key);
@@ -18,7 +16,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     // final availableAlbums = ref.watch(backupProvider).availableAlbums;
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isDarkTheme = context.isDarkTheme;
     final allAlbums = ref.watch(backupProvider).availableAlbums;
 
     // Albums which are displayed to the user
@@ -91,19 +89,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
     buildSelectedAlbumNameChip() {
       return selectedBackupAlbums.map((album) {
-        void removeSelection() {
-          if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
-            ImmichToast.show(
-              context: context,
-              msg: "backup_err_only_album".tr(),
-              toastType: ToastType.error,
-              gravity: ToastGravity.BOTTOM,
-            );
-            return;
-          }
-
-          ref.watch(backupProvider.notifier).removeAlbumForBackup(album);
-        }
+        void removeSelection() =>
+            ref.read(backupProvider.notifier).removeAlbumForBackup(album);
 
         return Padding(
           padding: const EdgeInsets.only(right: 8.0),
@@ -113,12 +100,12 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               label: Text(
                 album.name,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: isDarkTheme ? Colors.black : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: context.primaryColor,
               deleteIconColor: isDarkTheme ? Colors.black : Colors.white,
               deleteIcon: const Icon(
                 Icons.cancel_rounded,
@@ -147,7 +134,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               label: Text(
                 album.name,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: isDarkTheme ? Colors.black : immichBackgroundColor,
                   fontWeight: FontWeight.bold,
                 ),
@@ -211,12 +198,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => AutoRouter.of(context).pop(),
+          onPressed: () => context.autoPop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         title: const Text(
           "backup_album_selection_page_select_albums",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ).tr(),
         elevation: 0,
       ),
@@ -232,12 +218,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     vertical: 8.0,
                     horizontal: 16.0,
                   ),
-                  child: const Text(
+                  child: Text(
                     "backup_album_selection_page_selection_info",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: context.textTheme.titleSmall,
                   ).tr(),
                 ),
                 // Selected Album Chips
@@ -252,47 +235,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   ),
                 ),
 
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                  child: Card(
-                    margin: const EdgeInsets.all(0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: isDarkTheme
-                            ? const Color.fromARGB(255, 0, 0, 0)
-                            : const Color.fromARGB(255, 235, 235, 235),
-                        width: 1,
-                      ),
-                    ),
-                    elevation: 0,
-                    borderOnForeground: false,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          visualDensity: VisualDensity.compact,
-                          title: const Text(
-                            "backup_album_selection_page_total_assets",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ).tr(),
-                          trailing: Text(
-                            ref
-                                .watch(backupProvider)
-                                .allUniqueAssets
-                                .length
-                                .toString(),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
                 ListTile(
                   title: Text(
                     "backup_album_selection_page_albums_device".tr(
@@ -304,19 +246,14 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                             .toString(),
                       ],
                     ),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: context.textTheme.titleSmall,
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
                       "backup_album_selection_page_albums_tap",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
+                      style: context.textTheme.labelLarge?.copyWith(
+                        color: context.primaryColor,
                       ),
                     ).tr(),
                   ),
@@ -325,7 +262,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     icon: Icon(
                       Icons.info,
                       size: 20,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                     onPressed: () {
                       // show the dialog
@@ -342,7 +279,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).primaryColor,
+                                color: context.primaryColor,
                               ),
                             ).tr(),
                             content: SingleChildScrollView(

@@ -14,18 +14,24 @@ import {
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
+  newMoveRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   personStub,
   probeStub,
 } from '@test';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IPersonRepository } from '../person';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { IMediaRepository } from './media.repository';
+import { JobName } from '../job';
+import {
+  IAssetRepository,
+  IJobRepository,
+  IMediaRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  WithoutProperty,
+} from '../repositories';
 import { MediaService } from './media.service';
 
 describe(MediaService.name, () => {
@@ -34,6 +40,7 @@ describe(MediaService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
@@ -42,10 +49,11 @@ describe(MediaService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
     mediaMock = newMediaRepositoryMock();
+    moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock);
+    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock);
   });
 
   it('should be defined', () => {
@@ -1499,6 +1507,83 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toEqual(false);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should set vbr options for rkmpp when max bitrate is enabled', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.RKMPP },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '10000k' },
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.HEVC },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            `-c:v hevc_rkmpp_encoder`,
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
+            '-v verbose',
+            '-level 153',
+            '-rc_mode 3',
+            '-quality_min 0',
+            '-quality_max 100',
+            '-b:v 10000k',
+            '-width 1280',
+            '-height 720',
+          ],
+          twoPass: false,
+          ffmpegPath: 'ffmpeg_mpp',
+          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
+        },
+      );
+    });
+
+    it('should set cqp options for rkmpp when max bitrate is disabled', async () => {
+      storageMock.readdir.mockResolvedValue(['renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_ACCEL, value: TranscodeHWAccel.RKMPP },
+        { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '0' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            `-c:v h264_rkmpp_encoder`,
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-g 256',
+            '-v verbose',
+            '-level 51',
+            '-rc_mode 2',
+            '-quality_min 51',
+            '-quality_max 51',
+            '-width 1280',
+            '-height 720',
+          ],
+          twoPass: false,
+          ffmpegPath: 'ffmpeg_mpp',
+          ldLibraryPath: '/lib/aarch64-linux-gnu:/lib/ffmpeg-mpp',
+        },
+      );
     });
   });
 

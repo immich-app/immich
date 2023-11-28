@@ -25,7 +25,7 @@ export class OAuthController {
   @PublicRoute()
   @Get('mobile-redirect')
   @Redirect()
-  mobileRedirect(@Req() req: Request) {
+  redirectOAuthToMobile(@Req() req: Request) {
     return {
       url: this.service.getMobileRedirect(req.url),
       statusCode: HttpStatus.TEMPORARY_REDIRECT,
@@ -35,19 +35,19 @@ export class OAuthController {
   /** @deprecated use feature flags and /oauth/authorize */
   @PublicRoute()
   @Post('config')
-  generateConfig(@Body() dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
+  generateOAuthConfig(@Body() dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
     return this.service.generateConfig(dto);
   }
 
   @PublicRoute()
   @Post('authorize')
-  authorizeOAuth(@Body() dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
+  startOAuth(@Body() dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {
     return this.service.authorize(dto);
   }
 
   @PublicRoute()
   @Post('callback')
-  async callback(
+  async finishOAuth(
     @Res({ passthrough: true }) res: Response,
     @Body() dto: OAuthCallbackDto,
     @GetLoginDetails() loginDetails: LoginDetails,
@@ -58,12 +58,12 @@ export class OAuthController {
   }
 
   @Post('link')
-  link(@AuthUser() authUser: AuthUserDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
+  linkOAuthAccount(@AuthUser() authUser: AuthUserDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
     return this.service.link(authUser, dto);
   }
 
   @Post('unlink')
-  unlink(@AuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
+  unlinkOAuthAccount(@AuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
     return this.service.unlink(authUser);
   }
 }

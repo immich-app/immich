@@ -1,7 +1,6 @@
 <script lang="ts">
   import { api, APIKeyResponseDto } from '@api';
-  import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
-  import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
   import APIKeyForm from '../forms/api-key-form.svelte';
@@ -10,6 +9,7 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { locale } from '$lib/stores/preferences.store';
   import Button from '../elements/buttons/button.svelte';
+  import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
 
   export let keys: APIKeyResponseDto[];
 
@@ -25,14 +25,14 @@
   };
 
   async function refreshKeys() {
-    const { data } = await api.keyApi.getKeys();
+    const { data } = await api.keyApi.getApiKeys();
     keys = data;
   }
 
   const handleCreate = async (event: CustomEvent<APIKeyResponseDto>) => {
     try {
       const dto = event.detail;
-      const { data } = await api.keyApi.createKey({ aPIKeyCreateDto: dto });
+      const { data } = await api.keyApi.createApiKey({ aPIKeyCreateDto: dto });
       secret = data.secret;
     } catch (error) {
       handleError(error, 'Unable to create a new API Key');
@@ -50,7 +50,7 @@
     const dto = event.detail;
 
     try {
-      await api.keyApi.updateKey({ id: editKey.id, aPIKeyUpdateDto: { name: dto.name } });
+      await api.keyApi.updateApiKey({ id: editKey.id, aPIKeyUpdateDto: { name: dto.name } });
       notificationController.show({
         message: `Saved API Key`,
         type: NotificationType.Info,
@@ -69,7 +69,7 @@
     }
 
     try {
-      await api.keyApi.deleteKey({ id: deleteKey.id });
+      await api.keyApi.deleteApiKey({ id: deleteKey.id });
       notificationController.show({
         message: `Removed API Key: ${deleteKey.name}`,
         type: NotificationType.Info,
@@ -143,13 +143,13 @@
                     on:click={() => (editKey = key)}
                     class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   >
-                    <PencilOutline size="16" />
+                    <Icon path={mdiPencilOutline} size="16" />
                   </button>
                   <button
                     on:click={() => (deleteKey = key)}
                     class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                   >
-                    <TrashCanOutline size="16" />
+                    <Icon path={mdiTrashCanOutline} size="16" />
                   </button>
                 </td>
               </tr>

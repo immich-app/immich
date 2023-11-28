@@ -52,6 +52,11 @@ void main() {
       // TODO
     });
 
+    // bool hasMetadata
+    test('to test the property `hasMetadata`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -79,6 +84,11 @@ void main() {
 
     // bool isReadOnly
     test('to test the property `isReadOnly`', () async {
+      // TODO
+    });
+
+    // bool isTrashed
+    test('to test the property `isTrashed`', () async {
       // TODO
     });
 
@@ -132,12 +142,26 @@ void main() {
       // TODO
     });
 
+    // List<AssetResponseDto> stack (default value: const [])
+    test('to test the property `stack`', () async {
+      // TODO
+    });
+
+    // int stackCount
+    test('to test the property `stackCount`', () async {
+      // TODO
+    });
+
+    // String stackParentId
+    test('to test the property `stackParentId`', () async {
+      // TODO
+    });
+
     // List<TagResponseDto> tags (default value: const [])
     test('to test the property `tags`', () async {
       // TODO
     });
 
-    // base64 encoded thumbhash
     // String thumbhash
     test('to test the property `thumbhash`', () async {
       // TODO

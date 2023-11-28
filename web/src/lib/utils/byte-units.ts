@@ -9,7 +9,7 @@
  * @returns size (number) and unit (string)
  */
 export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, string] {
-  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'];
+  const units = ['B', 'KiB', 'MiB', 'GiB'];
 
   let magnitude = 0;
   let remainder = bytes;

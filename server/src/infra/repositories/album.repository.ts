@@ -1,4 +1,4 @@
-import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
+import { AlbumAsset, AlbumAssetCount, AlbumAssets, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
@@ -59,25 +59,30 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  async getAssetCountForIds(ids: string[]): Promise<AlbumAssetCount[]> {
+  async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (!ids.length) {
       return [];
     }
 
     // Only possible with query builder because of GROUP BY.
-    const countByAlbums = await this.repository
+    const albumMetadatas = await this.repository
       .createQueryBuilder('album')
       .select('album.id')
-      .addSelect('COUNT(albums_assets.assetsId)', 'asset_count')
-      .leftJoin('albums_assets_assets', 'albums_assets', 'albums_assets.albumsId = album.id')
+      .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
+      .addSelect('MAX(assets.fileCreatedAt)', 'end_date')
+      .addSelect('COUNT(album_assets.assetsId)', 'asset_count')
+      .leftJoin('albums_assets_assets', 'album_assets', 'album_assets.albumsId = album.id')
+      .leftJoin('assets', 'assets', 'assets.id = album_assets.assetsId')
       .where('album.id IN (:...ids)', { ids })
       .groupBy('album.id')
       .getRawMany();
 
-    return countByAlbums.map<AlbumAssetCount>((albumCount) => ({
-      albumId: albumCount['album_id'],
-      assetCount: Number(albumCount['asset_count']),
+    return albumMetadatas.map<AlbumAssetCount>((metadatas) => ({
+      albumId: metadatas['album_id'],
+      assetCount: Number(metadatas['asset_count']),
+      startDate: metadatas['end_date'] ? new Date(metadatas['start_date']) : undefined,
+      endDate: metadatas['end_date'] ? new Date(metadatas['end_date']) : undefined,
     }));
   }
 
@@ -168,22 +173,64 @@ export class AlbumRepository implements IAlbumRepository {
       .createQueryBuilder()
       .delete()
       .from('albums_assets_assets')
-      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId })
+      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId });
+  }
+
+  async removeAssets(asset: AlbumAssets): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('albums_assets_assets')
+      .where({
+        albumsId: asset.albumId,
+        assetsId: In(asset.assetIds),
+      })
       .execute();
   }
 
-  hasAsset(id: string, assetId: string): Promise<boolean> {
+  /**
+   * Get asset IDs for the given album ID.
+   *
+   * @param albumId Album ID to get asset IDs for.
+   * @param assetIds Optional list of asset IDs to filter on.
+   * @returns Set of Asset IDs for the given album ID.
+   */
+  async getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>> {
+    const query = this.dataSource
+      .createQueryBuilder()
+      .select('albums_assets.assetsId', 'assetId')
+      .from('albums_assets_assets', 'albums_assets')
+      .where('"albums_assets"."albumsId" = :albumId', { albumId });
+
+    if (assetIds?.length) {
+      query.andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds });
+    }
+
+    const result = await query.getRawMany();
+    return new Set(result.map((row) => row['assetId']));
+  }
+
+  hasAsset(asset: AlbumAsset): Promise<boolean> {
     return this.repository.exist({
       where: {
-        id,
+        id: asset.albumId,
         assets: {
-          id: assetId,
+          id: asset.assetId,
         },
       },
       relations: {
         assets: true,
       },
     });
+  }
+
+  async addAssets({ albumId, assetIds }: AlbumAssets): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into('albums_assets_assets', ['albumsId', 'assetsId'])
+      .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
+      .execute();
   }
 
   async create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {

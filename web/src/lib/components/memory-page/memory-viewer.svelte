@@ -5,12 +5,7 @@
   import { api } from '@api';
   import { goto } from '$app/navigation';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import Play from 'svelte-material-icons/Play.svelte';
-  import Pause from 'svelte-material-icons/Pause.svelte';
-  import ChevronDown from 'svelte-material-icons/ChevronDown.svelte';
-  import ChevronUp from 'svelte-material-icons/ChevronUp.svelte';
-  import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-  import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+  import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import { AppRoute } from '$lib/constants';
   import { page } from '$app/stores';
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
@@ -19,6 +14,7 @@
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import { fade } from 'svelte/transition';
   import { tweened } from 'svelte/motion';
+  import { mdiChevronDown, mdiChevronLeft, mdiChevronRight, mdiChevronUp, mdiPause, mdiPlay } from '@mdi/js';
 
   const parseIndex = (s: string | null, max: number | null) => Math.max(Math.min(parseInt(s ?? '') || 0, max ?? 0), 0);
 
@@ -114,7 +110,7 @@
 
       {#if !galleryInView}
         <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-          <CircleIconButton logo={paused ? Play : Pause} forceDark on:click={() => (paused = !paused)} />
+          <CircleIconButton icon={paused ? mdiPlay : mdiPause} forceDark on:click={() => (paused = !paused)} />
 
           {#each currentMemory.assets as _, i}
             <button class="relative w-full py-2" on:click={() => goto(`?memory=${memoryIndex}&asset=${i}`)}>
@@ -146,7 +142,7 @@
         class:opacity-100={galleryInView}
       >
         <button on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })} disabled={!galleryInView}>
-          <CircleIconButton logo={ChevronUp} backgroundColor="white" forceDark />
+          <CircleIconButton icon={mdiChevronUp} backgroundColor="white" forceDark />
         </button>
       </div>
     {/if}
@@ -189,14 +185,14 @@
               <div class="ml-4 flex h-full flex-col place-content-center place-items-center">
                 <div class="inline-block">
                   {#if canGoBack}
-                    <CircleIconButton logo={ChevronLeft} backgroundColor="#202123" on:click={toPrevious} />
+                    <CircleIconButton icon={mdiChevronLeft} backgroundColor="#202123" on:click={toPrevious} />
                   {/if}
                 </div>
               </div>
               <div class="mr-4 flex h-full flex-col place-content-center place-items-center">
                 <div class="inline-block">
                   {#if canGoForward}
-                    <CircleIconButton logo={ChevronRight} backgroundColor="#202123" on:click={toNext} />
+                    <CircleIconButton icon={mdiChevronRight} backgroundColor="#202123" on:click={toNext} />
                   {/if}
                 </div>
               </div>
@@ -214,7 +210,7 @@
 
             <div class="absolute left-8 top-4 text-sm font-medium text-white">
               <p>
-                {DateTime.fromISO(currentMemory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL)}
+                {fromLocalDateTime(currentMemory.assets[0].localDateTime).toLocaleString(DateTime.DATE_FULL)}
               </p>
               <p>
                 {currentAsset.exifInfo?.city || ''}
@@ -259,7 +255,7 @@
         class:opacity-100={!galleryInView}
       >
         <button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-          <CircleIconButton logo={ChevronDown} backgroundColor="white" forceDark />
+          <CircleIconButton icon={mdiChevronDown} backgroundColor="white" forceDark />
         </button>
       </div>
 
@@ -279,6 +275,8 @@
 
 <style>
   .main-view {
-    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.3), 0 8px 12px 6px rgba(0, 0, 0, 0.15);
+    box-shadow:
+      0 4px 4px 0 rgba(0, 0, 0, 0.3),
+      0 8px 12px 6px rgba(0, 0, 0, 0.15);
   }
 </style>

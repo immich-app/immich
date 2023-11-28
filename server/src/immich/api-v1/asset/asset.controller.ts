@@ -2,7 +2,6 @@ import { AssetResponseDto, AuthUserDto } from '@app/domain';
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -15,30 +14,25 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../../app.guard';
-import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../app.interceptor';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
+import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
+import { CreateAssetDto } from './dto/create-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
 
 interface UploadFiles {
   assetData: ImmichFile[];
@@ -82,20 +76,6 @@ export class AssetController {
     const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
       res.status(HttpStatus.OK);
-    }
-
-    return responseDto;
-  }
-
-  @Post('import')
-  async importFile(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(new ValidationPipe({ transform: true })) dto: ImportAssetDto,
-    @Response({ passthrough: true }) res: Res,
-  ): Promise<AssetFileUploadResponseDto> {
-    const responseDto = await this.assetService.importFile(authUser, dto);
-    if (responseDto.duplicate) {
-      res.status(200);
     }
 
     return responseDto;
@@ -149,15 +129,6 @@ export class AssetController {
     return this.assetService.getAssetSearchTerm(authUser);
   }
 
-  @Post('/search')
-  @HttpCode(HttpStatus.OK)
-  searchAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: SearchAssetDto,
-  ): Promise<AssetResponseDto[]> {
-    return this.assetService.searchAsset(authUser, dto);
-  }
-
   /**
    * Get all AssetEntity belong to the user
    */
@@ -176,9 +147,10 @@ export class AssetController {
   }
 
   /**
-   * Get all asset of a device that are in the database, ID only.
+   * @deprecated Use /asset/device/:deviceId instead - Remove at 1.92 release
    */
   @Get('/:deviceId')
+  @ApiOperation({ deprecated: true, summary: 'Use /asset/device/:deviceId instead - Remove in 1.92 release' })
   getUserAssetsByDeviceId(@AuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
     return this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
   }
@@ -189,28 +161,7 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/assetById/:id')
   getAssetById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
-    return this.assetService.getAssetById(authUser, id);
-  }
-
-  @Delete('/')
-  deleteAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: DeleteAssetDto,
-  ): Promise<DeleteAssetResponseDto[]> {
-    return this.assetService.deleteAll(authUser, dto);
-  }
-
-  /**
-   * Check duplicated asset before uploading - for Web upload used
-   */
-  @SharedLinkRoute()
-  @Post('/check')
-  @HttpCode(HttpStatus.OK)
-  checkDuplicateAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: CheckDuplicateAssetDto,
-  ): Promise<CheckDuplicateAssetResponseDto> {
-    return this.assetService.checkDuplicatedAsset(authUser, dto);
+    return this.assetService.getAssetById(authUser, id) as Promise<AssetResponseDto>;
   }
 
   /**
@@ -230,7 +181,7 @@ export class AssetController {
    */
   @Post('/bulk-upload-check')
   @HttpCode(HttpStatus.OK)
-  bulkUploadCheck(
+  checkBulkUpload(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
   ): Promise<AssetBulkUploadCheckResponseDto> {

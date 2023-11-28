@@ -1,37 +1,27 @@
 import { LoginResponseDto } from '@app/domain';
-import { AppModule, ServerInfoController } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { ServerInfoController } from '@app/immich';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub } from '@test/fixtures';
+import { errorStub, userDto } from '@test/fixtures';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
-  let accessToken: string;
-  let loginResponse: LoginResponseDto;
+  let admin: LoginResponseDto;
+  let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    [server] = await testApp.create();
 
-    app = await moduleFixture.createNestApplication().init();
-    server = app.getHttpServer();
-  });
-
-  beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
-    loginResponse = await api.authApi.adminLogin(server);
-    accessToken = loginResponse.accessToken;
+    admin = await api.authApi.adminLogin(server);
+    await api.userApi.create(server, admin.accessToken, userDto.user1);
+    nonAdmin = await api.authApi.login(server, userDto.user1);
   });
 
   afterAll(async () => {
-    await db.disconnect();
-    await app.close();
+    await testApp.teardown();
   });
 
   describe('GET /server-info', () => {
@@ -42,7 +32,9 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
     });
 
     it('should return the disk information', async () => {
-      const { status, body } = await request(server).get('/server-info').set('Authorization', `Bearer ${accessToken}`);
+      const { status, body } = await request(server)
+        .get('/server-info')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
         diskAvailable: expect.any(String),
@@ -81,9 +73,9 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/server-info/features');
       expect(status).toBe(200);
       expect(body).toEqual({
-        clipEncode: true,
+        clipEncode: false,
         configFile: false,
-        facialRecognition: true,
+        facialRecognition: false,
         map: true,
         reverseGeocoding: true,
         oauth: false,
@@ -91,7 +83,8 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         passwordLogin: true,
         search: false,
         sidecar: true,
-        tagImage: true,
+        tagImage: false,
+        trash: true,
       });
     });
   });
@@ -103,33 +96,31 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       expect(body).toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
-        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        trashDays: 30,
+        isInitialized: true,
       });
     });
   });
 
-  describe('GET /server-info/stats', () => {
+  describe('GET /server-info/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(server).get('/server-info/stats');
+      const { status, body } = await request(server).get('/server-info/statistics');
       expect(status).toBe(401);
       expect(body).toEqual(errorStub.unauthorized);
     });
 
     it('should only work for admins', async () => {
-      const loginDto = { email: 'test@immich.app', password: 'Immich123' };
-      await api.userApi.create(server, accessToken, { ...loginDto, firstName: 'test', lastName: 'test' });
-      const { accessToken: userAccessToken } = await api.authApi.login(server, loginDto);
       const { status, body } = await request(server)
-        .get('/server-info/stats')
-        .set('Authorization', `Bearer ${userAccessToken}`);
+        .get('/server-info/statistics')
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
       expect(status).toBe(403);
       expect(body).toEqual(errorStub.forbidden);
     });
 
     it('should return the server stats', async () => {
       const { status, body } = await request(server)
-        .get('/server-info/stats')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get('/server-info/statistics')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
         photos: 0,
@@ -138,9 +129,15 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
           {
             photos: 0,
             usage: 0,
-            userFirstName: 'Immich',
-            userId: loginResponse.userId,
-            userLastName: 'Admin',
+            userName: 'Immich Admin',
+            userId: admin.userId,
+            videos: 0,
+          },
+          {
+            photos: 0,
+            usage: 0,
+            userName: 'User 1',
+            userId: nonAdmin.userId,
             videos: 0,
           },
         ],
@@ -157,6 +154,16 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         sidecar: ['.xmp'],
         image: expect.any(Array),
         video: expect.any(Array),
+      });
+    });
+  });
+
+  describe('GET /server-info/theme', () => {
+    it('should respond with the server theme', async () => {
+      const { status, body } = await request(server).get('/server-info/theme');
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        customCss: '',
       });
     });
   });

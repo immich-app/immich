@@ -1,11 +1,11 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
-  import Magnify from 'svelte-material-icons/Magnify.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { goto } from '$app/navigation';
   import { isSearchEnabled, preventRaceConditionSearchBar, savedSearchTerms } from '$lib/stores/search.store';
   import { fly } from 'svelte/transition';
   import { clickOutside } from '$lib/utils/click-outside';
+  import { mdiClose, mdiMagnify } from '@mdi/js';
   export let value = '';
   export let grayTheme: boolean;
 
@@ -33,7 +33,7 @@
 
     showBigSearchBar = false;
     $isSearchEnabled = false;
-    goto(`${AppRoute.SEARCH}?${params}`);
+    goto(`${AppRoute.SEARCH}?${params}`, { invalidateAll: true });
   }
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -82,7 +82,7 @@
       <div class="absolute inset-y-0 left-0 flex items-center pl-6">
         <div class="dark:text-immich-dark-fg/75">
           <button class="flex items-center">
-            <Magnify size="1.5em" />
+            <Icon path={mdiMagnify} size="1.5em" />
           </button>
         </div>
       </div>
@@ -108,7 +108,7 @@
           type="reset"
           class="rounded-full p-2 hover:bg-immich-primary/5 active:bg-immich-primary/10 dark:text-immich-dark-fg/75 dark:hover:bg-immich-dark-primary/25 dark:active:bg-immich-dark-primary/[.35]"
         >
-          <Close size="1.5em" />
+          <Icon path={mdiClose} size="1.5em" />
         </button>
       </div>
     {/if}
@@ -118,7 +118,7 @@
         transition:fly={{ y: 25, duration: 250 }}
         class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300"
       >
-        <div class="flex px-5 pt-5 text-left text-xs">
+        <div class="flex px-5 pt-5 text-left text-sm">
           <p>
             Smart search is enabled by default, to search for metadata use the syntax <span
               class="rounded-lg bg-gray-100 p-2 font-mono font-semibold leading-7 text-immich-primary dark:bg-gray-900 dark:text-immich-dark-primary"
@@ -142,7 +142,7 @@
 
         {#each $savedSearchTerms as savedSearchTerm, i (i)}
           <div
-            class="flex w-full items-center justify-between text-xs text-black hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-500/10"
+            class="flex w-full items-center justify-between text-sm text-black hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-500/10"
           >
             <div class="relative w-full items-center">
               <button
@@ -153,11 +153,13 @@
                   onSearch();
                 }}
               >
-                <Magnify size="1.5em" />
+                <Icon path={mdiMagnify} size="1.5em" />
                 {savedSearchTerm}
               </button>
               <div class="absolute right-5 top-0 items-center justify-center py-3">
-                <button type="button" on:click={() => clearSearchTerm(savedSearchTerm)}><Close size="18" /></button>
+                <button type="button" on:click={() => clearSearchTerm(savedSearchTerm)}
+                  ><Icon path={mdiClose} size="18" /></button
+                >
               </div>
             </div>
           </div>

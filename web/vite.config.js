@@ -2,6 +2,14 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import path from 'path';
 import { isoImport } from 'vite-plugin-iso-import';
 
+const upstream = {
+  target: process.env.IMMICH_SERVER_URL || 'http://immich-server:3001/',
+  secure: true,
+  changeOrigin: true,
+  logLevel: 'info',
+  ws: true,
+};
+
 /** @type {import('vite').UserConfig} */
 const config = {
   resolve: {
@@ -13,17 +21,15 @@ const config = {
   server: {
     // connect to a remote backend during web-only development
     proxy: {
-      '/api': {
-        target: process.env.PUBLIC_IMMICH_SERVER_URL,
-        secure: true,
-        changeOrigin: true,
-        logLevel: 'debug',
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        ws: true,
-      },
+      '/api': upstream,
+      '/.well-known/immich': upstream,
+      '/custom.css': upstream,
     },
   },
-  plugins: [sveltekit(), isoImport()],
+  plugins: [sveltekit()],
+  optimizeDeps: {
+    entries: ['src/**/*.{svelte,ts,html}'],
+  },
 };
 
 export default config;

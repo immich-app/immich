@@ -1,58 +1,46 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
-  import Cloud from 'svelte-material-icons/Cloud.svelte';
-  import Dns from 'svelte-material-icons/Dns.svelte';
-  import LoadingSpinner from './loading-spinner.svelte';
-  import { api, ServerInfoResponseDto } from '@api';
-  import { asByteUnitString } from '../../utils/byte-units';
+  import { browser } from '$app/environment';
   import { locale } from '$lib/stores/preferences.store';
+  import { websocketStore } from '$lib/stores/websocket';
+  import { ServerInfoResponseDto, api } from '@api';
+  import { onDestroy, onMount } from 'svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { asByteUnitString } from '../../utils/byte-units';
+  import LoadingSpinner from './loading-spinner.svelte';
+  import { mdiCloud, mdiDns } from '@mdi/js';
 
-  let isServerOk = true;
-  let serverVersion = '';
+  const { serverVersion, connected } = websocketStore;
+
   let serverInfo: ServerInfoResponseDto;
-  let pingServerInterval: NodeJS.Timer;
+
+  $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
+  $: usedPercentage = Math.round((serverInfo?.diskUseRaw / serverInfo?.diskSizeRaw) * 100);
 
   onMount(async () => {
-    try {
-      const { data: version } = await api.serverInfoApi.getServerVersion();
-
-      serverVersion = `v${version.major}.${version.minor}.${version.patch}`;
-
-      const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
-      serverInfo = serverInfoRes;
-      getStorageUsagePercentage();
-    } catch (e) {
-      console.log('Error [StatusBox] [onMount]');
-      isServerOk = false;
-    }
-
-    pingServerInterval = setInterval(async () => {
-      try {
-        const { data: pingReponse } = await api.serverInfoApi.pingServer();
-
-        if (pingReponse.res === 'pong') isServerOk = true;
-        else isServerOk = false;
-
-        const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
-        serverInfo = serverInfoRes;
-      } catch (e) {
-        console.log('Error [StatusBox] [pingServerInterval]', e);
-        isServerOk = false;
-      }
-    }, 10000);
+    await refresh();
   });
 
-  onDestroy(() => clearInterval(pingServerInterval));
-
-  const getStorageUsagePercentage = () => {
-    return Math.round((serverInfo?.diskUseRaw / serverInfo?.diskSizeRaw) * 100);
+  const refresh = async () => {
+    try {
+      const { data } = await api.serverInfoApi.getServerInfo();
+      serverInfo = data;
+    } catch (e) {
+      console.log('Error [StatusBox] [onMount]');
+    }
   };
+
+  let interval: number;
+  if (browser) {
+    interval = window.setInterval(() => refresh(), 10_000);
+  }
+
+  onDestroy(() => clearInterval(interval));
 </script>
 
 <div class="dark:text-immich-dark-fg">
   <div class="storage-status grid grid-cols-[64px_auto]">
     <div class="pb-[2.15rem] pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
-      <Cloud size={'24'} />
+      <Icon path={mdiCloud} size={'24'} />
     </div>
     <div class="hidden group-hover:sm:block md:block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
@@ -61,7 +49,7 @@
           <!-- style={`width: ${$downloadAssets[fileName]}%`} -->
           <div
             class="h-[7px] rounded-full bg-immich-primary dark:bg-immich-dark-primary"
-            style="width: {getStorageUsagePercentage()}%"
+            style="width: {usedPercentage}%"
           />
         </div>
         <p class="text-xs">
@@ -80,7 +68,7 @@
   </div>
   <div class="server-status grid grid-cols-[64px_auto]">
     <div class="pb-11 pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
-      <Dns size={'24'} />
+      <Icon path={mdiDns} size={'24'} />
     </div>
     <div class="hidden text-xs group-hover:sm:block md:block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
@@ -88,7 +76,7 @@
       <div class="mt-2 flex justify-between justify-items-center">
         <p>Status</p>
 
-        {#if isServerOk}
+        {#if $connected}
           <p class="font-medium text-immich-primary dark:text-immich-dark-primary">Online</p>
         {:else}
           <p class="font-medium text-red-500">Offline</p>
@@ -97,20 +85,18 @@
 
       <div class="mt-2 flex justify-between justify-items-center">
         <p>Version</p>
-        <a
-          href="https://github.com/immich-app/immich/releases"
-          class="font-medium text-immich-primary dark:text-immich-dark-primary"
-          target="_blank"
-        >
-          {serverVersion}
-        </a>
+        {#if $connected && version}
+          <a
+            href="https://github.com/immich-app/immich/releases"
+            class="font-medium text-immich-primary dark:text-immich-dark-primary"
+            target="_blank"
+          >
+            {version}
+          </a>
+        {:else}
+          <p class="font-medium text-red-500">Unknown</p>
+        {/if}
       </div>
     </div>
   </div>
-  <!-- <div>
-		<hr class="ml-5 my-4" />
-	</div>
-	<button class="text-xs ml-5 underline hover:cursor-pointer text-immich-primary" on:click={() => goto('/changelog')}
-		>Changelog</button
-	> -->
 </div>

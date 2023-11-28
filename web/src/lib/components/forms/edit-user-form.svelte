@@ -1,11 +1,12 @@
 <script lang="ts">
   import { api, UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
-  import AccountEditOutline from 'svelte-material-icons/AccountEditOutline.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiAccountEditOutline } from '@mdi/js';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -19,13 +20,12 @@
 
   const editUser = async () => {
     try {
-      const { id, email, firstName, lastName, storageLabel, externalPath } = user;
+      const { id, email, name, storageLabel, externalPath } = user;
       const { status } = await api.userApi.updateUser({
         updateUserDto: {
           id,
           email,
-          firstName,
-          lastName,
+          name,
           storageLabel: storageLabel || '',
           externalPath: externalPath || '',
         },
@@ -72,7 +72,7 @@
   <div
     class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
   >
-    <AccountEditOutline size="4em" />
+    <Icon path={mdiAccountEditOutline} size="4em" />
     <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit user</h1>
   </div>
 
@@ -83,20 +83,8 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="firstName">First Name</label>
-      <input
-        class="immich-form-input"
-        id="firstName"
-        name="firstName"
-        type="text"
-        required
-        bind:value={user.firstName}
-      />
-    </div>
-
-    <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="lastName">Last Name</label>
-      <input class="immich-form-input" id="lastName" name="lastName" type="text" required bind:value={user.lastName} />
+      <label class="immich-form-label" for="name">Name</label>
+      <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
@@ -160,7 +148,7 @@
   >
     <svelte:fragment slot="prompt">
       <p>
-        Are you sure you want to reset <b>{user.firstName} {user.lastName}</b>'s password?
+        Are you sure you want to reset <b>{user.name}</b>'s password?
       </p>
     </svelte:fragment>
   </ConfirmDialogue>

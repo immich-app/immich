@@ -4,50 +4,70 @@ import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
 import { basename, parse } from 'path';
-import { AccessCore, IAccessRepository, Permission } from '../access';
-import { IAssetRepository, WithProperty } from '../asset';
+import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
-import { usePagination } from '../domain.util';
-
-import { ICryptoRepository } from '../crypto';
 import { mimeTypes } from '../domain.constant';
+import { usePagination, validateCronExpression } from '../domain.util';
+import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+
 import {
-  IBaseJob,
-  IEntityJob,
+  IAccessRepository,
+  IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
-  ILibraryFileJob,
-  ILibraryRefreshJob,
-  IOfflineLibraryFileJob,
-  JobName,
-  JOBS_ASSET_PAGINATION_SIZE,
-} from '../job';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
+  ILibraryRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  WithProperty,
+} from '../repositories';
+import { SystemConfigCore } from '../system-config';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
-  mapLibrary,
   ScanLibraryDto,
   UpdateLibraryDto,
+  mapLibrary,
 } from './library.dto';
-import { ILibraryRepository } from './library.repository';
 
 @Injectable()
 export class LibraryService {
   readonly logger = new Logger(LibraryService.name);
   private access: AccessCore;
+  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private repository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
+    this.access = AccessCore.create(accessRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.configCore.addValidator((config) => {
+      if (!validateCronExpression(config.library.scan.cronExpression)) {
+        throw new Error(`Invalid cron expression ${config.library.scan.cronExpression}`);
+      }
+    });
+  }
+
+  async init() {
+    const config = await this.configCore.getConfig();
+    this.jobRepository.addCronJob(
+      'libraryScan',
+      config.library.scan.cronExpression,
+      () => this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force: false } }),
+      config.library.scan.enabled,
+    );
+
+    this.configCore.config$.subscribe((config) => {
+      this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
+    });
   }
 
   async getStatistics(authUser: AuthUserDto, id: string): Promise<LibraryStatsResponseDto> {
@@ -137,28 +157,21 @@ export class LibraryService {
     }
 
     // TODO use pagination
-    const assetIds = await this.repository.getAssetIds(job.id);
+    const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
-    // TODO queue a job for asset deletion
-    await this.deleteAssets(assetIds);
-    this.logger.log(`Deleting library ${job.id}`);
-    await this.repository.delete(job.id);
+    for (const assetId of assetIds) {
+      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } });
+    }
+
+    if (assetIds.length === 0) {
+      this.logger.log(`Deleting library ${job.id}`);
+      await this.repository.delete(job.id);
+    }
     return true;
   }
 
   async handleAssetRefresh(job: ILibraryFileJob) {
     const assetPath = path.normalize(job.assetPath);
-
-    const user = await this.userRepository.get(job.ownerId);
-    if (!user?.externalPath) {
-      this.logger.warn('User has no external path set, cannot import asset');
-      return false;
-    }
-
-    if (!path.normalize(assetPath).match(new RegExp(`^${user.externalPath}`))) {
-      this.logger.error("Asset must be within the user's external path");
-      return false;
-    }
 
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, assetPath);
 
@@ -182,7 +195,7 @@ export class LibraryService {
     let doImport = false;
     let doRefresh = false;
 
-    if (job.forceRefresh) {
+    if (job.force) {
       doRefresh = true;
     }
 
@@ -196,7 +209,7 @@ export class LibraryService {
         `File modification time has changed, re-importing asset: ${assetPath}. Old mtime: ${existingAssetEntity.fileModifiedAt}. New mtime: ${stats.mtime}`,
       );
       doRefresh = true;
-    } else if (!job.forceRefresh && stats && !existingAssetEntity.isOffline) {
+    } else if (!job.force && stats && !existingAssetEntity.isOffline) {
       // Asset exists on disk and in db and mtime has not changed. Also, we are not forcing refresn. Therefore, do nothing
       this.logger.debug(`Asset already exists in database and on disk, will not import: ${assetPath}`);
     }
@@ -333,20 +346,17 @@ export class LibraryService {
   }
 
   async handleOfflineRemoval(job: IEntityJob): Promise<boolean> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id);
-    });
-
-    const assetIds: string[] = [];
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getWith(pagination, WithProperty.IS_OFFLINE, job.id),
+    );
 
     for await (const assets of assetPagination) {
+      this.logger.debug(`Removing ${assets.length} offline assets`);
       for (const asset of assets) {
-        assetIds.push(asset.id);
+        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } });
       }
     }
 
-    this.logger.verbose(`Found ${assetIds.length} offline assets to remove`);
-    await this.deleteAssets(assetIds);
     return true;
   }
 
@@ -357,7 +367,7 @@ export class LibraryService {
       return false;
     }
 
-    const user = await this.userRepository.get(library.ownerId);
+    const user = await this.userRepository.get(library.ownerId, {});
     if (!user?.externalPath) {
       this.logger.warn('User has no external path set, cannot refresh library');
       return false;
@@ -378,28 +388,26 @@ export class LibraryService {
 
     this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
-    const offlineAssets = assetsInLibrary.filter((asset) => !crawledAssetPaths.includes(asset.originalPath));
-    this.logger.debug(`${offlineAssets.length} assets in library are not present on disk and will be marked offline`);
+    const onlineFiles = new Set(crawledAssetPaths);
+    const offlineAssetIds = assetsInLibrary
+      .filter((asset) => !onlineFiles.has(asset.originalPath))
+      .filter((asset) => !asset.isOffline)
+      .map((asset) => asset.id);
+    this.logger.debug(`Marking ${offlineAssetIds.length} assets as offline`);
 
-    for (const offlineAsset of offlineAssets) {
-      const offlineJobData: IOfflineLibraryFileJob = {
-        id: job.id,
-        assetPath: offlineAsset.originalPath,
-      };
-
-      await this.jobRepository.queue({ name: JobName.LIBRARY_MARK_ASSET_OFFLINE, data: offlineJobData });
-    }
+    await this.assetRepository.updateAll(offlineAssetIds, { isOffline: true });
 
     if (crawledAssetPaths.length > 0) {
       let filteredPaths: string[] = [];
       if (job.refreshAllFiles || job.refreshModifiedFiles) {
         filteredPaths = crawledAssetPaths;
       } else {
-        const existingPaths = await this.repository.getOnlineAssetPaths(job.id);
-        this.logger.debug(`Found ${existingPaths.length} existing asset(s) in library ${job.id}`);
+        const onlinePathsInLibrary = new Set(
+          assetsInLibrary.filter((asset) => !asset.isOffline).map((asset) => asset.originalPath),
+        );
+        filteredPaths = crawledAssetPaths.filter((assetPath) => !onlinePathsInLibrary.has(assetPath));
 
-        filteredPaths = crawledAssetPaths.filter((assetPath) => !existingPaths.includes(assetPath));
-        this.logger.debug(`After db comparison, ${filteredPaths.length} asset(s) remain to be imported`);
+        this.logger.debug(`Will import ${filteredPaths.length} new asset(s)`);
       }
 
       for (const assetPath of filteredPaths) {
@@ -407,7 +415,7 @@ export class LibraryService {
           id: job.id,
           assetPath: path.normalize(assetPath),
           ownerId: library.ownerId,
-          forceRefresh: job.refreshAllFiles ?? false,
+          force: job.refreshAllFiles ?? false,
         };
 
         await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_ASSET, data: libraryJobData });
@@ -419,51 +427,11 @@ export class LibraryService {
     return true;
   }
 
-  async handleOfflineAsset(job: IOfflineLibraryFileJob): Promise<boolean> {
-    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, job.assetPath);
-
-    if (existingAssetEntity) {
-      this.logger.verbose(`Marking asset as offline: ${job.assetPath}`);
-      await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
-    }
-
-    return true;
-  }
-
   private async findOrFail(id: string) {
     const library = await this.repository.get(id);
     if (!library) {
       throw new BadRequestException('Library not found');
     }
     return library;
-  }
-
-  private async deleteAssets(assetIds: string[]) {
-    // TODO: this should be refactored to a centralized asset deletion service
-    for (const assetId of assetIds) {
-      const asset = await this.assetRepository.getById(assetId);
-      this.logger.debug(`Removing asset from library: ${asset.originalPath}`);
-
-      if (asset.faces) {
-        await Promise.all(
-          asset.faces.map(({ assetId, personId }) =>
-            this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_FACE, data: { assetId, personId } }),
-          ),
-        );
-      }
-
-      await this.assetRepository.remove(asset);
-      await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [asset.id] } });
-
-      await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: { files: [asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath] },
-      });
-
-      // TODO refactor this to use cascades
-      if (asset.livePhotoVideoId && !assetIds.includes(asset.livePhotoVideoId)) {
-        assetIds.push(asset.livePhotoVideoId);
-      }
-    }
   }
 }

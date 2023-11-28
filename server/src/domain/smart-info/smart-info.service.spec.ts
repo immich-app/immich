@@ -7,11 +7,15 @@ import {
   newSmartInfoRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { ISystemConfigRepository } from '../system-config';
-import { IMachineLearningRepository } from './machine-learning.interface';
-import { ISmartInfoRepository } from './smart-info.repository';
+import { JobName } from '../job';
+import {
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  ISmartInfoRepository,
+  ISystemConfigRepository,
+  WithoutProperty,
+} from '../repositories';
 import { SmartInfoService } from './smart-info.service';
 
 const asset = {
@@ -189,7 +193,7 @@ describe(SmartInfoService.name, () => {
       expect(machineMock.encodeImage).toHaveBeenCalledWith(
         'http://immich-machine-learning:3003',
         { imagePath: 'path/to/resize.ext' },
-        { enabled: true, modelName: 'ViT-B-32::openai' },
+        { enabled: true, modelName: 'ViT-B-32__openai' },
       );
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',

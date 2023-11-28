@@ -1,7 +1,8 @@
 import json
 import pickle
 from io import BytesIO
-from typing import Any, TypeAlias
+from pathlib import Path
+from typing import Any, Callable
 from unittest import mock
 
 import cv2
@@ -14,12 +15,10 @@ from pytest_mock import MockerFixture
 from .config import settings
 from .models.base import PicklableSessionOptions
 from .models.cache import ModelCache
-from .models.clip import CLIPEncoder
+from .models.clip import OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
 from .schemas import ModelType
-
-ndarray: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
 
 
 class TestImageClassifier:
@@ -56,44 +55,64 @@ class TestImageClassifier:
 
 class TestCLIP:
     embedding = np.random.rand(512).astype(np.float32)
+    cache_dir = Path("test_cache")
 
-    def test_basic_image(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPEncoder, "download")
+    def test_basic_image(
+        self,
+        pil_image: Image.Image,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        mocker.patch.object(OpenCLIPEncoder, "download")
+        mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
+        mocker.patch("app.models.clip.AutoTokenizer.from_pretrained", autospec=True)
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
         mocked.return_value.run.return_value = [[self.embedding]]
-        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
-        assert clip_encoder.mode == "vision"
+
+        clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
         embedding = clip_encoder.predict(pil_image)
 
-        assert isinstance(embedding, list)
-        assert len(embedding) == 512
-        assert all([isinstance(num, float) for num in embedding])
+        assert clip_encoder.mode == "vision"
+        assert isinstance(embedding, np.ndarray)
+        assert embedding.shape[0] == clip_model_cfg["embed_dim"]
+        assert embedding.dtype == np.float32
         clip_encoder.vision_model.run.assert_called_once()
 
-    def test_basic_text(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(CLIPEncoder, "download")
+    def test_basic_text(
+        self,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        mocker.patch.object(OpenCLIPEncoder, "download")
+        mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
+        mocker.patch("app.models.clip.AutoTokenizer.from_pretrained", autospec=True)
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
         mocked.return_value.run.return_value = [[self.embedding]]
-        clip_encoder = CLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
-        assert clip_encoder.mode == "text"
+
+        clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
         embedding = clip_encoder.predict("test search query")
 
-        assert isinstance(embedding, list)
-        assert len(embedding) == 512
-        assert all([isinstance(num, float) for num in embedding])
+        assert clip_encoder.mode == "text"
+        assert isinstance(embedding, np.ndarray)
+        assert embedding.shape[0] == clip_model_cfg["embed_dim"]
+        assert embedding.dtype == np.float32
         clip_encoder.text_model.run.assert_called_once()
 
 
 class TestFaceRecognition:
     def test_set_min_score(self, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
-        face_recognizer = FaceRecognizer("test_model_name", cache_dir="test_cache", min_score=0.5)
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache", min_score=0.5)
 
         assert face_recognizer.min_score == 0.5
 
     def test_basic(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
-        face_recognizer = FaceRecognizer("test_model_name", min_score=0.0, cache_dir="test_cache")
+        face_recognizer = FaceRecognizer("buffalo_s", min_score=0.0, cache_dir="test_cache")
 
         det_model = mock.Mock()
         num_faces = 2
@@ -114,9 +133,9 @@ class TestFaceRecognition:
         for face in faces:
             assert face["imageHeight"] == 800
             assert face["imageWidth"] == 600
-            assert isinstance(face["embedding"], list)
-            assert len(face["embedding"]) == 512
-            assert all([isinstance(num, float) for num in face["embedding"]])
+            assert isinstance(face["embedding"], np.ndarray)
+            assert face["embedding"].shape[0] == 512
+            assert face["embedding"].dtype == np.float32
 
         det_model.detect.assert_called_once()
         assert rec_model.get_feat.call_count == num_faces

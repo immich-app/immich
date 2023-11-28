@@ -6,9 +6,9 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AlbumResponseDto, api } from '@api';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { mdiDeleteOutline } from '@mdi/js';
 
   export let album: AlbumResponseDto;
   export let onRemove: ((assetIds: string[]) => void) | undefined = undefined;
@@ -53,7 +53,7 @@
 {#if menuItem}
   <MenuOption text="Remove from album" on:click={() => (isShowConfirmation = true)} />
 {:else}
-  <CircleIconButton title="Remove from album" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
+  <CircleIconButton title="Remove from album" icon={mdiDeleteOutline} on:click={() => (isShowConfirmation = true)} />
 {/if}
 
 {#if isShowConfirmation}

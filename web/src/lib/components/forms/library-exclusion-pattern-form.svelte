@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import FolderRemove from 'svelte-material-icons/FolderRemove.svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiFolderRemove } from '@mdi/js';
 
   export let exclusionPattern: string;
   export let canDelete = false;
@@ -20,7 +21,7 @@
     <div
       class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <FolderRemove size="4em" />
+      <Icon path={mdiFolderRemove} size="4em" />
       <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Add Exclusion pattern</h1>
     </div>
 

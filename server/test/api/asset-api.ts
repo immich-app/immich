@@ -6,13 +6,44 @@ import request from 'supertest';
 
 type UploadDto = Partial<CreateAssetDto> & { content?: Buffer };
 
+const asset = {
+  deviceAssetId: 'test-1',
+  deviceId: 'test',
+  fileCreatedAt: new Date(),
+  fileModifiedAt: new Date(),
+};
+
 export const assetApi = {
-  get: async (server: any, accessToken: string, id: string) => {
+  create: async (
+    server: any,
+    accessToken: string,
+    dto?: Omit<CreateAssetDto, 'assetData'>,
+  ): Promise<AssetResponseDto> => {
+    dto = dto || asset;
+    const { status, body } = await request(server)
+      .post(`/asset/upload`)
+      .field('deviceAssetId', dto.deviceAssetId)
+      .field('deviceId', dto.deviceId)
+      .field('fileCreatedAt', dto.fileCreatedAt.toISOString())
+      .field('fileModifiedAt', dto.fileModifiedAt.toISOString())
+      .attach('assetData', randomBytes(32), 'example.jpg')
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    expect([200, 201].includes(status)).toBe(true);
+
+    return body as AssetResponseDto;
+  },
+  get: async (server: any, accessToken: string, id: string): Promise<AssetResponseDto> => {
     const { body, status } = await request(server)
       .get(`/asset/assetById/${id}`)
       .set('Authorization', `Bearer ${accessToken}`);
     expect(status).toBe(200);
     return body as AssetResponseDto;
+  },
+  getAllAssets: async (server: any, accessToken: string) => {
+    const { body, status } = await request(server).get(`/asset/`).set('Authorization', `Bearer ${accessToken}`);
+    expect(status).toBe(200);
+    return body as AssetResponseDto[];
   },
   upload: async (server: any, accessToken: string, id: string, dto: UploadDto = {}) => {
     const { content, isFavorite = false, isArchived = false } = dto;

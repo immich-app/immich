@@ -10,7 +10,8 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getConfig**](SystemConfigApi.md#getconfig) | **GET** /system-config | 
-[**getDefaults**](SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
+[**getConfigDefaults**](SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
+[**getMapStyle**](SystemConfigApi.md#getmapstyle) | **GET** /system-config/map/style.json | 
 [**getStorageTemplateOptions**](SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 [**updateConfig**](SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
 
@@ -66,8 +67,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getDefaults**
-> SystemConfigDto getDefaults()
+# **getConfigDefaults**
+> SystemConfigDto getConfigDefaults()
 
 
 
@@ -92,10 +93,10 @@ import 'package:openapi/api.dart';
 final api_instance = SystemConfigApi();
 
 try {
-    final result = api_instance.getDefaults();
+    final result = api_instance.getConfigDefaults();
     print(result);
 } catch (e) {
-    print('Exception when calling SystemConfigApi->getDefaults: $e\n');
+    print('Exception when calling SystemConfigApi->getConfigDefaults: $e\n');
 }
 ```
 
@@ -105,6 +106,61 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**SystemConfigDto**](SystemConfigDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getMapStyle**
+> Object getMapStyle(theme)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = SystemConfigApi();
+final theme = ; // MapTheme | 
+
+try {
+    final result = api_instance.getMapStyle(theme);
+    print(result);
+} catch (e) {
+    print('Exception when calling SystemConfigApi->getMapStyle: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **theme** | [**MapTheme**](.md)|  | 
+
+### Return type
+
+[**Object**](Object.md)
 
 ### Authorization
 

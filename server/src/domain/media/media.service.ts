@@ -1,14 +1,41 @@
-import { AssetEntity, AssetType, Colorspace, TranscodeHWAccel, TranscodePolicy, VideoCodec } from '@app/infra/entities';
+import {
+  AssetEntity,
+  AssetPathType,
+  AssetType,
+  Colorspace,
+  TranscodeHWAccel,
+  TranscodePolicy,
+  VideoCodec,
+} from '@app/infra/entities';
 import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
-import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
-import { IPersonRepository } from '../person';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import {
+  AudioStreamInfo,
+  IAssetRepository,
+  IJobRepository,
+  IMediaRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  VideoCodecHWConfig,
+  VideoStreamInfo,
+  WithoutProperty,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
+import { SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { AudioStreamInfo, IMediaRepository, VideoCodecHWConfig, VideoStreamInfo } from './media.repository';
-import { H264Config, HEVCConfig, NVENCConfig, QSVConfig, ThumbnailConfig, VAAPIConfig, VP9Config } from './media.util';
+import {
+  H264Config,
+  HEVCConfig,
+  NVENCConfig,
+  QSVConfig,
+  RKMPPConfig,
+  ThumbnailConfig,
+  VAAPIConfig,
+  VP9Config,
+} from './media.util';
 
 @Injectable()
 export class MediaService {
@@ -23,9 +50,10 @@ export class MediaService {
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
-    this.storageCore = new StorageCore(this.storageRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob) {
@@ -99,29 +127,9 @@ export class MediaService {
       return false;
     }
 
-    if (asset.resizePath) {
-      const resizePath = this.ensureThumbnailPath(asset, 'jpeg');
-      if (asset.resizePath !== resizePath) {
-        await this.storageRepository.moveFile(asset.resizePath, resizePath);
-        await this.assetRepository.save({ id: asset.id, resizePath });
-      }
-    }
-
-    if (asset.webpPath) {
-      const webpPath = this.ensureThumbnailPath(asset, 'webp');
-      if (asset.webpPath !== webpPath) {
-        await this.storageRepository.moveFile(asset.webpPath, webpPath);
-        await this.assetRepository.save({ id: asset.id, webpPath });
-      }
-    }
-
-    if (asset.encodedVideoPath) {
-      const encodedVideoPath = this.ensureEncodedVideoPath(asset, 'mp4');
-      if (asset.encodedVideoPath !== encodedVideoPath) {
-        await this.storageRepository.moveFile(asset.encodedVideoPath, encodedVideoPath);
-        await this.assetRepository.save({ id: asset.id, encodedVideoPath });
-      }
-    }
+    await this.storageCore.moveAssetFile(asset, AssetPathType.JPEG_THUMBNAIL);
+    await this.storageCore.moveAssetFile(asset, AssetPathType.WEBP_THUMBNAIL);
+    await this.storageCore.moveAssetFile(asset, AssetPathType.ENCODED_VIDEO);
 
     return true;
   }
@@ -137,48 +145,39 @@ export class MediaService {
     return true;
   }
 
-  async generateThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
-    let path;
+  private async generateThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
+    const { thumbnail, ffmpeg } = await this.configCore.getConfig();
+    const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
+    const path =
+      format === 'jpeg' ? StorageCore.getLargeThumbnailPath(asset) : StorageCore.getSmallThumbnailPath(asset);
+    this.storageCore.ensureFolders(path);
+
     switch (asset.type) {
       case AssetType.IMAGE:
-        path = await this.generateImageThumbnail(asset, format);
+        const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
+        const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
+        await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
         break;
+
       case AssetType.VIDEO:
-        path = await this.generateVideoThumbnail(asset, format);
+        const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+        const mainVideoStream = this.getMainStream(videoStreams);
+        if (!mainVideoStream) {
+          this.logger.warn(`Skipped thumbnail generation for asset ${asset.id}: no video streams found`);
+          return;
+        }
+        const mainAudioStream = this.getMainStream(audioStreams);
+        const config = { ...ffmpeg, targetResolution: size.toString() };
+        const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
+        await this.mediaRepository.transcode(asset.originalPath, path, options);
         break;
+
       default:
         throw new UnsupportedMediaTypeException(`Unsupported asset type for thumbnail generation: ${asset.type}`);
     }
     this.logger.log(
       `Successfully generated ${format.toUpperCase()} ${asset.type.toLowerCase()} thumbnail for asset ${asset.id}`,
     );
-    return path;
-  }
-
-  async generateImageThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
-    const { thumbnail } = await this.configCore.getConfig();
-    const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
-    const path = this.ensureThumbnailPath(asset, format);
-    const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
-    const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
-    await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
-    return path;
-  }
-
-  async generateVideoThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
-    const { ffmpeg, thumbnail } = await this.configCore.getConfig();
-    const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
-    const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
-    const mainVideoStream = this.getMainStream(videoStreams);
-    if (!mainVideoStream) {
-      this.logger.warn(`Skipped thumbnail generation for asset ${asset.id}: no video streams found`);
-      return;
-    }
-    const mainAudioStream = this.getMainStream(audioStreams);
-    const path = this.ensureThumbnailPath(asset, format);
-    const config = { ...ffmpeg, targetResolution: size.toString() };
-    const options = new ThumbnailConfig(config).getOptions(mainVideoStream, mainAudioStream);
-    await this.mediaRepository.transcode(asset.originalPath, path, options);
     return path;
   }
 
@@ -230,7 +229,8 @@ export class MediaService {
     }
 
     const input = asset.originalPath;
-    const output = this.ensureEncodedVideoPath(asset, 'mp4');
+    const output = StorageCore.getEncodedVideoPath(asset);
+    this.storageCore.ensureFolders(output);
 
     const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
     const mainVideoStream = this.getMainStream(videoStreams);
@@ -361,6 +361,10 @@ export class MediaService {
         devices = await this.storageRepository.readdir('/dev/dri');
         handler = new VAAPIConfig(config, devices);
         break;
+      case TranscodeHWAccel.RKMPP:
+        devices = await this.storageRepository.readdir('/dev/dri');
+        handler = new RKMPPConfig(config, devices);
+        break;
       default:
         throw new UnsupportedMediaTypeException(`${config.accel.toUpperCase()} acceleration is unsupported`);
     }
@@ -371,14 +375,6 @@ export class MediaService {
     }
 
     return handler;
-  }
-
-  ensureThumbnailPath(asset: AssetEntity, extension: string): string {
-    return this.storageCore.ensurePath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}.${extension}`);
-  }
-
-  ensureEncodedVideoPath(asset: AssetEntity, extension: string): string {
-    return this.storageCore.ensurePath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.${extension}`);
   }
 
   isSRGB(asset: AssetEntity): boolean {

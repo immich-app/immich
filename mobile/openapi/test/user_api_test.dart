@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future deleteProfileImage() async
+    test('test deleteProfileImage', () async {
+      // TODO
+    });
+
     //Future<UserResponseDto> deleteUser(String id) async
     test('test deleteUser', () async {
       // TODO
@@ -49,11 +54,6 @@ void main() {
 
     //Future<UserResponseDto> getUserById(String id) async
     test('test getUserById', () async {
-      // TODO
-    });
-
-    //Future<UserCountResponseDto> getUserCount({ bool admin }) async
-    test('test getUserCount', () async {
       // TODO
     });
 

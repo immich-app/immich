@@ -1,16 +1,23 @@
-import { AssetEntity, AssetType, SystemConfig } from '@app/infra/entities';
+import { AssetEntity, AssetPathType, AssetType, SystemConfig } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { IAssetRepository } from '../asset/asset.repository';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+} from '../repositories';
+import { StorageCore, StorageFolder } from '../storage';
 import {
   INITIAL_SYSTEM_CONFIG,
-  ISystemConfigRepository,
   supportedDayTokens,
   supportedHourTokens,
   supportedMinuteTokens,
@@ -20,11 +27,17 @@ import {
   supportedYearTokens,
 } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { IUserRepository } from '../user/user.repository';
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;
   filename: string;
+}
+
+interface RenderMetadata {
+  asset: AssetEntity;
+  filename: string;
+  extension: string;
+  albumName: string | null;
 }
 
 @Injectable()
@@ -32,26 +45,37 @@ export class StorageTemplateService {
   private logger = new Logger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  private storageTemplate: HandlebarsTemplateDelegate<any>;
+  private template: {
+    compiled: HandlebarsTemplateDelegate<any>;
+    raw: string;
+    needsAlbum: boolean;
+  };
 
   constructor(
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
-    this.storageTemplate = this.compile(config.storageTemplate.template);
-    this.configCore = new SystemConfigCore(configRepository);
+    this.template = this.compile(config.storageTemplate.template);
+    this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
-    this.configCore.config$.subscribe((config) => this.onConfig(config));
-    this.storageCore = new StorageCore(storageRepository);
+    this.configCore.config$.subscribe((config) => {
+      const template = config.storageTemplate.template;
+      this.logger.debug(`Received config, compiling storage template: ${template}`);
+      this.template = this.compile(template);
+    });
+    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
 
-    const user = await this.userRepository.get(asset.ownerId);
+    const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
     await this.moveAsset(asset, { storageLabel, filename });
@@ -83,7 +107,7 @@ export class StorageTemplateService {
     }
 
     this.logger.debug('Cleaning up empty directories...');
-    const libraryFolder = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
+    const libraryFolder = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     await this.storageRepository.removeEmptyDirs(libraryFolder);
 
     this.logger.log('Finished storage template migration');
@@ -92,51 +116,29 @@ export class StorageTemplateService {
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
-    if (asset.isReadOnly || asset.isExternal) {
+    if (asset.isReadOnly || asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
       return;
     }
 
-    const destination = await this.getTemplatePath(asset, metadata);
-    if (asset.originalPath !== destination) {
-      const source = asset.originalPath;
+    const { id, sidecarPath, originalPath } = asset;
+    const oldPath = originalPath;
+    const newPath = await this.getTemplatePath(asset, metadata);
 
-      let sidecarMoved = false;
-      try {
-        await this.storageRepository.moveFile(asset.originalPath, destination);
-
-        let sidecarDestination;
-        try {
-          if (asset.sidecarPath) {
-            sidecarDestination = `${destination}.xmp`;
-            await this.storageRepository.moveFile(asset.sidecarPath, sidecarDestination);
-            sidecarMoved = true;
-          }
-
-          await this.assetRepository.save({ id: asset.id, originalPath: destination, sidecarPath: sidecarDestination });
-          asset.originalPath = destination;
-          asset.sidecarPath = sidecarDestination || null;
-        } catch (error: any) {
-          this.logger.warn(
-            `Unable to save new originalPath to database, undoing move for path ${asset.originalPath} - filename ${asset.originalFileName} - id ${asset.id}`,
-            error?.stack,
-          );
-
-          // Either sidecar move failed or the save failed. Either way, move media back
-          await this.storageRepository.moveFile(destination, source);
-
-          if (asset.sidecarPath && sidecarDestination && sidecarMoved) {
-            // If the sidecar was moved, that means the saved failed. So move both the sidecar and the
-            // media back into their original positions
-            await this.storageRepository.moveFile(sidecarDestination, asset.sidecarPath);
-          }
-        }
-      } catch (error: any) {
-        this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, source, destination });
+    try {
+      await this.storageCore.moveFile({ entityId: id, pathType: AssetPathType.ORIGINAL, oldPath, newPath });
+      if (sidecarPath) {
+        await this.storageCore.moveFile({
+          entityId: id,
+          pathType: AssetPathType.SIDECAR,
+          oldPath: sidecarPath,
+          newPath: `${newPath}.xmp`,
+        });
       }
+    } catch (error: any) {
+      this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, oldPath, newPath });
     }
-    return asset;
   }
 
   private async getTemplatePath(asset: AssetEntity, metadata: MoveAssetMetadata): Promise<string> {
@@ -146,8 +148,20 @@ export class StorageTemplateService {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
-      const rootPath = this.storageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
-      const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
+      const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+
+      let albumName = null;
+      if (this.template.needsAlbum) {
+        const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
+        albumName = albums?.[0]?.albumName || null;
+      }
+
+      const storagePath = this.render(this.template.compiled, {
+        asset,
+        filename: sanitized,
+        extension: ext,
+        albumName,
+      });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${ext}`;
 
@@ -202,37 +216,43 @@ export class StorageTemplateService {
   }
 
   private validate(config: SystemConfig) {
-    const testAsset = {
-      fileCreatedAt: new Date(),
-      originalPath: '/upload/test/IMG_123.jpg',
-      type: AssetType.IMAGE,
-    } as AssetEntity;
     try {
-      this.render(this.compile(config.storageTemplate.template), testAsset, 'IMG_123', 'jpg');
+      const { compiled } = this.compile(config.storageTemplate.template);
+      this.render(compiled, {
+        asset: {
+          fileCreatedAt: new Date(),
+          originalPath: '/upload/test/IMG_123.jpg',
+          type: AssetType.IMAGE,
+          id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
+        } as AssetEntity,
+        filename: 'IMG_123',
+        extension: 'jpg',
+        albumName: 'album',
+      });
     } catch (e) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(e)}`);
       throw new Error(`Invalid storage template: ${e}`);
     }
   }
 
-  private onConfig(config: SystemConfig) {
-    this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
-    this.storageTemplate = this.compile(config.storageTemplate.template);
-  }
-
   private compile(template: string) {
-    return handlebar.compile(template, {
-      knownHelpers: undefined,
-      strict: true,
-    });
+    return {
+      raw: template,
+      compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
+      needsAlbum: template.indexOf('{{album}}') !== -1,
+    };
   }
 
-  private render(template: HandlebarsTemplateDelegate<any>, asset: AssetEntity, filename: string, ext: string) {
+  private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
+    const { filename, extension, asset, albumName } = options;
     const substitutions: Record<string, string> = {
       filename,
-      ext,
+      ext: extension,
       filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
+      assetId: asset.id,
+      //just throw into the root if it doesn't belong to an album
+      album: (albumName && sanitize(albumName.replace(/\.+/g, ''))) || '.',
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;

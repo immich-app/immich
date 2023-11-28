@@ -3,9 +3,8 @@
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { BucketPosition, type AssetStore } from '$lib/stores/assets.store';
   import { handleError } from '$lib/utils/handle-error';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
-  import TimerSand from 'svelte-material-icons/TimerSand.svelte';
   import { get } from 'svelte/store';
+  import { mdiTimerSand, mdiSelectAll } from '@mdi/js';
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -32,8 +31,8 @@
 </script>
 
 {#if selecting}
-  <CircleIconButton title="Delete" logo={TimerSand} />
+  <CircleIconButton title="Delete" icon={mdiTimerSand} />
 {/if}
 {#if !selecting}
-  <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
+  <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
 {/if}

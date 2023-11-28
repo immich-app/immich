@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
@@ -25,11 +26,9 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
-import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/local_notification.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
-import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -44,7 +43,12 @@ void main() async {
   await initApp();
   await migrateDatabaseIfNeeded(db);
   HttpOverrides.global = HttpSSLCertOverride();
-  runApp(getMainWidget(db));
+  runApp(
+    ProviderScope(
+      overrides: [dbProvider.overrideWithValue(db)],
+      child: getMainWidget(),
+    ),
+  );
 }
 
 Future<void> initApp() async {
@@ -77,6 +81,8 @@ Future<void> initApp() async {
     log.severe('Catch all error: ${error.toString()} - $error', error, stack);
     return true;
   };
+
+  initializeTimeZones();
 }
 
 Future<Isar> loadDb() async {
@@ -102,16 +108,13 @@ Future<Isar> loadDb() async {
   return db;
 }
 
-Widget getMainWidget(Isar db) {
+Widget getMainWidget() {
   return EasyLocalization(
     supportedLocales: locales,
     path: translationsPath,
     useFallbackTranslations: true,
     fallbackLocale: locales.first,
-    child: ProviderScope(
-      overrides: [dbProvider.overrideWithValue(db)],
-      child: const ImmichApp(),
-    ),
+    child: const ImmichApp(),
   );
 }
 
@@ -131,17 +134,14 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         debugPrint("[APP STATE] resumed");
         ref.read(appStateProvider.notifier).handleAppResume();
         break;
-
       case AppLifecycleState.inactive:
         debugPrint("[APP STATE] inactive");
         ref.read(appStateProvider.notifier).handleAppInactivity();
         break;
-
       case AppLifecycleState.paused:
         debugPrint("[APP STATE] paused");
         ref.read(appStateProvider.notifier).handleAppPause();
         break;
-
       case AppLifecycleState.detached:
         debugPrint("[APP STATE] detached");
         ref.read(appStateProvider.notifier).handleAppDetached();
@@ -196,7 +196,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   Widget build(BuildContext context) {
     var router = ref.watch(appRouterProvider);
-    ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,
@@ -217,7 +216,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
             ),
           ),
           const ImmichLoadingOverlay(),
-          const VersionAnnouncementOverlay(),
         ],
       ),
     );

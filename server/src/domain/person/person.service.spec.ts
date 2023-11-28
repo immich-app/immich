@@ -1,4 +1,4 @@
-import { Colorspace, SystemConfigKey } from '@app/infra/entities';
+import { AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   IAccessRepositoryMock,
@@ -10,21 +10,28 @@ import {
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
   newMediaRepositoryMock,
+  newMoveRepositoryMock,
   newPersonRepositoryMock,
   newSearchRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   personStub,
 } from '@test';
-import { BulkIdErrorReason, IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IMediaRepository } from '../media';
-import { ISearchRepository } from '../search';
-import { IMachineLearningRepository } from '../smart-info';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
+import { BulkIdErrorReason } from '../asset';
+import { JobName } from '../job';
+import {
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  IMediaRepository,
+  IMoveRepository,
+  IPersonRepository,
+  ISearchRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  WithoutProperty,
+} from '../repositories';
 import { PersonResponseDto } from './person.dto';
-import { IPersonRepository } from './person.repository';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
@@ -34,6 +41,8 @@ const responseDto: PersonResponseDto = {
   thumbnailPath: '/path/to/thumbnail.jpg',
   isHidden: false,
 };
+
+const statistics = { assets: 3 };
 
 const croppedFace = Buffer.from('Cropped Face');
 
@@ -86,6 +95,7 @@ describe(PersonService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let machineLearningMock: jest.Mocked<IMachineLearningRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
@@ -97,6 +107,7 @@ describe(PersonService.name, () => {
     configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineLearningMock = newMachineLearningRepositoryMock();
+    moveMock = newMoveRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
@@ -105,6 +116,7 @@ describe(PersonService.name, () => {
       accessMock,
       assetMock,
       machineLearningMock,
+      moveMock,
       mediaMock,
       personMock,
       searchMock,
@@ -171,105 +183,101 @@ describe(PersonService.name, () => {
   describe('getById', () => {
     it('should require person.read permission', async () => {
       personMock.getById.mockResolvedValue(personStub.withName);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.getById(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should throw a bad request when person is not found', async () => {
       personMock.getById.mockResolvedValue(null);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
       await expect(sut.getById(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should get a person by id', async () => {
       personMock.getById.mockResolvedValue(personStub.withName);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
       await expect(sut.getById(authStub.admin, 'person-1')).resolves.toEqual(responseDto);
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
   });
 
   describe('getThumbnail', () => {
     it('should require person.read permission', async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.getThumbnail(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(storageMock.createReadStream).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should throw an error when personId is invalid', async () => {
       personMock.getById.mockResolvedValue(null);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
       await expect(sut.getThumbnail(authStub.admin, 'person-1')).rejects.toBeInstanceOf(NotFoundException);
       expect(storageMock.createReadStream).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should throw an error when person has no thumbnail', async () => {
       personMock.getById.mockResolvedValue(personStub.noThumbnail);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
       await expect(sut.getThumbnail(authStub.admin, 'person-1')).rejects.toBeInstanceOf(NotFoundException);
       expect(storageMock.createReadStream).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should serve the thumbnail', async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
       await sut.getThumbnail(authStub.admin, 'person-1');
       expect(storageMock.createReadStream).toHaveBeenCalledWith('/path/to/thumbnail.jpg', 'image/jpeg');
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
   });
 
   describe('getAssets', () => {
     it('should require person.read permission', async () => {
       personMock.getAssets.mockResolvedValue([assetStub.image, assetStub.video]);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.getAssets(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(personMock.getAssets).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it("should return a person's assets", async () => {
       personMock.getAssets.mockResolvedValue([assetStub.image, assetStub.video]);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
       await sut.getAssets(authStub.admin, 'person-1');
       expect(personMock.getAssets).toHaveBeenCalledWith('person-1');
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
   });
 
   describe('update', () => {
     it('should require person.write permission', async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(personMock.update).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should throw an error when personId is invalid', async () => {
       personMock.getById.mockResolvedValue(null);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(personMock.update).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it("should update a person's name", async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       personMock.update.mockResolvedValue(personStub.withName);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).resolves.toEqual(responseDto);
 
@@ -279,14 +287,14 @@ describe(PersonService.name, () => {
         name: JobName.SEARCH_INDEX_ASSET,
         data: { ids: [assetStub.image.id] },
       });
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it("should update a person's date of birth", async () => {
       personMock.getById.mockResolvedValue(personStub.noBirthDate);
       personMock.update.mockResolvedValue(personStub.withBirthDate);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { birthDate: new Date('1976-06-30') })).resolves.toEqual({
         id: 'person-1',
@@ -299,14 +307,14 @@ describe(PersonService.name, () => {
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
       expect(jobMock.queue).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should update a person visibility', async () => {
       personMock.getById.mockResolvedValue(personStub.hidden);
       personMock.update.mockResolvedValue(personStub.withName);
       personMock.getAssets.mockResolvedValue([assetStub.image]);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { isHidden: false })).resolves.toEqual(responseDto);
 
@@ -316,7 +324,7 @@ describe(PersonService.name, () => {
         name: JobName.SEARCH_INDEX_ASSET,
         data: { ids: [assetStub.image.id] },
       });
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it("should update a person's thumbnailPath", async () => {
@@ -324,7 +332,7 @@ describe(PersonService.name, () => {
       personMock.update.mockResolvedValue(personStub.withName);
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(
         sut.update(authStub.admin, 'person-1', { featureFaceAssetId: faceStub.face1.assetId }),
@@ -339,31 +347,31 @@ describe(PersonService.name, () => {
         },
       ]);
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: 'person-1' } });
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should throw an error when the face feature assetId is invalid', async () => {
       personMock.getById.mockResolvedValue(personStub.withName);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.update(authStub.admin, 'person-1', { featureFaceAssetId: '-1' })).rejects.toThrow(
         BadRequestException,
       );
       expect(personMock.update).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
   });
 
   describe('updateAll', () => {
     it('should throw an error when personId is invalid', async () => {
       personMock.getById.mockResolvedValue(null);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(
         sut.updatePeople(authStub.admin, { people: [{ id: 'person-1', name: 'Person 1' }] }),
       ).resolves.toEqual([{ error: BulkIdErrorReason.UNKNOWN, id: 'person-1', success: false }]);
       expect(personMock.update).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
   });
 
@@ -437,7 +445,26 @@ describe(PersonService.name, () => {
       expect(machineLearningMock.detectFaces).not.toHaveBeenCalled();
     });
 
+    it('should skip it the asset has already been processed', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        {
+          ...assetStub.noResizePath,
+          faces: [
+            {
+              id: 'asset-face-1',
+              assetId: assetStub.noResizePath.id,
+              personId: faceStub.face1.personId,
+            } as AssetFaceEntity,
+          ],
+        },
+      ]);
+      await sut.handleRecognizeFaces({ id: assetStub.noResizePath.id });
+      expect(machineLearningMock.detectFaces).not.toHaveBeenCalled();
+    });
+
     it('should handle no results', async () => {
+      const start = Date.now();
+
       machineLearningMock.detectFaces.mockResolvedValue([]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
@@ -456,6 +483,12 @@ describe(PersonService.name, () => {
       );
       expect(personMock.createFace).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
+
+      expect(assetMock.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: assetStub.image.id,
+        facesRecognizedAt: expect.any(Date),
+      });
+      expect(assetMock.upsertJobStatus.mock.calls[0][0].facesRecognizedAt?.getTime()).toBeGreaterThan(start);
     });
 
     it('should match existing people', async () => {
@@ -542,19 +575,19 @@ describe(PersonService.name, () => {
     it('should generate a thumbnail', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.middle.assetId });
       personMock.getFacesByIds.mockResolvedValue([faceStub.middle]);
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
 
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([faceStub.middle.assetId]);
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/pe/rs');
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/admin-id/thumbs/path.jpg', {
         left: 95,
         top: 95,
         width: 110,
         height: 110,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,
@@ -562,7 +595,7 @@ describe(PersonService.name, () => {
       });
       expect(personMock.update).toHaveBeenCalledWith({
         id: 'person-1',
-        thumbnailPath: 'upload/thumbs/user-id/pe/rs/person-1.jpeg',
+        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
       });
     });
 
@@ -579,7 +612,7 @@ describe(PersonService.name, () => {
         width: 510,
         height: 510,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,
@@ -590,17 +623,17 @@ describe(PersonService.name, () => {
     it('should generate a thumbnail without overflowing', async () => {
       personMock.getById.mockResolvedValue({ ...personStub.primaryPerson, faceAssetId: faceStub.end.assetId });
       personMock.getFacesByIds.mockResolvedValue([faceStub.end]);
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      assetMock.getByIds.mockResolvedValue([assetStub.primaryImage]);
 
       await sut.handleGeneratePersonThumbnail({ id: 'person-1' });
 
-      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.jpg', {
+      expect(mediaMock.crop).toHaveBeenCalledWith('/uploads/admin-id/thumbs/path.jpg', {
         left: 297,
         top: 297,
         width: 202,
         height: 202,
       });
-      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/user-id/pe/rs/person-1.jpeg', {
+      expect(mediaMock.resize).toHaveBeenCalledWith(croppedFace, 'upload/thumbs/admin_id/pe/rs/person-1.jpeg', {
         format: 'jpeg',
         size: 250,
         quality: 80,
@@ -615,7 +648,6 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
       personMock.prepareReassignFaces.mockResolvedValue([]);
       personMock.delete.mockResolvedValue(personStub.mergePerson);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(false);
 
       await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).rejects.toBeInstanceOf(
         BadRequestException,
@@ -626,7 +658,7 @@ describe(PersonService.name, () => {
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
 
       expect(personMock.delete).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should merge two people', async () => {
@@ -634,7 +666,8 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
       personMock.prepareReassignFaces.mockResolvedValue([]);
       personMock.delete.mockResolvedValue(personStub.mergePerson);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
 
       await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
         { id: 'person-2', success: true },
@@ -654,14 +687,15 @@ describe(PersonService.name, () => {
         name: JobName.PERSON_DELETE,
         data: { id: personStub.mergePerson.id },
       });
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should delete conflicting faces before merging', async () => {
       personMock.getById.mockResolvedValue(personStub.primaryPerson);
       personMock.getById.mockResolvedValue(personStub.mergePerson);
       personMock.prepareReassignFaces.mockResolvedValue([assetStub.image.id]);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
 
       await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
         { id: 'person-2', success: true },
@@ -676,25 +710,26 @@ describe(PersonService.name, () => {
         name: JobName.SEARCH_REMOVE_FACE,
         data: { assetId: assetStub.image.id, personId: personStub.mergePerson.id },
       });
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should throw an error when the primary person is not found', async () => {
       personMock.getById.mockResolvedValue(null);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).rejects.toBeInstanceOf(
         BadRequestException,
       );
 
       expect(personMock.delete).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should handle invalid merge ids', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
       personMock.getById.mockResolvedValueOnce(null);
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
 
       await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
         { id: 'person-2', success: false, error: BulkIdErrorReason.NOT_FOUND },
@@ -703,7 +738,7 @@ describe(PersonService.name, () => {
       expect(personMock.prepareReassignFaces).not.toHaveBeenCalled();
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.delete).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
     it('should handle an error reassigning faces', async () => {
@@ -711,14 +746,31 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.mergePerson);
       personMock.prepareReassignFaces.mockResolvedValue([assetStub.image.id]);
       personMock.reassignFaces.mockRejectedValue(new Error('update failed'));
-      accessMock.person.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
 
       await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual([
         { id: 'person-2', success: false, error: BulkIdErrorReason.UNKNOWN },
       ]);
 
       expect(personMock.delete).not.toHaveBeenCalled();
-      expect(accessMock.person.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'person-1');
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
+    });
+  });
+
+  describe('getStatistics', () => {
+    it('should get correct number of person', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      personMock.getStatistics.mockResolvedValue(statistics);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+      await expect(sut.getStatistics(authStub.admin, 'person-1')).resolves.toEqual({ assets: 3 });
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
+    });
+
+    it('should require person.read permission', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      await expect(sut.getStatistics(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
   });
 });

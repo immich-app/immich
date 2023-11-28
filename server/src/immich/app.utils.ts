@@ -3,7 +3,7 @@ import {
   IMMICH_API_KEY_HEADER,
   IMMICH_API_KEY_NAME,
   ImmichReadStream,
-  SERVER_VERSION,
+  serverVersion,
 } from '@app/domain';
 import { INestApplication, StreamableFile } from '@nestjs/common';
 import {
@@ -13,6 +13,7 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { NextFunction, Request, Response } from 'express';
 import { writeFileSync } from 'fs';
 import path from 'path';
 
@@ -47,10 +48,19 @@ function sortKeys<T>(obj: T): T {
   return result as T;
 }
 
+export const routeToErrorMessage = (methodName: string) =>
+  'Failed to ' + methodName.replace(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
+
 const patchOpenAPI = (document: OpenAPIObject) => {
   document.paths = sortKeys(document.paths);
   if (document.components?.schemas) {
     document.components.schemas = sortKeys(document.components.schemas);
+  }
+
+  for (const [key, value] of Object.entries(document.paths)) {
+    const newKey = key.replace('/api/', '/');
+    delete document.paths[key];
+    document.paths[newKey] = value;
   }
 
   for (const path of Object.values(document.paths)) {
@@ -78,6 +88,10 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         delete operation.summary;
       }
 
+      if (operation.operationId) {
+        // console.log(`${routeToErrorMessage(operation.operationId).padEnd(40)} (${operation.operationId})`);
+      }
+
       if (operation.description === '') {
         delete operation.description;
       }
@@ -87,11 +101,19 @@ const patchOpenAPI = (document: OpenAPIObject) => {
   return document;
 };
 
+export const indexFallback = (excludePaths: string[]) => (req: Request, res: Response, next: NextFunction) => {
+  if (req.url.startsWith('/api') || req.method.toLowerCase() !== 'get' || excludePaths.indexOf(req.url) !== -1) {
+    next();
+  } else {
+    res.sendFile('/www/index.html', { root: process.cwd() });
+  }
+};
+
 export const useSwagger = (app: INestApplication, isDev: boolean) => {
   const config = new DocumentBuilder()
     .setTitle('Immich')
     .setDescription('Immich API')
-    .setVersion(SERVER_VERSION)
+    .setVersion(serverVersion.toString())
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',

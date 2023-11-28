@@ -1,5 +1,5 @@
-import { IUserRepository, UserListFilter, UserStatsQueryResponse } from '@app/domain';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { IUserRepository, UserFindOptions, UserListFilter, UserStatsQueryResponse } from '@app/domain';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { UserEntity } from '../entities';
@@ -8,12 +8,20 @@ import { UserEntity } from '../entities';
 export class UserRepository implements IUserRepository {
   constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {}
 
-  async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { id: userId }, withDeleted: withDeleted });
+  async get(userId: string, options: UserFindOptions): Promise<UserEntity | null> {
+    options = options || {};
+    return this.userRepository.findOne({
+      where: { id: userId },
+      withDeleted: options.withDeleted,
+    });
   }
 
   async getAdmin(): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { isAdmin: true } });
+  }
+
+  async hasAdmin(): Promise<boolean> {
+    return this.userRepository.exist({ where: { isAdmin: true } });
   }
 
   async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
@@ -47,19 +55,13 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  async create(user: Partial<UserEntity>): Promise<UserEntity> {
-    return this.userRepository.save(user);
+  create(user: Partial<UserEntity>): Promise<UserEntity> {
+    return this.save(user);
   }
 
-  async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
-    user.id = id;
-
-    await this.userRepository.save(user);
-    const updatedUser = await this.get(id);
-    if (!updatedUser) {
-      throw new InternalServerErrorException('Cannot reload user after update');
-    }
-    return updatedUser;
+  // TODO change to (user: Partial<UserEntity>)
+  update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
+    return this.save({ ...user, id });
   }
 
   async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
@@ -78,8 +80,7 @@ export class UserRepository implements IUserRepository {
     const stats = await this.userRepository
       .createQueryBuilder('users')
       .select('users.id', 'userId')
-      .addSelect('users.firstName', 'userFirstName')
-      .addSelect('users.lastName', 'userLastName')
+      .addSelect('users.name', 'userName')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
       .addSelect('COALESCE(SUM(exif.fileSizeInByte), 0)', 'usage')
@@ -96,5 +97,10 @@ export class UserRepository implements IUserRepository {
     }
 
     return stats;
+  }
+
+  private async save(user: Partial<UserEntity>) {
+    const { id } = await this.userRepository.save(user);
+    return this.userRepository.findOneByOrFail({ id });
   }
 }

@@ -4,10 +4,11 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'asset_grid_data_structure.dart';
 import 'group_divider_title.dart';
@@ -37,6 +38,9 @@ class ImmichAssetGridView extends StatefulWidget {
   final int heroOffset;
   final bool shrinkWrap;
   final bool showDragScroll;
+  final bool showStack;
+  final bool isOwner;
+  final String? sharedAlbumId;
 
   const ImmichAssetGridView({
     super.key,
@@ -56,6 +60,9 @@ class ImmichAssetGridView extends StatefulWidget {
     this.heroOffset = 0,
     this.shrinkWrap = false,
     this.showDragScroll = true,
+    this.showStack = false,
+    this.isOwner = true,
+    this.sharedAlbumId,
   });
 
   @override
@@ -71,7 +78,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   bool _scrolling = false;
   final Set<Asset> _selectedAssets =
-      HashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
+      LinkedHashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
 
   Set<Asset> _getSelectedAssets() {
     return Set.from(_selectedAssets);
@@ -90,7 +97,13 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   void _deselectAssets(List<Asset> assets) {
     setState(() {
-      _selectedAssets.removeAll(assets);
+      _selectedAssets.removeAll(
+        assets.where(
+          (a) =>
+              widget.canDeselect ||
+              !(widget.preselectedAssets?.contains(a) ?? false),
+        ),
+      );
       _callSelectionListener(_selectedAssets.isNotEmpty);
     });
   }
@@ -129,6 +142,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       useGrayBoxPlaceholder: true,
       showStorageIndicator: widget.showStorageIndicator,
       heroOffset: widget.heroOffset,
+      showStack: widget.showStack,
+      isOwner: widget.isOwner,
+      sharedAlbumId: widget.sharedAlbumId,
     );
   }
 
@@ -206,10 +222,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 26,
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).textTheme.displayLarge?.color,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -357,7 +372,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,
-            backgroundColor: Theme.of(context).hintColor,
+            backgroundColor: context.themeData.hintColor,
             labelTextBuilder: _labelBuilder,
             labelConstraints: const BoxConstraints(maxHeight: 28),
             scrollbarAnimationDuration: const Duration(milliseconds: 300),
@@ -376,10 +391,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     if (!widget.selectionActive) {
       setState(() {
         _selectedAssets.clear();
-      });
-    } else if (widget.preselectedAssets != null) {
-      setState(() {
-        _selectedAssets.addAll(widget.preselectedAssets!);
       });
     }
   }

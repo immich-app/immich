@@ -1,23 +1,30 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
   import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
-  import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
-  import Calendar from 'svelte-material-icons/Calendar.svelte';
-  import CameraIris from 'svelte-material-icons/CameraIris.svelte';
-  import Close from 'svelte-material-icons/Close.svelte';
-  import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
-  import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
+  import { slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import {
+    mdiCalendar,
+    mdiCameraIris,
+    mdiClose,
+    mdiImageOutline,
+    mdiMapMarkerOutline,
+    mdiInformationOutline,
+  } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import Map from '../shared-components/map/map.svelte';
+  import { AppRoute } from '$lib/constants';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+  export let albumId: string | null = null;
 
   let textarea: HTMLTextAreaElement;
   let description: string;
@@ -39,12 +46,9 @@
     const lng = asset.exifInfo?.longitude;
 
     if (lat && lng) {
-      return [Number(lat.toFixed(7)), Number(lng.toFixed(7))] as LatLngTuple;
+      return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
     }
   })();
-
-  $: lat = latlng ? latlng[0] : undefined;
-  $: lng = latlng ? latlng[1] : undefined;
 
   $: people = asset.people || [];
 
@@ -83,6 +87,9 @@
       console.error(error);
     }
   };
+
+  let showAssetPath = false;
+  const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -91,7 +98,7 @@
       class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
       on:click={() => dispatch('close')}
     >
-      <Close size="24" />
+      <Icon path={mdiClose} size="24" />
     </button>
 
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Info</p>
@@ -131,7 +138,11 @@
 
       <div class="mt-4 flex flex-wrap gap-2">
         {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
+          <a
+            href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
+            class="w-[90px]"
+            on:click={() => dispatch('close-viewer')}
+          >
             <ImageThumbnail
               curve
               shadow
@@ -186,7 +197,7 @@
       })}
       <div class="flex gap-4 py-4">
         <div>
-          <Calendar size="24" />
+          <Icon path={mdiCalendar} size="24" />
         </div>
 
         <div>
@@ -218,11 +229,18 @@
 
     {#if asset.exifInfo?.fileSizeInByte}
       <div class="flex gap-4 py-4">
-        <div><ImageOutline size="24" /></div>
+        <div><Icon path={mdiImageOutline} size="24" /></div>
 
         <div>
-          <p class="break-all">
-            {getAssetFilename(asset)}
+          <p class="break-all flex place-items-center gap-2">
+            {#if isOwner}
+              {asset.originalFileName}
+              <button title="Show File Location" on:click={toggleAssetPath}>
+                <Icon path={mdiInformationOutline} />
+              </button>
+            {:else}
+              {getAssetFilename(asset)}
+            {/if}
           </p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
@@ -236,13 +254,18 @@
             {/if}
             <p>{asByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
           </div>
+          {#if showAssetPath}
+            <p class="text-xs opacity-50 break-all" transition:slide={{ duration: 250 }}>
+              {asset.originalPath}
+            </p>
+          {/if}
         </div>
       </div>
     {/if}
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
-        <div><CameraIris size="24" /></div>
+        <div><Icon path={mdiCameraIris} size="24" /></div>
 
         <div>
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
@@ -271,7 +294,7 @@
 
     {#if asset.exifInfo?.city}
       <div class="flex gap-4 py-4">
-        <div><MapMarkerOutline size="24" /></div>
+        <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
 
         <div>
           <p>{asset.exifInfo.city}</p>
@@ -293,24 +316,21 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    {#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
-      <Map center={latlng} zoom={14}>
-        <TileLayer
-          urlTemplate={$serverConfig.mapTileUrl}
-          options={{
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          }}
-        />
-        <Marker {latlng}>
-          <p>
-            {lat}, {lng}
-          </p>
-          <a href="https://www.openstreetmap.org/?mlat={lat}&mlon={lng}&zoom=15#map=15/{lat}/{lng}">
+    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+      <svelte:fragment slot="popup" let:marker>
+        {@const { lat, lon } = marker}
+        <div class="flex flex-col items-center gap-1">
+          <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+          <a
+            href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+            target="_blank"
+            class="font-medium text-immich-primary"
+          >
             Open in OpenStreetMap
           </a>
-        </Marker>
-      </Map>
-    {/await}
+        </div>
+      </svelte:fragment>
+    </Map>
   </div>
 {/if}
 
@@ -319,13 +339,12 @@
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
-        <UserAvatar user={asset.owner} size="md" autoColor />
+        <UserAvatar user={asset.owner} size="md" />
       </div>
 
       <div class="mb-auto mt-auto">
         <p>
-          {asset.owner.firstName}
-          {asset.owner.lastName}
+          {asset.owner.name}
         </p>
       </div>
     </div>

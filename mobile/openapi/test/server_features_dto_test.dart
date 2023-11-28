@@ -71,6 +71,11 @@ void main() {
       // TODO
     });
 
+    // bool trash
+    test('to test the property `trash`', () async {
+      // TODO
+    });
+
 
   });
 

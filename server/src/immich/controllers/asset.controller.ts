@@ -1,12 +1,15 @@
 import {
+  AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetIdsDto,
   AssetJobsDto,
   AssetResponseDto,
+  AssetSearchDto,
   AssetService,
   AssetStatsDto,
   AssetStatsResponseDto,
   AuthUserDto,
+  BulkIdsDto,
   DownloadInfoDto,
   DownloadResponseDto,
   MapMarkerDto,
@@ -17,16 +20,45 @@ import {
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
+  TrashAction,
   UpdateAssetDto as UpdateDto,
+  UpdateStackParentDto,
 } from '@app/domain';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  StreamableFile,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { DeviceIdDto } from '../api-v1/asset/dto/device-id.dto';
 import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile } from '../app.utils';
+import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Asset')
-@Controller('asset')
+@Controller('assets')
+@Authenticated()
+@UseValidation()
+export class AssetsController {
+  constructor(private service: AssetService) {}
+
+  @Get()
+  searchAssets(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    return this.service.search(authUser, dto);
+  }
+}
+
+@ApiTags('Asset')
+@Controller(Route.ASSET)
 @Authenticated()
 @UseValidation()
 export class AssetController {
@@ -69,8 +101,16 @@ export class AssetController {
     return this.service.downloadFile(authUser, id).then(asStreamableFile);
   }
 
+  /**
+   * Get all asset of a device that are in the database, ID only.
+   */
+  @Get('/device/:deviceId')
+  getAllUserAssetsByDeviceId(@AuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
+    return this.service.getUserAssetsByDeviceId(authUser, deviceId);
+  }
+
   @Get('statistics')
-  getAssetStats(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
+  getAssetStatistics(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
     return this.service.getStatistics(authUser, dto);
   }
 
@@ -82,8 +122,8 @@ export class AssetController {
 
   @Authenticated({ isShared: true })
   @Get('time-bucket')
-  getByTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    return this.service.getByTimeBucket(authUser, dto);
+  getTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+    return this.service.getTimeBucket(authUser, dto) as Promise<AssetResponseDto[]>;
   }
 
   @Post('jobs')
@@ -96,6 +136,36 @@ export class AssetController {
   @HttpCode(HttpStatus.NO_CONTENT)
   updateAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(authUser, dto);
+  }
+
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
+    return this.service.deleteAll(authUser, dto);
+  }
+
+  @Post('restore')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  restoreAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: BulkIdsDto): Promise<void> {
+    return this.service.restoreAll(authUser, dto);
+  }
+
+  @Post('trash/empty')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  emptyTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.handleTrashAction(authUser, TrashAction.EMPTY_ALL);
+  }
+
+  @Post('trash/restore')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  restoreTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.handleTrashAction(authUser, TrashAction.RESTORE_ALL);
+  }
+
+  @Put('stack/parent')
+  @HttpCode(HttpStatus.OK)
+  updateStackParent(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateStackParentDto): Promise<void> {
+    return this.service.updateStackParent(authUser, dto);
   }
 
   @Put(':id')

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/server_info/server_config.model.dart';
+import 'package:immich_mobile/shared/models/server_info/server_disk_info.model.dart';
+import 'package:immich_mobile/shared/models/server_info/server_features.model.dart';
+import 'package:immich_mobile/shared/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:openapi/api.dart';
 
 final serverInfoServiceProvider = Provider(
   (ref) => ServerInfoService(
@@ -15,39 +18,51 @@ class ServerInfoService {
 
   ServerInfoService(this._apiService);
 
-  Future<ServerInfoResponseDto?> getServerInfo() async {
+  Future<ServerDiskInfo?> getServerInfo() async {
     try {
-      return await _apiService.serverInfoApi.getServerInfo();
+      final dto = await _apiService.serverInfoApi.getServerInfo();
+      if (dto != null) {
+        return ServerDiskInfo.fromDto(dto);
+      }
     } catch (e) {
       debugPrint("Error [getServerInfo] ${e.toString()}");
-      return null;
     }
+    return null;
   }
 
-  Future<ServerVersionResponseDto?> getServerVersion() async {
+  Future<ServerVersion?> getServerVersion() async {
     try {
-      return await _apiService.serverInfoApi.getServerVersion();
+      final dto = await _apiService.serverInfoApi.getServerVersion();
+      if (dto != null) {
+        return ServerVersion.fromDto(dto);
+      }
     } catch (e) {
       debugPrint("Error [getServerVersion] ${e.toString()}");
-      return null;
     }
+    return null;
   }
 
-  Future<ServerFeaturesDto?> getServerFeatures() async {
+  Future<ServerFeatures?> getServerFeatures() async {
     try {
-      return await _apiService.serverInfoApi.getServerFeatures();
+      final dto = await _apiService.serverInfoApi.getServerFeatures();
+      if (dto != null) {
+        return ServerFeatures.fromDto(dto);
+      }
     } catch (e) {
       debugPrint("Error [getServerFeatures] ${e.toString()}");
-      return null;
     }
+    return null;
   }
 
-  Future<ServerConfigDto?> getServerConfig() async {
+  Future<ServerConfig?> getServerConfig() async {
     try {
-      return await _apiService.serverInfoApi.getServerConfig();
+      final dto = await _apiService.serverInfoApi.getServerConfig();
+      if (dto != null) {
+        return ServerConfig.fromDto(dto);
+      }
     } catch (e) {
       debugPrint("Error [getServerConfig] ${e.toString()}");
-      return null;
     }
+    return null;
   }
 }

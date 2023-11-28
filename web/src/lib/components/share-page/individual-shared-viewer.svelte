@@ -2,24 +2,22 @@
   import { goto } from '$app/navigation';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { downloadArchive } from '$lib/utils/asset-utils';
-  import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
+  import { api, AssetResponseDto, SharedLinkResponseDto, UserResponseDto } from '@api';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-  import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
   import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
+  import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
 
   export let sharedLink: SharedLinkResponseDto;
   export let isOwned: boolean;
+  export let user: UserResponseDto | undefined = undefined;
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
 
@@ -72,7 +70,7 @@
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
   {#if isMultiSelectionMode}
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-      <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
+      <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
       {#if sharedLink?.allowDownload}
         <DownloadAction filename="immich-shared.zip" />
       {/if}
@@ -81,7 +79,7 @@
       {/if}
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar on:close-button-click={() => goto('/photos')} backIcon={ArrowLeft} showBackButton={false}>
+    <ControlAppBar on:close-button-click={() => goto('/photos')} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
         <a
           data-sveltekit-preload-data="hover"
@@ -95,16 +93,16 @@
 
       <svelte:fragment slot="trailing">
         {#if sharedLink?.allowUpload}
-          <CircleIconButton title="Add Photos" on:click={() => handleUploadAssets()} logo={FileImagePlusOutline} />
+          <CircleIconButton title="Add Photos" on:click={() => handleUploadAssets()} icon={mdiFileImagePlusOutline} />
         {/if}
 
         {#if sharedLink?.allowDownload}
-          <CircleIconButton title="Download" on:click={downloadAssets} logo={FolderDownloadOutline} />
+          <CircleIconButton title="Download" on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
         {/if}
       </svelte:fragment>
     </ControlAppBar>
   {/if}
   <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
-    <GalleryViewer {assets} bind:selectedAssets />
+    <GalleryViewer {user} {assets} bind:selectedAssets />
   </section>
 </section>

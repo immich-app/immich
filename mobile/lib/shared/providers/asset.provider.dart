@@ -5,17 +5,16 @@ import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/shared/services/user.service.dart';
 import 'package:immich_mobile/utils/db.dart';
+import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AssetNotifier extends StateNotifier<bool> {
@@ -92,23 +91,89 @@ class AssetNotifier extends StateNotifier<bool> {
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
-  Future<void> deleteAssets(Iterable<Asset> deleteAssets) async {
+  Future<bool> deleteAssets(
+    Iterable<Asset> deleteAssets, {
+    bool force = false,
+  }) async {
     _deleteInProgress = true;
     state = true;
     try {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
-      final remoteDeleted = await _deleteRemoteAssets(deleteAssets);
+      final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
       if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
-        final dbIds = deleteAssets.map((e) => e.id).toList();
+        final dbIds = <int>[];
+        final dbUpdates = <Asset>[];
+
+        // Local assets are removed
+        if (localDeleted.isNotEmpty) {
+          // Permanently remove local only assets from isar
+          dbIds.addAll(
+            deleteAssets
+                .where((a) => a.storage == AssetState.local)
+                .map((e) => e.id),
+          );
+
+          if (remoteDeleted.any((e) => e.isLocal)) {
+            // Force delete: Add all local assets including merged assets
+            if (force) {
+              dbIds.addAll(remoteDeleted.map((e) => e.id));
+              // Soft delete: Remove local Id from asset and trash it
+            } else {
+              dbUpdates.addAll(
+                remoteDeleted.map((e) {
+                  e.localId = null;
+                  e.isTrashed = true;
+                  return e;
+                }),
+              );
+            }
+          }
+        }
+
+        // Handle remote deletion
+        if (remoteDeleted.isNotEmpty) {
+          if (force) {
+            // Remove remote only assets
+            dbIds.addAll(
+              deleteAssets
+                  .where((a) => a.storage == AssetState.remote)
+                  .map((e) => e.id),
+            );
+            // Local assets are not removed and there are merged assets
+            final hasLocal = remoteDeleted.any((e) => e.isLocal);
+            if (localDeleted.isEmpty && hasLocal) {
+              // Remove remote Id from local assets
+              dbUpdates.addAll(
+                remoteDeleted.map((e) {
+                  e.remoteId = null;
+                  // Remove from trashed if remote asset is removed
+                  e.isTrashed = false;
+                  return e;
+                }),
+              );
+            }
+          } else {
+            dbUpdates.addAll(
+              remoteDeleted.map((e) {
+                e.isTrashed = true;
+                return e;
+              }),
+            );
+          }
+        }
+
         await _db.writeTxn(() async {
+          await _db.assets.putAll(dbUpdates);
           await _db.exifInfos.deleteAll(dbIds);
           await _db.assets.deleteAll(dbIds);
         });
+        return true;
       }
     } finally {
       _deleteInProgress = false;
       state = false;
     }
+    return false;
   }
 
   Future<List<String>> _deleteLocalAssets(
@@ -127,15 +192,14 @@ class AssetNotifier extends StateNotifier<bool> {
     return [];
   }
 
-  Future<Iterable<String>> _deleteRemoteAssets(
+  Future<Iterable<Asset>> _deleteRemoteAssets(
     Iterable<Asset> assetsToDelete,
+    bool? force,
   ) async {
     final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
-    final List<DeleteAssetResponseDto> deleteAssetResult =
-        await _assetService.deleteAssets(remote) ?? [];
-    return deleteAssetResult
-        .where((a) => a.status == DeleteAssetStatus.SUCCESS)
-        .map((a) => a.id);
+
+    final isSuccess = await _assetService.deleteAssets(remote, force: force);
+    return isSuccess ? remote : [];
   }
 
   Future<void> toggleFavorite(List<Asset> assets, bool status) async {
@@ -180,42 +244,58 @@ final assetDetailProvider =
   }
 });
 
-final assetsProvider =
-    StreamProvider.family<RenderList, int?>((ref, userId) async* {
-  if (userId == null) return;
-  final query = ref
-      .watch(dbProvider)
-      .assets
-      .where()
-      .ownerIdEqualToAnyChecksum(userId)
-      .filter()
-      .isArchivedEqualTo(false)
-      .sortByFileCreatedAtDesc();
-  final settings = ref.watch(appSettingsServiceProvider);
-  final groupBy =
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
-  yield await RenderList.fromQuery(query, groupBy);
-  await for (final _ in query.watchLazy()) {
-    yield await RenderList.fromQuery(query, groupBy);
-  }
+final assetWatcher =
+    StreamProvider.autoDispose.family<Asset?, Asset>((ref, asset) {
+  final db = ref.watch(dbProvider);
+  return db.assets.watchObject(asset.id, fireImmediately: true);
 });
 
-final remoteAssetsProvider =
-    StreamProvider.family<RenderList, int?>((ref, userId) async* {
-  if (userId == null) return;
-  final query = ref
+final assetsProvider = StreamProvider.family<RenderList, int?>((ref, userId) {
+  if (userId == null) return const Stream.empty();
+  final query = _commonFilterAndSort(
+    _assets(ref).where().ownerIdEqualToAnyChecksum(userId),
+  );
+  return renderListGenerator(query, ref);
+});
+
+final multiUserAssetsProvider =
+    StreamProvider.family<RenderList, List<int>>((ref, userIds) {
+  if (userIds.isEmpty) return const Stream.empty();
+  final query = _commonFilterAndSort(
+    _assets(ref)
+        .where()
+        .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
+  );
+  return renderListGenerator(query, ref);
+});
+
+QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
+  final userId = ref.watch(currentUserProvider)?.isarId;
+  if (userId == null) {
+    return null;
+  }
+  return ref
       .watch(dbProvider)
       .assets
       .where()
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
+      .isTrashedEqualTo(false)
+      .stackParentIdIsNull()
       .sortByFileCreatedAtDesc();
-  final settings = ref.watch(appSettingsServiceProvider);
-  final groupBy =
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
-  yield await RenderList.fromQuery(query, groupBy);
-  await for (final _ in query.watchLazy()) {
-    yield await RenderList.fromQuery(query, groupBy);
-  }
-});
+}
+
+IsarCollection<Asset> _assets(StreamProviderRef<RenderList> ref) =>
+    ref.watch(dbProvider).assets;
+
+QueryBuilder<Asset, Asset, QAfterSortBy> _commonFilterAndSort(
+  QueryBuilder<Asset, Asset, QAfterWhereClause> query,
+) {
+  return query
+      .filter()
+      .isArchivedEqualTo(false)
+      .isTrashedEqualTo(false)
+      .stackParentIdIsNull()
+      .sortByFileCreatedAtDesc();
+}

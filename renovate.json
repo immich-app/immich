@@ -1,19 +1,59 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
+  "minimumReleaseAge": "5",
   "packageRules": [
     {
-      "matchPaths": ["mobile"],
-      "groupName": "mobile"
+      "matchFileNames": ["cli/**"],
+      "groupName": "@immich/cli",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on monday"
     },
     {
-      "matchPaths": ["server"],
-      "groupName": "server"
+      "matchFileNames": ["mobile/**"],
+      "groupName": "mobile",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
-      "matchPaths": ["web"],
-      "groupName": "web"
+      "matchFileNames": ["server/**"],
+      "groupName": "server",
+      "matchUpdateTypes": ["minor", "patch"],
+      "excludePackagePrefixes": ["exiftool"],
+      "schedule": "on wednesday"
+    },
+    {
+      "groupName": "exiftool",
+      "matchPackagePrefixes": ["exiftool"],
+      "schedule": "on monday"
+    },
+    {
+      "matchFileNames": ["web/**"],
+      "groupName": "web",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on thursday"
+    },
+    {
+      "matchFileNames": ["machine-learning/**"],
+      "groupName": "machine-learning",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on friday"
+    },
+    {
+      "matchFileNames": [".github/**"],
+      "groupName": "github-actions",
+      "schedule": "on friday"
+    },
+    {
+      "groupName": "base-image",
+      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"]
     }
   ],
-  "enabled": false
+  "ignoreDeps": [
+    "http",
+    "latlong2",
+    "vector_map_tiles",
+    "flutter_map",
+    "flutter_map_heatmap"
+  ]
 }

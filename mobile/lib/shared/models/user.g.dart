@@ -17,14 +17,15 @@ const UserSchema = CollectionSchema(
   name: r'User',
   id: -7838171048429979076,
   properties: {
-    r'email': PropertySchema(
+    r'avatarColor': PropertySchema(
       id: 0,
-      name: r'email',
-      type: IsarType.string,
+      name: r'avatarColor',
+      type: IsarType.byte,
+      enumMap: _UseravatarColorEnumValueMap,
     ),
-    r'firstName': PropertySchema(
+    r'email': PropertySchema(
       id: 1,
-      name: r'firstName',
+      name: r'email',
       type: IsarType.string,
     ),
     r'id': PropertySchema(
@@ -32,38 +33,43 @@ const UserSchema = CollectionSchema(
       name: r'id',
       type: IsarType.string,
     ),
-    r'isAdmin': PropertySchema(
+    r'inTimeline': PropertySchema(
       id: 3,
+      name: r'inTimeline',
+      type: IsarType.bool,
+    ),
+    r'isAdmin': PropertySchema(
+      id: 4,
       name: r'isAdmin',
       type: IsarType.bool,
     ),
     r'isPartnerSharedBy': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'isPartnerSharedBy',
       type: IsarType.bool,
     ),
     r'isPartnerSharedWith': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'isPartnerSharedWith',
       type: IsarType.bool,
-    ),
-    r'lastName': PropertySchema(
-      id: 6,
-      name: r'lastName',
-      type: IsarType.string,
     ),
     r'memoryEnabled': PropertySchema(
       id: 7,
       name: r'memoryEnabled',
       type: IsarType.bool,
     ),
-    r'profileImagePath': PropertySchema(
+    r'name': PropertySchema(
       id: 8,
+      name: r'name',
+      type: IsarType.string,
+    ),
+    r'profileImagePath': PropertySchema(
+      id: 9,
       name: r'profileImagePath',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -118,9 +124,8 @@ int _userEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.email.length * 3;
-  bytesCount += 3 + object.firstName.length * 3;
   bytesCount += 3 + object.id.length * 3;
-  bytesCount += 3 + object.lastName.length * 3;
+  bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.profileImagePath.length * 3;
   return bytesCount;
 }
@@ -131,16 +136,17 @@ void _userSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.email);
-  writer.writeString(offsets[1], object.firstName);
+  writer.writeByte(offsets[0], object.avatarColor.index);
+  writer.writeString(offsets[1], object.email);
   writer.writeString(offsets[2], object.id);
-  writer.writeBool(offsets[3], object.isAdmin);
-  writer.writeBool(offsets[4], object.isPartnerSharedBy);
-  writer.writeBool(offsets[5], object.isPartnerSharedWith);
-  writer.writeString(offsets[6], object.lastName);
+  writer.writeBool(offsets[3], object.inTimeline);
+  writer.writeBool(offsets[4], object.isAdmin);
+  writer.writeBool(offsets[5], object.isPartnerSharedBy);
+  writer.writeBool(offsets[6], object.isPartnerSharedWith);
   writer.writeBool(offsets[7], object.memoryEnabled);
-  writer.writeString(offsets[8], object.profileImagePath);
-  writer.writeDateTime(offsets[9], object.updatedAt);
+  writer.writeString(offsets[8], object.name);
+  writer.writeString(offsets[9], object.profileImagePath);
+  writer.writeDateTime(offsets[10], object.updatedAt);
 }
 
 User _userDeserialize(
@@ -150,16 +156,19 @@ User _userDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = User(
-    email: reader.readString(offsets[0]),
-    firstName: reader.readString(offsets[1]),
+    avatarColor:
+        _UseravatarColorValueEnumMap[reader.readByteOrNull(offsets[0])] ??
+            AvatarColorEnum.primary,
+    email: reader.readString(offsets[1]),
     id: reader.readString(offsets[2]),
-    isAdmin: reader.readBool(offsets[3]),
-    isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
-    isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
-    lastName: reader.readString(offsets[6]),
-    memoryEnabled: reader.readBoolOrNull(offsets[7]),
-    profileImagePath: reader.readStringOrNull(offsets[8]) ?? '',
-    updatedAt: reader.readDateTime(offsets[9]),
+    inTimeline: reader.readBoolOrNull(offsets[3]) ?? false,
+    isAdmin: reader.readBool(offsets[4]),
+    isPartnerSharedBy: reader.readBoolOrNull(offsets[5]) ?? false,
+    isPartnerSharedWith: reader.readBoolOrNull(offsets[6]) ?? false,
+    memoryEnabled: reader.readBoolOrNull(offsets[7]) ?? true,
+    name: reader.readString(offsets[8]),
+    profileImagePath: reader.readStringOrNull(offsets[9]) ?? '',
+    updatedAt: reader.readDateTime(offsets[10]),
   );
   return object;
 }
@@ -172,29 +181,57 @@ P _userDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (_UseravatarColorValueEnumMap[reader.readByteOrNull(offset)] ??
+          AvatarColorEnum.primary) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
-    case 4:
       return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 4:
+      return (reader.readBool(offset)) as P;
     case 5:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 7:
-      return (reader.readBoolOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 8:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readString(offset)) as P;
     case 9:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 10:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _UseravatarColorEnumValueMap = {
+  'primary': 0,
+  'pink': 1,
+  'red': 2,
+  'yellow': 3,
+  'blue': 4,
+  'green': 5,
+  'purple': 6,
+  'orange': 7,
+  'gray': 8,
+  'amber': 9,
+};
+const _UseravatarColorValueEnumMap = {
+  0: AvatarColorEnum.primary,
+  1: AvatarColorEnum.pink,
+  2: AvatarColorEnum.red,
+  3: AvatarColorEnum.yellow,
+  4: AvatarColorEnum.blue,
+  5: AvatarColorEnum.green,
+  6: AvatarColorEnum.purple,
+  7: AvatarColorEnum.orange,
+  8: AvatarColorEnum.gray,
+  9: AvatarColorEnum.amber,
+};
 
 Id _userGetId(User object) {
   return object.isarId;
@@ -383,6 +420,59 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
 }
 
 extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorEqualTo(
+      AvatarColorEnum value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'avatarColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorGreaterThan(
+    AvatarColorEnum value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'avatarColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorLessThan(
+    AvatarColorEnum value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'avatarColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> avatarColorBetween(
+    AvatarColorEnum lower,
+    AvatarColorEnum upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'avatarColor',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> emailEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -506,136 +596,6 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'email',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'firstName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'firstName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'firstName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'firstName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'firstName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'firstName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'firstName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'firstName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'firstName',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> firstNameIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'firstName',
         value: '',
       ));
     });
@@ -769,6 +729,16 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
+  QueryBuilder<User, User, QAfterFilterCondition> inTimelineEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'inTimeline',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> isAdminEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -850,20 +820,30 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameEqualTo(
+  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'memoryEnabled',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> nameEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameGreaterThan(
+  QueryBuilder<User, User, QAfterFilterCondition> nameGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -871,14 +851,14 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'lastName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameLessThan(
+  QueryBuilder<User, User, QAfterFilterCondition> nameLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -886,14 +866,14 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'lastName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameBetween(
+  QueryBuilder<User, User, QAfterFilterCondition> nameBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -902,7 +882,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'lastName',
+        property: r'name',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -912,95 +892,68 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameStartsWith(
+  QueryBuilder<User, User, QAfterFilterCondition> nameStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'lastName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameEndsWith(
+  QueryBuilder<User, User, QAfterFilterCondition> nameEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'lastName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameContains(String value,
+  QueryBuilder<User, User, QAfterFilterCondition> nameContains(String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'lastName',
+        property: r'name',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameMatches(
-      String pattern,
+  QueryBuilder<User, User, QAfterFilterCondition> nameMatches(String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'lastName',
+        property: r'name',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameIsEmpty() {
+  QueryBuilder<User, User, QAfterFilterCondition> nameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastName',
+        property: r'name',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<User, User, QAfterFilterCondition> lastNameIsNotEmpty() {
+  QueryBuilder<User, User, QAfterFilterCondition> nameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'lastName',
+        property: r'name',
         value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'memoryEnabled',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'memoryEnabled',
-      ));
-    });
-  }
-
-  QueryBuilder<User, User, QAfterFilterCondition> memoryEnabledEqualTo(
-      bool? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'memoryEnabled',
-        value: value,
       ));
     });
   }
@@ -1305,6 +1258,18 @@ extension UserQueryLinks on QueryBuilder<User, User, QFilterCondition> {
 }
 
 extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
+  QueryBuilder<User, User, QAfterSortBy> sortByAvatarColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByAvatarColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'email', Sort.asc);
@@ -1317,18 +1282,6 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> sortByFirstName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'firstName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterSortBy> sortByFirstNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'firstName', Sort.desc);
-    });
-  }
-
   QueryBuilder<User, User, QAfterSortBy> sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1338,6 +1291,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
   QueryBuilder<User, User, QAfterSortBy> sortByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByInTimeline() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inTimeline', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByInTimelineDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inTimeline', Sort.desc);
     });
   }
 
@@ -1377,18 +1342,6 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> sortByLastName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterSortBy> sortByLastNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastName', Sort.desc);
-    });
-  }
-
   QueryBuilder<User, User, QAfterSortBy> sortByMemoryEnabled() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'memoryEnabled', Sort.asc);
@@ -1398,6 +1351,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
   QueryBuilder<User, User, QAfterSortBy> sortByMemoryEnabledDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'memoryEnabled', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.desc);
     });
   }
 
@@ -1427,6 +1392,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
 }
 
 extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
+  QueryBuilder<User, User, QAfterSortBy> thenByAvatarColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByAvatarColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'avatarColor', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> thenByEmail() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'email', Sort.asc);
@@ -1439,18 +1416,6 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> thenByFirstName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'firstName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterSortBy> thenByFirstNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'firstName', Sort.desc);
-    });
-  }
-
   QueryBuilder<User, User, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1460,6 +1425,18 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
   QueryBuilder<User, User, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByInTimeline() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inTimeline', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByInTimelineDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inTimeline', Sort.desc);
     });
   }
 
@@ -1511,18 +1488,6 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
     });
   }
 
-  QueryBuilder<User, User, QAfterSortBy> thenByLastName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<User, User, QAfterSortBy> thenByLastNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastName', Sort.desc);
-    });
-  }
-
   QueryBuilder<User, User, QAfterSortBy> thenByMemoryEnabled() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'memoryEnabled', Sort.asc);
@@ -1532,6 +1497,18 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
   QueryBuilder<User, User, QAfterSortBy> thenByMemoryEnabledDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'memoryEnabled', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.desc);
     });
   }
 
@@ -1561,6 +1538,12 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
 }
 
 extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
+  QueryBuilder<User, User, QDistinct> distinctByAvatarColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'avatarColor');
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByEmail(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1568,17 +1551,16 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
-  QueryBuilder<User, User, QDistinct> distinctByFirstName(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'firstName', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<User, User, QDistinct> distinctById(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<User, User, QDistinct> distinctByInTimeline() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'inTimeline');
     });
   }
 
@@ -1600,16 +1582,16 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
-  QueryBuilder<User, User, QDistinct> distinctByLastName(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'lastName', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<User, User, QDistinct> distinctByMemoryEnabled() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'memoryEnabled');
+    });
+  }
+
+  QueryBuilder<User, User, QDistinct> distinctByName(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
     });
   }
 
@@ -1635,21 +1617,27 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
+  QueryBuilder<User, AvatarColorEnum, QQueryOperations> avatarColorProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'avatarColor');
+    });
+  }
+
   QueryBuilder<User, String, QQueryOperations> emailProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'email');
     });
   }
 
-  QueryBuilder<User, String, QQueryOperations> firstNameProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'firstName');
-    });
-  }
-
   QueryBuilder<User, String, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<User, bool, QQueryOperations> inTimelineProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'inTimeline');
     });
   }
 
@@ -1671,15 +1659,15 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, String, QQueryOperations> lastNameProperty() {
+  QueryBuilder<User, bool, QQueryOperations> memoryEnabledProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'lastName');
+      return query.addPropertyName(r'memoryEnabled');
     });
   }
 
-  QueryBuilder<User, bool?, QQueryOperations> memoryEnabledProperty() {
+  QueryBuilder<User, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'memoryEnabled');
+      return query.addPropertyName(r'name');
     });
   }
 

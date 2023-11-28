@@ -4,7 +4,6 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
-  import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
   import { api, UserResponseDto } from '@api';
   import ThemeButton from '../theme-button.svelte';
   import { AppRoute } from '../../../constants';
@@ -12,11 +11,11 @@
   import ImmichLogo from '../immich-logo.svelte';
   import SearchBar from '../search-bar/search-bar.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import Magnify from 'svelte-material-icons/Magnify.svelte';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
-  import Cog from 'svelte-material-icons/Cog.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { mdiMagnify, mdiTrayArrowUp, mdiCog } from '@mdi/js';
   export let user: UserResponseDto;
   export let showUploadButton = true;
 
@@ -27,9 +26,6 @@
 
   const logOut = async () => {
     const { data } = await api.authenticationApi.logout();
-
-    await fetch('/auth/logout', { method: 'POST' });
-
     goto(data.redirectUri || '/auth/login?autoLaunch=0');
   };
 </script>
@@ -56,7 +52,7 @@
           <a href={AppRoute.SEARCH} id="search-button" class="pl-4 sm:hidden">
             <IconButton title="Search">
               <div class="flex gap-2">
-                <Magnify size="1.5em" />
+                <Icon path={mdiMagnify} size="1.5em" />
               </div>
             </IconButton>
           </a>
@@ -68,7 +64,7 @@
           <div in:fly={{ x: 50, duration: 250 }}>
             <LinkButton on:click={() => dispatch('uploadClicked')}>
               <div class="flex gap-2">
-                <TrayArrowUp size="1.5em" />
+                <Icon path={mdiTrayArrowUp} size="1.5em" />
                 <span class="hidden md:block">Upload</span>
               </div>
             </LinkButton>
@@ -76,9 +72,16 @@
         {/if}
 
         {#if user.isAdmin}
-          <a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
-            <div class="hidden sm:block">
-              <LinkButton>
+          <a
+            data-sveltekit-preload-data="hover"
+            href={AppRoute.ADMIN_USER_MANAGEMENT}
+            aria-label="Administration"
+            aria-current={$page.url.pathname.includes('/admin') ? 'page' : null}
+          >
+            <div
+              class="inline-flex items-center justify-center transition-colors dark:text-immich-dark-fg p-2 font-medium rounded-lg"
+            >
+              <div class="hidden sm:block">
                 <span
                   class={$page.url.pathname.includes('/admin')
                     ? 'item text-immich-primary underline dark:text-immich-dark-primary'
@@ -86,22 +89,21 @@
                 >
                   Administration
                 </span>
-              </LinkButton>
-            </div>
-            <div class="block sm:hidden">
-              <IconButton title="Administration">
-                <Cog
+              </div>
+              <div class="block sm:hidden" aria-hidden="true">
+                <Icon
+                  path={mdiCog}
                   size="1.5em"
                   class="dark:text-immich-dark-fg {$page.url.pathname.includes('/admin')
                     ? 'text-immich-primary dark:text-immich-dark-primary'
                     : ''}"
                 />
-              </IconButton>
-              <hr
-                class={$page.url.pathname.includes('/admin')
-                  ? 'border-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
-                  : 'hidden'}
-              />
+                <div
+                  class={$page.url.pathname.includes('/admin')
+                    ? 'border-t-1 mx-auto block w-2/3 border-immich-primary dark:border-immich-dark-primary'
+                    : 'hidden'}
+                />
+              </div>
             </div>
           </a>
         {/if}
@@ -119,7 +121,9 @@
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
-            <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {#key user}
+              <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {/key}
           </button>
 
           {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
@@ -128,13 +132,13 @@
               out:fade={{ delay: 200, duration: 150 }}
               class="absolute -bottom-12 right-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
             >
-              <p>{user.firstName} {user.lastName}</p>
+              <p>{user.name}</p>
               <p>{user.email}</p>
             </div>
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel {user} on:logout={logOut} />
+            <AccountInfoPanel bind:user on:logout={logOut} />
           {/if}
         </div>
       </section>

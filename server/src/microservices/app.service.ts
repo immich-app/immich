@@ -1,4 +1,5 @@
 import {
+  AssetService,
   AuditService,
   IDeleteFilesJob,
   JobName,
@@ -8,6 +9,7 @@ import {
   MetadataService,
   PersonService,
   SearchService,
+  ServerInfoService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,
@@ -22,22 +24,26 @@ export class AppService {
   private logger = new Logger(AppService.name);
 
   constructor(
+    private auditService: AuditService,
+    private assetService: AssetService,
     private jobService: JobService,
+    private libraryService: LibraryService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
     private personService: PersonService,
     private searchService: SearchService,
+    private serverInfoService: ServerInfoService,
     private smartInfoService: SmartInfoService,
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
-    private auditService: AuditService,
-    private libraryService: LibraryService,
   ) {}
 
   async init() {
     await this.jobService.registerHandlers({
+      [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
+      [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
@@ -79,7 +85,6 @@ export class AppService {
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
       [JobName.LIBRARY_SCAN_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
-      [JobName.LIBRARY_MARK_ASSET_OFFLINE]: (data) => this.libraryService.handleOfflineAsset(data),
       [JobName.LIBRARY_SCAN]: (data) => this.libraryService.handleQueueAssetRefresh(data),
       [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
       [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
@@ -87,17 +92,11 @@ export class AppService {
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
     });
 
-    process.on('uncaughtException', (error: Error | any) => {
-      const isCsvError = error.code === 'CSV_RECORD_INCONSISTENT_FIELDS_LENGTH';
-      if (!isCsvError) {
-        throw error;
-      }
-
-      this.logger.warn('Geocoding csv parse error, trying again without cache...');
-      this.metadataService.init(true);
-    });
-
     await this.metadataService.init();
     await this.searchService.init();
+  }
+
+  async teardown() {
+    await this.metadataService.teardown();
   }
 }

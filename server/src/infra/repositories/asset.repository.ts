@@ -18,26 +18,167 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
 import { DateTime } from 'luxon';
-import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
-import { AssetEntity, AssetType, ExifEntity } from '../entities';
+import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
+import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
+
+const DEFAULT_SEARCH_SIZE = 250;
 
 const truncateMap: Record<TimeBucketSize, string> = {
   [TimeBucketSize.DAY]: 'day',
   [TimeBucketSize.MONTH]: 'month',
 };
 
+const dateTrunc = (options: TimeBucketOptions) =>
+  `(date_trunc('${
+    truncateMap[options.size]
+  }', (asset."localDateTime" at time zone 'UTC')) at time zone 'UTC')::timestamptz`;
+
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(
     @InjectRepository(AssetEntity) private repository: Repository<AssetEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
+    @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
+  }
+
+  async upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void> {
+    await this.jobStatusRepository.upsert(jobStatus, { conflictPaths: ['assetId'] });
+  }
+
+  search(options: AssetSearchOptions): Promise<AssetEntity[]> {
+    const {
+      id,
+      libraryId,
+      deviceAssetId,
+      type,
+      checksum,
+      ownerId,
+
+      isVisible,
+      isFavorite,
+      isExternal,
+      isReadOnly,
+      isOffline,
+      isArchived,
+      isMotion,
+      isEncoded,
+
+      createdBefore,
+      createdAfter,
+      updatedBefore,
+      updatedAfter,
+      trashedBefore,
+      trashedAfter,
+      takenBefore,
+      takenAfter,
+
+      originalFileName,
+      originalPath,
+      resizePath,
+      webpPath,
+      encodedVideoPath,
+
+      city,
+      state,
+      country,
+      make,
+      model,
+      lensModel,
+
+      withDeleted: _withDeleted,
+      withExif: _withExif,
+      withStacked,
+      withPeople,
+
+      order,
+    } = options;
+
+    const withDeleted = _withDeleted ?? (trashedAfter !== undefined || trashedBefore !== undefined);
+
+    const page = Math.max(options.page || 1, 1);
+    const size = Math.min(options.size || DEFAULT_SEARCH_SIZE, DEFAULT_SEARCH_SIZE);
+
+    const exifWhere = _.omitBy(
+      {
+        city,
+        state,
+        country,
+        make,
+        model,
+        lensModel,
+      },
+      _.isUndefined,
+    );
+
+    const withExif = Object.keys(exifWhere).length > 0 || _withExif;
+
+    const where = _.omitBy(
+      {
+        ownerId,
+        id,
+        libraryId,
+        deviceAssetId,
+        type,
+        checksum,
+        isVisible,
+        isFavorite,
+        isExternal,
+        isReadOnly,
+        isOffline,
+        isArchived,
+        livePhotoVideoId: isMotion && Not(IsNull()),
+        originalFileName,
+        originalPath,
+        resizePath,
+        webpPath,
+        encodedVideoPath: encodedVideoPath ?? (isEncoded && Not(IsNull())),
+        createdAt: OptionalBetween(createdAfter, createdBefore),
+        updatedAt: OptionalBetween(updatedAfter, updatedBefore),
+        deletedAt: OptionalBetween(trashedAfter, trashedBefore),
+        fileCreatedAt: OptionalBetween(takenAfter, takenBefore),
+        exifInfo: Object.keys(exifWhere).length > 0 ? exifWhere : undefined,
+      },
+      _.isUndefined,
+    );
+
+    const builder = this.repository.createQueryBuilder('asset');
+
+    if (withExif) {
+      if (_withExif) {
+        builder.leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+      } else {
+        builder.leftJoin('asset.exifInfo', 'exifInfo');
+      }
+    }
+
+    if (withPeople) {
+      builder.leftJoinAndSelect('asset.faces', 'faces');
+      builder.leftJoinAndSelect('faces.person', 'person');
+    }
+
+    if (withStacked) {
+      builder.leftJoinAndSelect('asset.stack', 'stack');
+    }
+
+    if (withDeleted) {
+      builder.withDeleted();
+    }
+
+    builder
+      .where(where)
+      .skip(size * (page - 1))
+      .take(size)
+      .orderBy('asset.fileCreatedAt', order ?? 'DESC');
+
+    return builder.getMany();
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
@@ -86,29 +227,35 @@ export class AssetRepository implements IAssetRepository {
       AND entity.isVisible = true
       AND entity.isArchived = false
       AND entity.resizePath IS NOT NULL
-      AND EXTRACT(DAY FROM entity.localDateTime) = :day
-      AND EXTRACT(MONTH FROM entity.localDateTime) = :month`,
+      AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
+      AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
           ownerId,
           day,
           month,
         },
       )
+      .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
       .orderBy('entity.localDateTime', 'DESC')
       .getMany();
   }
 
-  getByIds(ids: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { id: In(ids) },
-      relations: {
+  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
+    if (!relations) {
+      relations = {
         exifInfo: true,
         smartInfo: true,
         tags: true,
         faces: {
           person: true,
         },
-      },
+        stack: true,
+      };
+    }
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations,
+      withDeleted: true,
     });
   }
 
@@ -130,15 +277,17 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity> {
+  getByUserId(pagination: PaginationOptions, userId: string, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
         ownerId: userId,
-        isVisible: true,
+        isVisible: options.isVisible,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
       },
+      withDeleted: !!options.trashedBefore,
     });
   }
 
@@ -154,32 +303,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getById(assetId: string): Promise<AssetEntity> {
-    return this.repository.findOneOrFail({
-      where: {
-        id: assetId,
-      },
-      relations: {
-        exifInfo: true,
-        tags: true,
-        sharedLinks: true,
-        smartInfo: true,
-        faces: {
-          person: true,
-        },
-      },
-    });
-  }
-
-  remove(asset: AssetEntity): Promise<AssetEntity> {
-    return this.repository.remove(asset);
-  }
-
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {
         isVisible: options.isVisible,
         type: options.type,
+        deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
         exifInfo: true,
@@ -189,6 +318,7 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: options.withDeleted ?? !!options.trashedBefore,
       order: {
         // Ensures correct order when paginating
         createdAt: options.order ?? 'ASC',
@@ -196,8 +326,52 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  /**
+   * Get assets by device's Id on the database
+   * @param ownerId
+   * @param deviceId
+   *
+   * @returns Promise<string[]> - Array of assetIds belong to the device
+   */
+  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
+    const items = await this.repository.find({
+      select: { deviceAssetId: true },
+      where: {
+        ownerId,
+        deviceId,
+        isVisible: true,
+      },
+      withDeleted: true,
+    });
+
+    return items.map((asset) => asset.deviceAssetId);
+  }
+
+  getById(id: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { id },
+      relations: {
+        faces: {
+          person: true,
+        },
+        library: true,
+        stack: true,
+      },
+      // We are specifically asking for this asset. Return it even if it is soft deleted
+      withDeleted: true,
+    });
+  }
+
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
+  }
+
+  async softDeleteAll(ids: string[]): Promise<void> {
+    await this.repository.softDelete({ id: In(ids), isExternal: false });
+  }
+
+  async restoreAll(ids: string[]): Promise<void> {
+    await this.repository.restore({ id: In(ids) });
   }
 
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
@@ -213,7 +387,12 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      withDeleted: true,
     });
+  }
+
+  async remove(asset: AssetEntity): Promise<void> {
+    await this.repository.remove(asset);
   }
 
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
@@ -301,6 +480,7 @@ export class AssetRepository implements IAssetRepository {
       case WithoutProperty.FACES:
         relations = {
           faces: true,
+          jobStatus: true,
         };
         where = {
           resizePath: Not(IsNull()),
@@ -308,6 +488,9 @@ export class AssetRepository implements IAssetRepository {
           faces: {
             assetId: IsNull(),
             personId: IsNull(),
+          },
+          jobStatus: {
+            facesRecognizedAt: IsNull(),
           },
         };
         break;
@@ -424,13 +607,17 @@ export class AssetRepository implements IAssetRepository {
       .andWhere('asset.isVisible = true')
       .groupBy('asset.type');
 
-    const { isArchived, isFavorite } = options;
+    const { isArchived, isFavorite, isTrashed } = options;
     if (isArchived !== undefined) {
       builder = builder.andWhere(`asset.isArchived = :isArchived`, { isArchived });
     }
 
     if (isFavorite !== undefined) {
       builder = builder.andWhere(`asset.isFavorite = :isFavorite`, { isFavorite });
+    }
+
+    if (isTrashed !== undefined) {
+      builder = builder.withDeleted().andWhere(`asset.deletedAt is not null`);
     }
 
     const items = await builder.getRawMany();
@@ -461,42 +648,47 @@ export class AssetRepository implements IAssetRepository {
   }
 
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
-    const truncateValue = truncateMap[options.size];
-
+    const truncated = dateTrunc(options);
     return this.getBuilder(options)
       .select(`COUNT(asset.id)::int`, 'count')
-      .addSelect(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'timeBucket')
-      .groupBy(`date_trunc('${truncateValue}', "fileCreatedAt")`)
-      .orderBy(`date_trunc('${truncateValue}', "fileCreatedAt")`, 'DESC')
+      .addSelect(truncated, 'timeBucket')
+      .groupBy(truncated)
+      .orderBy(truncated, 'DESC')
       .getRawMany();
   }
 
-  getByTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
-    const truncateValue = truncateMap[options.size];
-    return this.getBuilder(options)
-      .andWhere(`date_trunc('${truncateValue}', "fileCreatedAt") = :timeBucket`, { timeBucket })
-      .orderBy(`date_trunc('day', "localDateTime")`, 'DESC')
-      .addOrderBy('asset.fileCreatedAt', 'DESC')
-      .getMany();
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+    const truncated = dateTrunc(options);
+    return (
+      this.getBuilder(options)
+        .andWhere(`${truncated} = :timeBucket`, { timeBucket })
+        // First sort by the day in localtime (put it in the right bucket)
+        .orderBy(truncated, 'DESC')
+        // and then sort by the actual time
+        .addOrderBy('asset.fileCreatedAt', 'DESC')
+        .getMany()
+    );
   }
 
   private getBuilder(options: TimeBucketOptions) {
-    const { isArchived, isFavorite, albumId, personId, userId } = options;
+    const { isArchived, isFavorite, isTrashed, albumId, personId, userIds, withStacked } = options;
 
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.isVisible = true')
-      .leftJoinAndSelect('asset.exifInfo', 'exifInfo');
+      .andWhere('asset.fileCreatedAt < NOW()')
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+      .leftJoinAndSelect('asset.stack', 'stack');
 
     if (albumId) {
       builder = builder.leftJoin('asset.albums', 'album').andWhere('album.id = :albumId', { albumId });
     }
 
-    if (userId) {
-      builder = builder.andWhere('asset.ownerId = :userId', { userId });
+    if (userIds) {
+      builder = builder.andWhere('asset.ownerId IN (:...userIds )', { userIds });
     }
 
-    if (isArchived != undefined) {
+    if (isArchived !== undefined) {
       builder = builder.andWhere('asset.isArchived = :isArchived', { isArchived });
     }
 
@@ -504,11 +696,19 @@ export class AssetRepository implements IAssetRepository {
       builder = builder.andWhere('asset.isFavorite = :isFavorite', { isFavorite });
     }
 
+    if (isTrashed !== undefined) {
+      builder = builder.andWhere(`asset.deletedAt ${isTrashed ? 'IS NOT NULL' : 'IS NULL'}`).withDeleted();
+    }
+
     if (personId !== undefined) {
       builder = builder
         .innerJoin('asset.faces', 'faces')
         .innerJoin('faces.person', 'person')
         .andWhere('person.id = :personId', { personId });
+    }
+
+    if (withStacked) {
+      builder = builder.andWhere('asset.stackParentId IS NULL');
     }
 
     return builder;

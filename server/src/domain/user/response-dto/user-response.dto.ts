@@ -1,13 +1,31 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserAvatarColor, UserEntity } from '@app/infra/entities';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum } from 'class-validator';
 
-export class UserResponseDto {
+export const getRandomAvatarColor = (user: UserEntity): UserAvatarColor => {
+  const values = Object.values(UserAvatarColor);
+  const randomIndex = Math.floor(
+    user.email
+      .split('')
+      .map((letter) => letter.charCodeAt(0))
+      .reduce((a, b) => a + b, 0) % values.length,
+  );
+  return values[randomIndex] as UserAvatarColor;
+};
+
+export class UserDto {
   id!: string;
+  name!: string;
   email!: string;
-  firstName!: string;
-  lastName!: string;
+  profileImagePath!: string;
+  @IsEnum(UserAvatarColor)
+  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
+  avatarColor!: UserAvatarColor;
+}
+
+export class UserResponseDto extends UserDto {
   storageLabel!: string | null;
   externalPath!: string | null;
-  profileImagePath!: string;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
   createdAt!: Date;
@@ -17,15 +35,21 @@ export class UserResponseDto {
   memoriesEnabled?: boolean;
 }
 
-export function mapUser(entity: UserEntity): UserResponseDto {
+export const mapSimpleUser = (entity: UserEntity): UserDto => {
   return {
     id: entity.id,
     email: entity.email,
-    firstName: entity.firstName,
-    lastName: entity.lastName,
+    name: entity.name,
+    profileImagePath: entity.profileImagePath,
+    avatarColor: entity.avatarColor ?? getRandomAvatarColor(entity),
+  };
+};
+
+export function mapUser(entity: UserEntity): UserResponseDto {
+  return {
+    ...mapSimpleUser(entity),
     storageLabel: entity.storageLabel,
     externalPath: entity.externalPath,
-    profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
     createdAt: entity.createdAt,

@@ -1,6 +1,18 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf, ValidationOptions } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateIf,
+  ValidationOptions,
+} from 'class-validator';
+import { CronJob } from 'cron';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 
@@ -18,9 +30,35 @@ export function ValidateUUID({ optional, each }: Options = { optional: false, ea
   );
 }
 
+export function validateCronExpression(expression: string) {
+  try {
+    new CronJob(expression, () => {});
+  } catch (error) {
+    return false;
+  }
+
+  return true;
+}
+
 interface IValue {
   value?: string;
 }
+
+export const QueryBoolean = ({ optional }: { optional?: boolean }) => {
+  const decorators = [IsBoolean(), Transform(toBoolean)];
+  if (optional) {
+    decorators.push(Optional());
+  }
+  return applyDecorators(...decorators);
+};
+
+export const QueryDate = ({ optional }: { optional?: boolean }) => {
+  const decorators = [IsDate(), Type(() => Date)];
+  if (optional) {
+    decorators.push(Optional());
+  }
+  return applyDecorators(...decorators);
+};
 
 export const toBoolean = ({ value }: IValue) => {
   if (value == 'true') {
@@ -112,3 +150,23 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
 
   return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);
 }
+
+// NOTE: The following Set utils have been added here, to easily determine where they are used.
+//       They should be replaced with native Set operations, when they are added to the language.
+//       Proposal reference: https://github.com/tc39/proposal-set-methods
+
+export const setUnion = <T>(setA: Set<T>, setB: Set<T>): Set<T> => {
+  const union = new Set(setA);
+  for (const elem of setB) {
+    union.add(elem);
+  }
+  return union;
+};
+
+export const setDifference = <T>(setA: Set<T>, setB: Set<T>): Set<T> => {
+  const difference = new Set(setA);
+  for (const elem of setB) {
+    difference.delete(elem);
+  }
+  return difference;
+};

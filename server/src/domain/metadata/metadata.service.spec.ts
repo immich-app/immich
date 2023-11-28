@@ -1,4 +1,4 @@
-import { AssetType, CitiesFile, ExifEntity, SystemConfigKey } from '@app/infra/entities';
+import { AssetType, ExifEntity, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAlbumRepositoryMock,
@@ -6,19 +6,30 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newMetadataRepositoryMock,
+  newMoveRepositoryMock,
+  newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
 import { randomBytes } from 'crypto';
 import { Stats } from 'fs';
 import { constants } from 'fs/promises';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository, WithProperty, WithoutProperty } from '../asset';
-import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName, QueueName } from '../job';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { IMetadataRepository, ImmichTags } from './metadata.repository';
+import { when } from 'jest-when';
+import { JobName } from '../job';
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IJobRepository,
+  IMetadataRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  ImmichTags,
+  WithProperty,
+  WithoutProperty,
+} from '../repositories';
 import { MetadataService } from './metadata.service';
 
 describe(MetadataService.name, () => {
@@ -28,6 +39,8 @@ describe(MetadataService.name, () => {
   let cryptoRepository: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let metadataMock: jest.Mocked<IMetadataRepository>;
+  let moveMock: jest.Mocked<IMoveRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let sut: MetadataService;
 
@@ -38,9 +51,25 @@ describe(MetadataService.name, () => {
     cryptoRepository = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     metadataMock = newMetadataRepositoryMock();
+    moveMock = newMoveRepositoryMock();
+    personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
-    sut = new MetadataService(albumMock, assetMock, cryptoRepository, jobMock, metadataMock, storageMock, configMock);
+    sut = new MetadataService(
+      albumMock,
+      assetMock,
+      cryptoRepository,
+      jobMock,
+      metadataMock,
+      storageMock,
+      configMock,
+      moveMock,
+      personMock,
+    );
+  });
+
+  afterEach(async () => {
+    await sut.teardown();
   });
 
   it('should be defined', () => {
@@ -49,10 +78,7 @@ describe(MetadataService.name, () => {
 
   describe('init', () => {
     beforeEach(async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true },
-        { key: SystemConfigKey.REVERSE_GEOCODING_CITIES_FILE_OVERRIDE, value: CitiesFile.CITIES_500 },
-      ]);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true }]);
 
       await sut.init();
     });
@@ -61,41 +87,9 @@ describe(MetadataService.name, () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: false }]);
 
       await sut.init();
-      expect(metadataMock.deleteCache).not.toHaveBeenCalled();
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
       expect(metadataMock.init).toHaveBeenCalledTimes(1);
       expect(jobMock.resume).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return if deleteCache is false and the cities precision has not changed', async () => {
-      await sut.init();
-
-      expect(metadataMock.deleteCache).not.toHaveBeenCalled();
-      expect(jobMock.pause).toHaveBeenCalledTimes(1);
-      expect(metadataMock.init).toHaveBeenCalledTimes(1);
-      expect(jobMock.resume).toHaveBeenCalledTimes(1);
-    });
-
-    it('should re-init if deleteCache is false but the cities precision has changed', async () => {
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.REVERSE_GEOCODING_CITIES_FILE_OVERRIDE, value: CitiesFile.CITIES_1000 },
-      ]);
-
-      await sut.init();
-
-      expect(metadataMock.deleteCache).not.toHaveBeenCalled();
-      expect(jobMock.pause).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
-      expect(metadataMock.init).toHaveBeenCalledWith({ citiesFileOverride: CitiesFile.CITIES_1000 });
-      expect(jobMock.resume).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
-    });
-
-    it('should re-init and delete cache if deleteCache is true', async () => {
-      await sut.init(true);
-
-      expect(metadataMock.deleteCache).toHaveBeenCalled();
-      expect(jobMock.pause).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
-      expect(metadataMock.init).toHaveBeenCalledWith({ citiesFileOverride: CitiesFile.CITIES_500 });
-      expect(jobMock.resume).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
     });
   });
 
@@ -220,6 +214,30 @@ describe(MetadataService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalled();
     });
 
+    it('should handle a date in a sidecar file', async () => {
+      const originalDate = new Date('2023-11-21T16:13:17.517Z');
+      const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      when(metadataMock.getExifTags)
+        .calledWith(assetStub.sidecar.originalPath)
+        // higher priority tag
+        .mockResolvedValue({ CreationDate: originalDate.toISOString() });
+      when(metadataMock.getExifTags)
+        .calledWith(assetStub.sidecar.sidecarPath as string)
+        // lower priority tag, but in sidecar
+        .mockResolvedValue({ CreateDate: sidecarDate.toISOString() });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.sidecar.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: sidecarDate }));
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetStub.image.id,
+        duration: null,
+        fileCreatedAt: sidecarDate,
+        localDateTime: sidecarDate,
+      });
+    });
+
     it('should handle lists of numbers', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       metadataMock.getExifTags.mockResolvedValue({ ISO: [160] as any });
@@ -253,7 +271,7 @@ describe(MetadataService.name, () => {
         id: assetStub.withLocation.id,
         duration: null,
         fileCreatedAt: assetStub.withLocation.createdAt,
-        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
+        localDateTime: new Date('2023-02-22T05:06:29.716Z'),
       });
     });
 
@@ -312,7 +330,7 @@ describe(MetadataService.name, () => {
           type: AssetType.VIDEO,
           originalFileName: assetStub.livePhotoStillAsset.originalFileName,
           isVisible: false,
-          isReadOnly: true,
+          isReadOnly: false,
         }),
       );
       expect(assetMock.save).toHaveBeenCalledWith({
@@ -384,6 +402,54 @@ describe(MetadataService.name, () => {
         fileCreatedAt: new Date('1970-01-01'),
         localDateTime: new Date('1970-01-01'),
       });
+    });
+
+    it('should handle duration', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.getExifTags.mockResolvedValue({ Duration: 6.21 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalled();
+      expect(assetMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: assetStub.image.id,
+          duration: '00:00:06.210',
+        }),
+      );
+    });
+
+    it('should handle duration as an object without Scale', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.getExifTags.mockResolvedValue({ Duration: { Value: 6.2 } });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalled();
+      expect(assetMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: assetStub.image.id,
+          duration: '00:00:06.200',
+        }),
+      );
+    });
+
+    it('should handle duration with scale', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      metadataMock.getExifTags.mockResolvedValue({ Duration: { Scale: 1.11111111111111e-5, Value: 558720 } });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalled();
+      expect(assetMock.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: assetStub.image.id,
+          duration: '00:00:06.207',
+        }),
+      );
     });
   });
 

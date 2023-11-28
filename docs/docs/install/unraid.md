@@ -98,12 +98,12 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
 
     > Note: This can take several minutes depending on your Internet speed and Unraid hardware
 
-9.  Once on the Docker page you will see several Immich containers, one of them will be labelled `immich_proxy` and will have a port mapping. Visit the `IP:PORT` displayed in your web browser and you should see the Immich admin setup page.
+9.  Once on the Docker page you will see several Immich containers, one of them will be labelled `immich_web` and will have a port mapping. Visit the `IP:PORT` displayed in your web browser and you should see the Immich admin setup page.
 
 <img
 src={require('./img/unraid06.webp').default}
 width="80%"
-alt="Go to Docker Tab and visit the address listed next to immich-proxy"
+alt="Go to Docker Tab and visit the address listed next to immich-web"
 />
 
 <details >
@@ -112,12 +112,12 @@ alt="Go to Docker Tab and visit the address listed next to immich-proxy"
     <img
         src={require('./img/unraid07.webp').default}
         width="80%"
-        alt="Go to Docker Tab and visit the address listed next to immich-proxy"
+        alt="Go to Docker Tab and visit the address listed next to immich-web"
     />
     <img
         src={require('./img/unraid08.webp').default}
         width="90%"
-        alt="Go to Docker Tab and visit the address listed next to immich-proxy"
+        alt="Go to Docker Tab and visit the address listed next to immich-web"
     />
     
 </details>

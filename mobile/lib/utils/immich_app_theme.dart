@@ -38,14 +38,19 @@ ThemeData immichLightTheme = ThemeData(
   hintColor: Colors.indigo,
   focusColor: Colors.indigo,
   splashColor: Colors.indigo.withOpacity(0.15),
-  fontFamily: 'WorkSans',
+  fontFamily: 'Overpass',
   scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+    contentTextStyle: TextStyle(
+      fontFamily: 'Overpass',
+      color: Colors.indigo,
+      fontWeight: FontWeight.bold,
+    ),
+    backgroundColor: Colors.white,
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: const TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Overpass',
       color: Colors.indigo,
       fontWeight: FontWeight.bold,
       fontSize: 18,
@@ -120,9 +125,9 @@ ThemeData immichLightTheme = ThemeData(
     surfaceTintColor: Colors.transparent,
     labelTextStyle: MaterialStatePropertyAll(
       TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[700],
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: Colors.grey[800],
       ),
     ),
   ),
@@ -155,9 +160,14 @@ ThemeData immichDarkTheme = ThemeData(
   primaryColor: immichDarkThemePrimaryColor,
   scaffoldBackgroundColor: immichDarkBackgroundColor,
   hintColor: Colors.grey[600],
-  fontFamily: 'WorkSans',
-  snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+  fontFamily: 'Overpass',
+  snackBarTheme: SnackBarThemeData(
+    contentTextStyle: TextStyle(
+      fontFamily: 'Overpass',
+      color: immichDarkThemePrimaryColor,
+      fontWeight: FontWeight.bold,
+    ),
+    backgroundColor: Colors.grey[900],
   ),
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
@@ -166,7 +176,7 @@ ThemeData immichDarkTheme = ThemeData(
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Overpass',
       color: immichDarkThemePrimaryColor,
       fontWeight: FontWeight.bold,
       fontSize: 18,
@@ -239,9 +249,9 @@ ThemeData immichDarkTheme = ThemeData(
     surfaceTintColor: Colors.transparent,
     labelTextStyle: MaterialStatePropertyAll(
       TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[500],
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: Colors.grey[300],
       ),
     ),
   ),

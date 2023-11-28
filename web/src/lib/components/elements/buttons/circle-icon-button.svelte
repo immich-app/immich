@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type Icon from 'svelte-material-icons/AbTesting.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
 
-  export let logo: typeof Icon;
-  export let backgroundColor = 'transparent';
+  export let icon: string;
+  export let backgroundColor = '';
   export let hoverColor = '#e2e7e9';
   export let padding = '3';
   export let size = '24';
@@ -10,6 +10,7 @@
   export let isOpacity = false;
   export let forceDark = false;
   export let hideMobile = false;
+  export let iconColor = 'currentColor';
 </script>
 
 <button
@@ -23,7 +24,7 @@
   {hideMobile && 'hidden sm:flex'}"
   on:click
 >
-  <svelte:component this={logo} {size} />
+  <Icon path={icon} {size} color={iconColor} />
   <slot />
 </button>
 

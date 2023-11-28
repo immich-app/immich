@@ -1,8 +1,8 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/partner/ui/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SharingPage extends HookConsumerWidget {
@@ -20,7 +21,6 @@ class SharingPage extends HookConsumerWidget {
     final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
     final userId = ref.watch(currentUserProvider)?.id;
     final partner = ref.watch(partnerSharedWithProvider);
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
       () {
@@ -46,8 +46,9 @@ class SharingPage extends HookConsumerWidget {
                 album: sharedAlbums[index],
                 showOwner: true,
                 onTap: () {
-                  AutoRouter.of(context)
-                      .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
+                  context.autoPush(
+                    AlbumViewerRoute(albumId: sharedAlbums[index].id),
+                  );
                 },
               );
             },
@@ -78,32 +79,27 @@ class SharingPage extends HookConsumerWidget {
                 album.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode
-                          ? Theme.of(context).primaryColor
-                          : Colors.black,
-                    ),
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               subtitle: isOwner
                   ? Text(
                       'album_thumbnail_owned'.tr(),
-                      style: const TextStyle(
-                        fontSize: 12.0,
-                      ),
+                      style: context.textTheme.bodyMedium,
                     )
                   : album.ownerName != null
                       ? Text(
                           'album_thumbnail_shared_by'
                               .tr(args: [album.ownerName!]),
-                          style: const TextStyle(
-                            fontSize: 12.0,
-                          ),
+                          style: context.textTheme.bodyMedium,
                         )
                       : null,
               onTap: () {
-                AutoRouter.of(context)
-                    .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
+                context.autoPush(
+                  AlbumViewerRoute(albumId: sharedAlbums[index].id),
+                );
               },
             );
           },
@@ -126,8 +122,7 @@ class SharingPage extends HookConsumerWidget {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  AutoRouter.of(context)
-                      .push(CreateAlbumRoute(isSharedAlbum: true));
+                  context.autoPush(CreateAlbumRoute(isSharedAlbum: true));
                 },
                 icon: const Icon(
                   Icons.photo_album_outlined,
@@ -137,8 +132,8 @@ class SharingPage extends HookConsumerWidget {
                   "sharing_silver_appbar_create_shared_album",
                   maxLines: 1,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
                   ),
                 ).tr(),
               ),
@@ -146,38 +141,22 @@ class SharingPage extends HookConsumerWidget {
             const SizedBox(width: 12.0),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () =>
-                    AutoRouter.of(context).push(const PartnerRoute()),
+                onPressed: () => context.autoPush(const SharedLinkRoute()),
                 icon: const Icon(
-                  Icons.swap_horizontal_circle_outlined,
+                  Icons.link,
                   size: 20,
                 ),
                 label: const Text(
-                  "sharing_silver_appbar_share_partner",
+                  "sharing_silver_appbar_shared_links",
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
                   ),
                   maxLines: 1,
                 ).tr(),
               ),
             ),
           ],
-        ),
-      );
-    }
-
-    AppBar buildAppBar() {
-      return AppBar(
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'IMMICH',
-          style: TextStyle(
-            fontFamily: 'SnowburstOne',
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
         ),
       );
     }
@@ -205,21 +184,21 @@ class SharingPage extends HookConsumerWidget {
                     child: Icon(
                       Icons.insert_photo_rounded,
                       size: 50,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'sharing_page_empty_list',
-                      style: Theme.of(context).textTheme.displaySmall,
+                      style: context.textTheme.displaySmall,
                     ).tr(),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'sharing_page_description',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: context.textTheme.bodyMedium,
                     ).tr(),
                   ),
                 ],
@@ -230,8 +209,21 @@ class SharingPage extends HookConsumerWidget {
       );
     }
 
+    Widget sharePartnerButton() {
+      return InkWell(
+        onTap: () => context.autoPush(const PartnerRoute()),
+        borderRadius: BorderRadius.circular(12),
+        child: const Icon(
+          Icons.swap_horizontal_circle_rounded,
+          size: 25,
+        ),
+      );
+    }
+
     return Scaffold(
-      appBar: buildAppBar(),
+      appBar: ImmichAppBar(
+        action: sharePartnerButton(),
+      ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: buildTopBottons()),
@@ -239,9 +231,11 @@ class SharingPage extends HookConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.all(12),
               sliver: SliverToBoxAdapter(
-                child: const Text(
+                child: Text(
                   "partner_page_title",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ).tr(),
               ),
             ),
@@ -249,10 +243,10 @@ class SharingPage extends HookConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.all(12),
             sliver: SliverToBoxAdapter(
-              child: const Text(
+              child: Text(
                 "sharing_page_album",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
               ).tr(),
             ),

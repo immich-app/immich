@@ -6,7 +6,7 @@ import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:path/path.dart' as p;
 
 part 'asset.g.dart';
@@ -30,7 +30,10 @@ class Asset {
         exifInfo =
             remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
         isFavorite = remote.isFavorite,
-        isArchived = remote.isArchived;
+        isArchived = remote.isArchived,
+        isTrashed = remote.isTrashed,
+        stackParentId = remote.stackParentId,
+        stackCount = remote.stackCount;
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -45,6 +48,8 @@ class Asset {
         updatedAt = local.modifiedDateTime,
         isFavorite = local.isFavorite,
         isArchived = false,
+        isTrashed = false,
+        stackCount = 0,
         fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
       fileCreatedAt = fileModifiedAt;
@@ -74,6 +79,9 @@ class Asset {
     this.exifInfo,
     required this.isFavorite,
     required this.isArchived,
+    required this.isTrashed,
+    this.stackParentId,
+    required this.stackCount,
   });
 
   @ignore
@@ -138,8 +146,17 @@ class Asset {
 
   bool isArchived;
 
+  bool isTrashed;
+
   @ignore
   ExifInfo? exifInfo;
+
+  String? stackParentId;
+
+  @ignore
+  int get stackChildrenCount => stackCount ?? 0;
+
+  int? stackCount;
 
   /// `true` if this [Asset] is present on the device
   @ignore
@@ -194,7 +211,10 @@ class Asset {
         livePhotoVideoId == other.livePhotoVideoId &&
         isFavorite == other.isFavorite &&
         isLocal == other.isLocal &&
-        isArchived == other.isArchived;
+        isArchived == other.isArchived &&
+        isTrashed == other.isTrashed &&
+        stackCount == other.stackCount &&
+        stackParentId == other.stackParentId;
   }
 
   @override
@@ -216,7 +236,10 @@ class Asset {
       livePhotoVideoId.hashCode ^
       isFavorite.hashCode ^
       isLocal.hashCode ^
-      isArchived.hashCode;
+      isArchived.hashCode ^
+      isTrashed.hashCode ^
+      stackCount.hashCode ^
+      stackParentId.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
@@ -229,8 +252,15 @@ class Asset {
         width == null && a.width != null ||
         height == null && a.height != null ||
         livePhotoVideoId == null && a.livePhotoVideoId != null ||
-        !isRemote && a.isRemote && isFavorite != a.isFavorite ||
-        !isRemote && a.isRemote && isArchived != a.isArchived;
+        stackParentId == null && a.stackParentId != null ||
+        isFavorite != a.isFavorite ||
+        isArchived != a.isArchived ||
+        isTrashed != a.isTrashed ||
+        // no local stack count or different count from remote
+        ((stackCount == null && a.stackCount != null) ||
+            (stackCount != null &&
+                a.stackCount != null &&
+                stackCount != a.stackCount));
   }
 
   /// Returns a new [Asset] with values from this and merged & updated with [a]
@@ -246,6 +276,7 @@ class Asset {
           width: a.width ?? width,
           height: a.height ?? height,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+          stackCount: a.stackCount ?? stackCount,
         );
       } else if (isRemote) {
         return _copyWith(
@@ -259,8 +290,11 @@ class Asset {
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
+          stackParentId: stackParentId,
+          stackCount: stackCount,
           isFavorite: isFavorite,
           isArchived: isArchived,
+          isTrashed: isTrashed,
         );
       }
     } else {
@@ -272,9 +306,12 @@ class Asset {
           width: a.width,
           height: a.height,
           livePhotoVideoId: a.livePhotoVideoId,
+          stackParentId: a.stackParentId,
+          stackCount: a.stackCount ?? stackCount,
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
+          isTrashed: a.isTrashed,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
         );
       } else {
@@ -306,7 +343,10 @@ class Asset {
     String? livePhotoVideoId,
     bool? isFavorite,
     bool? isArchived,
+    bool? isTrashed,
     ExifInfo? exifInfo,
+    String? stackParentId,
+    int? stackCount,
   }) =>
       Asset(
         id: id ?? this.id,
@@ -325,7 +365,10 @@ class Asset {
         livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
         isFavorite: isFavorite ?? this.isFavorite,
         isArchived: isArchived ?? this.isArchived,
+        isTrashed: isTrashed ?? this.isTrashed,
         exifInfo: exifInfo ?? this.exifInfo,
+        stackParentId: stackParentId ?? this.stackParentId,
+        stackCount: stackCount ?? this.stackCount,
       );
 
   Future<void> put(Isar db) async {
@@ -367,6 +410,8 @@ class Asset {
   "checksum": "$checksum",
   "ownerId": $ownerId, 
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
+  "stackCount": "$stackCount",
+  "stackParentId": "${stackParentId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt", 
   "updatedAt": "$updatedAt", 
@@ -374,11 +419,12 @@ class Asset {
   "type": "$type",
   "fileName": "$fileName", 
   "isFavorite": $isFavorite, 
-  "isRemote: $isRemote,
+  "isRemote": $isRemote,
   "storage": "$storage",
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
-  "isArchived": $isArchived
+  "isArchived": $isArchived,
+  "isTrashed": $isTrashed
 }""";
   }
 }

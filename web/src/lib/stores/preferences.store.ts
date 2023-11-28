@@ -43,15 +43,18 @@ export const isShowDetail = persisted<boolean>('info-opened', false, {});
 
 export interface AlbumViewSettings {
   sortBy: string;
+  sortDesc: boolean;
   view: string;
 }
 
 export interface SidebarSettings {
   people: boolean;
+  sharing: boolean;
 }
 
-export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings', {
+export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings-1', {
   people: false,
+  sharing: true,
 });
 
 export enum AlbumViewMode {
@@ -61,5 +64,6 @@ export enum AlbumViewMode {
 
 export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
   sortBy: 'Most recent photo',
+  sortDesc: true,
   view: AlbumViewMode.Cover,
 });

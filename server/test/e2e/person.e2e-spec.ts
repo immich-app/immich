@@ -1,11 +1,10 @@
 import { IPersonRepository, LoginResponseDto } from '@app/domain';
-import { AppModule, PersonController } from '@app/immich';
+import { PersonController } from '@app/immich';
 import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { api } from '@test/api';
-import { db } from '@test/db';
 import { errorStub, uuidStub } from '@test/fixtures';
+import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
 describe(`${PersonController.name}`, () => {
@@ -18,17 +17,16 @@ describe(`${PersonController.name}`, () => {
   let hiddenPerson: PersonEntity;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = await moduleFixture.createNestApplication().init();
-    server = app.getHttpServer();
+    [server, app] = await testApp.create();
     personRepository = app.get<IPersonRepository>(IPersonRepository);
   });
 
+  afterAll(async () => {
+    await testApp.teardown();
+  });
+
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
@@ -48,11 +46,6 @@ describe(`${PersonController.name}`, () => {
       thumbnailPath: '/thumbnail/face_asset',
     });
     await personRepository.createFace({ assetId: faceAsset.id, personId: hiddenPerson.id });
-  });
-
-  afterAll(async () => {
-    await db.disconnect();
-    await app.close();
   });
 
   describe('GET /person', () => {
@@ -145,10 +138,10 @@ describe(`${PersonController.name}`, () => {
 
     it('should not accept invalid birth dates', async () => {
       for (const { birthDate, response } of [
-        { birthDate: false, response: ['id must be a UUID'] },
+        { birthDate: false, response: 'Not found or no person.write access' },
         { birthDate: 'false', response: ['birthDate must be a Date instance'] },
-        { birthDate: '123567', response: ['id must be a UUID'] },
-        { birthDate: 123456, response: ['id must be a UUID'] },
+        { birthDate: '123567', response: 'Not found or no person.write access' },
+        { birthDate: 123567, response: 'Not found or no person.write access' },
       ]) {
         const { status, body } = await request(server)
           .put(`/person/${uuidStub.notFound}`)

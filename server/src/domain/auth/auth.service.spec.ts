@@ -1,9 +1,11 @@
 import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
+  IAccessRepositoryMock,
   authStub,
   keyStub,
   loginResponseStub,
+  newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newKeyRepositoryMock,
   newLibraryRepositoryMock,
@@ -19,16 +21,18 @@ import {
 import { IncomingHttpHeaders } from 'http';
 import { Issuer, generators } from 'openid-client';
 import { Socket } from 'socket.io';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ILibraryRepository } from '../library';
-import { ISharedLinkRepository } from '../shared-link';
-import { ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user';
+import {
+  ICryptoRepository,
+  IKeyRepository,
+  ILibraryRepository,
+  ISharedLinkRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  IUserTokenRepository,
+} from '../repositories';
 import { AuthType } from './auth.constant';
+import { AuthUserDto, SignUpDto } from './auth.dto';
 import { AuthService } from './auth.service';
-import { AuthUserDto, SignUpDto } from './dto';
-import { IUserTokenRepository } from './user-token.repository';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -50,6 +54,7 @@ const fixtures = {
 
 describe('AuthService', () => {
   let sut: AuthService;
+  let accessMock: jest.Mocked<IAccessRepositoryMock>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
@@ -82,6 +87,7 @@ describe('AuthService', () => {
       }),
     } as any);
 
+    accessMock = newAccessRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     userMock = newUserRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
@@ -90,7 +96,7 @@ describe('AuthService', () => {
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    sut = new AuthService(cryptoMock, configMock, userMock, userTokenMock, libraryMock, shareMock, keyMock);
+    sut = new AuthService(accessMock, cryptoMock, configMock, libraryMock, userMock, userTokenMock, shareMock, keyMock);
   });
 
   it('should be defined', () => {
@@ -216,7 +222,7 @@ describe('AuthService', () => {
         redirectUri: '/auth/login?autoLaunch=0',
       });
 
-      expect(userTokenMock.delete).toHaveBeenCalledWith('123', 'token123');
+      expect(userTokenMock.delete).toHaveBeenCalledWith('token123');
     });
 
     it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {
@@ -230,7 +236,7 @@ describe('AuthService', () => {
   });
 
   describe('adminSignUp', () => {
-    const dto: SignUpDto = { email: 'test@immich.com', password: 'password', firstName: 'immich', lastName: 'admin' };
+    const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
     it('should only allow one admin', async () => {
       userMock.getAdmin.mockResolvedValue({} as UserEntity);
@@ -242,11 +248,11 @@ describe('AuthService', () => {
       userMock.getAdmin.mockResolvedValue(null);
       userMock.create.mockResolvedValue({ ...dto, id: 'admin', createdAt: new Date('2021-01-01') } as UserEntity);
       await expect(sut.adminSignUp(dto)).resolves.toEqual({
+        avatarColor: expect.any(String),
         id: 'admin',
         createdAt: new Date('2021-01-01'),
         email: 'test@immich.com',
-        firstName: 'immich',
-        lastName: 'admin',
+        name: 'immich admin',
       });
       expect(userMock.getAdmin).toHaveBeenCalled();
       expect(userMock.create).toHaveBeenCalled();
@@ -382,16 +388,19 @@ describe('AuthService', () => {
       await sut.logoutDevices(authStub.user1);
 
       expect(userTokenMock.getAll).toHaveBeenCalledWith(authStub.user1.id);
-      expect(userTokenMock.delete).toHaveBeenCalledWith(authStub.user1.id, 'not_active');
-      expect(userTokenMock.delete).not.toHaveBeenCalledWith(authStub.user1.id, 'token-id');
+      expect(userTokenMock.delete).toHaveBeenCalledWith('not_active');
+      expect(userTokenMock.delete).not.toHaveBeenCalledWith('token-id');
     });
   });
 
   describe('logoutDevice', () => {
     it('should logout the device', async () => {
+      accessMock.authDevice.checkOwnerAccess.mockResolvedValue(new Set(['token-1']));
+
       await sut.logoutDevice(authStub.user1, 'token-1');
 
-      expect(userTokenMock.delete).toHaveBeenCalledWith(authStub.user1.id, 'token-1');
+      expect(accessMock.authDevice.checkOwnerAccess).toHaveBeenCalledWith(authStub.user1.id, new Set(['token-1']));
+      expect(userTokenMock.delete).toHaveBeenCalledWith('token-1');
     });
   });
 

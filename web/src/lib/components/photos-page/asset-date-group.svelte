@@ -1,19 +1,18 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetRatio } from '$lib/utils/asset-utils';
-  import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
+  import { formatGroupTitle, fromLocalDateTime, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@api';
   import justifiedLayout from 'justified-layout';
-  import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
-  import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-  import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import type { Viewport } from '$lib/stores/assets.store';
+  import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
@@ -21,6 +20,7 @@
   export let isSelectionMode = false;
   export let viewport: Viewport;
   export let singleSelect = false;
+  export let withStacked = false;
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -127,7 +127,7 @@
 <section id="asset-group-by-date" class="flex flex-wrap gap-x-12" bind:clientHeight={actualBucketHeight}>
   {#each assetsGroupByDate as groupAssets, groupIndex (groupAssets[0].id)}
     {@const asset = groupAssets[0]}
-    {@const groupTitle = formatGroupTitle(DateTime.fromISO(asset.localDateTime).startOf('day'))}
+    {@const groupTitle = formatGroupTitle(fromLocalDateTime(asset.localDateTime).startOf('day'))}
     <!-- Asset Group By Date -->
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -155,9 +155,9 @@
             on:keydown={() => handleSelectGroup(groupTitle, groupAssets)}
           >
             {#if $selectedGroup.has(groupTitle)}
-              <CheckCircle size="24" color="#4250af" />
+              <Icon path={mdiCheckCircle} size="24" color="#4250af" />
             {:else}
-              <CircleOutline size="24" color="#757575" />
+              <Icon path={mdiCircleOutline} size="24" color="#757575" />
             {/if}
           </div>
         {/if}
@@ -179,6 +179,7 @@
             style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
           >
             <Thumbnail
+              showStackedIcon={withStacked}
               {asset}
               {groupIndex}
               on:click={() => assetClickHandler(asset, groupAssets, groupTitle)}

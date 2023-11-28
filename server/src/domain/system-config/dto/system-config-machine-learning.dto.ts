@@ -6,7 +6,7 @@ export class SystemConfigMachineLearningDto {
   @IsBoolean()
   enabled!: boolean;
 
-  @IsUrl({ require_tld: false })
+  @IsUrl({ require_tld: false, allow_underscores: true })
   @ValidateIf((dto) => dto.enabled)
   url!: string;
 

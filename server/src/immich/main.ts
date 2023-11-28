@@ -1,4 +1,4 @@
-import { getLogLevels, SERVER_VERSION } from '@app/domain';
+import { envName, getLogLevels, isDev, serverVersion } from '@app/domain';
 import { RedisIoAdapter } from '@app/infra';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -6,12 +6,10 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { useSwagger } from './app.utils';
+import { indexFallback, useSwagger } from './app.utils';
 
 const logger = new Logger('ImmichServer');
-const envName = (process.env.NODE_ENV || 'development').toUpperCase();
 const port = Number(process.env.SERVER_PORT) || 3001;
-const isDev = process.env.NODE_ENV === 'development';
 
 export async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: getLogLevels() });
@@ -26,8 +24,13 @@ export async function bootstrap() {
   app.useWebSocketAdapter(new RedisIoAdapter(app));
   useSwagger(app, isDev);
 
+  const excludePaths = ['/.well-known/immich', '/custom.css'];
+  app.setGlobalPrefix('api', { exclude: excludePaths });
+  app.useStaticAssets('www');
+  app.use(indexFallback(excludePaths));
+
   const server = await app.listen(port);
   server.requestTimeout = 30 * 60 * 1000;
 
-  logger.log(`Immich Server is listening on ${await app.getUrl()} [v${SERVER_VERSION}] [${envName}] `);
+  logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
 }

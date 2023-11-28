@@ -1,7 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -21,12 +21,11 @@ class AlbumThumbnailListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var cardSize = 68.0;
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     buildEmptyThumbnail() {
       return Container(
         decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+          color: context.isDarkTheme ? Colors.grey[800] : Colors.grey[200],
         ),
         child: SizedBox(
           height: cardSize,
@@ -61,7 +60,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap ??
           () {
-            AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
+            context.autoPush(AlbumViewerRoute(albumId: album.id));
           },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12.0),

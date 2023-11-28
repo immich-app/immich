@@ -13,20 +13,15 @@ jobs:
   e2e-tests:
     name: Run end-to-end test suites
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Run npm install
-        run: npm ci
+        with:
+          submodules: "recursive"
 
       - name: Run e2e tests
-        run: npm run test:e2e
-        if: ${{ !cancelled() }}
+        run: docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
   doc-tests:
     name: Run documentation checks
@@ -102,6 +97,10 @@ jobs:
         run: npm run format
         if: ${{ !cancelled() }}
 
+      - name: Run tsc
+        run: npm run check
+        if: ${{ !cancelled() }}
+
       - name: Run unit tests & coverage
         run: npm run test:cov
         if: ${{ !cancelled() }}
@@ -149,7 +148,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.13.3"
+          flutter-version: "3.13.6"
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -171,16 +170,15 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install --with dev
-          poetry run pip install --no-deps -r requirements.txt
       - name: Lint with ruff
         run: |
-          poetry run ruff check --format=github app
+          poetry run ruff check --format=github app export
       - name: Check black formatting
         run: |
-          poetry run black --check app
+          poetry run black --check app export
       - name: Run mypy type checking
         run: |
-          poetry run mypy --install-types --non-interactive app/
+          poetry run mypy --install-types --non-interactive --strict app/ export/
       - name: Run tests and coverage
         run: |
           poetry run pytest --cov app
@@ -223,15 +221,27 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+    defaults:
+      run:
+        working-directory: ./server
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Install server dependencies
-        run: npm --prefix server ci
+        run: npm ci
+
+      - name: Build the
+        run: npm run build
+
       - name: Run existing migrations
-        run: npm --prefix server run typeorm:migrations:run
+        run: npm run typeorm:migrations:run
+
       - name: Generate new migrations
         continue-on-error: true
-        run: npm --prefix server run typeorm:migrations:generate ./src/infra/migrations/TestMigration
+        run: npm run typeorm:migrations:generate ./src/infra/migrations/TestMigration
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files

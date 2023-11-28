@@ -1,6 +1,10 @@
-import { IUserRepository } from '@app/domain';
+import { IUserRepository, UserCore } from '@app/domain';
 
-export const newUserRepositoryMock = (): jest.Mocked<IUserRepository> => {
+export const newUserRepositoryMock = (reset = true): jest.Mocked<IUserRepository> => {
+  if (reset) {
+    UserCore.reset();
+  }
+
   return {
     get: jest.fn(),
     getAdmin: jest.fn(),
@@ -14,5 +18,6 @@ export const newUserRepositoryMock = (): jest.Mocked<IUserRepository> => {
     delete: jest.fn(),
     getDeletedUsers: jest.fn(),
     restore: jest.fn(),
+    hasAdmin: jest.fn(),
   };
 };

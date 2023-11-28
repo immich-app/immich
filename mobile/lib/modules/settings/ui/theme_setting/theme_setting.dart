@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
@@ -24,27 +25,20 @@ class ThemeSetting extends HookConsumerWidget {
     );
 
     return ExpansionTile(
-      textColor: Theme.of(context).primaryColor,
-      title: const Text(
+      textColor: context.primaryColor,
+      title: Text(
         'theme_setting_theme_title',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         'theme_setting_theme_subtitle',
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         SwitchListTile.adaptive(
-          activeColor: Theme.of(context).primaryColor,
+          activeColor: context.primaryColor,
           title: Text(
             'theme_setting_system_theme_switch',
-            style: Theme.of(context)
-                .textTheme
-                .labelLarge
+            style: context.textTheme.labelLarge
                 ?.copyWith(fontWeight: FontWeight.bold),
           ).tr(),
           value: currentTheme.value == ThemeMode.system,
@@ -77,12 +71,10 @@ class ThemeSetting extends HookConsumerWidget {
         ),
         if (currentTheme.value != ThemeMode.system)
           SwitchListTile.adaptive(
-            activeColor: Theme.of(context).primaryColor,
+            activeColor: context.primaryColor,
             title: Text(
               'theme_setting_dark_mode_switch',
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
+              style: context.textTheme.labelLarge
                   ?.copyWith(fontWeight: FontWeight.bold),
             ).tr(),
             value: ref.watch(immichThemeProvider) == ThemeMode.dark,

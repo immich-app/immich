@@ -1,10 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
-import { ISystemConfigRepository, SystemConfigCore } from '../system-config';
-import { IMachineLearningRepository } from './machine-learning.interface';
-import { ISmartInfoRepository } from './smart-info.repository';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import {
+  IAssetRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  ISmartInfoRepository,
+  ISystemConfigRepository,
+  WithoutProperty,
+} from '../repositories';
+import { SystemConfigCore } from '../system-config';
 
 @Injectable()
 export class SmartInfoService {
@@ -17,7 +22,7 @@ export class SmartInfoService {
     @Inject(ISmartInfoRepository) private repository: ISmartInfoRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
   ) {
-    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore = SystemConfigCore.create(configRepository);
   }
 
   async handleQueueObjectTagging({ force }: IBaseJob) {

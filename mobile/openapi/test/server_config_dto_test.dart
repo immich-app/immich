@@ -16,18 +16,23 @@ void main() {
   // final instance = ServerConfigDto();
 
   group('test ServerConfigDto', () {
+    // bool isInitialized
+    test('to test the property `isInitialized`', () async {
+      // TODO
+    });
+
     // String loginPageMessage
     test('to test the property `loginPageMessage`', () async {
       // TODO
     });
 
-    // String mapTileUrl
-    test('to test the property `mapTileUrl`', () async {
+    // String oauthButtonText
+    test('to test the property `oauthButtonText`', () async {
       // TODO
     });
 
-    // String oauthButtonText
-    test('to test the property `oauthButtonText`', () async {
+    // int trashDays
+    test('to test the property `trashDays`', () async {
       // TODO
     });
 

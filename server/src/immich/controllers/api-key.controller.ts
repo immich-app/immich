@@ -20,22 +20,22 @@ export class APIKeyController {
   constructor(private service: APIKeyService) {}
 
   @Post()
-  createKey(@AuthUser() authUser: AuthUserDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
+  createApiKey(@AuthUser() authUser: AuthUserDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     return this.service.create(authUser, dto);
   }
 
   @Get()
-  getKeys(@AuthUser() authUser: AuthUserDto): Promise<APIKeyResponseDto[]> {
+  getApiKeys(@AuthUser() authUser: AuthUserDto): Promise<APIKeyResponseDto[]> {
     return this.service.getAll(authUser);
   }
 
   @Get(':id')
-  getKey(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
+  getApiKey(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
     return this.service.getById(authUser, id);
   }
 
   @Put(':id')
-  updateKey(
+  updateApiKey(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: APIKeyUpdateDto,
@@ -44,7 +44,7 @@ export class APIKeyController {
   }
 
   @Delete(':id')
-  deleteKey(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  deleteApiKey(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(authUser, id);
   }
 }

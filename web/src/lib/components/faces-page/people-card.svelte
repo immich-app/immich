@@ -3,11 +3,13 @@
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { AppRoute } from '$lib/constants';
+  import { mdiDotsVertical } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   export let person: PersonResponseDto;
 
@@ -42,7 +44,7 @@
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
 >
-  <a href="/people/{person.id}" draggable="false">
+  <a href="/people/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
@@ -70,7 +72,7 @@
     id={`icon-${person.id}`}
   >
     <IconButton color="transparent-primary">
-      <DotsVertical size="20" class="icon-white-drop-shadow" color="white" />
+      <Icon path={mdiDotsVertical} size="20" class="icon-white-drop-shadow text-white" />
     </IconButton>
   </button>
 </div>

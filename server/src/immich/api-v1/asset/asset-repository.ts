@@ -1,8 +1,8 @@
 import { AssetCreate } from '@app/domain';
 import { AssetEntity } from '@app/infra/entities';
+import OptionalBetween from '@app/infra/utils/optional-between.util';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan } from 'typeorm';
 import { In } from 'typeorm/find-options/operator/In';
 import { Repository } from 'typeorm/repository/Repository';
 import { AssetSearchDto } from './dto/asset-search.dto';
@@ -23,7 +23,6 @@ export interface AssetOwnerCheck extends AssetCheck {
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(asset: AssetCreate): Promise<AssetEntity>;
-  remove(asset: AssetEntity): Promise<void>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -110,7 +109,12 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+        stack: {
+          exifInfo: true,
+        },
       },
+      // We are specifically asking for this asset. Return it even if it is soft deleted
+      withDeleted: true,
     });
   }
 
@@ -125,16 +129,19 @@ export class AssetRepository implements IAssetRepository {
         isVisible: true,
         isFavorite: dto.isFavorite,
         isArchived: dto.isArchived,
-        updatedAt: dto.updatedAfter ? MoreThan(dto.updatedAfter) : undefined,
+        updatedAt: OptionalBetween(dto.updatedAfter, dto.updatedBefore),
       },
       relations: {
         exifInfo: true,
         tags: true,
+        stack: true,
       },
       skip: dto.skip || 0,
+      take: dto.take,
       order: {
         fileCreatedAt: 'DESC',
       },
+      withDeleted: true,
     });
   }
 
@@ -147,15 +154,12 @@ export class AssetRepository implements IAssetRepository {
         },
         library: true,
       },
+      withDeleted: true,
     });
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
     return this.assetRepository.save(asset);
-  }
-
-  async remove(asset: AssetEntity): Promise<void> {
-    await this.assetRepository.remove(asset);
   }
 
   /**
@@ -173,6 +177,7 @@ export class AssetRepository implements IAssetRepository {
         deviceId,
         isVisible: true,
       },
+      withDeleted: true,
     });
 
     return items.map((asset) => asset.deviceAssetId);
@@ -194,6 +199,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         checksum: In(checksums),
       },
+      withDeleted: true,
     });
   }
 
@@ -205,6 +211,7 @@ export class AssetRepository implements IAssetRepository {
         deviceId: checkDuplicateAssetDto.deviceId,
         ownerId,
       },
+      withDeleted: true,
     });
     return assets.map((asset) => asset.deviceAssetId);
   }

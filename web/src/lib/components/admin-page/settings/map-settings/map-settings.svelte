@@ -4,14 +4,13 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, CitiesFile, SystemConfigDto } from '@api';
+  import { api, SystemConfigDto } from '@api';
   import { cloneDeep, isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import SettingAccordion from '../setting-accordion.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import SettingSelect from '../setting-select.svelte';
+  import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 
   export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
@@ -22,7 +21,7 @@
   async function refreshConfig() {
     [savedConfig, defaultConfig] = await Promise.all([
       api.systemConfigApi.getConfig().then((res) => res.data),
-      api.systemConfigApi.getDefaults().then((res) => res.data),
+      api.systemConfigApi.getConfigDefaults().then((res) => res.data),
     ]);
   }
 
@@ -34,11 +33,11 @@
           ...current,
           map: {
             enabled: config.map.enabled,
-            tileUrl: config.map.tileUrl,
+            lightStyle: config.map.lightStyle,
+            darkStyle: config.map.darkStyle,
           },
           reverseGeocoding: {
             enabled: config.reverseGeocoding.enabled,
-            citiesFileOverride: config.reverseGeocoding.citiesFileOverride,
           },
         },
       });
@@ -65,7 +64,7 @@
   }
 
   async function resetToDefault() {
-    const { data: configs } = await api.systemConfigApi.getDefaults();
+    const { data: configs } = await api.systemConfigApi.getConfigDefaults();
 
     config = cloneDeep(configs);
     defaultConfig = cloneDeep(configs);
@@ -95,12 +94,19 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="Tile URL"
-                desc="URL to a leaflet compatible tile server"
-                bind:value={config.map.tileUrl}
-                required={true}
+                label="Light Style"
+                desc="URL to a style.json map theme"
+                bind:value={config.map.lightStyle}
                 disabled={disabled || !config.map.enabled}
-                isEdited={config.map.tileUrl !== savedConfig.map.tileUrl}
+                isEdited={config.map.lightStyle !== savedConfig.map.lightStyle}
+              />
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label="Dark Style"
+                desc="URL to a style.json map theme"
+                bind:value={config.map.darkStyle}
+                disabled={disabled || !config.map.enabled}
+                isEdited={config.map.darkStyle !== savedConfig.map.darkStyle}
               />
             </div></SettingAccordion
           >
@@ -122,24 +128,6 @@
                 {disabled}
                 subtitle="Enable reverse geocoding"
                 bind:checked={config.reverseGeocoding.enabled}
-              />
-
-              <hr />
-
-              <SettingSelect
-                label="Precision"
-                desc="Set reverse geocoding precision"
-                name="reverse-geocoding-precision"
-                bind:value={config.reverseGeocoding.citiesFileOverride}
-                options={[
-                  { value: CitiesFile.Cities500, text: 'Cities with more than 500 people' },
-                  { value: CitiesFile.Cities1000, text: 'Cities with more than 1000 people' },
-                  { value: CitiesFile.Cities5000, text: 'Cities with more than 5000 people' },
-                  { value: CitiesFile.Cities15000, text: 'Cities with more than 15000 people' },
-                ]}
-                disabled={disabled || !config.reverseGeocoding.enabled}
-                isEdited={config.reverseGeocoding.citiesFileOverride !==
-                  savedConfig.reverseGeocoding.citiesFileOverride}
               />
             </div></SettingAccordion
           >

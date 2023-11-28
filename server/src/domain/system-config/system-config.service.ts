@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ISystemConfigRepository } from '.';
-import { IJobRepository, JobName } from '../job';
+import { JobName } from '../job';
+import { CommunicationEvent, ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -19,10 +19,11 @@ import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
 export class SystemConfigService {
   private core: SystemConfigCore;
   constructor(
-    @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
+    @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    this.core = new SystemConfigCore(repository);
+    this.core = SystemConfigCore.create(repository);
   }
 
   get config$() {
@@ -42,6 +43,7 @@ export class SystemConfigService {
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     const config = await this.core.updateConfig(dto);
     await this.jobRepository.queue({ name: JobName.SYSTEM_CONFIG_CHANGE });
+    this.communicationRepository.broadcast(CommunicationEvent.CONFIG_UPDATE, {});
     return mapConfig(config);
   }
 
@@ -67,5 +69,21 @@ export class SystemConfigService {
     options.presetOptions = supportedPresetTokens;
 
     return options;
+  }
+
+  async getMapStyle(theme: 'light' | 'dark') {
+    const { map } = await this.getConfig();
+    const styleUrl = theme === 'dark' ? map.darkStyle : map.lightStyle;
+
+    if (styleUrl) {
+      return this.repository.fetchStyle(styleUrl);
+    }
+
+    return JSON.parse(await this.repository.readFile(`./resources/style-${theme}.json`));
+  }
+
+  async getCustomCss(): Promise<string> {
+    const { theme } = await this.core.getConfig();
+    return theme.customCss;
   }
 }

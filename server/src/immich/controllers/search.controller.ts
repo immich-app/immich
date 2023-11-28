@@ -1,4 +1,12 @@
-import { AuthUserDto, SearchDto, SearchExploreResponseDto, SearchResponseDto, SearchService } from '@app/domain';
+import {
+  AuthUserDto,
+  PersonResponseDto,
+  SearchDto,
+  SearchExploreResponseDto,
+  SearchPeopleDto,
+  SearchResponseDto,
+  SearchService,
+} from '@app/domain';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated } from '../app.guard';
@@ -19,5 +27,10 @@ export class SearchController {
   @Get('explore')
   getExploreData(@AuthUser() authUser: AuthUserDto): Promise<SearchExploreResponseDto[]> {
     return this.service.getExploreData(authUser) as Promise<SearchExploreResponseDto[]>;
+  }
+
+  @Get('person')
+  searchPerson(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return this.service.searchPerson(authUser, dto);
   }
 }

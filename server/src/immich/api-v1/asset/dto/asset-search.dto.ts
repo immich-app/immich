@@ -1,7 +1,7 @@
 import { Optional, toBoolean } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
+import { IsBoolean, IsDate, IsInt, IsNotEmpty, IsUUID } from 'class-validator';
 
 export class AssetSearchDto {
   @Optional()
@@ -17,8 +17,16 @@ export class AssetSearchDto {
   isArchived?: boolean;
 
   @Optional()
-  @IsNumber()
+  @IsInt()
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
   skip?: number;
+
+  @Optional()
+  @IsInt()
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  take?: number;
 
   @Optional()
   @IsUUID('4')
@@ -29,4 +37,9 @@ export class AssetSearchDto {
   @IsDate()
   @Type(() => Date)
   updatedAfter?: Date;
+
+  @Optional()
+  @IsDate()
+  @Type(() => Date)
+  updatedBefore?: Date;
 }

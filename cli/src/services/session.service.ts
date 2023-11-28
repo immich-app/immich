@@ -46,14 +46,21 @@ export class SessionService {
 
     // Check if server and api key are valid
     const { data: userInfo } = await this.api.userApi.getMyUserInfo().catch((error) => {
-      throw new LoginError(`Failed to connect to the server: ${error.message}`);
+      throw new LoginError(`Failed to connect to server ${instanceUrl}: ${error.message}`);
     });
 
     console.log(`Logged in as ${userInfo.email}`);
 
     if (!fs.existsSync(this.configDir)) {
       // Create config folder if it doesn't exist
-      fs.mkdirSync(this.configDir, { recursive: true });
+      const created = await fs.promises.mkdir(this.configDir, { recursive: true });
+      if (!created) {
+        throw new Error(`Failed to create config folder ${this.configDir}`);
+      }
+    }
+
+    if (!fs.existsSync(this.configDir)) {
+      console.error('waah');
     }
 
     fs.writeFileSync(this.authPath, yaml.stringify({ instanceUrl, apiKey }));
@@ -71,7 +78,7 @@ export class SessionService {
 
   private async ping(): Promise<void> {
     const { data: pingResponse } = await this.api.serverInfoApi.pingServer().catch((error) => {
-      throw new Error(`Failed to connect to the server: ${error.message}`);
+      throw new Error(`Failed to connect to server ${this.api.apiConfiguration.instanceUrl}: ${error.message}`);
     });
 
     if (pingResponse.res !== 'pong') {
