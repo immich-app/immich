@@ -12,6 +12,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let person: PersonResponseDto;
+  export let priority = false;
 
   type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-faces' | 'hide-face';
   let dispatch = createEventDispatcher<{
@@ -48,6 +49,7 @@
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
+        {priority}
         url={api.getPeopleThumbnailUrl(person.id)}
         altText={person.name}
         title={person.name}
