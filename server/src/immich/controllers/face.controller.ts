@@ -13,7 +13,7 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 export class FaceController {
   constructor(private service: PersonService) {}
 
-  @Put(':id/reassign')
+  @Put(':id')
   reassignFacesById(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,

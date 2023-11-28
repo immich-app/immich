@@ -68,7 +68,7 @@ class FaceApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /face/{id}/reassign' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /face/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -76,7 +76,7 @@ class FaceApi {
   /// * [FaceDto] faceDto (required):
   Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/face/{id}/reassign'
+    final path = r'/face/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals

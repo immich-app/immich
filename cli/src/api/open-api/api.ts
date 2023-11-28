@@ -11567,7 +11567,7 @@ export const FaceApiAxiosParamCreator = function (configuration?: Configuration)
             assertParamExists('reassignFacesById', 'id', id)
             // verify required parameter 'faceDto' is not null or undefined
             assertParamExists('reassignFacesById', 'faceDto', faceDto)
-            const localVarPath = `/face/{id}/reassign`
+            const localVarPath = `/face/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
