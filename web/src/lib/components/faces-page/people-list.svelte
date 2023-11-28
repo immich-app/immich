@@ -26,7 +26,10 @@
   };
 
   $: {
-    people = peopleCopy
+    people = peopleCopy.filter(
+      (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
+    );
+    people = people
       .filter((person: PersonResponseDto) => {
         const nameParts = person.name.split(' ');
         return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
@@ -41,16 +44,6 @@
     }
     if (!force) {
       if (people.length < 20 && name.startsWith(searchWord)) {
-        people = peopleCopy.filter(
-          (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
-        );
-
-        people = peopleCopy
-          .filter((person: PersonResponseDto) => {
-            const nameParts = person.name.split(' ');
-            return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
-          })
-          .slice(0, 10);
         return;
       }
     }
