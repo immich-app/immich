@@ -47,6 +47,12 @@
     {
       "groupName": "base-image",
       "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"]
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["node"],
+      "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
+      "versioning": "node"
     }
   ],
   "ignoreDeps": [
