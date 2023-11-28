@@ -376,7 +376,7 @@
           {#if !person.isHidden}
             <PeopleCard
               {person}
-              priority={idx < 20}
+              preload={idx < 20}
               on:change-name={() => handleChangeName(person)}
               on:set-birth-date={() => handleSetBirthDate(person)}
               on:merge-faces={() => handleMergeFaces(person)}
@@ -453,7 +453,7 @@
         on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
       >
         <ImageThumbnail
-          priority={idx < 20}
+          preload={idx < 20}
           bind:hidden={person.isHidden}
           shadow
           url={api.getPeopleThumbnailUrl(person.id)}
