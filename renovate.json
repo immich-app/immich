@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": ["config:base", "docker:pinDigests"],
   "minimumReleaseAge": "5",
   "packageRules": [
     {
@@ -47,6 +47,12 @@
     {
       "groupName": "base-image",
       "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"]
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["node"],
+      "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
+      "versioning": "node"
     }
   ],
   "ignoreDeps": [
