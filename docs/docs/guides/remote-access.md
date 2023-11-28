@@ -35,17 +35,14 @@ If you are unable to open a port on your router for Wireguard or OpenVPN to your
 - Tailscale is a paid service. However, there is a generous [free tier](https://tailscale.com/pricing/) that permits up to 3 users and up to 100 devices.
 - Tailscale needs to be installed and running on both server-side and client-side.
 
-## Option 3: Self-signed certificate
-Using a [self-signed certificate](https://en.wikipedia.org/wiki/Self-signed_certificate) protects you against man-in-the-middle attacks, but exposes your Immich instance to the web.
+## Option 3: Reverse Proxy
+A reverse proxy is a service that sits between web servers and clients. A reverse proxy can either be hosted on the server itself or remotely. Clients can connect to the reverse proxy via https, and the proxy relays data to Immich. This setup makes most sense if you have your own domain and want to access your Immich instance just like any other website, from outside your LAN. You can also use a DDNS provider like DuckDNS or no-ip if you don't have a domain. This configuration allows the Immich Android and iphone apps to connect to your server without a VPN or tailscale app on the client side.
 
-### Pros
-- No additional software needs to be installed client-side
+If you're hosting your own reverse proxy, [Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) is a great option. An example configuration for Nginx is provided [here](https://immich.app/docs/administration/reverse-proxy).
 
-### Cons
-- Both the Immich web interface and API may be exposed to the internet. Immich is under very active developement and the existence of severe security vulnerabilities cannot be ruled out.
+You'll also need your own certificate to authenticate https connections. If you're making Immich publicly accesible, [Let's Encrypt](https://letsencrypt.org/) can provide a free certificate for your domain and is the recommended option. Alternatively, a [self-signed certificate](https://en.wikipedia.org/wiki/Self-signed_certificate) allows you to encrypt your connection to Immich, but it raises a security warning on the client's browser.
 
-## Option 4: Reverse Proxy
-A reverse proxy is a service that sits between web servers and clients. A reverse proxy increases security by hiding the server IP address, which makes targeted attacks like [DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/) harder.
+A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) increases security by hiding the server IP address, which makes targeted attacks like [DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/) harder.
 
 ### Pros
 - No additional software needs to be installed client-side
