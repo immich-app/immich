@@ -33,10 +33,6 @@
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
-  $: if (map) {
-    map.on('click', handleMapClick);
-  }
-
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
       theme: $mapSettings.allowDarkMode ? $colorTheme : 'light',
@@ -120,6 +116,7 @@
     diffStyleUpdates={true}
     let:map
     on:load={(event) => event.detail.setMaxZoom(14)}
+    on:load={(event) => event.detail.on('click', handleMapClick)}
     bind:map
   >
     <NavigationControl position="top-left" showCompass={!simplified} />
