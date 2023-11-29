@@ -233,7 +233,7 @@
       <p class="text-sm">DETAILS</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal}
+    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
@@ -280,26 +280,56 @@
           <Icon path={mdiPencil} size="20" />
         </button>
       </div>
-    {:else}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
       <div
-        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
-        on:click={() => (isShowChangeDate = true)}
-        on:keydown={(event) => event.key === 'Enter' && (isShowChangeDate = true)}
-        tabindex="0"
-        role="button"
-        title="Add date"
-      >
+        class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
             <Icon path={mdiCalendar} size="24" />
           </div>
-
-          <p>Add a date</p>
         </div>
         <button class="focus:outline-none">
           <Icon path={mdiPencil} size="20" />
         </button>
       </div>
+    {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
+    {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+      zone: asset.exifInfo.timeZone ?? undefined,
+    })}
+        <div class="flex justify-between place-items-start gap-4 py-4">
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
+
+          <div>
+            <p>
+              {assetDateTimeOriginal.toLocaleString(
+                {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                },
+                { locale: $locale },
+              )}
+            </p>
+            <div class="flex gap-2 text-sm">
+              <p>
+                {assetDateTimeOriginal.toLocaleString(
+                  {
+                    weekday: 'short',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZoneName: 'longOffset',
+                  },
+                  { locale: $locale },
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     {/if}
 
     {#if isShowChangeDate}
@@ -380,7 +410,7 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city}
+    {#if asset.exifInfo?.city && !asset.isReadOnly}
       <div
         class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
         on:click={() => (isShowChangeLocation = true)}
@@ -411,7 +441,7 @@
           <Icon path={mdiPencil} size="20" />
         </div>
       </div>
-    {:else}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg pr-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
@@ -429,6 +459,27 @@
         </div>
         <div class="focus:outline-none">
           <Icon path={mdiPencil} size="20" />
+        </div>
+      </div>
+    {:else if asset.exifInfo?.city && asset.isReadOnly}
+    <div
+        class="flex justify-between place-items-start gap-4 py-4">
+        <div class="flex gap-4">
+          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+
+          <div>
+            <p>{asset.exifInfo.city}</p>
+            {#if asset.exifInfo?.state}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.state}</p>
+              </div>
+            {/if}
+            {#if asset.exifInfo?.country}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.country}</p>
+              </div>
+            {/if}
+          </div>
         </div>
       </div>
     {/if}
