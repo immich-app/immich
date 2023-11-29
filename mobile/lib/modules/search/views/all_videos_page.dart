@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/all_video_assets.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class AllVideosPage extends HookConsumerWidget {
   const AllVideosPage({super.key});
@@ -21,13 +21,9 @@ class AllVideosPage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),
-      body: videos.when(
-        data: (assets) => ImmichAssetGrid(
+      body: videos.widgetWhen(
+        onData: (assets) => ImmichAssetGrid(
           assets: assets,
-        ),
-        error: (e, s) => Text(e.toString()),
-        loading: () => const Center(
-          child: ImmichLoadingIndicator(),
         ),
       ),
     );

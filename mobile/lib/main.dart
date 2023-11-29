@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
@@ -28,7 +30,6 @@ import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/local_notification.service.dart';
-import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -43,10 +44,11 @@ void main() async {
   await initApp();
   await migrateDatabaseIfNeeded(db);
   HttpOverrides.global = HttpSSLCertOverride();
+
   runApp(
     ProviderScope(
       overrides: [dbProvider.overrideWithValue(db)],
-      child: getMainWidget(),
+      child: const MainWidget(),
     ),
   );
 }
@@ -108,16 +110,6 @@ Future<Isar> loadDb() async {
   return db;
 }
 
-Widget getMainWidget() {
-  return EasyLocalization(
-    supportedLocales: locales,
-    path: translationsPath,
-    useFallbackTranslations: true,
-    fallbackLocale: locales.first,
-    child: const ImmichApp(),
-  );
-}
-
 class ImmichApp extends ConsumerStatefulWidget {
   const ImmichApp({super.key});
 
@@ -167,10 +159,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       // Android 8 does not support transparent app bars
       final info = await DeviceInfoPlugin().androidInfo;
       if (info.version.sdkInt <= 26) {
-        overlayStyle =
-            MediaQuery.of(context).platformBrightness == Brightness.light
-                ? SystemUiOverlayStyle.light
-                : SystemUiOverlayStyle.dark;
+        overlayStyle = context.isDarkTheme
+            ? SystemUiOverlayStyle.dark
+            : SystemUiOverlayStyle.light;
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
@@ -202,22 +193,33 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       debugShowCheckedModeBanner: false,
-      home: Stack(
-        children: [
-          MaterialApp.router(
-            title: 'Immich',
-            debugShowCheckedModeBanner: false,
-            themeMode: ref.watch(immichThemeProvider),
-            darkTheme: immichDarkTheme,
-            theme: immichLightTheme,
-            routeInformationParser: router.defaultRouteParser(),
-            routerDelegate: router.delegate(
-              navigatorObservers: () => [TabNavigationObserver(ref: ref)],
-            ),
-          ),
-          const ImmichLoadingOverlay(),
-        ],
+      home: MaterialApp.router(
+        title: 'Immich',
+        debugShowCheckedModeBanner: false,
+        themeMode: ref.watch(immichThemeProvider),
+        darkTheme: immichDarkTheme,
+        theme: immichLightTheme,
+        routeInformationParser: router.defaultRouteParser(),
+        routerDelegate: router.delegate(
+          navigatorObservers: () => [TabNavigationObserver(ref: ref)],
+        ),
       ),
+    );
+  }
+}
+
+// ignore: prefer-single-widget-per-file
+class MainWidget extends StatelessWidget {
+  const MainWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return EasyLocalization(
+      supportedLocales: locales,
+      path: translationsPath,
+      useFallbackTranslations: true,
+      fallbackLocale: locales.first,
+      child: const ImmichApp(),
     );
   }
 }

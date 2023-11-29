@@ -21,7 +21,8 @@
     return '0'.repeat(zeroLength);
   };
 
-  $: [statsUsage, statsUsageUnit] = getBytesWithUnit(stats.usage, 0);
+  const TiB = 1024 ** 4;
+  $: [statsUsage, statsUsageUnit] = getBytesWithUnit(stats.usage, stats.usage > TiB ? 2 : 0);
 </script>
 
 <div class="flex flex-col gap-5">

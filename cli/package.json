@@ -29,8 +29,8 @@
     "@types/mime-types": "^2.1.1",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^20.3.1",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.48.1",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "chai": "^4.3.7",
     "eslint": "^8.43.0",
     "eslint-config-prettier": "^9.0.0",
@@ -46,7 +46,7 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.5.3",
-    "typescript": "^4.9.4"
+    "typescript": "^5.0.0"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",

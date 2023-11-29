@@ -229,6 +229,9 @@ class BackupControllerPage extends HookConsumerWidget {
       final snackBar = SnackBar(
         content: Text(
           msg.tr(),
+          style: context.textTheme.bodyLarge?.copyWith(
+            color: context.primaryColor,
+          ),
         ),
         backgroundColor: Colors.red,
       );

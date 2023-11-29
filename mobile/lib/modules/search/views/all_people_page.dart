@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class AllPeoplePage extends HookConsumerWidget {
   const AllPeoplePage({super.key});
@@ -23,12 +23,8 @@ class AllPeoplePage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),
-      body: curatedPeople.when(
-        loading: () => const Center(child: ImmichLoadingIndicator()),
-        error: (err, stack) => Center(
-          child: Text('Error: $err'),
-        ),
-        data: (people) => ExploreGrid(
+      body: curatedPeople.widgetWhen(
+        onData: (people) => ExploreGrid(
           isPeople: true,
           curatedContent: people,
         ),
