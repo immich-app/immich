@@ -16,8 +16,18 @@
   let savedConfig: SystemConfigJobDto;
   let defaultConfig: SystemConfigJobDto;
 
-  const ignoredJobs = [JobName.BackgroundTask, JobName.Search] as JobName[];
-  const jobNames = Object.values(JobName).filter((jobName) => !ignoredJobs.includes(jobName as JobName));
+  const jobNames = [
+    JobName.ThumbnailGeneration,
+    JobName.MetadataExtraction,
+    JobName.Library,
+    JobName.Sidecar,
+    JobName.ObjectTagging,
+    JobName.ClipEncoding,
+    JobName.RecognizeFaces,
+    JobName.VideoConversion,
+    JobName.StorageTemplateMigration,
+    JobName.Migration,
+  ];
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([

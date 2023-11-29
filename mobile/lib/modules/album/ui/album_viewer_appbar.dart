@@ -43,6 +43,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
+    final isProcessing = useProcessingOverlay();
     final comments = album.shared
         ? ref.watch(
             activityStatisticsStateProvider(
@@ -52,7 +53,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         : 0;
 
     deleteAlbum() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      isProcessing.value = true;
 
       final bool success;
       if (album.shared) {
@@ -74,7 +75,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       }
 
-      ImmichLoadingOverlayController.appLoader.hide();
+      isProcessing.value = false;
     }
 
     Future<void> showConfirmationDialog() async {
@@ -122,7 +123,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void onLeaveAlbumPressed() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      isProcessing.value = true;
 
       bool isSuccess =
           await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(album);
@@ -140,11 +141,11 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       }
 
-      ImmichLoadingOverlayController.appLoader.hide();
+      isProcessing.value = false;
     }
 
     void onRemoveFromAlbumPressed() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      isProcessing.value = true;
 
       bool isSuccess =
           await ref.watch(sharedAlbumProvider.notifier).removeAssetFromAlbum(
@@ -167,7 +168,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       }
 
-      ImmichLoadingOverlayController.appLoader.hide();
+      isProcessing.value = false;
     }
 
     void handleShareAssets(
@@ -198,9 +199,9 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void onShareAssetsTo() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      isProcessing.value = true;
       handleShareAssets(ref, context, selected);
-      ImmichLoadingOverlayController.appLoader.hide();
+      isProcessing.value = false;
     }
 
     buildBottomSheetActions() {

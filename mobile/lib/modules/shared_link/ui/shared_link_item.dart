@@ -46,9 +46,11 @@ class SharedLinkItem extends ConsumerWidget {
       } else if (difference.inHours > 0) {
         expiresText = "shared_link_expires_hours".plural(difference.inHours);
       } else if (difference.inMinutes > 0) {
-        expiresText = "shared_link_expires_minutes".plural(difference.inMinutes);
+        expiresText =
+            "shared_link_expires_minutes".plural(difference.inMinutes);
       } else if (difference.inSeconds > 0) {
-        expiresText = "shared_link_expires_seconds".plural(difference.inSeconds);
+        expiresText =
+            "shared_link_expires_seconds".plural(difference.inSeconds);
       }
     }
     return Text(
@@ -85,7 +87,12 @@ class SharedLinkItem extends ConsumerWidget {
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("shared_link_clipboard_copied_massage").tr(),
+            content: Text(
+              "shared_link_clipboard_copied_massage",
+              style: context.textTheme.bodyLarge?.copyWith(
+                color: context.primaryColor,
+              ),
+            ).tr(),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -162,9 +169,12 @@ class SharedLinkItem extends ConsumerWidget {
     Widget buildBottomInfo() {
       return Row(
         children: [
-          if (sharedLink.allowUpload) buildInfoChip("shared_link_info_chip_upload".tr()),
-          if (sharedLink.allowDownload) buildInfoChip("shared_link_info_chip_download".tr()),
-          if (sharedLink.showMetadata) buildInfoChip("shared_link_info_chip_metadata".tr()),
+          if (sharedLink.allowUpload)
+            buildInfoChip("shared_link_info_chip_upload".tr()),
+          if (sharedLink.allowDownload)
+            buildInfoChip("shared_link_info_chip_download".tr()),
+          if (sharedLink.showMetadata)
+            buildInfoChip("shared_link_info_chip_metadata".tr()),
         ],
       );
     }

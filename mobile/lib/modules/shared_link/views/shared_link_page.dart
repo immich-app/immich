@@ -2,11 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
 import 'package:immich_mobile/modules/shared_link/ui/shared_link_item.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SharedLinkPage extends HookConsumerWidget {
   const SharedLinkPage({Key? key}) : super(key: key);
@@ -18,7 +18,10 @@ class SharedLinkPage extends HookConsumerWidget {
     useEffect(
       () {
         ref.read(sharedLinksStateProvider.notifier).fetchLinks();
-        return () => ref.invalidate(sharedLinksStateProvider);
+        return () {
+          if (!context.mounted) return;
+          ref.invalidate(sharedLinksStateProvider);
+        };
       },
       [],
     );
@@ -113,11 +116,10 @@ class SharedLinkPage extends HookConsumerWidget {
         centerTitle: false,
       ),
       body: SafeArea(
-        child: sharedLinks.when(
-          data: (links) =>
+        child: sharedLinks.widgetWhen(
+          onError: (error, stackTrace) => buildNoShares(),
+          onData: (links) =>
               links.isNotEmpty ? buildSharesList(links) : buildNoShares(),
-          error: (error, stackTrace) => buildNoShares(),
-          loading: () => const Center(child: ImmichLoadingIndicator()),
         ),
       ),
     );

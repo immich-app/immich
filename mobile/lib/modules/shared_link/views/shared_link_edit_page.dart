@@ -275,7 +275,12 @@ class SharedLinkEditPage extends HookConsumerWidget {
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("shared_link_clipboard_copied_massage").tr(),
+            content: Text(
+              "shared_link_clipboard_copied_massage",
+              style: context.textTheme.bodyLarge?.copyWith(
+                color: context.primaryColor,
+              ),
+            ).tr(),
             duration: const Duration(seconds: 2),
           ),
         );

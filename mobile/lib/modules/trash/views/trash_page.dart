@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
@@ -11,8 +12,8 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class TrashPage extends HookConsumerWidget {
   const TrashPage({super.key});
@@ -24,7 +25,7 @@ class TrashPage extends HookConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
     final selectionEnabledHook = useState(false);
     final selection = useState(<Asset>{});
-    final processing = useState(false);
+    final processing = useProcessingOverlay();
 
     void selectionListener(
       bool multiselect,
@@ -229,18 +230,13 @@ class TrashPage extends HookConsumerWidget {
       );
     }
 
-    return trashedAssets.when(
-      loading: () => Scaffold(
-        appBar: buildAppBar("?"),
-        body: const Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      appBar: trashedAssets.maybeWhen(
+        orElse: () => buildAppBar("?"),
+        data: (data) => buildAppBar(data.totalAssets.toString()),
       ),
-      error: (error, stackTrace) => Scaffold(
-        appBar: buildAppBar("!"),
-        body: Center(child: Text(error.toString())),
-      ),
-      data: (data) => Scaffold(
-        appBar: buildAppBar(data.totalAssets.toString()),
-        body: data.isEmpty
+      body: trashedAssets.widgetWhen(
+        onData: (data) => data.isEmpty
             ? Center(
                 child: Text('trash_page_no_assets'.tr()),
               )
@@ -254,11 +250,9 @@ class TrashPage extends HookConsumerWidget {
                       showMultiSelectIndicator: false,
                       showStack: true,
                       topWidget: Padding(
-                        padding: const EdgeInsets.only(
-                          top: 24,
-                          bottom: 24,
-                          left: 12,
-                          right: 12,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 24,
                         ),
                         child: const Text(
                           "trash_page_info",
@@ -267,8 +261,6 @@ class TrashPage extends HookConsumerWidget {
                     ),
                   ),
                   if (selectionEnabledHook.value) buildBottomBar(),
-                  if (processing.value)
-                    const Center(child: ImmichLoadingIndicator()),
                 ],
               ),
       ),
