@@ -62,7 +62,7 @@
       ? ''
       : 'hidden'}"
   >
-  <Icon path={mdiCheck} />
+    <Icon path={mdiCheck} />
   </div>
   <img
     bind:this={imgElement}

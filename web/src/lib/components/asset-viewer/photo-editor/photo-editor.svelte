@@ -157,8 +157,6 @@
       f.sepia === filter.sepia
     );
   };
-  
-  
 
   const applyFilter = () => {
     if (!isFilter(presets[currentFilter] as Preset)) {
@@ -280,8 +278,9 @@
     const cropWrapperParent = cropElementWrapper.parentElement;
 
     //TODO: better solution
-    if (!cropWrapperParent) return;
-
+    if (!cropWrapperParent) {
+      return;
+    }
     switch (activeButton) {
       case 'autofix':
         cropWrapperParent.classList.remove('p-24');
@@ -510,7 +509,9 @@
     };
 
     const elementDrag = async (e: MouseEvent) => {
-      if (activeButton !== 'crop') return;
+      if (activeButton !== 'crop') {
+        return;
+      }
       e.preventDefault();
       // calculate the new cursor position:
       pos1 = pos3 - e.clientX;
@@ -756,7 +757,9 @@
   // Temporary function
   const save = async () => {
     // TBD
-    if (isRendering) return;
+    if (isRendering) {
+      return;
+    }
     await renderElement.start();
   };
 

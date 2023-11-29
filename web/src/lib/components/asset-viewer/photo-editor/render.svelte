@@ -26,11 +26,9 @@
   // let canvas2: HTMLCanvasElement;
 
   export const start = async () => {
-
     // scale and aspect ratio are not used yet
     console.log('scale', scale);
     console.log('aspectRatio', aspectRatio);
-
 
     isRendering = true;
     const canvas = document.createElement('canvas');
@@ -53,7 +51,9 @@
     canvas.width = d;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     ctx.save();
     ctx.translate(d / 2, d / 2);
@@ -76,7 +76,9 @@
     canvas2.width = cropWidth;
     canvas2.height = cropHeight;
     const cropCtx = canvas2.getContext('2d');
-    if (!cropCtx) return;
+    if (!cropCtx) {
+      return;
+    }
     cropCtx.drawImage(
       canvas,
       (d - cropWidth) / 2,
