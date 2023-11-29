@@ -55,7 +55,7 @@ export type AssetMapOptions = {
 
 const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[] => {
   const result: PersonWithFacesResponseDto[] = [];
-  if (faces)
+  if (faces) {
     faces.forEach((face) => {
       if (face.person !== null && face.person !== undefined) {
         const existingPersonEntry = result.find((item) => item.id === face.person!.id);
@@ -66,6 +66,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
         }
       }
     });
+  }
 
   return result;
 };

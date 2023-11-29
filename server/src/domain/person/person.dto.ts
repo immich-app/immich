@@ -78,8 +78,7 @@ export class PersonWithFacesResponseDto extends PersonResponseDto {
 }
 
 export class AssetFaceWithoutPersonResponseDto {
-  @IsString()
-  @IsNotEmpty()
+  @ValidateUUID()
   id!: string;
   @ApiProperty({ type: 'integer' })
   imageHeight!: number;
@@ -106,11 +105,16 @@ export class AssetFaceUpdateDto {
   data!: AssetFaceUpdateItem[];
 }
 
+export class FaceDto {
+  @ValidateUUID()
+  id!: string;
+}
+
 export class AssetFaceUpdateItem {
-  @IsString()
+  @ValidateUUID()
   personId!: string;
 
-  @IsString()
+  @ValidateUUID()
   assetId!: string;
 }
 

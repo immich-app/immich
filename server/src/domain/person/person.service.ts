@@ -6,7 +6,6 @@ import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
-import { FaceDto } from '../face/face.dto';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
@@ -31,6 +30,7 @@ import { SystemConfigCore } from '../system-config';
 import {
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
+  FaceDto,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,

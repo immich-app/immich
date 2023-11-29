@@ -35,6 +35,11 @@ export class PersonController {
     return this.service.getAll(authUser, withHidden);
   }
 
+  @Post()
+  createPerson(@AuthUser() authUser: AuthUserDto): Promise<PersonResponseDto> {
+    return this.service.createPerson(authUser);
+  }
+
   @Put(':id/reassign')
   reassignFaces(
     @AuthUser() authUser: AuthUserDto,
@@ -42,11 +47,6 @@ export class PersonController {
     @Body() dto: AssetFaceUpdateDto,
   ): Promise<PersonResponseDto[]> {
     return this.service.reassignFaces(authUser, id, dto);
-  }
-
-  @Post()
-  createPerson(@AuthUser() authUser: AuthUserDto): Promise<PersonResponseDto> {
-    return this.service.createPerson(authUser);
   }
 
   @Put()
