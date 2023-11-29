@@ -45,6 +45,10 @@ jobs:
         run: npm run check
         if: ${{ !cancelled() }}
 
+      - name: Run build
+        run: npm run build
+        if: ${{ !cancelled() }}
+
   server-unit-tests:
     name: Run server unit test suites and checks
     runs-on: ubuntu-latest
