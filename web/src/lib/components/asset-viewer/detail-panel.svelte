@@ -5,7 +5,7 @@
   import { getAssetFilename } from '$lib/utils/asset-utils';
   import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
@@ -57,10 +57,14 @@
 
   $: people = asset.people || [];
 
-  const subscribe = websocketStore.onAssetUpdate.subscribe(assetUpdate => {
+  const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
     if (assetUpdate && assetUpdate.id === asset.id) {
       asset = assetUpdate;
-    } 
+    }
+  });
+
+  onDestroy(() => {
+    unsubscribe();
   });
 
   const dispatch = createEventDispatcher();

@@ -29,6 +29,7 @@
   };
 
   const handleConfirm = () => {
+    if (!point) return;
     dispatch('confirm', point);
   };
 </script>
@@ -37,8 +38,6 @@
   confirmColor="primary"
   cancelColor="secondary"
   title="Change Location"
-  prompt="Please select a new location:"
-  disabled={!point}
   on:confirm={handleConfirm}
   on:cancel={handleCancel}
 >
