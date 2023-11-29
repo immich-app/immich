@@ -26,6 +26,12 @@
   // let canvas2: HTMLCanvasElement;
 
   export const start = async () => {
+
+    // scale and aspect ratio are not used yet
+    console.log('scale', scale);
+    console.log('aspectRatio', aspectRatio);
+
+
     isRendering = true;
     const canvas = document.createElement('canvas');
     const img = new Image();

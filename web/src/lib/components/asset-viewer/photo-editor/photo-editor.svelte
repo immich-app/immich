@@ -162,6 +162,19 @@
     }
   };
 
+  /*
+  
+  const isFilter = (f: Preset) => {
+    const testEntries = ["blur", "brightness", "contrast", "grayscale", "hueRotate", "invert", "opacity", "saturation", "sepia"];
+    if (!f) return false;
+    testEntries.forEach(entry => {
+      if (f[entry] !== filter[entry]) return false;
+    });
+    return true;
+  };
+  
+  */
+
   const applyFilter = () => {
     if (!isFilter(presets[currentFilter] as Preset)) {
       console.log(currentFilter);
