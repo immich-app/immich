@@ -21,21 +21,6 @@
     mdiPlaySpeed,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
-  import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-  import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-  import AlertOutline from 'svelte-material-icons/AlertOutline.svelte';
-  import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import Heart from 'svelte-material-icons/Heart.svelte';
-  import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
-  import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-  import MagnifyMinusOutline from 'svelte-material-icons/MagnifyMinusOutline.svelte';
-  import MagnifyPlusOutline from 'svelte-material-icons/MagnifyPlusOutline.svelte';
-  import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
-  import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
-  import Tune from 'svelte-material-icons/Tune.svelte';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 

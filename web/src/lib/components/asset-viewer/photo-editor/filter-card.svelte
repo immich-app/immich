@@ -10,7 +10,7 @@
 
   let imgElement: HTMLImageElement;
 
-  import Check from 'svelte-material-icons/Check.svelte';
+  import mdiCheck from '@mdi/js';
   import { presets as presetsObject } from './filter';
 
   type Preset = {

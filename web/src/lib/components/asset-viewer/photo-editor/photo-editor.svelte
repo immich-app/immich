@@ -5,24 +5,27 @@
   import { handleError } from '$lib/utils/handle-error';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import AutoFix from 'svelte-material-icons/AutoFix.svelte';
-  import ImageFilterHdr from 'svelte-material-icons/ImageFilterHdr.svelte';
-  import WeatherSunny from 'svelte-material-icons/WeatherSunny.svelte';
-  import WeatherCloudy from 'svelte-material-icons/WeatherCloudy.svelte';
-  import CropRotate from 'svelte-material-icons/CropRotate.svelte';
-  import Tune from 'svelte-material-icons/Tune.svelte';
-  import ImageAutoAdjust from 'svelte-material-icons/ImageAutoAdjust.svelte';
-  import Fullscreen from 'svelte-material-icons/Fullscreen.svelte';
-  import RelativeScale from 'svelte-material-icons/RelativeScale.svelte';
-  import RectangleOutline from 'svelte-material-icons/RectangleOutline.svelte';
-  import SquareOutline from 'svelte-material-icons/SquareOutline.svelte';
 
-  import Close from 'svelte-material-icons/Close.svelte';
-  import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-  import FlipHorizontal from 'svelte-material-icons/FlipHorizontal.svelte';
-  import FlipVertical from 'svelte-material-icons/FlipVertical.svelte';
-  import FormatRotate90 from 'svelte-material-icons/FormatRotate90.svelte';
-  import TriangleSmallUp from 'svelte-material-icons/TriangleSmallUp.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+
+  import { mdiAutoFix } from '@mdi/js';
+  import { mdiImageFilterHdr } from '@mdi/js';
+  import { mdiWeatherSunny } from '@mdi/js';
+  import { mdiWeatherCloudy } from '@mdi/js';
+  import { mdiCropRotate } from '@mdi/js';
+  import { mdiTune } from '@mdi/js';
+  import { mdiImageAutoAdjust } from '@mdi/js';
+  import { mdiFullscreen } from '@mdi/js';
+  import { mdiRelativeScale } from '@mdi/js';
+  import { mdiRectangleOutline } from '@mdi/js';
+  import { mdiSquareOutline } from '@mdi/js';
+
+  import { mdiClose } from '@mdi/js';
+  import { mdiDotsVertical } from '@mdi/js';
+  import { mdiFlipHorizontal } from '@mdi/js';
+  import { mdiFlipVertical } from '@mdi/js';
+  import { mdiFormatRotate90 } from '@mdi/js';
+  import { mdiTriangleSmallUp } from '@mdi/js';
 
   import SuggestionsButton from './suggestions-button.svelte';
   import AspectRatioButton from './aspect-ratio-button.svelte';
@@ -30,14 +33,14 @@
   import FilterCard from './filter-card.svelte';
 
   //Filter icons
-  import ContrastCircle from 'svelte-material-icons/ContrastCircle.svelte';
-  import Brightness6 from 'svelte-material-icons/Brightness6.svelte';
-  import InvertColors from 'svelte-material-icons/InvertColors.svelte';
-  import Blur from 'svelte-material-icons/Blur.svelte';
-  import CircleHalfFull from 'svelte-material-icons/CircleHalfFull.svelte';
-  import DotsCircle from 'svelte-material-icons/DotsCircle.svelte';
-  import SelectInverse from 'svelte-material-icons/SelectInverse.svelte';
-  import Pillar from 'svelte-material-icons/Pillar.svelte';
+  import { mdiContrastCircle } from '@mdi/js';
+  import { mdiBrightness6 } from '@mdi/js';
+  import { mdiInvertColors } from '@mdi/js';
+  import { mdiBlur } from '@mdi/js';
+  import { mdiCircleHalfFull } from '@mdi/js';
+  import { mdiDotsCircle } from '@mdi/js';
+  import { mdiSelectInverse } from '@mdi/js';
+  import { mdiPillar } from '@mdi/js';
 
   import Render from './render.svelte';
   import { presets as presetsObject } from './filter.js';

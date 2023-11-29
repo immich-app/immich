@@ -1,6 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import path from 'path';
-import { isoImport } from 'vite-plugin-iso-import';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:3001/',
