@@ -17,8 +17,8 @@
     "check": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.4.3",
-    "@docusaurus/preset-classic": "^2.4.3",
+    "@docusaurus/core": "^3.0.0",
+    "@docusaurus/preset-classic": "^3.0.0",
     "@mdi/js": "^7.3.67",
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^1.6.22",
@@ -35,7 +35,7 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^2.4.1",
+    "@docusaurus/module-type-aliases": "^3.0.0",
     "@tsconfig/docusaurus": "^1.0.5",
     "prettier": "^2.8.8",
     "typescript": "^5.1.6"
