@@ -9,7 +9,7 @@ export interface IAssetFaceJob extends IBaseJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload';
+  source?: 'upload' | 'sidecar-write';
 }
 
 export interface IAssetDeletionJob extends IEntityJob {

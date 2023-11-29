@@ -80,7 +80,6 @@ export class MetadataService {
   private logger = new Logger(MetadataService.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
-  private oldCities?: string;
   private subscription: Subscription | null = null;
 
   constructor(
@@ -272,8 +271,6 @@ export class MetadataService {
     if (!asset.sidecarPath) {
       await this.assetRepository.save({ id, sidecarPath });
     }
-
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
 
     return true;
   }
