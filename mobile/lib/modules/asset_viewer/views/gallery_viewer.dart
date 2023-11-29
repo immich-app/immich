@@ -9,6 +9,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
@@ -22,6 +23,7 @@ import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
 import 'package:immich_mobile/modules/home/ui/upload_dialog.dart';
+import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/shared/cache/original_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -29,6 +31,7 @@ import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
@@ -49,8 +52,6 @@ class GalleryViewerPage extends HookConsumerWidget {
   final int initialIndex;
   final int heroOffset;
   final bool showStack;
-  final bool isOwner;
-  final String? sharedAlbumId;
 
   GalleryViewerPage({
     super.key,
@@ -59,8 +60,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     required this.totalAssets,
     this.heroOffset = 0,
     this.showStack = false,
-    this.isOwner = true,
-    this.sharedAlbumId,
   }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
@@ -94,10 +93,16 @@ class GalleryViewerPage extends HookConsumerWidget {
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
     // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
     final isFromDto = currentAsset.id == Isar.autoIncrement;
+    final album = ref.watch(currentAlbumProvider);
 
     Asset asset() => stackIndex.value == -1
         ? currentAsset
         : stackElements.elementAt(stackIndex.value);
+    final isOwner = asset().ownerId == ref.watch(currentUserProvider)?.isarId;
+    final isPartner = ref
+        .watch(partnerSharedWithProvider)
+        .map((e) => e.isarId)
+        .contains(asset().ownerId);
 
     bool isParent = stackIndex.value == -1 || stackIndex.value == 0;
 
@@ -113,9 +118,8 @@ class GalleryViewerPage extends HookConsumerWidget {
       [],
     );
 
-    void toggleFavorite(Asset asset) => ref
-        .watch(assetProvider.notifier)
-        .toggleFavorite([asset], !asset.isFavorite);
+    void toggleFavorite(Asset asset) =>
+        ref.read(assetProvider.notifier).toggleFavorite([asset]);
 
     /// Original (large) image of a remote asset. Required asset.isRemote
     ImageProvider remoteOriginalProvider(Asset asset) =>
@@ -305,9 +309,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     handleArchive(Asset asset) {
-      ref
-          .watch(assetProvider.notifier)
-          .toggleArchive([asset], !asset.isArchived);
+      ref.watch(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
         context.autoPop();
         return;
@@ -331,10 +333,10 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     handleActivities() {
-      if (sharedAlbumId != null) {
+      if (album != null && album.shared && album.remoteId != null) {
         context.autoPush(
           ActivitiesRoute(
-            albumId: sharedAlbumId!,
+            albumId: album.remoteId!,
             assetId: asset().remoteId,
             withAssetThumbs: false,
             isOwner: isOwner,
@@ -353,6 +355,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             color: Colors.black.withOpacity(0.4),
             child: TopControlAppBar(
               isOwner: isOwner,
+              isPartner: isPartner,
               isPlayingMotionVideo: isPlayingMotionVideo.value,
               asset: asset(),
               onMoreInfoPressed: showInfo,
@@ -371,7 +374,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                 isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
               }),
               onAddToAlbumPressed: () => addToAlbum(asset()),
-              shareAlbumId: sharedAlbumId,
               onActivitiesPressed: handleActivities,
             ),
           ),

@@ -13,8 +13,10 @@ class DisableMultiSelectButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-        padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+    return Align(
+      alignment: Alignment.topRight,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16.0, top: 16.0),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: ElevatedButton.icon(
@@ -31,6 +33,7 @@ class DisableMultiSelectButton extends ConsumerWidget {
             ),
           ),
         ),
+      ),
     );
   }
 }
