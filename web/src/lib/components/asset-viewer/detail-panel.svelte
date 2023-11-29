@@ -281,8 +281,7 @@
         </button>
       </div>
     {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
-      <div
-        class="flex justify-between place-items-start gap-4 py-4">
+      <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
             <Icon path={mdiCalendar} size="24" />
@@ -293,10 +292,10 @@
         </button>
       </div>
     {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
-    {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-      zone: asset.exifInfo.timeZone ?? undefined,
-    })}
-        <div class="flex justify-between place-items-start gap-4 py-4">
+      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+        zone: asset.exifInfo.timeZone ?? undefined,
+      })}
+      <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
             <Icon path={mdiCalendar} size="24" />
@@ -329,7 +328,6 @@
           </div>
         </div>
       </div>
-
     {/if}
 
     {#if isShowChangeDate}
@@ -462,8 +460,7 @@
         </div>
       </div>
     {:else if asset.exifInfo?.city && asset.isReadOnly}
-    <div
-        class="flex justify-between place-items-start gap-4 py-4">
+      <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
 
