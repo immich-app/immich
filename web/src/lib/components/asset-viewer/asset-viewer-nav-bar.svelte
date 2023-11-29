@@ -19,6 +19,7 @@
     mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiPlaySpeed,
+    mdiTune,
   } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
@@ -54,6 +55,7 @@
     runJob: AssetJobName;
     playSlideShow: void;
     unstack: void;
+    edit: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -83,7 +85,7 @@
   </div>
   <div class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white">
     {#if showEditButton}
-      <CircleIconButton isOpacity={true} logo={Tune} title="Edit" on:click={() => dispatch('edit')} />
+      <CircleIconButton isOpacity={true} icon={mdiTune} title="Edit" on:click={() => dispatch('edit')} />
     {/if}
     {#if asset.isOffline}
       <CircleIconButton

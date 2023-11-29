@@ -780,14 +780,14 @@
 </script>
 
 <div
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-[1fr_1fr_1fr_360px] grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed left-0 top-0 z-[1003] grid h-screen w-screen grid-cols-[1fr_1fr_1fr_360px] grid-rows-[64px_1fr] overflow-hidden bg-black"
 >
   <div class="z-[1000] col-span-3 col-start-1 row-span-1 row-start-1 flex items-center transition-transform">
     <button
       on:click={() => dispatch('close')}
       class="hover:bg-immich-gray/10 ml-4 rounded-full p-3 text-2xl text-white"
     >
-      <Close />
+    <Icon path={mdiClose} />
     </button>
     <button
       on:click={() => save()}
@@ -812,7 +812,7 @@
       Save
     </button>
     <button class="hover:bg-immich-gray/10 mr-4 rounded-full p-3 text-2xl text-white">
-      <DotsVertical />
+      <Icon path={mdiDotsVertical} />
     </button>
   </div>
   <div class="relative col-span-3 col-start-1 row-span-full row-start-1">
@@ -856,11 +856,11 @@
             on:click={() => flipHorizontal()}
             class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
           >
-            <FlipHorizontal />
+          <Icon path={mdiFlipHorizontal} />
           </button>
 
           <button on:click={() => flipVertical()} class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white">
-            <FlipVertical />
+            <Icon path={mdiFlipVertical} />
           </button>
         </div>
         <div class="z-10 flex h-full w-full items-center justify-center bg-black">
@@ -868,7 +868,7 @@
             on:click={() => rotate(currentAngle, currentAngleOffset + 90, true)}
             class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
           >
-            <FormatRotate90 />
+          <Icon path={mdiFormatRotate90} />
           </button>
         </div>
 
@@ -940,7 +940,7 @@
               {currentAngle}°
             </div>
             <div class="mt-1.5 flex justify-center">
-              <TriangleSmallUp />
+              <Icon path={mdiTriangleSmallUp} size="1.5em" />
             </div>
           </div>
         </div>
@@ -966,7 +966,7 @@
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'autofix'}
     >
-      <AutoFix size="1.5em" />
+      <Icon path={mdiAutoFix} size="1.5em" />
       <div
         class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'autofix'}
@@ -978,7 +978,7 @@
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'crop'}
     >
-      <CropRotate size="1.5em" />
+    <Icon path={mdiCropRotate} size="1.5em" />
       <div
         class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'crop'}
@@ -989,7 +989,7 @@
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'adjust'}
     >
-      <Tune size="1.5em" />
+    <Icon path={mdiTune} size="1.5em" />
       <div
         class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'adjust'}
@@ -1000,7 +1000,7 @@
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'filter'}
     >
-      <ImageAutoAdjust size="1.5em" />
+    <Icon path={mdiImageAutoAdjust} size="1.5em" />
       <div
         class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'filter'}
@@ -1017,20 +1017,20 @@
           isActive={activeEdit === 'optimized'}
           on:click={() => navigateEdit('optimized')}
         >
-          <AutoFix />
+        <Icon path={mdiAutoFix} size="1.5em" />
         </SuggestionsButton>
         <SuggestionsButton
           buttonName="Dynamic"
           isActive={activeEdit === 'dynamic'}
           on:click={() => navigateEdit('dynamic')}
         >
-          <ImageFilterHdr />
+        <Icon path={mdiImageFilterHdr} size="1.5em" />
         </SuggestionsButton>
         <SuggestionsButton buttonName="Warm" isActive={activeEdit === 'warm'} on:click={() => navigateEdit('warm')}>
-          <WeatherSunny />
+          <Icon path={mdiWeatherSunny} size="1.5em" />
         </SuggestionsButton>
         <SuggestionsButton buttonName="Cold" isActive={activeEdit === 'cold'} on:click={() => navigateEdit('cold')}>
-          <WeatherCloudy />
+          <Icon path={mdiWeatherCloudy} size="1.5em" />
         </SuggestionsButton>
       </div>
     {:else if activeButton === 'crop'}
@@ -1043,53 +1043,53 @@
             isActive={currentAspectRatio === 'free'}
             title="Free"
           >
-            <Fullscreen />
+          <Icon path={mdiFullscreen} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton
             on:click={() => setAspectRatio('original')}
             isActive={currentAspectRatio === 'original'}
             title="Original"
           >
-            <RelativeScale />
+          <Icon path={mdiRelativeScale} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton
             on:click={() => setAspectRatio('16_9')}
             isActive={currentAspectRatio === '16_9'}
             title="16:9"
           >
-            <RectangleOutline />
+            <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton
             on:click={() => setAspectRatio('9_16')}
             isActive={currentAspectRatio === '9_16'}
             title="9:16"
           >
-            <RectangleOutline />
+          <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton on:click={() => setAspectRatio('5_4')} isActive={currentAspectRatio === '5_4'} title="5:4">
-            <RectangleOutline />
+            <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton on:click={() => setAspectRatio('4_5')} isActive={currentAspectRatio === '4_5'} title="4:5">
-            <RectangleOutline />
+            <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton on:click={() => setAspectRatio('4_3')} isActive={currentAspectRatio === '4_3'} title="4:3">
-            <RectangleOutline />
+            <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton on:click={() => setAspectRatio('3_4')} isActive={currentAspectRatio === '3_4'} title="3:4">
-            <RectangleOutline />
+            <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton on:click={() => setAspectRatio('3_2')} isActive={currentAspectRatio === '3_2'} title="3:2">
-            <RectangleOutline />
+            <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton on:click={() => setAspectRatio('2_3')} isActive={currentAspectRatio === '2_3'} title="2:3">
-            <RectangleOutline />
+            <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton
             on:click={() => setAspectRatio('square')}
             isActive={currentAspectRatio === 'square'}
             title="Square"
           >
-            <SquareOutline />
+          <Icon path={mdiSquareOutline} size="1.5em" />
           </AspectRatioButton>
         </div>
       </div>
@@ -1101,28 +1101,28 @@
             <ImageFilterHdr />
           </AdjustElement> -->
           <AdjustElement title="Brightness" type={true} bind:value={filter.brightness} on:applyFilter={applyFilter}>
-            <Brightness6 />
+            <Icon path={mdiBrightness6} size="1.5em" />
           </AdjustElement>
           <AdjustElement title="Contrast" type={true} bind:value={filter.contrast} on:applyFilter={applyFilter}>
-            <ContrastCircle />
+            <Icon path={mdiContrastCircle} size="1.5em" />
           </AdjustElement>
           <AdjustElement title="Saturation" type={true} bind:value={filter.saturation} on:applyFilter={applyFilter}>
-            <InvertColors />
+            <Icon path={mdiInvertColors} size="1.5em" />
           </AdjustElement>
           <AdjustElement title="Blur" type={false} bind:value={filter.blur} on:applyFilter={applyFilter}>
-            <Blur />
+            <Icon path={mdiBlur} size="1.5em" />
           </AdjustElement>
           <AdjustElement title="Grayscale" type={false} bind:value={filter.grayscale} on:applyFilter={applyFilter}>
-            <CircleHalfFull />
+            <Icon path={mdiCircleHalfFull} size="1.5em" />
           </AdjustElement>
           <AdjustElement title="Hue Rotate" type={true} bind:value={filter.hueRotate} on:applyFilter={applyFilter}>
-            <DotsCircle />
+            <Icon path={mdiDotsCircle} size="1.5em" />
           </AdjustElement>
           <AdjustElement title="Invert" type={false} bind:value={filter.invert} on:applyFilter={applyFilter}>
-            <SelectInverse />
+            <Icon path={mdiSelectInverse} size="1.5em" />
           </AdjustElement>
           <AdjustElement title="Sepia" type={false} bind:value={filter.sepia} on:applyFilter={applyFilter}>
-            <Pillar />
+            <Icon path={mdiPillar} size="1.5em" />
           </AdjustElement>
         </div>
       </div>

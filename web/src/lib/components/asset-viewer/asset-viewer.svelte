@@ -179,7 +179,8 @@
       getFavorite();
       getNumberOfComments();
     }
-  }  let shouldShowPhotoEditor = false;
+  } 
+  let shouldShowPhotoEditor = false;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
 
@@ -602,6 +603,7 @@
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={handlePlaySlideshow}
+        on:edit={() => (shouldShowPhotoEditor = true)}
       />
     </div>
   {/if}
