@@ -1,6 +1,6 @@
 import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   ActivityEntity,
   AlbumEntity,
@@ -62,33 +62,52 @@ export class AccessRepository implements IAccessRepository {
       });
     },
   };
+
   library = {
-    hasOwnerAccess: (userId: string, libraryId: string): Promise<boolean> => {
-      return this.libraryRepository.exist({
-        where: {
-          id: libraryId,
-          ownerId: userId,
-        },
-      });
+    checkOwnerAccess: async (userId: string, libraryIds: Set<string>): Promise<Set<string>> => {
+      if (libraryIds.size === 0) {
+        return new Set();
+      }
+
+      return this.libraryRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...libraryIds]),
+            ownerId: userId,
+          },
+        })
+        .then((libraries) => new Set(libraries.map((library) => library.id)));
     },
-    hasPartnerAccess: (userId: string, partnerId: string): Promise<boolean> => {
-      return this.partnerRepository.exist({
-        where: {
-          sharedWithId: userId,
-          sharedById: partnerId,
-        },
-      });
+
+    checkPartnerAccess: async (userId: string, partnerIds: Set<string>): Promise<Set<string>> => {
+      if (partnerIds.size === 0) {
+        return new Set();
+      }
+
+      return this.partnerRepository
+        .createQueryBuilder('partner')
+        .select('partner.sharedById')
+        .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+        .andWhere('partner.sharedWithId = :userId', { userId })
+        .getMany()
+        .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
     },
   };
 
   timeline = {
-    hasPartnerAccess: (userId: string, partnerId: string): Promise<boolean> => {
-      return this.partnerRepository.exist({
-        where: {
-          sharedWithId: userId,
-          sharedById: partnerId,
-        },
-      });
+    checkPartnerAccess: async (userId: string, partnerIds: Set<string>): Promise<Set<string>> => {
+      if (partnerIds.size === 0) {
+        return new Set();
+      }
+
+      return this.partnerRepository
+        .createQueryBuilder('partner')
+        .select('partner.sharedById')
+        .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+        .andWhere('partner.sharedWithId = :userId', { userId })
+        .getMany()
+        .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
     },
   };
 
@@ -198,66 +217,109 @@ export class AccessRepository implements IAccessRepository {
   };
 
   authDevice = {
-    hasOwnerAccess: (userId: string, deviceId: string): Promise<boolean> => {
-      return this.tokenRepository.exist({
-        where: {
-          userId,
-          id: deviceId,
-        },
-      });
+    checkOwnerAccess: async (userId: string, deviceIds: Set<string>): Promise<Set<string>> => {
+      if (deviceIds.size === 0) {
+        return new Set();
+      }
+
+      return this.tokenRepository
+        .find({
+          select: { id: true },
+          where: {
+            userId,
+            id: In([...deviceIds]),
+          },
+        })
+        .then((tokens) => new Set(tokens.map((token) => token.id)));
     },
   };
 
   album = {
-    hasOwnerAccess: (userId: string, albumId: string): Promise<boolean> => {
-      return this.albumRepository.exist({
-        where: {
-          id: albumId,
-          ownerId: userId,
-        },
-      });
-    },
+    checkOwnerAccess: async (userId: string, albumIds: Set<string>): Promise<Set<string>> => {
+      if (albumIds.size === 0) {
+        return new Set();
+      }
 
-    hasSharedAlbumAccess: (userId: string, albumId: string): Promise<boolean> => {
-      return this.albumRepository.exist({
-        where: {
-          id: albumId,
-          sharedUsers: {
-            id: userId,
+      return this.albumRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...albumIds]),
+            ownerId: userId,
           },
-        },
-      });
+        })
+        .then((albums) => new Set(albums.map((album) => album.id)));
     },
 
-    hasSharedLinkAccess: (sharedLinkId: string, albumId: string): Promise<boolean> => {
-      return this.sharedLinkRepository.exist({
-        where: {
-          id: sharedLinkId,
-          albumId,
-        },
-      });
+    checkSharedAlbumAccess: async (userId: string, albumIds: Set<string>): Promise<Set<string>> => {
+      if (albumIds.size === 0) {
+        return new Set();
+      }
+
+      return this.albumRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...albumIds]),
+            sharedUsers: {
+              id: userId,
+            },
+          },
+        })
+        .then((albums) => new Set(albums.map((album) => album.id)));
+    },
+
+    checkSharedLinkAccess: async (sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>> => {
+      if (albumIds.size === 0) {
+        return new Set();
+      }
+
+      return this.sharedLinkRepository
+        .find({
+          select: { albumId: true },
+          where: {
+            id: sharedLinkId,
+            albumId: In([...albumIds]),
+          },
+        })
+        .then(
+          (sharedLinks) =>
+            new Set(sharedLinks.flatMap((sharedLink) => (!!sharedLink.albumId ? [sharedLink.albumId] : []))),
+        );
     },
   };
 
   person = {
-    hasOwnerAccess: (userId: string, personId: string): Promise<boolean> => {
-      return this.personRepository.exist({
-        where: {
-          id: personId,
-          ownerId: userId,
-        },
-      });
+    checkOwnerAccess: async (userId: string, personIds: Set<string>): Promise<Set<string>> => {
+      if (personIds.size === 0) {
+        return new Set();
+      }
+
+      return this.personRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...personIds]),
+            ownerId: userId,
+          },
+        })
+        .then((persons) => new Set(persons.map((person) => person.id)));
     },
   };
 
   partner = {
-    hasUpdateAccess: (userId: string, partnerId: string): Promise<boolean> => {
-      return this.partnerRepository.exist({
-        where: {
-          sharedById: partnerId,
-          sharedWithId: userId,
-        },
-      });
+    checkUpdateAccess: async (userId: string, partnerIds: Set<string>): Promise<Set<string>> => {
+      if (partnerIds.size === 0) {
+        return new Set();
+      }
+
+      return this.partnerRepository
+        .createQueryBuilder('partner')
+        .select('partner.sharedById')
+        .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
+        .andWhere('partner.sharedWithId = :userId', { userId })
+        .getMany()
+        .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
     },
   };
 }

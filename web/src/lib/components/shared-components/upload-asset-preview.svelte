@@ -66,13 +66,17 @@
           <div class="h-[15px] rounded-md bg-immich-warning transition-all" style="width: 100%" />
           <p class="absolute top-0 h-full w-full text-center text-[10px]">
             Skipped
-            {#if uploadAsset.message} ({uploadAsset.message}){/if}
+            {#if uploadAsset.message}
+              ({uploadAsset.message})
+            {/if}
           </p>
         {:else if uploadAsset.state === UploadState.DONE}
           <div class="h-[15px] rounded-md bg-immich-success transition-all" style="width: 100%" />
           <p class="absolute top-0 h-full w-full text-center text-[10px]">
             Uploaded
-            {#if uploadAsset.message} ({uploadAsset.message}){/if}
+            {#if uploadAsset.message}
+              ({uploadAsset.message})
+            {/if}
           </p>
         {/if}
       </div>

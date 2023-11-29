@@ -28,7 +28,7 @@
   "album_viewer_page_share_add_users": "Add users",
   "all_people_page_title": "People",
   "all_videos_page_title": "Videos",
-  "app_bar_signout_dialog_content": "Are you sure you wanna sign out?",
+  "app_bar_signout_dialog_content": "Are you sure you want to sign out?",
   "app_bar_signout_dialog_ok": "Yes",
   "app_bar_signout_dialog_title": "Sign out",
   "archive_page_no_archived_assets": "No archived assets found",
@@ -123,7 +123,7 @@
   "cache_settings_tile_title": "Local Storage",
   "cache_settings_title": "Caching Settings",
   "change_password_form_confirm_password": "Confirm Password",
-  "change_password_form_description": "Hi {firstName} {lastName},\n\nThis is either the first time you are signing into the system or a request has been made to change your password. Please enter the new password below.",
+  "change_password_form_description": "Hi {name},\n\nThis is either the first time you are signing into the system or a request has been made to change your password. Please enter the new password below.",
   "change_password_form_new_password": "New Password",
   "change_password_form_password_mismatch": "Passwords do not match",
   "change_password_form_reenter_new_password": "Re-enter New Password",
@@ -390,6 +390,28 @@
   "shared_link_edit_show_meta": "Show metadata",
   "shared_link_edit_submit_button": "Update link",
   "shared_link_empty": "You don't have any shared links",
+  "shared_link_error_server_url_fetch": "Cannot fetch the server url",
+  "shared_link_expired": "Expired",
+  "shared_link_expires_days": {
+    "one": "Expires in {} day",
+    "other": "Expires in {} days"
+  },
+  "shared_link_expires_hours": {
+    "one": "Expires in {} hour",
+    "other": "Expires in {} hours"
+  },
+  "shared_link_expires_minutes": {
+    "one": "Expires in {} minute",
+    "other": "Expires in {} minutes"
+  },
+  "shared_link_expires_seconds": {
+    "one": "Expires in {} second",
+    "other": "Expires in {} seconds"
+  },
+  "shared_link_expires_never": "Expires ∞",
+  "shared_link_info_chip_download": "Download",
+  "shared_link_info_chip_metadata": "EXIF",
+  "shared_link_info_chip_upload": "Upload",
   "shared_link_manage_links": "Manage Shared links",
   "share_done": "Done",
   "share_invite": "Invite to album",

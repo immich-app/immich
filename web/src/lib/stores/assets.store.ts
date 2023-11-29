@@ -73,7 +73,10 @@ export class AssetStore {
   assets: AssetResponseDto[] = [];
   albumAssets: Set<string> = new Set();
 
-  constructor(options: AssetStoreOptions, private albumId?: string) {
+  constructor(
+    options: AssetStoreOptions,
+    private albumId?: string,
+  ) {
     this.options = { ...options, size: TimeBucketSize.Month };
     this.store$.set(this);
   }

@@ -4,12 +4,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -88,7 +88,7 @@ class ActivitiesPage extends HookConsumerWidget {
               width: 40,
               height: 30,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: const BorderRadius.all(Radius.circular(4)),
                 image: DecorationImage(
                   image: CachedNetworkImageProvider(
                     getThumbnailUrlForRemoteId(
@@ -231,11 +231,8 @@ class ActivitiesPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(appBarTitle)),
-      body: activities.maybeWhen(
-        orElse: () {
-          return const Center(child: ImmichLoadingIndicator());
-        },
-        data: (data) {
+      body: activities.widgetWhen(
+        onData: (data) {
           final liked = data.firstWhereOrNull(
             (a) =>
                 a.type == ActivityType.like &&

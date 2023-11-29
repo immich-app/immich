@@ -45,7 +45,7 @@ extension ContextHelper on BuildContext {
   ) =>
       AutoRouter.of(this).navigate(route);
 
-// Auto-Push replace route from the current context
+  // Auto-Push replace route from the current context
   Future<T?> autoReplace<T extends Object?>(PageRouteInfo<dynamic> route) =>
       AutoRouter.of(this).replace(route);
 

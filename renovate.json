@@ -1,40 +1,64 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": ["config:base", "docker:pinDigests"],
+  "minimumReleaseAge": "5 days",
   "packageRules": [
     {
       "matchFileNames": ["cli/**"],
       "groupName": "@immich/cli",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
+    },
+    {
+      "matchFileNames": ["docs/**"],
+      "groupName": "docs",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": ["mobile/**"],
       "groupName": "mobile",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": ["server/**"],
       "groupName": "server",
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackagePrefixes": ["exiftool"]
+      "excludePackagePrefixes": ["exiftool"],
+      "schedule": "on tuesday"
     },
     {
       "groupName": "exiftool",
-      "matchPackagePrefixes": ["exiftool"]
+      "matchPackagePrefixes": ["exiftool"],
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": ["web/**"],
       "groupName": "web",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": ["machine-learning/**"],
       "groupName": "machine-learning",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": [".github/**"],
-      "groupName": "github-actions"
+      "groupName": "github-actions",
+      "schedule": "on tuesday"
+    },
+    {
+      "groupName": "base-image",
+      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"]
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["node"],
+      "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
+      "versioning": "node"
     }
   ],
   "ignoreDeps": [

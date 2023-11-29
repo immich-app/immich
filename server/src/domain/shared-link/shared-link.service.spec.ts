@@ -97,7 +97,6 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should not allow non-owners to create album shared links', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       await expect(
         sut.create(authStub.admin, { type: SharedLinkType.ALBUM, assetIds: [], albumId: 'album-1' }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -117,12 +116,15 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should create an album shared link', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.oneAsset.id]));
       shareMock.create.mockResolvedValue(sharedLinkStub.valid);
 
       await sut.create(authStub.admin, { type: SharedLinkType.ALBUM, albumId: albumStub.oneAsset.id });
 
-      expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, albumStub.oneAsset.id);
+      expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.id,
+        new Set([albumStub.oneAsset.id]),
+      );
       expect(shareMock.create).toHaveBeenCalledWith({
         type: SharedLinkType.ALBUM,
         userId: authStub.admin.id,

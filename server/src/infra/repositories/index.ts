@@ -19,6 +19,7 @@ export * from './server-info.repository';
 export * from './shared-link.repository';
 export * from './smart-info.repository';
 export * from './system-config.repository';
+export * from './system-metadata.repository';
 export * from './tag.repository';
 export * from './typesense.repository';
 export * from './user-token.repository';

@@ -1,6 +1,5 @@
 import {
   AudioCodec,
-  CitiesFile,
   Colorspace,
   CQMode,
   SystemConfig,
@@ -85,7 +84,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   reverseGeocoding: {
     enabled: true,
-    citiesFileOverride: CitiesFile.CITIES_500,
   },
   oauth: {
     autoLaunch: true,

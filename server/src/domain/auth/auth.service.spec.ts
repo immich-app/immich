@@ -395,11 +395,11 @@ describe('AuthService', () => {
 
   describe('logoutDevice', () => {
     it('should logout the device', async () => {
-      accessMock.authDevice.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.authDevice.checkOwnerAccess.mockResolvedValue(new Set(['token-1']));
 
       await sut.logoutDevice(authStub.user1, 'token-1');
 
-      expect(accessMock.authDevice.hasOwnerAccess).toHaveBeenCalledWith(authStub.user1.id, 'token-1');
+      expect(accessMock.authDevice.checkOwnerAccess).toHaveBeenCalledWith(authStub.user1.id, new Set(['token-1']));
       expect(userTokenMock.delete).toHaveBeenCalledWith('token-1');
     });
   });

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/render_list.provider.dart';
@@ -85,12 +86,8 @@ class AssetSelectionPage extends HookConsumerWidget {
             ),
         ],
       ),
-      body: renderList.when(
-        data: (data) => buildBody(data),
-        error: (error, stackTrace) => Center(
-          child: Text(error.toString()),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+      body: renderList.widgetWhen(
+        onData: (data) => buildBody(data),
       ),
     );
   }

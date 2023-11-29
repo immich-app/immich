@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/modules/partner/services/partner.service.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -34,7 +35,7 @@ class PartnerPage extends HookConsumerWidget {
             children: [
               for (User u in users)
                 SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context, u),
+                  onPressed: () => context.pop(u),
                   child: Row(
                     children: [
                       Padding(
@@ -70,8 +71,7 @@ class PartnerPage extends HookConsumerWidget {
         builder: (BuildContext context) {
           return ConfirmDialog(
             title: "partner_page_stop_sharing_title",
-            content:
-                "partner_page_stop_sharing_content".tr(args: [u.name]),
+            content: "partner_page_stop_sharing_content".tr(args: [u.name]),
             onOk: () => ref.read(partnerServiceProvider).removePartner(u),
           );
         },
@@ -118,6 +118,7 @@ class PartnerPage extends HookConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -126,12 +127,15 @@ class PartnerPage extends HookConsumerWidget {
                       style: TextStyle(fontSize: 14),
                     ).tr(),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: availableUsers.whenOrNull(
-                      data: (data) => addNewUsersHandler,
+                  Align(
+                    alignment: Alignment.center,
+                    child: ElevatedButton.icon(
+                      onPressed: availableUsers.whenOrNull(
+                        data: (data) => addNewUsersHandler,
+                      ),
+                      icon: const Icon(Icons.person_add),
+                      label: const Text("partner_page_add_partner").tr(),
                     ),
-                    icon: const Icon(Icons.person_add),
-                    label: const Text("partner_page_add_partner").tr(),
                   ),
                 ],
               ),

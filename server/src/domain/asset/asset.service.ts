@@ -386,6 +386,10 @@ export class AssetService {
     return assets.map((a) => mapAsset(a));
   }
 
+  async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
+    return this.assetRepository.getAllByDeviceId(authUser.id, deviceId);
+  }
+
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, id);
 

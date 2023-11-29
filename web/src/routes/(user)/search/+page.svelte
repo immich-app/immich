@@ -3,8 +3,8 @@
   import { page } from '$app/stores';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
-  import ChangeDate from '$lib/components/photos-page/actions/change-location-action.svelte';
-  import ChangeLocation from '$lib/components/photos-page/actions/change-datetion-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
@@ -137,7 +137,7 @@
     {#if albums.length}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))]">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
           {#each albums as album (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
               <AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} showContextMenu={false} />

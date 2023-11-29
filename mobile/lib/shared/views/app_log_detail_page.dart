@@ -39,7 +39,14 @@ class AppLogDetailPage extends HookConsumerWidget {
                     Clipboard.setData(ClipboardData(text: stackTrace))
                         .then((_) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Copied to clipboard")),
+                        SnackBar(
+                          content: Text(
+                            "Copied to clipboard",
+                            style: context.textTheme.bodyLarge?.copyWith(
+                              color: context.primaryColor,
+                            ),
+                          ),
+                        ),
                       );
                     });
                   },
@@ -98,7 +105,14 @@ class AppLogDetailPage extends HookConsumerWidget {
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: message)).then((_) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Copied to clipboard")),
+                        SnackBar(
+                          content: Text(
+                            "Copied to clipboard",
+                            style: context.textTheme.bodyLarge?.copyWith(
+                              color: context.primaryColor,
+                            ),
+                          ),
+                        ),
                       );
                     });
                   },

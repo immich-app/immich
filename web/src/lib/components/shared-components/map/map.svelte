@@ -111,10 +111,20 @@
 </script>
 
 {#await style then style}
-  <MapLibre {style} class="h-full" {center} {zoom} attributionControl={false} diffStyleUpdates={true} let:map bind:map>
+  <MapLibre
+    {style}
+    class="h-full"
+    {center}
+    {zoom}
+    attributionControl={false}
+    diffStyleUpdates={true}
+    let:map
+    on:load={(event) => event.detail.setMaxZoom(14)}
+    bind:map
+  >
     <NavigationControl position="top-left" showCompass={!simplified} />
     {#if !simplified}
-      <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} />
+      <GeolocateControl position="top-left" />
       <FullscreenControl position="top-left" />
       <ScaleControl />
       <AttributionControl compact={false} />
@@ -134,7 +144,7 @@
         }),
       }}
       id="geojson"
-      cluster={{ maxZoom: 14, radius: 500 }}
+      cluster={{ radius: 500 }}
     >
       <MarkerLayer
         applyToClusters

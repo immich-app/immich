@@ -5,7 +5,7 @@
 #
 # This workflow will not trigger runs on forked repos.
 
-name: Cleanup Old Docker Images
+name: Docker Cleanup
 
 on:
   pull_request:

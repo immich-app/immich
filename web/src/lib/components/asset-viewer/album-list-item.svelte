@@ -44,14 +44,10 @@
     >
     <span class="flex gap-1 text-sm">
       {#if variant === 'simple'}
-        <span
-          >{#if album.shared}Shared{/if}
-        </span>
+        <span>{album.shared ? 'Shared' : ''}</span>
       {:else}
         <span>{album.assetCount} items</span>
-        <span
-          >{#if album.shared} · Shared{/if}
-        </span>
+        <span>{album.shared ? ' · Shared' : ''} </span>
       {/if}
     </span>
   </div>
