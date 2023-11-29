@@ -50,7 +50,7 @@ A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn
 ### Pros
 
 - No additional software needs to be installed client-side
-- If you only need access to the web interface remotely, it is possible to set up access controls that shield you from zero-day vulnerabilities on Immich. [Cloudflare Access](<(https://www.cloudflare.com/zero-trust/products/access/)>) has a generous free tier.
+- If you only need access to the web interface remotely, it is possible to set up access controls that shield you from zero-day vulnerabilities on Immich. [Cloudflare Access](https://www.cloudflare.com/zero-trust/products/access/) has a generous free tier.
 
 ### Cons
 
