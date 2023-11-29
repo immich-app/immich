@@ -79,7 +79,7 @@ export class SystemConfigService {
       return this.repository.fetchStyle(styleUrl);
     }
 
-    return JSON.parse(await this.repository.readFile(`./assets/style-${theme}.json`));
+    return JSON.parse(await this.repository.readFile(`./resources/style-${theme}.json`));
   }
 
   async getCustomCss(): Promise<string> {

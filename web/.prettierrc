@@ -3,7 +3,6 @@
   "trailingComma": "all",
   "printWidth": 120,
   "semi": true,
-  "organizeImportsSkipDestructiveCodeActions": true,
   "plugins": ["prettier-plugin-svelte"],
-  "pluginSearchDirs": false
+  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
 }

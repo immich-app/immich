@@ -150,3 +150,23 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
 
   return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);
 }
+
+// NOTE: The following Set utils have been added here, to easily determine where they are used.
+//       They should be replaced with native Set operations, when they are added to the language.
+//       Proposal reference: https://github.com/tc39/proposal-set-methods
+
+export const setUnion = <T>(setA: Set<T>, setB: Set<T>): Set<T> => {
+  const union = new Set(setA);
+  for (const elem of setB) {
+    union.add(elem);
+  }
+  return union;
+};
+
+export const setDifference = <T>(setA: Set<T>, setB: Set<T>): Set<T> => {
+  const difference = new Set(setA);
+  for (const elem of setB) {
+    difference.delete(elem);
+  }
+  return difference;
+};

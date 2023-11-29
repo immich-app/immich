@@ -2,11 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/user.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
@@ -137,8 +137,8 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: suggestedShareUsers.when(
-        data: (users) {
+      body: suggestedShareUsers.widgetWhen(
+        onData: (users) {
           for (var sharedUsers in album.sharedUsers) {
             users.removeWhere(
               (u) => u.id == sharedUsers.id || u.id == album.ownerId,
@@ -147,10 +147,6 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
 
           return buildUserList(users);
         },
-        error: (e, _) => Text("Error loading suggested users $e"),
-        loading: () => const Center(
-          child: ImmichLoadingIndicator(),
-        ),
       ),
     );
   }

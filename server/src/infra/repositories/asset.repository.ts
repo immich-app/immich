@@ -326,6 +326,27 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  /**
+   * Get assets by device's Id on the database
+   * @param ownerId
+   * @param deviceId
+   *
+   * @returns Promise<string[]> - Array of assetIds belong to the device
+   */
+  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
+    const items = await this.repository.find({
+      select: { deviceAssetId: true },
+      where: {
+        ownerId,
+        deviceId,
+        isVisible: true,
+      },
+      withDeleted: true,
+    });
+
+    return items.map((asset) => asset.deviceAssetId);
+  }
+
   getById(id: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { id },

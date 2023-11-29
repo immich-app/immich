@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   e2e-tests:
-    name: Run server end-to-end tests
+    name: Server (e2e)
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
         run: make test-server-e2e
 
   doc-tests:
-    name: Run documentation checks
+    name: Docs
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -45,8 +45,12 @@ jobs:
         run: npm run check
         if: ${{ !cancelled() }}
 
+      - name: Run build
+        run: npm run build
+        if: ${{ !cancelled() }}
+
   server-unit-tests:
-    name: Run server checks and unit tests
+    name: Server
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -76,7 +80,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   cli-unit-tests:
-    name: Run cli checks and unit tests
+    name: CLI
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -111,7 +115,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   cli-e2e-tests:
-    name: Run cli end-to-end tests
+    name: CLI (e2e)
     strategy:
       matrix:
         os: [ubuntu-latest] # TODO: macos and windows
@@ -128,7 +132,7 @@ jobs:
         run: make test-cli-e2e
 
   web-unit-tests:
-    name: Run web unit test suites and checks
+    name: Web
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -162,7 +166,7 @@ jobs:
       #   if: ${{ !cancelled() }}
 
   mobile-unit-tests:
-    name: Run mobile unit tests
+    name: Mobile
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -176,7 +180,7 @@ jobs:
         run: flutter test -j 1
 
   ml-unit-tests:
-    name: Run ML unit tests and checks
+    name: Machine Learning
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -206,7 +210,7 @@ jobs:
           poetry run pytest --cov app
 
   generated-api-up-to-date:
-    name: Check generated files are up-to-date
+    name: OpenAPI Clients
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -227,11 +231,11 @@ jobs:
           exit 1
 
   generated-typeorm-migrations-up-to-date:
-    name: Check generated TypeORM migrations are up-to-date
+    name: TypeORM Migrations
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres
+        image: postgres@sha256:71da05df8c4f1e1bac9b92ebfba2a0eeb183f6ac6a972fd5e55e8146e29efe9c
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres

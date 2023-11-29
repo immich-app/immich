@@ -1,5 +1,6 @@
-FROM node:20.9-alpine3.18
+FROM node:iron-alpine3.18
 
+USER node
 WORKDIR /usr/src/app
 COPY --chown=node:node package*.json ./
 RUN npm ci

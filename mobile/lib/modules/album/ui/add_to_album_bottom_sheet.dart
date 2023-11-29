@@ -65,7 +65,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
       }
 
       ref.invalidate(albumDetailProvider(album.id));
-      Navigator.pop(context);
+      context.pop();
     }
 
     return Card(

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
@@ -15,7 +16,7 @@ import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
 
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
@@ -73,10 +74,9 @@ class SearchPage extends HookConsumerWidget {
     buildPeople() {
       return SizedBox(
         height: imageSize,
-        child: curatedPeople.when(
-          loading: () => const Center(child: ImmichLoadingIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (people) => CuratedPeopleRow(
+        child: curatedPeople.widgetWhen(
+          onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
+          onData: (people) => CuratedPeopleRow(
             content: people.take(12).toList(),
             onTap: (content, index) {
               context.autoPush(
@@ -97,10 +97,9 @@ class SearchPage extends HookConsumerWidget {
     buildPlaces() {
       return SizedBox(
         height: imageSize,
-        child: curatedLocation.when(
-          loading: () => const Center(child: ImmichLoadingIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (locations) => CuratedPlacesRow(
+        child: curatedLocation.widgetWhen(
+          onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
+          onData: (locations) => CuratedPlacesRow(
             isMapEnabled: isMapEnabled,
             content: locations
                 .map(
