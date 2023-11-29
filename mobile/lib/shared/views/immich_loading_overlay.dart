@@ -28,16 +28,20 @@ class _LoadingOverlay extends Hook<ValueNotifier<bool>> {
 class _LoadingOverlayState
     extends HookState<ValueNotifier<bool>, _LoadingOverlay> {
   late final _isProcessing = ValueNotifier(false)..addListener(_listener);
+  OverlayEntry? overlayEntry;
 
   void _listener() {
     setState(() {
-      if (_isProcessing.value) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_isProcessing.value) {
+          overlayEntry?.remove();
+          overlayEntry = _loadingEntry;
           Overlay.of(context).insert(_loadingEntry);
-        });
-      } else {
-        _loadingEntry.remove();
-      }
+        } else {
+          overlayEntry?.remove();
+          overlayEntry = null;
+        }
+      });
     });
   }
 
