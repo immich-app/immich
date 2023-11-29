@@ -23,7 +23,7 @@ services:
       - database
 
   database:
-    image: tensorchord/pgvecto-rs:pg14-v0.1.10
+    image: tensorchord/pgvecto-rs:pg14-v0.1.11
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
