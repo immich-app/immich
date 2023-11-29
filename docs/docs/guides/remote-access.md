@@ -23,7 +23,8 @@ You may use a VPN service to open an encrypted connection to your Immich instanc
 - Requires you to open a port on your router to your server.
 
 ## Option 2: Tailscale
-If you are unable to open a port on your router for Wireguard or OpenVPN to your server, [Tailscale](https://tailscale.com/) is a good option. Tailscale mediates a peer-to-peer wireguard tunnel between your server and remote device, even if one or both of them are behind a [NAT firewall](https://en.wikipedia.org/wiki/Network_address_translation). 
+
+If you are unable to open a port on your router for Wireguard or OpenVPN to your server, [Tailscale](https://tailscale.com/) is a good option. Tailscale mediates a peer-to-peer wireguard tunnel between your server and remote device, even if one or both of them are behind a [NAT firewall](https://en.wikipedia.org/wiki/Network_address_translation).
 
 ### Pros
 
@@ -31,11 +32,13 @@ If you are unable to open a port on your router for Wireguard or OpenVPN to your
 - You are protected against zero-day vulnerabilities on Immich.
 
 ### Cons
+
 - The Tailscale client usually needs to run as root on your devices and it increases the attack surface slightly compared to a minimal Wireguard server. e.g., an [RCE vulnerability](https://github.com/tailscale/tailscale/security/advisories/GHSA-vqp6-rc3h-83cp) was discovered in the Windows Tailscale client in November 2022.
 - Tailscale is a paid service. However, there is a generous [free tier](https://tailscale.com/pricing/) that permits up to 3 users and up to 100 devices.
 - Tailscale needs to be installed and running on both server-side and client-side.
 
 ## Option 3: Reverse Proxy
+
 A reverse proxy is a service that sits between web servers and clients. A reverse proxy can either be hosted on the server itself or remotely. Clients can connect to the reverse proxy via https, and the proxy relays data to Immich. This setup makes most sense if you have your own domain and want to access your Immich instance just like any other website, from outside your LAN. You can also use a DDNS provider like DuckDNS or no-ip if you don't have a domain. This configuration allows the Immich Android and iphone apps to connect to your server without a VPN or tailscale app on the client side.
 
 If you're hosting your own reverse proxy, [Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) is a great option. An example configuration for Nginx is provided [here](https://immich.app/docs/administration/reverse-proxy).
@@ -45,9 +48,11 @@ You'll also need your own certificate to authenticate https connections. If you'
 A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) increases security by hiding the server IP address, which makes targeted attacks like [DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/) harder.
 
 ### Pros
+
 - No additional software needs to be installed client-side
-- If you only need access to the web interface remotely, it is possible to set up access controls that shield you from zero-day vulnerabilities on Immich. [Cloudflare Access]((https://www.cloudflare.com/zero-trust/products/access/)) has a generous free tier.
+- If you only need access to the web interface remotely, it is possible to set up access controls that shield you from zero-day vulnerabilities on Immich. [Cloudflare Access](<(https://www.cloudflare.com/zero-trust/products/access/)>) has a generous free tier.
 
 ### Cons
+
 - Complex configuration
 - Depending on your configuration, both the Immich web interface and API may be exposed to the internet. Immich is under very active developement and the existence of severe security vulnerabilities cannot be ruled out.
