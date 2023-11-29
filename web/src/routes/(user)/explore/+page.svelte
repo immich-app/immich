@@ -80,7 +80,7 @@
         <p class="mb-4 font-medium dark:text-immich-dark-fg">Places</p>
       </div>
       <div class="flex flex-row flex-wrap gap-4">
-        {#each places as item}
+        {#each places as item (item.data.id)}
           <a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"

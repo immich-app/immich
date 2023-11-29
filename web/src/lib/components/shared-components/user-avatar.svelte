@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-  import { imageLoad } from '$lib/utils/image-load';
+  import { onMount, tick } from 'svelte';
   import { UserAvatarColor, api } from '@api';
 
   interface User {
@@ -22,7 +22,18 @@
   export let showTitle = true;
   export let showProfileImage = true;
 
+  let img: HTMLImageElement;
   let showFallback = true;
+
+  onMount(async () => {
+    if (!user.profileImagePath) {
+      return;
+    }
+
+    await img.decode();
+    await tick();
+    showFallback = false;
+  });
 
   const colorClasses: Record<UserAvatarColor, string> = {
     primary: 'bg-immich-primary dark:bg-immich-dark-primary text-immich-dark-fg dark:text-immich-fg',
@@ -62,13 +73,12 @@
 >
   {#if showProfileImage && user.profileImagePath}
     <img
+      bind:this={img}
       src={api.getProfileImageUrl(user.id)}
       alt="Profile image of {title}"
       class="h-full w-full object-cover"
       class:hidden={showFallback}
       draggable="false"
-      use:imageLoad
-      on:image-load={() => (showFallback = false)}
     />
   {/if}
   {#if showFallback}
