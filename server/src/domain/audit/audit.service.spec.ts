@@ -1,8 +1,8 @@
 import { DatabaseAction, EntityType } from '@app/infra/entities';
 import {
+  IAccessRepositoryMock,
   auditStub,
   authStub,
-  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newAuditRepositoryMock,
