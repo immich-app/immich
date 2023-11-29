@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   e2e-tests:
-    name: Run end-to-end test suites
+    name: Server (e2e)
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
         run: docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
   doc-tests:
-    name: Run documentation checks
+    name: Docs
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -50,7 +50,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   server-unit-tests:
-    name: Run server unit test suites and checks
+    name: Server
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -80,7 +80,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   cli-unit-tests:
-    name: Run cli test suites
+    name: CLI
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -110,7 +110,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   web-unit-tests:
-    name: Run web unit test suites and checks
+    name: Web
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -144,7 +144,7 @@ jobs:
       #   if: ${{ !cancelled() }}
 
   mobile-unit-tests:
-    name: Run mobile unit tests
+    name: Mobile
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -158,7 +158,7 @@ jobs:
         run: flutter test -j 1
 
   ml-unit-tests:
-    name: Run ML unit tests and checks
+    name: Machine Learning
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -188,7 +188,7 @@ jobs:
           poetry run pytest --cov app
 
   generated-api-up-to-date:
-    name: Check generated files are up-to-date
+    name: OpenAPI Clients
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -209,7 +209,7 @@ jobs:
           exit 1
 
   generated-typeorm-migrations-up-to-date:
-    name: Check generated TypeORM migrations are up-to-date
+    name: TypeORM Migrations
     runs-on: ubuntu-latest
     services:
       postgres:
