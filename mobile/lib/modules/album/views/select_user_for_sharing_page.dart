@@ -42,7 +42,12 @@ class SelectUserForSharingPage extends HookConsumerWidget {
 
       ScaffoldMessenger(
         child: SnackBar(
-          content: const Text('select_user_for_sharing_page_err_album').tr(),
+          content: Text(
+            'select_user_for_sharing_page_err_album',
+            style: context.textTheme.bodyLarge?.copyWith(
+              color: context.primaryColor,
+            ),
+          ).tr(),
         ),
       );
     }
