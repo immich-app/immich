@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
@@ -9,7 +10,6 @@ import 'package:immich_mobile/modules/album/providers/suggested_shared_users.pro
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 class SelectUserForSharingPage extends HookConsumerWidget {
@@ -42,7 +42,12 @@ class SelectUserForSharingPage extends HookConsumerWidget {
 
       ScaffoldMessenger(
         child: SnackBar(
-          content: const Text('select_user_for_sharing_page_err_album').tr(),
+          content: Text(
+            'select_user_for_sharing_page_err_album',
+            style: context.textTheme.bodyLarge?.copyWith(
+              color: context.primaryColor,
+            ),
+          ).tr(),
         ),
       );
     }
@@ -166,14 +171,10 @@ class SelectUserForSharingPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: suggestedShareUsers.when(
-        data: (users) {
+      body: suggestedShareUsers.widgetWhen(
+        onData: (users) {
           return buildUserList(users);
         },
-        error: (e, _) => Text("Error loading suggested users $e"),
-        loading: () => const Center(
-          child: ImmichLoadingIndicator(),
-        ),
       ),
     );
   }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class PartnerDetailPage extends HookConsumerWidget {
@@ -71,8 +71,8 @@ class PartnerDetailPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: assets.when(
-        data: (renderList) => renderList.isEmpty
+      body: assets.widgetWhen(
+        onData: (renderList) => renderList.isEmpty
             ? Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
@@ -84,8 +84,6 @@ class PartnerDetailPage extends HookConsumerWidget {
                 onRefresh: () =>
                     ref.read(assetProvider.notifier).getPartnerAssets(partner),
               ),
-        error: (e, _) => Text("Error loading partners:\n$e"),
-        loading: () => const Center(child: ImmichLoadingIndicator()),
       ),
     );
   }

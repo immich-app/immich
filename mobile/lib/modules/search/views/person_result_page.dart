@@ -8,7 +8,6 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart'
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/shared/models/store.dart' as isar_store;
-import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PersonResultPage extends HookConsumerWidget {
@@ -112,7 +111,7 @@ class PersonResultPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: ref.watch(personAssetsProvider(personId)).scaffoldBodyWhen(
+      body: ref.watch(personAssetsProvider(personId)).widgetWhen(
             onData: (renderList) => ImmichAssetGrid(
               renderList: renderList,
               topWidget: Padding(
@@ -137,7 +136,6 @@ class PersonResultPage extends HookConsumerWidget {
                 ),
               ),
             ),
-            onError: const ScaffoldErrorBody(icon: Icons.person_off_outlined),
           ),
     );
   }

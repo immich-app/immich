@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
@@ -17,7 +18,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
@@ -260,13 +260,11 @@ class AlbumViewerPage extends HookConsumerWidget {
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
       ),
-      body: album.when(
-        data: (data) => WillPopScope(
+      body: album.widgetWhen(
+        onData: (data) => WillPopScope(
           onWillPop: onWillPop,
           child: GestureDetector(
-            onTap: () {
-              titleFocusNode.unfocus();
-            },
+            onTap: () => titleFocusNode.unfocus(),
             child: ImmichAssetGrid(
               renderList: data.renderList,
               listener: selectionListener,
@@ -284,10 +282,6 @@ class AlbumViewerPage extends HookConsumerWidget {
                   data.shared && data.activityEnabled ? data.remoteId : null,
             ),
           ),
-        ),
-        error: (e, _) => Center(child: Text("Error loading album info!\n$e")),
-        loading: () => const Center(
-          child: ImmichLoadingIndicator(),
         ),
       ),
     );
