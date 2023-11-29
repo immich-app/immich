@@ -1,41 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
-class ImmichLoadingOverlay extends StatelessWidget {
-  const ImmichLoadingOverlay({
-    Key? key,
-  }) : super(key: key);
+final _loadingEntry = OverlayEntry(
+  builder: (context) => SizedBox.square(
+    dimension: double.infinity,
+    child: DecoratedBox(
+      decoration:
+          BoxDecoration(color: context.colorScheme.surface.withAlpha(200)),
+      child: const Center(child: ImmichLoadingIndicator()),
+    ),
+  ),
+);
 
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable:
-          ImmichLoadingOverlayController.appLoader.loaderShowingNotifier,
-      builder: (context, shouldShow, child) {
-        return shouldShow
-            ? const Scaffold(
-                backgroundColor: Colors.black54,
-                body: Center(
-                  child: ImmichLoadingIndicator(),
-                ),
-              )
-            : const SizedBox();
-      },
-    );
-  }
+ValueNotifier<bool> useProcessingOverlay() {
+  return use(const _LoadingOverlay());
 }
 
-class ImmichLoadingOverlayController {
-  static final ImmichLoadingOverlayController appLoader =
-      ImmichLoadingOverlayController();
-  ValueNotifier<bool> loaderShowingNotifier = ValueNotifier(false);
-  ValueNotifier<String> loaderTextNotifier = ValueNotifier('error message');
+class _LoadingOverlay extends Hook<ValueNotifier<bool>> {
+  const _LoadingOverlay();
 
-  void show() {
-    loaderShowingNotifier.value = true;
+  @override
+  _LoadingOverlayState createState() => _LoadingOverlayState();
+}
+
+class _LoadingOverlayState
+    extends HookState<ValueNotifier<bool>, _LoadingOverlay> {
+  late final _isProcessing = ValueNotifier(false)..addListener(_listener);
+  OverlayEntry? overlayEntry;
+
+  void _listener() {
+    setState(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_isProcessing.value) {
+          overlayEntry?.remove();
+          overlayEntry = _loadingEntry;
+          Overlay.of(context).insert(_loadingEntry);
+        } else {
+          overlayEntry?.remove();
+          overlayEntry = null;
+        }
+      });
+    });
   }
 
-  void hide() {
-    loaderShowingNotifier.value = false;
+  @override
+  ValueNotifier<bool> build(BuildContext context) {
+    return _isProcessing;
   }
+
+  @override
+  void dispose() {
+    _isProcessing.dispose();
+    super.dispose();
+  }
+
+  @override
+  Object? get debugValue => _isProcessing.value;
+
+  @override
+  String get debugLabel => 'useProcessingOverlay<>';
 }

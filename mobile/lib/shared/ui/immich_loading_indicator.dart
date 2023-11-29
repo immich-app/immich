@@ -21,7 +21,7 @@ class ImmichLoadingIndicator extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       child: const CircularProgressIndicator(
         color: Colors.white,
-        strokeWidth: 2,
+        strokeWidth: 3,
       ),
     );
   }

@@ -12,8 +12,8 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class TrashPage extends HookConsumerWidget {
   const TrashPage({super.key});
@@ -25,7 +25,7 @@ class TrashPage extends HookConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
     final selectionEnabledHook = useState(false);
     final selection = useState(<Asset>{});
-    final processing = useState(false);
+    final processing = useProcessingOverlay();
 
     void selectionListener(
       bool multiselect,
@@ -261,8 +261,6 @@ class TrashPage extends HookConsumerWidget {
                     ),
                   ),
                   if (selectionEnabledHook.value) buildBottomBar(),
-                  if (processing.value)
-                    const Center(child: ImmichLoadingIndicator()),
                 ],
               ),
       ),

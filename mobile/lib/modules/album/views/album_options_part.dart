@@ -24,6 +24,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final owner = album.owner.value;
     final userId = ref.watch(authenticationProvider).userId;
     final activityEnabled = useState(album.activityEnabled);
+    final isProcessing = useProcessingOverlay();
     final isOwner = owner?.id == userId;
 
     void showErrorMessage() {
@@ -37,7 +38,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     }
 
     void leaveAlbum() async {
-      ImmichLoadingOverlayController.appLoader.show();
+      isProcessing.value = true;
 
       try {
         final isSuccess =
@@ -54,11 +55,11 @@ class AlbumOptionsPage extends HookConsumerWidget {
         showErrorMessage();
       }
 
-      ImmichLoadingOverlayController.appLoader.hide();
+      isProcessing.value = false;
     }
 
     void removeUserFromAlbum(User user) async {
-      ImmichLoadingOverlayController.appLoader.show();
+      isProcessing.value = true;
 
       try {
         await ref
@@ -71,7 +72,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       }
 
       context.pop();
-      ImmichLoadingOverlayController.appLoader.hide();
+      isProcessing.value = false;
     }
 
     void handleUserClick(User user) {

@@ -45,7 +45,7 @@ class ImmichTestHelper {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [dbProvider.overrideWithValue(db)],
-        child: app.getMainWidget(),
+        child: const app.MainWidget(),
       ),
     );
     // Post run tasks

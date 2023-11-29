@@ -33,6 +33,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     final userId = ref.watch(authenticationProvider).userId;
     final selection = useState<Set<Asset>>({});
     final multiSelectEnabled = useState(false);
+    final isProcessing = useProcessingOverlay();
 
     useEffect(
       () {
@@ -75,24 +76,21 @@ class AlbumViewerPage extends HookConsumerWidget {
         ),
       );
 
-      if (returnPayload != null) {
+      if (returnPayload != null && returnPayload.selectedAssets.isNotEmpty) {
         // Check if there is new assets add
-        if (returnPayload.selectedAssets.isNotEmpty) {
-          ImmichLoadingOverlayController.appLoader.show();
+        isProcessing.value = true;
 
-          var addAssetsResult =
-              await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
-                    returnPayload.selectedAssets,
-                    albumInfo,
-                  );
+        var addAssetsResult =
+            await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
+                  returnPayload.selectedAssets,
+                  albumInfo,
+                );
 
-          if (addAssetsResult != null &&
-              addAssetsResult.successfullyAdded > 0) {
-            ref.invalidate(albumDetailProvider(albumId));
-          }
-
-          ImmichLoadingOverlayController.appLoader.hide();
+        if (addAssetsResult != null && addAssetsResult.successfullyAdded > 0) {
+          ref.invalidate(albumDetailProvider(albumId));
         }
+
+        isProcessing.value = false;
       }
     }
 
@@ -102,7 +100,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
 
       if (sharedUserIds != null) {
-        ImmichLoadingOverlayController.appLoader.show();
+        isProcessing.value = true;
 
         var isSuccess = await ref
             .watch(albumServiceProvider)
@@ -112,7 +110,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           ref.invalidate(albumDetailProvider(album.id));
         }
 
-        ImmichLoadingOverlayController.appLoader.hide();
+        isProcessing.value = false;
       }
     }
 
