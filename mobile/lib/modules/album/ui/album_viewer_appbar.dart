@@ -90,7 +90,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             ),
             actions: <Widget>[
               TextButton(
-                onPressed: () => Navigator.pop(context, 'Cancel'),
+                onPressed: () => context.pop('Cancel'),
                 child: Text(
                   'Cancel',
                   style: TextStyle(
@@ -101,7 +101,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context, 'Confirm');
+                  context.pop('Confirm');
                   deleteAlbum();
                 },
                 child: Text(
@@ -132,7 +132,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         context
             .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
       } else {
-        Navigator.pop(context);
+        context.pop();
         ImmichToast.show(
           context: context,
           msg: "album_viewer_appbar_share_err_leave".tr(),
@@ -154,12 +154,12 @@ class AlbumViewerAppbar extends HookConsumerWidget
               );
 
       if (isSuccess) {
-        Navigator.pop(context);
+        context.pop();
         selectionDisabled();
         ref.watch(albumProvider.notifier).getAllAlbums();
         ref.invalidate(albumDetailProvider(album.id));
       } else {
-        Navigator.pop(context);
+        context.pop();
         ImmichToast.show(
           context: context,
           msg: "album_viewer_appbar_share_err_remove".tr(),
@@ -287,7 +287,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ListTile(
           leading: const Icon(Icons.add_photo_alternate_outlined),
           onTap: () {
-            Navigator.pop(context);
+            context.pop();
             onAddPhotos!(album);
           },
           title: const Text(

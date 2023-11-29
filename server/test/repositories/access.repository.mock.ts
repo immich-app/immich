@@ -36,24 +36,24 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
     },
 
     authDevice: {
-      hasOwnerAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     library: {
-      hasOwnerAccess: jest.fn(),
-      hasPartnerAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     timeline: {
-      hasPartnerAccess: jest.fn(),
+      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     person: {
-      hasOwnerAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     partner: {
-      hasUpdateAccess: jest.fn(),
+      checkUpdateAccess: jest.fn().mockResolvedValue(new Set()),
     },
   };
 };

@@ -28,7 +28,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final isOwner = owner?.id == userId;
 
     void showErrorMessage() {
-      Navigator.pop(context);
+      context.pop();
       ImmichToast.show(
         context: context,
         msg: "shared_album_section_people_action_error".tr(),
@@ -71,7 +71,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         showErrorMessage();
       }
 
-      Navigator.pop(context);
+      context.pop();
       isProcessing.value = false;
     }
 

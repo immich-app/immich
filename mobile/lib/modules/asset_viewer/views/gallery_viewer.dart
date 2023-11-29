@@ -514,7 +514,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                               currentAsset,
                               stackElements.elementAt(stackIndex.value),
                             );
-                        Navigator.pop(ctx);
+                        ctx.pop();
                         context.autoPop();
                       },
                       title: const Text(
@@ -541,7 +541,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                           stackElements.elementAt(1),
                           childrenToRemove: [currentAsset],
                         );
-                        Navigator.pop(ctx);
+                        ctx.pop();
                         context.autoPop();
                       } else {
                         await ref.read(assetStackServiceProvider).updateStack(
@@ -551,7 +551,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                           ],
                         );
                         removeAssetFromStack();
-                        Navigator.pop(ctx);
+                        ctx.pop();
                       }
                     },
                     title: const Text(
@@ -569,7 +569,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                             currentAsset,
                             childrenToRemove: stack,
                           );
-                      Navigator.pop(ctx);
+                      ctx.pop();
                       context.autoPop();
                     },
                     title: const Text(
