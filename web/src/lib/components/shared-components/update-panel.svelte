@@ -27,7 +27,7 @@
           });
         } else {
           notificationController.show({
-            message: `${assetUpdateCount} assets updated.\nPlease reload to apply changes`,
+            message: `${assetUpdateCount} assets updated.`,
             type: NotificationType.Info,
           });
         }

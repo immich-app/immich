@@ -50,7 +50,7 @@
   const handleConfirm = () => {
     let date = DateTime.fromISO(selectedDate);
     if (selectedTimezone != null) {
-      date = date.setZone(selectedTimezone);
+      date = date.setZone(selectedTimezone, { keepLocalTime: true }); // Keep local time if not it's really confusing
     }
 
     const value = date.toISO();
