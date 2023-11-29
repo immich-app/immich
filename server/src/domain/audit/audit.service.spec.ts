@@ -1,8 +1,8 @@
 import { DatabaseAction, EntityType } from '@app/infra/entities';
 import {
-  IAccessRepositoryMock,
   auditStub,
   authStub,
+  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newAuditRepositoryMock,
@@ -61,7 +61,7 @@ describe(AuditService.name, () => {
       await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({
         needsFullSync: true,
         ids: [],
-        timeOfRequest: expect.any(Date),
+        requestedAt: expect.any(Date),
       });
 
       expect(auditMock.getAfter).toHaveBeenCalledWith(date, {
@@ -78,7 +78,7 @@ describe(AuditService.name, () => {
       await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({
         needsFullSync: false,
         ids: ['asset-deleted'],
-        timeOfRequest: expect.any(Date),
+        requestedAt: expect.any(Date),
       });
 
       expect(auditMock.getAfter).toHaveBeenCalledWith(date, {
