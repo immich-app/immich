@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { doc } from 'prettier';
-  import { onMount } from 'svelte';
   import 'context-filter-polyfill'; // polyfill for canvas filters
 
   export let editedImage;

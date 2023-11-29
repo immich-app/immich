@@ -603,6 +603,7 @@
         on:asProfileImage={() => (isShowProfileImageCrop = true)}
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={handlePlaySlideshow}
+        on:unstack={handleUnstack}
         on:edit={() => (shouldShowPhotoEditor = true)}
       />
     </div>

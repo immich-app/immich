@@ -11,7 +11,7 @@
   let imgElement: HTMLImageElement;
 
   import Icon from '$lib/components/elements/icon.svelte';
-  import mdiCheck from '@mdi/js';
+  import { mdiCheck } from '@mdi/js';
   import { presets as presetsObject } from './filter';
 
   type Preset = {
@@ -62,7 +62,7 @@
       ? ''
       : 'hidden'}"
   >
-  <Icon path=mdiCheck />
+  <Icon path={mdiCheck} />
   </div>
   <img
     bind:this={imgElement}

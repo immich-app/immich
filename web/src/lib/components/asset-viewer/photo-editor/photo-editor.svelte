@@ -1,10 +1,7 @@
 <script lang="ts">
   import { onMount, SvelteComponent } from 'svelte';
-  import { browser } from '$app/environment';
   import { api, AssetResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
 
   import Icon from '$lib/components/elements/icon.svelte';
 
@@ -787,7 +784,7 @@
       on:click={() => dispatch('close')}
       class="hover:bg-immich-gray/10 ml-4 rounded-full p-3 text-2xl text-white"
     >
-    <Icon path={mdiClose} />
+      <Icon path={mdiClose} />
     </button>
     <button
       on:click={() => save()}
@@ -856,7 +853,7 @@
             on:click={() => flipHorizontal()}
             class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
           >
-          <Icon path={mdiFlipHorizontal} />
+            <Icon path={mdiFlipHorizontal} />
           </button>
 
           <button on:click={() => flipVertical()} class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white">
@@ -868,7 +865,7 @@
             on:click={() => rotate(currentAngle, currentAngleOffset + 90, true)}
             class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
           >
-          <Icon path={mdiFormatRotate90} />
+            <Icon path={mdiFormatRotate90} />
           </button>
         </div>
 
@@ -978,7 +975,7 @@
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'crop'}
     >
-    <Icon path={mdiCropRotate} size="1.5em" />
+      <Icon path={mdiCropRotate} size="1.5em" />
       <div
         class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'crop'}
@@ -989,7 +986,7 @@
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'adjust'}
     >
-    <Icon path={mdiTune} size="1.5em" />
+      <Icon path={mdiTune} size="1.5em" />
       <div
         class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'adjust'}
@@ -1000,7 +997,7 @@
       class="text-immich-gray/70 hover:text-immich-gray hover:bg-immich-gray/5 active:text-immich-dark-primary relative flex w-1/4 items-center justify-center"
       class:active={activeButton === 'filter'}
     >
-    <Icon path={mdiImageAutoAdjust} size="1.5em" />
+      <Icon path={mdiImageAutoAdjust} size="1.5em" />
       <div
         class="bg-immich-dark-primary absolute bottom-0 hidden h-[3px] w-6 rounded-t-full"
         class:active={activeButton == 'filter'}
@@ -1017,14 +1014,14 @@
           isActive={activeEdit === 'optimized'}
           on:click={() => navigateEdit('optimized')}
         >
-        <Icon path={mdiAutoFix} size="1.5em" />
+          <Icon path={mdiAutoFix} size="1.5em" />
         </SuggestionsButton>
         <SuggestionsButton
           buttonName="Dynamic"
           isActive={activeEdit === 'dynamic'}
           on:click={() => navigateEdit('dynamic')}
         >
-        <Icon path={mdiImageFilterHdr} size="1.5em" />
+          <Icon path={mdiImageFilterHdr} size="1.5em" />
         </SuggestionsButton>
         <SuggestionsButton buttonName="Warm" isActive={activeEdit === 'warm'} on:click={() => navigateEdit('warm')}>
           <Icon path={mdiWeatherSunny} size="1.5em" />
@@ -1043,14 +1040,14 @@
             isActive={currentAspectRatio === 'free'}
             title="Free"
           >
-          <Icon path={mdiFullscreen} size="1.5em" />
+            <Icon path={mdiFullscreen} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton
             on:click={() => setAspectRatio('original')}
             isActive={currentAspectRatio === 'original'}
             title="Original"
           >
-          <Icon path={mdiRelativeScale} size="1.5em" />
+            <Icon path={mdiRelativeScale} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton
             on:click={() => setAspectRatio('16_9')}
@@ -1064,7 +1061,7 @@
             isActive={currentAspectRatio === '9_16'}
             title="9:16"
           >
-          <Icon path={mdiRectangleOutline} size="1.5em" />
+            <Icon path={mdiRectangleOutline} size="1.5em" />
           </AspectRatioButton>
           <AspectRatioButton on:click={() => setAspectRatio('5_4')} isActive={currentAspectRatio === '5_4'} title="5:4">
             <Icon path={mdiRectangleOutline} size="1.5em" />
@@ -1089,7 +1086,7 @@
             isActive={currentAspectRatio === 'square'}
             title="Square"
           >
-          <Icon path={mdiSquareOutline} size="1.5em" />
+            <Icon path={mdiSquareOutline} size="1.5em" />
           </AspectRatioButton>
         </div>
       </div>
