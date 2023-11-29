@@ -200,6 +200,10 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
-    await exiftool.write(path, tags, ['-overwrite_original']);
+  
+    await exiftool.write(path, tags, ['-overwrite_original']).catch((error) => {
+      this.logger.warn(`Error writing exif data (${path}): ${error}`, error?.stack);
+      return null;
+    });
   }
 }
