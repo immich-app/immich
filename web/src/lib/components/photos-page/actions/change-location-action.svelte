@@ -28,7 +28,10 @@
           longitude: point.lng,
         },
       });
-      notificationController.show({ message: 'Updating location please wait', type: NotificationType.Info });
+      notificationController.show({
+        message: 'Updating location you can reload to see change',
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Unable to update location');
     }

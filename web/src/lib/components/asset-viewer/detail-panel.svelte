@@ -5,7 +5,7 @@
   import { getAssetFilename } from '$lib/utils/asset-utils';
   import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
@@ -22,10 +22,10 @@
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Map from '../shared-components/map/map.svelte';
-  import { websocketStore } from '$lib/stores/websocket';
   import { AppRoute } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -56,16 +56,6 @@
   })();
 
   $: people = asset.people || [];
-
-  const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
-    if (assetUpdate && assetUpdate.id === asset.id) {
-      asset = assetUpdate;
-    }
-  });
-
-  onDestroy(() => {
-    unsubscribe();
-  });
 
   const dispatch = createEventDispatcher();
 
@@ -110,6 +100,10 @@
     isShowChangeDate = false;
     try {
       await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+      notificationController.show({
+        message: 'The date has been changed successfully, please reload to see the changes.',
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Unable to change date');
     }
@@ -127,6 +121,10 @@
           latitude: gps.lat,
           longitude: gps.lng,
         },
+      });
+      notificationController.show({
+        message: 'The location has been changed successfully, please reload to see the changes.',
+        type: NotificationType.Info,
       });
     } catch (error) {
       handleError(error, 'Unable to change location');

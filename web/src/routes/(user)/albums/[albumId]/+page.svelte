@@ -58,7 +58,6 @@
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
-  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -755,5 +754,3 @@
     on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}
-
-<UpdatePanel {assetStore} />
