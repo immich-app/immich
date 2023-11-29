@@ -17,12 +17,14 @@
   export let circle = false;
   export let hidden = false;
   export let border = false;
+  export let preload = true;
   let complete = false;
 
   export let eyeColor: 'black' | 'white' = 'white';
 </script>
 
 <img
+  loading={preload ? 'eager' : 'lazy'}
   style:width={widthStyle}
   style:height={heightStyle}
   style:filter={hidden ? 'grayscale(50%)' : 'none'}
