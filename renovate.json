@@ -7,7 +7,13 @@
       "matchFileNames": ["cli/**"],
       "groupName": "@immich/cli",
       "matchUpdateTypes": ["minor", "patch"],
-      "schedule": "on monday"
+      "schedule": "on tuesday"
+    },
+    {
+      "matchFileNames": ["docs/**"],
+      "groupName": "docs",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": ["mobile/**"],
@@ -20,29 +26,29 @@
       "groupName": "server",
       "matchUpdateTypes": ["minor", "patch"],
       "excludePackagePrefixes": ["exiftool"],
-      "schedule": "on wednesday"
+      "schedule": "on tuesday"
     },
     {
       "groupName": "exiftool",
       "matchPackagePrefixes": ["exiftool"],
-      "schedule": "on monday"
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": ["web/**"],
       "groupName": "web",
       "matchUpdateTypes": ["minor", "patch"],
-      "schedule": "on thursday"
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": ["machine-learning/**"],
       "groupName": "machine-learning",
       "matchUpdateTypes": ["minor", "patch"],
-      "schedule": "on friday"
+      "schedule": "on tuesday"
     },
     {
       "matchFileNames": [".github/**"],
       "groupName": "github-actions",
-      "schedule": "on friday"
+      "schedule": "on tuesday"
     },
     {
       "groupName": "base-image",
