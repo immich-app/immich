@@ -15,7 +15,7 @@ class AuditDeletesResponseDto {
   AuditDeletesResponseDto({
     this.ids = const [],
     required this.needsFullSync,
-    this.timeOfRequest,
+    this.requestedAt,
   });
 
   List<String> ids;
@@ -28,32 +28,32 @@ class AuditDeletesResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DateTime? timeOfRequest;
+  DateTime? requestedAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AuditDeletesResponseDto &&
      other.ids == ids &&
      other.needsFullSync == needsFullSync &&
-     other.timeOfRequest == timeOfRequest;
+     other.requestedAt == requestedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (ids.hashCode) +
     (needsFullSync.hashCode) +
-    (timeOfRequest == null ? 0 : timeOfRequest!.hashCode);
+    (requestedAt == null ? 0 : requestedAt!.hashCode);
 
   @override
-  String toString() => 'AuditDeletesResponseDto[ids=$ids, needsFullSync=$needsFullSync, timeOfRequest=$timeOfRequest]';
+  String toString() => 'AuditDeletesResponseDto[ids=$ids, needsFullSync=$needsFullSync, requestedAt=$requestedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'ids'] = this.ids;
       json[r'needsFullSync'] = this.needsFullSync;
-    if (this.timeOfRequest != null) {
-      json[r'timeOfRequest'] = this.timeOfRequest!.toUtc().toIso8601String();
+    if (this.requestedAt != null) {
+      json[r'requestedAt'] = this.requestedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'timeOfRequest'] = null;
+    //  json[r'requestedAt'] = null;
     }
     return json;
   }
@@ -70,7 +70,7 @@ class AuditDeletesResponseDto {
             ? (json[r'ids'] as List).cast<String>()
             : const [],
         needsFullSync: mapValueOfType<bool>(json, r'needsFullSync')!,
-        timeOfRequest: mapDateTime(json, r'timeOfRequest', ''),
+        requestedAt: mapDateTime(json, r'requestedAt', ''),
       );
     }
     return null;

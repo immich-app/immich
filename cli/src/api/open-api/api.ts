@@ -964,7 +964,7 @@ export interface AuditDeletesResponseDto {
      * @type {string}
      * @memberof AuditDeletesResponseDto
      */
-    'timeOfRequest'?: string;
+    'requestedAt'?: string;
 }
 /**
  * 

@@ -61,7 +61,7 @@ export class AuditService {
     });
 
     return {
-      timeOfRequest: now.toJSDate(),
+      requestedAt: now.toJSDate(),
       needsFullSync: duration > AUDIT_LOG_MAX_DURATION,
       ids: audits.map(({ entityId }) => entityId),
     };

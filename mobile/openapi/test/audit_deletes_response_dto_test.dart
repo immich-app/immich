@@ -26,8 +26,8 @@ void main() {
       // TODO
     });
 
-    // DateTime timeOfRequest
-    test('to test the property `timeOfRequest`', () async {
+    // DateTime requestedAt
+    test('to test the property `requestedAt`', () async {
       // TODO
     });
 

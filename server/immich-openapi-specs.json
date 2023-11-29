@@ -6827,7 +6827,7 @@
           "needsFullSync": {
             "type": "boolean"
           },
-          "timeOfRequest": {
+          "requestedAt": {
             "format": "date-time",
             "type": "string"
           }

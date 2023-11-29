@@ -54,15 +54,15 @@ class AssetService {
     final deleted = await _apiService.auditApi
         .getAuditDeletes(EntityType.ASSET, since, userId: user.id);
     if (deleted == null || deleted.needsFullSync) {
-      return (null, null, deleted?.timeOfRequest);
+      return (null, null, deleted?.requestedAt);
     }
     final assetDto = await _apiService.assetApi
         .getAllAssets(userId: user.id, updatedAfter: since);
-    if (assetDto == null) return (null, null, deleted.timeOfRequest);
+    if (assetDto == null) return (null, null, deleted.requestedAt);
     return (
       assetDto.map(Asset.remote).toList(),
       deleted.ids,
-      deleted.timeOfRequest
+      deleted.requestedAt
     );
   }
 
