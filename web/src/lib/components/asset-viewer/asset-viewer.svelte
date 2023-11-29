@@ -179,7 +179,7 @@
       getFavorite();
       getNumberOfComments();
     }
-  } 
+  }
   let shouldShowPhotoEditor = false;
 
   const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo);
