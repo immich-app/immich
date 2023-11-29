@@ -24,7 +24,7 @@
     "@mdx-js/react": "^1.6.22",
     "autoprefixer": "^10.4.13",
     "classnames": "^2.3.2",
-    "clsx": "^1.2.1",
+    "clsx": "^2.0.0",
     "docusaurus-lunr-search": "^2.3.2",
     "docusaurus-preset-openapi": "^0.6.3",
     "postcss": "^8.4.25",
