@@ -144,8 +144,8 @@
   $: currentRatio = originalImage ? originalImage.naturalWidth / imageWrapper.offsetWidth : 0;
 
   const isFilter = (f: Preset) => {
-    if (!f) return false;
-    if (
+    return (
+      f &&
       f.blur === filter.blur &&
       f.brightness === filter.brightness &&
       f.contrast === filter.contrast &&
@@ -155,25 +155,10 @@
       f.opacity === filter.opacity &&
       f.saturation === filter.saturation &&
       f.sepia === filter.sepia
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  /*
-  
-  const isFilter = (f: Preset) => {
-    const testEntries = ["blur", "brightness", "contrast", "grayscale", "hueRotate", "invert", "opacity", "saturation", "sepia"];
-    if (!f) return false;
-    testEntries.forEach(entry => {
-      if (f[entry] !== filter[entry]) return false;
-    });
-    return true;
+    );
   };
   
-  */
+  
 
   const applyFilter = () => {
     if (!isFilter(presets[currentFilter] as Preset)) {
