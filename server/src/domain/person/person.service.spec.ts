@@ -31,7 +31,7 @@ import {
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
-import { PersonResponseDto } from './person.dto';
+import { PersonResponseDto, mapFaces } from './person.dto';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
@@ -388,17 +388,27 @@ describe(PersonService.name, () => {
     });
     it('should reassign a face', async () => {
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.withName.id]));
-      personMock.getById.mockResolvedValue(personStub.withName);
+      personMock.getById.mockResolvedValue(personStub.noName);
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       personMock.reassignFace.mockResolvedValue(1);
-      personMock.getRandomFace.mockResolvedValue(null);
+      personMock.getRandomFace.mockResolvedValue(faceStub.primaryFace1);
       await expect(
         sut.reassignFaces(authStub.admin, personStub.noName.id, {
           data: [{ personId: personStub.withName.id, assetId: assetStub.image.id }],
         }),
-      ).resolves.toEqual([personStub.withName]);
+      ).resolves.toEqual([personStub.noName]);
 
-      expect(jobMock.queue).not.toHaveBeenCalledWith();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_PERSON_THUMBNAIL,
+        data: { id: personStub.newThumbnail.id },
+      });
+    });
+  });
+
+  describe('handlePersonMigration', () => {
+    it('should not move person files', async () => {
+      personMock.getById.mockResolvedValue(null);
+      await expect(sut.handlePersonMigration(personStub.noName)).resolves.toStrictEqual(false);
     });
   });
 
@@ -407,22 +417,7 @@ describe(PersonService.name, () => {
       accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
       await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
-        {
-          id: faceStub.face1.id,
-          imageHeight: faceStub.face1.imageHeight,
-          imageWidth: faceStub.face1.imageWidth,
-          boundingBoxX1: faceStub.face1.boundingBoxX1,
-          boundingBoxX2: faceStub.face1.boundingBoxX2,
-          boundingBoxY1: faceStub.face1.boundingBoxY1,
-          boundingBoxY2: faceStub.face1.boundingBoxY2,
-          person: {
-            id: 'person-1',
-            name: 'Person 1',
-            birthDate: null,
-            thumbnailPath: '/path/to/thumbnail',
-            isHidden: false,
-          },
-        },
+        mapFaces(faceStub.primaryFace1),
       ]);
     });
     it('should reject if the user has not access to the asset', async () => {

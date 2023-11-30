@@ -40,7 +40,7 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
-    faceAssetId: null,
+    faceAssetId: 'assetFaceId',
     faceAsset: null,
     isHidden: false,
   }),

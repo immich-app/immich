@@ -155,11 +155,3 @@ export function mapFaces(face: AssetFaceEntity): AssetFaceResponseDto {
     person: face.person ? mapPerson(face.person) : null,
   };
 }
-
-export function mapFace(face: AssetFaceEntity): PersonResponseDto | null {
-  if (face.person) {
-    return mapPerson(face.person);
-  }
-
-  return null;
-}
