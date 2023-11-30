@@ -112,15 +112,21 @@
     if (people) {
       suggestedPeople = !name
         ? []
-        : people
-            .filter((person: PersonResponseDto) => {
-              const nameParts = person.name.split(' ');
-              return (
-                nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase())) &&
-                person.id !== data.person.id
-              );
-            })
-            .slice(0, 5);
+        : name.indexOf(' ') >= 0
+          ? people
+              .filter((person: PersonResponseDto) => {
+                return person.name.toLowerCase().startsWith(name.toLowerCase()) && person.id !== data.person.id;
+              })
+              .slice(0, 5)
+          : people
+              .filter((person: PersonResponseDto) => {
+                const nameParts = person.name.split(' ');
+                return (
+                  nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase())) &&
+                  person.id !== data.person.id
+                );
+              })
+              .slice(0, 5);
     }
   }
 

@@ -56,12 +56,19 @@
     }
     if (!force) {
       if (people.length < 20 && name.startsWith(searchWord)) {
-        people = peopleCopy
-          .filter((person: PersonResponseDto) => {
-            const nameParts = person.name.split(' ');
-            return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
-          })
-          .slice(0, 10);
+        people =
+          name.indexOf(' ') >= 0
+            ? peopleCopy
+                .filter((person: PersonResponseDto) => {
+                  return person.name.toLowerCase().startsWith(name.toLowerCase());
+                })
+                .slice(0, 10)
+            : peopleCopy
+                .filter((person: PersonResponseDto) => {
+                  const nameParts = person.name.split(' ');
+                  return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
+                })
+                .slice(0, 10);
         return;
       }
     }
