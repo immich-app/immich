@@ -1,0 +1,11 @@
+version: "3.8"
+
+# ML acceleration on supported Mali ARM GPUs using ARM-NN
+
+services:
+  mlaccel:
+    devices:
+      - /dev/mali0:/dev/mali0
+    volumes:
+      - /lib/firmware/mali_csffw.bin:/lib/firmware/mali_csffw.bin:ro # Mali firmware for your chipset
+      - /usr/lib/libmali-valhall-g610-g6p0-gbm.so:/usr/lib/libmali.so:ro # Mali driver for your chipset
