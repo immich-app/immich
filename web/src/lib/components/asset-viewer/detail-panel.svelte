@@ -26,6 +26,7 @@
   import { AppRoute } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
+  import { user } from '$lib/stores/user.store';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -233,7 +234,7 @@
       <p class="text-sm">DETAILS</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
+    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
@@ -280,7 +281,7 @@
           <Icon path={mdiPencil} size="20" />
         </button>
       </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -408,7 +409,7 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city && !asset.isReadOnly}
+    {#if asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div
         class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
         on:click={() => (isShowChangeLocation = true)}
@@ -439,7 +440,7 @@
           <Icon path={mdiPencil} size="20" />
         </div>
       </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg pr-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}

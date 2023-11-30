@@ -59,8 +59,11 @@
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
+  import { setUser, user } from '$lib/stores/user.store';
 
   export let data: PageData;
+
+  setUser(data.user);
 
   let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
   let { slideshowState, slideshowShuffle } = slideshowStore;
@@ -96,7 +99,6 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
-  let user = data.user;
   let globalWidth: number;
   let assetGridWidth: number;
 
@@ -179,10 +181,10 @@
   };
 
   const getFavorite = async () => {
-    if (user) {
+    if ($user) {
       try {
         const { data } = await api.activityApi.getActivities({
-          userId: user.id,
+          userId: $user.id,
           albumId: album.id,
           type: ReactionType.Like,
           level: ReactionLevel.Album,
@@ -549,16 +551,10 @@
       style={`width:${assetGridWidth}px`}
     >
       {#if viewMode === ViewMode.SELECT_ASSETS}
-        <AssetGrid
-          user={data.user}
-          assetStore={timelineStore}
-          assetInteractionStore={timelineInteractionStore}
-          isSelectionMode={true}
-        />
+        <AssetGrid assetStore={timelineStore} assetInteractionStore={timelineInteractionStore} isSelectionMode={true} />
       {:else}
         <AssetGrid
           {album}
-          user={data.user}
           {assetStore}
           {assetInteractionStore}
           isShared={album.sharedUsers.length > 0}
@@ -679,7 +675,7 @@
       {/if}
     </main>
   </div>
-  {#if album.sharedUsers.length > 0 && album && isShowActivity && user && !$showAssetViewer}
+  {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -688,7 +684,7 @@
         translate="yes"
       >
         <ActivityViewer
-          {user}
+          user={$user}
           disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
@@ -738,10 +734,10 @@
   </ConfirmDialogue>
 {/if}
 
-{#if viewMode === ViewMode.OPTIONS}
+{#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
-    {user}
+    user={$user}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

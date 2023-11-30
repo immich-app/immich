@@ -8,7 +8,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto, UserResponseDto } from '@api';
+  import type { AlbumResponseDto, AssetResponseDto } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -27,7 +27,6 @@
   export let removeAction: AssetAction | null = null;
   export let withStacked = false;
   export let isShared = false;
-  export let user: UserResponseDto | null = null;
   export let album: AlbumResponseDto | null = null;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
@@ -394,7 +393,6 @@
 <Portal target="body">
   {#if $showAssetViewer}
     <AssetViewer
-      {user}
       {withStacked}
       {assetStore}
       asset={$viewingAsset}

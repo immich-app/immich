@@ -24,8 +24,11 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
+  import { setUser } from '$lib/stores/user.store';
 
   export let data: PageData;
+
+  setUser(data.user);
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
