@@ -76,7 +76,7 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
-  @GenerateSql({ params: [false] })
+  @GenerateSql({ params: [] })
   getAll(withDeleted = false, type?: LibraryType): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: { type },

@@ -38,7 +38,7 @@ export class AlbumRepository implements IAlbumRepository {
     return this.repository.findOne({ where: { id }, relations, order });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   getByIds(ids: string[]): Promise<AlbumEntity[]> {
     return this.repository.find({
       where: {
