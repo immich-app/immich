@@ -5,22 +5,27 @@
   import { getAssetFilename } from '$lib/utils/asset-utils';
   import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import {
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
+    mdiPencil,
     mdiImageOutline,
     mdiMapMarkerOutline,
     mdiInformationOutline,
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import Map from '../shared-components/map/map.svelte';
+  import { websocketStore } from '$lib/stores/websocket';
   import { AppRoute } from '$lib/constants';
+  import ChangeLocation from '../shared-components/change-location.svelte';
+  import { handleError } from '../../utils/handle-error';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -52,6 +57,16 @@
 
   $: people = asset.people || [];
 
+  const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
+    if (assetUpdate && assetUpdate.id === asset.id) {
+      asset = assetUpdate;
+    }
+  });
+
+  onDestroy(() => {
+    unsubscribe();
+  });
+
   const dispatch = createEventDispatcher();
 
   const getMegapixel = (width: number, height: number): number | undefined => {
@@ -79,9 +94,7 @@
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
-        updateAssetDto: {
-          description: description,
-        },
+        updateAssetDto: { description },
       });
     } catch (error) {
       console.error(error);
@@ -90,6 +103,35 @@
 
   let showAssetPath = false;
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
+
+  let isShowChangeDate = false;
+
+  async function handleConfirmChangeDate(dateTimeOriginal: string) {
+    isShowChangeDate = false;
+    try {
+      await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+    } catch (error) {
+      handleError(error, 'Unable to change date');
+    }
+  }
+
+  let isShowChangeLocation = false;
+
+  async function handleConfirmChangeLocation(gps: { lng: number; lat: number }) {
+    isShowChangeLocation = false;
+
+    try {
+      await api.assetApi.updateAsset({
+        id: asset.id,
+        updateAssetDto: {
+          latitude: gps.lat,
+          longitude: gps.lng,
+        },
+      });
+    } catch (error) {
+      handleError(error, 'Unable to change location');
+    }
+  }
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -191,41 +233,115 @@
       <p class="text-sm">DETAILS</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal}
+    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
-      <div class="flex gap-4 py-4">
-        <div>
-          <Icon path={mdiCalendar} size="24" />
-        </div>
+      <div
+        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
+        on:click={() => (isShowChangeDate = true)}
+        on:keydown={(event) => event.key === 'Enter' && (isShowChangeDate = true)}
+        tabindex="0"
+        role="button"
+        title="Edit date"
+      >
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
 
-        <div>
-          <p>
-            {assetDateTimeOriginal.toLocaleString(
-              {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              },
-              { locale: $locale },
-            )}
-          </p>
-          <div class="flex gap-2 text-sm">
+          <div>
             <p>
               {assetDateTimeOriginal.toLocaleString(
                 {
-                  weekday: 'short',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  timeZoneName: 'longOffset',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
                 },
                 { locale: $locale },
               )}
             </p>
+            <div class="flex gap-2 text-sm">
+              <p>
+                {assetDateTimeOriginal.toLocaleString(
+                  {
+                    weekday: 'short',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZoneName: 'longOffset',
+                  },
+                  { locale: $locale },
+                )}
+              </p>
+            </div>
           </div>
         </div>
-      </div>{/if}
+        <button class="focus:outline-none">
+          <Icon path={mdiPencil} size="20" />
+        </button>
+      </div>
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
+      <div class="flex justify-between place-items-start gap-4 py-4">
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
+        </div>
+        <button class="focus:outline-none">
+          <Icon path={mdiPencil} size="20" />
+        </button>
+      </div>
+    {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
+      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+        zone: asset.exifInfo.timeZone ?? undefined,
+      })}
+      <div class="flex justify-between place-items-start gap-4 py-4">
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
+
+          <div>
+            <p>
+              {assetDateTimeOriginal.toLocaleString(
+                {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                },
+                { locale: $locale },
+              )}
+            </p>
+            <div class="flex gap-2 text-sm">
+              <p>
+                {assetDateTimeOriginal.toLocaleString(
+                  {
+                    weekday: 'short',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZoneName: 'longOffset',
+                  },
+                  { locale: $locale },
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    {#if isShowChangeDate}
+      {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
+        ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+            zone: asset.exifInfo.timeZone ?? undefined,
+          })
+        : DateTime.now()}
+      <ChangeDate
+        initialDate={assetDateTimeOriginal}
+        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
+        on:cancel={() => (isShowChangeDate = false)}
+      />
+    {/if}
 
     {#if asset.exifInfo?.fileSizeInByte}
       <div class="flex gap-4 py-4">
@@ -292,24 +408,84 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+    {#if asset.exifInfo?.city && !asset.isReadOnly}
+      <div
+        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
+        on:click={() => (isShowChangeLocation = true)}
+        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
+        tabindex="0"
+        role="button"
+        title="Edit location"
+      >
+        <div class="flex gap-4">
+          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+
+          <div>
+            <p>{asset.exifInfo.city}</p>
+            {#if asset.exifInfo?.state}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.state}</p>
+              </div>
+            {/if}
+            {#if asset.exifInfo?.country}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.country}</p>
+              </div>
+            {/if}
+          </div>
+        </div>
 
         <div>
-          <p>{asset.exifInfo.city}</p>
-          {#if asset.exifInfo?.state}
-            <div class="flex gap-2 text-sm">
-              <p>{asset.exifInfo.state}</p>
-            </div>
-          {/if}
-          {#if asset.exifInfo?.country}
-            <div class="flex gap-2 text-sm">
-              <p>{asset.exifInfo.country}</p>
-            </div>
-          {/if}
+          <Icon path={mdiPencil} size="20" />
         </div>
       </div>
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly}
+      <div
+        class="flex justify-between place-items-start gap-4 py-4 rounded-lg pr-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+        on:click={() => (isShowChangeLocation = true)}
+        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
+        tabindex="0"
+        role="button"
+        title="Add location"
+      >
+        <div class="flex gap-4">
+          <div>
+            <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+          </div>
+
+          <p>Add a location</p>
+        </div>
+        <div class="focus:outline-none">
+          <Icon path={mdiPencil} size="20" />
+        </div>
+      </div>
+    {:else if asset.exifInfo?.city && asset.isReadOnly}
+      <div class="flex justify-between place-items-start gap-4 py-4">
+        <div class="flex gap-4">
+          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+
+          <div>
+            <p>{asset.exifInfo.city}</p>
+            {#if asset.exifInfo?.state}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.state}</p>
+              </div>
+            {/if}
+            {#if asset.exifInfo?.country}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.country}</p>
+              </div>
+            {/if}
+          </div>
+        </div>
+      </div>
+    {/if}
+    {#if isShowChangeLocation}
+      <ChangeLocation
+        {asset}
+        on:confirm={({ detail: gps }) => handleConfirmChangeLocation(gps)}
+        on:cancel={() => (isShowChangeLocation = false)}
+      />
     {/if}
   </div>
 </section>

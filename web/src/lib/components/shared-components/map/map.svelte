@@ -28,6 +28,10 @@
   export let zoom: number | undefined = undefined;
   export let center: LngLatLike | undefined = undefined;
   export let simplified = false;
+  export let clickable = false;
+
+  let map: maplibregl.Map;
+  let marker: maplibregl.Marker | null = null;
 
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
@@ -36,7 +40,10 @@
     return data as StyleSpecification;
   })();
 
-  const dispatch = createEventDispatcher<{ selected: string[] }>();
+  const dispatch = createEventDispatcher<{
+    selected: string[];
+    clickedPoint: { lat: number; lng: number };
+  }>();
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
@@ -61,6 +68,19 @@
         dispatch('selected', ids);
       }
     });
+  }
+
+  function handleMapClick(event: maplibregl.MapMouseEvent) {
+    if (clickable) {
+      const { lng, lat } = event.lngLat;
+      dispatch('clickedPoint', { lng, lat });
+
+      if (marker) {
+        marker.remove();
+      }
+
+      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+    }
   }
 
   type FeaturePoint = Feature<Point, { id: string }>;
@@ -96,6 +116,8 @@
     diffStyleUpdates={true}
     let:map
     on:load={(event) => event.detail.setMaxZoom(14)}
+    on:load={(event) => event.detail.on('click', handleMapClick)}
+    bind:map
   >
     <NavigationControl position="top-left" showCompass={!simplified} />
     {#if !simplified}

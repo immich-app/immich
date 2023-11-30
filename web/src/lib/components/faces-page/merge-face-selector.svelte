@@ -17,6 +17,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { cloneDeep } from 'lodash-es';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { searchNameLocal } from '$lib/utils/person';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -56,12 +57,7 @@
     }
     if (!force) {
       if (people.length < 20 && name.startsWith(searchWord)) {
-        people = peopleCopy
-          .filter((person: PersonResponseDto) => {
-            const nameParts = person.name.split(' ');
-            return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
-          })
-          .slice(0, 10);
+        people = searchNameLocal(name, peopleCopy, 10);
         return;
       }
     }

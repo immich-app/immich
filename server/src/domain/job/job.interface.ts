@@ -9,7 +9,7 @@ export interface IAssetFaceJob extends IBaseJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload';
+  source?: 'upload' | 'sidecar-write';
 }
 
 export interface IAssetDeletionJob extends IEntityJob {
@@ -32,4 +32,11 @@ export interface IBulkEntityJob extends IBaseJob {
 
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
+}
+
+export interface ISidecarWriteJob extends IEntityJob {
+  description?: string;
+  dateTimeOriginal?: string;
+  latitude?: number;
+  longitude?: number;
 }
