@@ -4,8 +4,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from huggingface_hub import create_repo, login, upload_folder
-from models import mclip, openclip, tfclip
 from rich.progress import Progress
+
+from models import mclip, openclip, tfclip
 
 models = [
     "RN50::openai",

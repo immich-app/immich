@@ -29,6 +29,7 @@ python-multipart = "^0.0.6"
 orjson = "^3.9.5"
 safetensors = "0.3.2"
 gunicorn = "^21.1.0"
+tflite-runtime = "^2.14.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.3.0"
