@@ -2,7 +2,7 @@ import { SetMetadata } from '@nestjs/common';
 
 export const GENERATE_SQL_KEY = 'generate-sql-key';
 
-interface GenerateSqlQueries {
+export interface GenerateSqlQueries {
   name?: string;
   params?: any[];
 }
