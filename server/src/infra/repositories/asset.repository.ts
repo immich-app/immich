@@ -22,6 +22,7 @@ import _ from 'lodash';
 import { DateTime } from 'luxon';
 import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
 
@@ -185,6 +186,7 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.save(asset);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.DATE] })
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     // For reference of a correct approach although slower
 
@@ -219,6 +221,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
   getByDayOfYear(ownerId: string, { day, month }: MonthDay): Promise<AssetEntity[]> {
     return this.repository
       .createQueryBuilder('entity')
@@ -240,6 +243,7 @@ export class AssetRepository implements IAssetRepository {
       .getMany();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
     if (!relations) {
       relations = {
@@ -259,6 +263,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
@@ -291,12 +296,14 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
     return this.repository.find({
       where: { library: { id: In(libraryIds) } },
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { library: { id: libraryId }, originalPath: originalPath },
@@ -333,6 +340,7 @@ export class AssetRepository implements IAssetRepository {
    *
    * @returns Promise<string[]> - Array of assetIds belong to the device
    */
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
     const items = await this.repository.find({
       select: { deviceAssetId: true },
@@ -347,6 +355,7 @@ export class AssetRepository implements IAssetRepository {
     return items.map((asset) => asset.deviceAssetId);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getById(id: string): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { id },
@@ -362,6 +371,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
   }
@@ -395,6 +405,7 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.remove(asset);
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.BUFFER] })
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null> {
     return this.repository.findOne({ where: { ownerId: userId, checksum } });
   }
@@ -417,6 +428,14 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  @GenerateSql(
+    ...Object.values(WithProperty)
+      .filter((property) => property !== WithProperty.IS_OFFLINE)
+      .map((property) => ({
+        name: property,
+        params: [DummyValue.PAGINATION, property],
+      })),
+  )
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity> {
     let relations: FindOptionsRelations<AssetEntity> = {};
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};

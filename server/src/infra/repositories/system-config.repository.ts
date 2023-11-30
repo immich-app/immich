@@ -4,6 +4,7 @@ import axios from 'axios';
 import { readFile } from 'fs/promises';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 export class SystemConfigRepository implements ISystemConfigRepository {
   constructor(
@@ -14,6 +15,7 @@ export class SystemConfigRepository implements ISystemConfigRepository {
     return axios.get(url).then((response) => response.data);
   }
 
+  @GenerateSql()
   load(): Promise<SystemConfigEntity[]> {
     return this.repository.find();
   }
@@ -26,6 +28,7 @@ export class SystemConfigRepository implements ISystemConfigRepository {
     return this.repository.save(items);
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   async deleteKeys(keys: string[]): Promise<void> {
     await this.repository.delete({ key: In(keys) });
   }
