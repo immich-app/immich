@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-node node_modules/.bin/immich "$@"
+node /usr/src/app/node_modules/.bin/immich "$@"
