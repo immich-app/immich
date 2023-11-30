@@ -1,9 +1,5 @@
 <script lang="ts">
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { api } from '@api';
   import { DateTime } from 'luxon';
@@ -24,7 +20,6 @@
       await api.assetApi.updateAssets({
         assetBulkUpdateDto: { ids, dateTimeOriginal },
       });
-      notificationController.show({ message: 'Updating date please wait', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to change date');
     }

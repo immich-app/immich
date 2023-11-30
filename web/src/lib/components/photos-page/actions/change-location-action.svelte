@@ -1,9 +1,5 @@
 <script lang="ts">
   import { api } from '@api';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
@@ -28,7 +24,6 @@
           longitude: point.lng,
         },
       });
-      notificationController.show({ message: 'Updating location please wait', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to update location');
     }
