@@ -8,7 +8,7 @@ import { AccessCore, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IAssetDeletionJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IAssetDeletionJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import {
   CommunicationEvent,
   IAccessRepository,
@@ -393,10 +393,8 @@ export class AssetService {
   async update(authUser: AuthUserDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, id);
 
-    const { description, ...rest } = dto;
-    if (description !== undefined) {
-      await this.assetRepository.upsertExif({ assetId: id, description });
-    }
+    const { description, dateTimeOriginal, latitude, longitude, ...rest } = dto;
+    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
 
     const asset = await this.assetRepository.save({ id, ...rest });
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [id] } });
@@ -404,7 +402,7 @@ export class AssetService {
   }
 
   async updateAll(authUser: AuthUserDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, removeParent, ...options } = dto;
+    const { ids, removeParent, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, ids);
 
     if (removeParent) {
@@ -422,6 +420,10 @@ export class AssetService {
 
       // This updates the updatedAt column of the parent to indicate that a new child has been added
       await this.assetRepository.updateAll([options.stackParentId], { stackParentId: null });
+    }
+
+    for (const id of ids) {
+      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
     }
 
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids } });
@@ -585,6 +587,15 @@ export class AssetService {
           await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
           break;
       }
+    }
+  }
+
+  private async updateMetadata(dto: ISidecarWriteJob) {
+    const { id, description, dateTimeOriginal, latitude, longitude } = dto;
+    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude }, _.isUndefined);
+    if (Object.keys(writes).length > 0) {
+      await this.assetRepository.upsertExif({ assetId: id, ...writes });
+      await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
     }
   }
 }

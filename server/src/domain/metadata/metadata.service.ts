@@ -3,10 +3,11 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
+import _ from 'lodash';
 import { Duration } from 'luxon';
 import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
   ExifDuration,
   IAlbumRepository,
@@ -79,7 +80,6 @@ export class MetadataService {
   private logger = new Logger(MetadataService.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
-  private oldCities?: string;
   private subscription: Subscription | null = null;
 
   constructor(
@@ -244,6 +244,37 @@ export class MetadataService {
     return true;
   }
 
+  async handleSidecarWrite(job: ISidecarWriteJob) {
+    const { id, description, dateTimeOriginal, latitude, longitude } = job;
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset) {
+      return false;
+    }
+
+    const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
+    const exif = _.omitBy<Tags>(
+      {
+        ImageDescription: description,
+        CreationDate: dateTimeOriginal,
+        GPSLatitude: latitude,
+        GPSLongitude: longitude,
+      },
+      _.isUndefined,
+    );
+
+    if (Object.keys(exif).length === 0) {
+      return true;
+    }
+
+    await this.repository.writeTags(sidecarPath, exif);
+
+    if (!asset.sidecarPath) {
+      await this.assetRepository.save({ id, sidecarPath });
+    }
+
+    return true;
+  }
+
   private async applyReverseGeocoding(asset: AssetEntity, exifData: ExifEntityWithoutGeocodeAndTypeOrm) {
     const { latitude, longitude } = exifData;
     if (!(await this.configCore.hasFeature(FeatureFlag.REVERSE_GEOCODING)) || !longitude || !latitude) {
@@ -346,8 +377,8 @@ export class MetadataService {
     asset: AssetEntity,
   ): Promise<{ exifData: ExifEntityWithoutGeocodeAndTypeOrm; tags: ImmichTags }> {
     const stats = await this.storageRepository.stat(asset.originalPath);
-    const mediaTags = await this.repository.getExifTags(asset.originalPath);
-    const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
+    const mediaTags = await this.repository.readTags(asset.originalPath);
+    const sidecarTags = asset.sidecarPath ? await this.repository.readTags(asset.sidecarPath) : null;
 
     // ensure date from sidecar is used if present
     const hasDateOverride = !!this.getDateTimeOriginal(sidecarTags);

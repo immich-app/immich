@@ -218,11 +218,11 @@ describe(MetadataService.name, () => {
       const originalDate = new Date('2023-11-21T16:13:17.517Z');
       const sidecarDate = new Date('2022-01-01T00:00:00.000Z');
       assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
-      when(metadataMock.getExifTags)
+      when(metadataMock.readTags)
         .calledWith(assetStub.sidecar.originalPath)
         // higher priority tag
         .mockResolvedValue({ CreationDate: originalDate.toISOString() });
-      when(metadataMock.getExifTags)
+      when(metadataMock.readTags)
         .calledWith(assetStub.sidecar.sidecarPath as string)
         // lower priority tag, but in sidecar
         .mockResolvedValue({ CreateDate: sidecarDate.toISOString() });
@@ -240,7 +240,7 @@ describe(MetadataService.name, () => {
 
     it('should handle lists of numbers', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.getExifTags.mockResolvedValue({ ISO: [160] as any });
+      metadataMock.readTags.mockResolvedValue({ ISO: [160] as any });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
@@ -257,7 +257,7 @@ describe(MetadataService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.REVERSE_GEOCODING_ENABLED, value: true }]);
       metadataMock.reverseGeocode.mockResolvedValue({ city: 'City', state: 'State', country: 'Country' });
-      metadataMock.getExifTags.mockResolvedValue({
+      metadataMock.readTags.mockResolvedValue({
         GPSLatitude: assetStub.withLocation.exifInfo!.latitude!,
         GPSLongitude: assetStub.withLocation.exifInfo!.longitude!,
       });
@@ -289,7 +289,7 @@ describe(MetadataService.name, () => {
 
     it('should apply motion photos', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
-      metadataMock.getExifTags.mockResolvedValue({
+      metadataMock.readTags.mockResolvedValue({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
@@ -310,7 +310,7 @@ describe(MetadataService.name, () => {
 
     it('should create new motion asset if not found and link it with the photo', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoStillAsset, livePhotoVideoId: null }]);
-      metadataMock.getExifTags.mockResolvedValue({
+      metadataMock.readTags.mockResolvedValue({
         Directory: 'foo/bar/',
         MotionPhoto: 1,
         MicroVideo: 1,
@@ -367,7 +367,7 @@ describe(MetadataService.name, () => {
         tz: '+02:00',
       };
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.getExifTags.mockResolvedValue(tags);
+      metadataMock.readTags.mockResolvedValue(tags);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
@@ -406,7 +406,7 @@ describe(MetadataService.name, () => {
 
     it('should handle duration', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.getExifTags.mockResolvedValue({ Duration: 6.21 });
+      metadataMock.readTags.mockResolvedValue({ Duration: 6.21 });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -422,7 +422,7 @@ describe(MetadataService.name, () => {
 
     it('should handle duration as an object without Scale', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.getExifTags.mockResolvedValue({ Duration: { Value: 6.2 } });
+      metadataMock.readTags.mockResolvedValue({ Duration: { Value: 6.2 } });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -438,7 +438,7 @@ describe(MetadataService.name, () => {
 
     it('should handle duration with scale', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      metadataMock.getExifTags.mockResolvedValue({ Duration: { Scale: 1.11111111111111e-5, Value: 558720 } });
+      metadataMock.readTags.mockResolvedValue({ Duration: { Scale: 1.11111111111111e-5, Value: 558720 } });
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -528,6 +528,43 @@ describe(MetadataService.name, () => {
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetStub.image.id,
         sidecarPath: '/original/path.ext.xmp',
+      });
+    });
+  });
+
+  describe('handleSidecarWrite', () => {
+    it('should skip assets that do not exist anymore', async () => {
+      assetMock.getByIds.mockResolvedValue([]);
+      await expect(sut.handleSidecarWrite({ id: 'asset-123' })).resolves.toBe(false);
+      expect(metadataMock.writeTags).not.toHaveBeenCalled();
+    });
+
+    it('should skip jobs with not metadata', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      await expect(sut.handleSidecarWrite({ id: assetStub.sidecar.id })).resolves.toBe(true);
+      expect(metadataMock.writeTags).not.toHaveBeenCalled();
+    });
+
+    it('should write tags', async () => {
+      const description = 'this is a description';
+      const gps = 12;
+      const date = '2023-11-22T04:56:12.196Z';
+
+      assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
+      await expect(
+        sut.handleSidecarWrite({
+          id: assetStub.sidecar.id,
+          description,
+          latitude: gps,
+          longitude: gps,
+          dateTimeOriginal: date,
+        }),
+      ).resolves.toBe(true);
+      expect(metadataMock.writeTags).toHaveBeenCalledWith(assetStub.sidecar.sidecarPath, {
+        ImageDescription: description,
+        CreationDate: date,
+        GPSLatitude: gps,
+        GPSLongitude: gps,
       });
     });
   });

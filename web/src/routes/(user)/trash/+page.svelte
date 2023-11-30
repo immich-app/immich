@@ -23,6 +23,7 @@
   import empty3Url from '$lib/assets/empty-3.svg';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { mdiDeleteOutline, mdiHistory } from '@mdi/js';
+  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -113,3 +114,4 @@
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}
+<UpdatePanel {assetStore} />

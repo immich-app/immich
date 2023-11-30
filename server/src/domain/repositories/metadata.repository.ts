@@ -33,5 +33,6 @@ export interface IMetadataRepository {
   init(): Promise<void>;
   teardown(): Promise<void>;
   reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult | null>;
-  getExifTags(path: string): Promise<ImmichTags | null>;
+  readTags(path: string): Promise<ImmichTags | null>;
+  writeTags(path: string, tags: Partial<Tags>): Promise<void>;
 }

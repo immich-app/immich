@@ -6449,6 +6449,9 @@
       },
       "AssetBulkUpdateDto": {
         "properties": {
+          "dateTimeOriginal": {
+            "type": "string"
+          },
           "ids": {
             "items": {
               "format": "uuid",
@@ -6461,6 +6464,12 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
           },
           "removeParent": {
             "type": "boolean"
@@ -9343,6 +9352,9 @@
       },
       "UpdateAssetDto": {
         "properties": {
+          "dateTimeOriginal": {
+            "type": "string"
+          },
           "description": {
             "type": "string"
           },
@@ -9351,6 +9363,12 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
           }
         },
         "type": "object"
