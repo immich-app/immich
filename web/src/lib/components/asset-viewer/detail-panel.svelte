@@ -15,7 +15,6 @@
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
-    mdiPencil,
     mdiImageOutline,
     mdiMapMarkerOutline,
     mdiInformationOutline,

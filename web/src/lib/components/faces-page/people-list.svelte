@@ -6,6 +6,7 @@
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { searchNameLocal } from '$lib/utils/person';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
@@ -29,12 +30,7 @@
     people = peopleCopy.filter(
       (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
     );
-    people = people
-      .filter((person: PersonResponseDto) => {
-        const nameParts = person.name.split(' ');
-        return nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase()));
-      })
-      .slice(0, 10);
+    people = searchNameLocal(name, people, 10);
   }
 
   const searchPeople = async (force: boolean) => {

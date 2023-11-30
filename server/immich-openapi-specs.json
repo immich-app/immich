@@ -6754,6 +6754,7 @@
             "type": "integer"
           },
           "id": {
+            "format": "uuid",
             "type": "string"
           },
           "imageHeight": {
@@ -6772,13 +6773,13 @@
           }
         },
         "required": [
+          "id",
           "imageHeight",
           "imageWidth",
           "boundingBoxX1",
           "boundingBoxX2",
           "boundingBoxY1",
           "boundingBoxY2",
-          "id",
           "person"
         ],
         "type": "object"
@@ -6800,9 +6801,11 @@
       "AssetFaceUpdateItem": {
         "properties": {
           "assetId": {
+            "format": "uuid",
             "type": "string"
           },
           "personId": {
+            "format": "uuid",
             "type": "string"
           }
         },
@@ -6827,6 +6830,7 @@
             "type": "integer"
           },
           "id": {
+            "format": "uuid",
             "type": "string"
           },
           "imageHeight": {
@@ -6837,13 +6841,13 @@
           }
         },
         "required": [
+          "id",
           "imageHeight",
           "imageWidth",
           "boundingBoxX1",
           "boundingBoxX2",
           "boundingBoxY1",
-          "boundingBoxY2",
-          "id"
+          "boundingBoxY2"
         ],
         "type": "object"
       },
