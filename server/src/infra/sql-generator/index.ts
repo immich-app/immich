@@ -145,7 +145,7 @@ class SqlGenerator {
 
   private stats() {
     console.log(`Wrote ${Object.keys(this.results).length} files`);
-    console.log(`Generated ${Object.values(this.results).flatMap((x) => x).length} queries`);
+    console.log(`Generated ${Object.values(this.results).flat().length} queries`);
   }
 
   private async close() {
