@@ -25,16 +25,17 @@
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
+  import { page } from '$app/stores';
 
   export let data: PageData;
-
-  $user = data.user;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   let handleEscapeKey = false;
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+
+  $user = $page.data.user;
 
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
 

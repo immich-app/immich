@@ -60,15 +60,17 @@
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
+  import { page } from '$app/stores';
 
   export let data: PageData;
-
-  $user = data.user;
 
   let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
   let album = data.album;
+
+  $user = $page.data.user;
+
   $: album = data.album;
 
   $: {
