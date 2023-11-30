@@ -9,7 +9,7 @@ import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMe
 import { DatabaseLock } from '@app/infra/utils/database-locks';
 import { Inject, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, exiftool } from 'exiftool-vendored';
+import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
 import { createReadStream, existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import * as geotz from 'geo-tz';
@@ -181,7 +181,7 @@ export class MetadataRepository implements IMetadataRepository {
     return { country, state, city };
   }
 
-  getExifTags(path: string): Promise<ImmichTags | null> {
+  readTags(path: string): Promise<ImmichTags | null> {
     return exiftool
       .read(path, undefined, {
         ...DefaultReadTaskOptions,
@@ -197,5 +197,13 @@ export class MetadataRepository implements IMetadataRepository {
         this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
         return null;
       }) as Promise<ImmichTags | null>;
+  }
+
+  async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+    try {
+      await exiftool.write(path, tags, ['-overwrite_original']);
+    } catch (error) {
+      this.logger.warn(`Error writing exif data (${path}): ${error}`);
+    }
   }
 }

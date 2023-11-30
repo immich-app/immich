@@ -165,7 +165,19 @@ export class JobService {
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: item.data });
         break;
 
+      case JobName.SIDECAR_WRITE:
+        await this.jobRepository.queue({
+          name: JobName.METADATA_EXTRACTION,
+          data: { id: item.data.id, source: 'sidecar-write' },
+        });
+
       case JobName.METADATA_EXTRACTION:
+        if (item.data.source === 'sidecar-write') {
+          const [asset] = await this.assetRepository.getByIds([item.data.id]);
+          if (asset) {
+            this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
+          }
+        }
         await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
         break;
 

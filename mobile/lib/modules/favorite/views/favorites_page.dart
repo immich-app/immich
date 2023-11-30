@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
@@ -62,22 +63,18 @@ class FavoritesPage extends HookConsumerWidget {
           child: SizedBox(
             height: 64,
             child: Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    leading: const Icon(
-                      Icons.star_border,
-                    ),
-                    title: const Text(
-                      "Unfavorite",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    onTap: processing.value ? null : unfavorite,
-                  ),
-                ],
+              child: ListTile(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+                leading: const Icon(
+                  Icons.star_border,
+                ),
+                title: const Text(
+                  "Unfavorite",
+                  style: TextStyle(fontSize: 14),
+                ),
+                onTap: processing.value ? null : unfavorite,
               ),
             ),
           ),
@@ -87,10 +84,8 @@ class FavoritesPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: buildAppBar(),
-      body: ref.watch(favoriteAssetsProvider).when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stackTrace) => Center(child: Text(error.toString())),
-            data: (data) => data.isEmpty
+      body: ref.watch(favoriteAssetsProvider).widgetWhen(
+            onData: (data) => data.isEmpty
                 ? Center(
                     child: Text('favorites_page_no_favorites'.tr()),
                   )

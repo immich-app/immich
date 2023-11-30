@@ -1,9 +1,10 @@
-name: Publish Package to npmjs
+name: CLI Release
 on:
   workflow_dispatch:
 
 jobs:
   publish:
+    name: Publish
     runs-on: ubuntu-latest
     defaults:
       run:

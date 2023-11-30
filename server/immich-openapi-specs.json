@@ -6279,7 +6279,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.88.2",
+    "version": "1.89.0",
     "contact": {}
   },
   "tags": [],
@@ -6631,6 +6631,9 @@
       },
       "AssetBulkUpdateDto": {
         "properties": {
+          "dateTimeOriginal": {
+            "type": "string"
+          },
           "ids": {
             "items": {
               "format": "uuid",
@@ -6643,6 +6646,12 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
           },
           "removeParent": {
             "type": "boolean"
@@ -9681,6 +9690,9 @@
       },
       "UpdateAssetDto": {
         "properties": {
+          "dateTimeOriginal": {
+            "type": "string"
+          },
           "description": {
             "type": "string"
           },
@@ -9689,6 +9701,12 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
           }
         },
         "type": "object"

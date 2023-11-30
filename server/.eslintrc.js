@@ -19,6 +19,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-floating-promises': 'error',
+    curly: 2,
     'prettier/prettier': 0,
   },
 };

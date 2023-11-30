@@ -4,22 +4,32 @@ import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
 import 'package:logging/logging.dart';
 
-extension ScaffoldBody<T> on AsyncValue<T> {
-  static final Logger _scaffoldBodyLog = Logger("ScaffoldBody");
+extension LogOnError<T> on AsyncValue<T> {
+  static final Logger _asyncErrorLogger = Logger("AsyncValue");
 
-  Widget scaffoldBodyWhen({
+  Widget widgetWhen({
+    bool skipLoadingOnRefresh = true,
+    Widget Function()? onLoading,
+    Widget Function(Object? error, StackTrace? stack)? onError,
     required Widget Function(T data) onData,
-    Widget? onError,
   }) {
     if (isLoading) {
-      return const Center(
-        child: ImmichLoadingIndicator(),
-      );
+      bool skip = false;
+      if (isRefreshing) {
+        skip = skipLoadingOnRefresh;
+      }
+
+      if (!skip) {
+        return onLoading?.call() ??
+            const Center(
+              child: ImmichLoadingIndicator(),
+            );
+      }
     }
 
     if (hasError && !hasValue) {
-      _scaffoldBodyLog.severe("Error occured in AsyncValue", error, stackTrace);
-      return onError ?? const ScaffoldErrorBody();
+      _asyncErrorLogger.severe("Error occured", error, stackTrace);
+      return onError?.call(error, stackTrace) ?? const ScaffoldErrorBody();
     }
 
     return onData(requireValue);

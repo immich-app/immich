@@ -1,4 +1,4 @@
-name: Clean up actions cache on PR close
+name: Cache Cleanup
 on:
   pull_request:
     types:
@@ -10,6 +10,7 @@ concurrency:
 
 jobs:
   cleanup:
+    name: Cleanup
     runs-on: ubuntu-latest
     steps:
       - name: Check out code

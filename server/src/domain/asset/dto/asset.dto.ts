@@ -1,7 +1,19 @@
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsPositive, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsLatitude,
+  IsLongitude,
+  IsNotEmpty,
+  IsPositive,
+  IsString,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { Optional, QueryBoolean, QueryDate, ValidateUUID } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 
@@ -9,6 +21,10 @@ export enum AssetOrder {
   ASC = 'asc',
   DESC = 'desc',
 }
+
+const hasGPS = (o: { latitude: undefined; longitude: undefined }) =>
+  o.latitude !== undefined || o.longitude !== undefined;
+const ValidateGPS = () => ValidateIf(hasGPS);
 
 export class AssetSearchDto {
   @ValidateUUID({ optional: true })
@@ -172,6 +188,20 @@ export class AssetBulkUpdateDto extends BulkIdsDto {
   @Optional()
   @IsBoolean()
   removeParent?: boolean;
+
+  @Optional()
+  @IsDateString()
+  dateTimeOriginal?: string;
+
+  @ValidateGPS()
+  @IsLatitude()
+  @IsNotEmpty()
+  latitude?: number;
+
+  @ValidateGPS()
+  @IsLongitude()
+  @IsNotEmpty()
+  longitude?: number;
 }
 
 export class UpdateAssetDto {
@@ -186,6 +216,20 @@ export class UpdateAssetDto {
   @Optional()
   @IsString()
   description?: string;
+
+  @Optional()
+  @IsDateString()
+  dateTimeOriginal?: string;
+
+  @ValidateGPS()
+  @IsLatitude()
+  @IsNotEmpty()
+  latitude?: number;
+
+  @ValidateGPS()
+  @IsLongitude()
+  @IsNotEmpty()
+  longitude?: number;
 }
 
 export class RandomAssetsDto {

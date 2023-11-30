@@ -52,7 +52,7 @@
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
       <p class="font-medium">
-        Add to {#if shared}Shared {/if} Album
+        Add to {shared ? 'Shared ' : ''}Album
       </p>
     </span>
   </svelte:fragment>
@@ -88,7 +88,7 @@
             <Icon path={mdiPlus} size="30" />
           </div>
           <p class="">
-            New {#if shared}Shared {/if}Album {#if search.length > 0}<b>{search}</b>{/if}
+            New {shared ? 'Shared ' : ''}Album {#if search.length > 0}<b>{search}</b>{/if}
           </p>
         </button>
         {#if filteredAlbums.length > 0}
@@ -101,7 +101,8 @@
 
           {#if !shared}
             <p class="px-5 py-3 text-xs">
-              {#if search.length === 0}ALL {/if}ALBUMS
+              {#if search.length === 0}ALL
+              {/if}ALBUMS
             </p>
           {/if}
           {#each filteredAlbums as album (album.id)}

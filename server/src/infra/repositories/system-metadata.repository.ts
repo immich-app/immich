@@ -10,7 +10,9 @@ export class SystemMetadataRepository implements ISystemMetadataRepository {
   ) {}
   async get<T extends keyof SystemMetadata>(key: T): Promise<SystemMetadata[T] | null> {
     const metadata = await this.repository.findOne({ where: { key } });
-    if (!metadata) return null;
+    if (!metadata) {
+      return null;
+    }
     return metadata.value as SystemMetadata[T];
   }
 
