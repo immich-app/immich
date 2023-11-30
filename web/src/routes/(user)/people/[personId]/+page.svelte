@@ -35,6 +35,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiPlus, mdiDotsVertical, mdiArrowLeft } from '@mdi/js';
   import { isExternalUrl } from '$lib/utils/navigation';
+  import { searchNameLocal } from '$lib/utils/person';
 
   export let data: PageData;
 
@@ -110,17 +111,7 @@
 
   $: {
     if (people) {
-      suggestedPeople = !name
-        ? []
-        : people
-            .filter((person: PersonResponseDto) => {
-              const nameParts = person.name.split(' ');
-              return (
-                nameParts.some((splitName) => splitName.toLowerCase().startsWith(name.toLowerCase())) &&
-                person.id !== data.person.id
-              );
-            })
-            .slice(0, 5);
+      suggestedPeople = !name ? [] : searchNameLocal(name, people, 5, data.person.id);
     }
   }
 
