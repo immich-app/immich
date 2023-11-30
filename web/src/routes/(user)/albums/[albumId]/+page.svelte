@@ -59,11 +59,11 @@
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
-  import { setUser, user } from '$lib/stores/user.store';
+  import { user } from '$lib/stores/user.store';
 
   export let data: PageData;
 
-  setUser(data.user);
+  $user = data.user;
 
   let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
   let { slideshowState, slideshowShuffle } = slideshowStore;
