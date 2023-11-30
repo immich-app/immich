@@ -18,6 +18,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
 
   export let data: PageData;
 
@@ -57,3 +58,4 @@
     />
   </AssetGrid>
 </UserPageLayout>
+<UpdatePanel {assetStore} />

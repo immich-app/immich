@@ -172,6 +172,12 @@ export class JobService {
         });
 
       case JobName.METADATA_EXTRACTION:
+        if (item.data.source === 'sidecar-write') {
+          const [asset] = await this.assetRepository.getByIds([item.data.id]);
+          if (asset) {
+            this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
+          }
+        }
         await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
         break;
 
