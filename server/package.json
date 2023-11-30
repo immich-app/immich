@@ -36,7 +36,8 @@
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
     "api:typescript": "bash ./bin/generate-open-api.sh web",
     "api:dart": "bash ./bin/generate-open-api.sh mobile",
-    "api:generate": "node ./bin/sync-spec-version.js && bash ./bin/generate-open-api.sh"
+    "api:generate": "node ./bin/sync-spec-version.js && bash ./bin/generate-open-api.sh",
+    "sql:generate": "node ./dist/infra/sql-generator/"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
@@ -119,6 +120,7 @@
     "prettier-plugin-organize-imports": "^3.2.3",
     "rimraf": "^5.0.1",
     "source-map-support": "^0.5.21",
+    "sql-formatter": "^14.0.0",
     "supertest": "^6.3.3",
     "testcontainers": "^10.2.1",
     "ts-jest": "^29.1.1",

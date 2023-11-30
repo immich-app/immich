@@ -9,6 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -17,6 +18,26 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
+  /**
+   * Before reassigning faces, delete potential key violations
+   */
+  async prepareReassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<string[]> {
+    const results = await this.assetFaceRepository
+      .createQueryBuilder('face')
+      .select('face."assetId"')
+      .where(`face."personId" IN (:...ids)`, { ids: [oldPersonId, newPersonId] })
+      .groupBy('face."assetId"')
+      .having('COUNT(face."personId") > 1')
+      .getRawMany();
+
+    const assetIds = results.map(({ assetId }) => assetId);
+
+    await this.assetFaceRepository.delete({ personId: oldPersonId, assetId: In(assetIds) });
+
+    return assetIds;
+  }
+
+  @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
   async reassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
@@ -38,18 +59,22 @@ export class PersonRepository implements IPersonRepository {
     return people.length;
   }
 
+  @GenerateSql()
   getAllFaces(): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({ relations: { asset: true }, withDeleted: true });
   }
 
+  @GenerateSql()
   getAll(): Promise<PersonEntity[]> {
     return this.personRepository.find();
   }
 
+  @GenerateSql()
   getAllWithoutThumbnail(): Promise<PersonEntity[]> {
     return this.personRepository.findBy({ thumbnailPath: '' });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getAllForUser(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
@@ -70,6 +95,7 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
+  @GenerateSql()
   getAllWithoutFaces(): Promise<PersonEntity[]> {
     return this.personRepository
       .createQueryBuilder('person')
@@ -80,6 +106,7 @@ export class PersonRepository implements IPersonRepository {
       .getMany();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getFaces(assetId: string): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({
       where: { assetId },
@@ -89,6 +116,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getFaceById(id: string): Promise<AssetFaceEntity> {
     return this.assetFaceRepository.findOneOrFail({
       where: { id },
@@ -98,6 +126,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOne({
       where: { id },
@@ -108,6 +137,7 @@ export class PersonRepository implements IPersonRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async reassignFace(assetFaceId: string, newPersonId: string): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
@@ -123,6 +153,7 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOne({ where: { id: personId } });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, { withHidden: true }] })
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions): Promise<PersonEntity[]> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
@@ -141,6 +172,7 @@ export class PersonRepository implements IPersonRepository {
     return queryBuilder.getMany();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getStatistics(personId: string): Promise<PersonStatistics> {
     return {
       assets: await this.assetFaceRepository
@@ -155,6 +187,7 @@ export class PersonRepository implements IPersonRepository {
     };
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getAssets(personId: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {
@@ -191,10 +224,12 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOneByOrFail({ id });
   }
 
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
   async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ personId });
   }

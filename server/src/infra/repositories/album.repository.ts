@@ -4,6 +4,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
@@ -13,6 +14,7 @@ export class AlbumRepository implements IAlbumRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
+  @GenerateSql({ params: [DummyValue.UUID, {}] })
   getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null> {
     const relations: FindOptionsRelations<AlbumEntity> = {
       owner: true,
@@ -36,6 +38,7 @@ export class AlbumRepository implements IAlbumRepository {
     return this.repository.findOne({ where: { id }, relations, order });
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   getByIds(ids: string[]): Promise<AlbumEntity[]> {
     return this.repository.find({
       where: {
@@ -48,6 +51,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
       where: [
@@ -59,6 +63,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (!ids.length) {
@@ -91,6 +96,7 @@ export class AlbumRepository implements IAlbumRepository {
    *  - Thumbnail references an asset outside the album
    *  - Empty album still has a thumbnail set
    */
+  @GenerateSql()
   async getInvalidThumbnail(): Promise<string[]> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
     const albumHasAssets = this.dataSource
@@ -113,6 +119,7 @@ export class AlbumRepository implements IAlbumRepository {
     return albums.map((album) => album.id);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getOwned(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
       relations: { sharedUsers: true, sharedLinks: true, owner: true },
@@ -124,6 +131,7 @@ export class AlbumRepository implements IAlbumRepository {
   /**
    * Get albums shared with and shared by owner.
    */
+  @GenerateSql({ params: [DummyValue.UUID] })
   getShared(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
       relations: { sharedUsers: true, sharedLinks: true, owner: true },
@@ -139,6 +147,7 @@ export class AlbumRepository implements IAlbumRepository {
   /**
    * Get albums of owner that are _not_ shared
    */
+  @GenerateSql({ params: [DummyValue.UUID] })
   getNotShared(ownerId: string): Promise<AlbumEntity[]> {
     return this.repository.find({
       relations: { sharedUsers: true, sharedLinks: true, owner: true },
@@ -159,6 +168,7 @@ export class AlbumRepository implements IAlbumRepository {
     await this.repository.delete({ ownerId: userId });
   }
 
+  @GenerateSql()
   getAll(): Promise<AlbumEntity[]> {
     return this.repository.find({
       relations: {
@@ -167,6 +177,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  // @GenerateSql({ params: [DummyValue.UUID] })
   async removeAsset(assetId: string): Promise<void> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
     await this.dataSource
@@ -176,6 +187,7 @@ export class AlbumRepository implements IAlbumRepository {
       .where('"albums_assets_assets"."assetsId" = :assetId', { assetId });
   }
 
+  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
   async removeAssets(asset: AlbumAssets): Promise<void> {
     await this.dataSource
       .createQueryBuilder()
@@ -195,6 +207,7 @@ export class AlbumRepository implements IAlbumRepository {
    * @param assetIds Optional list of asset IDs to filter on.
    * @returns Set of Asset IDs for the given album ID.
    */
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] }, { name: 'no assets', params: [DummyValue.UUID] })
   async getAssetIds(albumId: string, assetIds?: string[]): Promise<Set<string>> {
     const query = this.dataSource
       .createQueryBuilder()
@@ -210,6 +223,7 @@ export class AlbumRepository implements IAlbumRepository {
     return new Set(result.map((row) => row['assetId']));
   }
 
+  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
   hasAsset(asset: AlbumAsset): Promise<boolean> {
     return this.repository.exist({
       where: {
@@ -224,6 +238,7 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
   async addAssets({ albumId, assetIds }: AlbumAssets): Promise<void> {
     await this.dataSource
       .createQueryBuilder()
@@ -266,6 +281,7 @@ export class AlbumRepository implements IAlbumRepository {
    *
    * @returns Amount of updated album thumbnails or undefined when unknown
    */
+  @GenerateSql()
   async updateThumbnails(): Promise<number | undefined> {
     // Subquery for getting a new thumbnail.
     const newThumbnail = this.assetRepository

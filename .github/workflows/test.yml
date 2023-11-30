@@ -209,7 +209,7 @@ jobs:
           exit 1
 
   generated-typeorm-migrations-up-to-date:
-    name: TypeORM Migrations
+    name: TypeORM Checks
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -236,7 +236,7 @@ jobs:
       - name: Install server dependencies
         run: npm ci
 
-      - name: Build the
+      - name: Build the app
         run: npm run build
 
       - name: Run existing migrations
@@ -252,11 +252,28 @@ jobs:
         with:
           files: |
             server/src/infra/migrations/
-      - name: Verify files have not changed
+      - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
-          echo "ERROR: Generated files not up to date!"
+          echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
+
+      - name: Run SQL generation
+        run: npm run sql:generate
+
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@v13.1
+        id: verify-changed-sql-files
+        with:
+          files: |
+            server/src/infra/sql
+
+      - name: Verify SQL files have not changed
+        if: steps.verify-changed-sql-files.outputs.files_changed == 'true'
+        run: |
+          echo "ERROR: Generated SQL files not up to date!"
+          echo "Changed files: ${{ steps.verify-changed-sql-files.outputs.changed_files }}"
           exit 1
 
   # mobile-integration-tests:
