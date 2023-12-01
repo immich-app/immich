@@ -52,7 +52,8 @@
     },
     {
       "groupName": "base-image",
-      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"]
+      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"],
+      "minimumReleaseAge": "0"
     },
     {
       "matchDatasources": ["docker"],
