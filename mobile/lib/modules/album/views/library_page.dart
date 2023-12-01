@@ -135,49 +135,56 @@ class LibraryPage extends HookConsumerWidget {
     }
 
     Widget buildCreateAlbumButton() {
-      return GestureDetector(
-        onTap: () {
-          context.autoPush(CreateAlbumRoute(isSharedAlbum: false));
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          var cardSize = constraints.maxWidth;
+
+          return GestureDetector(
+            onTap: () {
+              context.autoPush(CreateAlbumRoute(isSharedAlbum: false));
+            },
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(bottom: 32), // Adjust padding to suit
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: cardSize,
+                    height: cardSize,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isDarkTheme
+                            ? const Color.fromARGB(255, 53, 53, 53)
+                            : const Color.fromARGB(255, 203, 203, 203),
+                      ),
+                      color: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.add_rounded,
+                        size: 28,
+                        color: context.primaryColor,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 8.0,
+                      bottom: 16,
+                    ),
+                    child: Text(
+                      'library_page_new_album',
+                      style: context.textTheme.labelLarge,
+                    ).tr(),
+                  ),
+                ],
+              ),
+            ),
+          );
         },
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: isDarkTheme
-                          ? const Color.fromARGB(255, 53, 53, 53)
-                          : const Color.fromARGB(255, 203, 203, 203),
-                    ),
-                    color: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.add_rounded,
-                      size: 28,
-                      color: context.primaryColor,
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  top: 8.0,
-                  bottom: 16,
-                ),
-                child: Text(
-                  'library_page_new_album',
-                  style: context.textTheme.labelLarge,
-                ).tr(),
-              ),
-            ],
-          ),
-        ),
       );
     }
 
