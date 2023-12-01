@@ -1,107 +1,127 @@
 <script lang="ts">
   import 'context-filter-polyfill'; // polyfill for canvas filters
 
-  export let editedImage;
+  export let editedImage: string;
   export let isRendering = false;
   export let assetData: string;
-  export let angle: number;
-  export let crop: { width: number; height: number };
-  export let scale: number;
-  export let translate: { x: number; y: number };
-  export let aspectRatio: number;
-  export let ratio: number; // ratio of original image to displayed image
-  export let filter: {
-    blur: number;
-    brightness: number;
-    contrast: number;
-    grayscale: number;
-    hueRotate: number;
-    invert: number;
-    opacity: number;
-    saturation: number;
-    sepia: number;
+  export let angle = 0;
+  export let crop = { width: 0, height: 0 };
+  export let scale = 1;
+  export let translate = { x: 0, y: 0 };
+  export let aspectRatio = 0;
+  export let ratio = 1; // ratio of the original image to the displayed image
+  export let filter = {
+    blur: 0,
+    brightness: 1,
+    contrast: 1,
+    grayscale: 0,
+    hueRotate: 0,
+    invert: 0,
+    opacity: 1,
+    saturation: 1,
+    sepia: 0,
   };
 
-  // let canvas: HTMLCanvasElement;
-  // let canvas2: HTMLCanvasElement;
-
   export const start = async () => {
-    // scale and aspect ratio are not used yet
     console.log('scale', scale);
     console.log('aspectRatio', aspectRatio);
 
     isRendering = true;
-    const canvas = document.createElement('canvas');
+
     const img = new Image();
     img.src = assetData;
 
     const imgWidth = img.width;
     const imgHeight = img.height;
 
-    //calc rotation-wrapper-canvas
     const d = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
-
     const dx = -imgWidth / 2;
     const dy = -imgHeight / 2;
 
     const translateX = translate.x * ratio;
     const translateY = translate.y * ratio;
-
-    canvas.height = d;
-    canvas.width = d;
-
-    const ctx = canvas.getContext('2d');
+    const canvas = createCanvas(d, d);
+    const ctx = getCanvasContext(canvas);
     if (!ctx) {
       return;
     }
 
+    drawImageOnCanvas(ctx, img, (dx + translateX) * scale, (dy + translateY) * scale, imgWidth, imgHeight);
+
+    const canvas2 = createCanvas(crop.width * ratio, crop.height * ratio);
+    const cropCtx = getCanvasContext(canvas2);
+    if (!cropCtx) {
+      return;
+    }
+
+    cropCtx.drawImage(
+      canvas,
+      (d - canvas2.width) / 2,
+      (d - canvas2.height) / 2,
+      canvas2.width,
+      canvas2.height,
+      0,
+      0,
+      canvas2.width,
+      canvas2.height,
+    );
+
+    downloadImage(canvas2);
+  };
+
+  const createCanvas = (width: number, height: number): HTMLCanvasElement => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    return canvas;
+  };
+
+  const getCanvasContext = (canvas: HTMLCanvasElement | null): CanvasRenderingContext2D | null => {
+    if (!canvas) {
+      return null;
+    }
+    const ctx = canvas.getContext('2d');
+    return ctx;
+  };
+
+  const drawImageOnCanvas = (
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    x: number,
+    y: number,
+    originalWidth: number,
+    originalHeight: number,
+  ) => {
     ctx.save();
-    ctx.translate(d / 2, d / 2);
+    ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
     ctx.rotate((angle * Math.PI) / 180);
     ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${
       filter.grayscale
     }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${
       filter.saturation
     }) sepia(${filter.sepia})`;
-    ctx.drawImage(img, dx + translateX, dy + translateY, imgWidth, imgHeight);
-    ctx.save();
 
-    //crop image
-    const canvas2 = document.createElement('canvas');
-    // wrapper.appendChild(canvas2);
+    const { scaledWidth, scaledHeight } = scaleImage(originalWidth, originalHeight);
+    ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+    ctx.restore();
+  };
 
-    const cropHeight = crop.height * ratio;
-    const cropWidth = crop.width * ratio;
+  const scaleImage = (width: number, height: number) => {
+    const scaledWidth = width * scale;
+    const scaledHeight = height * scale;
+    return { scaledWidth, scaledHeight };
+  };
 
-    canvas2.width = cropWidth;
-    canvas2.height = cropHeight;
-    const cropCtx = canvas2.getContext('2d');
-    if (!cropCtx) {
-      return;
-    }
-    cropCtx.drawImage(
-      canvas,
-      (d - cropWidth) / 2,
-      (d - cropHeight) / 2,
-      cropWidth,
-      cropHeight,
-      0,
-      0,
-      cropWidth,
-      cropHeight,
-    );
-    cropCtx.save();
-
-    // download image
-    // hack to first render loading animation
+  const downloadImage = (canvas: HTMLCanvasElement) => {
     window.setTimeout(() => {
-      const dataURL = canvas2.toDataURL('image/png');
+      const dataURL = canvas.toDataURL('image/png');
       editedImage = dataURL;
 
-      const l = document.createElement('a');
-      l.href = dataURL;
-      l.download = 'test.png';
-      l.click();
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'test.png';
+      link.click();
+
       isRendering = false;
     }, 0);
   };

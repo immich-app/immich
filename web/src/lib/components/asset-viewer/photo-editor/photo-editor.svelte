@@ -1164,7 +1164,7 @@
     {assetData}
     editedImage={renderedImage}
     angle={currentAngle - currentAngleOffset}
-    scale={1}
+    scale={currentZoom}
     translate={currentTranslate}
     aspectRatio={aspectRatioNum}
     crop={currentCrop}
