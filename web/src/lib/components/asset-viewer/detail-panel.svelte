@@ -234,17 +234,19 @@
       <p class="text-sm">DETAILS</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
       <div
-        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
-        on:click={() => (isShowChangeDate = true)}
-        on:keydown={(event) => event.key === 'Enter' && (isShowChangeDate = true)}
+        class="flex justify-between place-items-start gap-4 py-4"
         tabindex="0"
         role="button"
-        title="Edit date"
+        on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
+        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeDate = true) : null)}
+        title={isOwner ? 'Edit date' : ''}
+        class:hover:dark:text-immich-dark-primary={isOwner}
+        class:hover:text-immich-primary={isOwner}
       >
         <div class="flex gap-4">
           <div>
@@ -277,9 +279,12 @@
             </div>
           </div>
         </div>
-        <button class="focus:outline-none">
-          <Icon path={mdiPencil} size="20" />
-        </button>
+
+        {#if isOwner}
+          <button class="focus:outline-none">
+            <Icon path={mdiPencil} size="20" />
+          </button>
+        {/if}
       </div>
     {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div class="flex justify-between place-items-start gap-4 py-4">
@@ -409,14 +414,16 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {#if asset.exifInfo?.city && !asset.isReadOnly}
       <div
-        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
-        on:click={() => (isShowChangeLocation = true)}
-        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
+        class="flex justify-between place-items-start gap-4 py-4"
+        on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
+        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeLocation = true) : null)}
         tabindex="0"
+        title={isOwner ? 'Edit location' : ''}
         role="button"
-        title="Edit location"
+        class:hover:dark:text-immich-dark-primary={isOwner}
+        class:hover:text-immich-primary={isOwner}
       >
         <div class="flex gap-4">
           <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
@@ -436,9 +443,11 @@
           </div>
         </div>
 
-        <div>
-          <Icon path={mdiPencil} size="20" />
-        </div>
+        {#if isOwner}
+          <div>
+            <Icon path={mdiPencil} size="20" />
+          </div>
+        {/if}
       </div>
     {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div
