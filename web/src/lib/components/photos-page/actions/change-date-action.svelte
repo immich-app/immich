@@ -6,6 +6,7 @@
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { user } from '$lib/stores/user.store';
+  import { getSelectedAssets } from '$lib/utils/asset-utils';
   export let menuItem = false;
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -13,9 +14,7 @@
 
   const handleConfirm = async (dateTimeOriginal: string) => {
     isShowChangeDate = false;
-    const ids = Array.from(getOwnedAssets())
-      .filter((a) => !a.isExternal && $user && a.ownerId !== $user.id)
-      .map((a) => a.id);
+    const ids = getSelectedAssets(getOwnedAssets(), $user);
 
     try {
       await api.assetApi.updateAssets({
