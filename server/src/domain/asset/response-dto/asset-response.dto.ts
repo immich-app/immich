@@ -98,7 +98,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     tags: entity.tags?.map(mapTag),
     people: entity.faces
       ?.map(mapFace)
-      .filter((person): person is PersonResponseDto => person !== null && !person.isHidden)
+      .filter((person): person is PersonResponseDto => person !== null)
       .reduce((people, person) => {
         const existingPerson = people.find((p) => p.id === person.id);
         if (!existingPerson) {
