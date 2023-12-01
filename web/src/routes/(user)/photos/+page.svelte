@@ -25,7 +25,6 @@
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
-  import { page } from '$app/stores';
 
   export let data: PageData;
 
@@ -35,7 +34,7 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $user = $page.data.user;
+  $user = data.user;
 
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
 
