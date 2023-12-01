@@ -1095,9 +1095,6 @@
       <div class="grid gap-y-2 px-6 pt-2">
         <!-- Adjust -->
         <div class="grid gap-y-8">
-          <!-- <AdjustElement title="HDR" type={false} bind:value={filter.hdr}>
-            <ImageFilterHdr />
-          </AdjustElement> -->
           <AdjustElement title="Brightness" type={true} bind:value={filter.brightness} on:applyFilter={applyFilter}>
             <Icon path={mdiBrightness6} size="1.5em" />
           </AdjustElement>

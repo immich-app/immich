@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from 'svelte';
 
-  export let title: string = 'Free';
+  export let title = 'Free';
 
-  export let type: boolean = false; // false = range from 0 to 100, true = range from 0 to 200 with default value of 100
+  export let type = false; // false = range from 0 to 100, true = range from 0 to 200 with default value of 100
 
-  export let value: number = 0;
+  export let value = 0;
 
   let dispatch = createEventDispatcher();
   let progressBar: HTMLDivElement;
 
-  let rangeValue: number = 0;
+  let rangeValue = 0;
 
   $: if (type) {
     rangeValue = (value / 2) * 100;
@@ -72,7 +72,7 @@
     <input bind:value={rangeValue} type="range" name="" id="" on:input={renderProgress} />
     <div
       bind:this={progressBar}
-      class="bg-immich-gray/10 progress-bar pointer-events-none absolute bottom-[14px] h-[3px] w-full rounded-full"
+      class="bg-immich-gray/10 progress-bar pointer-events-none absolute bottom-[22px] h-[3px] w-full rounded-full"
     />
   </div>
 </div>
