@@ -13,7 +13,7 @@ ENV VIRTUAL_ENV="/opt/venv" PATH="/opt/venv/bin:${PATH}"
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --only main
 
-FROM python:3.11-slim-bookworm@sha256:1bc6a3e9356d64ea632791653bc71a56340e8741dab66434ab2739ebf6aed29d
+FROM python:3.11-slim-bookworm@sha256:23f52205321f806c2cc742cefbf837e0d25101388c043e860c7817985230565c
 
 RUN apt-get update && apt-get install -y --no-install-recommends tini libmimalloc2.0 && rm -rf /var/lib/apt/lists/*
 
