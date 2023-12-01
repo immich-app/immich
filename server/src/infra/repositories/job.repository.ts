@@ -15,7 +15,7 @@ export class JobRepository implements IJobRepository {
   constructor(
     private moduleRef: ModuleRef,
     private schedulerReqistry: SchedulerRegistry,
-  ) {}
+  ) { }
 
   addHandler(queueName: QueueName, concurrency: number, handler: (item: JobItem) => Promise<void>) {
     const workerHandler: Processor = async (job: Job) => handler(job as JobItem);
@@ -89,6 +89,10 @@ export class JobRepository implements IJobRepository {
 
   empty(name: QueueName) {
     return this.getQueue(name).drain();
+  }
+
+  clearFailed(name: QueueName) {
+    return this.getQueue(name).clean(0, 1000, 'failed');
   }
 
   getJobCounts(name: QueueName): Promise<JobCounts> {

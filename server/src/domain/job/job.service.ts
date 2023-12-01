@@ -49,6 +49,11 @@ export class JobService {
       case JobCommand.EMPTY:
         await this.jobRepository.empty(queueName);
         break;
+
+      case JobCommand.CLEARFAILED:
+        const failedJobs = await this.jobRepository.clearFailed(queueName);
+        this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
+        break;
     }
 
     return this.getJobStatus(queueName);

@@ -120,6 +120,7 @@ export interface IJobRepository {
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;
+  clearFailed(name: QueueName): Promise<string[]>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
 }

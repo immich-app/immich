@@ -15,6 +15,7 @@
     mdiPlay,
     mdiSelectionSearch,
   } from '@mdi/js';
+  import Button from '$lib/components/elements/buttons/button.svelte';
 
   export let title: string;
   export let subtitle: string | undefined = undefined;
@@ -56,6 +57,13 @@
           {#if jobCounts.failed > 0}
             <Badge color="primary">
               {jobCounts.failed.toLocaleString($locale)} failed
+              <Button
+                size="tiny"
+                shadow={false}
+                on:click={() => dispatch('command', { command: JobCommand.ClearFailed, force: false })}
+              >
+                <Icon path={mdiClose} size="12" />
+              </Button>
             </Badge>
           {/if}
           {#if jobCounts.delayed > 0}

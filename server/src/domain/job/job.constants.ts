@@ -18,6 +18,7 @@ export enum JobCommand {
   PAUSE = 'pause',
   RESUME = 'resume',
   EMPTY = 'empty',
+  CLEARFAILED = 'clearFailed',
 }
 
 export enum JobName {
