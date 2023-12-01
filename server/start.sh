@@ -32,4 +32,4 @@ if [ "$REDIS_PASSWORD_FILE" ]; then
 	unset REDIS_PASSWORD_FILE
 fi
 
-exec node dist/main $@
+exec node /usr/src/app/dist/main $@

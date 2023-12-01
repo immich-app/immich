@@ -36,10 +36,10 @@ import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
 import {
-  APIKeyRepository,
   AccessRepository,
   ActivityRepository,
   AlbumRepository,
+  ApiKeyRepository,
   AssetRepository,
   AuditRepository,
   CommunicationRepository,
@@ -74,7 +74,7 @@ const providers: Provider[] = [
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
-  { provide: IKeyRepository, useClass: APIKeyRepository },
+  { provide: IKeyRepository, useClass: ApiKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: IMetadataRepository, useClass: MetadataRepository },
   { provide: IMoveRepository, useClass: MoveRepository },
