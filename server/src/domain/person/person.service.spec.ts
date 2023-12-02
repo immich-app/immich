@@ -414,14 +414,14 @@ describe(PersonService.name, () => {
 
   describe('getFacesById', () => {
     it('should get the bounding boxes for an asset', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([faceStub.face1.assetId]));
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
       await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
         mapFaces(faceStub.primaryFace1),
       ]);
     });
     it('should reject if the user has not access to the asset', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set());
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
       await expect(sut.getFacesById(authStub.admin, { id: faceStub.primaryFace1.assetId })).rejects.toBeInstanceOf(
         BadRequestException,
