@@ -112,7 +112,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: postgres:14-alpine@sha256:54916702f83d9330d355e078f69a7ba42f2cf2e530c8fe63423d6680d8da45b0
+    image: postgres:14-alpine@sha256:6a0e35296341e676fe6bd8d236c72afffe2dfe3d7eb9c2405c0f3fc04500cd07
     env_file:
       - .env
     environment:
