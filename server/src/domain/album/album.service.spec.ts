@@ -509,7 +509,7 @@ describe(AlbumService.name, () => {
   describe('addAssets', () => {
     it('should allow the owner to add assets', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
       albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
@@ -534,7 +534,7 @@ describe(AlbumService.name, () => {
 
     it('should not set the thumbnail if the album has one already', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       albumMock.getById.mockResolvedValue(_.cloneDeep({ ...albumStub.empty, albumThumbnailAssetId: 'asset-id' }));
       albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
@@ -552,7 +552,7 @@ describe(AlbumService.name, () => {
 
     it('should allow a shared user to add assets', async () => {
       accessMock.album.checkSharedAlbumAccess.mockResolvedValue(new Set(['album-123']));
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.sharedWithUser));
       albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
@@ -577,7 +577,7 @@ describe(AlbumService.name, () => {
 
     it('should allow a shared link user to add assets', async () => {
       accessMock.album.checkSharedLinkAccess.mockResolvedValue(new Set(['album-123']));
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
       albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
@@ -607,8 +607,7 @@ describe(AlbumService.name, () => {
 
     it('should allow adding assets shared via partner sharing', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
-      accessMock.asset.hasPartnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkPartnerAccess.mockResolvedValue(new Set(['asset-1']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
       albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
@@ -621,12 +620,12 @@ describe(AlbumService.name, () => {
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-1',
       });
-      expect(accessMock.asset.hasPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'asset-1');
+      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['asset-1']));
     });
 
     it('should skip duplicate assets', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-id']));
       albumMock.getById.mockResolvedValue(_.cloneDeep(albumStub.oneAsset));
       albumMock.getAssetIds.mockResolvedValueOnce(new Set(['asset-id']));
 
@@ -639,8 +638,6 @@ describe(AlbumService.name, () => {
 
     it('should skip assets not shared with user', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
-      accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
       albumMock.getById.mockResolvedValue(albumStub.oneAsset);
       albumMock.getAssetIds.mockResolvedValueOnce(new Set());
 
@@ -648,8 +645,8 @@ describe(AlbumService.name, () => {
         { success: false, id: 'asset-1', error: BulkIdErrorReason.NO_PERMISSION },
       ]);
 
-      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'asset-1');
-      expect(accessMock.asset.hasPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'asset-1');
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['asset-1']));
+      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['asset-1']));
     });
 
     it('should not allow unauthorized access to the album', async () => {

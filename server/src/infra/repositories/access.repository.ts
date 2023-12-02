@@ -1,6 +1,6 @@
 import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import {
   ActivityEntity,
   AlbumEntity,
@@ -112,107 +112,120 @@ export class AccessRepository implements IAccessRepository {
   };
 
   asset = {
-    hasAlbumAccess: (userId: string, assetId: string): Promise<boolean> => {
-      return this.albumRepository.exist({
-        where: [
-          {
+    checkAlbumAccess: async (userId: string, assetIds: Set<string>): Promise<Set<string>> => {
+      if (assetIds.size === 0) {
+        return new Set();
+      }
+
+      return this.albumRepository
+        .createQueryBuilder('album')
+        .innerJoin('album.assets', 'asset')
+        .leftJoin('album.sharedUsers', 'sharedUsers')
+        .select('asset.id', 'assetId')
+        .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
+        .where(
+          new Brackets((qb) => {
+            qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
+          }),
+        )
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
+              // still part of a live photo is in an album
+              .orWhere('asset.livePhotoVideoId IN (:...assetIds)', { assetIds: [...assetIds] });
+          }),
+        )
+        .getRawMany()
+        .then((rows) => {
+          const allowedIds = new Set<string>();
+          for (const row of rows) {
+            if (row.assetId && assetIds.has(row.assetId)) {
+              allowedIds.add(row.assetId);
+            }
+            if (row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
+              allowedIds.add(row.livePhotoVideoId);
+            }
+          }
+          return allowedIds;
+        });
+    },
+
+    checkOwnerAccess: async (userId: string, assetIds: Set<string>): Promise<Set<string>> => {
+      if (assetIds.size === 0) {
+        return new Set();
+      }
+
+      return this.assetRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...assetIds]),
             ownerId: userId,
-            assets: {
-              id: assetId,
-            },
           },
-          {
-            sharedUsers: {
-              id: userId,
-            },
-            assets: {
-              id: assetId,
-            },
-          },
-          // still part of a live photo is in an album
-          {
-            ownerId: userId,
-            assets: {
-              livePhotoVideoId: assetId,
-            },
-          },
-          {
-            sharedUsers: {
-              id: userId,
-            },
-            assets: {
-              livePhotoVideoId: assetId,
-            },
-          },
-        ],
-      });
+          withDeleted: true,
+        })
+        .then((assets) => new Set(assets.map((asset) => asset.id)));
     },
 
-    hasOwnerAccess: (userId: string, assetId: string): Promise<boolean> => {
-      return this.assetRepository.exist({
-        where: {
-          id: assetId,
-          ownerId: userId,
-        },
-        withDeleted: true,
-      });
+    checkPartnerAccess: async (userId: string, assetIds: Set<string>): Promise<Set<string>> => {
+      if (assetIds.size === 0) {
+        return new Set();
+      }
+
+      return this.partnerRepository
+        .createQueryBuilder('partner')
+        .innerJoin('partner.sharedBy', 'sharedBy')
+        .innerJoin('sharedBy.assets', 'asset')
+        .select('asset.id', 'assetId')
+        .where('partner.sharedWithId = :userId', { userId })
+        .andWhere('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
+        .getRawMany()
+        .then((rows) => new Set(rows.map((row) => row.assetId)));
     },
 
-    hasPartnerAccess: (userId: string, assetId: string): Promise<boolean> => {
-      return this.partnerRepository.exist({
-        where: {
-          sharedWith: {
-            id: userId,
-          },
-          sharedBy: {
-            assets: {
-              id: assetId,
-            },
-          },
-        },
-        relations: {
-          sharedWith: true,
-          sharedBy: {
-            assets: true,
-          },
-        },
-      });
-    },
+    checkSharedLinkAccess: async (sharedLinkId: string, assetIds: Set<string>): Promise<Set<string>> => {
+      if (assetIds.size === 0) {
+        return new Set();
+      }
 
-    hasSharedLinkAccess: async (sharedLinkId: string, assetId: string): Promise<boolean> => {
-      return this.sharedLinkRepository.exist({
-        where: [
-          {
-            id: sharedLinkId,
-            album: {
-              assets: {
-                id: assetId,
-              },
-            },
-          },
-          {
-            id: sharedLinkId,
-            assets: {
-              id: assetId,
-            },
-          },
-          // still part of a live photo is in a shared link
-          {
-            id: sharedLinkId,
-            album: {
-              assets: {
-                livePhotoVideoId: assetId,
-              },
-            },
-          },
-          {
-            id: sharedLinkId,
-            assets: {
-              livePhotoVideoId: assetId,
-            },
-          },
-        ],
-      });
+      return this.sharedLinkRepository
+        .createQueryBuilder('sharedLink')
+        .leftJoin('sharedLink.album', 'album')
+        .leftJoin('sharedLink.assets', 'assets')
+        .leftJoin('album.assets', 'albumAssets')
+        .select('assets.id', 'assetId')
+        .addSelect('albumAssets.id', 'albumAssetId')
+        .addSelect('assets.livePhotoVideoId', 'assetLivePhotoVideoId')
+        .addSelect('albumAssets.livePhotoVideoId', 'albumAssetLivePhotoVideoId')
+        .where('sharedLink.id = :sharedLinkId', { sharedLinkId })
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('assets.id IN (:...assetIds)', { assetIds: [...assetIds] })
+              .orWhere('albumAssets.id IN (:...assetIds)', { assetIds: [...assetIds] })
+              // still part of a live photo is in a shared link
+              .orWhere('assets.livePhotoVideoId IN (:...assetIds)', { assetIds: [...assetIds] })
+              .orWhere('albumAssets.livePhotoVideoId IN (:...assetIds)', { assetIds: [...assetIds] });
+          }),
+        )
+        .getRawMany()
+        .then((rows) => {
+          const allowedIds = new Set<string>();
+          for (const row of rows) {
+            if (row.assetId && assetIds.has(row.assetId)) {
+              allowedIds.add(row.assetId);
+            }
+            if (row.assetLivePhotoVideoId && assetIds.has(row.assetLivePhotoVideoId)) {
+              allowedIds.add(row.assetLivePhotoVideoId);
+            }
+            if (row.albumAssetId && assetIds.has(row.albumAssetId)) {
+              allowedIds.add(row.albumAssetId);
+            }
+            if (row.albumAssetLivePhotoVideoId && assetIds.has(row.albumAssetLivePhotoVideoId)) {
+              allowedIds.add(row.albumAssetLivePhotoVideoId);
+            }
+          }
+          return allowedIds;
+        });
     },
   };
 
