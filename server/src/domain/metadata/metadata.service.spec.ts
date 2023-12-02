@@ -33,7 +33,7 @@ import {
   WithProperty,
   WithoutProperty,
 } from '../repositories';
-import { MetadataService } from './metadata.service';
+import { MetadataService, Orientation } from './metadata.service';
 
 describe(MetadataService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
@@ -302,7 +302,9 @@ describe(MetadataService.name, () => {
       await sut.handleMetadataExtraction({ id: assetStub.video.id });
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
-      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ orientation: '8' }));
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ orientation: Orientation.Rotate270CW }),
+      );
     });
 
     it('should apply motion photos', async () => {

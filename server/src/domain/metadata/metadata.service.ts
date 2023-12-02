@@ -50,6 +50,17 @@ interface DirectoryEntry {
   Item: DirectoryItem;
 }
 
+export enum Orientation {
+  Horizontal = '1',
+  MirrorHorizontal = '2',
+  Rotate180 = '3',
+  MirrorVertical = '4',
+  MirrorHorizontalRotate270CW = '5',
+  Rotate90CW = '6',
+  MirrorHorizontalRotate90CW = '7',
+  Rotate270CW = '8',
+}
+
 type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
   ExifEntity,
   'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
@@ -190,16 +201,16 @@ export class MetadataService {
       if (videoStreams[0]) {
         switch (videoStreams[0].rotation) {
           case -90:
-            exifData.orientation = '6';
-            break;
-          case 90:
-            exifData.orientation = '8';
-            break;
-          case 180:
-            exifData.orientation = '3';
+            exifData.orientation = Orientation.Rotate90CW;
             break;
           case 0:
-            exifData.orientation = '1';
+            exifData.orientation = Orientation.Horizontal;
+            break;
+          case 90:
+            exifData.orientation = Orientation.Rotate270CW;
+            break;
+          case 180:
+            exifData.orientation = Orientation.Rotate180;
             break;
         }
       }
