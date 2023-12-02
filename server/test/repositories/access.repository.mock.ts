@@ -22,11 +22,12 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
       hasAlbumOwnerAccess: jest.fn(),
       hasCreateAccess: jest.fn(),
     },
+
     asset: {
-      hasOwnerAccess: jest.fn(),
-      hasAlbumAccess: jest.fn(),
-      hasPartnerAccess: jest.fn(),
-      hasSharedLinkAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkAlbumAccess: jest.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkSharedLinkAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     album: {

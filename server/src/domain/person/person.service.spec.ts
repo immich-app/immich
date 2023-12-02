@@ -331,7 +331,7 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.withName);
       personMock.update.mockResolvedValue(personStub.withName);
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(

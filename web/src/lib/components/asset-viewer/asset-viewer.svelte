@@ -9,7 +9,6 @@
     AssetTypeEnum,
     ReactionType,
     SharedLinkResponseDto,
-    UserResponseDto,
   } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -42,6 +41,7 @@
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import SlideshowBar from './slideshow-bar.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -51,7 +51,6 @@
   export let force = false;
   export let withStacked = false;
   export let isShared = false;
-  export let user: UserResponseDto | null = null;
   export let album: AlbumResponseDto | null = null;
 
   let reactions: ActivityResponseDto[] = [];
@@ -143,10 +142,10 @@
   };
 
   const getFavorite = async () => {
-    if (album && user) {
+    if (album && $user) {
       try {
         const { data } = await api.activityApi.getActivities({
-          userId: user.id,
+          userId: $user.id,
           assetId: asset.id,
           albumId: album.id,
           type: ReactionType.Like,
@@ -743,7 +742,7 @@
     </div>
   {/if}
 
-  {#if isShared && album && isShowActivity && user}
+  {#if isShared && album && isShowActivity && $user}
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
@@ -751,7 +750,7 @@
       translate="yes"
     >
       <ActivityViewer
-        {user}
+        user={$user}
         disabled={!album.isActivityEnabled}
         assetType={asset.type}
         albumOwnerId={album.ownerId}

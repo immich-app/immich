@@ -6,11 +6,12 @@ export interface IAccessRepository {
     hasAlbumOwnerAccess(userId: string, activityId: string): Promise<boolean>;
     hasCreateAccess(userId: string, albumId: string): Promise<boolean>;
   };
+
   asset: {
-    hasOwnerAccess(userId: string, assetId: string): Promise<boolean>;
-    hasAlbumAccess(userId: string, assetId: string): Promise<boolean>;
-    hasPartnerAccess(userId: string, assetId: string): Promise<boolean>;
-    hasSharedLinkAccess(sharedLinkId: string, assetId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>>;
+    checkAlbumAccess(userId: string, assetIds: Set<string>): Promise<Set<string>>;
+    checkPartnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>>;
+    checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>): Promise<Set<string>>;
   };
 
   authDevice: {

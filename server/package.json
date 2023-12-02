@@ -5,10 +5,6 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "bin": {
-    "immich": "./bin/cli.sh",
-    "immich-admin": "./bin/admin-cli.sh"
-  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --check .",

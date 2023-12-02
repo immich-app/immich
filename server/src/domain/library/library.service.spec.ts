@@ -58,7 +58,8 @@ describe(LibraryService.name, () => {
       ctime: new Date('2023-01-01'),
     } as Stats);
 
-    accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.id]));
+    // Always validate owner access for library.
+    accessMock.library.checkOwnerAccess.mockImplementation(async (_, libraryIds) => libraryIds);
 
     sut = new LibraryService(
       accessMock,

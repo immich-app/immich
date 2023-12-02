@@ -1,5 +1,5 @@
-import { bootstrap as adminCli } from './admin-cli/main';
-import { bootstrap as immich } from './immich/main';
+import { bootstrap as admin } from './immich-admin/main';
+import { bootstrap as server } from './immich/main';
 import { bootstrap as microservices } from './microservices/main';
 
 const immichApp = process.argv[2] || process.env.IMMICH_APP;
@@ -12,13 +12,13 @@ function bootstrap() {
   switch (immichApp) {
     case 'immich':
       process.title = 'immich_server';
-      return immich();
+      return server();
     case 'microservices':
       process.title = 'immich_microservices';
       return microservices();
-    case 'admin-cli':
+    case 'immich-admin':
       process.title = 'immich_admin_cli';
-      return adminCli();
+      return admin();
     default:
       console.log(`Invalid app name: ${immichApp}. Expected one of immich|microservices|cli`);
       process.exit(1);

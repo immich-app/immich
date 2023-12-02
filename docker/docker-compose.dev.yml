@@ -108,11 +108,11 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:80cc8518800438c684a53ed829c621c94afd1087aaeb59b0d4343ed3e7bcf6c5
+    image: redis:6.2-alpine@sha256:60e49e22fa5706cd8df7d5e0bc50ee9bab7c608039fa653c4d961014237cca46
 
   database:
     container_name: immich_postgres
-    image: postgres:14-alpine@sha256:50d9be76e9a90da4c781554955e0ffc79d9d5c4226838e64b36aacc97cbc35ad
+    image: postgres:14-alpine@sha256:54916702f83d9330d355e078f69a7ba42f2cf2e530c8fe63423d6680d8da45b0
     env_file:
       - .env
     environment:

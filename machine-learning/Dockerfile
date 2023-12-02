@@ -1,4 +1,4 @@
-FROM python:3.11-bookworm@sha256:e5a1b0a194a5fbf94f6e350b31c9a508723f9eeb2f9e9e32c3b65df8520a40cc as builder
+FROM python:3.11-bookworm@sha256:47c1829f72432c33609b3095259843a88c7ffc42cc9dbb55c43f2e7bbe46ca58 as builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
@@ -13,7 +13,7 @@ ENV VIRTUAL_ENV="/opt/venv" PATH="/opt/venv/bin:${PATH}"
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --only main
 
-FROM python:3.11-slim-bookworm@sha256:1bc6a3e9356d64ea632791653bc71a56340e8741dab66434ab2739ebf6aed29d
+FROM python:3.11-slim-bookworm@sha256:8f82989e563d0dbad057a874a96438a360978c148e34f36c1db8d2d61b5fd6f0
 
 RUN apt-get update && apt-get install -y --no-install-recommends tini libmimalloc2.0 && rm -rf /var/lib/apt/lists/*
 

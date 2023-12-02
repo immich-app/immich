@@ -15,6 +15,8 @@
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
+    mdiEye,
+    mdiEyeOff,
     mdiImageOutline,
     mdiMapMarkerOutline,
     mdiInformationOutline,
@@ -22,12 +24,14 @@
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Map from '../shared-components/map/map.svelte';
   import { setBoundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { AppRoute } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
+  import { user } from '$lib/stores/user.store';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -71,6 +75,7 @@
   })();
 
   $: people = asset.people || [];
+  $: showingHiddenPeople = false;
 
   const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
     if (assetUpdate && assetUpdate.id === asset.id) {
@@ -197,28 +202,33 @@
   </section>
 
   {#if !api.isSharedLink && people.length > 0}
-    <section class="px-4 py-4 text-sm uppercase">
-      <div class="grid grid-cols-2 items-center">
-        <h2 class="justify-self-start uppercase">People</h2>
-        <button class="justify-self-end" on:click={() => (showEditFaces = true)}>
-          <Icon path={mdiPencil} size={18} />
-        </button>
+    <section class="px-4 py-4 text-sm">
+      <div class="flex h-10 w-full items-center justify-between">
+        <h2>PEOPLE</h2>
+        <CircleIconButton
+            title="Show hidden people"
+            icon={mdiPencil}
+            padding="1"
+            on:click={() => (showEditFaces = true)}
+          />
+        {#if people.some((person) => person.isHidden)}
+          <CircleIconButton
+            title="Show hidden people"
+            icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
+            padding="1"
+            on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+          />
+        {/if}
       </div>
 
-      <div class="mt-4 flex flex-wrap gap-2">
-        {#each people as person, index (person.id)}
-          <div
-            role="button"
-            tabindex={index}
-            on:focus={() => setBoundingBoxesArray(people[index].faces)}
-            on:mouseover={() => setBoundingBoxesArray(people[index].faces)}
-            on:mouseleave={() => setBoundingBoxesArray([])}
+      <div class="mt-2 flex flex-wrap gap-2">
+        {#each people as person (person.id)}
+          <a
+            href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
+            class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
+            on:click={() => dispatch('close-viewer')}
           >
-            <a
-              href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-              class="w-[90px]"
-              on:click={() => dispatch('close-viewer')}
-            >
+            <div class="relative">
               <ImageThumbnail
                 curve
                 shadow
@@ -228,26 +238,27 @@
                 widthStyle="90px"
                 heightStyle="90px"
                 thumbhash={null}
+                hidden={person.isHidden}
               />
-              <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-              {#if person.birthDate}
-                {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                <p
-                  class="font-light"
-                  title={personBirthDate.toLocaleString(
-                    {
-                      month: 'long',
-                      day: 'numeric',
-                      year: 'numeric',
-                    },
-                    { locale: $locale },
-                  )}
-                >
-                  Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                </p>
-              {/if}
-            </a>
-          </div>
+            </div>
+            <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+            {#if person.birthDate}
+              {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+              <p
+                class="font-light"
+                title={personBirthDate.toLocaleString(
+                  {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  },
+                  { locale: $locale },
+                )}
+              >
+                Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+              </p>
+            {/if}
+          </a>
         {/each}
       </div>
     </section>
@@ -273,12 +284,14 @@
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
       <div
-        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
-        on:click={() => (isShowChangeDate = true)}
-        on:keydown={(event) => event.key === 'Enter' && (isShowChangeDate = true)}
+        class="flex justify-between place-items-start gap-4 py-4"
         tabindex="0"
         role="button"
-        title="Edit date"
+        on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
+        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeDate = true) : null)}
+        title={isOwner ? 'Edit date' : ''}
+        class:hover:dark:text-immich-dark-primary={isOwner}
+        class:hover:text-immich-primary={isOwner}
       >
         <div class="flex gap-4">
           <div>
@@ -311,11 +324,14 @@
             </div>
           </div>
         </div>
-        <button class="focus:outline-none">
-          <Icon path={mdiPencil} size="20" />
-        </button>
+
+        {#if isOwner}
+          <button class="focus:outline-none">
+            <Icon path={mdiPencil} size="20" />
+          </button>
+        {/if}
       </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -445,12 +461,14 @@
 
     {#if asset.exifInfo?.city && !asset.isReadOnly}
       <div
-        class="flex justify-between place-items-start gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary cursor-pointer"
-        on:click={() => (isShowChangeLocation = true)}
-        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
+        class="flex justify-between place-items-start gap-4 py-4"
+        on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
+        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeLocation = true) : null)}
         tabindex="0"
+        title={isOwner ? 'Edit location' : ''}
         role="button"
-        title="Edit location"
+        class:hover:dark:text-immich-dark-primary={isOwner}
+        class:hover:text-immich-primary={isOwner}
       >
         <div class="flex gap-4">
           <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
@@ -470,11 +488,13 @@
           </div>
         </div>
 
-        <div>
-          <Icon path={mdiPencil} size="20" />
-        </div>
+        {#if isOwner}
+          <div>
+            <Icon path={mdiPencil} size="20" />
+          </div>
+        {/if}
       </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg pr-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
