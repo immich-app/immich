@@ -14,6 +14,7 @@ import {
   IAssetRepository,
   ICryptoRepository,
   IJobRepository,
+  IMediaRepository,
   IMetadataRepository,
   IMoveRepository,
   IPersonRepository,
@@ -90,6 +91,7 @@ export class MetadataService {
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
@@ -181,6 +183,27 @@ export class MetadataService {
     }
 
     const { exifData, tags } = await this.exifData(asset);
+
+    if (asset.type === AssetType.VIDEO) {
+      const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+
+      if (videoStreams[0]) {
+        switch (videoStreams[0].rotation) {
+          case -90:
+            exifData.orientation = '6';
+            break;
+          case 90:
+            exifData.orientation = '8';
+            break;
+          case 180:
+            exifData.orientation = '3';
+            break;
+          case 0:
+            exifData.orientation = '1';
+            break;
+        }
+      }
+    }
 
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
