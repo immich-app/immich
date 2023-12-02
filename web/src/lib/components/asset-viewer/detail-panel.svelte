@@ -180,19 +180,19 @@
 
   {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
-      <div class="flex w-full items-center justify-between">
+      <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
-        <div class={people.reduce((acc, p) => acc || p.isHidden, false) ? '' : 'hidden'}>
+        {#if people.some((person) => person.isHidden)}
           <CircleIconButton
             title="Show hidden people"
             icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
-            padding="0"
+            padding="1"
             on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
           />
-        </div>
+        {/if}
       </div>
 
-      <div class="mt-4 flex flex-wrap gap-2">
+      <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person (person.id)}
           <a
             href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
