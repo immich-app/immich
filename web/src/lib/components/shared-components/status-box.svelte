@@ -2,19 +2,18 @@
   import { browser } from '$app/environment';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { ServerInfoResponseDto, api } from '@api';
+  import { api } from '@api';
   import { onDestroy, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { asByteUnitString } from '../../utils/byte-units';
   import LoadingSpinner from './loading-spinner.svelte';
   import { mdiCloud, mdiDns } from '@mdi/js';
+  import { serverInfoStore } from '$lib/stores/server-info.store';
 
   const { serverVersion, connected } = websocketStore;
 
-  let serverInfo: ServerInfoResponseDto;
-
   $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
-  $: usedPercentage = Math.round((serverInfo?.diskUseRaw / serverInfo?.diskSizeRaw) * 100);
+  $: usedPercentage = Math.round(($serverInfoStore?.diskUseRaw / $serverInfoStore?.diskSizeRaw) * 100);
 
   onMount(async () => {
     await refresh();
@@ -23,7 +22,7 @@
   const refresh = async () => {
     try {
       const { data } = await api.serverInfoApi.getServerInfo();
-      serverInfo = data;
+      $serverInfoStore = data;
     } catch (e) {
       console.log('Error [StatusBox] [onMount]');
     }
@@ -44,7 +43,7 @@
     </div>
     <div class="hidden group-hover:sm:block md:block">
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
-      {#if serverInfo}
+      {#if $serverInfoStore}
         <div class="my-2 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
           <!-- style={`width: ${$downloadAssets[fileName]}%`} -->
           <div
@@ -53,8 +52,8 @@
           />
         </div>
         <p class="text-xs">
-          {asByteUnitString(serverInfo?.diskUseRaw, $locale)} of
-          {asByteUnitString(serverInfo?.diskSizeRaw, $locale)} used
+          {asByteUnitString($serverInfoStore?.diskUseRaw, $locale)} of
+          {asByteUnitString($serverInfoStore?.diskSizeRaw, $locale)} used
         </p>
       {:else}
         <div class="mt-2">
