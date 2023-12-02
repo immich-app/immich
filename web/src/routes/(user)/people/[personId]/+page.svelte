@@ -155,11 +155,11 @@
     }
   });
 
-  const hideFace = async () => {
+  const toggleHideFace = async () => {
     try {
       await api.personApi.updatePerson({
         id: data.person.id,
-        personUpdateDto: { isHidden: true },
+        personUpdateDto: { isHidden: !data.person.isHidden },
       });
 
       notificationController.show({
@@ -382,7 +382,7 @@
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
             <MenuOption text="Set date of birth" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
             <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />
-            <MenuOption text="Hide face" on:click={() => hideFace()} />
+            <MenuOption text={data.person.isHidden ? 'Unhide face' : 'Hide face'} on:click={() => toggleHideFace()} />
           </AssetSelectContextMenu>
         </svelte:fragment>
       </ControlAppBar>
