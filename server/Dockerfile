@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20231130@sha256:2f3b4bc0b50a0710e4a0867b4842ebde3a709d18fd19b095b8bfb884082cfa18 as dev
+FROM ghcr.io/immich-app/base-server-dev:20231201@sha256:4701c0c5920c78e73040dd2b74d22042ffce393f1a9d3453d90a0ecf81ff8649 as dev
 
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
@@ -23,7 +23,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20231130@sha256:dd91bfac4090357605a862823a99b50cf01cbc519723198f7aebb6b0517fab1d
+FROM ghcr.io/immich-app/base-server-prod:20231201@sha256:b8e86cf4c3cad872f54bab25a83f7503480049eea5c0ae36a8b8460b13cad3b5
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
