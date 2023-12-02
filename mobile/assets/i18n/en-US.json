@@ -144,6 +144,8 @@
   "control_bottom_app_bar_stack": "Stack",
   "control_bottom_app_bar_unarchive": "Unarchive",
   "control_bottom_app_bar_upload": "Upload",
+  "control_bottom_app_bar_edit_time": "Edit Date & Time",
+  "control_bottom_app_bar_edit_location": "Edit Location",
   "create_album_page_untitled": "Untitled",
   "create_shared_album_page_create": "Create",
   "create_shared_album_page_share": "Share",
@@ -461,5 +463,9 @@
   "viewer_remove_from_stack": "Remove from Stack",
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
   "viewer_unstack": "Un-Stack",
-  "scaffold_body_error_occurred": "Error occurred"
+  "scaffold_body_error_occurred": "Error occurred",
+  "edit_date_time_dialog_date_time": "Date and Time",
+  "edit_date_time_dialog_timezone": "Timezone",
+  "action_common_cancel": "Cancel",
+  "action_common_update": "Update"
 }

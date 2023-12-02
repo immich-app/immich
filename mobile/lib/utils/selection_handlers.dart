@@ -2,10 +2,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
+import 'package:immich_mobile/shared/ui/date_time_picker.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/share_dialog.dart';
 
@@ -84,4 +87,32 @@ Future<void> handleFavoriteAssets(
       );
     }
   }
+}
+
+Future<void> handleEditDateTime(
+    WidgetRef ref, BuildContext context, List<Asset> selection,) async {
+  DateTime? initialDate;
+  String? timeZone;
+  Duration? offset;
+  if (selection.length == 1) {
+    final asset = selection.first;
+    final assetWithExif = await ref.watch(assetServiceProvider).loadExif(asset);
+    final (dt, oft) = assetWithExif.getTZAdjustedTimeAndOffset();
+    initialDate = dt;
+    offset = oft;
+    timeZone = assetWithExif.exifInfo?.timeZone;
+  }
+  final dateTime = await showDateTimePicker(
+    context: context,
+    initialDateTime: initialDate,
+    initialTZ: timeZone,
+    initialTZOffset: offset,
+  );
+  if (dateTime == null) {
+    return;
+  }
+
+  ref
+      .watch(assetServiceProvider)
+      .changeAssetDateTime(selection.toList(), dateTime);
 }

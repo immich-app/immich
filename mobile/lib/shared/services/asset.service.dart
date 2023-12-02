@@ -181,4 +181,14 @@ class AssetService {
   Future<List<Asset?>> changeArchiveStatus(List<Asset> assets, bool isArchive) {
     return updateAssets(assets, UpdateAssetDto(isArchived: isArchive));
   }
+
+  Future<List<Asset?>> changeAssetDateTime(
+    List<Asset> assets,
+    String updatedDt,
+  ) {
+    return updateAssets(
+      assets,
+      UpdateAssetDto(dateTimeOriginal: updatedDt),
+    );
+  }
 }
