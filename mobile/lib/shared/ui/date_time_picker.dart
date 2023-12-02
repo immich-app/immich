@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -28,7 +27,7 @@ String _getFormattedOffset(int offsetInMilli, tz.Location location) {
   return "${location.name} (UTC${Duration(milliseconds: offsetInMilli).formatAsOffset()})";
 }
 
-class _DateTimePicker extends HookConsumerWidget {
+class _DateTimePicker extends HookWidget {
   final DateTime? initialDateTime;
   final String? initialTZ;
   final Duration? initialTZOffset;
@@ -81,7 +80,7 @@ class _DateTimePicker extends HookConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final date = useState<DateTime>(initialDateTime ?? DateTime.now());
     final tzOffset = useState<_TimeZoneOffset>(_getInitiationLocation());
     final timeZones = useMemoized(() => getAllTimeZones(), const []);

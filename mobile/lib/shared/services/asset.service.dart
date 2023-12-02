@@ -11,6 +11,7 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -182,13 +183,26 @@ class AssetService {
     return updateAssets(assets, UpdateAssetDto(isArchived: isArchive));
   }
 
-  Future<List<Asset?>> changeAssetDateTime(
+  Future<List<Asset?>> changeDateTime(
     List<Asset> assets,
     String updatedDt,
   ) {
     return updateAssets(
       assets,
       UpdateAssetDto(dateTimeOriginal: updatedDt),
+    );
+  }
+
+  Future<List<Asset?>> changeLocation(
+    List<Asset> assets,
+    LatLng location,
+  ) {
+    return updateAssets(
+      assets,
+      UpdateAssetDto(
+        latitude: location.latitude,
+        longitude: location.longitude,
+      ),
     );
   }
 }

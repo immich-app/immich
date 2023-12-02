@@ -92,12 +92,14 @@ class ExifBottomSheet extends HookConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return MapThumbnail(
+              showAttribution: false,
               coords: LatLng(
                 exifInfo?.latitude ?? 0,
                 exifInfo?.longitude ?? 0,
               ),
               height: 150,
-              zoom: 16.0,
+              width: constraints.maxWidth,
+              zoom: 12.0,
               markers: [
                 Marker(
                   anchorPos: AnchorPos.align(AnchorAlign.top),
@@ -154,7 +156,25 @@ class ExifBottomSheet extends HookConsumerWidget {
     buildLocation() {
       // Guard no lat/lng
       if (!hasCoordinates()) {
-        return Container();
+        return asset.isRemote
+            ? ListTile(
+                minLeadingWidth: 0,
+                contentPadding: const EdgeInsets.all(0),
+                leading: const Icon(Icons.location_on),
+                title: Text(
+                  "exif_bottom_sheet_location_add",
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: context.primaryColor,
+                  ),
+                ).tr(),
+                onTap: () => handleEditLocation(
+                  ref,
+                  context,
+                  [assetWithExif.value ?? asset],
+                ),
+              )
+            : const SizedBox.shrink();
       }
 
       return Column(
@@ -163,13 +183,29 @@ class ExifBottomSheet extends HookConsumerWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "exif_bottom_sheet_location",
-                style: context.textTheme.labelMedium?.copyWith(
-                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                  fontWeight: FontWeight.w600,
-                ),
-              ).tr(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "exif_bottom_sheet_location",
+                    style: context.textTheme.labelMedium?.copyWith(
+                      color:
+                          context.textTheme.labelMedium?.color?.withAlpha(200),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ).tr(),
+                  if (asset.isRemote)
+                    IconButton(
+                      onPressed: () => handleEditLocation(
+                        ref,
+                        context,
+                        [assetWithExif.value ?? asset],
+                      ),
+                      icon: const Icon(Icons.edit_outlined),
+                      iconSize: 20,
+                    ),
+                ],
+              ),
               buildMap(),
               RichText(
                 text: TextSpan(
@@ -389,9 +425,8 @@ class ExifBottomSheet extends HookConsumerWidget {
                         child: CircularProgressIndicator.adaptive(),
                       ),
                     ),
-                    const SizedBox(height: 8.0),
                     buildLocation(),
-                    SizedBox(height: hasCoordinates() ? 16.0 : 0.0),
+                    SizedBox(height: hasCoordinates() ? 16.0 : 6.0),
                     buildDetail(),
                     const SizedBox(height: 50),
                   ],

@@ -326,6 +326,20 @@ class HomePage extends HookConsumerWidget {
         }
       }
 
+      void onEditLocation() async {
+        try {
+          final remoteAssets = ownedRemoteSelection(
+            localErrorMessage: 'home_page_favorite_err_local'.tr(),
+            ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+          );
+          if (remoteAssets.isNotEmpty) {
+            handleEditLocation(ref, context, remoteAssets.toList());
+          }
+        } finally {
+          selectionEnabledHook.value = false;
+        }
+      }
+
       Future<void> refreshAssets() async {
         final fullRefresh = refreshCount.value > 0;
         await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
@@ -426,6 +440,7 @@ class HomePage extends HookConsumerWidget {
                 selectionAssetState: selectionAssetState.value,
                 onStack: onStack,
                 onEditTime: onEditTime,
+                onEditLocation: onEditLocation,
               ),
           ],
         ),

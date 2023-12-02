@@ -10,7 +10,9 @@ import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/date_time_picker.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/shared/ui/location_picker.dart';
 import 'package:immich_mobile/shared/ui/share_dialog.dart';
+import 'package:latlong2/latlong.dart';
 
 void handleShareAssets(
   WidgetRef ref,
@@ -90,7 +92,10 @@ Future<void> handleFavoriteAssets(
 }
 
 Future<void> handleEditDateTime(
-    WidgetRef ref, BuildContext context, List<Asset> selection,) async {
+  WidgetRef ref,
+  BuildContext context,
+  List<Asset> selection,
+) async {
   DateTime? initialDate;
   String? timeZone;
   Duration? offset;
@@ -112,7 +117,33 @@ Future<void> handleEditDateTime(
     return;
   }
 
-  ref
-      .watch(assetServiceProvider)
-      .changeAssetDateTime(selection.toList(), dateTime);
+  ref.watch(assetServiceProvider).changeDateTime(selection.toList(), dateTime);
+}
+
+Future<void> handleEditLocation(
+  WidgetRef ref,
+  BuildContext context,
+  List<Asset> selection,
+) async {
+  LatLng? initialLatLng;
+  if (selection.length == 1) {
+    final asset = selection.first;
+    final assetWithExif = await ref.watch(assetServiceProvider).loadExif(asset);
+    if (assetWithExif.exifInfo?.latitude != null &&
+        assetWithExif.exifInfo?.longitude != null) {
+      initialLatLng = LatLng(
+        assetWithExif.exifInfo!.latitude!,
+        assetWithExif.exifInfo!.longitude!,
+      );
+    }
+  }
+  final location = await showLocationPicker(
+    context: context,
+    initialLatLng: initialLatLng,
+  );
+  if (location == null) {
+    return;
+  }
+
+  ref.watch(assetServiceProvider).changeLocation(selection.toList(), location);
 }
