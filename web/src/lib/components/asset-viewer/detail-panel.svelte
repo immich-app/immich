@@ -201,66 +201,77 @@
     />
   </section>
 
-  {#if !api.isSharedLink && people.length > 0}
+  {#if !api.isSharedLink}
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
-        <CircleIconButton
+        <div class="flex gap-2">
+          {#if people.some((person) => person.isHidden)}
+            <CircleIconButton
+              title="Show hidden people"
+              icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
+              padding="1"
+              on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+            />
+          {/if}
+          <CircleIconButton
             title="Show hidden people"
             icon={mdiPencil}
             padding="1"
             on:click={() => (showEditFaces = true)}
           />
-        {#if people.some((person) => person.isHidden)}
-          <CircleIconButton
-            title="Show hidden people"
-            icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
-            padding="1"
-            on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
-          />
-        {/if}
+        </div>
       </div>
-
-      <div class="mt-2 flex flex-wrap gap-2">
-        {#each people as person (person.id)}
-          <a
-            href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-            class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
-            on:click={() => dispatch('close-viewer')}
-          >
-            <div class="relative">
-              <ImageThumbnail
-                curve
-                shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
-                altText={person.name}
-                title={person.name}
-                widthStyle="90px"
-                heightStyle="90px"
-                thumbhash={null}
-                hidden={person.isHidden}
-              />
-            </div>
-            <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-            {#if person.birthDate}
-              {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-              <p
-                class="font-light"
-                title={personBirthDate.toLocaleString(
-                  {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  },
-                  { locale: $locale },
-                )}
+      {#if people.length > 0}
+        <div class="mt-2 flex flex-wrap gap-2">
+          {#each people as person, index (person.id)}
+            <div
+              role="button"
+              tabindex={index}
+              on:focus={() => setBoundingBoxesArray(people[index].faces)}
+              on:mouseover={() => setBoundingBoxesArray(people[index].faces)}
+              on:mouseleave={() => setBoundingBoxesArray([])}
+            >
+              <a
+                href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
+                class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
+                on:click={() => dispatch('close-viewer')}
               >
-                Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-              </p>
-            {/if}
-          </a>
-        {/each}
-      </div>
+                <div class="relative">
+                  <ImageThumbnail
+                    curve
+                    shadow
+                    url={api.getPeopleThumbnailUrl(person.id)}
+                    altText={person.name}
+                    title={person.name}
+                    widthStyle="90px"
+                    heightStyle="90px"
+                    thumbhash={null}
+                    hidden={person.isHidden}
+                  />
+                </div>
+                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+                {#if person.birthDate}
+                  {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+                  <p
+                    class="font-light"
+                    title={personBirthDate.toLocaleString(
+                      {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      },
+                      { locale: $locale },
+                    )}
+                  >
+                    Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                  </p>
+                {/if}
+              </a>
+            </div>
+          {/each}
+        </div>
+      {/if}
     </section>
   {/if}
 
