@@ -19,8 +19,11 @@
     mdiImageOutline,
     mdiMapMarkerOutline,
     mdiInformationOutline,
+    mdiEye,
+    mdiEyeOff,
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Map from '../shared-components/map/map.svelte';
   import { websocketStore } from '$lib/stores/websocket';
   import { AppRoute } from '$lib/constants';
@@ -57,6 +60,7 @@
   })();
 
   $: people = asset.people || [];
+  $: showingHiddenPeople = false;
 
   const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
     if (assetUpdate && assetUpdate.id === asset.id) {
@@ -177,25 +181,38 @@
 
   {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
-      <h2>PEOPLE</h2>
+      <div class="flex h-10 w-full items-center justify-between">
+        <h2>PEOPLE</h2>
+        {#if people.some((person) => person.isHidden)}
+          <CircleIconButton
+            title="Show hidden people"
+            icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
+            padding="1"
+            on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+          />
+        {/if}
+      </div>
 
-      <div class="mt-4 flex flex-wrap gap-2">
+      <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person (person.id)}
           <a
             href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-            class="w-[90px]"
+            class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
             on:click={() => dispatch('close-viewer')}
           >
-            <ImageThumbnail
-              curve
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              title={person.name}
-              widthStyle="90px"
-              heightStyle="90px"
-              thumbhash={null}
-            />
+            <div class="relative">
+              <ImageThumbnail
+                curve
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                title={person.name}
+                widthStyle="90px"
+                heightStyle="90px"
+                thumbhash={null}
+                hidden={person.isHidden}
+              />
+            </div>
             <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
             {#if person.birthDate}
               {@const personBirthDate = DateTime.fromISO(person.birthDate)}
