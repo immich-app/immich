@@ -11,7 +11,7 @@
 <p align="center">
 <img src="design/immich-logo.svg" width="150" title="Login mit eigener URL">
 </p>
-<h3 align="center">Immich - Hoch performante, selbst gehostete Backuplösung für Fotos und Videos</h3>
+<h3 align="center">Immich - Hoch performante, selbst gehostete Backup-Lösung für Fotos und Videos</h3>
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Haupt-Screenshot">
@@ -54,9 +54,9 @@ Die Hauptdokumentation, inklusive Installationsanleitungen, ist unter https://im
 
 ## Demo
 
-Die Web-Demo kannst du unter https://demo.immich.app finden.
+Die Web-Demo kannst Du unter https://demo.immich.app finden.
 
-Für die Handy-App kannst du `https://demo.immich.app/api` als `Server Endpoint URL` angeben.
+Für die Handy-App kannst Du `https://demo.immich.app/api` als `Server Endpoint URL` angeben.
 
 ```bash title="Demo Credential"
 Die Anmeldedaten
@@ -101,11 +101,11 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 ## Unterstütze das Projekt
 
-Ich habe mich diesem Projekt verpflichtet und werde nicht aufgeben. Ich werde die Dokumentation weiter aktualisieren, neue Funktionen hinzufügen und Fehler beheben. Allerdings kann ich das nicht alleine schaffen. Daher brauche ich eure Unterstützung, um mir zusätzliche Motivation zu geben, weiterzumachen.
+Ich habe mich diesem Projekt verpflichtet und werde nicht aufgeben. Ich werde die Dokumentation weiter aktualisieren, neue Funktionen hinzufügen und Fehler beheben. Allerdings kann ich das nicht alleine schaffen. Daher brauche ich Eure Unterstützung, um mir zusätzliche Motivation zu geben, weiterzumachen.
 
-Wie unsere Gastgeber in der [selfhosted.show - In der Episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) gesagt haben, ist dies ein riesiges Unterfangen, welchem das Team und ich uns annehmen. In Zukunft würde ich liebend gerne Vollzeit an dem Projekt arbeiten und bitte daher um eure Unterstützung.
+Wie unsere Gastgeber in der [selfhosted.show - In der Episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) gesagt haben, ist dies ein riesiges Unterfangen, welchem das Team und ich uns annehmen. In Zukunft würde ich liebend gerne Vollzeit an dem Projekt arbeiten und bitte daher um Eure Unterstützung.
 
-Wenn du denkst, dass dies die richtige Sache ist und dich selbst die App für eine längere Zeit nutzen siehst, dann denke bitte darüber nach, das Projekt mit einer der unten aufgelisteten Optionen zu unterstützen.  
+Wenn Du denkst, dass dies die richtige Sache ist und dich selbst die App für eine längere Zeit nutzen siehst, dann denke bitte darüber nach, das Projekt mit einer der unten aufgelisteten Optionen zu unterstützen.  
 
 ### Spenden
 
