@@ -9,6 +9,7 @@ import {
   IEntityJob,
   ILibraryFileJob,
   ILibraryRefreshJob,
+  ISidecarWriteJob,
 } from '../job/job.interface';
 
 export interface JobCounts {
@@ -54,11 +55,11 @@ export type JobItem =
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
   | { name: JobName.LINK_LIVE_PHOTOS; data: IEntityJob }
-
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
   | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
+  | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }

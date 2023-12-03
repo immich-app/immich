@@ -25,7 +25,9 @@ export const db = {
       const tableNames =
         entities.length > 0
           ? entities.map((entity) => em.getRepository(entity).metadata.tableName)
-          : dataSource.entityMetadatas.map((entity) => entity.tableName);
+          : dataSource.entityMetadatas
+              .map((entity) => entity.tableName)
+              .filter((tableName) => !tableName.startsWith('geodata'));
 
       let deleteUsers = false;
       for (const tableName of tableNames) {

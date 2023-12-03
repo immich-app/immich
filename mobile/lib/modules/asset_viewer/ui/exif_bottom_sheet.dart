@@ -193,21 +193,15 @@ class ExifBottomSheet extends HookConsumerWidget {
             children: [
               Text(
                 "exif_bottom_sheet_location",
-                style: TextStyle(
-                  fontSize: 11,
-                  color: textColor,
-                  fontWeight: FontWeight.bold,
+                style: context.textTheme.labelMedium?.copyWith(
+                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                  fontWeight: FontWeight.w600,
                 ),
               ).tr(),
               buildMap(),
               RichText(
                 text: TextSpan(
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                    fontFamily: 'WorkSans',
-                  ),
+                  style: context.textTheme.labelLarge,
                   children: [
                     if (exifInfo != null && exifInfo.city != null)
                       TextSpan(
@@ -228,7 +222,9 @@ class ExifBottomSheet extends HookConsumerWidget {
               ),
               Text(
                 "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
-                style: const TextStyle(fontSize: 12),
+                style: context.textTheme.labelMedium?.copyWith(
+                  color: context.textTheme.labelMedium?.color?.withAlpha(150),
+                ),
               ),
             ],
           ),
@@ -258,10 +254,7 @@ class ExifBottomSheet extends HookConsumerWidget {
             titleAlignment: ListTileTitleAlignment.center,
             title: Text(
               title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
+              style: context.textTheme.labelLarge,
             ),
             subtitle: subtitle,
           );
@@ -278,7 +271,7 @@ class ExifBottomSheet extends HookConsumerWidget {
         // There is both filename and size information
         return createImagePropertiesListStyle(
           asset.fileName,
-          Text(imgSizeString),
+          Text(imgSizeString, style: context.textTheme.bodySmall),
         );
       } else if (imgSizeString != null && asset.fileName.isEmpty) {
         // There is only size information
@@ -305,10 +298,9 @@ class ExifBottomSheet extends HookConsumerWidget {
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
               "exif_bottom_sheet_details",
-              style: TextStyle(
-                fontSize: 11,
-                color: textColor,
-                fontWeight: FontWeight.bold,
+              style: context.textTheme.labelMedium?.copyWith(
+                color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                fontWeight: FontWeight.w600,
               ),
             ).tr(),
           ),
@@ -323,10 +315,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               ),
               title: Text(
                 "${exifInfo!.make} ${exifInfo.model}",
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: context.textTheme.labelLarge,
               ),
               subtitle: exifInfo.f != null ||
                       exifInfo.exposureSeconds != null ||
@@ -334,6 +323,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                       exifInfo.iso != null
                   ? Text(
                       "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
+                      style: context.textTheme.bodySmall,
                     )
                   : null,
             ),

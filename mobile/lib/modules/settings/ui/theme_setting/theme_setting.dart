@@ -25,17 +25,13 @@ class ThemeSetting extends HookConsumerWidget {
     );
 
     return ExpansionTile(
-      title: const Text(
+      textColor: context.primaryColor,
+      title: Text(
         'theme_setting_theme_title',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         'theme_setting_theme_subtitle',
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         SwitchListTile.adaptive(

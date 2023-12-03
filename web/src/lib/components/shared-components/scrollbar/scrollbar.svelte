@@ -42,8 +42,8 @@
       segment.timeGroup = bucket.bucketDate;
       segment.date = fromLocalDateTime(segment.timeGroup);
 
-      if (prev?.date.year !== segment.date.year && (!prev || height > MIN_YEAR_LABEL_DISTANCE)) {
-        segment.hasLabel = true;
+      if (prev?.date.year !== segment.date.year && height > MIN_YEAR_LABEL_DISTANCE) {
+        prev.hasLabel = true;
         height = 0;
       }
 
@@ -134,7 +134,7 @@
         {#if segment.hasLabel}
           <div
             aria-label={segment.timeGroup + ' ' + segment.count}
-            class="absolute right-0 z-10 pr-5 text-xs font-medium dark:text-immich-dark-fg font-mono"
+            class="absolute right-0 bottom-0 z-10 pr-5 text-[12px] dark:text-immich-dark-fg font-immich-mono"
           >
             {segment.date.year}
           </div>

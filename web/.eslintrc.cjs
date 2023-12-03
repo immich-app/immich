@@ -35,5 +35,6 @@ module.exports = {
         varsIgnorePattern: '^_$',
       },
     ],
+    curly: 2,
   },
 };

@@ -24,7 +24,7 @@ describe(ActivityService.name, () => {
 
   describe('getAll', () => {
     it('should get all', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
       activityMock.search.mockResolvedValue([]);
 
       await expect(sut.getAll(authStub.admin, { assetId: 'asset-id', albumId: 'album-id' })).resolves.toEqual([]);
@@ -37,7 +37,7 @@ describe(ActivityService.name, () => {
     });
 
     it('should filter by type=like', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
       activityMock.search.mockResolvedValue([]);
 
       await expect(
@@ -52,7 +52,7 @@ describe(ActivityService.name, () => {
     });
 
     it('should filter by type=comment', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
       activityMock.search.mockResolvedValue([]);
 
       await expect(
@@ -70,7 +70,7 @@ describe(ActivityService.name, () => {
   describe('getStatistics', () => {
     it('should get the comment count', async () => {
       activityMock.getStatistics.mockResolvedValue(1);
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([activityStub.oneComment.albumId]));
       await expect(
         sut.getStatistics(authStub.admin, {
           assetId: 'asset-id',
@@ -82,7 +82,6 @@ describe(ActivityService.name, () => {
 
   describe('addComment', () => {
     it('should require access to the album', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       await expect(
         sut.create(authStub.admin, {
           albumId: 'album-id',
@@ -114,7 +113,7 @@ describe(ActivityService.name, () => {
     });
 
     it('should fail because activity is disabled for the album', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
       accessMock.activity.hasCreateAccess.mockResolvedValue(false);
       activityMock.create.mockResolvedValue(activityStub.oneComment);
 
@@ -148,7 +147,7 @@ describe(ActivityService.name, () => {
     });
 
     it('should skip if like exists', async () => {
-      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
       accessMock.activity.hasCreateAccess.mockResolvedValue(true);
       activityMock.search.mockResolvedValue([activityStub.liked]);
 

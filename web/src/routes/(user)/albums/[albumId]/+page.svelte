@@ -11,6 +11,8 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
@@ -56,6 +58,8 @@
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
+  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let data: PageData;
 
@@ -63,6 +67,9 @@
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
   let album = data.album;
+
+  $user = data.user;
+
   $: album = data.album;
 
   $: {
@@ -93,7 +100,6 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
-  let user = data.user;
   let globalWidth: number;
   let assetGridWidth: number;
 
@@ -121,7 +127,7 @@
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
 
-    let url: string | undefined = from?.url.pathname;
+    let url: string | undefined = from?.url?.pathname;
 
     if (from?.route.id === '/(user)/search') {
       url = from.url.href;
@@ -176,10 +182,10 @@
   };
 
   const getFavorite = async () => {
-    if (user) {
+    if ($user) {
       try {
         const { data } = await api.activityApi.getActivities({
-          userId: user.id,
+          userId: $user.id,
           albumId: album.id,
           type: ReactionType.Like,
           level: ReactionLevel.Album,
@@ -446,6 +452,8 @@
           {/if}
           {#if isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+            <ChangeDate menuItem />
+            <ChangeLocation menuItem />
           {/if}
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
@@ -544,16 +552,10 @@
       style={`width:${assetGridWidth}px`}
     >
       {#if viewMode === ViewMode.SELECT_ASSETS}
-        <AssetGrid
-          user={data.user}
-          assetStore={timelineStore}
-          assetInteractionStore={timelineInteractionStore}
-          isSelectionMode={true}
-        />
+        <AssetGrid assetStore={timelineStore} assetInteractionStore={timelineInteractionStore} isSelectionMode={true} />
       {:else}
         <AssetGrid
           {album}
-          user={data.user}
           {assetStore}
           {assetInteractionStore}
           isShared={album.sharedUsers.length > 0}
@@ -674,7 +676,7 @@
       {/if}
     </main>
   </div>
-  {#if album.sharedUsers.length > 0 && album && isShowActivity && user && !$showAssetViewer}
+  {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
@@ -683,7 +685,7 @@
         translate="yes"
       >
         <ActivityViewer
-          {user}
+          user={$user}
           disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
@@ -733,10 +735,10 @@
   </ConfirmDialogue>
 {/if}
 
-{#if viewMode === ViewMode.OPTIONS}
+{#if viewMode === ViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
-    {user}
+    user={$user}
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
@@ -750,3 +752,5 @@
     on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}
+
+<UpdatePanel {assetStore} />

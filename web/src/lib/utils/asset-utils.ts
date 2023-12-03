@@ -1,6 +1,14 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { downloadManager } from '$lib/stores/download';
-import { api, BulkIdResponseDto, AssetResponseDto, DownloadResponseDto, DownloadInfoDto, AssetTypeEnum } from '@api';
+import {
+  api,
+  BulkIdResponseDto,
+  AssetResponseDto,
+  DownloadResponseDto,
+  DownloadInfoDto,
+  AssetTypeEnum,
+  UserResponseDto,
+} from '@api';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
@@ -202,4 +210,18 @@ export const getAssetType = (type: AssetTypeEnum) => {
     default:
       return 'Asset';
   }
+};
+
+export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserResponseDto | null): string[] => {
+  const ids = Array.from(assets)
+    .filter((a) => !a.isExternal && user && a.ownerId !== user.id)
+    .map((a) => a.id);
+  const numberOfIssues = Array.from(assets).filter((a) => a.isExternal || (user && a.ownerId === user.id)).length;
+  if (numberOfIssues > 0) {
+    notificationController.show({
+      message: `Can't change metadata of ${numberOfIssues} asset${numberOfIssues > 1 ? 's' : ''}`,
+      type: NotificationType.Warning,
+    });
+  }
+  return ids;
 };

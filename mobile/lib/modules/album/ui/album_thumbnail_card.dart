@@ -32,8 +32,8 @@ class AlbumThumbnailCard extends StatelessWidget {
             height: cardSize,
             width: cardSize,
             child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0)),
               ),
               child: Center(
                 child: Icon(
@@ -47,8 +47,8 @@ class AlbumThumbnailCard extends StatelessWidget {
 
         buildAlbumThumbnail() => Card(
               clipBehavior: Clip.hardEdge,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
               ),
               child: ImmichImage(
                 album.thumbnail.value,
@@ -68,9 +68,9 @@ class AlbumThumbnailCard extends StatelessWidget {
             }
           }
 
-          return RichText(
+          return Text.rich(
             overflow: TextOverflow.fade,
-            text: TextSpan(
+            TextSpan(
               children: [
                 TextSpan(
                   text: album.assetCount == 1
@@ -78,17 +78,15 @@ class AlbumThumbnailCard extends StatelessWidget {
                           .tr(args: ['${album.assetCount}'])
                       : 'album_thumbnail_card_items'
                           .tr(args: ['${album.assetCount}']),
-                  style: TextStyle(
-                    fontFamily: 'WorkSans',
-                    fontSize: 12,
-                    color: context.colorScheme.onSurface,
-                  ),
+                  style: context.textTheme.bodyMedium,
                 ),
                 if (owner != null) const TextSpan(text: ' · '),
                 if (owner != null)
                   TextSpan(
                     text: owner,
-                    style: context.textTheme.labelSmall,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.colorScheme.onSurface,
+                    ),
                   ),
               ],
             ),
@@ -108,7 +106,8 @@ class AlbumThumbnailCard extends StatelessWidget {
                       width: cardSize,
                       height: cardSize,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20)),
                         child: album.thumbnail.value == null
                             ? buildEmptyThumbnail()
                             : buildAlbumThumbnail(),
@@ -120,9 +119,9 @@ class AlbumThumbnailCard extends StatelessWidget {
                         width: cardSize,
                         child: Text(
                           album.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                          style: context.textTheme.bodyMedium?.copyWith(
                             color: context.primaryColor,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

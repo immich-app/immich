@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { PersonEntity } from './person.entity';
 
 @Entity('asset_faces')
+@Index(['personId', 'assetId'])
 export class AssetFaceEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

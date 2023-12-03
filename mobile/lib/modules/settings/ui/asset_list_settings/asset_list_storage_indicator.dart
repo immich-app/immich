@@ -36,8 +36,7 @@ class StorageIndicator extends HookConsumerWidget {
     return SwitchListTile.adaptive(
       title: Text(
         "theme_setting_asset_list_storage_indicator_title",
-        style:
-            context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+        style: context.textTheme.labelLarge,
       ).tr(),
       onChanged: switchChanged,
       value: showStorageIndicator.value,

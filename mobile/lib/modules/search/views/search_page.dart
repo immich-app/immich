@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
@@ -15,7 +16,7 @@ import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
 
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
@@ -33,8 +34,8 @@ class SearchPage extends HookConsumerWidget {
     double imageSize = math.min(context.width / 3, 150);
 
     TextStyle categoryTitleStyle = const TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 14.0,
+      fontWeight: FontWeight.w500,
+      fontSize: 15.0,
     );
 
     Color categoryIconColor = context.isDarkTheme ? Colors.white : Colors.black;
@@ -73,19 +74,10 @@ class SearchPage extends HookConsumerWidget {
     buildPeople() {
       return SizedBox(
         height: imageSize,
-        child: curatedPeople.when(
-          loading: () => const Center(child: ImmichLoadingIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (people) => CuratedPeopleRow(
-            content: people
-                .map(
-                  (person) => CuratedContent(
-                    id: person.id,
-                    label: person.name,
-                  ),
-                )
-                .take(12)
-                .toList(),
+        child: curatedPeople.widgetWhen(
+          onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
+          onData: (people) => CuratedPeopleRow(
+            content: people.take(12).toList(),
             onTap: (content, index) {
               context.autoPush(
                 PersonResultRoute(
@@ -105,10 +97,9 @@ class SearchPage extends HookConsumerWidget {
     buildPlaces() {
       return SizedBox(
         height: imageSize,
-        child: curatedLocation.when(
-          loading: () => const Center(child: ImmichLoadingIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (locations) => CuratedPlacesRow(
+        child: curatedLocation.widgetWhen(
+          onError: (error, stack) => const ScaffoldErrorBody(withIcon: false),
+          onData: (locations) => CuratedPlacesRow(
             isMapEnabled: isMapEnabled,
             content: locations
                 .map(
@@ -164,7 +155,9 @@ class SearchPage extends HookConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'search_page_your_activity',
-                    style: context.textTheme.titleSmall,
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                 ),
                 ListTile(
@@ -194,11 +187,15 @@ class SearchPage extends HookConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     'search_page_categories',
-                    style: context.textTheme.titleSmall,
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                 ),
                 ListTile(
-                  title: Text('search_page_screenshots', style: categoryTitleStyle).tr(),
+                  title:
+                      Text('search_page_screenshots', style: categoryTitleStyle)
+                          .tr(),
                   leading: Icon(
                     Icons.screenshot,
                     color: categoryIconColor,
@@ -263,7 +260,7 @@ class CategoryDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.only(
-        left: 72,
+        left: 56,
         right: 16,
       ),
       child: Divider(

@@ -92,15 +92,11 @@ class DescriptionInput extends HookConsumerWidget {
       maxLines: null,
       keyboardType: TextInputType.multiline,
       controller: controller,
-      style: const TextStyle(
-        fontSize: 14,
-      ),
+      style: context.textTheme.labelLarge,
       decoration: InputDecoration(
         hintText: 'description_input_hint_text'.tr(),
         border: InputBorder.none,
-        hintStyle: TextStyle(
-          fontWeight: FontWeight.normal,
-          fontSize: 12,
+        hintStyle: context.textTheme.labelLarge?.copyWith(
           color: context.colorScheme.onSurface.withOpacity(0.5),
         ),
         suffixIcon: suffixIcon,

@@ -69,6 +69,33 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                       child: ListView(
                         shrinkWrap: true,
                         children: [
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: IconButton(
+                              onPressed: () {
+                                Clipboard.setData(
+                                  ClipboardData(text: assetDetail.toString()),
+                                ).then((_) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "Copied to clipboard",
+                                        style: context.textTheme.bodyLarge
+                                            ?.copyWith(
+                                          color: context.primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                });
+                              },
+                              icon: Icon(
+                                Icons.copy,
+                                size: 16.0,
+                                color: context.primaryColor,
+                              ),
+                            ),
+                          ),
                           SelectableText(
                             assetDetail.toString(),
                             style: const TextStyle(

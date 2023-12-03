@@ -28,15 +28,11 @@ class PartnerList extends HookConsumerWidget {
       leading: userAvatar(context, p, radius: 24),
       title: Text(
         "${p.name}'s photos",
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        ),
+        style: context.textTheme.labelLarge,
       ),
       trailing: Text(
         "View all",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
+        style: context.textTheme.labelLarge?.copyWith(
           color: context.primaryColor,
         ),
       ),

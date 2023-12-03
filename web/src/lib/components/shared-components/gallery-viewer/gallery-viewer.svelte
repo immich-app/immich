@@ -2,17 +2,17 @@
   import { page } from '$app/stores';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, ThumbnailFormat, UserResponseDto } from '@api';
+  import { AssetResponseDto, ThumbnailFormat } from '@api';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import { flip } from 'svelte/animate';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { onDestroy } from 'svelte';
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
   export let disableAssetSelect = false;
   export let showArchiveIcon = false;
-  export let user: UserResponseDto | undefined = undefined;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -80,6 +80,10 @@
     $showAssetViewer = false;
     history.pushState(null, '', `${$page.url.pathname}`);
   };
+
+  onDestroy(() => {
+    $showAssetViewer = false;
+  });
 </script>
 
 {#if assets.length > 0}
@@ -104,7 +108,6 @@
 <!-- Overlay Asset Viewer -->
 {#if $showAssetViewer}
   <AssetViewer
-    {user}
     asset={selectedAsset}
     on:previous={navigateAssetBackward}
     on:next={navigateAssetForward}

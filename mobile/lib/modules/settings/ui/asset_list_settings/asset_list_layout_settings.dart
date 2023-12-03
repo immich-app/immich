@@ -53,8 +53,7 @@ class LayoutSettings extends HookConsumerWidget {
         SwitchListTile.adaptive(
           title: Text(
             "asset_list_layout_settings_dynamic_layout_title",
-            style: context.textTheme.labelLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: context.textTheme.labelLarge,
           ).tr(),
           onChanged: switchChanged,
           value: useDynamicLayout.value,

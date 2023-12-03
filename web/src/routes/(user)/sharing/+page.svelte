@@ -74,7 +74,7 @@
                 <p class="text-immich-fg dark:text-immich-dark-fg">
                   {partner.name}
                 </p>
-                <p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
+                <p class="text-sm text-immich-fg/75 dark:text-immich-dark-fg/75">
                   {partner.email}
                 </p>
               </div>
@@ -93,7 +93,7 @@
 
       <div>
         <!-- Share Album List -->
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
           {#each data.sharedAlbums as album (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
               <AlbumCard {album} user={data.user} isSharingView showContextMenu={false} />

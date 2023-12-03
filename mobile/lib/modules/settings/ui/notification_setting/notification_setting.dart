@@ -67,17 +67,12 @@ class NotificationSetting extends HookConsumerWidget {
     final String formattedValue = _formatSliderValue(sliderValue.value);
     return ExpansionTile(
       textColor: context.primaryColor,
-      title: const Text(
+      title: Text(
         'setting_notifications_title',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         'setting_notifications_subtitle',
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         if (!hasPermission)

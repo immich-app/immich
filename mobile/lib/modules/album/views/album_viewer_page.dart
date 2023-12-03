@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/widgetref_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
@@ -18,7 +19,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
@@ -33,7 +33,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     final userId = ref.watch(authenticationProvider).userId;
     final selection = useState<Set<Asset>>({});
     final multiSelectEnabled = useState(false);
-    final immichOverlayController = ref.useProcessingOverlay();
+    final isProcessing = useProcessingOverlay();
 
     useEffect(
       () {
@@ -76,24 +76,21 @@ class AlbumViewerPage extends HookConsumerWidget {
         ),
       );
 
-      if (returnPayload != null) {
+      if (returnPayload != null && returnPayload.selectedAssets.isNotEmpty) {
         // Check if there is new assets add
-        if (returnPayload.selectedAssets.isNotEmpty) {
-          immichOverlayController.value = true;
+        isProcessing.value = true;
 
-          var addAssetsResult =
-              await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
-                    returnPayload.selectedAssets,
-                    albumInfo,
-                  );
+        var addAssetsResult =
+            await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
+                  returnPayload.selectedAssets,
+                  albumInfo,
+                );
 
-          if (addAssetsResult != null &&
-              addAssetsResult.successfullyAdded > 0) {
-            ref.invalidate(albumDetailProvider(albumId));
-          }
-
-          immichOverlayController.value = false;
+        if (addAssetsResult != null && addAssetsResult.successfullyAdded > 0) {
+          ref.invalidate(albumDetailProvider(albumId));
         }
+
+        isProcessing.value = false;
       }
     }
 
@@ -103,7 +100,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
 
       if (sharedUserIds != null) {
-        immichOverlayController.value = true;
+        isProcessing.value = true;
 
         var isSuccess = await ref
             .watch(albumServiceProvider)
@@ -113,7 +110,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           ref.invalidate(albumDetailProvider(album.id));
         }
 
-        immichOverlayController.value = false;
+        isProcessing.value = false;
       }
     }
 
@@ -154,10 +151,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(left: 8.0, bottom: 20.0),
                 child: Text(
                   album.name,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: context.textTheme.headlineMedium,
                 ),
               ),
       );
@@ -192,10 +186,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         ),
         child: Text(
           dateRangeText,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+          style: context.textTheme.labelLarge,
         ),
       );
     }
@@ -267,13 +258,11 @@ class AlbumViewerPage extends HookConsumerWidget {
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
       ),
-      body: album.when(
-        data: (data) => WillPopScope(
+      body: album.widgetWhen(
+        onData: (data) => WillPopScope(
           onWillPop: onWillPop,
           child: GestureDetector(
-            onTap: () {
-              titleFocusNode.unfocus();
-            },
+            onTap: () => titleFocusNode.unfocus(),
             child: ImmichAssetGrid(
               renderList: data.renderList,
               listener: selectionListener,
@@ -291,10 +280,6 @@ class AlbumViewerPage extends HookConsumerWidget {
                   data.shared && data.activityEnabled ? data.remoteId : null,
             ),
           ),
-        ),
-        error: (e, _) => Center(child: Text("Error loading album info!\n$e")),
-        loading: () => const Center(
-          child: ImmichLoadingIndicator(),
         ),
       ),
     );

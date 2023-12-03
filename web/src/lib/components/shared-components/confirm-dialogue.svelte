@@ -11,8 +11,9 @@
   export let cancelText = 'Cancel';
   export let cancelColor: Color = 'primary';
   export let hideCancelButton = false;
+  export let disabled = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{ cancel: void; confirm: void }>();
 
   let isConfirmButtonDisabled = false;
 
@@ -53,7 +54,7 @@
             {cancelText}
           </Button>
         {/if}
-        <Button color={confirmColor} fullwidth on:click={handleConfirm} disabled={isConfirmButtonDisabled}>
+        <Button color={confirmColor} fullwidth on:click={handleConfirm} disabled={disabled || isConfirmButtonDisabled}>
           {confirmText}
         </Button>
       </div>

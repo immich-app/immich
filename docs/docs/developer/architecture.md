@@ -34,7 +34,7 @@ The web app is a [TypeScript](https://www.typescriptlang.org/) project that uses
 
 ### CLI
 
-The CLI is a [TypeScript](https://www.typescriptlang.org/) project that parses command line arguments to programmatically upload/import assets to an Immich server. See [Bulk Upload](/docs/features/bulk-upload.md) for more information about its usage.
+The Immich CLI is an [npm](https://www.npmjs.com/) package that lets users control their Immich instance from the command line. It uses the API to perform various tasks, especially uploading assets. See the [CLI documentation](/docs/features/command-line-interface.md) for more information.
 
 ## Server
 

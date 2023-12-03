@@ -58,10 +58,8 @@ class ImmichSearchBar extends HookConsumerWidget
         },
         decoration: InputDecoration(
           hintText: 'search_bar_hint'.tr(),
-          hintStyle: context.textTheme.titleSmall?.copyWith(
-            color: context.themeData.colorScheme.onSurface.withOpacity(0.5),
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
+          hintStyle: context.textTheme.bodyLarge?.copyWith(
+            color: context.themeData.colorScheme.onSurface.withOpacity(0.75),
           ),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),

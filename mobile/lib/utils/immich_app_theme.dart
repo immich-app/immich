@@ -94,7 +94,7 @@ ThemeData getThemeForScheme(ColorScheme scheme) {
     colorScheme: scheme,
     primaryColor: scheme.primary,
     scaffoldBackgroundColor: scheme.background,
-    fontFamily: 'WorkSans',
+    fontFamily: 'Overpass',
     appBarTheme: AppBarTheme(
       iconTheme: IconThemeData(color: scheme.primary),
       titleTextStyle: TextStyle(
@@ -102,6 +102,16 @@ ThemeData getThemeForScheme(ColorScheme scheme) {
         fontWeight: FontWeight.bold,
         color: scheme.primary,
       ),
+      centerTitle: true,
+    ),
+    snackBarTheme: const SnackBarThemeData(
+      contentTextStyle: TextStyle(
+        fontFamily: 'Overpass',
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      type: BottomNavigationBarType.fixed,
     ),
     cardTheme: const CardTheme(elevation: 2.0),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -123,6 +133,12 @@ ThemeData getThemeForScheme(ColorScheme scheme) {
         }
         return null;
       }),
+      labelTextStyle: const MaterialStatePropertyAll(
+        TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     ),
     textTheme: TextTheme(
       displayLarge: TextStyle(
@@ -171,8 +187,8 @@ ThemeData getThemeForScheme(ColorScheme scheme) {
   );
 }
 
-ThemeData immichLightTheme = getThemeForScheme(_lightColorScheme);
-ThemeData immichDarkTheme = getThemeForScheme(_darkColorScheme);
+final ThemeData immichLightTheme = getThemeForScheme(_lightColorScheme);
+final ThemeData immichDarkTheme = getThemeForScheme(_darkColorScheme);
 
 const redAccent = Colors.redAccent;
 const orangeAccent = Colors.orangeAccent;

@@ -123,10 +123,8 @@ class LibraryPage extends HookConsumerWidget {
             ),
             Text(
               options[selectedAlbumSortOrder.value],
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
+              style: context.textTheme.labelLarge?.copyWith(
                 color: context.primaryColor,
-                fontSize: 12.0,
               ),
             ),
           ],
@@ -140,47 +138,44 @@ class LibraryPage extends HookConsumerWidget {
           var cardSize = constraints.maxWidth;
 
           return GestureDetector(
-            onTap: () {
-              (context).autoPush(CreateAlbumRoute(isSharedAlbum: false));
-            },
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: cardSize,
-                    width: cardSize,
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.add_rounded,
-                          size: 28,
+              onTap: () {
+                (context).autoPush(CreateAlbumRoute(isSharedAlbum: false));
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: context.themeData.cardColor,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(20)),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.add_rounded,
+                            size: 28,
+                            color: context.primaryColor,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: 8.0,
-                      bottom: 16,
-                      left: 8.0,
-                    ),
-                    child: const Text(
-                      'library_page_new_album',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 8.0,
+                        bottom: 16,
                       ),
-                    ).tr(),
-                  ),
-                ],
-              ),
-            ),
-          );
+                      child: Text(
+                        'library_page_new_album',
+                        style: context.textTheme.labelLarge,
+                      ).tr(),
+                    ),
+                  ],
+                ),
+              ));
         },
       );
     }
@@ -197,6 +192,11 @@ class LibraryPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(left: 8.0),
             child: Text(
               label,
+              style: TextStyle(
+                color: context.isDarkTheme
+                    ? Colors.white
+                    : Colors.black.withAlpha(200),
+              ),
             ),
           ),
           style: context.themeData.elevatedButtonTheme.style?.copyWith(
@@ -267,9 +267,11 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'library_page_albums',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                   buildSortButton(),
                 ],
@@ -314,9 +316,11 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'library_page_device_albums',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                 ],
               ),

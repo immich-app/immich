@@ -1,73 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/shared/providers/immich_loading_overlay.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/utils/immich_app_theme.dart';
 
-class ImmichLoadingOverlay extends StatefulHookConsumerWidget {
-  final ThemeData theme;
-  final ThemeData darkTheme;
+final _loadingEntry = OverlayEntry(
+  builder: (context) => SizedBox.square(
+    dimension: double.infinity,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface.withAlpha(70),
+      ),
+      child: const Center(child: ImmichLoadingIndicator()),
+    ),
+  ),
+);
 
-  const ImmichLoadingOverlay(
-      {super.key, required this.theme, required this.darkTheme});
-
-  @override
-  ImmichLoadingOverlayState createState() => ImmichLoadingOverlayState();
+ValueNotifier<bool> useProcessingOverlay() {
+  return use(const _LoadingOverlay());
 }
 
-class ImmichLoadingOverlayState extends ConsumerState<ImmichLoadingOverlay>
-    with WidgetsBindingObserver {
-  Brightness currentPlatformBrightness =
-      WidgetsBinding.instance.platformDispatcher.platformBrightness;
+class _LoadingOverlay extends Hook<ValueNotifier<bool>> {
+  const _LoadingOverlay();
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
+  _LoadingOverlayState createState() => _LoadingOverlayState();
+}
 
-  @override
-  void didChangePlatformBrightness() {
-    super.didChangePlatformBrightness();
+class _LoadingOverlayState
+    extends HookState<ValueNotifier<bool>, _LoadingOverlay> {
+  late final _isProcessing = ValueNotifier(false)..addListener(_listener);
+  OverlayEntry? overlayEntry;
 
+  void _listener() {
     setState(() {
-      currentPlatformBrightness =
-          WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_isProcessing.value) {
+          overlayEntry?.remove();
+          overlayEntry = _loadingEntry;
+          Overlay.of(context).insert(_loadingEntry);
+        } else {
+          overlayEntry?.remove();
+          overlayEntry = null;
+        }
+      });
     });
   }
 
   @override
+  ValueNotifier<bool> build(BuildContext context) {
+    return _isProcessing;
+  }
+
+  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    _isProcessing.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    final shouldShow = ref.watch(immichLoadingOverlayController);
+  Object? get debugValue => _isProcessing.value;
 
-    final themeMode = ref.watch(immichThemeProvider);
-    final currentBrightness = themeMode == ThemeMode.system
-        ? currentPlatformBrightness
-        : themeMode == ThemeMode.dark
-            ? Brightness.dark
-            : Brightness.light;
-
-    return IgnorePointer(
-      child: shouldShow
-          ? Theme(
-              data: currentBrightness == Brightness.dark
-                  ? widget.darkTheme
-                  : widget.theme,
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: context.colorScheme.surface.withAlpha(70),
-                child: const Center(child: ImmichLoadingIndicator()),
-              ),
-            )
-          : const SizedBox(),
-    );
-  }
+  @override
+  String get debugLabel => 'useProcessingOverlay<>';
 }

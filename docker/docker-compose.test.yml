@@ -23,7 +23,7 @@ services:
       - database
 
   database:
-    image: postgres:14-alpine@sha256:50d9be76e9a90da4c781554955e0ffc79d9d5c4226838e64b36aacc97cbc35ad
+    image: postgres:14-alpine@sha256:6a0e35296341e676fe6bd8d236c72afffe2dfe3d7eb9c2405c0f3fc04500cd07
     command: -c fsync=off
     environment:
       POSTGRES_PASSWORD: postgres

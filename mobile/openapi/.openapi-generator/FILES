@@ -46,7 +46,6 @@ doc/CQMode.md
 doc/ChangePasswordDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
-doc/CitiesFile.md
 doc/ClassificationConfig.md
 doc/Colorspace.md
 doc/CreateAlbumDto.md
@@ -231,7 +230,6 @@ lib/model/bulk_ids_dto.dart
 lib/model/change_password_dto.dart
 lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
-lib/model/cities_file.dart
 lib/model/classification_config.dart
 lib/model/clip_config.dart
 lib/model/clip_mode.dart
@@ -388,7 +386,6 @@ test/bulk_ids_dto_test.dart
 test/change_password_dto_test.dart
 test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
-test/cities_file_test.dart
 test/classification_config_test.dart
 test/clip_config_test.dart
 test/clip_mode_test.dart

@@ -138,8 +138,8 @@ class MemoryPage extends HookConsumerWidget {
                   memory.title,
                   style: TextStyle(
                     color: Colors.grey[400],
-                    fontSize: 11.0,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
@@ -148,7 +148,7 @@ class MemoryPage extends HookConsumerWidget {
                   ),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 14.0,
+                    fontSize: 15.0,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

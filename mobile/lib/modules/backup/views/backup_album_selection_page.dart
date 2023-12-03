@@ -99,7 +99,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               label: Text(
                 album.name,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: isDarkTheme ? Colors.black : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -133,7 +133,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               label: Text(
                 album.name,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: context.colorScheme.surface,
                   fontWeight: FontWeight.bold,
                 ),
@@ -201,7 +201,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         ),
         title: const Text(
           "backup_album_selection_page_select_albums",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ).tr(),
         elevation: 0,
       ),
@@ -217,12 +216,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     vertical: 8.0,
                     horizontal: 16.0,
                   ),
-                  child: const Text(
+                  child: Text(
                     "backup_album_selection_page_selection_info",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: context.textTheme.titleSmall,
                   ).tr(),
                 ),
                 // Selected Album Chips
@@ -248,19 +244,14 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                             .toString(),
                       ],
                     ),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: context.textTheme.titleSmall,
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
                       "backup_album_selection_page_albums_tap",
-                      style: TextStyle(
-                        fontSize: 12,
+                      style: context.textTheme.labelLarge?.copyWith(
                         color: context.primaryColor,
-                        fontWeight: FontWeight.bold,
                       ),
                     ).tr(),
                   ),

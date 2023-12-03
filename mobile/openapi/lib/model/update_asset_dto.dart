@@ -13,10 +13,21 @@ part of openapi.api;
 class UpdateAssetDto {
   /// Returns a new [UpdateAssetDto] instance.
   UpdateAssetDto({
+    this.dateTimeOriginal,
     this.description,
     this.isArchived,
     this.isFavorite,
+    this.latitude,
+    this.longitude,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? dateTimeOriginal;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -42,24 +53,51 @@ class UpdateAssetDto {
   ///
   bool? isFavorite;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? latitude;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? longitude;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
+     other.dateTimeOriginal == dateTimeOriginal &&
      other.description == description &&
      other.isArchived == isArchived &&
-     other.isFavorite == isFavorite;
+     other.isFavorite == isFavorite &&
+     other.latitude == latitude &&
+     other.longitude == longitude;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (latitude == null ? 0 : latitude!.hashCode) +
+    (longitude == null ? 0 : longitude!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[description=$description, isArchived=$isArchived, isFavorite=$isFavorite]';
+  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.dateTimeOriginal != null) {
+      json[r'dateTimeOriginal'] = this.dateTimeOriginal;
+    } else {
+    //  json[r'dateTimeOriginal'] = null;
+    }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
@@ -75,6 +113,16 @@ class UpdateAssetDto {
     } else {
     //  json[r'isFavorite'] = null;
     }
+    if (this.latitude != null) {
+      json[r'latitude'] = this.latitude;
+    } else {
+    //  json[r'latitude'] = null;
+    }
+    if (this.longitude != null) {
+      json[r'longitude'] = this.longitude;
+    } else {
+    //  json[r'longitude'] = null;
+    }
     return json;
   }
 
@@ -86,9 +134,16 @@ class UpdateAssetDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateAssetDto(
+        dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        latitude: json[r'latitude'] == null
+            ? null
+            : num.parse(json[r'latitude'].toString()),
+        longitude: json[r'longitude'] == null
+            ? null
+            : num.parse(json[r'longitude'].toString()),
       );
     }
     return null;
