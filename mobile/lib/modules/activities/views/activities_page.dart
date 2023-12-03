@@ -51,7 +51,7 @@ class ActivitiesPage extends HookConsumerWidget {
 
     buildTitleWithTimestamp(Activity activity, {bool leftAlign = true}) {
       final textStyle = context.textTheme.bodyMedium?.copyWith(
-          color: context.textTheme.bodyMedium?.color?.withOpacity(0.6));
+          color: context.textTheme.bodyMedium?.color?.withOpacity(0.6),);
 
       return Row(
         mainAxisAlignment: leftAlign

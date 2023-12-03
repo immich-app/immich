@@ -135,47 +135,45 @@ class LibraryPage extends HookConsumerWidget {
     Widget buildCreateAlbumButton() {
       return LayoutBuilder(
         builder: (context, constraints) {
-          var cardSize = constraints.maxWidth;
-
           return GestureDetector(
-              onTap: () {
-                (context).autoPush(CreateAlbumRoute(isSharedAlbum: false));
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: context.themeData.cardColor,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(20)),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.add_rounded,
-                            size: 28,
-                            color: context.primaryColor,
-                          ),
+            onTap: () =>
+                context.autoPush(CreateAlbumRoute(isSharedAlbum: false)),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: context.themeData.cardColor,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20)),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.add_rounded,
+                          size: 28,
+                          color: context.primaryColor,
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 8.0,
-                        bottom: 16,
-                      ),
-                      child: Text(
-                        'library_page_new_album',
-                        style: context.textTheme.labelLarge,
-                      ).tr(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 8.0,
+                      bottom: 16,
                     ),
-                  ],
-                ),
-              ));
+                    child: Text(
+                      'library_page_new_album',
+                      style: context.textTheme.labelLarge,
+                    ).tr(),
+                  ),
+                ],
+              ),
+            ),
+          );
         },
       );
     }

@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/immich_app_theme.dart';
+import 'package:immich_mobile/shared/providers/theme.provider.dart';
 
 class ThemeSetting extends HookConsumerWidget {
   const ThemeSetting({
@@ -47,20 +47,26 @@ class ThemeSetting extends HookConsumerWidget {
 
             if (isSystem) {
               currentTheme.value = ThemeMode.system;
-              ref.watch(immichThemeProvider.notifier).state = ThemeMode.system;
+              ref
+                  .watch(immichThemeProvider.notifier)
+                  .updateTheme(ThemeMode.system);
               ref
                   .watch(appSettingsServiceProvider)
                   .setSetting(AppSettingsEnum.themeMode, "system");
             } else {
               if (currentSystemBrightness == Brightness.light) {
                 currentTheme.value = ThemeMode.light;
-                ref.watch(immichThemeProvider.notifier).state = ThemeMode.light;
+                ref
+                    .watch(immichThemeProvider.notifier)
+                    .updateTheme(ThemeMode.light);
                 ref
                     .watch(appSettingsServiceProvider)
                     .setSetting(AppSettingsEnum.themeMode, "light");
               } else if (currentSystemBrightness == Brightness.dark) {
                 currentTheme.value = ThemeMode.dark;
-                ref.watch(immichThemeProvider.notifier).state = ThemeMode.dark;
+                ref
+                    .watch(immichThemeProvider.notifier)
+                    .updateTheme(ThemeMode.dark);
                 ref
                     .watch(appSettingsServiceProvider)
                     .setSetting(AppSettingsEnum.themeMode, "dark");
@@ -78,12 +84,16 @@ class ThemeSetting extends HookConsumerWidget {
             value: ref.watch(immichThemeProvider) == ThemeMode.dark,
             onChanged: (bool isDark) {
               if (isDark) {
-                ref.watch(immichThemeProvider.notifier).state = ThemeMode.dark;
+                ref
+                    .watch(immichThemeProvider.notifier)
+                    .updateTheme(ThemeMode.dark);
                 ref
                     .watch(appSettingsServiceProvider)
                     .setSetting(AppSettingsEnum.themeMode, "dark");
               } else {
-                ref.watch(immichThemeProvider.notifier).state = ThemeMode.light;
+                ref
+                    .watch(immichThemeProvider.notifier)
+                    .updateTheme(ThemeMode.light);
                 ref
                     .watch(appSettingsServiceProvider)
                     .setSetting(AppSettingsEnum.themeMode, "light");

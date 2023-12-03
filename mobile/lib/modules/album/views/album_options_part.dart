@@ -5,7 +5,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/color_extensions.dart';
-import 'package:immich_mobile/extensions/widgetref_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -13,6 +12,7 @@ import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumOptionsPage extends HookConsumerWidget {
   final Album album;
@@ -27,7 +27,6 @@ class AlbumOptionsPage extends HookConsumerWidget {
     final activityEnabled = useState(album.activityEnabled);
     final isProcessing = useProcessingOverlay();
     final isOwner = owner?.id == userId;
-    final immichOverlayController = ref.useProcessingOverlay();
 
     void showErrorMessage() {
       context.pop();

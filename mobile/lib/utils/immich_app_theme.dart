@@ -1,23 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-
-final immichThemeProvider = StateProvider<ThemeMode>((ref) {
-  var themeMode = ref
-      .watch(appSettingsServiceProvider)
-      .getSetting(AppSettingsEnum.themeMode);
-
-  debugPrint("Current themeMode $themeMode");
-
-  if (themeMode == "light") {
-    return ThemeMode.light;
-  } else if (themeMode == "dark") {
-    return ThemeMode.dark;
-  } else {
-    return ThemeMode.system;
-  }
-});
 
 ColorScheme _lightColorScheme = const ColorScheme(
   brightness: Brightness.light,
