@@ -83,6 +83,10 @@
     isShowLoadingPeople = false;
   });
 
+  const getPersonNameWithHiddenValue = (name: string, isHidden: boolean) => {
+    return `${name} ${isHidden ? '(hidden)' : ''}`;
+  };
+
   const isEqual = (a: string[], b: string[]): boolean => {
     return b.every((valueB) => a.includes(valueB));
   };
@@ -273,8 +277,8 @@
           <LoadingSpinner />
         </div>
       {:else}
-        {#each peopleWithFaces as person, index}
-          {#if person.person}
+        {#each peopleWithFaces as face, index}
+          {#if face.person}
             <div class="relative z-[20001] h-[115px] w-[95px]">
               <div
                 role="button"
@@ -284,23 +288,26 @@
                 on:mouseover={() => setBoundingBoxesArray([peopleWithFaces[index]])}
                 on:mouseleave={() => setBoundingBoxesArray([])}
               >
-                <ImageThumbnail
-                  curve
-                  shadow
-                  url={selectedPersonToCreate[index] ||
-                    api.getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || person.person.id)}
-                  altText={person.person?.name || ''}
-                  title={person.person?.name || ''}
-                  widthStyle="90px"
-                  heightStyle="90px"
-                  thumbhash={null}
-                />
+                <div class="relative">
+                  <ImageThumbnail
+                    curve
+                    shadow
+                    url={selectedPersonToCreate[index] ||
+                      api.getPeopleThumbnailUrl(selectedPersonToReassign[index]?.id || face.person.id)}
+                    altText={getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
+                    title={getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
+                    widthStyle="90px"
+                    heightStyle="90px"
+                    thumbhash={null}
+                    hidden={face.person.isHidden}
+                  />
+                </div>
                 {#if !selectedPersonToCreate[index]}
-                  <p class="relative mt-1 truncate font-medium" title={person.person?.name}>
+                  <p class="relative mt-1 truncate font-medium" title={face.person?.name}>
                     {#if selectedPersonToReassign[index]?.id}
                       {selectedPersonToReassign[index]?.name}
                     {:else}
-                      {person.person?.name}
+                      {face.person?.name}
                     {/if}
                   </p>
                 {/if}
@@ -419,18 +426,26 @@
             {#if person.id !== peopleWithFaces[editedPersonIndex].person?.id}
               <div class="w-fit">
                 <button class="w-[90px]" on:click={() => handleReassignFace(person)}>
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                  />
+                  <div class="relative">
+                    <ImageThumbnail
+                      curve
+                      shadow
+                      url={api.getPeopleThumbnailUrl(person.id)}
+                      altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                      title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                      widthStyle="90px"
+                      heightStyle="90px"
+                      thumbhash={null}
+                      hidden={person.isHidden}
+                    />
+                  </div>
 
-                  <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+                  <p
+                    class="mt-1 truncate font-medium"
+                    title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                  >
+                    {person.name}
+                  </p>
                 </button>
               </div>
             {/if}
@@ -440,17 +455,19 @@
             {#if person.id !== peopleWithFaces[editedPersonIndex].person?.id}
               <div class="w-fit">
                 <button class="w-[90px]" on:click={() => handleReassignFace(person)}>
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                  />
-
+                  <div class="relative">
+                    <ImageThumbnail
+                      curve
+                      shadow
+                      url={api.getPeopleThumbnailUrl(person.id)}
+                      altText={`${person.name} ${person.isHidden ? '(hidden)' : ''}`}
+                      title={`${person.name} ${person.isHidden ? '(hidden)' : ''}`}
+                      widthStyle="90px"
+                      heightStyle="90px"
+                      thumbhash={null}
+                      hidden={person.isHidden}
+                    />
+                  </div>
                   <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 </button>
               </div>
