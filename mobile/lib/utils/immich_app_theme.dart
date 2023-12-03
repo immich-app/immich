@@ -84,6 +84,8 @@ ThemeData getThemeForScheme(ColorScheme scheme) {
         color: scheme.primary,
       ),
       centerTitle: true,
+      scrolledUnderElevation: 4.0,
+      elevation: 4.0,
     ),
     snackBarTheme: const SnackBarThemeData(
       contentTextStyle: TextStyle(

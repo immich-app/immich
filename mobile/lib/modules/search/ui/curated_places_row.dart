@@ -52,13 +52,13 @@ class CuratedPlacesRow extends CuratedRow {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Colors.black,
+                    color: context.colorScheme.shadow,
                     gradient: LinearGradient(
                       begin: FractionalOffset.topCenter,
                       end: FractionalOffset.bottomCenter,
                       colors: [
-                        Colors.blueGrey.withOpacity(0.0),
-                        Colors.black.withOpacity(0.4),
+                        context.colorScheme.shadow.withOpacity(0.1),
+                        context.colorScheme.shadow.withOpacity(0.2),
                       ],
                       stops: const [0.0, 0.4],
                     ),

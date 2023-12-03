@@ -674,7 +674,6 @@ class BackupControllerPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
         title: const Text(
           "backup_controller_page_backup",
         ).tr(),

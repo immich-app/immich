@@ -617,7 +617,7 @@ class LoadingIcon extends StatelessWidget {
         height: 24,
         child: FittedBox(
           child: CircularProgressIndicator(
-            strokeWidth: 2,
+            strokeWidth: 5,
           ),
         ),
       ),

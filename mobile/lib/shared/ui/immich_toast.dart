@@ -30,9 +30,9 @@ class ImmichToast {
       switch (type) {
         case ToastType.info:
           return Icons.info_outline_rounded;
-        case ToastType.error:
-          return Icons.check_circle_outline_rounded;
         case ToastType.success:
+          return Icons.check_circle_outline_rounded;
+        case ToastType.error:
           return Icons.report_problem_outlined;
       }
     }

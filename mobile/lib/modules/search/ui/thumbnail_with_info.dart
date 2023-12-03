@@ -71,15 +71,15 @@ class ThumbnailWithInfo extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
-              color: Colors.white,
+              color: context.colorScheme.inverseSurface,
               gradient: LinearGradient(
                 begin: FractionalOffset.topCenter,
                 end: FractionalOffset.bottomCenter,
                 colors: [
-                  context.colorScheme.surfaceVariant.withOpacity(0.0),
+                  context.colorScheme.shadow.withOpacity(0),
                   textInfo == ''
-                      ? context.colorScheme.surface.withOpacity(0.1)
-                      : context.colorScheme.surface.withOpacity(0.6),
+                      ? context.colorScheme.shadow.withOpacity(0.1)
+                      : context.colorScheme.shadow.withOpacity(0.2),
                 ],
                 stops: const [0.0, 1.0],
               ),

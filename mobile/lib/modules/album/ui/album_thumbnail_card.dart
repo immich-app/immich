@@ -95,40 +95,35 @@ class AlbumThumbnailCard extends StatelessWidget {
 
         return GestureDetector(
           onTap: onTap,
-          child: Flex(
-            direction: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: cardSize,
-                      height: cardSize,
-                      child: ClipRRect(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20)),
-                        child: album.thumbnail.value == null
-                            ? buildEmptyThumbnail()
-                            : buildAlbumThumbnail(),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: SizedBox(
-                        width: cardSize,
-                        child: Text(
-                          album.name,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: context.primaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                    buildAlbumTextRow(),
-                  ],
+              SizedBox(
+                width: cardSize,
+                height: cardSize,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                  child: album.thumbnail.value == null
+                      ? buildEmptyThumbnail()
+                      : buildAlbumThumbnail(),
                 ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0),
+                child: SizedBox(
+                  width: cardSize,
+                  child: Text(
+                    album.name,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.primaryColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 2.0, left: 8.0),
+                child: buildAlbumTextRow(),
               ),
             ],
           ),

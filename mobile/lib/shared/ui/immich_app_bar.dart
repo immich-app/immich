@@ -131,6 +131,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     return AppBar(
+      elevation: 0.0,
       backgroundColor: context.themeData.appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(

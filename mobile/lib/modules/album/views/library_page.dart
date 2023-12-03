@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/color_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -144,13 +145,14 @@ class LibraryPage extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: context.themeData.cardColor,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20)),
+                  SizedBox.square(
+                    dimension: constraints.maxWidth,
+                    child: Card(
+                      clipBehavior: Clip.hardEdge,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
                       ),
+                      color: context.themeData.cardColor.lighten(5),
                       child: Center(
                         child: Icon(
                           Icons.add_rounded,
@@ -164,6 +166,7 @@ class LibraryPage extends HookConsumerWidget {
                     padding: const EdgeInsets.only(
                       top: 8.0,
                       bottom: 16,
+                      left: 8.0,
                     ),
                     child: Text(
                       'library_page_new_album',
@@ -188,14 +191,7 @@ class LibraryPage extends HookConsumerWidget {
           onPressed: onClick,
           label: Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: context.isDarkTheme
-                    ? Colors.white
-                    : Colors.black.withAlpha(200),
-              ),
-            ),
+            child: Text(label),
           ),
           style: context.themeData.elevatedButtonTheme.style?.copyWith(
             alignment: Alignment.centerLeft,
@@ -215,7 +211,7 @@ class LibraryPage extends HookConsumerWidget {
       return trashEnabled
           ? InkWell(
               onTap: () => context.autoPush(const TrashRoute()),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
               child: const Icon(
                 Icons.delete_rounded,
                 size: 25,
