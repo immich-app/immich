@@ -1,4 +1,4 @@
-FROM python:3.11-bookworm@sha256:47c1829f72432c33609b3095259843a88c7ffc42cc9dbb55c43f2e7bbe46ca58 as builder
+FROM python:3.11-bookworm@sha256:ba7a7ac30c38e119c4304f98ef0e188f90f4f67a958bb6899da9defb99bfb471 as builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
