@@ -145,14 +145,25 @@ class _DateTimePicker extends HookWidget {
           ).tr(),
           DropdownMenu(
             menuHeight: 300,
-            width: 300,
-            inputDecorationTheme:
-                const InputDecorationTheme(border: InputBorder.none),
-            trailingIcon:
-                Icon(Icons.arrow_drop_down, color: context.primaryColor),
-            textStyle: context.textTheme.bodyLarge
-                ?.copyWith(color: context.primaryColor),
-            menuStyle: const MenuStyle(alignment: Alignment.centerLeft),
+            width: 280,
+            inputDecorationTheme: const InputDecorationTheme(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+            ),
+            trailingIcon: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Icon(
+                Icons.arrow_drop_down,
+                color: context.primaryColor,
+              ),
+            ),
+            textStyle: context.textTheme.bodyLarge?.copyWith(
+              color: context.primaryColor,
+            ),
+            menuStyle: const MenuStyle(
+              fixedSize: MaterialStatePropertyAll(Size.fromWidth(350)),
+              alignment: Alignment(-1.25, 0.5),
+            ),
             onSelected: (value) => tzOffset.value = value!,
             initialSelection: tzOffset.value,
             dropdownMenuEntries: timeZones
