@@ -211,21 +211,23 @@ class _LocationPicker extends HookWidget {
     return AlertDialog(
       contentPadding: const EdgeInsets.all(30),
       alignment: Alignment.center,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            "edit_location_dialog_title",
-            textAlign: TextAlign.center,
-          ).tr(),
-          const SizedBox(
-            height: 12,
-          ),
-          if (pickerMode.value == _LocationPickerMode.manual)
-            ...buildManualPickerMode(),
-          if (pickerMode.value == _LocationPickerMode.map)
-            ...buildMapPickerMode(),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "edit_location_dialog_title",
+              textAlign: TextAlign.center,
+            ).tr(),
+            const SizedBox(
+              height: 12,
+            ),
+            if (pickerMode.value == _LocationPickerMode.manual)
+              ...buildManualPickerMode(),
+            if (pickerMode.value == _LocationPickerMode.map)
+              ...buildMapPickerMode(),
+          ],
+        ),
       ),
       actions: [
         TextButton(
