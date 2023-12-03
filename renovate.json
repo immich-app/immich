@@ -1,19 +1,72 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": ["config:base", "docker:pinDigests"],
+  "minimumReleaseAge": "5 days",
   "packageRules": [
     {
-      "matchPaths": ["mobile"],
-      "groupName": "mobile"
+      "matchFileNames": ["cli/**"],
+      "groupName": "@immich/cli",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
-      "matchPaths": ["server"],
-      "groupName": "server"
+      "matchFileNames": ["docs/**"],
+      "groupName": "docs",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
     },
     {
-      "matchPaths": ["web"],
-      "groupName": "web"
+      "matchFileNames": ["mobile/**"],
+      "groupName": "mobile",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
+    },
+    {
+      "matchFileNames": ["server/**"],
+      "groupName": "server",
+      "matchUpdateTypes": ["minor", "patch"],
+      "excludePackagePrefixes": ["exiftool"],
+      "schedule": "on tuesday"
+    },
+    {
+      "groupName": "exiftool",
+      "matchPackagePrefixes": ["exiftool"],
+      "schedule": "on tuesday"
+    },
+    {
+      "matchFileNames": ["web/**"],
+      "groupName": "web",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
+    },
+    {
+      "matchFileNames": ["machine-learning/**"],
+      "groupName": "machine-learning",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
+    },
+    {
+      "matchFileNames": [".github/**"],
+      "groupName": "github-actions",
+      "schedule": "on tuesday"
+    },
+    {
+      "groupName": "base-image",
+      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"],
+      "minimumReleaseAge": "0"
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["node"],
+      "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
+      "versioning": "node"
     }
   ],
-  "enabled": false
+  "ignoreDeps": [
+    "http",
+    "latlong2",
+    "vector_map_tiles",
+    "flutter_map",
+    "flutter_map_heatmap"
+  ]
 }

@@ -1,22 +1,43 @@
 version: "3.8"
 
+name: immich-prod
+
+x-server-build: &server-common
+  image: immich-server:latest
+  build:
+    context: ../
+    dockerfile: server/Dockerfile
+  volumes:
+    - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+    - /etc/localtime:/etc/localtime:ro
+  env_file:
+    - .env
+  restart: always
+
 services:
   immich-server:
     container_name: immich_server
-    image: immich-server:latest
-    build:
-      context: ../server
-      dockerfile: Dockerfile
-    command: ["./start-server.sh"]
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
+    command: [ "./start-server.sh" ]
+    <<: *server-common
+    ports:
+      - 2283:3001
     depends_on:
       - redis
       - database
       - typesense
+
+  immich-microservices:
+    container_name: immich_microservices
+    command: [ "./start-microservices.sh" ]
+    <<: *server-common
+    # extends:
+    #   file: hwaccel.yml
+    #   service: hwaccel
+    depends_on:
+      - redis
+      - database
+      - typesense
+      - immich-server
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -25,44 +46,10 @@ services:
       context: ../machine-learning
       dockerfile: Dockerfile
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - model-cache:/cache
     env_file:
       - .env
     restart: always
-
-  immich-microservices:
-    container_name: immich_microservices
-    image: immich-microservices:latest
-    # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
-    build:
-      context: ../server
-      dockerfile: Dockerfile
-    command: ["./start-microservices.sh"]
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
-    depends_on:
-      - database
-      - immich-server
-      - typesense
-    restart: always
-
-  immich-web:
-    container_name: immich_web
-    image: immich-web:latest
-    build:
-      context: ../web
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    restart: always
-    depends_on:
-      - immich-server
 
   typesense:
     container_name: immich_typesense
@@ -73,17 +60,17 @@ services:
       # remove this to get debug messages
       - GLOG_minloglevel=1
     volumes:
-      - tsdata:/data
+      - ${UPLOAD_LOCATION}/typesense:/data
     restart: always
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:70a7a5b641117670beae0d80658430853896b5ef269ccf00d1827427e3263fa3
+    image: redis:6.2-alpine@sha256:60e49e22fa5706cd8df7d5e0bc50ee9bab7c608039fa653c4d961014237cca46
     restart: always
 
   database:
     container_name: immich_postgres
-    image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    image: postgres:14-alpine@sha256:6a0e35296341e676fe6bd8d236c72afffe2dfe3d7eb9c2405c0f3fc04500cd07
     env_file:
       - .env
     environment:
@@ -91,28 +78,8 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: always
-
-  immich-proxy:
-    container_name: immich_proxy
-    image: immich-proxy:latest
-    environment:
-      # Make sure these values get passed through from the env file
-      - IMMICH_SERVER_URL
-      - IMMICH_WEB_URL
-    build:
-      context: ../nginx
-      dockerfile: Dockerfile
-    ports:
-      - 2283:8080
-    logging:
-      driver: none
-    depends_on:
-      - immich-server
+      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     restart: always
 
 volumes:
-  pgdata:
   model-cache:
-  tsdata:

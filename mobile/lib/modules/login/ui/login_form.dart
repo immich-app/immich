@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/login/providers/oauth.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -48,7 +48,7 @@ class LoginForm extends HookConsumerWidget {
     /// Fetch the server login credential and enables oAuth login if necessary
     /// Returns true if successful, false otherwise
     Future<bool> getServerLoginCredential() async {
-      final serverUrl = serverEndpointController.text.trim();
+      final serverUrl = sanitizeUrl(serverEndpointController.text);
 
       // Guard empty URL
       if (serverUrl.isEmpty) {
@@ -127,6 +127,12 @@ class LoginForm extends HookConsumerWidget {
     );
 
     populateTestLoginInfo() {
+      usernameController.text = 'demo@immich.app';
+      passwordController.text = 'demo';
+      serverEndpointController.text = 'https://demo.immich.app';
+    }
+
+    populateTestLoginInfo1() {
       usernameController.text = 'testuser@email.com';
       passwordController.text = 'password';
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
@@ -144,13 +150,13 @@ class LoginForm extends HookConsumerWidget {
             await ref.read(authenticationProvider.notifier).login(
                   usernameController.text,
                   passwordController.text,
-                  serverEndpointController.text.trim(),
+                  sanitizeUrl(serverEndpointController.text),
                 );
         if (isAuthenticated) {
           // Resume backup (if enable) then navigate
           if (ref.read(authenticationProvider).shouldChangePassword &&
               !ref.read(authenticationProvider).isAdmin) {
-            AutoRouter.of(context).push(const ChangePasswordRoute());
+            context.autoPush(const ChangePasswordRoute());
           } else {
             final hasPermission = await ref
                 .read(galleryPermissionNotifier.notifier)
@@ -159,7 +165,7 @@ class LoginForm extends HookConsumerWidget {
               // Don't resume the backup until we have gallery permission
               ref.read(backupProvider.notifier).resumeBackup();
             }
-            AutoRouter.of(context).replace(const TabControllerRoute());
+            context.autoReplace(const TabControllerRoute());
           }
         } else {
           ImmichToast.show(
@@ -181,7 +187,7 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         oAuthServerConfig = await oAuthService
-            .getOAuthServerConfig(serverEndpointController.text);
+            .getOAuthServerConfig(sanitizeUrl(serverEndpointController.text));
 
         isLoading.value = true;
       } catch (e) {
@@ -203,7 +209,7 @@ class LoginForm extends HookConsumerWidget {
               .watch(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
-                serverUrl: serverEndpointController.text,
+                serverUrl: sanitizeUrl(serverEndpointController.text),
               );
 
           if (isSuccess) {
@@ -212,9 +218,7 @@ class LoginForm extends HookConsumerWidget {
             if (permission.isGranted || permission.isLimited) {
               ref.watch(backupProvider.notifier).resumeBackup();
             }
-            AutoRouter.of(context).replace(
-              const TabControllerRoute(),
-            );
+            context.autoReplace(const TabControllerRoute());
           } else {
             ImmichToast.show(
               context: context,
@@ -260,8 +264,7 @@ class LoginForm extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                  onPressed: () =>
-                      AutoRouter.of(context).push(const SettingsRoute()),
+                  onPressed: () => context.autoPush(const SettingsRoute()),
                   icon: const Icon(Icons.settings_rounded),
                   label: const SizedBox.shrink(),
                 ),
@@ -302,8 +305,8 @@ class LoginForm extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              serverEndpointController.text,
-              style: Theme.of(context).textTheme.displaySmall,
+              sanitizeUrl(serverEndpointController.text),
+              style: context.textTheme.displaySmall,
               textAlign: TextAlign.center,
             ),
             if (isPasswordLoginEnable.value) ...[
@@ -339,8 +342,7 @@ class LoginForm extends HookConsumerWidget {
                               horizontal: 16.0,
                             ),
                             child: Divider(
-                              color: Brightness.dark ==
-                                      Theme.of(context).brightness
+                              color: context.isDarkTheme
                                   ? Colors.white
                                   : Colors.black,
                             ),
@@ -362,7 +364,7 @@ class LoginForm extends HookConsumerWidget {
             TextButton.icon(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => serverEndpoint.value = null,
-              label: const Text('Back'),
+              label: const Text('login_form_back_button_text').tr(),
             ),
           ],
         ),
@@ -391,6 +393,7 @@ class LoginForm extends HookConsumerWidget {
                     children: [
                       GestureDetector(
                         onDoubleTap: () => populateTestLoginInfo(),
+                        onLongPress: () => populateTestLoginInfo1(),
                         child: RotationTransition(
                           turns: logoAnimationController,
                           child: const ImmichLogo(
@@ -588,7 +591,7 @@ class OAuthLoginButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).primaryColor.withAlpha(230),
+        backgroundColor: context.primaryColor.withAlpha(230),
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
       onPressed: onPressed,

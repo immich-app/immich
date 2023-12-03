@@ -31,23 +31,31 @@ export class AlbumController {
   }
 
   @Get()
-  getAllAlbums(@AuthUser() authUser: AuthUserDto, @Query() query: GetAlbumsDto) {
+  getAllAlbums(@AuthUser() authUser: AuthUserDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     return this.service.getAll(authUser, query);
   }
 
   @Post()
-  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto) {
+  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto): Promise<AlbumResponseDto> {
     return this.service.create(authUser, dto);
   }
 
   @SharedLinkRoute()
   @Get(':id')
-  getAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Query() dto: AlbumInfoDto) {
+  getAlbumInfo(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: AlbumInfoDto,
+  ): Promise<AlbumResponseDto> {
     return this.service.get(authUser, id, dto);
   }
 
   @Patch(':id')
-  updateAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto) {
+  updateAlbumInfo(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateDto,
+  ): Promise<AlbumResponseDto> {
     return this.service.update(authUser, id, dto);
   }
 

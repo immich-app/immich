@@ -9,7 +9,6 @@
     AssetTypeEnum,
     ReactionType,
     SharedLinkResponseDto,
-    UserResponseDto,
   } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -42,6 +41,7 @@
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import SlideshowBar from './slideshow-bar.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -51,7 +51,6 @@
   export let force = false;
   export let withStacked = false;
   export let isShared = false;
-  export let user: UserResponseDto | null = null;
   export let album: AlbumResponseDto | null = null;
 
   let reactions: ActivityResponseDto[] = [];
@@ -104,6 +103,12 @@
     }
   }
 
+  $: {
+    if (album && !album.isActivityEnabled && numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  }
+
   const handleAddComment = () => {
     numberOfComments++;
     updateNumberOfComments(1);
@@ -115,7 +120,7 @@
   };
 
   const handleFavorite = async () => {
-    if (album) {
+    if (album && album.isActivityEnabled) {
       try {
         if (isLiked) {
           const activityId = isLiked.id;
@@ -137,10 +142,10 @@
   };
 
   const getFavorite = async () => {
-    if (album && user) {
+    if (album && $user) {
       try {
         const { data } = await api.activityApi.getActivities({
-          userId: user.id,
+          userId: $user.id,
           assetId: asset.id,
           albumId: album.id,
           type: ReactionType.Like,
@@ -661,9 +666,10 @@
             on:onVideoStarted={handleVideoStarted}
           />
         {/if}
-        {#if $slideshowState === SlideshowState.None && isShared}
+        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
           <div class="z-[9999] absolute bottom-0 right-0 mb-6 mr-6 justify-self-end">
             <ActivityStatus
+              disabled={!album?.isActivityEnabled}
               {isLiked}
               {numberOfComments}
               {isShowActivity}
@@ -726,6 +732,7 @@
     >
       <DetailPanel
         {asset}
+        albumId={album?.id}
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
         on:close-viewer={handleCloseViewer}
@@ -735,7 +742,7 @@
     </div>
   {/if}
 
-  {#if isShared && album && isShowActivity && user}
+  {#if isShared && album && isShowActivity && $user}
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
@@ -743,11 +750,13 @@
       translate="yes"
     >
       <ActivityViewer
-        {user}
+        user={$user}
+        disabled={!album.isActivityEnabled}
         assetType={asset.type}
         albumOwnerId={album.ownerId}
         albumId={album.id}
         assetId={asset.id}
+        {isLiked}
         bind:reactions
         on:addComment={handleAddComment}
         on:deleteComment={handleRemoveComment}

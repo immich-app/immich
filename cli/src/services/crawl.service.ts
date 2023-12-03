@@ -1,47 +1,28 @@
 import { CrawlOptionsDto } from 'src/cores/dto/crawl-options-dto';
-import { ACCEPTED_FILE_EXTENSIONS } from '../cores';
 import { glob } from 'glob';
-import * as fs from 'fs';
 
 export class CrawlService {
-  public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const pathsToCrawl: string[] = crawlOptions.pathsToCrawl;
+  private readonly extensions!: string[];
 
-    const directories: string[] = [];
-    const crawledFiles: string[] = [];
+  constructor(image: string[], video: string[]) {
+    this.extensions = image.concat(video).map((extension) => extension.replace('.', ''));
+  }
 
-    for await (const currentPath of pathsToCrawl) {
-      const stats = await fs.promises.stat(currentPath);
-      if (stats.isFile() || stats.isSymbolicLink()) {
-        crawledFiles.push(currentPath);
-      } else {
-        directories.push(currentPath);
-      }
+  crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
+    if (!pathsToCrawl) {
+      return Promise.resolve([]);
     }
 
-    let searchPattern: string;
-    if (directories.length === 1) {
-      searchPattern = directories[0];
-    } else if (directories.length === 0) {
-      return crawledFiles;
-    } else {
-      searchPattern = '{' + directories.join(',') + '}';
-    }
+    const base = pathsToCrawl.length === 1 ? pathsToCrawl[0] : `{${pathsToCrawl.join(',')}}`;
+    const extensions = `*{${this.extensions}}`;
 
-    if (crawlOptions.recursive) {
-      searchPattern = searchPattern + '/**/';
-    }
-
-    searchPattern = `${searchPattern}/*.{${ACCEPTED_FILE_EXTENSIONS.join(',')}}`;
-
-    const globbedFiles = await glob(searchPattern, {
+    return glob(`${base}/**/${extensions}`, {
+      absolute: true,
       nocase: true,
       nodir: true,
-      ignore: crawlOptions.excludePatterns,
+      dot: includeHidden,
+      ignore: exclusionPatterns,
     });
-
-    const returnedFiles = crawledFiles.concat(globbedFiles);
-    returnedFiles.sort();
-    return returnedFiles;
   }
 }

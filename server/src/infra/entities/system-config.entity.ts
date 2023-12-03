@@ -62,10 +62,10 @@ export enum SystemConfigKey {
   MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES = 'machineLearning.facialRecognition.minFaces',
 
   MAP_ENABLED = 'map.enabled',
-  MAP_TILE_URL = 'map.tileUrl',
+  MAP_LIGHT_STYLE = 'map.lightStyle',
+  MAP_DARK_STYLE = 'map.darkStyle',
 
   REVERSE_GEOCODING_ENABLED = 'reverseGeocoding.enabled',
-  REVERSE_GEOCODING_CITIES_FILE_OVERRIDE = 'reverseGeocoding.citiesFileOverride',
 
   NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
 
@@ -144,13 +144,6 @@ export enum Colorspace {
   P3 = 'p3',
 }
 
-export enum CitiesFile {
-  CITIES_15000 = 'cities15000',
-  CITIES_5000 = 'cities5000',
-  CITIES_1000 = 'cities1000',
-  CITIES_500 = 'cities500',
-}
-
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -194,11 +187,11 @@ export interface SystemConfig {
   };
   map: {
     enabled: boolean;
-    tileUrl: string;
+    lightStyle: string;
+    darkStyle: string;
   };
   reverseGeocoding: {
     enabled: boolean;
-    citiesFileOverride: CitiesFile;
   };
   oauth: {
     enabled: boolean;

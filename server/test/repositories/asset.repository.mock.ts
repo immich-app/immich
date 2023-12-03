@@ -4,6 +4,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
   return {
     create: jest.fn(),
     upsertExif: jest.fn(),
+    upsertJobStatus: jest.fn(),
     getByDate: jest.fn(),
     getByDayOfYear: jest.fn(),
     getByIds: jest.fn().mockResolvedValue([]),
@@ -17,6 +18,7 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getFirstAssetForAlbumId: jest.fn(),
     getLastUpdatedAssetForAlbumId: jest.fn(),
     getAll: jest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
+    getAllByDeviceId: jest.fn(),
     updateAll: jest.fn(),
     getByLibraryId: jest.fn(),
     getByLibraryIdAndOriginalPath: jest.fn(),
@@ -30,5 +32,6 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
     getTimeBuckets: jest.fn(),
     restoreAll: jest.fn(),
     softDeleteAll: jest.fn(),
+    search: jest.fn(),
   };
 };

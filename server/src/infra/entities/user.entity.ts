@@ -10,16 +10,29 @@ import {
 import { AssetEntity } from './asset.entity';
 import { TagEntity } from './tag.entity';
 
+export enum UserAvatarColor {
+  PRIMARY = 'primary',
+  PINK = 'pink',
+  RED = 'red',
+  YELLOW = 'yellow',
+  BLUE = 'blue',
+  GREEN = 'green',
+  PURPLE = 'purple',
+  ORANGE = 'orange',
+  GRAY = 'gray',
+  AMBER = 'amber',
+}
+
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column({ default: '' })
-  firstName!: string;
+  name!: string;
 
-  @Column({ default: '' })
-  lastName!: string;
+  @Column({ type: 'varchar', nullable: true })
+  avatarColor!: UserAvatarColor | null;
 
   @Column({ default: false })
   isAdmin!: boolean;

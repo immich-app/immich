@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class BackupInfoCard extends StatelessWidget {
   final String title;
@@ -14,13 +15,11 @@ class BackupInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20), // if you need this
         side: BorderSide(
-          color: isDarkMode
+          color: context.isDarkTheme
               ? const Color.fromARGB(255, 56, 56, 56)
               : Colors.black12,
           width: 1,
@@ -29,17 +28,17 @@ class BackupInfoCard extends StatelessWidget {
       elevation: 0,
       borderOnForeground: false,
       child: ListTile(
-        minVerticalPadding: 15,
+        minVerticalPadding: 18,
         isThreeLine: true,
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: context.textTheme.titleMedium,
         ),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 4.0, right: 18.0),
           child: Text(
             subtitle,
-            style: const TextStyle(fontSize: 12),
+            style: context.textTheme.bodyMedium,
           ),
         ),
         trailing: Column(
@@ -47,9 +46,12 @@ class BackupInfoCard extends StatelessWidget {
           children: [
             Text(
               info,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: context.textTheme.titleLarge,
             ),
-            const Text("backup_info_card_assets").tr(),
+            Text(
+              "backup_info_card_assets",
+              style: context.textTheme.labelLarge,
+            ).tr(),
           ],
         ),
       ),

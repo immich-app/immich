@@ -8,6 +8,7 @@ export interface IAccessRepositoryMock {
   library: jest.Mocked<IAccessRepository['library']>;
   timeline: jest.Mocked<IAccessRepository['timeline']>;
   person: jest.Mocked<IAccessRepository['person']>;
+  partner: jest.Mocked<IAccessRepository['partner']>;
 }
 
 export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => {
@@ -19,35 +20,41 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
     activity: {
       hasOwnerAccess: jest.fn(),
       hasAlbumOwnerAccess: jest.fn(),
+      hasCreateAccess: jest.fn(),
     },
+
     asset: {
-      hasOwnerAccess: jest.fn(),
-      hasAlbumAccess: jest.fn(),
-      hasPartnerAccess: jest.fn(),
-      hasSharedLinkAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkAlbumAccess: jest.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkSharedLinkAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     album: {
-      hasOwnerAccess: jest.fn(),
-      hasSharedAlbumAccess: jest.fn(),
-      hasSharedLinkAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkSharedAlbumAccess: jest.fn().mockResolvedValue(new Set()),
+      checkSharedLinkAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     authDevice: {
-      hasOwnerAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     library: {
-      hasOwnerAccess: jest.fn(),
-      hasPartnerAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     timeline: {
-      hasPartnerAccess: jest.fn(),
+      checkPartnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     person: {
-      hasOwnerAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+    },
+
+    partner: {
+      checkUpdateAccess: jest.fn().mockResolvedValue(new Set()),
     },
   };
 };

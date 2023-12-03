@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   e2e-tests:
-    name: Run end-to-end test suites
+    name: Server (e2e)
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
         run: docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
   doc-tests:
-    name: Run documentation checks
+    name: Docs
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -45,8 +45,12 @@ jobs:
         run: npm run check
         if: ${{ !cancelled() }}
 
+      - name: Run build
+        run: npm run build
+        if: ${{ !cancelled() }}
+
   server-unit-tests:
-    name: Run server unit test suites and checks
+    name: Server
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -76,7 +80,7 @@ jobs:
         if: ${{ !cancelled() }}
 
   cli-unit-tests:
-    name: Run cli test suites
+    name: CLI
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -97,12 +101,16 @@ jobs:
         run: npm run format
         if: ${{ !cancelled() }}
 
+      - name: Run tsc
+        run: npm run check
+        if: ${{ !cancelled() }}
+
       - name: Run unit tests & coverage
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
   web-unit-tests:
-    name: Run web unit test suites and checks
+    name: Web
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -136,7 +144,7 @@ jobs:
       #   if: ${{ !cancelled() }}
 
   mobile-unit-tests:
-    name: Run mobile unit tests
+    name: Mobile
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -150,7 +158,7 @@ jobs:
         run: flutter test -j 1
 
   ml-unit-tests:
-    name: Run ML unit tests and checks
+    name: Machine Learning
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -168,19 +176,19 @@ jobs:
           poetry install --with dev
       - name: Lint with ruff
         run: |
-          poetry run ruff check --format=github app
+          poetry run ruff check --format=github app export
       - name: Check black formatting
         run: |
-          poetry run black --check app
+          poetry run black --check app export
       - name: Run mypy type checking
         run: |
-          poetry run mypy --install-types --non-interactive app/
+          poetry run mypy --install-types --non-interactive --strict app/ export/
       - name: Run tests and coverage
         run: |
           poetry run pytest --cov app
 
   generated-api-up-to-date:
-    name: Check generated files are up-to-date
+    name: OpenAPI Clients
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -201,11 +209,11 @@ jobs:
           exit 1
 
   generated-typeorm-migrations-up-to-date:
-    name: Check generated TypeORM migrations are up-to-date
+    name: TypeORM Checks
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres
+        image: postgres@sha256:71da05df8c4f1e1bac9b92ebfba2a0eeb183f6ac6a972fd5e55e8146e29efe9c
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -228,7 +236,7 @@ jobs:
       - name: Install server dependencies
         run: npm ci
 
-      - name: Build the
+      - name: Build the app
         run: npm run build
 
       - name: Run existing migrations
@@ -244,11 +252,28 @@ jobs:
         with:
           files: |
             server/src/infra/migrations/
-      - name: Verify files have not changed
+      - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
-          echo "ERROR: Generated files not up to date!"
+          echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
+
+      - name: Run SQL generation
+        run: npm run sql:generate
+
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@v13.1
+        id: verify-changed-sql-files
+        with:
+          files: |
+            server/src/infra/sql
+
+      - name: Verify SQL files have not changed
+        if: steps.verify-changed-sql-files.outputs.files_changed == 'true'
+        run: |
+          echo "ERROR: Generated SQL files not up to date!"
+          echo "Changed files: ${{ steps.verify-changed-sql-files.outputs.changed_files }}"
           exit 1
 
   # mobile-integration-tests:

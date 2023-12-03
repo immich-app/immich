@@ -20,7 +20,7 @@ jobs:
     name: Build and sign Android
     # Skip when PR from a fork
     if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' }}
-    runs-on: macos-12
+    runs-on: macos-13
 
     steps:
       - name: Determine ref
@@ -35,7 +35,7 @@ jobs:
         with:
           ref: ${{ steps.get-ref.outputs.ref }}
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "12.x"

@@ -1,10 +1,10 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
 import 'package:immich_mobile/modules/shared_link/services/shared_link.service.dart';
@@ -26,7 +26,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const padding = 20.0;
-    final themeData = Theme.of(context);
+    final themeData = context.themeData;
     final descriptionController =
         useTextEditingController(text: existingLink?.description ?? "");
     final descriptionFocusNode = useFocusNode();
@@ -206,9 +206,16 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
     Widget buildExpiryAfterButton() {
       return DropdownMenu(
+        label: Text(
+          "shared_link_edit_expire_after",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: themeData.primaryColor,
+          ),
+        ).tr(),
         enableSearch: false,
         enableFilter: false,
-        width: MediaQuery.of(context).size.width - 40,
+        width: context.width - 40,
         initialSelection: expiryAfter.value,
         enabled: newShareLink.value.isEmpty &&
             (existingLink == null || editExpiry.value),
@@ -223,31 +230,34 @@ class SharedLinkEditPage extends HookConsumerWidget {
             borderSide: BorderSide(color: Colors.grey),
           ),
         ),
-        dropdownMenuEntries: const [
-          DropdownMenuEntry(value: 0, label: "Never"),
+        dropdownMenuEntries: [
+          DropdownMenuEntry(
+            value: 0,
+            label: "shared_link_edit_expire_after_option_never".tr(),
+          ),
           DropdownMenuEntry(
             value: 30,
-            label: '30 minutes',
+            label: "shared_link_edit_expire_after_option_minutes".plural(30),
           ),
           DropdownMenuEntry(
             value: 60,
-            label: '1 hour',
+            label: "shared_link_edit_expire_after_option_hours".plural(1),
           ),
           DropdownMenuEntry(
             value: 60 * 6,
-            label: '6 hours',
+            label: "shared_link_edit_expire_after_option_hours".plural(6),
           ),
           DropdownMenuEntry(
             value: 60 * 24,
-            label: '1 day',
+            label: "shared_link_edit_expire_after_option_days".plural(1),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 7,
-            label: '7 days',
+            label: "shared_link_edit_expire_after_option_days".plural(7),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30,
-            label: '30 days',
+            label: "shared_link_edit_expire_after_option_days".plural(30),
           ),
         ],
       );
@@ -258,15 +268,20 @@ class SharedLinkEditPage extends HookConsumerWidget {
         ClipboardData(
           text: passwordController.text.isEmpty
               ? newShareLink.value
-              : "Link: ${newShareLink.value}\nPassword: ${passwordController.text}",
+              : "shared_link_clipboard_text".tr(
+                  args: [newShareLink.value, passwordController.text],
+                ),
         ),
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              "Copied to clipboard",
-            ),
-            duration: Duration(seconds: 2),
+              "shared_link_clipboard_copied_massage",
+              style: context.textTheme.bodyLarge?.copyWith(
+                color: context.primaryColor,
+              ),
+            ).tr(),
+            duration: const Duration(seconds: 2),
           ),
         );
       });
@@ -300,10 +315,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
               alignment: Alignment.bottomRight,
               child: ElevatedButton(
                 onPressed: () {
-                  AutoRouter.of(context).pop();
+                  context.autoPop();
                 },
                 child: const Text(
-                  "Done",
+                  "share_done",
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -346,7 +361,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
           context: context,
           gravity: ToastGravity.BOTTOM,
           toastType: ToastType.error,
-          msg: 'Error while creating shared link',
+          msg: 'shared_link_create_error'.tr(),
         );
       }
     }
@@ -396,7 +411,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             changeExpiry: changeExpiry,
           );
       ref.invalidate(sharedLinksStateProvider);
-      AutoRouter.of(context).pop();
+      context.autoPop();
     }
 
     return Scaffold(

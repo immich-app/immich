@@ -1,9 +1,9 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -21,7 +21,7 @@ class LibraryPage extends HookConsumerWidget {
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider);
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    var isDarkTheme = context.isDarkTheme;
     var settings = ref.watch(appSettingsServiceProvider);
 
     useEffect(
@@ -96,15 +96,14 @@ class LibraryPage extends HookConsumerWidget {
                     padding: const EdgeInsets.only(right: 12.0),
                     child: Icon(
                       Icons.check,
-                      color: selected
-                          ? Theme.of(context).primaryColor
-                          : Colors.transparent,
+                      color:
+                          selected ? context.primaryColor : Colors.transparent,
                     ),
                   ),
                   Text(
                     option,
                     style: TextStyle(
-                      color: selected ? Theme.of(context).primaryColor : null,
+                      color: selected ? context.primaryColor : null,
                       fontSize: 12.0,
                     ),
                   ),
@@ -122,14 +121,12 @@ class LibraryPage extends HookConsumerWidget {
             Icon(
               Icons.swap_vert_rounded,
               size: 18,
-              color: Theme.of(context).primaryColor,
+              color: context.primaryColor,
             ),
             Text(
               options[selectedAlbumSortOrder.value],
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-                fontSize: 12.0,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: context.primaryColor,
               ),
             ),
           ],
@@ -140,7 +137,7 @@ class LibraryPage extends HookConsumerWidget {
     Widget buildCreateAlbumButton() {
       return GestureDetector(
         onTap: () {
-          AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: false));
+          context.autoPush(CreateAlbumRoute(isSharedAlbum: false));
         },
         child: Padding(
           padding: const EdgeInsets.only(bottom: 32),
@@ -152,18 +149,18 @@ class LibraryPage extends HookConsumerWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: isDarkMode
+                      color: isDarkTheme
                           ? const Color.fromARGB(255, 53, 53, 53)
                           : const Color.fromARGB(255, 203, 203, 203),
                     ),
-                    color: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+                    color: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
                     child: Icon(
                       Icons.add_rounded,
                       size: 28,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                   ),
                 ),
@@ -173,11 +170,9 @@ class LibraryPage extends HookConsumerWidget {
                   top: 8.0,
                   bottom: 16,
                 ),
-                child: const Text(
+                child: Text(
                   'library_page_new_album',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: context.textTheme.labelLarge,
                 ).tr(),
               ),
             ],
@@ -199,23 +194,23 @@ class LibraryPage extends HookConsumerWidget {
             child: Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13.0,
-                color: isDarkMode ? Colors.white : Colors.grey[800],
+                color: context.isDarkTheme
+                    ? Colors.white
+                    : Colors.black.withAlpha(200),
               ),
             ),
           ),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+            backgroundColor: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
             side: BorderSide(
-              color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+              color: isDarkTheme ? Colors.grey[800]! : Colors.grey[300]!,
             ),
             alignment: Alignment.centerLeft,
           ),
           icon: Icon(
             icon,
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
           ),
         ),
       );
@@ -228,7 +223,7 @@ class LibraryPage extends HookConsumerWidget {
     Widget? shareTrashButton() {
       return trashEnabled
           ? InkWell(
-              onTap: () => AutoRouter.of(context).push(const TrashRoute()),
+              onTap: () => context.autoPush(const TrashRoute()),
               borderRadius: BorderRadius.circular(12),
               child: const Icon(
                 Icons.delete_rounded,
@@ -257,12 +252,12 @@ class LibraryPage extends HookConsumerWidget {
                 children: [
                   buildLibraryNavButton(
                       "library_page_favorites".tr(), Icons.favorite_border, () {
-                    AutoRouter.of(context).navigate(const FavoritesRoute());
+                    context.autoNavigate(const FavoritesRoute());
                   }),
                   const SizedBox(width: 12.0),
                   buildLibraryNavButton(
                       "library_page_archive".tr(), Icons.archive_outlined, () {
-                    AutoRouter.of(context).navigate(const ArchiveRoute());
+                    context.autoNavigate(const ArchiveRoute());
                   }),
                 ],
               ),
@@ -279,9 +274,11 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'library_page_albums',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                   buildSortButton(),
                 ],
@@ -306,7 +303,7 @@ class LibraryPage extends HookConsumerWidget {
 
                   return AlbumThumbnailCard(
                     album: sorted[index - 1],
-                    onTap: () => AutoRouter.of(context).push(
+                    onTap: () => context.autoPush(
                       AlbumViewerRoute(
                         albumId: sorted[index - 1].id,
                       ),
@@ -327,9 +324,11 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'library_page_device_albums',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ).tr(),
                 ],
               ),
@@ -348,7 +347,7 @@ class LibraryPage extends HookConsumerWidget {
                 childCount: local.length,
                 (context, index) => AlbumThumbnailCard(
                   album: local[index],
-                  onTap: () => AutoRouter.of(context).push(
+                  onTap: () => context.autoPush(
                     AlbumViewerRoute(
                       albumId: local[index].id,
                     ),

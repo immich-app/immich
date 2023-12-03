@@ -26,9 +26,6 @@
 
   const logOut = async () => {
     const { data } = await api.authenticationApi.logout();
-
-    await fetch('/auth/logout', { method: 'POST' });
-
     goto(data.redirectUri || '/auth/login?autoLaunch=0');
   };
 </script>
@@ -124,7 +121,9 @@
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
-            <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {#key user}
+              <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {/key}
           </button>
 
           {#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
@@ -133,13 +132,13 @@
               out:fade={{ delay: 200, duration: 150 }}
               class="absolute -bottom-12 right-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
             >
-              <p>{user.firstName} {user.lastName}</p>
+              <p>{user.name}</p>
               <p>{user.email}</p>
             </div>
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel {user} on:logout={logOut} />
+            <AccountInfoPanel bind:user on:logout={logOut} />
           {/if}
         </div>
       </section>

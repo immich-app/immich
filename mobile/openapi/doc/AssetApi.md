@@ -16,6 +16,7 @@ Method | HTTP request | Description
 [**downloadFile**](AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 [**emptyTrash**](AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
+[**getAllUserAssetsByDeviceId**](AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
 [**getAssetSearchTerms**](AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
 [**getAssetStatistics**](AssetApi.md#getassetstatistics) | **GET** /asset/statistics | 
@@ -28,12 +29,11 @@ Method | HTTP request | Description
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
 [**getTimeBucket**](AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
-[**importFile**](AssetApi.md#importfile) | **POST** /asset/import | 
+[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | Use /asset/device/:deviceId instead - Remove in 1.92 release
 [**restoreAssets**](AssetApi.md#restoreassets) | **POST** /asset/restore | 
 [**restoreTrash**](AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 [**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
-[**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
+[**searchAssets**](AssetApi.md#searchassets) | **GET** /assets | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 [**updateAssets**](AssetApi.md#updateassets) | **PUT** /asset | 
@@ -432,6 +432,63 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**List<AssetResponseDto>**](AssetResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAllUserAssetsByDeviceId**
+> List<String> getAllUserAssetsByDeviceId(deviceId)
+
+
+
+Get all asset of a device that are in the database, ID only.
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final deviceId = deviceId_example; // String | 
+
+try {
+    final result = api_instance.getAllUserAssetsByDeviceId(deviceId);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getAllUserAssetsByDeviceId: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **deviceId** | **String**|  | 
+
+### Return type
+
+**List<String>**
 
 ### Authorization
 
@@ -1005,7 +1062,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getTimeBucket**
-> List<AssetResponseDto> getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key)
+> List<AssetResponseDto> getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key)
 
 
 
@@ -1037,10 +1094,11 @@ final isArchived = true; // bool |
 final isFavorite = true; // bool | 
 final isTrashed = true; // bool | 
 final withStacked = true; // bool | 
+final withPartners = true; // bool | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key);
+    final result = api_instance.getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getTimeBucket: $e\n');
@@ -1060,6 +1118,7 @@ Name | Type | Description  | Notes
  **isFavorite** | **bool**|  | [optional] 
  **isTrashed** | **bool**|  | [optional] 
  **withStacked** | **bool**|  | [optional] 
+ **withPartners** | **bool**|  | [optional] 
  **key** | **String**|  | [optional] 
 
 ### Return type
@@ -1078,7 +1137,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getTimeBuckets**
-> List<TimeBucketResponseDto> getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key)
+> List<TimeBucketResponseDto> getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key)
 
 
 
@@ -1109,10 +1168,11 @@ final isArchived = true; // bool |
 final isFavorite = true; // bool | 
 final isTrashed = true; // bool | 
 final withStacked = true; // bool | 
+final withPartners = true; // bool | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, key);
+    final result = api_instance.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getTimeBuckets: $e\n');
@@ -1131,6 +1191,7 @@ Name | Type | Description  | Notes
  **isFavorite** | **bool**|  | [optional] 
  **isTrashed** | **bool**|  | [optional] 
  **withStacked** | **bool**|  | [optional] 
+ **withPartners** | **bool**|  | [optional] 
  **key** | **String**|  | [optional] 
 
 ### Return type
@@ -1151,9 +1212,7 @@ Name | Type | Description  | Notes
 # **getUserAssetsByDeviceId**
 > List<String> getUserAssetsByDeviceId(deviceId)
 
-
-
-Get all asset of a device that are in the database, ID only.
+Use /asset/device/:deviceId instead - Remove in 1.92 release
 
 ### Example
 ```dart
@@ -1174,7 +1233,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final deviceId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final deviceId = deviceId_example; // String | 
 
 try {
     final result = api_instance.getUserAssetsByDeviceId(deviceId);
@@ -1201,61 +1260,6 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **importFile**
-> AssetFileUploadResponseDto importFile(importAssetDto)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final importAssetDto = ImportAssetDto(); // ImportAssetDto | 
-
-try {
-    final result = api_instance.importFile(importAssetDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->importFile: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **importAssetDto** | [**ImportAssetDto**](ImportAssetDto.md)|  | 
-
-### Return type
-
-[**AssetFileUploadResponseDto**](AssetFileUploadResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -1418,8 +1422,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **searchAsset**
-> List<AssetResponseDto> searchAsset(searchAssetDto)
+# **searchAssets**
+> List<AssetResponseDto> searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, originalFileName, originalPath, resizePath, webpPath, encodedVideoPath, city, state, country, make, model, lensModel, page, size)
 
 
 
@@ -1442,13 +1446,52 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final searchAssetDto = SearchAssetDto(); // SearchAssetDto | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final type = ; // AssetTypeEnum | 
+final order = ; // AssetOrder | 
+final deviceAssetId = deviceAssetId_example; // String | 
+final deviceId = deviceId_example; // String | 
+final checksum = checksum_example; // String | 
+final isArchived = true; // bool | 
+final isEncoded = true; // bool | 
+final isExternal = true; // bool | 
+final isFavorite = true; // bool | 
+final isMotion = true; // bool | 
+final isOffline = true; // bool | 
+final isReadOnly = true; // bool | 
+final isVisible = true; // bool | 
+final withDeleted = true; // bool | 
+final withStacked = true; // bool | 
+final withExif = true; // bool | 
+final withPeople = true; // bool | 
+final createdBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
+final createdAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
+final updatedBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
+final updatedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
+final trashedBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
+final trashedAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
+final takenBefore = 2013-10-20T19:20:30+01:00; // DateTime | 
+final takenAfter = 2013-10-20T19:20:30+01:00; // DateTime | 
+final originalFileName = originalFileName_example; // String | 
+final originalPath = originalPath_example; // String | 
+final resizePath = resizePath_example; // String | 
+final webpPath = webpPath_example; // String | 
+final encodedVideoPath = encodedVideoPath_example; // String | 
+final city = city_example; // String | 
+final state = state_example; // String | 
+final country = country_example; // String | 
+final make = make_example; // String | 
+final model = model_example; // String | 
+final lensModel = lensModel_example; // String | 
+final page = 8.14; // num | 
+final size = 8.14; // num | 
 
 try {
-    final result = api_instance.searchAsset(searchAssetDto);
+    final result = api_instance.searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, originalFileName, originalPath, resizePath, webpPath, encodedVideoPath, city, state, country, make, model, lensModel, page, size);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->searchAsset: $e\n');
+    print('Exception when calling AssetApi->searchAssets: $e\n');
 }
 ```
 
@@ -1456,7 +1499,46 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **searchAssetDto** | [**SearchAssetDto**](SearchAssetDto.md)|  | 
+ **id** | **String**|  | [optional] 
+ **libraryId** | **String**|  | [optional] 
+ **type** | [**AssetTypeEnum**](.md)|  | [optional] 
+ **order** | [**AssetOrder**](.md)|  | [optional] 
+ **deviceAssetId** | **String**|  | [optional] 
+ **deviceId** | **String**|  | [optional] 
+ **checksum** | **String**|  | [optional] 
+ **isArchived** | **bool**|  | [optional] 
+ **isEncoded** | **bool**|  | [optional] 
+ **isExternal** | **bool**|  | [optional] 
+ **isFavorite** | **bool**|  | [optional] 
+ **isMotion** | **bool**|  | [optional] 
+ **isOffline** | **bool**|  | [optional] 
+ **isReadOnly** | **bool**|  | [optional] 
+ **isVisible** | **bool**|  | [optional] 
+ **withDeleted** | **bool**|  | [optional] 
+ **withStacked** | **bool**|  | [optional] 
+ **withExif** | **bool**|  | [optional] 
+ **withPeople** | **bool**|  | [optional] 
+ **createdBefore** | **DateTime**|  | [optional] 
+ **createdAfter** | **DateTime**|  | [optional] 
+ **updatedBefore** | **DateTime**|  | [optional] 
+ **updatedAfter** | **DateTime**|  | [optional] 
+ **trashedBefore** | **DateTime**|  | [optional] 
+ **trashedAfter** | **DateTime**|  | [optional] 
+ **takenBefore** | **DateTime**|  | [optional] 
+ **takenAfter** | **DateTime**|  | [optional] 
+ **originalFileName** | **String**|  | [optional] 
+ **originalPath** | **String**|  | [optional] 
+ **resizePath** | **String**|  | [optional] 
+ **webpPath** | **String**|  | [optional] 
+ **encodedVideoPath** | **String**|  | [optional] 
+ **city** | **String**|  | [optional] 
+ **state** | **String**|  | [optional] 
+ **country** | **String**|  | [optional] 
+ **make** | **String**|  | [optional] 
+ **model** | **String**|  | [optional] 
+ **lensModel** | **String**|  | [optional] 
+ **page** | **num**|  | [optional] 
+ **size** | **num**|  | [optional] 
 
 ### Return type
 
@@ -1468,7 +1550,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

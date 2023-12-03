@@ -2,36 +2,42 @@ export const IAccessRepository = 'IAccessRepository';
 
 export interface IAccessRepository {
   activity: {
-    hasOwnerAccess(userId: string, albumId: string): Promise<boolean>;
-    hasAlbumOwnerAccess(userId: string, albumId: string): Promise<boolean>;
+    hasOwnerAccess(userId: string, activityId: string): Promise<boolean>;
+    hasAlbumOwnerAccess(userId: string, activityId: string): Promise<boolean>;
+    hasCreateAccess(userId: string, albumId: string): Promise<boolean>;
   };
+
   asset: {
-    hasOwnerAccess(userId: string, assetId: string): Promise<boolean>;
-    hasAlbumAccess(userId: string, assetId: string): Promise<boolean>;
-    hasPartnerAccess(userId: string, assetId: string): Promise<boolean>;
-    hasSharedLinkAccess(sharedLinkId: string, assetId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>>;
+    checkAlbumAccess(userId: string, assetIds: Set<string>): Promise<Set<string>>;
+    checkPartnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>>;
+    checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>): Promise<Set<string>>;
   };
 
   authDevice: {
-    hasOwnerAccess(userId: string, deviceId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, deviceIds: Set<string>): Promise<Set<string>>;
   };
 
   album: {
-    hasOwnerAccess(userId: string, albumId: string): Promise<boolean>;
-    hasSharedAlbumAccess(userId: string, albumId: string): Promise<boolean>;
-    hasSharedLinkAccess(sharedLinkId: string, albumId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, albumIds: Set<string>): Promise<Set<string>>;
+    checkSharedAlbumAccess(userId: string, albumIds: Set<string>): Promise<Set<string>>;
+    checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>>;
   };
 
   library: {
-    hasOwnerAccess(userId: string, libraryId: string): Promise<boolean>;
-    hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, libraryIds: Set<string>): Promise<Set<string>>;
+    checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
 
   timeline: {
-    hasPartnerAccess(userId: string, partnerId: string): Promise<boolean>;
+    checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
 
   person: {
-    hasOwnerAccess(userId: string, personId: string): Promise<boolean>;
+    checkOwnerAccess(userId: string, personIds: Set<string>): Promise<Set<string>>;
+  };
+
+  partner: {
+    checkUpdateAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>>;
   };
 }

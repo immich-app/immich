@@ -17,14 +17,14 @@ class _$AppRouter extends RootStackRouter {
     GlobalKey<NavigatorState>? navigatorKey,
     required this.authGuard,
     required this.duplicateGuard,
-    required this.galleryPermissionGuard,
+    required this.backupPermissionGuard,
   }) : super(navigatorKey);
 
   final AuthGuard authGuard;
 
   final DuplicateGuard duplicateGuard;
 
-  final GalleryPermissionGuard galleryPermissionGuard;
+  final BackupPermissionGuard backupPermissionGuard;
 
   @override
   final Map<String, PageFactory> pagesMap = {
@@ -348,6 +348,7 @@ class _$AppRouter extends RootStackRouter {
           assetId: args.assetId,
           withAssetThumbs: args.withAssetThumbs,
           isOwner: args.isOwner,
+          isReadOnly: args.isReadOnly,
           key: args.key,
         ),
         transitionsBuilder: TransitionsBuilders.slideLeft,
@@ -413,7 +414,6 @@ class _$AppRouter extends RootStackRouter {
           guards: [
             authGuard,
             duplicateGuard,
-            galleryPermissionGuard,
           ],
           children: [
             RouteConfig(
@@ -460,7 +460,6 @@ class _$AppRouter extends RootStackRouter {
           guards: [
             authGuard,
             duplicateGuard,
-            galleryPermissionGuard,
           ],
         ),
         RouteConfig(
@@ -477,6 +476,7 @@ class _$AppRouter extends RootStackRouter {
           guards: [
             authGuard,
             duplicateGuard,
+            backupPermissionGuard,
           ],
         ),
         RouteConfig(
@@ -1568,6 +1568,7 @@ class ActivitiesRoute extends PageRouteInfo<ActivitiesRouteArgs> {
     String? assetId,
     bool withAssetThumbs = true,
     bool isOwner = false,
+    bool isReadOnly = false,
     Key? key,
   }) : super(
           ActivitiesRoute.name,
@@ -1578,6 +1579,7 @@ class ActivitiesRoute extends PageRouteInfo<ActivitiesRouteArgs> {
             assetId: assetId,
             withAssetThumbs: withAssetThumbs,
             isOwner: isOwner,
+            isReadOnly: isReadOnly,
             key: key,
           ),
         );
@@ -1592,6 +1594,7 @@ class ActivitiesRouteArgs {
     this.assetId,
     this.withAssetThumbs = true,
     this.isOwner = false,
+    this.isReadOnly = false,
     this.key,
   });
 
@@ -1605,11 +1608,13 @@ class ActivitiesRouteArgs {
 
   final bool isOwner;
 
+  final bool isReadOnly;
+
   final Key? key;
 
   @override
   String toString() {
-    return 'ActivitiesRouteArgs{albumId: $albumId, appBarTitle: $appBarTitle, assetId: $assetId, withAssetThumbs: $withAssetThumbs, isOwner: $isOwner, key: $key}';
+    return 'ActivitiesRouteArgs{albumId: $albumId, appBarTitle: $appBarTitle, assetId: $assetId, withAssetThumbs: $withAssetThumbs, isOwner: $isOwner, isReadOnly: $isReadOnly, key: $key}';
   }
 }
 

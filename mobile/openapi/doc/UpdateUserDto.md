@@ -8,13 +8,13 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**avatarColor** | [**UserAvatarColor**](UserAvatarColor.md) |  | [optional] 
 **email** | **String** |  | [optional] 
 **externalPath** | **String** |  | [optional] 
-**firstName** | **String** |  | [optional] 
 **id** | **String** |  | 
 **isAdmin** | **bool** |  | [optional] 
-**lastName** | **String** |  | [optional] 
 **memoriesEnabled** | **bool** |  | [optional] 
+**name** | **String** |  | [optional] 
 **password** | **String** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 

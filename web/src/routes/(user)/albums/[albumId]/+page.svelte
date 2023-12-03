@@ -11,6 +11,8 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import RemoveFromAlbum from '$lib/components/photos-page/actions/remove-from-album.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
@@ -35,7 +37,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { ActivityResponseDto, ReactionType, UserResponseDto, api } from '@api';
+  import { ActivityResponseDto, ReactionLevel, ReactionType, UserResponseDto, api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -55,6 +57,9 @@
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
+  import AlbumOptions from '$lib/components/album-page/album-options.svelte';
+  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let data: PageData;
 
@@ -62,7 +67,16 @@
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
   let album = data.album;
+
+  $user = data.user;
+
   $: album = data.album;
+
+  $: {
+    if (!album.isActivityEnabled && $numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  }
 
   enum ViewMode {
     CONFIRM_DELETE = 'confirm-delete',
@@ -73,6 +87,7 @@
     ALBUM_OPTIONS = 'album-options',
     VIEW_USERS = 'view-users',
     VIEW = 'view',
+    OPTIONS = 'options',
   }
 
   let backUrl: string = AppRoute.ALBUMS;
@@ -85,7 +100,6 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
-  let user = data.user;
   let globalWidth: number;
   let assetGridWidth: number;
 
@@ -107,11 +121,13 @@
       assetGridWidth = globalWidth;
     }
   }
+  $: showActivityStatus =
+    album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
   afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
 
-    let url: string | undefined = from?.url.pathname;
+    let url: string | undefined = from?.url?.pathname;
 
     if (from?.route.id === '/(user)/search') {
       url = from.url.href;
@@ -128,6 +144,24 @@
     }
   });
 
+  const handleToggleEnableActivity = async () => {
+    try {
+      const { data } = await api.albumApi.updateAlbumInfo({
+        id: album.id,
+        updateAlbumDto: {
+          isActivityEnabled: !album.isActivityEnabled,
+        },
+      });
+      album = data;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: `Activity is ${album.isActivityEnabled ? 'enabled' : 'disabled'}`,
+      });
+    } catch (error) {
+      handleError(error, `Can't ${!album.isActivityEnabled ? 'enable' : 'disable'} activity`);
+    }
+  };
+
   const handleFavorite = async () => {
     try {
       if (isLiked) {
@@ -139,7 +173,6 @@
         const { data } = await api.activityApi.createActivity({
           activityCreateDto: { albumId: album.id, type: ReactionType.Like },
         });
-
         isLiked = data;
         reactions = [...reactions, isLiked];
       }
@@ -149,12 +182,13 @@
   };
 
   const getFavorite = async () => {
-    if (user) {
+    if ($user) {
       try {
         const { data } = await api.activityApi.getActivities({
-          userId: user.id,
+          userId: $user.id,
           albumId: album.id,
           type: ReactionType.Like,
+          level: ReactionLevel.Album,
         });
         if (data.length > 0) {
           isLiked = data[0];
@@ -374,6 +408,7 @@
         },
       });
       currentAlbumName = album.albumName;
+      notificationController.show({ type: NotificationType.Info, message: 'New album name has been saved' });
     } catch (error) {
       handleError(error, 'Unable to update album name');
     }
@@ -417,6 +452,8 @@
           {/if}
           {#if isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
+            <ChangeDate menuItem />
+            <ChangeLocation menuItem />
           {/if}
         </AssetSelectContextMenu>
       </AssetSelectControlBar>
@@ -455,6 +492,7 @@
                           <MenuOption on:click={handleStartSlideshow} text="Slideshow" />
                         {/if}
                         <MenuOption on:click={() => (viewMode = ViewMode.SELECT_THUMBNAIL)} text="Set album cover" />
+                        <MenuOption on:click={() => (viewMode = ViewMode.OPTIONS)} text="Options" />
                       </ContextMenu>
                     {/if}
                   </CircleIconButton>
@@ -514,16 +552,10 @@
       style={`width:${assetGridWidth}px`}
     >
       {#if viewMode === ViewMode.SELECT_ASSETS}
-        <AssetGrid
-          user={data.user}
-          assetStore={timelineStore}
-          assetInteractionStore={timelineInteractionStore}
-          isSelectionMode={true}
-        />
+        <AssetGrid assetStore={timelineStore} assetInteractionStore={timelineInteractionStore} isSelectionMode={true} />
       {:else}
         <AssetGrid
           {album}
-          user={data.user}
           {assetStore}
           {assetInteractionStore}
           isShared={album.sharedUsers.length > 0}
@@ -573,13 +605,13 @@
 
                   <!-- owner -->
                   <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                    <UserAvatar user={album.owner} size="md" autoColor />
+                    <UserAvatar user={album.owner} size="md" />
                   </button>
 
                   <!-- users -->
                   {#each album.sharedUsers as user (user.id)}
                     <button on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
-                      <UserAvatar {user} size="md" autoColor />
+                      <UserAvatar {user} size="md" />
                     </button>
                   {/each}
 
@@ -630,9 +662,10 @@
         </AssetGrid>
       {/if}
 
-      {#if album.sharedUsers.length > 0 && !$showAssetViewer}
+      {#if showActivityStatus}
         <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">
           <ActivityStatus
+            disabled={!album.isActivityEnabled}
             {isLiked}
             numberOfComments={$numberOfComments}
             {isShowActivity}
@@ -643,18 +676,20 @@
       {/if}
     </main>
   </div>
-  {#if album.sharedUsers.length > 0 && album && isShowActivity && user && !$showAssetViewer}
+  {#if album.sharedUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[1002] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
         translate="yes"
       >
         <ActivityViewer
-          {user}
+          user={$user}
+          disabled={!album.isActivityEnabled}
           albumOwnerId={album.ownerId}
           albumId={album.id}
+          {isLiked}
           bind:reactions
           on:addComment={() => updateNumberOfComments(1)}
           on:deleteComment={() => updateNumberOfComments(-1)}
@@ -700,6 +735,16 @@
   </ConfirmDialogue>
 {/if}
 
+{#if viewMode === ViewMode.OPTIONS && $user}
+  <AlbumOptions
+    {album}
+    user={$user}
+    on:close={() => (viewMode = ViewMode.VIEW)}
+    on:toggleEnableActivity={handleToggleEnableActivity}
+    on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
+  />
+{/if}
+
 {#if isEditingDescription}
   <EditDescriptionModal
     {album}
@@ -707,3 +752,5 @@
     on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}
+
+<UpdatePanel {assetStore} />

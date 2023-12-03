@@ -2,7 +2,7 @@ import { AuthUserDto, IJobRepository, JobName, mimeTypes, UploadFile } from '@ap
 import { AssetEntity } from '@app/infra/entities';
 import { parse } from 'node:path';
 import { IAssetRepository } from './asset-repository';
-import { CreateAssetDto, ImportAssetDto } from './dto/create-asset.dto';
+import { CreateAssetDto } from './dto/create-asset.dto';
 
 export class AssetCore {
   constructor(
@@ -12,7 +12,7 @@ export class AssetCore {
 
   async create(
     authUser: AuthUserDto,
-    dto: (CreateAssetDto | ImportAssetDto) & { libraryId: string },
+    dto: CreateAssetDto & { libraryId: string },
     file: UploadFile,
     livePhotoAssetId?: string,
     sidecarPath?: string,

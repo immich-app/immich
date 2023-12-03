@@ -5,7 +5,7 @@
 #
 # This workflow will not trigger runs on forked repos.
 
-name: Cleanup Old Docker Images
+name: Docker Cleanup
 
 on:
   pull_request:
@@ -29,16 +29,13 @@ jobs:
         include:
           - primary-name: "immich-server"
           - primary-name: "immich-machine-learning"
-          - primary-name: "immich-web"
-          - primary-name: "immich-proxy"
     env:
       # Requires a personal access token with the OAuth scope delete:packages
       TOKEN: ${{ secrets.PACKAGE_DELETE_TOKEN }}
     steps:
-      -
-        name: Clean temporary images
+      - name: Clean temporary images
         if: "${{ env.TOKEN != '' }}"
-        uses: stumpylog/image-cleaner-action/ephemeral@v0.3.0
+        uses: stumpylog/image-cleaner-action/ephemeral@v0.4.0
         with:
           token: "${{ env.TOKEN }}"
           owner: "immich-app"
@@ -60,17 +57,14 @@ jobs:
         include:
           - primary-name: "immich-server"
           - primary-name: "immich-machine-learning"
-          - primary-name: "immich-web"
-          - primary-name: "immich-proxy"
           - primary-name: "immich-build-cache"
     env:
       # Requires a personal access token with the OAuth scope delete:packages
       TOKEN: ${{ secrets.PACKAGE_DELETE_TOKEN }}
     steps:
-      -
-        name: Clean untagged images
+      - name: Clean untagged images
         if: "${{ env.TOKEN != '' }}"
-        uses: stumpylog/image-cleaner-action/untagged@v0.3.0
+        uses: stumpylog/image-cleaner-action/untagged@v0.4.0
         with:
           token: "${{ env.TOKEN }}"
           owner: "immich-app"

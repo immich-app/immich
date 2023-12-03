@@ -3,6 +3,8 @@
   import { page } from '$app/stores';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
@@ -70,7 +72,7 @@
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
-    if (from && from.route.id !== $page.route.id) {
+    if (from?.url && from.route.id !== $page.route.id) {
       previousRoute = from.url.href;
     }
 
@@ -117,6 +119,8 @@
         <DownloadAction menuItem />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         <ArchiveAction menuItem unarchive={isAllArchived} />
+        <ChangeDate menuItem />
+        <ChangeLocation menuItem />
       </AssetSelectContextMenu>
     </AssetSelectControlBar>
   {:else}
@@ -133,7 +137,7 @@
     {#if albums.length}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
-        <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
           {#each albums as album (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
               <AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} showContextMenu={false} />
@@ -145,7 +149,7 @@
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      {#if data.results?.assets?.items.length > 0}
+      {#if searchResultAssets.length > 0}
         <div class="pl-4">
           <GalleryViewer assets={searchResultAssets} bind:selectedAssets showArchiveIcon={true} />
         </div>

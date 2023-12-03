@@ -31,8 +31,8 @@ import {
   IUserTokenRepository,
 } from '../repositories';
 import { AuthType } from './auth.constant';
+import { AuthUserDto, SignUpDto } from './auth.dto';
 import { AuthService } from './auth.service';
-import { AuthUserDto, SignUpDto } from './dto';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -236,7 +236,7 @@ describe('AuthService', () => {
   });
 
   describe('adminSignUp', () => {
-    const dto: SignUpDto = { email: 'test@immich.com', password: 'password', firstName: 'immich', lastName: 'admin' };
+    const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
     it('should only allow one admin', async () => {
       userMock.getAdmin.mockResolvedValue({} as UserEntity);
@@ -248,11 +248,11 @@ describe('AuthService', () => {
       userMock.getAdmin.mockResolvedValue(null);
       userMock.create.mockResolvedValue({ ...dto, id: 'admin', createdAt: new Date('2021-01-01') } as UserEntity);
       await expect(sut.adminSignUp(dto)).resolves.toEqual({
+        avatarColor: expect.any(String),
         id: 'admin',
         createdAt: new Date('2021-01-01'),
         email: 'test@immich.com',
-        firstName: 'immich',
-        lastName: 'admin',
+        name: 'immich admin',
       });
       expect(userMock.getAdmin).toHaveBeenCalled();
       expect(userMock.create).toHaveBeenCalled();
@@ -395,11 +395,11 @@ describe('AuthService', () => {
 
   describe('logoutDevice', () => {
     it('should logout the device', async () => {
-      accessMock.authDevice.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.authDevice.checkOwnerAccess.mockResolvedValue(new Set(['token-1']));
 
       await sut.logoutDevice(authStub.user1, 'token-1');
 
-      expect(accessMock.authDevice.hasOwnerAccess).toHaveBeenCalledWith(authStub.user1.id, 'token-1');
+      expect(accessMock.authDevice.checkOwnerAccess).toHaveBeenCalledWith(authStub.user1.id, new Set(['token-1']));
       expect(userTokenMock.delete).toHaveBeenCalledWith('token-1');
     });
   });

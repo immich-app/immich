@@ -185,7 +185,6 @@ describe(ServerInfoService.name, () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
-        mapTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       });
       expect(configMock.load).toHaveBeenCalled();
     });
@@ -196,24 +195,21 @@ describe(ServerInfoService.name, () => {
       userMock.getUserStats.mockResolvedValue([
         {
           userId: 'user1',
-          userFirstName: '1',
-          userLastName: 'User',
+          userName: '1 User',
           photos: 10,
           videos: 11,
           usage: 12345,
         },
         {
           userId: 'user2',
-          userFirstName: '2',
-          userLastName: 'User',
+          userName: '2 User',
           photos: 10,
           videos: 20,
           usage: 123456,
         },
         {
           userId: 'user3',
-          userFirstName: '3',
-          userLastName: 'User',
+          userName: '3 User',
           photos: 100,
           videos: 0,
           usage: 987654,
@@ -228,25 +224,22 @@ describe(ServerInfoService.name, () => {
           {
             photos: 10,
             usage: 12345,
-            userFirstName: '1',
+            userName: '1 User',
             userId: 'user1',
-            userLastName: 'User',
             videos: 11,
           },
           {
             photos: 10,
             usage: 123456,
-            userFirstName: '2',
+            userName: '2 User',
             userId: 'user2',
-            userLastName: 'User',
             videos: 20,
           },
           {
             photos: 100,
             usage: 987654,
-            userFirstName: '3',
+            userName: '3 User',
             userId: 'user3',
-            userLastName: 'User',
             videos: 0,
           },
         ],

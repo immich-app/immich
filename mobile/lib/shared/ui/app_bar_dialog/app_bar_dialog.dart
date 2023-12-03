@@ -1,8 +1,8 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/manual_upload.provider.dart';
@@ -22,9 +22,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
-    final theme = Theme.of(context);
-    bool isDarkTheme = theme.brightness == Brightness.dark;
-    bool isHorizontal = MediaQuery.of(context).size.width > 600;
+    final theme = context.themeData;
+    bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
 
@@ -40,7 +39,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return Row(
         children: [
           InkWell(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => context.pop(),
             child: const Icon(
               Icons.close,
               size: 20,
@@ -54,8 +53,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 style: TextStyle(
                   fontFamily: 'SnowburstOne',
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
-                  fontSize: 15,
+                  color: context.primaryColor,
+                  fontSize: 16,
                 ),
               ),
             ),
@@ -73,14 +72,15 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         leading: SizedBox(
           child: Icon(
             icon,
-            color: theme.textTheme.labelMedium?.color,
+            color: theme.textTheme.labelLarge?.color?.withAlpha(250),
             size: 20,
           ),
         ),
         title: Text(
           text,
-          style:
-              theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: theme.textTheme.labelLarge?.color?.withAlpha(250),
+          ),
         ).tr(),
         onTap: onTap,
       );
@@ -90,7 +90,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(
         Icons.settings_rounded,
         "profile_drawer_settings",
-        () => AutoRouter.of(context).push(const SettingsRoute()),
+        () => context.autoPush(const SettingsRoute()),
       );
     }
 
@@ -98,7 +98,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(
         Icons.assignment_outlined,
         "profile_drawer_app_logs",
-        () => AutoRouter.of(context).push(const AppLogRoute()),
+        () => context.autoPush(const AppLogRoute()),
       );
     }
 
@@ -121,7 +121,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                   ref.watch(backupProvider.notifier).cancelBackup();
                   ref.watch(assetProvider.notifier).clearAllAsset();
                   ref.watch(websocketProvider.notifier).disconnect();
-                  AutoRouter.of(context).replace(const LoginRoute());
+                  context.autoReplace(const LoginRoute());
                 },
               );
             },
@@ -136,8 +136,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: isDarkTheme
-                ? Theme.of(context).scaffoldBackgroundColor
+            color: context.isDarkTheme
+                ? context.scaffoldBackgroundColor
                 : const Color.fromARGB(255, 225, 229, 240),
           ),
           child: ListTile(
@@ -146,9 +146,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               Icons.storage_rounded,
               color: theme.primaryColor,
             ),
-            title: const Text(
+            title: Text(
               "backup_controller_page_server_storage",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: context.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
             ).tr(),
             isThreeLine: true,
             subtitle: Padding(
@@ -191,7 +193,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           children: [
             InkWell(
               onTap: () {
-                Navigator.of(context).pop();
+                context.pop();
                 launchUrl(
                   Uri.parse('https://immich.app'),
                   mode: LaunchMode.externalApplication,
@@ -199,7 +201,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               },
               child: Text(
                 "profile_drawer_documentation",
-                style: Theme.of(context).textTheme.bodySmall,
+                style: context.textTheme.bodySmall,
               ).tr(),
             ),
             const SizedBox(
@@ -211,7 +213,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             ),
             InkWell(
               onTap: () {
-                Navigator.of(context).pop();
+                context.pop();
                 launchUrl(
                   Uri.parse('https://github.com/immich-app/immich'),
                   mode: LaunchMode.externalApplication,
@@ -219,7 +221,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               },
               child: Text(
                 "profile_drawer_github",
-                style: Theme.of(context).textTheme.bodySmall,
+                style: context.textTheme.bodySmall,
               ).tr(),
             ),
           ],
@@ -231,7 +233,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       clipBehavior: Clip.hardEdge,
       alignment: Alignment.topCenter,
       insetPadding: EdgeInsets.only(
-        top: isHorizontal ? 20 : 60,
+        top: isHorizontal ? 20 : 40,
         left: horizontalPadding,
         right: horizontalPadding,
         bottom: isHorizontal ? 20 : 100,

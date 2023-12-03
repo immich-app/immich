@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useEffect, useState;
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -25,38 +26,27 @@ class LocalStorageSettings extends HookConsumerWidget {
     }
 
     return ExpansionTile(
-      textColor: Theme.of(context).primaryColor,
-      title: const Text(
+      textColor: context.primaryColor,
+      title: Text(
         "cache_settings_tile_title",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         "cache_settings_tile_subtitle",
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         ListTile(
           title: Text(
-            "Duplicated Assets (${cacheItemCount.value})",
-            style: Theme.of(context)
-                .textTheme
-                .labelLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ).tr(),
+            "cache_settings_duplicated_assets_title",
+            style: context.textTheme.titleSmall,
+          ).tr(args: ["${cacheItemCount.value}"]),
           subtitle: const Text(
-            "Photos and videos that are black listed by the app",
-            style: TextStyle(
-              fontSize: 13,
-            ),
+            "cache_settings_duplicated_assets_subtitle",
           ).tr(),
           trailing: TextButton(
             onPressed: cacheItemCount.value > 0 ? clearCache : null,
             child: Text(
-              "CLEAR",
+              "cache_settings_duplicated_assets_clear_button",
               style: TextStyle(
                 fontSize: 12,
                 color: cacheItemCount.value > 0 ? Colors.red : Colors.grey,

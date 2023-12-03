@@ -38,9 +38,7 @@ export class UsageByUserDto {
   @ApiProperty({ type: 'string' })
   userId!: string;
   @ApiProperty({ type: 'string' })
-  userFirstName!: string;
-  @ApiProperty({ type: 'string' })
-  userLastName!: string;
+  userName!: string;
   @ApiProperty({ type: 'integer' })
   photos!: number;
   @ApiProperty({ type: 'integer' })
@@ -85,7 +83,6 @@ export class ServerThemeDto extends SystemConfigThemeDto {}
 export class ServerConfigDto {
   oauthButtonText!: string;
   loginPageMessage!: string;
-  mapTileUrl!: string;
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
   isInitialized!: boolean;

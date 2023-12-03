@@ -16,13 +16,13 @@ void main() {
   // final instance = UserDto();
 
   group('test UserDto', () {
-    // String email
-    test('to test the property `email`', () async {
+    // UserAvatarColor avatarColor
+    test('to test the property `avatarColor`', () async {
       // TODO
     });
 
-    // String firstName
-    test('to test the property `firstName`', () async {
+    // String email
+    test('to test the property `email`', () async {
       // TODO
     });
 
@@ -31,8 +31,8 @@ void main() {
       // TODO
     });
 
-    // String lastName
-    test('to test the property `lastName`', () async {
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

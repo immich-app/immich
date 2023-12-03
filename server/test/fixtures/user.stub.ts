@@ -1,12 +1,29 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserAvatarColor, UserEntity } from '@app/infra/entities';
 import { authStub } from './auth.stub';
+
+export const userDto = {
+  user1: {
+    email: 'user1@immich.app',
+    password: 'Password123',
+    name: 'User 1',
+  },
+  user2: {
+    email: 'user2@immich.app',
+    password: 'Password123',
+    name: 'User 2',
+  },
+  user3: {
+    email: 'user3@immich.app',
+    password: 'Password123',
+    name: 'User 3',
+  },
+};
 
 export const userStub = {
   admin: Object.freeze<UserEntity>({
     ...authStub.admin,
     password: 'admin_password',
-    firstName: 'admin_first_name',
-    lastName: 'admin_last_name',
+    name: 'admin_name',
     storageLabel: 'admin',
     externalPath: null,
     oauthId: '',
@@ -18,12 +35,12 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    firstName: 'immich_first_name',
-    lastName: 'immich_last_name',
+    name: 'immich_name',
     storageLabel: null,
     externalPath: null,
     oauthId: '',
@@ -35,12 +52,12 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   user2: Object.freeze<UserEntity>({
     ...authStub.user2,
     password: 'immich_password',
-    firstName: 'immich_first_name',
-    lastName: 'immich_last_name',
+    name: 'immich_name',
     storageLabel: null,
     externalPath: null,
     oauthId: '',
@@ -52,12 +69,12 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    firstName: 'immich_first_name',
-    lastName: 'immich_last_name',
+    name: 'immich_name',
     storageLabel: 'label-1',
     externalPath: null,
     oauthId: '',
@@ -69,12 +86,12 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   externalPath1: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    firstName: 'immich_first_name',
-    lastName: 'immich_last_name',
+    name: 'immich_name',
     storageLabel: 'label-1',
     externalPath: '/data/user1',
     oauthId: '',
@@ -86,12 +103,12 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   externalPath2: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    firstName: 'immich_first_name',
-    lastName: 'immich_last_name',
+    name: 'immich_name',
     storageLabel: 'label-1',
     externalPath: '/data/user2',
     oauthId: '',
@@ -103,12 +120,12 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
   profilePath: Object.freeze<UserEntity>({
     ...authStub.user1,
     password: 'immich_password',
-    firstName: 'immich_first_name',
-    lastName: 'immich_last_name',
+    name: 'immich_name',
     storageLabel: 'label-1',
     externalPath: null,
     oauthId: '',
@@ -120,5 +137,6 @@ export const userStub = {
     tags: [],
     assets: [],
     memoriesEnabled: true,
+    avatarColor: UserAvatarColor.PRIMARY,
   }),
 };

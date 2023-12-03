@@ -3,8 +3,7 @@ import { AlbumController } from '@app/immich';
 import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { SharedLinkType } from '@app/infra/entities';
 import { api } from '@test/api';
-import { db } from '@test/db';
-import { errorStub, uuidStub } from '@test/fixtures';
+import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
@@ -33,28 +32,18 @@ describe(`${AlbumController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
 
     await Promise.all([
-      api.userApi.create(server, admin.accessToken, {
-        email: 'user1@immich.app',
-        password: 'Password123',
-        firstName: 'User 1',
-        lastName: 'Test',
-      }),
-      api.userApi.create(server, admin.accessToken, {
-        email: 'user2@immich.app',
-        password: 'Password123',
-        firstName: 'User 2',
-        lastName: 'Test',
-      }),
+      api.userApi.create(server, admin.accessToken, userDto.user1),
+      api.userApi.create(server, admin.accessToken, userDto.user2),
     ]);
 
     [user1, user2] = await Promise.all([
-      api.authApi.login(server, { email: 'user1@immich.app', password: 'Password123' }),
-      api.authApi.login(server, { email: 'user2@immich.app', password: 'Password123' }),
+      api.authApi.login(server, userDto.user1),
+      api.authApi.login(server, userDto.user2),
     ]);
 
     user1Asset = await api.assetApi.upload(server, user1.accessToken, 'example');
@@ -226,6 +215,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         assets: [],
         assetCount: 0,
         owner: expect.objectContaining({ email: user1.userEmail }),
+        isActivityEnabled: true,
       });
     });
   });
@@ -256,7 +246,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
 
     it('should return album info for own album', async () => {
       const { status, body } = await request(server)
-        .get(`/album/${user1Albums[0].id}`)
+        .get(`/album/${user1Albums[0].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
@@ -265,11 +255,33 @@ describe(`${AlbumController.name} (e2e)`, () => {
 
     it('should return album info for shared album', async () => {
       const { status, body } = await request(server)
-        .get(`/album/${user2Albums[0].id}`)
+        .get(`/album/${user2Albums[0].id}?withoutAssets=false`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
       expect(body).toEqual(user2Albums[0]);
+    });
+
+    it('should return album info with assets when withoutAssets is undefined', async () => {
+      const { status, body } = await request(server)
+        .get(`/album/${user1Albums[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(user1Albums[0]);
+    });
+
+    it('should return album info without assets when withoutAssets is true', async () => {
+      const { status, body } = await request(server)
+        .get(`/album/${user1Albums[0].id}?withoutAssets=true`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        ...user1Albums[0],
+        assets: [],
+        assetCount: 1,
+      });
     });
   });
 

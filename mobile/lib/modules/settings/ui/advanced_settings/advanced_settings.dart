@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useEffect, useState;
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -43,18 +44,13 @@ class AdvancedSettings extends HookConsumerWidget {
     final logLevel = Level.LEVELS[levelId.value].name;
 
     return ExpansionTile(
-      textColor: Theme.of(context).primaryColor,
-      title: const Text(
+      textColor: context.primaryColor,
+      title: Text(
         "advanced_settings_tile_title",
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: context.textTheme.titleMedium,
       ).tr(),
       subtitle: const Text(
         "advanced_settings_tile_subtitle",
-        style: TextStyle(
-          fontSize: 13,
-        ),
       ).tr(),
       children: [
         SettingsSwitchListTile(
@@ -67,11 +63,10 @@ class AdvancedSettings extends HookConsumerWidget {
         ),
         ListTile(
           dense: true,
-          title: Text(
-            // Not translated because the levels are only English
-            "Log level: $logLevel",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          title: const Text(
+            "advanced_settings_log_level_title",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).tr(args: [logLevel]),
           subtitle: Slider(
             value: levelId.value.toDouble(),
             onChanged: (double v) => levelId.value = v.toInt(),
@@ -86,7 +81,7 @@ class AdvancedSettings extends HookConsumerWidget {
             min: 1.0,
             divisions: 7,
             label: logLevel,
-            activeColor: Theme.of(context).primaryColor,
+            activeColor: context.primaryColor,
           ),
         ),
         SettingsSwitchListTile(

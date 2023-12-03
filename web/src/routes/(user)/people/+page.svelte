@@ -372,10 +372,11 @@
   {#if countVisiblePeople > 0}
     <div class="pl-4">
       <div class="flex flex-row flex-wrap gap-1">
-        {#each people as person (person.id)}
+        {#each people as person, idx (person.id)}
           {#if !person.isHidden}
             <PeopleCard
               {person}
+              preload={idx < 20}
               on:change-name={() => handleChangeName(person)}
               on:set-birth-date={() => handleSetBirthDate(person)}
               on:merge-faces={() => handleMergeFaces(person)}
@@ -444,7 +445,7 @@
     bind:showLoadingSpinner
     bind:toggleVisibility
   >
-    {#each people as person (person.id)}
+    {#each people as person, idx (person.id)}
       <button
         class="relative h-36 w-36 md:h-48 md:w-48"
         on:click={() => (person.isHidden = !person.isHidden)}
@@ -452,6 +453,7 @@
         on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
       >
         <ImageThumbnail
+          preload={idx < 20}
           bind:hidden={person.isHidden}
           shadow
           url={api.getPeopleThumbnailUrl(person.id)}

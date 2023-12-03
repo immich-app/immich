@@ -3,6 +3,7 @@ import {
   mdiAndroid,
   mdiAppleIos,
   mdiArchiveOutline,
+  mdiBash,
   mdiBookSearchOutline,
   mdiCakeVariant,
   mdiCheckAll,
@@ -15,6 +16,7 @@ import {
   mdiFile,
   mdiFileSearch,
   mdiFolder,
+  mdiForum,
   mdiHeart,
   mdiImage,
   mdiImageAlbum,
@@ -41,6 +43,7 @@ import {
   mdiText,
   mdiThemeLightDark,
   mdiTrashCanOutline,
+  mdiVectorCombine,
   mdiVideo,
   mdiWeb,
 } from '@mdi/js';
@@ -49,6 +52,34 @@ import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiVectorCombine,
+    description:
+      'The serving of the web app is merged into the server image, allowing us to remove two containers from the stack.',
+    title: 'Container consolidation',
+    release: 'v1.88.0',
+    tag: 'v1.88.0',
+    date: new Date(2023, 10, 20),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiBash,
+    description: 'Version 2 of the Immich CLI is released, replacing the legacy v1 CLI.',
+    title: 'CLI v2',
+    release: 'v1.88.0',
+    tag: 'v1.88.0',
+    date: new Date(2023, 10, 19),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiForum,
+    description: 'Comment a photo or a video in a shared album',
+    title: 'Activity',
+    release: 'v1.84.0',
+    tag: 'v1.84.0',
+    date: new Date(2023, 10, 1),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiStar,
     description: 'Reach 20K Stars on GitHub!',

@@ -1,7 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -17,7 +17,7 @@ class MemoryLane extends HookConsumerWidget {
         .whenData(
           (memories) => memories != null
               ? Container(
-                  margin: const EdgeInsets.only(top: 10),
+                  margin: const EdgeInsets.only(top: 10, left: 10),
                   height: 200,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
@@ -31,7 +31,7 @@ class MemoryLane extends HookConsumerWidget {
                         child: GestureDetector(
                           onTap: () {
                             HapticFeedback.heavyImpact();
-                            AutoRouter.of(context).push(
+                            context.autoPush(
                               MemoryRoute(
                                 memories: memories,
                                 memoryIndex: index,
@@ -48,7 +48,7 @@ class MemoryLane extends HookConsumerWidget {
                                 clipBehavior: Clip.hardEdge,
                                 child: ColorFiltered(
                                   colorFilter: ColorFilter.mode(
-                                    Colors.black.withOpacity(0.1),
+                                    Colors.black.withOpacity(0.2),
                                     BlendMode.darken,
                                   ),
                                   child: ImmichImage(
@@ -71,9 +71,9 @@ class MemoryLane extends HookConsumerWidget {
                                   child: Text(
                                     memory.title,
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       color: Colors.white,
-                                      fontSize: 14,
+                                      fontSize: 15,
                                     ),
                                   ),
                                 ),

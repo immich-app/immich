@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: true, path: '/api/socket.io' })
 export class CommunicationRepository implements OnGatewayConnection, OnGatewayDisconnect, ICommunicationRepository {
   private logger = new Logger(CommunicationRepository.name);
   private onConnectCallbacks: Callback[] = [];

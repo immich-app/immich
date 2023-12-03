@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -83,9 +84,8 @@ class CuratedPeopleRow extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
                         "Add name",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
+                        style: context.textTheme.labelLarge?.copyWith(
+                          color: context.primaryColor,
                         ),
                       ),
                     ),
@@ -97,10 +97,7 @@ class CuratedPeopleRow extends StatelessWidget {
                       person.label,
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13.0,
-                      ),
+                      style: context.textTheme.labelLarge,
                     ),
                   ),
               ],

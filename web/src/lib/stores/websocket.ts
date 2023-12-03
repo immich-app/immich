@@ -14,6 +14,7 @@ export const websocketStore = {
   onUploadSuccess: writable<AssetResponseDto>(),
   onAssetDelete: writable<string>(),
   onAssetTrash: writable<string[]>(),
+  onAssetUpdate: writable<AssetResponseDto>(),
   onPersonThumbnail: writable<string>(),
   serverVersion: writable<ServerVersionResponseDto>(),
   connected: writable<boolean>(false),
@@ -41,6 +42,7 @@ export const openWebsocketConnection = () => {
       // .on('on_upload_success', (data) => websocketStore.onUploadSuccess.set(data))
       .on('on_asset_delete', (data) => websocketStore.onAssetDelete.set(data))
       .on('on_asset_trash', (data) => websocketStore.onAssetTrash.set(data))
+      .on('on_asset_update', (data) => websocketStore.onAssetUpdate.set(data))
       .on('on_person_thumbnail', (data) => websocketStore.onPersonThumbnail.set(data))
       .on('on_server_version', (data) => websocketStore.serverVersion.set(data))
       .on('on_config_update', () => loadConfig())

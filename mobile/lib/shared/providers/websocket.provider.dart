@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -63,21 +64,19 @@ class WebsocketState {
 }
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
-  WebsocketNotifier(this.ref)
+  WebsocketNotifier(this._ref)
       : super(
           WebsocketState(socket: null, isConnected: false, pendingChanges: []),
-        ) {
-    debounce = Debounce(
-      const Duration(milliseconds: 500),
-    );
-  }
+        );
 
-  final log = Logger('WebsocketNotifier');
-  final Ref ref;
-  late final Debounce debounce;
+  final _log = Logger('WebsocketNotifier');
+  final Ref _ref;
+  final Debounce _debounce = Debounce(const Duration(milliseconds: 500));
 
-  connect() {
-    var authenticationState = ref.read(authenticationProvider);
+  /// Connects websocket to server unless already connected
+  void connect() {
+    if (state.isConnected) return;
+    final authenticationState = _ref.read(authenticationProvider);
 
     if (authenticationState.isAuthenticated) {
       final accessToken = Store.get(StoreKey.accessToken);
@@ -118,7 +117,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         });
 
         socket.on('error', (errorMessage) {
-          log.severe("Websocket Error - $errorMessage");
+          _log.severe("Websocket Error - $errorMessage");
           state = WebsocketState(
             isConnected: false,
             socket: null,
@@ -132,13 +131,14 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_asset_trash', _handleServerUpdates);
         socket.on('on_asset_restore', _handleServerUpdates);
         socket.on('on_asset_update', _handleServerUpdates);
+        socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
     }
   }
 
-  disconnect() {
+  void disconnect() {
     debugPrint("Attempting to disconnect from websocket");
 
     var socket = state.socket?.disconnect();
@@ -152,30 +152,30 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
   }
 
-  stopListenToEvent(String eventName) {
+  void stopListenToEvent(String eventName) {
     debugPrint("Stop listening to event $eventName");
     state.socket?.off(eventName);
   }
 
-  listenUploadEvent() {
+  void listenUploadEvent() {
     debugPrint("Start listening to event on_upload_success");
     state.socket?.on('on_upload_success', _handleOnUploadSuccess);
   }
 
-  addPendingChange(PendingAction action, dynamic value) {
+  void addPendingChange(PendingAction action, dynamic value) {
     state = state.copyWith(
       pendingChanges: [...state.pendingChanges, PendingChange(action, value)],
     );
   }
 
-  handlePendingChanges() {
+  void handlePendingChanges() {
     final deleteChanges = state.pendingChanges
         .where((c) => c.action == PendingAction.assetDelete)
         .toList();
     if (deleteChanges.isNotEmpty) {
       List<String> remoteIds =
           deleteChanges.map((a) => a.value.toString()).toList();
-      ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
+      _ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
       state = state.copyWith(
         pendingChanges: state.pendingChanges
             .where((c) => c.action != PendingAction.assetDelete)
@@ -184,27 +184,57 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
   }
 
-  _handleOnUploadSuccess(dynamic data) {
+  void _handleOnUploadSuccess(dynamic data) {
     final dto = AssetResponseDto.fromJson(data);
     if (dto != null) {
       final newAsset = Asset.remote(dto);
-      ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+      _ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
     }
   }
 
-  _handleOnConfigUpdate(dynamic _) {
-    ref.read(serverInfoProvider.notifier).getServerFeatures();
-    ref.read(serverInfoProvider.notifier).getServerConfig();
+  void _handleOnConfigUpdate(dynamic _) {
+    _ref.read(serverInfoProvider.notifier).getServerFeatures();
+    _ref.read(serverInfoProvider.notifier).getServerConfig();
   }
 
   // Refresh updated assets
-  _handleServerUpdates(dynamic _) {
-    ref.read(assetProvider.notifier).getAllAsset();
+  void _handleServerUpdates(dynamic _) {
+    _ref.read(assetProvider.notifier).getAllAsset();
   }
 
-  _handleOnAssetDelete(dynamic data) {
+  void _handleOnAssetDelete(dynamic data) {
     addPendingChange(PendingAction.assetDelete, data);
-    debounce(handlePendingChanges);
+    _debounce(handlePendingChanges);
+  }
+
+  _handleReleaseUpdates(dynamic data) {
+    // Json guard
+    if (data is! Map) {
+      return;
+    }
+
+    final json = data.cast<String, dynamic>();
+    final serverVersionJson =
+        json.containsKey('serverVersion') ? json['serverVersion'] : null;
+    final releaseVersionJson =
+        json.containsKey('releaseVersion') ? json['releaseVersion'] : null;
+    if (serverVersionJson == null || releaseVersionJson == null) {
+      return;
+    }
+
+    final serverVersionDto =
+        ServerVersionResponseDto.fromJson(serverVersionJson);
+    final releaseVersionDto =
+        ServerVersionResponseDto.fromJson(releaseVersionJson);
+    if (serverVersionDto == null || releaseVersionDto == null) {
+      return;
+    }
+
+    final serverVersion = ServerVersion.fromDto(serverVersionDto);
+    final releaseVersion = ServerVersion.fromDto(releaseVersionDto);
+    _ref
+        .read(serverInfoProvider.notifier)
+        .handleNewRelease(serverVersion, releaseVersion);
   }
 }
 

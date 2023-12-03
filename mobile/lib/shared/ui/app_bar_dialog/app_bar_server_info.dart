@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/server_info/server_info.model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -17,6 +18,8 @@ class AppBarServerInfo extends HookConsumerWidget {
     ServerInfo serverInfoState = ref.watch(serverInfoProvider);
 
     final appInfo = useState({});
+    const titleFontSize = 12.0;
+    const contentFontSize = 11.0;
 
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -39,8 +42,8 @@ class AppBarServerInfo extends HookConsumerWidget {
       padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Theme.of(context).scaffoldBackgroundColor
+          color: context.isDarkTheme
+              ? context.scaffoldBackgroundColor
               : const Color.fromARGB(255, 225, 229, 240),
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(10),
@@ -61,8 +64,8 @@ class AppBarServerInfo extends HookConsumerWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.w600,
+                    color: context.primaryColor,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -82,9 +85,9 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         "server_info_box_app_version".tr(),
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontSize: titleFontSize,
+                          color: context.textTheme.labelSmall?.color,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -96,11 +99,8 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context)
-                              .textTheme
-                              .labelSmall
-                              ?.color
+                          fontSize: contentFontSize,
+                          color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
                         ),
@@ -125,9 +125,9 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         "server_info_box_server_version".tr(),
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontSize: titleFontSize,
+                          color: context.textTheme.labelSmall?.color,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -139,13 +139,10 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         serverInfoState.serverVersion.major > 0
                             ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
-                            : "?",
+                            : "--",
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context)
-                              .textTheme
-                              .labelSmall
-                              ?.color
+                          fontSize: contentFontSize,
+                          color: context.textTheme.labelSmall?.color
                               ?.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
                         ),
@@ -170,9 +167,9 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Text(
                         "server_info_box_server_url".tr(),
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.bold,
+                          fontSize: titleFontSize,
+                          color: context.textTheme.labelSmall?.color,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -185,14 +182,12 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Tooltip(
                         verticalOffset: 0,
                         decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).primaryColor.withOpacity(0.9),
+                          color: context.primaryColor.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         textStyle: TextStyle(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.black
-                              : Colors.white,
+                          color:
+                              context.isDarkTheme ? Colors.black : Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                         message: getServerUrl() ?? '--',
@@ -201,16 +196,68 @@ class AppBarServerInfo extends HookConsumerWidget {
                         child: Text(
                           getServerUrl() ?? '--',
                           style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.color
+                            fontSize: contentFontSize,
+                            color: context.textTheme.labelSmall?.color
                                 ?.withOpacity(0.5),
                             fontWeight: FontWeight.bold,
                             overflow: TextOverflow.ellipsis,
                           ),
                           textAlign: TextAlign.end,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Divider(
+                  color: Color.fromARGB(101, 201, 201, 201),
+                  thickness: 1,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: Row(
+                        children: [
+                          if (serverInfoState.isNewReleaseAvailable)
+                            const Padding(
+                              padding: EdgeInsets.only(right: 5.0),
+                              child: Icon(
+                                Icons.info,
+                                color: Color.fromARGB(255, 243, 188, 106),
+                                size: 12,
+                              ),
+                            ),
+                          Text(
+                            "server_info_box_latest_release".tr(),
+                            style: TextStyle(
+                              fontSize: titleFontSize,
+                              color: context.textTheme.labelSmall?.color,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10.0),
+                      child: Text(
+                        serverInfoState.latestVersion.major > 0
+                            ? "${serverInfoState.latestVersion.major}.${serverInfoState.latestVersion.minor}.${serverInfoState.latestVersion.patch}"
+                            : "--",
+                        style: TextStyle(
+                          fontSize: contentFontSize,
+                          color: context.textTheme.labelSmall?.color
+                              ?.withOpacity(0.5),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

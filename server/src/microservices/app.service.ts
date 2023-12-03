@@ -84,22 +84,13 @@ export class AppService {
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
+      [JobName.SIDECAR_WRITE]: (data) => this.metadataService.handleSidecarWrite(data),
       [JobName.LIBRARY_SCAN_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
       [JobName.LIBRARY_SCAN]: (data) => this.libraryService.handleQueueAssetRefresh(data),
       [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
       [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
       [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
-    });
-
-    process.on('uncaughtException', async (error: Error | any) => {
-      const isCsvError = error.code === 'CSV_RECORD_INCONSISTENT_FIELDS_LENGTH';
-      if (!isCsvError) {
-        throw error;
-      }
-
-      this.logger.warn('Geocoding csv parse error, trying again without cache...');
-      await this.metadataService.init(true);
     });
 
     await this.metadataService.init();

@@ -1,10 +1,9 @@
-import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -25,14 +24,13 @@ class AlbumInfoListTile extends HookConsumerWidget {
         ref.watch(backupProvider).excludedBackupAlbums.contains(albumInfo);
 
     ColorFilter selectedFilter = ColorFilter.mode(
-      Theme.of(context).primaryColor.withAlpha(100),
+      context.primaryColor.withAlpha(100),
       BlendMode.darken,
     );
     ColorFilter excludedFilter =
         ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
     ColorFilter unselectedFilter =
         const ColorFilter.mode(Colors.black, BlendMode.color);
-    var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     var assetCount = useState(0);
 
@@ -56,11 +54,11 @@ class AlbumInfoListTile extends HookConsumerWidget {
 
     buildTileColor() {
       if (isSelected) {
-        return isDarkTheme
-            ? Theme.of(context).primaryColor.withAlpha(100)
-            : Theme.of(context).primaryColor.withAlpha(25);
+        return context.isDarkTheme
+            ? context.primaryColor.withAlpha(100)
+            : context.primaryColor.withAlpha(25);
       } else if (isExcluded) {
-        return isDarkTheme
+        return context.isDarkTheme
             ? Colors.red[300]?.withAlpha(150)
             : Colors.red[100]?.withAlpha(150);
       } else {
@@ -75,23 +73,10 @@ class AlbumInfoListTile extends HookConsumerWidget {
         if (isExcluded) {
           // Remove from exclude album list
           ref
-              .watch(backupProvider.notifier)
+              .read(backupProvider.notifier)
               .removeExcludedAlbumForBackup(albumInfo);
         } else {
           // Add to exclude album list
-          if (ref.watch(backupProvider).selectedBackupAlbums.length == 1 &&
-              ref
-                  .watch(backupProvider)
-                  .selectedBackupAlbums
-                  .contains(albumInfo)) {
-            ImmichToast.show(
-              context: context,
-              msg: "backup_err_only_album".tr(),
-              toastType: ToastType.error,
-              gravity: ToastGravity.BOTTOM,
-            );
-            return;
-          }
 
           if (albumInfo.id == 'isAll' || albumInfo.name == 'Recents') {
             ImmichToast.show(
@@ -104,7 +89,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
           }
 
           ref
-              .watch(backupProvider.notifier)
+              .read(backupProvider.notifier)
               .addExcludedAlbumForBackup(albumInfo);
         }
       },
@@ -114,19 +99,9 @@ class AlbumInfoListTile extends HookConsumerWidget {
         onTap: () {
           HapticFeedback.selectionClick();
           if (isSelected) {
-            if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
-              ImmichToast.show(
-                context: context,
-                msg: "backup_err_only_album".tr(),
-                toastType: ToastType.error,
-                gravity: ToastGravity.BOTTOM,
-              );
-              return;
-            }
-
-            ref.watch(backupProvider.notifier).removeAlbumForBackup(albumInfo);
+            ref.read(backupProvider.notifier).removeAlbumForBackup(albumInfo);
           } else {
-            ref.watch(backupProvider.notifier).addAlbumForBackup(albumInfo);
+            ref.read(backupProvider.notifier).addAlbumForBackup(albumInfo);
           }
         },
         leading: ClipRRect(
@@ -159,13 +134,13 @@ class AlbumInfoListTile extends HookConsumerWidget {
         subtitle: Text(assetCount.value.toString()),
         trailing: IconButton(
           onPressed: () {
-            AutoRouter.of(context).push(
+            context.autoPush(
               AlbumPreviewRoute(album: albumInfo.albumEntity),
             );
           },
           icon: Icon(
             Icons.image_outlined,
-            color: Theme.of(context).primaryColor,
+            color: context.primaryColor,
             size: 24,
           ),
           splashRadius: 25,

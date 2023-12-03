@@ -36,7 +36,8 @@ def deployed_app() -> TestClient:
 
 @pytest.fixture(scope="session")
 def responses() -> dict[str, Any]:
-    return json.load(open("responses.json", "r"))
+    responses: dict[str, Any] = json.load(open("responses.json", "r"))
+    return responses
 
 
 @pytest.fixture(scope="session")

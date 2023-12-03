@@ -1,6 +1,5 @@
 import { AuthController } from '@app/immich';
 import { api } from '@test/api';
-import { db } from '@test/db';
 import {
   adminSignupStub,
   changePasswordStub,
@@ -8,16 +7,32 @@ import {
   errorStub,
   loginResponseStub,
   loginStub,
-  signupResponseStub,
   uuidStub,
 } from '@test/fixtures';
 import { testApp } from '@test/test-utils';
 import request from 'supertest';
 
-const firstName = 'Immich';
-const lastName = 'Admin';
+const name = 'Immich Admin';
 const password = 'Password123';
 const email = 'admin@immich.app';
+
+const adminSignupResponse = {
+  avatarColor: expect.any(String),
+  id: expect.any(String),
+  name: 'Immich Admin',
+  email: 'admin@immich.app',
+  storageLabel: 'admin',
+  externalPath: null,
+  profileImagePath: '',
+  // why? lol
+  shouldChangePassword: true,
+  isAdmin: true,
+  createdAt: expect.any(String),
+  updatedAt: expect.any(String),
+  deletedAt: null,
+  oauthId: '',
+  memoriesEnabled: true,
+};
 
 describe(`${AuthController.name} (e2e)`, () => {
   let server: any;
@@ -33,7 +48,7 @@ describe(`${AuthController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await db.reset();
+    await testApp.reset();
     await api.authApi.adminSignUp(server);
     const response = await api.authApi.adminLogin(server);
     accessToken = response.accessToken;
@@ -41,29 +56,25 @@ describe(`${AuthController.name} (e2e)`, () => {
 
   describe('POST /auth/admin-sign-up', () => {
     beforeEach(async () => {
-      await db.reset();
+      await testApp.reset();
     });
 
     const invalid = [
       {
         should: 'require an email address',
-        data: { firstName, lastName, password },
+        data: { name, password },
       },
       {
         should: 'require a password',
-        data: { firstName, lastName, email },
+        data: { name, email },
       },
       {
-        should: 'require a first name ',
-        data: { lastName, email, password },
-      },
-      {
-        should: 'require a last name ',
-        data: { firstName, email, password },
+        should: 'require a name',
+        data: { email, password },
       },
       {
         should: 'require a valid email',
-        data: { firstName, lastName, email: 'immich', password },
+        data: { name, email: 'immich', password },
       },
     ];
 
@@ -84,7 +95,7 @@ describe(`${AuthController.name} (e2e)`, () => {
         .post('/auth/admin-sign-up')
         .send({ ...adminSignupStub, email: 'admin@local' });
       expect(status).toEqual(201);
-      expect(body).toEqual({ ...signupResponseStub, email: 'admin@local' });
+      expect(body).toEqual({ ...adminSignupResponse, email: 'admin@local' });
     });
 
     it('should transform email to lower case', async () => {
@@ -92,7 +103,7 @@ describe(`${AuthController.name} (e2e)`, () => {
         .post('/auth/admin-sign-up')
         .send({ ...adminSignupStub, email: 'aDmIn@IMMICH.app' });
       expect(status).toEqual(201);
-      expect(body).toEqual(signupResponseStub);
+      expect(body).toEqual(adminSignupResponse);
     });
 
     it('should not allow a second admin to sign up', async () => {

@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -17,7 +18,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
@@ -33,6 +33,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     final userId = ref.watch(authenticationProvider).userId;
     final selection = useState<Set<Asset>>({});
     final multiSelectEnabled = useState(false);
+    final isProcessing = useProcessingOverlay();
 
     useEffect(
       () {
@@ -67,7 +68,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     /// If they exist, add to selected asset state to show they are already selected.
     void onAddPhotosPressed(Album albumInfo) async {
       AssetSelectionPageResult? returnPayload =
-          await AutoRouter.of(context).push<AssetSelectionPageResult?>(
+          await context.autoPush<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: albumInfo.assets,
           canDeselect: false,
@@ -75,35 +76,31 @@ class AlbumViewerPage extends HookConsumerWidget {
         ),
       );
 
-      if (returnPayload != null) {
+      if (returnPayload != null && returnPayload.selectedAssets.isNotEmpty) {
         // Check if there is new assets add
-        if (returnPayload.selectedAssets.isNotEmpty) {
-          ImmichLoadingOverlayController.appLoader.show();
+        isProcessing.value = true;
 
-          var addAssetsResult =
-              await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
-                    returnPayload.selectedAssets,
-                    albumInfo,
-                  );
+        var addAssetsResult =
+            await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
+                  returnPayload.selectedAssets,
+                  albumInfo,
+                );
 
-          if (addAssetsResult != null &&
-              addAssetsResult.successfullyAdded > 0) {
-            ref.invalidate(albumDetailProvider(albumId));
-          }
-
-          ImmichLoadingOverlayController.appLoader.hide();
+        if (addAssetsResult != null && addAssetsResult.successfullyAdded > 0) {
+          ref.invalidate(albumDetailProvider(albumId));
         }
+
+        isProcessing.value = false;
       }
     }
 
     void onAddUsersPressed(Album album) async {
-      List<String>? sharedUserIds =
-          await AutoRouter.of(context).push<List<String>?>(
+      List<String>? sharedUserIds = await context.autoPush<List<String>?>(
         SelectAdditionalUserForSharingRoute(album: album),
       );
 
       if (sharedUserIds != null) {
-        ImmichLoadingOverlayController.appLoader.show();
+        isProcessing.value = true;
 
         var isSuccess = await ref
             .watch(albumServiceProvider)
@@ -113,7 +110,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           ref.invalidate(albumDetailProvider(album.id));
         }
 
-        ImmichLoadingOverlayController.appLoader.hide();
+        isProcessing.value = false;
       }
     }
 
@@ -154,10 +151,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
                   album.name,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: context.textTheme.headlineMedium,
                 ),
               ),
       );
@@ -171,11 +165,19 @@ class AlbumViewerPage extends HookConsumerWidget {
         return const SizedBox();
       }
 
-      final String startDateText = (startDate.year == endDate.year
-              ? DateFormat.MMMd()
-              : DateFormat.yMMMd())
-          .format(startDate);
-      final String endDateText = DateFormat.yMMMd().format(endDate);
+      final String dateRangeText;
+      if (startDate.day == endDate.day &&
+          startDate.month == endDate.month &&
+          startDate.year == endDate.year) {
+        dateRangeText = DateFormat.yMMMd().format(startDate);
+      } else {
+        final String startDateText = (startDate.year == endDate.year
+                ? DateFormat.MMMd()
+                : DateFormat.yMMMd())
+            .format(startDate);
+        final String endDateText = DateFormat.yMMMd().format(endDate);
+        dateRangeText = "$startDateText - $endDateText";
+      }
 
       return Padding(
         padding: EdgeInsets.only(
@@ -183,11 +185,8 @@ class AlbumViewerPage extends HookConsumerWidget {
           bottom: album.shared ? 0.0 : 8.0,
         ),
         child: Text(
-          "$startDateText - $endDateText",
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+          dateRangeText,
+          style: context.textTheme.labelLarge,
         ),
       );
     }
@@ -195,7 +194,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     Widget buildSharedUserIconsRow(Album album) {
       return GestureDetector(
         onTap: () async {
-          await AutoRouter.of(context).push(AlbumOptionsRoute(album: album));
+          await context.autoPush(AlbumOptionsRoute(album: album));
           ref.invalidate(albumDetailProvider(album.id));
         },
         child: SizedBox(
@@ -210,7 +209,6 @@ class AlbumViewerPage extends HookConsumerWidget {
                   user: album.sharedUsers.toList()[index],
                   radius: 18,
                   size: 36,
-                  useRandomBackgroundColor: true,
                 ),
               );
             }),
@@ -234,11 +232,12 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     onActivitiesPressed(Album album) {
       if (album.remoteId != null) {
-        AutoRouter.of(context).push(
+        context.autoPush(
           ActivitiesRoute(
             albumId: album.remoteId!,
             appBarTitle: album.name,
             isOwner: userId == album.ownerId,
+            isReadOnly: !album.activityEnabled,
           ),
         );
       }
@@ -259,13 +258,11 @@ class AlbumViewerPage extends HookConsumerWidget {
         error: (error, stackTrace) => AppBar(title: const Text("Error")),
         loading: () => AppBar(),
       ),
-      body: album.when(
-        data: (data) => WillPopScope(
+      body: album.widgetWhen(
+        onData: (data) => WillPopScope(
           onWillPop: onWillPop,
           child: GestureDetector(
-            onTap: () {
-              titleFocusNode.unfocus();
-            },
+            onTap: () => titleFocusNode.unfocus(),
             child: ImmichAssetGrid(
               renderList: data.renderList,
               listener: selectionListener,
@@ -279,13 +276,10 @@ class AlbumViewerPage extends HookConsumerWidget {
                 ],
               ),
               isOwner: userId == data.ownerId,
-              sharedAlbumId: data.remoteId,
+              sharedAlbumId:
+                  data.shared && data.activityEnabled ? data.remoteId : null,
             ),
           ),
-        ),
-        error: (e, _) => Center(child: Text("Error loading album info!\n$e")),
-        loading: () => const Center(
-          child: ImmichLoadingIndicator(),
         ),
       ),
     );

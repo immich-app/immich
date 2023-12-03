@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { UserEntity } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
@@ -16,14 +17,17 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  @GenerateSql()
   async getAdmin(): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { isAdmin: true } });
   }
 
+  @GenerateSql()
   async hasAdmin(): Promise<boolean> {
     return this.userRepository.exist({ where: { isAdmin: true } });
   }
 
+  @GenerateSql({ params: [DummyValue.EMAIL] })
   async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
     let builder = this.userRepository.createQueryBuilder('user').where({ email });
 
@@ -34,10 +38,12 @@ export class UserRepository implements IUserRepository {
     return builder.getOne();
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   async getByStorageLabel(storageLabel: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { storageLabel } });
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { oauthId } });
   }
@@ -76,12 +82,12 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.recover(user);
   }
 
+  @GenerateSql()
   async getUserStats(): Promise<UserStatsQueryResponse[]> {
     const stats = await this.userRepository
       .createQueryBuilder('users')
       .select('users.id', 'userId')
-      .addSelect('users.firstName', 'userFirstName')
-      .addSelect('users.lastName', 'userLastName')
+      .addSelect('users.name', 'userName')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
       .addSelect('COALESCE(SUM(exif.fileSizeInByte), 0)', 'usage')

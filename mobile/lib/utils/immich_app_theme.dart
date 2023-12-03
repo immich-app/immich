@@ -38,19 +38,19 @@ ThemeData immichLightTheme = ThemeData(
   hintColor: Colors.indigo,
   focusColor: Colors.indigo,
   splashColor: Colors.indigo.withOpacity(0.15),
-  fontFamily: 'WorkSans',
+  fontFamily: 'Overpass',
   scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Overpass',
       color: Colors.indigo,
       fontWeight: FontWeight.bold,
     ),
     backgroundColor: Colors.white,
   ),
-  appBarTheme: AppBarTheme(
-    titleTextStyle: const TextStyle(
-      fontFamily: 'WorkSans',
+  appBarTheme: const AppBarTheme(
+    titleTextStyle: TextStyle(
+      fontFamily: 'Overpass',
       color: Colors.indigo,
       fontWeight: FontWeight.bold,
       fontSize: 18,
@@ -61,7 +61,7 @@ ThemeData immichLightTheme = ThemeData(
     scrolledUnderElevation: 0,
     centerTitle: true,
   ),
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
     backgroundColor: immichBackgroundColor,
     selectedItemColor: Colors.indigo,
@@ -69,7 +69,7 @@ ThemeData immichLightTheme = ThemeData(
   cardTheme: const CardTheme(
     surfaceTintColor: Colors.transparent,
   ),
-  drawerTheme: DrawerThemeData(
+  drawerTheme: const DrawerThemeData(
     backgroundColor: immichBackgroundColor,
   ),
   textTheme: const TextTheme(
@@ -125,9 +125,9 @@ ThemeData immichLightTheme = ThemeData(
     surfaceTintColor: Colors.transparent,
     labelTextStyle: MaterialStatePropertyAll(
       TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[700],
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: Colors.grey[800],
       ),
     ),
   ),
@@ -160,10 +160,10 @@ ThemeData immichDarkTheme = ThemeData(
   primaryColor: immichDarkThemePrimaryColor,
   scaffoldBackgroundColor: immichDarkBackgroundColor,
   hintColor: Colors.grey[600],
-  fontFamily: 'WorkSans',
+  fontFamily: 'Overpass',
   snackBarTheme: SnackBarThemeData(
-    contentTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
+    contentTextStyle: const TextStyle(
+      fontFamily: 'Overpass',
       color: immichDarkThemePrimaryColor,
       fontWeight: FontWeight.bold,
     ),
@@ -174,35 +174,35 @@ ThemeData immichDarkTheme = ThemeData(
       foregroundColor: immichDarkThemePrimaryColor,
     ),
   ),
-  appBarTheme: AppBarTheme(
+  appBarTheme: const AppBarTheme(
     titleTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Overpass',
       color: immichDarkThemePrimaryColor,
       fontWeight: FontWeight.bold,
       fontSize: 18,
     ),
-    backgroundColor: const Color.fromARGB(255, 32, 33, 35),
+    backgroundColor: Color.fromARGB(255, 32, 33, 35),
     foregroundColor: immichDarkThemePrimaryColor,
     elevation: 0,
     scrolledUnderElevation: 0,
     centerTitle: true,
   ),
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
-    backgroundColor: const Color.fromARGB(255, 35, 36, 37),
+    backgroundColor: Color.fromARGB(255, 35, 36, 37),
     selectedItemColor: immichDarkThemePrimaryColor,
   ),
   drawerTheme: DrawerThemeData(
     backgroundColor: immichDarkBackgroundColor,
     scrimColor: Colors.white.withOpacity(0.1),
   ),
-  textTheme: TextTheme(
-    displayLarge: const TextStyle(
+  textTheme: const TextTheme(
+    displayLarge: TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
       color: Color.fromARGB(255, 255, 255, 255),
     ),
-    displayMedium: const TextStyle(
+    displayMedium: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
       color: Color.fromARGB(255, 255, 255, 255),
@@ -212,15 +212,15 @@ ThemeData immichDarkTheme = ThemeData(
       fontWeight: FontWeight.bold,
       color: immichDarkThemePrimaryColor,
     ),
-    titleSmall: const TextStyle(
+    titleSmall: TextStyle(
       fontSize: 16.0,
       fontWeight: FontWeight.bold,
     ),
-    titleMedium: const TextStyle(
+    titleMedium: TextStyle(
       fontSize: 18.0,
       fontWeight: FontWeight.bold,
     ),
-    titleLarge: const TextStyle(
+    titleLarge: TextStyle(
       fontSize: 26.0,
       fontWeight: FontWeight.bold,
     ),
@@ -249,16 +249,16 @@ ThemeData immichDarkTheme = ThemeData(
     surfaceTintColor: Colors.transparent,
     labelTextStyle: MaterialStatePropertyAll(
       TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[500],
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: Colors.grey[300],
       ),
     ),
   ),
   dialogTheme: const DialogTheme(
     surfaceTintColor: Colors.transparent,
   ),
-  inputDecorationTheme: InputDecorationTheme(
+  inputDecorationTheme: const InputDecorationTheme(
     focusedBorder: OutlineInputBorder(
       borderSide: BorderSide(
         color: immichDarkThemePrimaryColor,
@@ -267,12 +267,12 @@ ThemeData immichDarkTheme = ThemeData(
     labelStyle: TextStyle(
       color: immichDarkThemePrimaryColor,
     ),
-    hintStyle: const TextStyle(
+    hintStyle: TextStyle(
       fontSize: 14.0,
       fontWeight: FontWeight.normal,
     ),
   ),
-  textSelectionTheme: TextSelectionThemeData(
+  textSelectionTheme: const TextSelectionThemeData(
     cursorColor: immichDarkThemePrimaryColor,
   ),
 );

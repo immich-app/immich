@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 
@@ -11,11 +11,58 @@ export interface AssetStatsOptions {
 }
 
 export interface AssetSearchOptions {
-  isVisible?: boolean;
-  trashedBefore?: Date;
+  id?: string;
+  libraryId?: string;
+  deviceAssetId?: string;
+  deviceId?: string;
+  ownerId?: string;
   type?: AssetType;
-  order?: 'ASC' | 'DESC';
+  checksum?: Buffer;
+
+  isArchived?: boolean;
+  isEncoded?: boolean;
+  isExternal?: boolean;
+  isFavorite?: boolean;
+  isMotion?: boolean;
+  isOffline?: boolean;
+  isReadOnly?: boolean;
+  isVisible?: boolean;
+
   withDeleted?: boolean;
+  withStacked?: boolean;
+  withExif?: boolean;
+  withPeople?: boolean;
+
+  createdBefore?: Date;
+  createdAfter?: Date;
+  updatedBefore?: Date;
+  updatedAfter?: Date;
+  trashedBefore?: Date;
+  trashedAfter?: Date;
+  takenBefore?: Date;
+  takenAfter?: Date;
+
+  originalFileName?: string;
+  originalPath?: string;
+  resizePath?: string;
+  webpPath?: string;
+  encodedVideoPath?: string;
+
+  city?: string;
+  state?: string;
+  country?: string;
+  make?: string;
+  model?: string;
+  lensModel?: string;
+
+  /** defaults to 'DESC' */
+  order?: 'ASC' | 'DESC';
+
+  /** defaults to 1 */
+  page?: number;
+
+  /** defaults to 250 */
+  size?: number;
 }
 
 export interface LivePhotoSearchOptions {
@@ -65,7 +112,7 @@ export interface TimeBucketOptions {
   isTrashed?: boolean;
   albumId?: string;
   personId?: string;
-  userId?: string;
+  userIds?: string[];
   withStacked?: boolean;
 }
 
@@ -115,6 +162,7 @@ export interface IAssetRepository {
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
+  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void>;
   save(asset: Pick<AssetEntity, 'id'> & Partial<AssetEntity>): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
@@ -126,4 +174,6 @@ export interface IAssetRepository {
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
+  upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
+  search(options: AssetSearchOptions): Promise<AssetEntity[]>;
 }

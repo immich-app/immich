@@ -9,7 +9,6 @@ import { ServerVersionResponseDto, UserResponseDto } from 'src/api/open-api';
 export abstract class BaseCommand {
   protected sessionService!: SessionService;
   protected immichApi!: ImmichApi;
-  protected deviceId!: string;
   protected user!: UserResponseDto;
   protected serverVersion!: ServerVersionResponseDto;
 

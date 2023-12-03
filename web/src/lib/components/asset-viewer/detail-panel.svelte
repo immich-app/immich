@@ -1,20 +1,39 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
   import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
-  import type { LatLngTuple } from 'leaflet';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import { mdiCalendar, mdiCameraIris, mdiClose, mdiImageOutline, mdiMapMarkerOutline } from '@mdi/js';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import {
+    mdiCalendar,
+    mdiCameraIris,
+    mdiClose,
+    mdiPencil,
+    mdiImageOutline,
+    mdiMapMarkerOutline,
+    mdiInformationOutline,
+    mdiEye,
+    mdiEyeOff,
+  } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import Map from '../shared-components/map/map.svelte';
+  import { websocketStore } from '$lib/stores/websocket';
+  import { AppRoute } from '$lib/constants';
+  import ChangeLocation from '../shared-components/change-location.svelte';
+  import { handleError } from '../../utils/handle-error';
+  import { user } from '$lib/stores/user.store';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
+  export let albumId: string | null = null;
 
   let textarea: HTMLTextAreaElement;
   let description: string;
@@ -36,21 +55,22 @@
     const lng = asset.exifInfo?.longitude;
 
     if (lat && lng) {
-      return [Number(lat.toFixed(7)), Number(lng.toFixed(7))] as LatLngTuple;
+      return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
     }
   })();
 
-  $: {
-    if (!asset.exifInfo) {
-      api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-        asset.exifInfo = res.data?.exifInfo;
-      });
-    }
-  }
-  $: lat = latlng ? latlng[0] : undefined;
-  $: lng = latlng ? latlng[1] : undefined;
-
   $: people = asset.people || [];
+  $: showingHiddenPeople = false;
+
+  const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
+    if (assetUpdate && assetUpdate.id === asset.id) {
+      asset = assetUpdate;
+    }
+  });
+
+  onDestroy(() => {
+    unsubscribe();
+  });
 
   const dispatch = createEventDispatcher();
 
@@ -79,14 +99,44 @@
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
-        updateAssetDto: {
-          description: description,
-        },
+        updateAssetDto: { description },
       });
     } catch (error) {
       console.error(error);
     }
   };
+
+  let showAssetPath = false;
+  const toggleAssetPath = () => (showAssetPath = !showAssetPath);
+
+  let isShowChangeDate = false;
+
+  async function handleConfirmChangeDate(dateTimeOriginal: string) {
+    isShowChangeDate = false;
+    try {
+      await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+    } catch (error) {
+      handleError(error, 'Unable to change date');
+    }
+  }
+
+  let isShowChangeLocation = false;
+
+  async function handleConfirmChangeLocation(gps: { lng: number; lat: number }) {
+    isShowChangeLocation = false;
+
+    try {
+      await api.assetApi.updateAsset({
+        id: asset.id,
+        updateAssetDto: {
+          latitude: gps.lat,
+          longitude: gps.lng,
+        },
+      });
+    } catch (error) {
+      handleError(error, 'Unable to change location');
+    }
+  }
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -131,21 +181,38 @@
 
   {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
-      <h2>PEOPLE</h2>
+      <div class="flex h-10 w-full items-center justify-between">
+        <h2>PEOPLE</h2>
+        {#if people.some((person) => person.isHidden)}
+          <CircleIconButton
+            title="Show hidden people"
+            icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
+            padding="1"
+            on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+          />
+        {/if}
+      </div>
 
-      <div class="mt-4 flex flex-wrap gap-2">
+      <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person (person.id)}
-          <a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
-            <ImageThumbnail
-              curve
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              title={person.name}
-              widthStyle="90px"
-              heightStyle="90px"
-              thumbhash={null}
-            />
+          <a
+            href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
+            class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
+            on:click={() => dispatch('close-viewer')}
+          >
+            <div class="relative">
+              <ImageThumbnail
+                curve
+                shadow
+                url={api.getPeopleThumbnailUrl(person.id)}
+                altText={person.name}
+                title={person.name}
+                widthStyle="90px"
+                heightStyle="90px"
+                thumbhash={null}
+                hidden={person.isHidden}
+              />
+            </div>
             <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
             {#if person.birthDate}
               {@const personBirthDate = DateTime.fromISO(person.birthDate)}
@@ -184,49 +251,135 @@
       <p class="text-sm">DETAILS</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal}
+    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
       {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
         zone: asset.exifInfo.timeZone ?? undefined,
       })}
-      <div class="flex gap-4 py-4">
-        <div>
-          <Icon path={mdiCalendar} size="24" />
-        </div>
+      <div
+        class="flex justify-between place-items-start gap-4 py-4"
+        tabindex="0"
+        role="button"
+        on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
+        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeDate = true) : null)}
+        title={isOwner ? 'Edit date' : ''}
+        class:hover:dark:text-immich-dark-primary={isOwner}
+        class:hover:text-immich-primary={isOwner}
+      >
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
 
-        <div>
-          <p>
-            {assetDateTimeOriginal.toLocaleString(
-              {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              },
-              { locale: $locale },
-            )}
-          </p>
-          <div class="flex gap-2 text-sm">
+          <div>
             <p>
               {assetDateTimeOriginal.toLocaleString(
                 {
-                  weekday: 'short',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  timeZoneName: 'longOffset',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
                 },
                 { locale: $locale },
               )}
             </p>
+            <div class="flex gap-2 text-sm">
+              <p>
+                {assetDateTimeOriginal.toLocaleString(
+                  {
+                    weekday: 'short',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZoneName: 'longOffset',
+                  },
+                  { locale: $locale },
+                )}
+              </p>
+            </div>
           </div>
         </div>
-      </div>{/if}
+
+        {#if isOwner}
+          <button class="focus:outline-none">
+            <Icon path={mdiPencil} size="20" />
+          </button>
+        {/if}
+      </div>
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+      <div class="flex justify-between place-items-start gap-4 py-4">
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
+        </div>
+        <button class="focus:outline-none">
+          <Icon path={mdiPencil} size="20" />
+        </button>
+      </div>
+    {:else if asset.exifInfo?.dateTimeOriginal && asset.isReadOnly}
+      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+        zone: asset.exifInfo.timeZone ?? undefined,
+      })}
+      <div class="flex justify-between place-items-start gap-4 py-4">
+        <div class="flex gap-4">
+          <div>
+            <Icon path={mdiCalendar} size="24" />
+          </div>
+
+          <div>
+            <p>
+              {assetDateTimeOriginal.toLocaleString(
+                {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                },
+                { locale: $locale },
+              )}
+            </p>
+            <div class="flex gap-2 text-sm">
+              <p>
+                {assetDateTimeOriginal.toLocaleString(
+                  {
+                    weekday: 'short',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    timeZoneName: 'longOffset',
+                  },
+                  { locale: $locale },
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    {#if isShowChangeDate}
+      {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
+        ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+            zone: asset.exifInfo.timeZone ?? undefined,
+          })
+        : DateTime.now()}
+      <ChangeDate
+        initialDate={assetDateTimeOriginal}
+        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
+        on:cancel={() => (isShowChangeDate = false)}
+      />
+    {/if}
 
     {#if asset.exifInfo?.fileSizeInByte}
       <div class="flex gap-4 py-4">
         <div><Icon path={mdiImageOutline} size="24" /></div>
 
         <div>
-          <p class="break-all">
-            {getAssetFilename(asset)}
+          <p class="break-all flex place-items-center gap-2">
+            {#if isOwner}
+              {asset.originalFileName}
+              <button title="Show File Location" on:click={toggleAssetPath}>
+                <Icon path={mdiInformationOutline} />
+              </button>
+            {:else}
+              {getAssetFilename(asset)}
+            {/if}
           </p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
@@ -240,6 +393,11 @@
             {/if}
             <p>{asByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
           </div>
+          {#if showAssetPath}
+            <p class="text-xs opacity-50 break-all" transition:slide={{ duration: 250 }}>
+              {asset.originalPath}
+            </p>
+          {/if}
         </div>
       </div>
     {/if}
@@ -273,48 +431,109 @@
       </div>
     {/if}
 
-    {#if asset.exifInfo?.city}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+    {#if asset.exifInfo?.city && !asset.isReadOnly}
+      <div
+        class="flex justify-between place-items-start gap-4 py-4"
+        on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
+        on:keydown={(event) => (isOwner ? event.key === 'Enter' && (isShowChangeLocation = true) : null)}
+        tabindex="0"
+        title={isOwner ? 'Edit location' : ''}
+        role="button"
+        class:hover:dark:text-immich-dark-primary={isOwner}
+        class:hover:text-immich-primary={isOwner}
+      >
+        <div class="flex gap-4">
+          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
 
-        <div>
-          <p>{asset.exifInfo.city}</p>
-          {#if asset.exifInfo?.state}
-            <div class="flex gap-2 text-sm">
-              <p>{asset.exifInfo.state}</p>
-            </div>
-          {/if}
-          {#if asset.exifInfo?.country}
-            <div class="flex gap-2 text-sm">
-              <p>{asset.exifInfo.country}</p>
-            </div>
-          {/if}
+          <div>
+            <p>{asset.exifInfo.city}</p>
+            {#if asset.exifInfo?.state}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.state}</p>
+              </div>
+            {/if}
+            {#if asset.exifInfo?.country}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.country}</p>
+              </div>
+            {/if}
+          </div>
+        </div>
+
+        {#if isOwner}
+          <div>
+            <Icon path={mdiPencil} size="20" />
+          </div>
+        {/if}
+      </div>
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+      <div
+        class="flex justify-between place-items-start gap-4 py-4 rounded-lg pr-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+        on:click={() => (isShowChangeLocation = true)}
+        on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
+        tabindex="0"
+        role="button"
+        title="Add location"
+      >
+        <div class="flex gap-4">
+          <div>
+            <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+          </div>
+
+          <p>Add a location</p>
+        </div>
+        <div class="focus:outline-none">
+          <Icon path={mdiPencil} size="20" />
         </div>
       </div>
+    {:else if asset.exifInfo?.city && asset.isReadOnly}
+      <div class="flex justify-between place-items-start gap-4 py-4">
+        <div class="flex gap-4">
+          <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+
+          <div>
+            <p>{asset.exifInfo.city}</p>
+            {#if asset.exifInfo?.state}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.state}</p>
+              </div>
+            {/if}
+            {#if asset.exifInfo?.country}
+              <div class="flex gap-2 text-sm">
+                <p>{asset.exifInfo.country}</p>
+              </div>
+            {/if}
+          </div>
+        </div>
+      </div>
+    {/if}
+    {#if isShowChangeLocation}
+      <ChangeLocation
+        {asset}
+        on:confirm={({ detail: gps }) => handleConfirmChangeLocation(gps)}
+        on:cancel={() => (isShowChangeLocation = false)}
+      />
     {/if}
   </div>
 </section>
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    {#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
-      <Map center={latlng} zoom={14}>
-        <TileLayer
-          urlTemplate={$serverConfig.mapTileUrl}
-          options={{
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          }}
-        />
-        <Marker {latlng}>
-          <p>
-            {lat}, {lng}
-          </p>
-          <a href="https://www.openstreetmap.org/?mlat={lat}&mlon={lng}&zoom=15#map=15/{lat}/{lng}">
+    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+      <svelte:fragment slot="popup" let:marker>
+        {@const { lat, lon } = marker}
+        <div class="flex flex-col items-center gap-1">
+          <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
+          <a
+            href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=15#map=15/{lat}/{lon}"
+            target="_blank"
+            class="font-medium text-immich-primary"
+          >
             Open in OpenStreetMap
           </a>
-        </Marker>
-      </Map>
-    {/await}
+        </div>
+      </svelte:fragment>
+    </Map>
   </div>
 {/if}
 
@@ -323,13 +542,12 @@
     <p class="text-sm">SHARED BY</p>
     <div class="flex gap-4 pt-4">
       <div>
-        <UserAvatar user={asset.owner} size="md" autoColor />
+        <UserAvatar user={asset.owner} size="md" />
       </div>
 
       <div class="mb-auto mt-auto">
         <p>
-          {asset.owner.firstName}
-          {asset.owner.lastName}
+          {asset.owner.name}
         </p>
       </div>
     </div>

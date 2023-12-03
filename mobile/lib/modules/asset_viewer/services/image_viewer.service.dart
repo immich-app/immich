@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
@@ -84,8 +83,8 @@ class ImageViewerService {
         }
         return entity != null;
       }
-    } catch (e) {
-      debugPrint("Error saving file $e");
+    } catch (error, stack) {
+      _log.severe("Error saving file ${error.toString()}", error, stack);
       return false;
     }
   }
