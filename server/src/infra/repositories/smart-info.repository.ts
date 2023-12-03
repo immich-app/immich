@@ -1,15 +1,14 @@
 import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import AsyncLock from 'async-lock';
 import { Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { asVector, isValidInteger } from '../infra.utils';
+import { DatabaseLock, RequireLock, asyncLock } from '@app/infra';
 
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {
   private logger = new Logger(SmartInfoRepository.name);
-  private lock: AsyncLock;
   private readonly faceColumns: string[];
   private curDimSize: number | undefined;
 
@@ -19,7 +18,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
   ) {
-    this.lock = new AsyncLock();
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
       .ownColumns.map((column) => column.propertyName)
@@ -92,10 +90,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   private async upsertEmbedding(assetId: string, embedding: number[]): Promise<void> {
-    if (this.lock.isBusy('updateDimSize')) {
-      this.logger.debug('Waiting for CLIP dimension size update to finish');
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return this.upsertEmbedding(assetId, embedding);
+    if (asyncLock.isBusy(DatabaseLock[DatabaseLock.CLIPDimSize])) {
+      this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
+      await asyncLock.acquire(DatabaseLock[DatabaseLock.CLIPDimSize], () => {});
     }
 
     if (this.curDimSize == null) {
@@ -112,52 +109,50 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     );
   }
 
+  @RequireLock(DatabaseLock.CLIPDimSize)
   private async updateDimSize(dimSize: number): Promise<void> {
     if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
-    await this.lock.acquire('updateDimSize', async () => {
-      if (this.curDimSize === dimSize) return;
+    if (this.curDimSize === dimSize) return;
+    
+    this.logger.log(`Current dimension size is ${this.curDimSize}. Updating CLIP dimension size to ${dimSize}.`);
 
-      this.logger.log(`Updating CLIP dimension size to ${dimSize}`);
+    await this.smartSearchRepository.manager.transaction(async (manager) => {
+      await manager.query(`DROP TABLE smart_search`);
 
-      await this.smartSearchRepository.manager.transaction(async (manager) => {
-        await manager.query(`DROP TABLE smart_search`);
+      await manager.query(`
+        CREATE TABLE smart_search (
+          "assetId"  uuid PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
+          embedding  vector(${dimSize}) NOT NULL )`);
 
-        await manager.query(`
-          CREATE TABLE smart_search (
-            "assetId"  uuid PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE,
-            embedding  vector(${dimSize}) NOT NULL )`);
-
-        await manager.query(`
-          CREATE INDEX clip_index ON smart_search
-            USING vectors (embedding cosine_ops) WITH (options = $$
-            [indexing.hnsw]
-            m = 16
-            ef_construction = 300
-            $$)`);
-      });
-
-      this.curDimSize = dimSize;
-      this.logger.log(`Successfully updated CLIP dimension size to ${dimSize}`);
+      await manager.query(`
+        CREATE INDEX clip_index ON smart_search
+          USING vectors (embedding cosine_ops) WITH (options = $$
+          [indexing.hnsw]
+          m = 16
+          ef_construction = 300
+          $$)`);
     });
+
+    this.logger.log(`Successfully updated CLIP dimension size from ${this.curDimSize} to ${dimSize}.`);
+    this.curDimSize = dimSize;
   }
 
+  @RequireLock(DatabaseLock.CLIPDimSize)
   private async getDimSize(): Promise<void> {
-    await this.lock.acquire('getDimSize', async () => {
-      if (this.curDimSize != null) return;
+    if (this.curDimSize != null) return;
 
-      const res = await this.smartSearchRepository.manager.query(`
-        SELECT atttypmod as dimsize
-        FROM pg_attribute f
-          JOIN pg_class c ON c.oid = f.attrelid
-        WHERE c.relkind = 'r'::char
-          AND f.attnum > 0
-          AND c.relname = 'smart_search'
-          AND f.attname = 'embedding'`);
-      this.curDimSize = res?.[0]?.['dimsize'] ?? 512;
-      this.logger.log(`CLIP dimension size is ${this.curDimSize}`);
-    });
+    const res = await this.smartSearchRepository.manager.query(`
+      SELECT atttypmod as dimsize
+      FROM pg_attribute f
+        JOIN pg_class c ON c.oid = f.attrelid
+      WHERE c.relkind = 'r'::char
+        AND f.attnum > 0
+        AND c.relname = 'smart_search'
+        AND f.attname = 'embedding'`);
+    this.curDimSize = res?.[0]?.['dimsize'] ?? 512;
+    this.logger.verbose(`CLIP dimension size is ${this.curDimSize}`);
   }
 }
