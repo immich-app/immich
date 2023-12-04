@@ -5,11 +5,13 @@ import {
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
+  newMediaRepositoryMock,
   newMetadataRepositoryMock,
   newMoveRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  probeStub,
 } from '@test';
 import { randomBytes } from 'crypto';
 import { Stats } from 'fs';
@@ -21,6 +23,7 @@ import {
   IAssetRepository,
   ICryptoRepository,
   IJobRepository,
+  IMediaRepository,
   IMetadataRepository,
   IMoveRepository,
   IPersonRepository,
@@ -30,7 +33,7 @@ import {
   WithProperty,
   WithoutProperty,
 } from '../repositories';
-import { MetadataService } from './metadata.service';
+import { MetadataService, Orientation } from './metadata.service';
 
 describe(MetadataService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
@@ -40,6 +43,7 @@ describe(MetadataService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let metadataMock: jest.Mocked<IMetadataRepository>;
   let moveMock: jest.Mocked<IMoveRepository>;
+  let mediaMock: jest.Mocked<IMediaRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let sut: MetadataService;
@@ -54,6 +58,7 @@ describe(MetadataService.name, () => {
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    mediaMock = newMediaRepositoryMock();
 
     sut = new MetadataService(
       albumMock,
@@ -63,6 +68,7 @@ describe(MetadataService.name, () => {
       metadataMock,
       storageMock,
       configMock,
+      mediaMock,
       moveMock,
       personMock,
     );
@@ -277,6 +283,7 @@ describe(MetadataService.name, () => {
 
     it('should not apply motion photos if asset is video', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoMotionAsset, isVisible: true }]);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id]);
@@ -284,6 +291,19 @@ describe(MetadataService.name, () => {
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalledWith(
         expect.objectContaining({ assetType: AssetType.VIDEO, isVisible: false }),
+      );
+    });
+
+    it('should extract the correct video orientation', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
+      metadataMock.readTags.mockResolvedValue(null);
+
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ orientation: Orientation.Rotate270CW }),
       );
     });
 

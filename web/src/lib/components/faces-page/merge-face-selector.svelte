@@ -16,6 +16,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PeopleList from './people-list.svelte';
+  import { page } from '$app/stores';
 
   export let person: PersonResponseDto;
   let people: PersonResponseDto[] = [];
@@ -41,7 +42,8 @@
 
   const handleSwapPeople = () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
-    goto(`${AppRoute.PEOPLE}/${person.id}?action=merge`);
+    $page.url.searchParams.set('action', 'merge');
+    goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
   };
 
   const onSelect = (selected: PersonResponseDto) => {

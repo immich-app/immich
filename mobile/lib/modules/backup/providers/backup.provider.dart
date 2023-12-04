@@ -375,6 +375,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await _getBackupAlbumsInfo();
       await updateServerInfo();
       await _updateBackupAssetCount();
+    } else {
+      log.warning("cannot get backup info - background backup is in progress!");
     }
   }
 

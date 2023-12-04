@@ -30,7 +30,7 @@ describe('Albums BLoC', () => {
   });
 
   it('loads albums from the server', async () => {
-    // TODO: this method currently deletes albums with no assets and albumName === 'Untitled' which might not be the best approach
+    // TODO: this method currently deletes albums with no assets and albumName === '' which might not be the best approach
     const loadedAlbums = [..._albums, albumFactory.build({ id: 'new_loaded_uuid' })];
 
     apiMock.albumApi.getAllAlbums.mockResolvedValueOnce({
@@ -63,9 +63,8 @@ describe('Albums BLoC', () => {
   });
 
   it('creates a new album', async () => {
-    // TODO: we probably shouldn't hardcode the album name "untitled" here and let the user input the album name before creating it
     const payload: CreateAlbumDto = {
-      albumName: 'Untitled',
+      albumName: '',
     };
 
     const returnedAlbum = albumFactory.build();

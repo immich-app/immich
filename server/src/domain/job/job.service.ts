@@ -223,7 +223,9 @@ export class JobService {
         }
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
-        if (asset) {
+
+        // Only live-photo motion part will be marked as not visible immediately on upload. Skip notifying clients
+        if (asset && asset.isVisible) {
           this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
       }

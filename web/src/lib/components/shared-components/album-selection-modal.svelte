@@ -41,9 +41,9 @@
 
   const handleNew = () => {
     if (shared) {
-      dispatch('newAlbum', { albumName: search.length > 0 ? search : 'Untitled' });
+      dispatch('newAlbum', { albumName: search.length > 0 ? search : '' });
     } else {
-      dispatch('newSharedAlbum', { albumName: search.length > 0 ? search : 'Untitled' });
+      dispatch('newSharedAlbum', { albumName: search.length > 0 ? search : '' });
     }
   };
 </script>
