@@ -215,9 +215,10 @@
             />
           {/if}
           <CircleIconButton
-            title="Show hidden people"
+            title="Edit people"
             icon={mdiPencil}
             padding="1"
+            size="20"
             on:click={() => (showEditFaces = true)}
           />
         </div>
