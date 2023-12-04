@@ -109,9 +109,6 @@
               id: personId,
               faceDto: { id: peopleWithFaces[i].id },
             });
-            if (peopleWithFaces[i].isFeaturePhoto) {
-              numberOfPersonToCreate.push(peopleWithFaces[i].id);
-            }
           } else if (selectedPersonToCreate[i]) {
             const { data } = await api.personApi.createPerson();
             numberOfPersonToCreate.push(data.id);
