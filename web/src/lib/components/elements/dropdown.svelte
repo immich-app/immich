@@ -68,7 +68,7 @@
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />
       {/if}
-      <p class="hidden sm:block">{renderedSelectedOption.title}</p>
+      <p class="hidden lg:block">{renderedSelectedOption.title}</p>
     </div>
   </LinkButton>
 
