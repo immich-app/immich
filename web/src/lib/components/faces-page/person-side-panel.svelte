@@ -9,7 +9,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { mdiArrowLeftThin, mdiRestart } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
-  import { setBoundingBoxesArray } from '$lib/stores/people.store';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
@@ -109,6 +109,9 @@
               id: personId,
               faceDto: { id: peopleWithFaces[i].id },
             });
+            if (peopleWithFaces[i].isFeaturePhoto) {
+              numberOfPersonToCreate.push(peopleWithFaces[i].id);
+            }
           } else if (selectedPersonToCreate[i]) {
             const { data } = await api.personApi.createPerson();
             numberOfPersonToCreate.push(data.id);
@@ -200,9 +203,9 @@
                 role="button"
                 tabindex={index}
                 class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
-                on:focus={() => setBoundingBoxesArray([peopleWithFaces[index]])}
-                on:mouseover={() => setBoundingBoxesArray([peopleWithFaces[index]])}
-                on:mouseleave={() => setBoundingBoxesArray([])}
+                on:focus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+                on:mouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+                on:mouseleave={() => ($boundingBoxesArray = [])}
               >
                 <div class="relative">
                   <ImageThumbnail

@@ -26,7 +26,7 @@
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Map from '../shared-components/map/map.svelte';
-  import { setBoundingBoxesArray } from '$lib/stores/people.store';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { AppRoute } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
@@ -229,9 +229,9 @@
             <div
               role="button"
               tabindex={index}
-              on:focus={() => setBoundingBoxesArray(people[index].faces)}
-              on:mouseover={() => setBoundingBoxesArray(people[index].faces)}
-              on:mouseleave={() => setBoundingBoxesArray([])}
+              on:focus={() => ($boundingBoxesArray = people[index].faces)}
+              on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
+              on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
                 href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"

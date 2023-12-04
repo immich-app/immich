@@ -19,7 +19,7 @@ export interface boundingBox {
   height: number;
 }
 
-export const showBoundingBox = (
+export const getBoundingBox = (
   faces: Faces[],
   zoom: ZoomImageWheelState,
   photoViewer: HTMLImageElement | null,

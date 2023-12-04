@@ -9,8 +9,8 @@
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { photoViewer } from '$lib/stores/assets.store';
-  import { showBoundingBox } from '$lib/utils/people-utils';
-  import { boundingBoxesArray, setBoundingBoxesArray } from '$lib/stores/people.store';
+  import { getBoundingBox } from '$lib/utils/people-utils';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
 
   export let asset: AssetResponseDto;
   export let element: HTMLDivElement | undefined = undefined;
@@ -39,7 +39,7 @@
   });
 
   onDestroy(() => {
-    setBoundingBoxesArray([]);
+    $boundingBoxesArray = [];
     abortController?.abort();
   });
 
@@ -141,7 +141,7 @@
         class="h-full w-full object-contain"
         draggable="false"
       />
-      {#each showBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
+      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
         <div
           class="absolute border-solid border-white border-[3px] rounded-lg p-3"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
