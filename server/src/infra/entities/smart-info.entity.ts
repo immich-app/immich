@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 
-@Entity('smart_info')
+@Entity('smart_info', { synchronize: false })
 export class SmartInfoEntity {
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })

@@ -2,7 +2,7 @@ import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeor
 import { AssetEntity } from './asset.entity';
 import { PersonEntity } from './person.entity';
 
-@Entity('asset_faces')
+@Entity('asset_faces', { synchronize: false })
 @Index(['personId', 'assetId'])
 export class AssetFaceEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -14,6 +14,7 @@ export class AssetFaceEntity {
   @Column({ nullable: true, type: 'uuid' })
   personId!: string | null;
 
+  @Index('face_index', { synchronize: false })
   @Column({ type: 'float4', array: true, select: false })
   embedding!: number[];
 

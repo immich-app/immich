@@ -34,7 +34,9 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
         SELECT si."assetId", si."clipEmbedding"
         FROM smart_info si
         WHERE "clipEmbedding" IS NOT NULL`);
-  }
+
+    await queryRunner.query(`ALTER TABLE smart_info DROP COLUMN IF EXISTS "clipEmbedding"`);
+    }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE asset_faces ALTER COLUMN embedding TYPE real array`);

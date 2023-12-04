@@ -46,6 +46,7 @@ export class ExifEntity {
   @Column({ type: 'varchar', nullable: true })
   projectionType!: string | null;
 
+  @Index('exif_city')
   @Column({ type: 'varchar', nullable: true })
   city!: string | null;
 
