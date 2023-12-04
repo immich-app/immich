@@ -19,7 +19,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
-  import { ProjectionType } from '$lib/constants';
+  import { AssetAction, ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -64,14 +64,10 @@
   } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
-    archived: AssetResponseDto;
-    unarchived: AssetResponseDto;
-    favorite: AssetResponseDto;
-    unfavorite: AssetResponseDto;
+    action: { type: AssetAction; asset: AssetResponseDto };
     close: void;
     next: void;
     previous: void;
-    unstack: void;
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
@@ -374,9 +370,7 @@
     try {
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
 
-      await navigateAssetForward();
-
-      assetStore?.removeAsset(asset.id);
+      dispatch('action', { type: AssetAction.TRASH, asset });
 
       notificationController.show({
         message: 'Moved to trash',
@@ -391,9 +385,7 @@
     try {
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
 
-      await navigateAssetForward();
-
-      assetStore?.removeAsset(asset.id);
+      dispatch('action', { type: AssetAction.DELETE, asset });
 
       notificationController.show({
         message: 'Permanently deleted asset',
@@ -416,8 +408,7 @@
       });
 
       asset.isFavorite = data.isFavorite;
-      assetStore?.updateAsset(data);
-      dispatch(data.isFavorite ? 'favorite' : 'unfavorite', data);
+      dispatch('action', { type: data.isFavorite ? AssetAction.FAVORITE : AssetAction.UNFAVORITE, asset: data });
 
       notificationController.show({
         type: NotificationType.Info,
@@ -473,8 +464,7 @@
       });
 
       asset.isArchived = data.isArchived;
-      assetStore?.updateAsset(data);
-      dispatch(data.isArchived ? 'archived' : 'unarchived', data);
+      dispatch('action', { type: data.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: data });
 
       notificationController.show({
         type: NotificationType.Info,
@@ -557,10 +547,10 @@
         child.stackParentId = null;
         child.stackCount = 0;
         child.stack = [];
-        assetStore?.addAsset(child);
+        dispatch('action', { type: AssetAction.ADD, asset: child });
       }
 
-      dispatch('unstack');
+      dispatch('close');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
     } catch (error) {
       await handleError(error, `Unable to unstack`);
