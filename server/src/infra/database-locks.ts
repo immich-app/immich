@@ -2,7 +2,7 @@ import { dataSource } from '@app/infra';
 import AsyncLock from 'async-lock';
 export enum DatabaseLock {
   GeodataImport = 100,
-  CLIPDimSize = 512
+  CLIPDimSize = 512,
 }
 
 export async function acquireLock(lock: DatabaseLock): Promise<void> {
@@ -15,10 +15,12 @@ export async function releaseLock(lock: DatabaseLock): Promise<void> {
 
 export const asyncLock = new AsyncLock();
 
-export function RequireLock<T>(lock: DatabaseLock): Function {
+export function RequireLock<T>(
+  lock: DatabaseLock,
+): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor): void {
     const originalMethod = descriptor.value;
-    descriptor.value = async function(...args: any[]): Promise<T> {
+    descriptor.value = async function (...args: any[]): Promise<T> {
       if (!dataSource.isInitialized) {
         await dataSource.initialize();
       }
@@ -35,5 +37,5 @@ export function RequireLock<T>(lock: DatabaseLock): Function {
 
       return res as any;
     };
-  }
+  };
 }

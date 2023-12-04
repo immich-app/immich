@@ -1,5 +1,6 @@
+import { AssetType } from '@app/infra/entities';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Optional, toBoolean } from '../../domain.util';
 
 export class SearchDto {
@@ -17,6 +18,20 @@ export class SearchDto {
   @Optional()
   @Transform(toBoolean)
   clip?: boolean;
+
+  @IsEnum(AssetType)
+  @Optional()
+  type?: AssetType;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  recent?: boolean;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  motion?: boolean;
 }
 
 export class SearchPeopleDto {

@@ -1,4 +1,11 @@
-import { AssetResponseDto, IAssetRepository, ISmartInfoRepository, LibraryResponseDto, LoginResponseDto, mapAsset } from '@app/domain';
+import {
+  AssetResponseDto,
+  IAssetRepository,
+  ISmartInfoRepository,
+  LibraryResponseDto,
+  LoginResponseDto,
+  mapAsset,
+} from '@app/domain';
 import { SearchController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
@@ -47,7 +54,8 @@ describe(`${SearchController.name}`, () => {
     });
     await smartInfoRepository.upsert(
       { assetId, objects: ['car', 'tree'], tags: ['accident'] },
-      Array.from({ length: 512 }, Math.random));
+      Array.from({ length: 512 }, Math.random),
+    );
     const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true, smartInfo: true });
     if (!assetWithMetadata) {
       throw new Error('Asset not found');

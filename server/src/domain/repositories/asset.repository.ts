@@ -1,5 +1,5 @@
 import { SearchExploreItem } from '@app/domain';
-import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '@app/infra/entities';
+import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 

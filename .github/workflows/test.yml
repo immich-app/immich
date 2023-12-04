@@ -213,7 +213,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.1.10
+        image: tensorchord/pgvecto-rs:pg14-v0.1.11
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres

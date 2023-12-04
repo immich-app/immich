@@ -1,4 +1,4 @@
-import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/infra/entities';
+import { SystemConfig, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
@@ -362,7 +362,7 @@ describe(JobService.name, () => {
       });
     }
 
-    const featureTests: Array<{ queue: QueueName, feature: FeatureFlag, configKey: SystemConfigKey}> = [
+    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
       {
         queue: QueueName.CLIP_ENCODING,
         feature: FeatureFlag.CLIP_ENCODE,
@@ -385,7 +385,7 @@ describe(JobService.name, () => {
         configMock.load.mockResolvedValue([{ key: configKey, value: false }]);
         jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-        expect(sut.handleCommand(queue, { command: JobCommand.START, force: false })).rejects.toThrow();
+        await expect(sut.handleCommand(queue, { command: JobCommand.START, force: false })).rejects.toThrow();
       });
     }
   });

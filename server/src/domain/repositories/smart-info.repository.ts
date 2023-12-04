@@ -2,7 +2,7 @@ import { AssetEntity, AssetFaceEntity, SmartInfoEntity } from '@app/infra/entiti
 
 export const ISmartInfoRepository = 'ISmartInfoRepository';
 
-export type Embedding = number[]; 
+export type Embedding = number[];
 
 export interface EmbeddingSearch {
   ownerId: string;

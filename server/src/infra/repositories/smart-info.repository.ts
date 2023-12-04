@@ -1,10 +1,10 @@
 import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
+import { DatabaseLock, RequireLock, asyncLock } from '@app/infra';
+import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { asVector, isValidInteger } from '../infra.utils';
-import { DatabaseLock, RequireLock, asyncLock } from '@app/infra';
 
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {
@@ -46,12 +46,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     return results;
   }
 
-  async searchFaces({
-    ownerId,
-    embedding,
-    numResults,
-    maxDistance,
-  }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
+  async searchFaces({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -84,7 +79,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
     await this.repository.upsert(smartInfo, { conflictPaths: ['assetId'] });
-    if (!smartInfo.assetId || !embedding) return;
+    if (!smartInfo.assetId || !embedding) {
+      return;
+    }
 
     await this.upsertEmbedding(smartInfo.assetId, embedding);
   }
@@ -115,8 +112,10 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
-    if (this.curDimSize === dimSize) return;
-    
+    if (this.curDimSize === dimSize) {
+      return;
+    }
+
     this.logger.log(`Current dimension size is ${this.curDimSize}. Updating CLIP dimension size to ${dimSize}.`);
 
     await this.smartSearchRepository.manager.transaction(async (manager) => {
@@ -142,7 +141,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
   @RequireLock(DatabaseLock.CLIPDimSize)
   private async getDimSize(): Promise<void> {
-    if (this.curDimSize != null) return;
+    if (this.curDimSize != null) {
+      return;
+    }
 
     const res = await this.smartSearchRepository.manager.query(`
       SELECT atttypmod as dimsize

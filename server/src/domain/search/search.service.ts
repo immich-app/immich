@@ -80,7 +80,7 @@ export class SearchService {
       default:
         break;
     }
-    
+
     return {
       albums: {
         total: 0,
