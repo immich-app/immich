@@ -95,7 +95,7 @@
   let titleInput: HTMLInputElement;
   let isEditingDescription = false;
   let isCreatingSharedAlbum = false;
-  let currentAlbumName = '';
+  let currentAlbumName = album.albumName;
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
@@ -578,6 +578,7 @@
                 disabled={!isOwned}
                 bind:this={titleInput}
                 title="Edit Title"
+                placeholder="Add a title"
               />
 
               <!-- ALBUM SUMMARY -->
