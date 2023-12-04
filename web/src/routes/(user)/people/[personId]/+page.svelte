@@ -30,7 +30,7 @@
   import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetResponseDto, PersonResponseDto, api } from '@api';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -38,6 +38,7 @@
   import { mdiPlus, mdiDotsVertical, mdiArrowLeft } from '@mdi/js';
   import { isExternalUrl } from '$lib/utils/navigation';
   import { searchNameLocal } from '$lib/utils/person';
+  import { browser } from '$app/environment';
 
   export let data: PageData;
 
@@ -86,6 +87,82 @@
    **/
   let searchWord: string;
   let isSearchingPeople = false;
+  let focusedElements: (HTMLButtonElement | null)[] = Array(20)
+    .fill(null)
+    .map(() => null);
+  let indexFocus: number | null = null;
+
+  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
+  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: $onPersonThumbnail === data.person.id &&
+    (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
+
+  $: {
+    if (people) {
+      suggestedPeople = !name ? [] : searchNameLocal(name, people, 5, data.person.id);
+      indexFocus = null;
+    }
+  }
+
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
+  onMount(() => {
+    document.addEventListener('keydown', onKeyboardPress);
+    const action = $page.url.searchParams.get('action');
+    const getPreviousRoute = $page.url.searchParams.get('previousRoute');
+    if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
+      previousRoute = getPreviousRoute;
+    }
+    if (action == 'merge') {
+      viewMode = ViewMode.MERGE_FACES;
+    }
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+  });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (suggestedPeople.length === 0) {
+      return;
+    }
+    if (!$showAssetViewer) {
+      event.stopPropagation();
+      switch (event.key) {
+        case 'Tab':
+        case 'ArrowDown':
+          event.preventDefault();
+          if (indexFocus === null) {
+            indexFocus = 0;
+          } else if (indexFocus === suggestedPeople.length - 1) {
+            indexFocus = 0;
+          } else {
+            indexFocus++;
+          }
+          focusedElements[indexFocus]?.focus();
+          return;
+        case 'ArrowUp':
+          if (indexFocus === null) {
+            indexFocus = 0;
+            return;
+          }
+          if (indexFocus === 0) {
+            indexFocus = suggestedPeople.length - 1;
+          } else {
+            indexFocus--;
+          }
+          focusedElements[indexFocus]?.focus();
+
+          return;
+        case 'Enter':
+          if (indexFocus !== null) {
+            handleSuggestPeople(suggestedPeople[indexFocus]);
+          }
+      }
+    }
+  };
 
   const searchPeople = async () => {
     if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
@@ -94,6 +171,7 @@
     const timeout = setTimeout(() => (isSearchingPeople = true), 100);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
+      indexFocus = null;
       people = data;
       searchWord = name;
     } catch (error) {
@@ -106,29 +184,8 @@
     isSearchingPeople = false;
   };
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
-  $: $onPersonThumbnail === data.person.id &&
-    (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
-
-  $: {
-    if (people) {
-      suggestedPeople = !name ? [] : searchNameLocal(name, people, 5, data.person.id);
-    }
-  }
-
-  onMount(() => {
-    const action = $page.url.searchParams.get('action');
-    const getPreviousRoute = $page.url.searchParams.get('previousRoute');
-    if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
-      previousRoute = getPreviousRoute;
-    }
-    if (action == 'merge') {
-      viewMode = ViewMode.MERGE_FACES;
-    }
-  });
   const handleEscape = () => {
-    if ($showAssetViewer) {
+    if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
       return;
     }
     if ($isMultiSelectState) {
@@ -468,24 +525,24 @@
                 </div>
               {:else}
                 {#each suggestedPeople as person, index (person.id)}
-                  <div
-                    class="flex border-t border-x border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] {index ===
+                  <button
+                    bind:this={focusedElements[index]}
+                    class="flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
                     suggestedPeople.length - 1
                       ? 'rounded-b-lg border-b'
                       : ''}"
+                    on:click={() => handleSuggestPeople(person)}
                   >
-                    <button class="flex w-full place-items-center" on:click={() => handleSuggestPeople(person)}>
-                      <ImageThumbnail
-                        circle
-                        shadow
-                        url={api.getPeopleThumbnailUrl(person.id)}
-                        altText={person.name}
-                        widthStyle="2rem"
-                        heightStyle="2rem"
-                      />
-                      <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
-                    </button>
-                  </div>
+                    <ImageThumbnail
+                      circle
+                      shadow
+                      url={api.getPeopleThumbnailUrl(person.id)}
+                      altText={person.name}
+                      widthStyle="2rem"
+                      heightStyle="2rem"
+                    />
+                    <p class="ml-4 text-gray-700 dark:text-gray-100">{person.name}</p>
+                  </button>
                 {/each}
               {/if}
             </div>

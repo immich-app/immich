@@ -1,12 +1,14 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { api, type PersonResponseDto } from '@api';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { browser } from '$app/environment';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   const dispatch = createEventDispatcher<{
     reject: void;
@@ -18,9 +20,46 @@
   export let personMerge2: PersonResponseDto;
   export let potentialMergePeople: PersonResponseDto[];
 
+  let { isViewing: showAssetViewer } = assetViewingStore;
   let choosePersonToMerge = false;
-
+  let changeFocus = false;
+  let buttonNo: HTMLButtonElement;
+  let buttonYes: HTMLButtonElement;
   const title = personMerge2.name;
+
+  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
+
+  onMount(() => {
+    document.addEventListener('keydown', onKeyboardPress);
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('keydown', onKeyboardPress);
+    }
+  });
+
+  const handleKeyboardPress = (event: KeyboardEvent) => {
+    if (!$showAssetViewer) {
+      event.stopPropagation();
+      switch (event.key) {
+        case 'Tab':
+          event.preventDefault();
+
+          if (changeFocus) {
+            buttonYes.focus();
+          } else {
+            buttonNo.focus();
+          }
+
+          changeFocus = !changeFocus;
+          return;
+        case 'Escape':
+          dispatch('close');
+          return;
+      }
+    }
+  };
 
   const changePersonToMerge = (newperson: PersonResponseDto) => {
     const index = potentialMergePeople.indexOf(newperson);
@@ -114,8 +153,10 @@
         <p class="text-sm text-gray-500 dark:text-gray-300">They will be merged together</p>
       </div>
       <div class="mt-8 flex w-full gap-4 px-4 pb-4">
-        <Button color="gray" fullwidth on:click={() => dispatch('reject')}>No</Button>
-        <Button fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}>Yes</Button>
+        <Button bind:ref={buttonNo} color="gray" fullwidth on:click={() => dispatch('reject')}>No</Button>
+        <Button bind:ref={buttonYes} fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}
+          >Yes</Button
+        >
       </div>
     </div>
   </div>

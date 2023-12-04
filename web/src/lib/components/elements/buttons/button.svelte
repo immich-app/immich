@@ -26,6 +26,7 @@
   export let fullwidth = false;
   export let border = false;
   export let title: string | undefined = '';
+  export let ref: HTMLButtonElement | null = null;
 
   const colorClasses: Record<Color, string> = {
     primary:
@@ -55,6 +56,7 @@
 </script>
 
 <button
+  bind:this={ref}
   {type}
   {disabled}
   {title}
