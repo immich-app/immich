@@ -30,7 +30,7 @@
   import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetResponseDto, PersonResponseDto, api } from '@api';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -38,7 +38,6 @@
   import { mdiPlus, mdiDotsVertical, mdiArrowLeft } from '@mdi/js';
   import { isExternalUrl } from '$lib/utils/navigation';
   import { searchNameLocal } from '$lib/utils/person';
-  import { browser } from '$app/environment';
 
   export let data: PageData;
 
@@ -104,10 +103,7 @@
     }
   }
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-
   onMount(() => {
-    document.addEventListener('keydown', onKeyboardPress);
     const action = $page.url.searchParams.get('action');
     const getPreviousRoute = $page.url.searchParams.get('previousRoute');
     if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
@@ -115,12 +111,6 @@
     }
     if (action == 'merge') {
       viewMode = ViewMode.MERGE_FACES;
-    }
-  });
-
-  onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
     }
   });
 
@@ -389,6 +379,8 @@
     }
   };
 </script>
+
+<svelte:document on:keydown={handleKeyboardPress} />
 
 {#if viewMode === ViewMode.SUGGEST_MERGE}
   <MergeSuggestionModal

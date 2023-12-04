@@ -1,20 +1,14 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { api, type PersonResponseDto } from '@api';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { mdiArrowLeft, mdiClose, mdiMerge } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { browser } from '$app/environment';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
-  const dispatch = createEventDispatcher<{
-    reject: void;
-    confirm: [PersonResponseDto, PersonResponseDto];
-    close: void;
-  }>();
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 
   export let personMerge1: PersonResponseDto;
   export let personMerge2: PersonResponseDto;
@@ -25,19 +19,14 @@
   let changeFocus = false;
   let buttonNo: HTMLButtonElement;
   let buttonYes: HTMLButtonElement;
+
   const title = personMerge2.name;
 
-  const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
-
-  onMount(() => {
-    document.addEventListener('keydown', onKeyboardPress);
-  });
-
-  onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('keydown', onKeyboardPress);
-    }
-  });
+  const dispatch = createEventDispatcher<{
+    reject: void;
+    confirm: [PersonResponseDto, PersonResponseDto];
+    close: void;
+  }>();
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if (!$showAssetViewer) {
@@ -67,6 +56,8 @@
     choosePersonToMerge = false;
   };
 </script>
+
+<svelte:document on:keypress={handleKeyboardPress} />
 
 <FullScreenModal on:clickOutside={() => dispatch('close')}>
   <div class="flex h-full w-full place-content-center place-items-center overflow-hidden">
