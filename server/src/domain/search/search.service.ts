@@ -32,7 +32,7 @@ export class SearchService {
   }
 
   async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return await this.personRepository.getByName(authUser.id, dto.name, { withHidden: dto.withHidden });
+    return this.personRepository.getByName(authUser.id, dto.name, { withHidden: dto.withHidden });
   }
 
   async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetResponseDto>[]> {

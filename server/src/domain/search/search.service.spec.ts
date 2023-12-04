@@ -1,11 +1,15 @@
+import { mapAsset } from '@app/domain';
+import { SystemConfigKey } from '@app/infra/entities';
 import {
+  assetStub,
+  authStub,
   newAssetRepositoryMock,
   newMachineLearningRepositoryMock,
   newPersonRepositoryMock,
   newSmartInfoRepositoryMock,
   newSystemConfigRepositoryMock,
+  personStub,
 } from '@test';
-import { plainToInstance } from 'class-transformer';
 import {
   IAssetRepository,
   IMachineLearningRepository,
@@ -39,25 +43,107 @@ describe(SearchService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  describe('request dto', () => {
-    it('should convert smartInfo.tags to a string list', () => {
-      const instance = plainToInstance(SearchDto, { 'smartInfo.tags': 'a,b,c' });
-      expect(instance['smartInfo.tags']).toEqual(['a', 'b', 'c']);
+  describe('searchPerson', () => {
+    it('should pass options to search', async () => {
+      const { name } = personStub.withName;
+
+      await sut.searchPerson(authStub.user1, { name, withHidden: false });
+
+      expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.id, name, { withHidden: false });
+
+      await sut.searchPerson(authStub.user1, { name, withHidden: true });
+
+      expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.id, name, { withHidden: true });
+    });
+  });
+
+  describe('getExploreData', () => {
+    it('should get assets by city and tag', async () => {
+      assetMock.getAssetIdByCity.mockResolvedValueOnce({
+        fieldName: 'exifInfo.city',
+        items: [{ value: 'Paris', data: assetStub.image.id }],
+      });
+      assetMock.getAssetIdByTag.mockResolvedValueOnce({
+        fieldName: 'smartInfo.tags',
+        items: [{ value: 'train', data: assetStub.imageFrom2015.id }],
+      });
+      assetMock.getByIds.mockResolvedValueOnce([assetStub.image, assetStub.imageFrom2015]);
+      const expectedResponse = [
+        { fieldName: 'exifInfo.city', items: [{ value: 'Paris', data: mapAsset(assetStub.image) }] },
+        { fieldName: 'smartInfo.tags', items: [{ value: 'train', data: mapAsset(assetStub.imageFrom2015) }] },
+      ];
+
+      const result = await sut.getExploreData(authStub.user1);
+
+      expect(result).toEqual(expectedResponse);
+    });
+  });
+
+  describe('search', () => {
+    it('should throw an error if query is missing', async () => {
+      await expect(sut.search(authStub.user1, { q: '' })).rejects.toThrow('Missing query');
     });
 
-    it('should handle empty smartInfo.tags', () => {
-      const instance = plainToInstance(SearchDto, {});
-      expect(instance['smartInfo.tags']).toBeUndefined();
+    it('should search by metadata if `clip` option is false', async () => {
+      const dto: SearchDto = { q: 'test query', clip: false };
+      assetMock.searchMetadata.mockResolvedValueOnce([assetStub.image]);
+      const expectedResponse = {
+        albums: {
+          total: 0,
+          count: 0,
+          items: [],
+          facets: [],
+        },
+        assets: {
+          total: 1,
+          count: 1,
+          items: [mapAsset(assetStub.image)],
+          facets: [],
+        },
+      };
+
+      const result = await sut.search(authStub.user1, dto);
+
+      expect(result).toEqual(expectedResponse);
+      expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, authStub.user1.id, { numResults: 250 });
+      expect(smartInfoMock.searchCLIP).not.toHaveBeenCalled();
     });
 
-    it('should convert smartInfo.objects to a string list', () => {
-      const instance = plainToInstance(SearchDto, { 'smartInfo.objects': 'a,b,c' });
-      expect(instance['smartInfo.objects']).toEqual(['a', 'b', 'c']);
+    it('should search by CLIP if `clip` option is true', async () => {
+      const dto: SearchDto = { q: 'test query', clip: true };
+      const embedding = [1, 2, 3];
+      smartInfoMock.searchCLIP.mockResolvedValueOnce([assetStub.image]);
+      machineMock.encodeText.mockResolvedValueOnce(embedding);
+      const expectedResponse = {
+        albums: {
+          total: 0,
+          count: 0,
+          items: [],
+          facets: [],
+        },
+        assets: {
+          total: 1,
+          count: 1,
+          items: [mapAsset(assetStub.image)],
+          facets: [],
+        },
+      };
+
+      const result = await sut.search(authStub.user1, dto);
+
+      expect(result).toEqual(expectedResponse);
+      expect(smartInfoMock.searchCLIP).toHaveBeenCalledWith({ ownerId: authStub.user1.id, embedding, numResults: 100 });
+      expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });
 
-    it('should handle empty smartInfo.objects', () => {
-      const instance = plainToInstance(SearchDto, {});
-      expect(instance['smartInfo.objects']).toBeUndefined();
+    it('should throw an error if clip is requested but disabled', async () => {
+      const dto: SearchDto = { q: 'test query', clip: true };
+      configMock.load
+        .mockResolvedValueOnce([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }])
+        .mockResolvedValueOnce([{ key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED, value: false }]);
+
+      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('CLIP is not enabled');
+      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('CLIP is not enabled');
     });
   });
 });

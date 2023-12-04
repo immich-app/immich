@@ -12,7 +12,6 @@ import {
   newMediaRepositoryMock,
   newMoveRepositoryMock,
   newPersonRepositoryMock,
-  newSearchRepositoryMock,
   newSmartInfoRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
@@ -27,13 +26,12 @@ import {
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
-  ISearchRepository,
   ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
-import { PersonResponseDto, mapFaces } from './person.dto';
+import { PersonResponseDto, mapFace } from './person.dto';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
@@ -97,7 +95,7 @@ describe(PersonService.name, () => {
       configMock,
       storageMock,
       jobMock,
-      smartInfoMock
+      smartInfoMock,
     );
 
     mediaMock.crop.mockResolvedValue(croppedFace);
@@ -385,7 +383,7 @@ describe(PersonService.name, () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([faceStub.face1.assetId]));
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
       await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
-        mapFaces(faceStub.primaryFace1, authStub.admin),
+        mapFace(faceStub.primaryFace1, authStub.admin),
       ]);
     });
     it('should reject if the user has not access to the asset', async () => {
@@ -472,6 +470,17 @@ describe(PersonService.name, () => {
       await expect(sut.handlePersonDelete({ id: 'person-1' })).resolves.toBe(true);
       expect(personMock.delete).toHaveBeenCalledWith(personStub.primaryPerson);
       expect(storageMock.unlink).toHaveBeenCalledWith(personStub.primaryPerson.thumbnailPath);
+    });
+  });
+
+  describe('handlePersonDelete', () => {
+    it('should delete person', async () => {
+      personMock.getById.mockResolvedValue(personStub.withName);
+
+      await sut.handlePersonDelete({ id: personStub.withName.id });
+
+      expect(personMock.delete).toHaveBeenCalledWith(personStub.withName);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.withName.thumbnailPath);
     });
   });
 
@@ -834,6 +843,26 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.primaryPerson);
       await expect(sut.getStatistics(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
+    });
+  });
+
+  describe('mapFace', () => {
+    it('should map a face', () => {
+      expect(mapFace(faceStub.face1, authStub.user1)).toEqual({
+        id: 'person-1',
+        name: 'Person 1',
+        birthDate: null,
+        thumbnailPath: '/path/to/thumbnail.jpg',
+        isHidden: false,
+      });
+    });
+
+    it('should not map person if person is null', () => {
+      expect(mapFace({ ...faceStub.face1, person: null }, authStub.user1).person).toBeNull();
+    });
+
+    it('should not map person if person does not match auth user id', () => {
+      expect(mapFace(faceStub.face1, authStub.user1).person).toBeNull();
     });
   });
 });

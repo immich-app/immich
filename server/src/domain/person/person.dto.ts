@@ -144,7 +144,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFaces(face: AssetFaceEntity, authUser: AuthUserDto): AssetFaceResponseDto {
+export function mapFace(face: AssetFaceEntity, authUser: AuthUserDto): AssetFaceResponseDto {
   return {
     id: face.id,
     imageHeight: face.imageHeight,
