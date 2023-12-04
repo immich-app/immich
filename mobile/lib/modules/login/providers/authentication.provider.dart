@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -21,6 +23,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   AuthenticationNotifier(
     this._apiService,
     this._db,
+    this._ref,
   ) : super(
           AuthenticationState(
             deviceId: "",
@@ -36,6 +39,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   final ApiService _apiService;
   final Isar _db;
+  final StateNotifierProviderRef<AuthenticationNotifier, AuthenticationState>
+      _ref;
   final _log = Logger("AuthenticationNotifier");
 
   Future<bool> login(
@@ -111,6 +116,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.delete(StoreKey.currentUser),
         Store.delete(StoreKey.accessToken),
       ]);
+      _ref.invalidate(albumProvider);
+      _ref.invalidate(sharedAlbumProvider);
 
       state = state.copyWith(
         deviceId: "",
@@ -222,5 +229,6 @@ final authenticationProvider =
   return AuthenticationNotifier(
     ref.watch(apiServiceProvider),
     ref.watch(dbProvider),
+    ref,
   );
 });
