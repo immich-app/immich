@@ -578,7 +578,7 @@
                 disabled={!isOwned}
                 bind:this={titleInput}
                 title="Edit Title"
-                placeholder="Add title"
+                placeholder="Add a title"
               />
 
               <!-- ALBUM SUMMARY -->
