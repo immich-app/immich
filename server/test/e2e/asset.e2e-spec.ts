@@ -774,15 +774,18 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(body).toMatchObject({
         id: asset1.id,
         isFavorite: true,
-        people: [
-          {
-            birthDate: null,
-            id: expect.any(String),
-            isHidden: false,
-            name: 'Test Person',
-            thumbnailPath: '',
-          },
-        ],
+        people: {
+          numberOfAssets: 1,
+          people: [
+            {
+              birthDate: null,
+              id: expect.any(String),
+              isHidden: false,
+              name: 'Test Person',
+              thumbnailPath: '',
+            },
+          ],
+        },
       });
     });
   });
