@@ -4,7 +4,9 @@ export enum AssetAction {
   FAVORITE = 'favorite',
   UNFAVORITE = 'unfavorite',
   TRASH = 'trash',
-  RESTORE = 'restore',
+  DELETE = 'delete',
+  // RESTORE = 'restore',
+  ADD = 'add',
 }
 
 export enum AppRoute {
