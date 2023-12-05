@@ -24,6 +24,10 @@ doc/AssetBulkUploadCheckDto.md
 doc/AssetBulkUploadCheckItem.md
 doc/AssetBulkUploadCheckResponseDto.md
 doc/AssetBulkUploadCheckResult.md
+doc/AssetFaceResponseDto.md
+doc/AssetFaceUpdateDto.md
+doc/AssetFaceUpdateItem.md
+doc/AssetFaceWithoutPersonResponseDto.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
@@ -60,6 +64,8 @@ doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/EntityType.md
 doc/ExifResponseDto.md
+doc/FaceApi.md
+doc/FaceDto.md
 doc/FileChecksumDto.md
 doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
@@ -100,6 +106,7 @@ doc/PersonApi.md
 doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
+doc/PersonWithFacesResponseDto.md
 doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
@@ -177,6 +184,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/audit_api.dart
 lib/api/authentication_api.dart
+lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
 lib/api/o_auth_api.dart
@@ -213,6 +221,10 @@ lib/model/asset_bulk_upload_check_dto.dart
 lib/model/asset_bulk_upload_check_item.dart
 lib/model/asset_bulk_upload_check_response_dto.dart
 lib/model/asset_bulk_upload_check_result.dart
+lib/model/asset_face_response_dto.dart
+lib/model/asset_face_update_dto.dart
+lib/model/asset_face_update_item.dart
+lib/model/asset_face_without_person_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
@@ -247,6 +259,7 @@ lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
+lib/model/face_dto.dart
 lib/model/file_checksum_dto.dart
 lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
@@ -282,6 +295,7 @@ lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
+lib/model/person_with_faces_response_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/reaction_level.dart
 lib/model/reaction_type.dart
@@ -367,6 +381,10 @@ test/asset_bulk_upload_check_dto_test.dart
 test/asset_bulk_upload_check_item_test.dart
 test/asset_bulk_upload_check_response_dto_test.dart
 test/asset_bulk_upload_check_result_test.dart
+test/asset_face_response_dto_test.dart
+test/asset_face_update_dto_test.dart
+test/asset_face_update_item_test.dart
+test/asset_face_without_person_response_dto_test.dart
 test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
@@ -403,6 +421,8 @@ test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/entity_type_test.dart
 test/exif_response_dto_test.dart
+test/face_api_test.dart
+test/face_dto_test.dart
 test/file_checksum_dto_test.dart
 test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart
@@ -443,6 +463,7 @@ test/person_api_test.dart
 test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
+test/person_with_faces_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart

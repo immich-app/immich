@@ -133,6 +133,8 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logoutAuthDevices**](doc//AuthenticationApi.md#logoutauthdevices) | **DELETE** /auth/devices | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /face | 
+*FaceApi* | [**reassignFacesById**](doc//FaceApi.md#reassignfacesbyid) | **PUT** /face/{id} | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
@@ -153,12 +155,14 @@ Class | Method | HTTP request | Description
 *PartnerApi* | [**getPartners**](doc//PartnerApi.md#getpartners) | **GET** /partner | 
 *PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
 *PartnerApi* | [**updatePartner**](doc//PartnerApi.md#updatepartner) | **PUT** /partner/{id} | 
+*PersonApi* | [**createPerson**](doc//PersonApi.md#createperson) | **POST** /person | 
 *PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
 *PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
 *PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
 *PersonApi* | [**getPersonStatistics**](doc//PersonApi.md#getpersonstatistics) | **GET** /person/{id}/statistics | 
 *PersonApi* | [**getPersonThumbnail**](doc//PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
 *PersonApi* | [**mergePerson**](doc//PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
+*PersonApi* | [**reassignFaces**](doc//PersonApi.md#reassignfaces) | **PUT** /person/{id}/reassign | 
 *PersonApi* | [**updatePeople**](doc//PersonApi.md#updatepeople) | **PUT** /person | 
 *PersonApi* | [**updatePerson**](doc//PersonApi.md#updateperson) | **PUT** /person/{id} | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
@@ -224,6 +228,10 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
+ - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
+ - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
+ - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
+ - [AssetFaceWithoutPersonResponseDto](doc//AssetFaceWithoutPersonResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
@@ -258,6 +266,7 @@ Class | Method | HTTP request | Description
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [EntityType](doc//EntityType.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
+ - [FaceDto](doc//FaceDto.md)
  - [FileChecksumDto](doc//FileChecksumDto.md)
  - [FileChecksumResponseDto](doc//FileChecksumResponseDto.md)
  - [FileReportDto](doc//FileReportDto.md)
@@ -293,6 +302,7 @@ Class | Method | HTTP request | Description
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
+ - [PersonWithFacesResponseDto](doc//PersonWithFacesResponseDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)

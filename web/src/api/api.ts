@@ -21,6 +21,7 @@ import {
   UserApiFp,
   AuditApi,
   ActivityApi,
+  FaceApi,
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
@@ -33,6 +34,7 @@ class ImmichApi {
   public assetApi: AssetApi;
   public auditApi: AuditApi;
   public authenticationApi: AuthenticationApi;
+  public faceApi: FaceApi;
   public jobApi: JobApi;
   public keyApi: APIKeyApi;
   public oauthApi: OAuthApi;
@@ -60,6 +62,7 @@ class ImmichApi {
     this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.authenticationApi = new AuthenticationApi(this.config);
+    this.faceApi = new FaceApi(this.config);
     this.jobApi = new JobApi(this.config);
     this.keyApi = new APIKeyApi(this.config);
     this.oauthApi = new OAuthApi(this.config);

@@ -52,7 +52,7 @@
 
 {#if hidden}
   <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-    <Icon path={mdiEyeOffOutline} size="2em" class="text-{eyeColor}" />
+    <Icon {title} path={mdiEyeOffOutline} size="2em" class="text-{eyeColor}" />
   </div>
 {/if}
 

@@ -3220,6 +3220,103 @@
         ]
       }
     },
+    "/face": {
+      "get": {
+        "operationId": "getFaces",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetFaceResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Face"
+        ]
+      }
+    },
+    "/face/{id}": {
+      "put": {
+        "operationId": "reassignFacesById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Face"
+        ]
+      }
+    },
     "/jobs": {
       "get": {
         "operationId": "getAllJobsStatus",
@@ -4022,6 +4119,36 @@
           "Person"
         ]
       },
+      "post": {
+        "operationId": "createPerson",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      },
       "put": {
         "operationId": "updatePeople",
         "parameters": [],
@@ -4234,6 +4361,61 @@
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      }
+    },
+    "/person/{id}/reassign": {
+      "put": {
+        "operationId": "reassignFaces",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFaceUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PersonResponseDto"
                   },
                   "type": "array"
                 }
@@ -6557,6 +6739,118 @@
         ],
         "type": "object"
       },
+      "AssetFaceResponseDto": {
+        "properties": {
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "person": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonResponseDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "imageHeight",
+          "imageWidth",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "person"
+        ],
+        "type": "object"
+      },
+      "AssetFaceUpdateDto": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceUpdateItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
+      "AssetFaceUpdateItem": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "personId",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "AssetFaceWithoutPersonResponseDto": {
+        "properties": {
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "imageHeight",
+          "imageWidth",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2"
+        ],
+        "type": "object"
+      },
       "AssetFileUploadResponseDto": {
         "properties": {
           "duplicate": {
@@ -6719,7 +7013,7 @@
           },
           "people": {
             "items": {
-              "$ref": "#/components/schemas/PersonResponseDto"
+              "$ref": "#/components/schemas/PersonWithFacesResponseDto"
             },
             "type": "array"
           },
@@ -7452,6 +7746,18 @@
         },
         "type": "object"
       },
+      "FaceDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
       "FileChecksumDto": {
         "properties": {
           "filenames": {
@@ -8145,6 +8451,42 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "PersonWithFacesResponseDto": {
+        "properties": {
+          "birthDate": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "faces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isHidden": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "birthDate",
+          "faces",
+          "id",
+          "name",
+          "thumbnailPath",
+          "isHidden"
+        ],
         "type": "object"
       },
       "QueueStatusDto": {

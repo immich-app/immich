@@ -41,6 +41,8 @@ export enum Permission {
   PERSON_READ = 'person.read',
   PERSON_WRITE = 'person.write',
   PERSON_MERGE = 'person.merge',
+  PERSON_CREATE = 'person.create',
+  PERSON_REASSIGN = 'person.reassign',
 
   PARTNER_UPDATE = 'partner.update',
 }
@@ -246,6 +248,12 @@ export class AccessCore {
 
       case Permission.PERSON_MERGE:
         return await this.repository.person.checkOwnerAccess(authUser.id, ids);
+
+      case Permission.PERSON_CREATE:
+        return this.repository.person.hasFaceOwnerAccess(authUser.id, ids);
+
+      case Permission.PERSON_REASSIGN:
+        return this.repository.person.hasFaceOwnerAccess(authUser.id, ids);
 
       case Permission.PARTNER_UPDATE:
         return await this.repository.partner.checkUpdateAccess(authUser.id, ids);

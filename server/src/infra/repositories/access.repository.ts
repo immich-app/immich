@@ -5,6 +5,7 @@ import {
   ActivityEntity,
   AlbumEntity,
   AssetEntity,
+  AssetFaceEntity,
   LibraryEntity,
   PartnerEntity,
   PersonEntity,
@@ -20,6 +21,7 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>,
     @InjectRepository(PartnerEntity) private partnerRepository: Repository<PartnerEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
+    @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SharedLinkEntity) private sharedLinkRepository: Repository<SharedLinkEntity>,
     @InjectRepository(UserTokenEntity) private tokenRepository: Repository<UserTokenEntity>,
   ) {}
@@ -317,6 +319,22 @@ export class AccessRepository implements IAccessRepository {
           },
         })
         .then((persons) => new Set(persons.map((person) => person.id)));
+    },
+    hasFaceOwnerAccess: async (userId: string, assetFaceIds: Set<string>): Promise<Set<string>> => {
+      if (assetFaceIds.size === 0) {
+        return new Set();
+      }
+      return this.assetFaceRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...assetFaceIds]),
+            asset: {
+              ownerId: userId,
+            },
+          },
+        })
+        .then((faces) => new Set(faces.map((face) => face.id)));
     },
   };
 

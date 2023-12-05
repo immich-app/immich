@@ -201,7 +201,7 @@ export class JobService {
         const { id } = item.data;
         const person = await this.personRepository.getById(id);
         if (person) {
-          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, person.ownerId, id);
+          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, person.ownerId, person.id);
         }
         break;
 

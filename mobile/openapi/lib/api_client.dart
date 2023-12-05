@@ -215,6 +215,14 @@ class ApiClient {
           return AssetBulkUploadCheckResponseDto.fromJson(value);
         case 'AssetBulkUploadCheckResult':
           return AssetBulkUploadCheckResult.fromJson(value);
+        case 'AssetFaceResponseDto':
+          return AssetFaceResponseDto.fromJson(value);
+        case 'AssetFaceUpdateDto':
+          return AssetFaceUpdateDto.fromJson(value);
+        case 'AssetFaceUpdateItem':
+          return AssetFaceUpdateItem.fromJson(value);
+        case 'AssetFaceWithoutPersonResponseDto':
+          return AssetFaceWithoutPersonResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetIdsDto':
@@ -283,6 +291,8 @@ class ApiClient {
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
+        case 'FaceDto':
+          return FaceDto.fromJson(value);
         case 'FileChecksumDto':
           return FileChecksumDto.fromJson(value);
         case 'FileChecksumResponseDto':
@@ -353,6 +363,8 @@ class ApiClient {
           return PersonStatisticsResponseDto.fromJson(value);
         case 'PersonUpdateDto':
           return PersonUpdateDto.fromJson(value);
+        case 'PersonWithFacesResponseDto':
+          return PersonWithFacesResponseDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'ReactionLevel':

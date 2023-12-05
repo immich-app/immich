@@ -107,6 +107,48 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getFaces(assetId: string): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({
+      where: { assetId },
+      relations: {
+        person: true,
+      },
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getFaceById(id: string): Promise<AssetFaceEntity> {
+    return this.assetFaceRepository.findOneOrFail({
+      where: { id },
+      relations: {
+        person: true,
+      },
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null> {
+    return this.assetFaceRepository.findOne({
+      where: { id },
+      relations: {
+        person: true,
+        asset: true,
+      },
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async reassignFace(assetFaceId: string, newPersonId: string): Promise<number> {
+    const result = await this.assetFaceRepository
+      .createQueryBuilder()
+      .update()
+      .set({ personId: newPersonId })
+      .where({ id: assetFaceId })
+      .execute();
+
+    return result.affected ?? 0;
+  }
+
   getById(personId: string): Promise<PersonEntity | null> {
     return this.personRepository.findOne({ where: { id: personId } });
   }

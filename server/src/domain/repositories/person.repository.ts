@@ -34,7 +34,7 @@ export interface IPersonRepository {
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
 
   getAssets(personId: string): Promise<AssetEntity[]>;
-  prepareReassignFaces(data: UpdateFacesData): Promise<string[]>;
+
   reassignFaces(data: UpdateFacesData): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
@@ -48,4 +48,8 @@ export interface IPersonRepository {
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
   createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity>;
+  getFaces(assetId: string): Promise<AssetFaceEntity[]>;
+  reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
+  getFaceById(id: string): Promise<AssetFaceEntity>;
+  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null>;
 }

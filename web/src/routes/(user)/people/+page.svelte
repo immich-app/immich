@@ -79,7 +79,7 @@
     // trigger reactivity
     people = people;
 
-    // Reset variables used on the "Show & hide faces"   modal
+    // Reset variables used on the "Show & hide people"   modal
     showLoadingSpinner = false;
     selectHidden = false;
     toggleVisibility = false;
@@ -145,13 +145,13 @@
         `Unable to change the visibility for ${changed.length} ${changed.length <= 1 ? 'person' : 'people'}`,
       );
     }
-    // Reset variables used on the "Show & hide faces" modal
+    // Reset variables used on the "Show & hide people" modal
     showLoadingSpinner = false;
     selectHidden = false;
     toggleVisibility = false;
   };
 
-  const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
+  const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {
     const [personToMerge, personToBeMergedIn] = response;
     showMergeModal = false;
 
@@ -167,7 +167,7 @@
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
 
       notificationController.show({
-        message: 'Merge faces succesfully',
+        message: 'Merge people succesfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -213,7 +213,7 @@
     edittingPerson = detail;
   };
 
-  const handleHideFace = async (detail: PersonResponseDto) => {
+  const handleHidePerson = async (detail: PersonResponseDto) => {
     try {
       const { data: updatedPerson } = await api.personApi.updatePerson({
         id: detail.id,
@@ -244,7 +244,7 @@
     }
   };
 
-  const handleMergeFaces = (detail: PersonResponseDto) => {
+  const handleMergePeople = (detail: PersonResponseDto) => {
     goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge&previousRoute=${AppRoute.PEOPLE}`);
   };
 
@@ -352,7 +352,7 @@
       {potentialMergePeople}
       on:close={() => (showMergeModal = false)}
       on:reject={() => changeName()}
-      on:confirm={(event) => handleMergeSameFace(event.detail)}
+      on:confirm={(event) => handleMergeSamePerson(event.detail)}
     />
   </FullScreenModal>
 {/if}
@@ -363,7 +363,7 @@
       <IconButton on:click={() => (selectHidden = !selectHidden)}>
         <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
           <Icon path={mdiEyeOutline} size="18" />
-          <p class="ml-2">Show & hide faces</p>
+          <p class="ml-2">Show & hide people</p>
         </div>
       </IconButton>
     {/if}
@@ -379,8 +379,8 @@
               preload={idx < 20}
               on:change-name={() => handleChangeName(person)}
               on:set-birth-date={() => handleSetBirthDate(person)}
-              on:merge-faces={() => handleMergeFaces(person)}
-              on:hide-face={() => handleHideFace(person)}
+              on:merge-people={() => handleMergePeople(person)}
+              on:hide-person={() => handleHidePerson(person)}
             />
           {/if}
         {/each}

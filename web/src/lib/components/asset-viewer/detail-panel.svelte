@@ -15,16 +15,18 @@
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
-    mdiPencil,
+    mdiEye,
+    mdiEyeOff,
     mdiImageOutline,
     mdiMapMarkerOutline,
     mdiInformationOutline,
-    mdiEye,
-    mdiEyeOff,
+    mdiPencil,
   } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import PersonSidePanel from '../faces-page/person-side-panel.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import Map from '../shared-components/map/map.svelte';
+  import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { AppRoute } from '$lib/constants';
   import ChangeLocation from '../shared-components/change-location.svelte';
@@ -35,8 +37,21 @@
   export let albums: AlbumResponseDto[] = [];
   export let albumId: string | null = null;
 
+  let showAssetPath = false;
   let textarea: HTMLTextAreaElement;
   let description: string;
+  let showEditFaces = false;
+  let previousId: string;
+
+  $: {
+    if (!previousId) {
+      previousId = asset.id;
+    }
+    if (asset.id !== previousId) {
+      showEditFaces = false;
+      previousId = asset.id;
+    }
+  }
 
   $: isOwner = $page?.data?.user?.id === asset.ownerId;
 
@@ -84,6 +99,14 @@
     return undefined;
   };
 
+  const handleRefreshPeople = async () => {
+    await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
+      people = res.data?.people || [];
+      textarea.value = res.data?.exifInfo?.description || '';
+    });
+    showEditFaces = false;
+  };
+
   const autoGrowHeight = (e: Event) => {
     const target = e.target as HTMLTextAreaElement;
     target.style.height = 'auto';
@@ -106,7 +129,6 @@
     }
   };
 
-  let showAssetPath = false;
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
   let isShowChangeDate = false;
@@ -139,7 +161,7 @@
   }
 </script>
 
-<section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+<section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
     <button
       class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
@@ -183,54 +205,71 @@
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
-        {#if people.some((person) => person.isHidden)}
+        <div class="flex gap-2">
+          {#if people.some((person) => person.isHidden)}
+            <CircleIconButton
+              title="Show hidden people"
+              icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
+              padding="1"
+              on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+            />
+          {/if}
           <CircleIconButton
-            title="Show hidden people"
-            icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
+            title="Edit people"
+            icon={mdiPencil}
             padding="1"
-            on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+            size="20"
+            on:click={() => (showEditFaces = true)}
           />
-        {/if}
+        </div>
       </div>
 
       <div class="mt-2 flex flex-wrap gap-2">
-        {#each people as person (person.id)}
-          <a
-            href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-            class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
-            on:click={() => dispatch('close-viewer')}
+        {#each people as person, index (person.id)}
+          <div
+            role="button"
+            tabindex={index}
+            on:focus={() => ($boundingBoxesArray = people[index].faces)}
+            on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
+            on:mouseleave={() => ($boundingBoxesArray = [])}
           >
-            <div class="relative">
-              <ImageThumbnail
-                curve
-                shadow
-                url={api.getPeopleThumbnailUrl(person.id)}
-                altText={person.name}
-                title={person.name}
-                widthStyle="90px"
-                heightStyle="90px"
-                thumbhash={null}
-                hidden={person.isHidden}
-              />
-            </div>
-            <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-            {#if person.birthDate}
-              {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-              <p
-                class="font-light"
-                title={personBirthDate.toLocaleString(
-                  {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  },
-                  { locale: $locale },
-                )}
-              >
-                Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-              </p>
-            {/if}
-          </a>
+            <a
+              href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
+              class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
+              on:click={() => dispatch('close-viewer')}
+            >
+              <div class="relative">
+                <ImageThumbnail
+                  curve
+                  shadow
+                  url={api.getPeopleThumbnailUrl(person.id)}
+                  altText={person.name}
+                  title={person.name}
+                  widthStyle="90px"
+                  heightStyle="90px"
+                  thumbhash={null}
+                  hidden={person.isHidden}
+                />
+              </div>
+              <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+              {#if person.birthDate}
+                {@const personBirthDate = DateTime.fromISO(person.birthDate)}
+                <p
+                  class="font-light"
+                  title={personBirthDate.toLocaleString(
+                    {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    },
+                    { locale: $locale },
+                  )}
+                >
+                  Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                </p>
+              {/if}
+            </a>
+          </div>
         {/each}
       </div>
     </section>
@@ -588,4 +627,14 @@
       </a>
     {/each}
   </section>
+{/if}
+
+{#if showEditFaces}
+  <PersonSidePanel
+    assetId={asset.id}
+    on:close={() => {
+      showEditFaces = false;
+    }}
+    on:refresh={handleRefreshPeople}
+  />
 {/if}

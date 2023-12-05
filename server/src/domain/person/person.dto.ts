@@ -2,6 +2,7 @@ import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { AuthUserDto } from '../auth';
 import { Optional, ValidateUUID, toBoolean } from '../domain.util';
 
 export class PersonUpdateDto {
@@ -73,6 +74,51 @@ export class PersonResponseDto {
   isHidden!: boolean;
 }
 
+export class PersonWithFacesResponseDto extends PersonResponseDto {
+  faces!: AssetFaceWithoutPersonResponseDto[];
+}
+
+export class AssetFaceWithoutPersonResponseDto {
+  @ValidateUUID()
+  id!: string;
+  @ApiProperty({ type: 'integer' })
+  imageHeight!: number;
+  @ApiProperty({ type: 'integer' })
+  imageWidth!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX2!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY2!: number;
+}
+
+export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
+  person!: PersonResponseDto | null;
+}
+
+export class AssetFaceUpdateDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetFaceUpdateItem)
+  data!: AssetFaceUpdateItem[];
+}
+
+export class FaceDto {
+  @ValidateUUID()
+  id!: string;
+}
+
+export class AssetFaceUpdateItem {
+  @ValidateUUID()
+  personId!: string;
+
+  @ValidateUUID()
+  assetId!: string;
+}
+
 export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   assets!: number;
@@ -98,10 +144,15 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFace(face: AssetFaceEntity): PersonResponseDto | null {
-  if (face.person) {
-    return mapPerson(face.person);
-  }
-
-  return null;
+export function mapFaces(face: AssetFaceEntity, authUser: AuthUserDto): AssetFaceResponseDto {
+  return {
+    id: face.id,
+    imageHeight: face.imageHeight,
+    imageWidth: face.imageWidth,
+    boundingBoxX1: face.boundingBoxX1,
+    boundingBoxX2: face.boundingBoxX2,
+    boundingBoxY1: face.boundingBoxY1,
+    boundingBoxY2: face.boundingBoxY2,
+    person: face.person?.ownerId === authUser.id ? mapPerson(face.person) : null,
+  };
 }

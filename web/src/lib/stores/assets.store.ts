@@ -58,6 +58,8 @@ interface TrashAsset {
   value: string;
 }
 
+export const photoViewer = writable<HTMLImageElement | null>(null);
+
 type PendingChange = AddAsset | DeleteAsset | TrashAsset;
 
 export class AssetStore {
