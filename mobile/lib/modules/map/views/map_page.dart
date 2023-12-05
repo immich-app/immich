@@ -55,6 +55,7 @@ class MapPageState extends ConsumerState<MapPage> {
   // in onMapEvent() since MapEventMove#id is not populated properly in the
   // current version of flutter_map(4.0.0) used
   bool forceAssetUpdate = false;
+  bool isMapReady = false;
   late final Debounce debounce;
 
   @override
@@ -79,7 +80,7 @@ class MapPageState extends ConsumerState<MapPage> {
     bool forceReload = false,
   }) {
     try {
-      final bounds = mapController.bounds;
+      final bounds = isMapReady ? mapController.bounds : null;
       if (bounds != null) {
         final oldAssetsInBounds = assetsInBounds.toSet();
         assetsInBounds =
@@ -455,6 +456,7 @@ class MapPageState extends ConsumerState<MapPage> {
                     minZoom: 1,
                     maxZoom: maxZoom,
                     onMapReady: () {
+                      isMapReady = true;
                       mapController.mapEventStream.listen(onMapEvent);
                     },
                   ),

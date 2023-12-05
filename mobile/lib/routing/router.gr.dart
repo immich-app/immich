@@ -360,6 +360,19 @@ class _$AppRouter extends RootStackRouter {
         barrierDismissible: false,
       );
     },
+    MapLocationPickerRoute.name: (routeData) {
+      final args = routeData.argsAs<MapLocationPickerRouteArgs>(
+          orElse: () => const MapLocationPickerRouteArgs());
+      return CustomPage<LatLng?>(
+        routeData: routeData,
+        child: MapLocationPickerPage(
+          key: args.key,
+          initialLatLng: args.initialLatLng,
+        ),
+        opaque: true,
+        barrierDismissible: false,
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -699,6 +712,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           ActivitiesRoute.name,
           path: '/activities-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          MapLocationPickerRoute.name,
+          path: '/map-location-picker-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1618,6 +1639,40 @@ class ActivitiesRouteArgs {
   @override
   String toString() {
     return 'ActivitiesRouteArgs{albumId: $albumId, appBarTitle: $appBarTitle, assetId: $assetId, withAssetThumbs: $withAssetThumbs, isOwner: $isOwner, isReadOnly: $isReadOnly, key: $key}';
+  }
+}
+
+/// generated route for
+/// [MapLocationPickerPage]
+class MapLocationPickerRoute extends PageRouteInfo<MapLocationPickerRouteArgs> {
+  MapLocationPickerRoute({
+    Key? key,
+    LatLng? initialLatLng,
+  }) : super(
+          MapLocationPickerRoute.name,
+          path: '/map-location-picker-page',
+          args: MapLocationPickerRouteArgs(
+            key: key,
+            initialLatLng: initialLatLng,
+          ),
+        );
+
+  static const String name = 'MapLocationPickerRoute';
+}
+
+class MapLocationPickerRouteArgs {
+  const MapLocationPickerRouteArgs({
+    this.key,
+    this.initialLatLng,
+  });
+
+  final Key? key;
+
+  final LatLng? initialLatLng;
+
+  @override
+  String toString() {
+    return 'MapLocationPickerRouteArgs{key: $key, initialLatLng: $initialLatLng}';
   }
 }
 

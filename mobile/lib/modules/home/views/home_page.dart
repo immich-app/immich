@@ -213,10 +213,10 @@ class HomePage extends HookConsumerWidget {
         processing.value = true;
         selectionEnabledHook.value = false;
         try {
-            ref.read(manualUploadProvider.notifier).uploadAssets(
-                  context,
-                  selection.value.where((a) => a.storage == AssetState.local),
-                );
+          ref.read(manualUploadProvider.notifier).uploadAssets(
+                context,
+                selection.value.where((a) => a.storage == AssetState.local),
+              );
         } finally {
           processing.value = false;
         }
@@ -308,6 +308,34 @@ class HomePage extends HookConsumerWidget {
               );
         } finally {
           processing.value = false;
+          selectionEnabledHook.value = false;
+        }
+      }
+
+      void onEditTime() async {
+        try {
+          final remoteAssets = ownedRemoteSelection(
+            localErrorMessage: 'home_page_favorite_err_local'.tr(),
+            ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+          );
+          if (remoteAssets.isNotEmpty) {
+            handleEditDateTime(ref, context, remoteAssets.toList());
+          }
+        } finally {
+          selectionEnabledHook.value = false;
+        }
+      }
+
+      void onEditLocation() async {
+        try {
+          final remoteAssets = ownedRemoteSelection(
+            localErrorMessage: 'home_page_favorite_err_local'.tr(),
+            ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+          );
+          if (remoteAssets.isNotEmpty) {
+            handleEditLocation(ref, context, remoteAssets.toList());
+          }
+        } finally {
           selectionEnabledHook.value = false;
         }
       }
@@ -411,6 +439,8 @@ class HomePage extends HookConsumerWidget {
                 enabled: !processing.value,
                 selectionAssetState: selectionAssetState.value,
                 onStack: onStack,
+                onEditTime: onEditTime,
+                onEditLocation: onEditLocation,
               ),
           ],
         ),

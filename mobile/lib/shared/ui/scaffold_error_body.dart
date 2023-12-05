@@ -15,7 +15,7 @@ class ScaffoldErrorBody extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          "scaffold_body_error_occured",
+          "scaffold_body_error_occurred",
           style: context.textTheme.displayMedium,
           textAlign: TextAlign.center,
         ).tr(),
