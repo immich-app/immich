@@ -1785,7 +1785,8 @@ export const JobCommand = {
     Start: 'start',
     Pause: 'pause',
     Resume: 'resume',
-    Empty: 'empty'
+    Empty: 'empty',
+    ClearFailed: 'clear-failed'
 } as const;
 
 export type JobCommand = typeof JobCommand[keyof typeof JobCommand];
