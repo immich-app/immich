@@ -13,7 +13,7 @@
   export let hideCancelButton = false;
   export let disabled = false;
 
-  const dispatch = createEventDispatcher<{ cancel: void; confirm: void }>();
+  const dispatch = createEventDispatcher<{ cancel: void; confirm: void; 'click-outside': void }>();
 
   let isConfirmButtonDisabled = false;
 
@@ -28,9 +28,13 @@
     isConfirmButtonDisabled = true;
     dispatch('confirm');
   };
+
+  const handleClickOutside = () => {
+    dispatch('click-outside');
+  };
 </script>
 
-<FullScreenModal on:clickOutside={handleCancel} on:escape={() => handleEscape()}>
+<FullScreenModal on:clickOutside={handleClickOutside} on:escape={() => handleEscape()}>
   <div
     class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   >
