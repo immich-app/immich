@@ -183,6 +183,7 @@ enum StoreKey<T> {
   selfSignedCert<bool>(120, type: bool),
   mapIncludeArchived<bool>(121, type: bool),
   ignoreIcloudAssets<bool>(122, type: bool),
+  selectedAlbumSortReverse<bool>(123, type: bool),
   ;
 
   const StoreKey(

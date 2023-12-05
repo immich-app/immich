@@ -52,6 +52,11 @@ enum AppSettingsEnum<T> {
   mapRelativeDate<int>(StoreKey.mapRelativeDate, null, 0),
   allowSelfSignedSSLCert<bool>(StoreKey.selfSignedCert, null, false),
   ignoreIcloudAssets<bool>(StoreKey.ignoreIcloudAssets, null, false),
+  selectedAlbumSortReverse<bool>(
+    StoreKey.selectedAlbumSortReverse,
+    null,
+    false,
+  ),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
