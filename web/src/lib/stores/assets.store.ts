@@ -83,28 +83,31 @@ export class AssetStore {
 
   subscribe = this.store$.subscribe;
 
+  private addPendingChanges(...changes: PendingChange[]) {
+    // prevent websocket events from happening before local client events
+    setTimeout(() => {
+      this.pendingChanges.push(...changes);
+      this.processPendingChanges();
+    }, 1_000);
+  }
+
   connect() {
     this.unsubscribers.push(
       websocketStore.onUploadSuccess.subscribe((value) => {
         if (value) {
-          this.pendingChanges.push({ type: 'add', value });
-          this.processPendingChanges();
+          this.addPendingChanges({ type: 'add', value });
         }
       }),
 
       websocketStore.onAssetTrash.subscribe((ids) => {
         if (ids) {
-          for (const id of ids) {
-            this.pendingChanges.push({ type: 'trash', value: id });
-          }
-          this.processPendingChanges();
+          this.addPendingChanges(...ids.map((id) => ({ type: 'trash', value: id }) as PendingChange));
         }
       }),
 
       websocketStore.onAssetDelete.subscribe((value) => {
         if (value) {
-          this.pendingChanges.push({ type: 'delete', value });
-          this.processPendingChanges();
+          this.addPendingChanges({ type: 'delete', value });
         }
       }),
     );
