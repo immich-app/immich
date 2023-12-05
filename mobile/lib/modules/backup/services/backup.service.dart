@@ -202,6 +202,7 @@ class BackupService {
   Future<bool> backupAsset(
     Iterable<AssetEntity> assetList,
     http.CancellationToken cancelToken,
+    PMProgressHandler pmProgressHandler,
     Function(String, String, bool) uploadSuccessCb,
     Function(int, int) uploadProgressCb,
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
@@ -241,10 +242,17 @@ class BackupService {
 
     for (var entity in assetsToUpload) {
       try {
-        if (entity.type == AssetType.video) {
-          file = await entity.originFile;
+        final isAvailableLocally = await entity.isLocallyAvailable();
+
+        // Handle getting files from iCloud
+        if (!isAvailableLocally && Platform.isIOS) {
+          file = await entity.loadFile(progressHandler: pmProgressHandler);
         } else {
-          file = await entity.originFile.timeout(const Duration(seconds: 5));
+          if (entity.type == AssetType.video) {
+            file = await entity.originFile;
+          } else {
+            file = await entity.originFile.timeout(const Duration(seconds: 5));
+          }
         }
 
         if (file != null) {

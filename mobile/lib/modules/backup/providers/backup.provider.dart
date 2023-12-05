@@ -444,9 +444,15 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       // Perform Backup
       state = state.copyWith(cancelToken: CancellationToken());
+
+      final pmProgressHandler = PMProgressHandler();
+
+      pmProgressHandler.stream.listen((event) {});
+
       await _backupService.backupAsset(
         assetsWillBeBackup,
         state.cancelToken,
+        pmProgressHandler,
         _onAssetUploaded,
         _onUploadProgress,
         _onSetCurrentBackupAsset,
