@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from 'svelte';
 
-  export let title: string = 'Without';
+  export let title = 'Without';
 
   export let currentFilter: string;
   export let thumbData: string;

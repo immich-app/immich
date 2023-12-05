@@ -44,7 +44,7 @@
     }
     progressBar.style.background = '#373737';
     progressBar.style.background = progressColor;
-    console.log(progressColor);
+    //console.log(progressColor);
     dispatch('applyFilter');
   };
 </script>

@@ -1,43 +1,42 @@
 <script lang="ts">
+  import { mdiContrastCircle } from '@mdi/js'; // Contrast
+  import { mdiBrightness6 } from '@mdi/js'; // Brightness
+  import { mdiInvertColors } from '@mdi/js'; // Invert
+  import { mdiBlur } from '@mdi/js'; // Blur
+  import { mdiCircleHalfFull } from '@mdi/js'; // Vignette
+  import { mdiDotsCircle } from '@mdi/js'; // Tilt-shift
+  import { mdiSelectInverse } from '@mdi/js'; // Selective
+  import { mdiPillar } from '@mdi/js'; // Pillarbox
+
   import { onMount, SvelteComponent } from 'svelte';
   import { api, AssetResponseDto } from '@api';
   import { handleError } from '$lib/utils/handle-error';
 
   import Icon from '$lib/components/elements/icon.svelte';
 
-  import { mdiAutoFix } from '@mdi/js';
-  import { mdiImageFilterHdr } from '@mdi/js';
-  import { mdiWeatherSunny } from '@mdi/js';
-  import { mdiWeatherCloudy } from '@mdi/js';
-  import { mdiCropRotate } from '@mdi/js';
-  import { mdiTune } from '@mdi/js';
-  import { mdiImageAutoAdjust } from '@mdi/js';
-  import { mdiFullscreen } from '@mdi/js';
-  import { mdiRelativeScale } from '@mdi/js';
-  import { mdiRectangleOutline } from '@mdi/js';
-  import { mdiSquareOutline } from '@mdi/js';
+  import { mdiAutoFix } from '@mdi/js'; // Auto
+  import { mdiImageFilterHdr } from '@mdi/js'; // HDR
+  import { mdiWeatherSunny } from '@mdi/js'; // Exposure
+  import { mdiWeatherCloudy } from '@mdi/js'; // Contrast
+  import { mdiCropRotate } from '@mdi/js'; // Rotate
+  import { mdiTune } from '@mdi/js'; // Adjust
+  import { mdiImageAutoAdjust } from '@mdi/js'; // Auto Adjust
+  import { mdiFullscreen } from '@mdi/js'; // Fullscreen
+  import { mdiRelativeScale } from '@mdi/js'; // Ratio
+  import { mdiRectangleOutline } from '@mdi/js'; // Rectangle
+  import { mdiSquareOutline } from '@mdi/js'; // Square
 
-  import { mdiClose } from '@mdi/js';
-  import { mdiDotsVertical } from '@mdi/js';
-  import { mdiFlipHorizontal } from '@mdi/js';
-  import { mdiFlipVertical } from '@mdi/js';
-  import { mdiFormatRotate90 } from '@mdi/js';
-  import { mdiTriangleSmallUp } from '@mdi/js';
+  import { mdiClose } from '@mdi/js'; // Close
+  import { mdiDotsVertical } from '@mdi/js'; // More
+  import { mdiFlipHorizontal } from '@mdi/js'; // Flip horizontal
+  import { mdiFlipVertical } from '@mdi/js'; // Flip vertical
+  import { mdiFormatRotate90 } from '@mdi/js'; // Rotate
+  import { mdiTriangleSmallUp } from '@mdi/js'; // Triangle
 
   import SuggestionsButton from './suggestions-button.svelte';
   import AspectRatioButton from './aspect-ratio-button.svelte';
   import AdjustElement from './adjust-element.svelte';
   import FilterCard from './filter-card.svelte';
-
-  //Filter icons
-  import { mdiContrastCircle } from '@mdi/js';
-  import { mdiBrightness6 } from '@mdi/js';
-  import { mdiInvertColors } from '@mdi/js';
-  import { mdiBlur } from '@mdi/js';
-  import { mdiCircleHalfFull } from '@mdi/js';
-  import { mdiDotsCircle } from '@mdi/js';
-  import { mdiSelectInverse } from '@mdi/js';
-  import { mdiPillar } from '@mdi/js';
 
   import Render from './render.svelte';
   import { presets as presetsObject } from './filter.js';
@@ -57,6 +56,7 @@
   };
 
   import { createEventDispatcher } from 'svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -81,6 +81,7 @@
   let imageElement: HTMLImageElement;
 
   let originalImage: HTMLImageElement;
+  let isLoaded = false;
 
   let imageWrapper: HTMLDivElement;
   let cropElement: HTMLDivElement;
@@ -160,23 +161,24 @@
 
   const applyFilter = () => {
     if (!isFilter(presets[currentFilter] as Preset)) {
-      console.log(currentFilter);
-      console.log(presets[currentFilter]);
-      console.log(filter);
+      // console.log(currentFilter);
+      // console.log(presets[currentFilter]);
+      // console.log(filter);
       currentFilter = 'custom';
     }
 
-    console.log('apply filter');
-    console.log(filter);
-    (imageElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
+    // console.log('apply filter');
+    // console.log(filter);
+    imageElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
       filter.contrast
     }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
       filter.opacity
-    }) saturate(${filter.saturation}) sepia(${filter.sepia})`),
-      console.log('applied filter');
+    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
+    //console.log('applied filter');
   };
 
   onMount(async () => {
+    isLoaded = false;
     try {
       await loadThumbData();
       await loadAssetData();
@@ -186,16 +188,13 @@
     }
     imageElement.src = thumbData || assetData;
     imageElement.onload = () => {
-      console.log('imageElement.onload');
-      initAngleSlider();
-      initAssetDrag();
-      initZoom();
+      isLoaded = true;
       setAspectRatio('original');
     };
   });
 
   const initZoom = () => {
-    document.addEventListener('wheel', function (e) {
+    document.onwheel = (e: WheelEvent) => {
       if (e.deltaY > 0) {
         if (currentZoom <= 5) {
           currentZoom += zoomSpeed;
@@ -206,12 +205,12 @@
         }
       }
       setImageWrapperTransform();
-    });
+    };
   };
 
+  // Sets the filter to the preset passed in by the event
   const setPreset = (event: CustomEvent<string>) => {
     const preset = event.detail;
-    console.log(presets);
     filter.blur = presets[preset].blur;
     filter.brightness = presets[preset].brightness;
     filter.contrast = presets[preset].contrast;
@@ -221,14 +220,12 @@
     filter.opacity = presets[preset].opacity;
     filter.saturation = presets[preset].saturation;
     filter.sepia = presets[preset].sepia;
-
-    console.log(presets);
-    console.log(preset);
     applyFilter();
     currentFilter = preset;
   };
 
   const loadAssetData = async () => {
+    // Load original image
     try {
       const { data } = await api.assetApi.serveFile(
         { id: asset.id, isThumb: false, isWeb: false, key: publicSharedKey },
@@ -277,6 +274,10 @@
     activeButton = button;
     const cropWrapperParent = cropElementWrapper.parentElement;
 
+    removeAngleSlider();
+    removeAssetDrag();
+    removeZoom();
+
     //TODO: better solution
     if (!cropWrapperParent) {
       return;
@@ -288,6 +289,9 @@
         setAspectRatio(currentAspectRatio);
         break;
       case 'crop':
+        initAngleSlider();
+        initAssetDrag();
+        initZoom();
         if (!cropWrapperParent.classList.contains('p-24')) {
           cropWrapperParent.classList.add('p-24');
           cropWrapperParent.classList.add('pb-52');
@@ -318,13 +322,13 @@
         aspectRatio = strings[1] + '_' + strings[0];
       }
       if (currentAngleOffset % 180 == 0) {
-        console.log('currentAngleOffset', currentAngleOffset);
-        console.log('isRotate', isRotate);
+        //console.log('currentAngleOffset', currentAngleOffset);
+        //console.log('isRotate', isRotate);
         isRotate = false;
       }
     }
 
-    console.log('isRotate', isRotate);
+    //console.log('isRotate', isRotate);
 
     currentAspectRatio = aspectRatio;
 
@@ -374,8 +378,8 @@
     cropElement.style.aspectRatio = '' + aspectRatioNum;
     const cropElementWrapperAspectRatio = cropElementWrapper.offsetWidth / cropElementWrapper.offsetHeight;
 
-    console.log('aspectRatioNum', aspectRatioNum);
-    console.log('cropElementWrapperAspectRatio', cropElementWrapperAspectRatio);
+    //console.log('aspectRatioNum', aspectRatioNum);
+    //console.log('cropElementWrapperAspectRatio', cropElementWrapperAspectRatio);
 
     if (aspectRatioNum >= 1 && cropElementWrapperAspectRatio >= 1 && aspectRatioNum < cropElementWrapperAspectRatio) {
       cropElement.style.width = 'auto';
@@ -408,8 +412,8 @@
       //cropElement.style.maxWidth = '100%';
     }
 
-    console.log('cropElement.offsetWidth', cropElement.offsetWidth);
-    console.log('cropElement.offsetHeight', cropElement.offsetHeight);
+    //console.log('cropElement.offsetWidth', cropElement.offsetWidth);
+    //console.log('cropElement.offsetHeight', cropElement.offsetHeight);
 
     currentTranslate = { x: 0, y: 0 };
     calcImageElement(currentAngle);
@@ -443,7 +447,7 @@
         a = Math.min(a, (125 / 49) * 45);
       }
 
-      console.log('a', a);
+      //console.log('a', a);
 
       let angle = Math.round((a / 125) * 49);
       angle = angle * -1;
@@ -459,7 +463,7 @@
       // set the element's new position:
       let a = angleSlider.offsetLeft - pos1;
 
-      console.log('a', a);
+      //console.log('a', a);
       if (a < 0) {
         a = Math.max(a, (-125 / 49) * 45);
       } else {
@@ -485,7 +489,7 @@
 
     const dragTouchStart = (e: TouchEvent) => {
       e.preventDefault();
-      console.log('dragTouchStart');
+      //console.log('dragTouchStart');
       // get the mouse cursor position at startup:
       pos2 = e.touches[0].clientX;
       document.ontouchend = closeDragElement;
@@ -556,17 +560,17 @@
 
       maxY = maxY / currentZoom;
 
-      console.log('currentZoom', currentZoom);
-      console.log('offsetHeight', imageWrapper.offsetHeight);
-      console.log('realHight', imageWrapper.offsetHeight * currentZoom);
-      console.log('maxY', maxY);
+      // console.log('currentZoom', currentZoom);
+      // console.log('offsetHeight', imageWrapper.offsetHeight);
+      // console.log('realHight', imageWrapper.offsetHeight * currentZoom);
+      // console.log('maxY', maxY);
 
       // Calc max x translation
       const h3 = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * h1;
       const h4 = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * w1;
       let maxX = (imageWrapper.offsetWidth * currentZoom - h3 - h4) / 2;
       maxX = maxX / currentZoom;
-      console.log('maxX', maxX);
+      //console.log('maxX', maxX);
 
       if (currentTranslate.x - pos1 > maxX) {
         x = maxX;
@@ -584,8 +588,8 @@
         y = currentTranslate.y - pos2;
       }
 
-      console.log('y:', Math.round(y));
-      console.log('x:', Math.round(x));
+      // console.log('y:', Math.round(y));
+      // console.log('x:', Math.round(x));
 
       // Decide which direction to translate
       // if (currentTranslateDirection === 'y') {
@@ -608,14 +612,14 @@
         x: x,
         y: y,
       };
-      console.log('currentTranslateBefore', currentTranslate);
+      // console.log('currentTranslateBefore', currentTranslate);
 
-      console.log('currentTranslate', currentTranslate);
+      // console.log('currentTranslate', currentTranslate);
       setImageWrapperTransform();
     };
 
     const dragMouseDown = (e: MouseEvent) => {
-      console.log('dragMouseDown');
+      //console.log('dragMouseDown');
 
       e.preventDefault();
       // get the mouse cursor position at startup:
@@ -626,6 +630,25 @@
       document.onmousemove = elementDrag;
     };
     assetDragHandle.onmousedown = dragMouseDown;
+  };
+
+  const removeAssetDrag = () => {
+    assetDragHandle.onmousedown = null;
+    document.onmouseup = null;
+    document.onmousemove = null;
+  };
+
+  const removeAngleSlider = () => {
+    angleSliderHandle.onmousedown = null;
+    document.onmouseup = null;
+    document.onmousemove = null;
+    document.ontouchmove = null;
+    document.ontouchend = null;
+    angleSliderHandle.ontouchstart = null;
+  };
+
+  const removeZoom = () => {
+    document.onwheel = null;
   };
 
   const calcImageElement = (angle: number) => {
@@ -644,8 +667,8 @@
     const cropElementWidth = cropElement.offsetWidth;
     const cropElementHeight = cropElement.offsetHeight;
 
-    console.log('cropElementWidth', cropElementWidth);
-    console.log('cropElementHeight', cropElementHeight);
+    // console.log('cropElementWidth', cropElementWidth);
+    // console.log('cropElementHeight', cropElementHeight);
 
     const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropElementWidth;
     const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropElementHeight;
@@ -656,29 +679,29 @@
     if ((x1 + x2) / (y1 + y2) > originalAspect) {
       newWidth = `${x1 + x2}px`;
       newHeight = `${(x1 + x2) / originalAspect}px`;
-      console.log('Translation in Y possible');
-      console.log('case4');
+      // console.log('Translation in Y possible');
+      // console.log('case4');
       currentTranslateDirection = 'y';
     } else if ((x1 + x2) / (y1 + y2) < originalAspect) {
       newHeight = `${y1 + y2}px`;
       newWidth = `${(y1 + y2) / (1 / originalAspect)}px`;
-      console.log('Translation in X possible');
+      // console.log('Translation in X possible');
       currentTranslateDirection = 'x';
-      console.log('case5');
+      // console.log('case5');
     } else {
       newHeight = `${y1 + y2}px`;
       newWidth = `${(y1 + y2) / (1 / originalAspect)}px`;
       currentTranslateDirection = '';
-      console.log('case6');
+      // console.log('case6');
     }
 
     // Set image element width and height
-    console.log('newWidth', newWidth);
-    console.log('newHeight', newHeight);
-    console.log('currentAngleOffset', currentAngleOffset);
-    console.log('currentTranslateDirection', currentTranslateDirection);
-    console.log('currentTranslate', currentTranslate);
-    console.log('currentAngle', currentAngle);
+    // console.log('newWidth', newWidth);
+    // console.log('newHeight', newHeight);
+    // console.log('currentAngleOffset', currentAngleOffset);
+    // console.log('currentTranslateDirection', currentTranslateDirection);
+    // console.log('currentTranslate', currentTranslate);
+    // console.log('currentAngle', currentAngle);
 
     if (currentAngleOffset === 90 || currentAngleOffset === 270) {
       imageWrapper.style.height = newWidth;
@@ -695,7 +718,7 @@
   };
 
   const navigateEdit = (edit: activeEdit) => {
-    console.log('navigateEdit');
+    // console.log('navigateEdit');
     let revert = false;
     if (activeEdit === edit) {
       revert = true;
@@ -719,61 +742,73 @@
   };
 
   const resetCropAndRotate = async () => {
+    // Reset the image orientation.
     currentFlipX = false;
     currentFlipY = false;
     currentZoom = 1;
     rotate(0, 0);
+
+    // Reset the aspect ratio.
     await setAspectRatio('original');
   };
 
   const flipVertical = async () => {
     currentFlipY = !currentFlipY;
-    console.log('flipVertical');
     rotate(currentAngle, currentAngleOffset);
   };
   const flipHorizontal = async () => {
     currentFlipX = !currentFlipX;
-    console.log('flipHorizontal');
     rotate(currentAngle, currentAngleOffset);
   };
 
   const rotate = async (angle: number, angleOffset: number, isRotate?: boolean) => {
+    // If the angle offset is greater than 360 degrees, reset it back to 0
     if (angleOffset > 360) {
       angleOffset = angleOffset - 360;
     }
-    console.log('isRotate', isRotate);
 
+    // Set current angle and angle offset
     currentAngle = angle;
     currentAngleOffset = angleOffset;
 
+    // Set aspect ratio
     setAspectRatio(currentAspectRatio, isRotate ? true : false);
 
+    // Set slider handle position
     let a = -1 * angle * (125 / 49);
-    let b = a + 'px';
-    angleSliderHandle.style.left = b;
-    angleSlider.style.left = b;
+    angleSliderHandle.style.left = a + 'px';
+    angleSlider.style.left = a + 'px';
   };
 
-  // Temporary function
   const save = async () => {
-    // TBD
+    // Save element
     if (isRendering) {
       return;
     }
     await renderElement.start();
   };
 
+  // Set the transform of the image wrapper, which includes the rotation, translation, and scale.
   const setImageWrapperTransform = () => {
     let transformString = '';
 
+    // Add rotation to the transform string.
     transformString += `rotate(${currentAngle - currentAngleOffset}deg)`;
+
+    // If translation is non-zero, add it to the transform string.
     if (currentTranslate.x || currentTranslate.y) {
       transformString += ` translate(${currentTranslate.x * currentZoom}px, ${currentTranslate.y * currentZoom}px)`;
     }
+
+    // Add scale to the transform string.
     transformString += ` scaleX(${(currentFlipX ? -1 : 1) * currentZoom}) scaleY(${
       (currentFlipY ? -1 : 1) * currentZoom
     })`;
-    imageWrapper.style.transform = transformString;
+    // Set the transform of the image wrapper.
+
+    if (imageWrapper && imageWrapper.style) {
+      imageWrapper.style.transform = transformString;
+    }
   };
 </script>
 
@@ -820,8 +855,16 @@
       <div class="-z-10 flex h-full w-full items-center justify-center">
         <div bind:this={cropElementWrapper} class="relative flex h-full w-full items-center justify-center">
           <div>
-            <div bind:this={imageWrapper} class="">
-              <img class="h-full w-full" bind:this={imageElement} src="" alt="" />
+            <div bind:this={imageWrapper}>
+              <div
+                class="{isLoaded
+                  ? 'hidden'
+                  : 'flex'} absolute z-[1001] left-0 top-0 w-full h-full bg-black justify-center items-center gap-1"
+              >
+                <span>Loading</span>
+                <LoadingSpinner />
+              </div>
+              <img class="h-full w-full {isLoaded ? '' : 'hidden'}" bind:this={imageElement} src="" alt="" />
             </div>
             <div
               bind:this={cropElement}
