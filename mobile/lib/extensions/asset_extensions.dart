@@ -2,6 +2,9 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:timezone/timezone.dart';
 
 extension TZExtension on Asset {
+  /// Returns the created time of the asset from the exif info (if available) or from
+  /// the fileCreatedAt field, adjusted to the timezone value from the exif info along with
+  /// the timezone offset in [Duration]
   (DateTime, Duration) getTZAdjustedTimeAndOffset() {
     DateTime dt = fileCreatedAt.toLocal();
     if (exifInfo?.dateTimeOriginal != null) {
