@@ -7549,7 +7549,7 @@
           "pause",
           "resume",
           "empty",
-          "clearFailed"
+          "clear-failed"
         ],
         "type": "string"
       },

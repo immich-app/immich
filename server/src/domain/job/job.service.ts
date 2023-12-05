@@ -10,6 +10,7 @@ import {
   ISystemConfigRepository,
   JobHandler,
   JobItem,
+  QueueCleanType,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
@@ -50,8 +51,8 @@ export class JobService {
         await this.jobRepository.empty(queueName);
         break;
 
-      case JobCommand.CLEARFAILED:
-        const failedJobs = await this.jobRepository.clearFailed(queueName);
+      case JobCommand.CLEAR_FAILED:
+        const failedJobs = await this.jobRepository.clear(queueName, QueueCleanType.FAILED);
         this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
         break;
     }

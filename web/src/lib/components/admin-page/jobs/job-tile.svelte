@@ -5,6 +5,7 @@
   import Badge from '$lib/components/elements/badge.svelte';
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     mdiAlertCircle,
@@ -15,7 +16,6 @@
     mdiPlay,
     mdiSelectionSearch,
   } from '@mdi/js';
-  import Button from '$lib/components/elements/buttons/button.svelte';
 
   export let title: string;
   export let subtitle: string | undefined = undefined;
@@ -56,19 +56,23 @@
         <div class="flex gap-2">
           {#if jobCounts.failed > 0}
             <Badge color="primary">
-              {jobCounts.failed.toLocaleString($locale)} failed
+              <span class="text-sm">
+                {jobCounts.failed.toLocaleString($locale)} failed
+              </span>
               <Button
                 size="tiny"
                 shadow={false}
                 on:click={() => dispatch('command', { command: JobCommand.ClearFailed, force: false })}
               >
-                <Icon path={mdiClose} size="12" />
+                <Icon path={mdiClose} size="18" />
               </Button>
             </Badge>
           {/if}
-          {#if jobCounts.delayed > 0}
+          {#if jobCounts.delayed > 0 || true}
             <Badge color="secondary">
-              {jobCounts.delayed.toLocaleString($locale)} delayed
+              <span class="text-sm">
+                {jobCounts.delayed.toLocaleString($locale)} delayed
+              </span>
             </Badge>
           {/if}
         </div>
