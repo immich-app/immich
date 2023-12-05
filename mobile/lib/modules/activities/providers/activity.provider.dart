@@ -95,7 +95,11 @@ class ActivityStatisticsNotifier extends StateNotifier<int> {
   }
 
   Future<void> fetchStatistics() async {
-    state = await _activityService.getStatistics(albumId, assetId: assetId);
+    final count =
+        await _activityService.getStatistics(albumId, assetId: assetId);
+    if (mounted) {
+      state = count;
+    }
   }
 
   Future<void> addActivity() async {

@@ -29,9 +29,8 @@ class CuratedPlacesRow extends CuratedRow {
         onTap: () => context.autoPush(
           const MapRoute(),
         ),
-        child: SizedBox(
-          height: imageSize,
-          width: imageSize,
+        child: SizedBox.square(
+          dimension: imageSize,
           child: Stack(
             children: [
               Padding(
@@ -43,6 +42,7 @@ class CuratedPlacesRow extends CuratedRow {
                     5,
                   ),
                   height: imageSize,
+                  width: imageSize,
                   showAttribution: false,
                   isDarkTheme: context.isDarkTheme,
                 ),

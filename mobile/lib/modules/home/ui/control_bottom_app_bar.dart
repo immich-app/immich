@@ -19,6 +19,8 @@ class ControlBottomAppBar extends ConsumerWidget {
   final void Function() onCreateNewAlbum;
   final void Function() onUpload;
   final void Function() onStack;
+  final void Function() onEditTime;
+  final void Function() onEditLocation;
 
   final List<Album> albums;
   final List<Album> sharedAlbums;
@@ -37,6 +39,8 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.onCreateNewAlbum,
     required this.onUpload,
     required this.onStack,
+    required this.onEditTime,
+    required this.onEditLocation,
     this.selectionAssetState = const SelectionAssetState(),
     this.enabled = true,
   }) : super(key: key);
@@ -73,6 +77,18 @@ class ControlBottomAppBar extends ConsumerWidget {
             iconData: Icons.favorite_border_rounded,
             label: "control_bottom_app_bar_favorite".tr(),
             onPressed: enabled ? onFavorite : null,
+          ),
+        if (hasRemote)
+          ControlBoxButton(
+            iconData: Icons.edit_calendar_outlined,
+            label: "control_bottom_app_bar_edit_time".tr(),
+            onPressed: enabled ? onEditTime : null,
+          ),
+        if (hasRemote)
+          ControlBoxButton(
+            iconData: Icons.edit_location_alt_outlined,
+            label: "control_bottom_app_bar_edit_location".tr(),
+            onPressed: enabled ? onEditLocation : null,
           ),
         ControlBoxButton(
           iconData: Icons.delete_outline_rounded,

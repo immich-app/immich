@@ -256,6 +256,8 @@ class Asset {
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
+        a.exifInfo?.latitude != exifInfo?.latitude ||
+        a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
         ((stackCount == null && a.stackCount != null) ||
             (stackCount != null &&
