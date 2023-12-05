@@ -14,7 +14,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let assetIds: string[];
-  export let personId: string;
+  export let personAssets: PersonResponseDto;
 
   let people: PersonResponseDto[] = [];
   let selectedPerson: PersonResponseDto | null = null;
@@ -25,7 +25,7 @@
   let screenHeight: number;
 
   $: unselectedPeople = selectedPerson
-    ? people.filter((person) => selectedPerson && person.id !== selectedPerson.id)
+    ? people.filter((person) => selectedPerson && person.id !== selectedPerson.id && personAssets.id !== person.id)
     : people;
 
   let dispatch = createEventDispatcher();
@@ -33,7 +33,7 @@
   const selectedPeople: AssetFaceUpdateItem[] = [];
 
   for (const assetId of assetIds) {
-    selectedPeople.push({ assetId, personId });
+    selectedPeople.push({ assetId, personId: personAssets.id });
   }
 
   onMount(async () => {
@@ -181,7 +181,7 @@
       <PeopleList
         people={unselectedPeople}
         peopleCopy={unselectedPeople}
-        unselectedPeople={selectedPerson ? [selectedPerson] : []}
+        unselectedPeople={selectedPerson ? [selectedPerson, personAssets] : [personAssets]}
         {screenHeight}
         on:select={({ detail }) => handleSelectedPerson(detail)}
       />

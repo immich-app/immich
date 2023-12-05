@@ -97,6 +97,7 @@ export class PersonService {
       const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
       for (const face of faces) {
+        await this.access.requirePermission(authUser, Permission.PERSON_CREATE, face.id);
         if (person.faceAssetId === null) {
           changeFeaturePhoto.push(person.id);
         }

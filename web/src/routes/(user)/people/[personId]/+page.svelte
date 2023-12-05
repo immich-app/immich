@@ -348,7 +348,7 @@
 {#if viewMode === ViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
     assetIds={Array.from($selectedAssets).map((a) => a.id)}
-    personId={data.person.id}
+    personAssets={data.person}
     on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
     on:confirm={handleUnmerge}
   />

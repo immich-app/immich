@@ -389,6 +389,7 @@ describe(PersonService.name, () => {
     it('should reassign a face', async () => {
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.withName.id]));
       personMock.getById.mockResolvedValue(personStub.noName);
+      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getRandomFace.mockResolvedValue(faceStub.primaryFace1);
@@ -417,7 +418,7 @@ describe(PersonService.name, () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([faceStub.face1.assetId]));
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
       await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
-        mapFaces(faceStub.primaryFace1),
+        mapFaces(faceStub.primaryFace1, authStub.admin),
       ]);
     });
     it('should reject if the user has not access to the asset', async () => {
@@ -459,6 +460,22 @@ describe(PersonService.name, () => {
         name: personStub.noName.name,
         thumbnailPath: personStub.noName.thumbnailPath,
       });
+
+      expect(jobMock.queue).not.toHaveBeenCalledWith();
+    });
+
+    it('should fail if user has not the correct permissions on the asset', async () => {
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
+      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set());
+      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      personMock.reassignFace.mockResolvedValue(1);
+      personMock.getById.mockResolvedValue(personStub.noName);
+      personMock.getRandomFace.mockResolvedValue(null);
+      await expect(
+        sut.reassignFacesById(authStub.admin, personStub.noName.id, {
+          id: faceStub.face1.id,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(jobMock.queue).not.toHaveBeenCalledWith();
     });
