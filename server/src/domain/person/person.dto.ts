@@ -2,6 +2,7 @@ import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { AuthUserDto } from '../auth';
 import { Optional, ValidateUUID, toBoolean } from '../domain.util';
 
 export class PersonUpdateDto {
@@ -143,7 +144,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFaces(face: AssetFaceEntity): AssetFaceResponseDto {
+export function mapFaces(face: AssetFaceEntity, authUser: AuthUserDto): AssetFaceResponseDto {
   return {
     id: face.id,
     imageHeight: face.imageHeight,
@@ -152,6 +153,6 @@ export function mapFaces(face: AssetFaceEntity): AssetFaceResponseDto {
     boundingBoxX2: face.boundingBoxX2,
     boundingBoxY1: face.boundingBoxY1,
     boundingBoxY2: face.boundingBoxY2,
-    person: face.person ? mapPerson(face.person) : null,
+    person: face.person?.ownerId === authUser.id ? mapPerson(face.person) : null,
   };
 }
