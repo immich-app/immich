@@ -32,5 +32,5 @@ export const searchNameLocal = (
 };
 
 export const getPersonNameWithHiddenValue = (name: string, isHidden: boolean) => {
-  return `${name} ${isHidden ? '(hidden)' : ''}`;
+  return `${name ? name + (isHidden ? ' ' : '') : ''}${isHidden ? '(hidden)' : ''}`;
 };

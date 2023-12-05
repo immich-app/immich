@@ -227,8 +227,8 @@
                     curve
                     shadow
                     url={api.getPeopleThumbnailUrl(person.id)}
-                    altText={`${person.name} ${person.isHidden ? '(hidden)' : ''}`}
-                    title={`${person.name} ${person.isHidden ? '(hidden)' : ''}`}
+                    altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                    title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
                     widthStyle="90px"
                     heightStyle="90px"
                     thumbhash={null}
