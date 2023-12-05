@@ -3,16 +3,8 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { SearchExploreResponseDto, api } from '@api';
   import type { PageData } from './$types';
-  import {
-    mdiHeartMultipleOutline,
-    mdiClockOutline,
-    mdiPlayCircleOutline,
-    mdiMotionPlayOutline,
-    mdiRotate360,
-  } from '@mdi/js';
 
   export let data: PageData;
 

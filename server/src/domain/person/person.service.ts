@@ -9,7 +9,6 @@ import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
-  AssetFaceId,
   CropOptions,
   IAccessRepository,
   IAssetRepository,

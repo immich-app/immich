@@ -14565,22 +14565,12 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {string} [query] 
          * @param {boolean} [clip] 
          * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
-         * @param {boolean} [isFavorite] 
-         * @param {boolean} [isArchived] 
-         * @param {string} [exifInfoCity] 
-         * @param {string} [exifInfoState] 
-         * @param {string} [exifInfoCountry] 
-         * @param {string} [exifInfoMake] 
-         * @param {string} [exifInfoModel] 
-         * @param {string} [exifInfoProjectionType] 
-         * @param {Array<string>} [smartInfoObjects] 
-         * @param {Array<string>} [smartInfoTags] 
          * @param {boolean} [recent] 
          * @param {boolean} [motion] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, exifInfoProjectionType?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', recent?: boolean, motion?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -14616,46 +14606,6 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (type !== undefined) {
                 localVarQueryParameter['type'] = type;
-            }
-
-            if (isFavorite !== undefined) {
-                localVarQueryParameter['isFavorite'] = isFavorite;
-            }
-
-            if (isArchived !== undefined) {
-                localVarQueryParameter['isArchived'] = isArchived;
-            }
-
-            if (exifInfoCity !== undefined) {
-                localVarQueryParameter['exifInfo.city'] = exifInfoCity;
-            }
-
-            if (exifInfoState !== undefined) {
-                localVarQueryParameter['exifInfo.state'] = exifInfoState;
-            }
-
-            if (exifInfoCountry !== undefined) {
-                localVarQueryParameter['exifInfo.country'] = exifInfoCountry;
-            }
-
-            if (exifInfoMake !== undefined) {
-                localVarQueryParameter['exifInfo.make'] = exifInfoMake;
-            }
-
-            if (exifInfoModel !== undefined) {
-                localVarQueryParameter['exifInfo.model'] = exifInfoModel;
-            }
-
-            if (exifInfoProjectionType !== undefined) {
-                localVarQueryParameter['exifInfo.projectionType'] = exifInfoProjectionType;
-            }
-
-            if (smartInfoObjects) {
-                localVarQueryParameter['smartInfo.objects'] = smartInfoObjects;
-            }
-
-            if (smartInfoTags) {
-                localVarQueryParameter['smartInfo.tags'] = smartInfoTags;
             }
 
             if (recent !== undefined) {
@@ -14752,23 +14702,13 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {string} [query] 
          * @param {boolean} [clip] 
          * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
-         * @param {boolean} [isFavorite] 
-         * @param {boolean} [isArchived] 
-         * @param {string} [exifInfoCity] 
-         * @param {string} [exifInfoState] 
-         * @param {string} [exifInfoCountry] 
-         * @param {string} [exifInfoMake] 
-         * @param {string} [exifInfoModel] 
-         * @param {string} [exifInfoProjectionType] 
-         * @param {Array<string>} [smartInfoObjects] 
-         * @param {Array<string>} [smartInfoTags] 
          * @param {boolean} [recent] 
          * @param {boolean} [motion] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, isArchived?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, exifInfoProjectionType?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, isFavorite, isArchived, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, exifInfoProjectionType, smartInfoObjects, smartInfoTags, recent, motion, options);
+        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', recent?: boolean, motion?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, recent, motion, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -14807,7 +14747,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @throws {RequiredError}
          */
         search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig): AxiosPromise<SearchResponseDto> {
-            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.exifInfoProjectionType, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(axios, basePath));
+            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.recent, requestParameters.motion, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -14854,76 +14794,6 @@ export interface SearchApiSearchRequest {
      * @memberof SearchApiSearch
      */
     readonly type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SearchApiSearch
-     */
-    readonly isFavorite?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SearchApiSearch
-     */
-    readonly isArchived?: boolean
-
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchApiSearch
-     */
-    readonly exifInfoCity?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchApiSearch
-     */
-    readonly exifInfoState?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchApiSearch
-     */
-    readonly exifInfoCountry?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchApiSearch
-     */
-    readonly exifInfoMake?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchApiSearch
-     */
-    readonly exifInfoModel?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof SearchApiSearch
-     */
-    readonly exifInfoProjectionType?: string
-
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SearchApiSearch
-     */
-    readonly smartInfoObjects?: Array<string>
-
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof SearchApiSearch
-     */
-    readonly smartInfoTags?: Array<string>
 
     /**
      * 
@@ -14986,7 +14856,7 @@ export class SearchApi extends BaseAPI {
      * @memberof SearchApi
      */
     public search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig) {
-        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.exifInfoCity, requestParameters.exifInfoState, requestParameters.exifInfoCountry, requestParameters.exifInfoMake, requestParameters.exifInfoModel, requestParameters.exifInfoProjectionType, requestParameters.smartInfoObjects, requestParameters.smartInfoTags, requestParameters.recent, requestParameters.motion, options).then((request) => request(this.axios, this.basePath));
+        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.recent, requestParameters.motion, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

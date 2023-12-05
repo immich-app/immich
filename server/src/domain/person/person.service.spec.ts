@@ -31,7 +31,7 @@ import {
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
-import { PersonResponseDto, mapFace } from './person.dto';
+import { PersonResponseDto, mapFace, mapPerson } from './person.dto';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
@@ -848,12 +848,15 @@ describe(PersonService.name, () => {
 
   describe('mapFace', () => {
     it('should map a face', () => {
-      expect(mapFace(faceStub.face1, authStub.user1)).toEqual({
-        id: 'person-1',
-        name: 'Person 1',
-        birthDate: null,
-        thumbnailPath: '/path/to/thumbnail.jpg',
-        isHidden: false,
+      expect(mapFace(faceStub.face1, personStub.withName.owner)).toEqual({
+        boundingBoxX1: 0,
+        boundingBoxX2: 1,
+        boundingBoxY1: 0,
+        boundingBoxY2: 1,
+        id: 'assetFaceId',
+        imageHeight: 1024,
+        imageWidth: 1024,
+        person: mapPerson(personStub.withName),
       });
     });
 

@@ -153,6 +153,6 @@ export function mapFace(face: AssetFaceEntity, authUser: AuthUserDto): AssetFace
     boundingBoxX2: face.boundingBoxX2,
     boundingBoxY1: face.boundingBoxY1,
     boundingBoxY2: face.boundingBoxY2,
-    person: face.person?.ownerId === authUser.id ? mapPerson(face.person) : null,
+    person: face.person && face.person.ownerId === authUser.id ? mapPerson(face.person) : null,
   };
 }
