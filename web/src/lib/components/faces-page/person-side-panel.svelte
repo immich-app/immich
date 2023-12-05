@@ -7,31 +7,40 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { mdiArrowLeftThin, mdiRestart } from '@mdi/js';
+  import { mdiAccountOff, mdiArrowLeftThin, mdiFaceMan, mdiRestart, mdiSelect } from '@mdi/js';
   import Icon from '../elements/icon.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketStore } from '$lib/stores/websocket';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
-  import { getPersonNameWithHiddenValue } from '$lib/utils/person';
+  import { getPersonNameWithHiddenValue, zoomImageToBase64 } from '$lib/utils/person';
+  import { photoViewer } from '$lib/stores/assets.store';
+  import UnassignedFacesSidePannel from './unassigned-faces-side-pannel.svelte';
+  import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
 
   export let assetId: string;
 
   // keep track of the changes
-  let numberOfPersonToCreate: string[] = [];
-  let numberOfAssetFaceGenerated: string[] = [];
+  let idsOfPersonToCreate: string[] = [];
+  let idsOfAssetFaceGenerated: string[] = [];
 
   // faces
   let peopleWithFaces: AssetFaceResponseDto[] = [];
   let selectedPersonToReassign: (PersonResponseDto | null)[];
   let selectedPersonToCreate: (string | null)[];
+  let selectedPersonToAdd: FaceWithGeneretedThumbnail[] = [];
+  let selectedPersonToRemove: boolean[] = [];
+  let unassignedFaces: (FaceWithGeneretedThumbnail | null)[] = [];
   let editedPersonIndex: number;
+  let shouldRefresh: boolean = false;
 
   // loading spinners
   let isShowLoadingDone = false;
   let isShowLoadingPeople = false;
 
-  // search people
+  // other modals
   let showSeletecFaces = false;
+  let showUnassignedFaces = false;
+  let isSelectingFaces = false;
   let allPeople: PersonResponseDto[] = [];
 
   // timers
@@ -43,15 +52,17 @@
 
   // Reset value
   $onPersonThumbnail = '';
-
+  $: numberOfFacesToUnassign = selectedPersonToRemove ? selectedPersonToRemove.filter((value) => value).length : 0;
   $: {
     if ($onPersonThumbnail) {
-      numberOfAssetFaceGenerated.push($onPersonThumbnail);
+      idsOfAssetFaceGenerated.push($onPersonThumbnail);
       if (
-        isEqual(numberOfAssetFaceGenerated, numberOfPersonToCreate) &&
+        isEqual(idsOfAssetFaceGenerated, idsOfPersonToCreate) &&
         loaderLoadingDoneTimeout &&
         automaticRefreshTimeout &&
-        selectedPersonToCreate.filter((person) => person !== null).length === numberOfPersonToCreate.length
+        selectedPersonToCreate.filter((person) => person !== null).length +
+          selectedPersonToAdd.filter((face) => face.person === null).length ===
+          idsOfPersonToCreate.length
       ) {
         clearTimeout(loaderLoadingDoneTimeout);
         clearTimeout(automaticRefreshTimeout);
@@ -69,6 +80,17 @@
       peopleWithFaces = result.data;
       selectedPersonToCreate = new Array<string | null>(peopleWithFaces.length);
       selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
+      selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
+      unassignedFaces = await Promise.all(
+        peopleWithFaces.map(async (personWithFace) => {
+          if (personWithFace.person) {
+            return null;
+          } else {
+            const image = await zoomImageToBase64(personWithFace, $photoViewer);
+            return image ? { ...personWithFace, customThumbnail: image } : null;
+          }
+        }),
+      );
     } catch (error) {
       handleError(error, "Can't get faces");
     } finally {
@@ -82,6 +104,15 @@
   };
 
   const handleBackButton = () => {
+    if (isSelectingFaces) {
+      isSelectingFaces = false;
+      selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
+      return;
+    }
+    if (shouldRefresh) {
+      dispatch('refresh');
+      return;
+    }
     dispatch('close');
   };
 
@@ -94,11 +125,60 @@
     }
   };
 
+  const handleOpenAvailableFaces = () => {
+    showUnassignedFaces = true;
+  };
+
+  const handleSelectFaces = () => {
+    isSelectingFaces = !isSelectingFaces;
+  };
+
+  const handleSelectFace = (index: number) => {
+    if (!isSelectingFaces) {
+      return;
+    }
+    selectedPersonToRemove[index] = !selectedPersonToRemove[index];
+  };
+
+  const handleRemoveAddedFace = (indexToRemove: number) => {
+    $boundingBoxesArray = [];
+    selectedPersonToAdd = selectedPersonToAdd.filter((_, index) => index !== indexToRemove);
+  };
+
+  const handleUnassignFaces = async () => {
+    if (numberOfFacesToUnassign > 0) {
+      try {
+        for (let i = 0; i < peopleWithFaces.length; i++) {
+          if (selectedPersonToRemove[i]) {
+            await api.faceApi.unassignFace({
+              id: peopleWithFaces[i].id,
+            });
+            shouldRefresh = true;
+            peopleWithFaces[i].person = null;
+            const image = await zoomImageToBase64(peopleWithFaces[i], $photoViewer);
+            if (image) {
+              unassignedFaces[i] = { ...peopleWithFaces[i], customThumbnail: image };
+            }
+          }
+        }
+
+        notificationController.show({
+          message: `Unassigned ${numberOfFacesToUnassign} face${numberOfFacesToUnassign > 1 ? 's' : ''}`,
+          type: NotificationType.Info,
+        });
+      } catch (error) {
+        handleError(error, "Can't apply changes");
+      }
+    }
+    isSelectingFaces = false;
+  };
+
   const handleEditFaces = async () => {
     loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), 100);
     const numberOfChanges =
       selectedPersonToCreate.filter((person) => person !== null).length +
-      selectedPersonToReassign.filter((person) => person !== null).length;
+      selectedPersonToReassign.filter((person) => person !== null).length +
+      selectedPersonToAdd.length;
     if (numberOfChanges > 0) {
       try {
         for (let i = 0; i < peopleWithFaces.length; i++) {
@@ -111,10 +191,25 @@
             });
           } else if (selectedPersonToCreate[i]) {
             const { data } = await api.personApi.createPerson();
-            numberOfPersonToCreate.push(data.id);
+            idsOfPersonToCreate.push(data.id);
             await api.faceApi.reassignFacesById({
               id: data.id,
               faceDto: { id: peopleWithFaces[i].id },
+            });
+          }
+        }
+        for (const face of selectedPersonToAdd) {
+          if (face.person) {
+            await api.faceApi.reassignFacesById({
+              id: face.person.id,
+              faceDto: { id: face.id },
+            });
+          } else {
+            const { data } = await api.personApi.createPerson();
+            idsOfPersonToCreate.push(data.id);
+            await api.faceApi.reassignFacesById({
+              id: data.id,
+              faceDto: { id: face.id },
             });
           }
         }
@@ -129,7 +224,7 @@
     }
 
     isShowLoadingDone = false;
-    if (numberOfPersonToCreate.length === 0) {
+    if (idsOfPersonToCreate.length === 0) {
       clearTimeout(loaderLoadingDoneTimeout);
       dispatch('refresh');
     } else {
@@ -148,8 +243,20 @@
   const handleReassignFace = (person: PersonResponseDto | null) => {
     if (person) {
       selectedPersonToReassign[editedPersonIndex] = person;
-      showSeletecFaces = false;
     }
+    showSeletecFaces = false;
+  };
+
+  const handleCreatePersonFromUnassignedFace = (face: FaceWithGeneretedThumbnail) => {
+    selectedPersonToAdd.push(face);
+    selectedPersonToAdd = selectedPersonToAdd;
+    showUnassignedFaces = false;
+  };
+
+  const handleReassignFaceFromUnassignedFace = (face: FaceWithGeneretedThumbnail) => {
+    selectedPersonToAdd.push(face);
+    selectedPersonToAdd = selectedPersonToAdd;
+    showUnassignedFaces = false;
   };
 
   const handlePersonPicker = async (index: number) => {
@@ -172,21 +279,70 @@
           <Icon path={mdiArrowLeftThin} size="24" />
         </div>
       </button>
-      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Edit faces</p>
+      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">
+        {isSelectingFaces ? 'Select Faces' : 'Edit faces'}
+      </p>
     </div>
     {#if !isShowLoadingDone}
-      <button
-        class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
-        on:click={() => handleEditFaces()}
-      >
-        Done
-      </button>
+      <div class="flex items-center gap-2">
+        {#if !isSelectingFaces && unassignedFaces.length > 0}
+          <button
+            class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
+            on:click={handleOpenAvailableFaces}
+            title="Faces available"
+          >
+            <div>
+              <Icon path={mdiFaceMan} />
+            </div>
+          </button>
+        {/if}
+        {#if !peopleWithFaces.every((item) => item.person === null)}
+          <button
+            class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
+            on:click={handleSelectFaces}
+            title="Select faces to unassign"
+          >
+            <div>
+              <Icon path={mdiSelect} />
+            </div>
+          </button>
+        {/if}
+        {#if !isSelectingFaces}
+          <button
+            class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
+            on:click={handleEditFaces}
+          >
+            Done
+          </button>
+        {/if}
+      </div>
     {:else}
       <LoadingSpinner />
     {/if}
   </div>
 
   <div class="px-4 py-4 text-sm">
+    <div class="flex items-center justify-between gap-2">
+      {#if peopleWithFaces.every((item) => item.person === null)}
+        <div class="flex items-center justify-center w-full">
+          <div class="grid place-items-center">
+            <Icon path={mdiAccountOff} size="3.5em" />
+            <p class="mt-5 font-medium">No faces visible</p>
+          </div>
+        </div>
+      {:else}
+        <div>Visible faces</div>
+      {/if}
+
+      {#if isSelectingFaces && selectedPersonToRemove && selectedPersonToRemove.filter((value) => value).length > 0}
+        <button
+          class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
+          on:click={handleUnassignFaces}
+        >
+          Unassign faces
+        </button>
+      {/if}
+    </div>
     <div class="mt-4 flex flex-wrap gap-2">
       {#if isShowLoadingPeople}
         <div class="flex w-full justify-center">
@@ -203,6 +359,8 @@
                 on:focus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
                 on:mouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
                 on:mouseleave={() => ($boundingBoxesArray = [])}
+                on:click={() => handleSelectFace(index)}
+                on:keydown={() => handleSelectFace(index)}
               >
                 <div class="relative">
                   <ImageThumbnail
@@ -223,11 +381,14 @@
                     widthStyle="90px"
                     heightStyle="90px"
                     thumbhash={null}
-                    hidden={selectedPersonToReassign[index]
-                      ? selectedPersonToReassign[index]?.isHidden
-                      : selectedPersonToCreate[index]
-                        ? false
-                        : face.person?.isHidden}
+                    hidden={!isSelectingFaces
+                      ? selectedPersonToReassign[index]
+                        ? selectedPersonToReassign[index]?.isHidden
+                        : selectedPersonToCreate[index]
+                          ? false
+                          : face.person?.isHidden
+                      : false}
+                    persistentBorder={isSelectingFaces ? selectedPersonToRemove[index] : false}
                   />
                 </div>
                 {#if !selectedPersonToCreate[index]}
@@ -239,40 +400,100 @@
                     {/if}
                   </p>
                 {/if}
-
-                <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700">
-                  {#if selectedPersonToCreate[index] || selectedPersonToReassign[index]}
-                    <button on:click={() => handleReset(index)} class="flex h-full w-full">
-                      <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-                        <div>
-                          <Icon path={mdiRestart} size={18} />
+                {#if !isSelectingFaces}
+                  <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-blue-700">
+                    {#if selectedPersonToCreate[index] || selectedPersonToReassign[index]}
+                      <button on:click={() => handleReset(index)} class="flex h-full w-full">
+                        <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+                          <div>
+                            <Icon path={mdiRestart} size={18} />
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                  {:else}
-                    <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
-                      <div
-                        class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
-                      />
-                    </button>
-                  {/if}
-                </div>
+                      </button>
+                    {:else}
+                      <button on:click={() => handlePersonPicker(index)} class="flex h-full w-full">
+                        <div
+                          class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
+                        />
+                      </button>
+                    {/if}
+                  </div>
+                {/if}
               </div>
             </div>
           {/if}
         {/each}
       {/if}
     </div>
+    {#if selectedPersonToAdd.length > 0}
+      Faces To add
+      <div class="mt-4 flex flex-wrap gap-2">
+        {#each selectedPersonToAdd as face, index}
+          {#if face}
+            <div class="relative z-[20001] h-[115px] w-[95px]">
+              <div
+                role="button"
+                tabindex={index}
+                class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
+                on:focus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+                on:mouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+                on:mouseleave={() => ($boundingBoxesArray = [])}
+                on:click={() => handleSelectFace(index)}
+                on:keydown={() => handleSelectFace(index)}
+              >
+                <div class="relative">
+                  <ImageThumbnail
+                    curve
+                    shadow
+                    url={face.person && face.person.id
+                      ? api.getPeopleThumbnailUrl(face.person.id)
+                      : face.customThumbnail}
+                    altText={'New person'}
+                    title={'New person'}
+                    widthStyle="90px"
+                    heightStyle="90px"
+                    thumbhash={null}
+                  />
+                </div>
+                {#if face.person?.name}
+                  <p class="relative mt-1 truncate font-medium" title={face.person?.name}>
+                    {face.person?.name}
+                  </p>{/if}
+                {#if !isSelectingFaces}
+                  <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-red-700">
+                    <button on:click={() => handleRemoveAddedFace(index)} class="flex h-full w-full">
+                      <div
+                        class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
+                      />
+                    </button>
+                  </div>
+                {/if}
+              </div>
+            </div>
+          {/if}
+        {/each}
+      </div>
+    {/if}
   </div>
 </section>
 
 {#if showSeletecFaces}
   <AssignFaceSidePanel
-    {peopleWithFaces}
+    personWithFace={peopleWithFaces[editedPersonIndex]}
     {allPeople}
-    {editedPersonIndex}
     on:close={() => (showSeletecFaces = false)}
     on:createPerson={(event) => handleCreatePerson(event.detail)}
     on:reassign={(event) => handleReassignFace(event.detail)}
+  />
+{/if}
+
+{#if showUnassignedFaces}
+  <UnassignedFacesSidePannel
+    {allPeople}
+    {unassignedFaces}
+    {selectedPersonToAdd}
+    on:close={() => (showUnassignedFaces = false)}
+    on:createPerson={(event) => handleCreatePersonFromUnassignedFace(event.detail)}
+    on:reassign={(event) => handleReassignFaceFromUnassignedFace(event.detail)}
   />
 {/if}

@@ -357,6 +357,8 @@ class ApiClient {
           return PeopleUpdateDto.fromJson(value);
         case 'PeopleUpdateItem':
           return PeopleUpdateItem.fromJson(value);
+        case 'PeopleWithFacesResponseDto':
+          return PeopleWithFacesResponseDto.fromJson(value);
         case 'PersonResponseDto':
           return PersonResponseDto.fromJson(value);
         case 'PersonStatisticsResponseDto':

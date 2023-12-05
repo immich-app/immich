@@ -127,7 +127,7 @@ void main() {
       // TODO
     });
 
-    // List<PersonWithFacesResponseDto> people (default value: const [])
+    // PeopleWithFacesResponseDto people
     test('to test the property `people`', () async {
       // TODO
     });

@@ -78,6 +78,12 @@ export class PersonWithFacesResponseDto extends PersonResponseDto {
   faces!: AssetFaceWithoutPersonResponseDto[];
 }
 
+export class PeopleWithFacesResponseDto {
+  people!: PersonWithFacesResponseDto[];
+  @ApiProperty({ type: 'integer' })
+  numberOfAssets!: number;
+}
+
 export class AssetFaceWithoutPersonResponseDto {
   @ValidateUUID()
   id!: string;

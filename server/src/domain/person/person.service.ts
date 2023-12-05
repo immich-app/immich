@@ -117,6 +117,21 @@ export class PersonService {
     return result;
   }
 
+  async unassignFace(authUser: AuthUserDto, id: string): Promise<AssetFaceResponseDto> {
+    let face = await this.repository.getFaceById(id);
+    await this.access.requirePermission(authUser, Permission.PERSON_CREATE, face.id);
+    if (face.personId) {
+      await this.access.requirePermission(authUser, Permission.PERSON_WRITE, face.personId);
+    }
+
+    await this.repository.reassignFace(face.id, null);
+    if (face.person && face.person.faceAssetId === face.id) {
+      await this.createNewFeaturePhoto([face.person.id]);
+    }
+    face = await this.repository.getFaceById(id);
+    return mapFaces(face, authUser);
+  }
+
   async reassignFacesById(authUser: AuthUserDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
     await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
 

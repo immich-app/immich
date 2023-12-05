@@ -1,4 +1,5 @@
 import type { Faces } from '$lib/stores/people.store';
+import type { AssetFaceResponseDto } from '@api';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 
 const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
@@ -17,6 +18,10 @@ export interface boundingBox {
   left: number;
   width: number;
   height: number;
+}
+
+export interface FaceWithGeneretedThumbnail extends AssetFaceResponseDto {
+  customThumbnail: string;
 }
 
 export const getBoundingBox = (

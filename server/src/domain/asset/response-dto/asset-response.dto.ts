@@ -1,6 +1,6 @@
 import { AssetEntity, AssetFaceEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { PersonWithFacesResponseDto } from '../../person/person.dto';
+import { PeopleWithFacesResponseDto, PersonWithFacesResponseDto } from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
@@ -39,7 +39,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
-  people?: PersonWithFacesResponseDto[];
+  people?: PeopleWithFacesResponseDto | null;
   /**base64 encoded sha1 hash */
   checksum!: string;
   stackParentId?: string | null;
@@ -53,7 +53,7 @@ export type AssetMapOptions = {
   withStack?: boolean;
 };
 
-const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[] => {
+const peopleWithFaces = (faces: AssetFaceEntity[]): PeopleWithFacesResponseDto => {
   const result: PersonWithFacesResponseDto[] = [];
   if (faces) {
     faces.forEach((face) => {
@@ -68,7 +68,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
     });
   }
 
-  return result;
+  return { people: result, numberOfAssets: faces.length };
 };
 
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
@@ -114,7 +114,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
-    people: peopleWithFaces(entity.faces),
+    people: entity.faces ? peopleWithFaces(entity.faces) : null,
     checksum: entity.checksum.toString('base64'),
     stackParentId: entity.stackParentId,
     stack: withStack ? entity.stack?.map((a) => mapAsset(a, { stripMetadata })) ?? undefined : undefined,

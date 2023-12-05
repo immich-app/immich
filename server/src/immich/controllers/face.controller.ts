@@ -1,5 +1,5 @@
 import { AssetFaceResponseDto, AuthUserDto, FaceDto, PersonResponseDto, PersonService } from '@app/domain';
-import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -24,5 +24,10 @@ export class FaceController {
     @Body() dto: FaceDto,
   ): Promise<PersonResponseDto> {
     return this.service.reassignFacesById(authUser, id, dto);
+  }
+
+  @Delete(':id')
+  unassignFace(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetFaceResponseDto> {
+    return this.service.unassignFace(authUser, id);
   }
 }

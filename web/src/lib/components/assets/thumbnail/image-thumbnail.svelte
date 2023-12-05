@@ -19,6 +19,7 @@
   export let border = false;
   export let preload = true;
   export let eyeColor: 'black' | 'white' = 'white';
+  export let persistentBorder = false;
 
   let complete = false;
   let img: HTMLImageElement;
@@ -42,7 +43,7 @@
   {title}
   class="object-cover transition duration-300 {border
     ? 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary'
-    : ''}"
+    : ''} {persistentBorder ? 'border-[3px] border-immich-dark-primary/80 border-immich-primary' : ''}"
   class:rounded-xl={curve}
   class:shadow-lg={shadow}
   class:rounded-full={circle}

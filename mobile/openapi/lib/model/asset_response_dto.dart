@@ -35,7 +35,7 @@ class AssetResponseDto {
     required this.originalPath,
     this.owner,
     required this.ownerId,
-    this.people = const [],
+    this.people,
     required this.resized,
     this.smartInfo,
     this.stack = const [],
@@ -104,7 +104,7 @@ class AssetResponseDto {
 
   String ownerId;
 
-  List<PersonWithFacesResponseDto> people;
+  PeopleWithFacesResponseDto? people;
 
   bool resized;
 
@@ -190,7 +190,7 @@ class AssetResponseDto {
     (originalPath.hashCode) +
     (owner == null ? 0 : owner!.hashCode) +
     (ownerId.hashCode) +
-    (people.hashCode) +
+    (people == null ? 0 : people!.hashCode) +
     (resized.hashCode) +
     (smartInfo == null ? 0 : smartInfo!.hashCode) +
     (stack.hashCode) +
@@ -240,7 +240,11 @@ class AssetResponseDto {
     //  json[r'owner'] = null;
     }
       json[r'ownerId'] = this.ownerId;
+    if (this.people != null) {
       json[r'people'] = this.people;
+    } else {
+    //  json[r'people'] = null;
+    }
       json[r'resized'] = this.resized;
     if (this.smartInfo != null) {
       json[r'smartInfo'] = this.smartInfo;
@@ -299,7 +303,7 @@ class AssetResponseDto {
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
+        people: PeopleWithFacesResponseDto.fromJson(json[r'people']),
         resized: mapValueOfType<bool>(json, r'resized')!,
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         stack: AssetResponseDto.listFromJson(json[r'stack']),

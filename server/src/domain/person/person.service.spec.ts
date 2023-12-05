@@ -491,6 +491,21 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('unassignFace', () => {
+    it('should unassign a face', async () => {
+      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
+      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
+      personMock.reassignFace.mockResolvedValue(1);
+      personMock.getRandomFace.mockResolvedValue(null);
+      personMock.getFaceById.mockResolvedValue(faceStub.unassignedFace);
+
+      await expect(sut.unassignFace(authStub.admin, faceStub.face1.id)).resolves.toStrictEqual(
+        mapFaces(faceStub.unassignedFace, authStub.admin),
+      );
+    });
+  });
+
   describe('handlePersonDelete', () => {
     it('should stop if a person has not be found', async () => {
       personMock.getById.mockResolvedValue(null);

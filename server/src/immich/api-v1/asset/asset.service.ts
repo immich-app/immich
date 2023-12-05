@@ -133,7 +133,7 @@ export class AssetService {
       const data = mapAsset(asset, { withStack: true });
 
       if (data.ownerId !== authUser.id) {
-        data.people = [];
+        data.people = null;
       }
 
       if (authUser.isPublicUser) {
