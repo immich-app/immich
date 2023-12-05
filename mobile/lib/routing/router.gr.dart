@@ -63,7 +63,7 @@ class _$AppRouter extends RootStackRouter {
     },
     GalleryViewerRoute.name: (routeData) {
       final args = routeData.argsAs<GalleryViewerRouteArgs>();
-      return MaterialPageX<dynamic>(
+      return CustomPage<dynamic>(
         routeData: routeData,
         child: GalleryViewerPage(
           key: args.key,
@@ -75,6 +75,9 @@ class _$AppRouter extends RootStackRouter {
           isOwner: args.isOwner,
           sharedAlbumId: args.sharedAlbumId,
         ),
+        transitionsBuilder: CustomTransitionsBuilders.zoomedPage,
+        opaque: true,
+        barrierDismissible: false,
       );
     },
     VideoViewerRoute.name: (routeData) {

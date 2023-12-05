@@ -795,6 +795,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       tag: isFromDto
                           ? '${a.remoteId}-$heroOffset'
                           : a.id + heroOffset,
+                      transitionOnUserGestures: true,
                     ),
                     filterQuality: FilterQuality.high,
                     tightMode: true,
