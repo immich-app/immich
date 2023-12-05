@@ -111,7 +111,8 @@ export class PersonService {
       result.push(person);
     }
     if (changeFeaturePhoto.length > 0) {
-      await this.createNewFeaturePhoto(changeFeaturePhoto);
+      // Remove duplicates
+      await this.createNewFeaturePhoto(Array.from(new Set(changeFeaturePhoto)));
     }
     return result;
   }
