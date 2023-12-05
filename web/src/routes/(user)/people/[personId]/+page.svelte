@@ -47,8 +47,8 @@
 
   enum ViewMode {
     VIEW_ASSETS = 'view-assets',
-    SELECT_FACE = 'select-face',
-    MERGE_FACES = 'merge-faces',
+    SELECT_PERSON = 'select-person',
+    MERGE_PEOPLE = 'merge-people',
     SUGGEST_MERGE = 'suggest-merge',
     BIRTH_DATE = 'birth-date',
     UNASSIGN_ASSETS = 'unassign-faces',
@@ -126,7 +126,7 @@
       previousRoute = getPreviousRoute;
     }
     if (action == 'merge') {
-      viewMode = ViewMode.MERGE_FACES;
+      viewMode = ViewMode.MERGE_PEOPLE;
     }
   });
   const handleEscape = () => {
@@ -167,7 +167,7 @@
     viewMode = ViewMode.UNASSIGN_ASSETS;
   };
 
-  const toggleHideFace = async () => {
+  const toggleHidePerson = async () => {
     try {
       await api.personApi.updatePerson({
         id: data.person.id,
@@ -191,7 +191,7 @@
   };
 
   const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
-    if (viewMode !== ViewMode.SELECT_FACE) {
+    if (viewMode !== ViewMode.SELECT_PERSON) {
       return;
     }
 
@@ -214,7 +214,7 @@
     }
   };
 
-  const handleMergeSameFace = async (response: [PersonResponseDto, PersonResponseDto]) => {
+  const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {
     const [personToMerge, personToBeMergedIn] = response;
     viewMode = ViewMode.VIEW_ASSETS;
     isEditingName = false;
@@ -224,7 +224,7 @@
         mergePersonDto: { ids: [personToMerge.id] },
       });
       notificationController.show({
-        message: 'Merge faces succesfully',
+        message: 'Merge people succesfully',
         type: NotificationType.Info,
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
@@ -361,7 +361,7 @@
     {potentialMergePeople}
     on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}
     on:reject={() => changeName()}
-    on:confirm={(event) => handleMergeSameFace(event.detail)}
+    on:confirm={(event) => handleMergeSamePerson(event.detail)}
   />
 {/if}
 
@@ -373,7 +373,7 @@
   />
 {/if}
 
-{#if viewMode === ViewMode.MERGE_FACES}
+{#if viewMode === ViewMode.MERGE_PEOPLE}
   <MergeFaceSelector person={data.person} on:go-back={handleGoBack} on:merge={handleMerge} />
 {/if}
 
@@ -401,16 +401,19 @@
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-            <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_FACE)} />
+            <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_PERSON)} />
             <MenuOption text="Set date of birth" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
-            <MenuOption text="Merge face" on:click={() => (viewMode = ViewMode.MERGE_FACES)} />
-            <MenuOption text={data.person.isHidden ? 'Unhide face' : 'Hide face'} on:click={() => toggleHideFace()} />
+            <MenuOption text="Merge person" on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)} />
+            <MenuOption
+              text={data.person.isHidden ? 'Unhide person' : 'Hide person'}
+              on:click={() => toggleHidePerson()}
+            />
           </AssetSelectContextMenu>
         </svelte:fragment>
       </ControlAppBar>
     {/if}
 
-    {#if viewMode === ViewMode.SELECT_FACE}
+    {#if viewMode === ViewMode.SELECT_PERSON}
       <ControlAppBar on:close-button-click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
         <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
       </ControlAppBar>
@@ -423,13 +426,13 @@
     <AssetGrid
       {assetStore}
       {assetInteractionStore}
-      isSelectionMode={viewMode === ViewMode.SELECT_FACE}
-      singleSelect={viewMode === ViewMode.SELECT_FACE}
+      isSelectionMode={viewMode === ViewMode.SELECT_PERSON}
+      singleSelect={viewMode === ViewMode.SELECT_PERSON}
       on:select={({ detail: asset }) => handleSelectFeaturePhoto(asset)}
       on:escape={handleEscape}
     >
       {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-        <!-- Face information block -->
+        <!-- Person information block -->
         <div
           role="button"
           class="relative w-fit p-4 sm:px-6"

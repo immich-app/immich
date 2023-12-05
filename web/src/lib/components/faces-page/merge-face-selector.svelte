@@ -76,7 +76,7 @@
       });
       dispatch('merge');
     } catch (error) {
-      handleError(error, 'Cannot merge faces');
+      handleError(error, 'Cannot merge people');
     } finally {
       isShowConfirmation = false;
     }
@@ -94,7 +94,7 @@
       {#if hasSelection}
         Selected {selectedPeople.length}
       {:else}
-        Merge faces
+        Merge people
       {/if}
       <div />
     </svelte:fragment>
@@ -114,7 +114,7 @@
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
       <div class="mb-10 h-[200px] place-content-center place-items-center">
-        <p class="mb-4 text-center uppercase dark:text-white">Choose matching faces to merge</p>
+        <p class="mb-4 text-center uppercase dark:text-white">Choose matching people to merge</p>
 
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
           {#each selectedPeople as person (person.id)}
@@ -152,14 +152,14 @@
 
     {#if isShowConfirmation}
       <ConfirmDialogue
-        title="Merge faces"
+        title="Merge people"
         confirmText="Merge"
         on:confirm={handleMerge}
         on:cancel={() => (isShowConfirmation = false)}
       >
         <svelte:fragment slot="prompt">
-          <p>Are you sure you want merge these faces? <br />This action is <strong>irreversible</strong>.</p>
-        </svelte:fragment>
+          <p>Are you sure you want merge these people ?</p></svelte:fragment
+        >
       </ConfirmDialogue>
     {/if}
   </section>

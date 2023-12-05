@@ -379,8 +379,8 @@
               preload={idx < 20}
               on:change-name={() => handleChangeName(person)}
               on:set-birth-date={() => handleSetBirthDate(person)}
-              on:merge-faces={() => handleMergePeople(person)}
-              on:hide-face={() => handleHidePerson(person)}
+              on:merge-people={() => handleMergePeople(person)}
+              on:hide-person={() => handleHidePerson(person)}
             />
           {/if}
         {/each}
