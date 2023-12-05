@@ -9,9 +9,11 @@ import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
+  CommunicationEvent,
   ExifDuration,
   IAlbumRepository,
   IAssetRepository,
+  ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
   IMediaRepository,
@@ -104,6 +106,7 @@ export class MetadataService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
@@ -166,6 +169,9 @@ export class MetadataService {
     await this.assetRepository.save({ id: photoAsset.id, livePhotoVideoId: motionAsset.id });
     await this.assetRepository.save({ id: motionAsset.id, isVisible: false });
     await this.albumRepository.removeAsset(motionAsset.id);
+
+    // Notify clients to hide the linked live photo asset
+    this.communicationRepository.send(CommunicationEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
 
     return true;
   }

@@ -188,15 +188,6 @@ export class JobService {
         break;
 
       case JobName.LINK_LIVE_PHOTOS:
-        // Notify clients to hide the linked live photo asset
-        const [asset] = await this.assetRepository.getByIds([item.data.id]);
-        if (asset) {
-          const motionId = asset.type == AssetType.VIDEO && !asset.isVisible ? asset.id : asset.livePhotoVideoId;
-          if (motionId) {
-            this.communicationRepository.send(CommunicationEvent.ASSET_HIDDEN, asset.ownerId, motionId);
-          }
-        }
-
         await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
 
