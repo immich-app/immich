@@ -43,6 +43,7 @@ import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
 import 'package:immich_mobile/modules/settings/views/settings_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
+import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -86,9 +87,10 @@ part 'router.gr.dart';
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
-    AutoRoute(
+    CustomRoute(
       page: GalleryViewerPage,
       guards: [AuthGuard, DuplicateGuard],
+      transitionsBuilder: CustomTransitionsBuilders.zoomedPage,
     ),
     AutoRoute(page: VideoViewerPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(
