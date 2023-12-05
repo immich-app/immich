@@ -76,6 +76,7 @@ export const testApp = {
         getQueueStatus: jest.fn(),
         getJobCounts: jest.fn(),
         pause: jest.fn(),
+        clear: jest.fn(),
       } as IJobRepository)
       .compile();
 

@@ -27,6 +27,7 @@ class JobCommand {
   static const pause = JobCommand._(r'pause');
   static const resume = JobCommand._(r'resume');
   static const empty = JobCommand._(r'empty');
+  static const clearFailed = JobCommand._(r'clear-failed');
 
   /// List of all possible values in this [enum][JobCommand].
   static const values = <JobCommand>[
@@ -34,6 +35,7 @@ class JobCommand {
     pause,
     resume,
     empty,
+    clearFailed,
   ];
 
   static JobCommand? fromJson(dynamic value) => JobCommandTypeTransformer().decode(value);
@@ -76,6 +78,7 @@ class JobCommandTypeTransformer {
         case r'pause': return JobCommand.pause;
         case r'resume': return JobCommand.resume;
         case r'empty': return JobCommand.empty;
+        case r'clear-failed': return JobCommand.clearFailed;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

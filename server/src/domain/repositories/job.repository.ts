@@ -26,6 +26,10 @@ export interface QueueStatus {
   isPaused: boolean;
 }
 
+export enum QueueCleanType {
+  FAILED = 'failed',
+}
+
 export type JobItem =
   // Transcoding
   | { name: JobName.QUEUE_VIDEO_CONVERSION; data: IBaseJob }
@@ -120,6 +124,7 @@ export interface IJobRepository {
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;
+  clear(name: QueueName, type: QueueCleanType): Promise<string[]>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
 }

@@ -14,7 +14,7 @@
 </script>
 
 <span
-  class="inline-block h-min whitespace-nowrap px-4 pb-[0.55em] pt-[0.55em] text-center align-baseline text-xs leading-none {colorClasses[
+  class="inline-block h-min whitespace-nowrap px-3 py-1 text-center align-baseline text-xs leading-none {colorClasses[
     color
   ]}"
   class:rounded-md={rounded === true}
