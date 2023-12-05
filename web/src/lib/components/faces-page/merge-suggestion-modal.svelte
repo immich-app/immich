@@ -17,8 +17,8 @@
   let { isViewing: showAssetViewer } = assetViewingStore;
   let choosePersonToMerge = false;
   let changeFocus = false;
-  let buttonNo: HTMLButtonElement;
-  let buttonYes: HTMLButtonElement;
+  let focusButtonNo: () => void;
+  let focusButtonYes: () => void;
 
   const title = personMerge2.name;
 
@@ -30,15 +30,14 @@
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if (!$showAssetViewer) {
-      event.stopPropagation();
       switch (event.key) {
         case 'Tab':
           event.preventDefault();
 
           if (changeFocus) {
-            buttonYes.focus();
+            focusButtonYes();
           } else {
-            buttonNo.focus();
+            focusButtonNo();
           }
 
           changeFocus = !changeFocus;
@@ -144,8 +143,8 @@
         <p class="text-sm text-gray-500 dark:text-gray-300">They will be merged together</p>
       </div>
       <div class="mt-8 flex w-full gap-4 px-4 pb-4">
-        <Button bind:ref={buttonNo} color="gray" fullwidth on:click={() => dispatch('reject')}>No</Button>
-        <Button bind:ref={buttonYes} fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}
+        <Button bind:focus={focusButtonNo} color="gray" fullwidth on:click={() => dispatch('reject')}>No</Button>
+        <Button bind:focus={focusButtonYes} fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}
           >Yes</Button
         >
       </div>

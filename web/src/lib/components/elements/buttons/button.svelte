@@ -26,7 +26,11 @@
   export let fullwidth = false;
   export let border = false;
   export let title: string | undefined = '';
-  export let ref: HTMLButtonElement | null = null;
+  export const focus = () => {
+    ref.focus;
+  };
+
+  let ref: HTMLButtonElement;
 
   const colorClasses: Record<Color, string> = {
     primary:
