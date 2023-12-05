@@ -117,7 +117,7 @@ Future<void> handleEditDateTime(
     return;
   }
 
-  ref.watch(assetServiceProvider).changeDateTime(selection.toList(), dateTime);
+  ref.read(assetServiceProvider).changeDateTime(selection.toList(), dateTime);
 }
 
 Future<void> handleEditLocation(
@@ -145,5 +145,5 @@ Future<void> handleEditLocation(
     return;
   }
 
-  ref.watch(assetServiceProvider).changeLocation(selection.toList(), location);
+  ref.read(assetServiceProvider).changeLocation(selection.toList(), location);
 }
