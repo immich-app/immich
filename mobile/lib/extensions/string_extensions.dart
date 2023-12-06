@@ -9,6 +9,7 @@ extension StringExtension on String {
 }
 
 extension DurationExtension on String {
+  /// Parses and returns the string of format HH:MM:SS as a duration object else null
   Duration? toDuration() {
     try {
       final parts = split(':')
