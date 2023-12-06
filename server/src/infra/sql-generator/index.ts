@@ -1,3 +1,4 @@
+import { ISystemConfigRepository } from '@app/domain';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
@@ -26,7 +27,6 @@ import {
   UserTokenRepository,
 } from '../repositories';
 import { SqlLogger } from './sql.logger';
-import { ISystemConfigRepository } from '@app/domain';
 
 const reflector = new Reflector();
 const repositories = [

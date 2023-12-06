@@ -1,16 +1,12 @@
-import {
-  Embedding,
-  EmbeddingSearch,
-  ISmartInfoRepository,
-} from '@app/domain';
+import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { DatabaseLock, RequireLock, asyncLock } from '@app/infra';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { asVector, isValidInteger } from '../infra.utils';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { asVector, isValidInteger } from '../infra.utils';
 
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {
@@ -38,7 +34,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     }
   }
 
-  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }] })
+  @GenerateSql({
+    params: [{ ownerId: DummyValue.UUID, embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
+  })
   async searchCLIP({ ownerId, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
@@ -61,7 +59,16 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     return results;
   }
 
-  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, embedding: Array.from({ length: 512 }, Math.random), numResults: 100, maxDistance: 0.6 }] })
+  @GenerateSql({
+    params: [
+      {
+        ownerId: DummyValue.UUID,
+        embedding: Array.from({ length: 512 }, Math.random),
+        numResults: 100,
+        maxDistance: 0.6,
+      },
+    ],
+  })
   async searchFaces({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
@@ -78,8 +85,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .orderBy(`faces.embedding <=> :embedding`)
         .setParameters({ ownerId, embedding: asVector(embedding) })
         .limit(numResults);
-
-      // this.faceColumns.forEach((col) => cte.addSelect(`faces.${col} AS "${col}"`));
 
       results = await manager
         .createQueryBuilder()
