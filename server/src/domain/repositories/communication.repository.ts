@@ -5,6 +5,7 @@ export enum CommunicationEvent {
   ASSET_DELETE = 'on_asset_delete',
   ASSET_TRASH = 'on_asset_trash',
   ASSET_UPDATE = 'on_asset_update',
+  ASSET_HIDDEN = 'on_asset_hidden',
   ASSET_RESTORE = 'on_asset_restore',
   PERSON_THUMBNAIL = 'on_person_thumbnail',
   SERVER_VERSION = 'on_server_version',
