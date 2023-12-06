@@ -18,6 +18,7 @@ import {
   PartnerRepository,
   PersonRepository,
   SharedLinkRepository,
+  SmartInfoRepository,
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
@@ -25,6 +26,7 @@ import {
   UserTokenRepository,
 } from '../repositories';
 import { SqlLogger } from './sql.logger';
+import { ISystemConfigRepository } from '@app/domain';
 
 const reflector = new Reflector();
 const repositories = [
@@ -38,6 +40,7 @@ const repositories = [
   PartnerRepository,
   PersonRepository,
   SharedLinkRepository,
+  SmartInfoRepository,
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
@@ -82,7 +85,7 @@ class SqlGenerator {
         }),
         TypeOrmModule.forFeature(databaseEntities),
       ],
-      providers: repositories,
+      providers: [{ provide: ISystemConfigRepository, useClass: SystemConfigRepository }, ...repositories],
     }).compile();
 
     this.app = await moduleFixture.createNestApplication().init();

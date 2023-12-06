@@ -606,3 +606,73 @@ ORDER BY
   "AssetEntity"."createdAt" ASC
 LIMIT
   11
+
+-- AssetRepository.getAssetIdByCity
+WITH
+  "cities" AS (
+    SELECT
+      city
+    FROM
+      "exif" "e"
+    GROUP BY
+      city
+    HAVING
+      count(city) >= $1
+    ORDER BY
+      random() ASC
+    LIMIT
+      12
+  )
+SELECT DISTINCT
+  ON (c.city) "asset"."id" AS "data",
+  c.city AS "value"
+FROM
+  "assets" "asset"
+  INNER JOIN "exif" "e" ON "asset"."id" = e."assetId"
+  INNER JOIN "cities" "c" ON c.city = "e"."city"
+WHERE
+  (
+    "asset"."isVisible" = true
+    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."type" = $2
+    AND "asset"."ownerId" IN ($3)
+    AND "asset"."isArchived" = $4
+  )
+  AND ("asset"."deletedAt" IS NULL)
+LIMIT
+  12
+
+-- AssetRepository.getAssetIdByTag
+WITH
+  "random_tags" AS (
+    SELECT
+      unnest(tags) AS "tag"
+    FROM
+      "smart_info" "si"
+    GROUP BY
+      tag
+    HAVING
+      count(*) >= $1
+    ORDER BY
+      random() ASC
+    LIMIT
+      12
+  )
+SELECT DISTINCT
+  ON (unnest("si"."tags")) "asset"."id" AS "data",
+  unnest("si"."tags") AS "value"
+FROM
+  "assets" "asset"
+  INNER JOIN "smart_info" "si" ON "asset"."id" = si."assetId"
+  INNER JOIN "random_tags" "t" ON "si"."tags" @> ARRAY[t.tag]
+WHERE
+  (
+    "asset"."isVisible" = true
+    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."type" = $2
+    AND "asset"."ownerId" IN ($3)
+    AND "asset"."isArchived" = $4
+  )
+  AND ("asset"."deletedAt" IS NULL)
+LIMIT
+  12

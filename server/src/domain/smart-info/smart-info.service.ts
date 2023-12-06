@@ -38,7 +38,9 @@ export class SmartInfoService {
       });
     }
 
-    await this.repository.init();
+    const { machineLearning } = await this.configCore.getConfig();
+
+    await this.repository.init(machineLearning.clip.modelName);
 
     await this.jobRepository.resume(QueueName.CLIP_ENCODING);
   }

@@ -12,7 +12,7 @@ export interface EmbeddingSearch {
 }
 
 export interface ISmartInfoRepository {
-  init(): Promise<void>;
+  init(modelName: string): Promise<void>;
   searchCLIP(search: EmbeddingSearch): Promise<AssetEntity[]>;
   searchFaces(search: EmbeddingSearch): Promise<AssetFaceEntity[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;

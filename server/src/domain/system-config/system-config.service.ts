@@ -53,7 +53,7 @@ export class SystemConfigService {
     await this.jobRepository.queue({ name: JobName.SYSTEM_CONFIG_CHANGE });
     this.communicationRepository.broadcast(CommunicationEvent.CONFIG_UPDATE, {});
     if (oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
-      await this.smartInfoRepository.init();
+      await this.smartInfoRepository.init(newConfig.machineLearning.clip.modelName);
     }
     return mapConfig(newConfig);
   }

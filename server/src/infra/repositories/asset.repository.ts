@@ -697,6 +697,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
   async getAssetIdByCity(
     ownerId: string,
     { minAssetsPerField, maxFields }: AssetExploreFieldOptions,
@@ -727,6 +728,7 @@ export class AssetRepository implements IAssetRepository {
     return { fieldName: 'exifInfo.city', items };
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
   async getAssetIdByTag(
     ownerId: string,
     { minAssetsPerField, maxFields }: AssetExploreFieldOptions,

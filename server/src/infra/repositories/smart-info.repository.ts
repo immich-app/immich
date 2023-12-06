@@ -2,40 +2,28 @@ import {
   Embedding,
   EmbeddingSearch,
   ISmartInfoRepository,
-  ISystemConfigRepository,
-  SystemConfigCore,
 } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { DatabaseLock, RequireLock, asyncLock } from '@app/infra';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { asVector, isValidInteger } from '../infra.utils';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {
   private logger = new Logger(SmartInfoRepository.name);
-  private configCore: SystemConfigCore;
-  private readonly faceColumns: string[];
 
   constructor(
     @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
-    @Inject(ISystemConfigRepository) private configRepository: ISystemConfigRepository,
-  ) {
-    this.configCore = SystemConfigCore.create(configRepository);
-    this.faceColumns = this.assetFaceRepository.manager.connection
-      .getMetadata(AssetFaceEntity)
-      .ownColumns.map((column) => column.propertyName)
-      .filter((propertyName) => propertyName !== 'embedding');
-  }
+  ) {}
 
-  async init(): Promise<void> {
-    const { machineLearning } = await this.configCore.getConfig();
-    const modelName = machineLearning.clip.modelName;
+  async init(modelName: string): Promise<void> {
     const { dimSize } = getCLIPModelInfo(modelName);
     if (dimSize == null) {
       throw new Error(`Invalid CLIP model name: ${modelName}`);
@@ -50,6 +38,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     }
   }
 
+  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }] })
   async searchCLIP({ ownerId, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
@@ -72,6 +61,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     return results;
   }
 
+  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, embedding: Array.from({ length: 512 }, Math.random), numResults: 100, maxDistance: 0.6 }] })
   async searchFaces({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
@@ -82,14 +72,14 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
-        .select('1 + (faces.embedding <=> :embedding)', 'distance')
+        .addSelect('1 + (faces.embedding <=> :embedding)', 'distance')
         .innerJoin('faces.asset', 'asset')
         .where('asset.ownerId = :ownerId')
         .orderBy(`faces.embedding <=> :embedding`)
         .setParameters({ ownerId, embedding: asVector(embedding) })
         .limit(numResults);
 
-      this.faceColumns.forEach((col) => cte.addSelect(`faces.${col} AS "${col}"`));
+      // this.faceColumns.forEach((col) => cte.addSelect(`faces.${col} AS "${col}"`));
 
       results = await manager
         .createQueryBuilder()
