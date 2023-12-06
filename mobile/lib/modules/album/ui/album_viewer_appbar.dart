@@ -53,11 +53,11 @@ class AlbumViewerAppbar extends HookConsumerWidget
         success =
             await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(album);
         context
-            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
+            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
         context
-            .autoNavigate(const TabControllerRoute(children: [LibraryRoute()]));
+            .navigateTo(const TabControllerRoute(children: [LibraryRoute()]));
       }
       if (!success) {
         ImmichToast.show(
@@ -123,7 +123,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
 
       if (isSuccess) {
         context
-            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
+            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         context.pop();
         ImmichToast.show(
@@ -186,7 +186,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ),
         ListTile(
           leading: const Icon(Icons.settings_rounded),
-          onTap: () => context.autoNavigate(AlbumOptionsRoute(album: album)),
+          onTap: () => context.navigateTo(AlbumOptionsRoute(album: album)),
           title: const Text(
             "translated_text_options",
             style: TextStyle(fontWeight: FontWeight.w500),

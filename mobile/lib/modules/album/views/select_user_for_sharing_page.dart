@@ -38,7 +38,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
         context.popRoute(true);
         context
-            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
+            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       }
 
       ScaffoldMessenger(

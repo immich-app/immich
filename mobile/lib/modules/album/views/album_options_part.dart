@@ -46,7 +46,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
             await ref.read(sharedAlbumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
-          context.autoNavigate(
+          context.navigateTo(
             const TabControllerRoute(children: [SharingRoute()]),
           );
         } else {

@@ -203,7 +203,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         selectedAssets.value = {};
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
-        context.autoReplace(AlbumViewerRoute(albumId: newAlbum.id));
+        context.replaceRoute(AlbumViewerRoute(albumId: newAlbum.id));
       }
     }
 

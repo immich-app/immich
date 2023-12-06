@@ -65,7 +65,7 @@ class SplashScreenPage extends HookConsumerWidget {
       // If the device is offline and there is a currentUser stored locallly
       // Proceed into the app
       if (deviceIsOffline && Store.tryGet(StoreKey.currentUser) != null) {
-        context.autoReplace(const TabControllerRoute());
+        context.replaceRoute(const TabControllerRoute());
       } else if (isSuccess) {
         // If device was able to login through the internet successfully
         final hasPermission =
@@ -74,10 +74,10 @@ class SplashScreenPage extends HookConsumerWidget {
           // Resume backup (if enable) then navigate
           ref.watch(backupProvider.notifier).resumeBackup();
         }
-        context.autoReplace(const TabControllerRoute());
+        context.replaceRoute(const TabControllerRoute());
       } else {
         // User was unable to login through either offline or online methods
-        context.autoReplace(const LoginRoute());
+        context.replaceRoute(const LoginRoute());
       }
     }
 
@@ -86,7 +86,7 @@ class SplashScreenPage extends HookConsumerWidget {
         if (serverUrl != null && accessToken != null) {
           performLoggingIn();
         } else {
-          context.autoReplace(const LoginRoute());
+          context.replaceRoute(const LoginRoute());
         }
         return null;
       },

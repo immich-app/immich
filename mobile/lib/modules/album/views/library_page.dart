@@ -220,12 +220,12 @@ class LibraryPage extends HookConsumerWidget {
                 children: [
                   buildLibraryNavButton(
                       "library_page_favorites".tr(), Icons.favorite_border, () {
-                    context.autoNavigate(const FavoritesRoute());
+                    context.navigateTo(const FavoritesRoute());
                   }),
                   const SizedBox(width: 12.0),
                   buildLibraryNavButton(
                       "library_page_archive".tr(), Icons.archive_outlined, () {
-                    context.autoNavigate(const ArchiveRoute());
+                    context.navigateTo(const ArchiveRoute());
                   }),
                 ],
               ),

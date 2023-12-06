@@ -166,7 +166,7 @@ class LoginForm extends HookConsumerWidget {
               // Don't resume the backup until we have gallery permission
               ref.read(backupProvider.notifier).resumeBackup();
             }
-            context.autoReplace(const TabControllerRoute());
+            context.replaceRoute(const TabControllerRoute());
           }
         } else {
           ImmichToast.show(
@@ -219,7 +219,7 @@ class LoginForm extends HookConsumerWidget {
             if (permission.isGranted || permission.isLimited) {
               ref.watch(backupProvider.notifier).resumeBackup();
             }
-            context.autoReplace(const TabControllerRoute());
+            context.replaceRoute(const TabControllerRoute());
           } else {
             ImmichToast.show(
               context: context,

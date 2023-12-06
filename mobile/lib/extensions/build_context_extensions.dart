@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 extension ContextHelper on BuildContext {
@@ -34,14 +33,4 @@ extension ContextHelper on BuildContext {
 
   // Pop-out from the current context with optional result
   void pop<T>([T? result]) => Navigator.of(this).pop(result);
-
-  // Auto-Push navigate route from the current context
-  Future<dynamic> autoNavigate<T extends Object?>(
-    PageRouteInfo<dynamic> route,
-  ) =>
-      AutoRouter.of(this).navigate(route);
-
-  // Auto-Push replace route from the current context
-  Future<T?> autoReplace<T extends Object?>(PageRouteInfo<dynamic> route) =>
-      AutoRouter.of(this).replace(route);
 }
