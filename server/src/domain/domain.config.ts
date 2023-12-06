@@ -10,7 +10,6 @@ const WHEN_DB_URL_SET = Joi.when('DB_URL', {
 });
 
 export const immichAppConfig: ConfigModuleOptions = {
-  ignoreEnvFile: process.env.USE_ENV_FILE === 'false',
   envFilePath: '.env',
   isGlobal: true,
   validationSchema: Joi.object({
