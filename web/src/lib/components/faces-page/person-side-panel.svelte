@@ -151,8 +151,10 @@
 
   const handleAddRemovedFace = (indexToRemove: number) => {
     $boundingBoxesArray = [];
+    unassignedFaces = unassignedFaces.map((obj) =>
+      obj && obj.id === selectedPersonToUnassign[indexToRemove].id ? null : obj,
+    );
     selectedPersonToUnassign = selectedPersonToUnassign.filter((_, index) => index !== indexToRemove);
-    peopleWithFaces = peopleWithFaces
   };
 
   const handleUnassignFaces = async () => {
