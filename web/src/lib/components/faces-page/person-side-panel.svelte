@@ -149,6 +149,12 @@
     selectedPersonToAdd = selectedPersonToAdd.filter((_, index) => index !== indexToRemove);
   };
 
+  const handleAddRemovedFace = (indexToRemove: number) => {
+    $boundingBoxesArray = [];
+    selectedPersonToUnassign = selectedPersonToUnassign.filter((_, index) => index !== indexToRemove);
+    peopleWithFaces = peopleWithFaces
+  };
+
   const handleUnassignFaces = async () => {
     if (numberOfFacesToUnassign > 0) {
       for (let i = 0; i < peopleWithFaces.length; i++) {
@@ -157,6 +163,12 @@
           if (image) {
             unassignedFaces[i] = { ...peopleWithFaces[i], customThumbnail: image };
             selectedPersonToUnassign.push(peopleWithFaces[i]);
+            if (selectedPersonToReassign[i]) {
+              selectedPersonToReassign[i] = null;
+            }
+            if (selectedPersonToCreate[i]) {
+              selectedPersonToCreate[i] = null;
+            }
           }
         }
       }
@@ -250,15 +262,7 @@
     showSeletecFaces = false;
   };
 
-  const handleCreatePersonFromUnassignedFace = (face: FaceWithGeneretedThumbnail) => {
-    selectedPersonToAdd.push(face);
-    const uniqueIds = new Set(selectedPersonToAdd.map((objA) => objA.id));
-    selectedPersonToUnassign = selectedPersonToUnassign.filter((objB) => !uniqueIds.has(objB.id));
-    selectedPersonToAdd = selectedPersonToAdd;
-    showUnassignedFaces = false;
-  };
-
-  const handleReassignFaceFromUnassignedFace = (face: FaceWithGeneretedThumbnail) => {
+  const handleCreateOrReassignFaceFromUnassignedFace = (face: FaceWithGeneretedThumbnail) => {
     selectedPersonToAdd.push(face);
     const uniqueIds = new Set(selectedPersonToAdd.map((objA) => objA.id));
     selectedPersonToUnassign = selectedPersonToUnassign.filter((objB) => !uniqueIds.has(objB.id));
@@ -357,7 +361,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index}
-          {#if face.person && unassignedFaces[index] === null}
+          {#if face.person && unassignedFaces[index] === null && !selectedPersonToUnassign.some((unassignedFace) => unassignedFace.id === face.id)}
             <div class="relative z-[20001] h-[115px] w-[95px]">
               <div
                 role="button"
@@ -433,7 +437,7 @@
       {/if}
     </div>
     {#if selectedPersonToAdd.length > 0}
-      Faces To add
+      Faces to add
       <div class="mt-4 flex flex-wrap gap-2">
         {#each selectedPersonToAdd as face, index}
           {#if face}
@@ -445,8 +449,6 @@
                 on:focus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
                 on:mouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
                 on:mouseleave={() => ($boundingBoxesArray = [])}
-                on:click={() => handleSelectFace(index)}
-                on:keydown={() => handleSelectFace(index)}
               >
                 <div class="relative">
                   <ImageThumbnail
@@ -481,6 +483,51 @@
         {/each}
       </div>
     {/if}
+    {#if selectedPersonToUnassign.length > 0}
+      Faces to unassign
+      <div class="mt-4 flex flex-wrap gap-2">
+        {#each selectedPersonToUnassign as face, index}
+          {#if face && face.person}
+            <div class="relative z-[20001] h-[115px] w-[95px]">
+              <div
+                role="button"
+                tabindex={index}
+                class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
+                on:focus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+                on:mouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+                on:mouseleave={() => ($boundingBoxesArray = [])}
+              >
+                <div class="relative">
+                  <ImageThumbnail
+                    curve
+                    shadow
+                    url={api.getPeopleThumbnailUrl(face.person.id)}
+                    altText={'New person'}
+                    title={'New person'}
+                    widthStyle="90px"
+                    heightStyle="90px"
+                    thumbhash={null}
+                  />
+                </div>
+                {#if face.person?.name}
+                  <p class="relative mt-1 truncate font-medium" title={face.person?.name}>
+                    {face.person?.name}
+                  </p>{/if}
+                {#if !isSelectingFaces}
+                  <div class="absolute -right-[5px] -top-[5px] h-[20px] w-[20px] rounded-full bg-red-700">
+                    <button on:click={() => handleAddRemovedFace(index)} class="flex h-full w-full">
+                      <div
+                        class="absolute left-1/2 top-1/2 h-[2px] w-[14px] translate-x-[-50%] translate-y-[-50%] transform bg-white"
+                      />
+                    </button>
+                  </div>
+                {/if}
+              </div>
+            </div>
+          {/if}
+        {/each}
+      </div>
+    {/if}
   </div>
 </section>
 
@@ -500,7 +547,7 @@
     {unassignedFaces}
     {selectedPersonToAdd}
     on:close={() => (showUnassignedFaces = false)}
-    on:createPerson={(event) => handleCreatePersonFromUnassignedFace(event.detail)}
-    on:reassign={(event) => handleReassignFaceFromUnassignedFace(event.detail)}
+    on:createPerson={(event) => handleCreateOrReassignFaceFromUnassignedFace(event.detail)}
+    on:reassign={(event) => handleCreateOrReassignFaceFromUnassignedFace(event.detail)}
   />
 {/if}
