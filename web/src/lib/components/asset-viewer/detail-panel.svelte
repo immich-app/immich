@@ -211,7 +211,7 @@
               title="Show hidden people"
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
               padding="1"
-              buttonSize='32'
+              buttonSize="32"
               on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
@@ -220,7 +220,7 @@
             icon={mdiPencil}
             padding="1"
             size="20"
-            buttonSize='32'
+            buttonSize="32"
             on:click={() => (showEditFaces = true)}
           />
         </div>
