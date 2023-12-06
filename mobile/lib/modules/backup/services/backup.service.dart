@@ -246,6 +246,18 @@ class BackupService {
 
         // Handle getting files from iCloud
         if (!isAvailableLocally && Platform.isIOS) {
+          setCurrentUploadAssetCb(
+            CurrentUploadAsset(
+              id: entity.id,
+              fileCreatedAt: entity.createDateTime.year == 1970
+                  ? entity.modifiedDateTime
+                  : entity.createDateTime,
+              fileName: "File from iCloud",
+              fileType: _getAssetType(entity.type),
+              iCloudAsset: true,
+            ),
+          );
+
           file = await entity.loadFile(progressHandler: pmProgressHandler);
         } else {
           if (entity.type == AssetType.video) {
@@ -294,6 +306,7 @@ class BackupService {
                   : entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
+              iCloudAsset: false,
             ),
           );
 
