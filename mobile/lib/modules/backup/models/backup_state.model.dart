@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
 
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
@@ -133,8 +132,10 @@ class BackUpState {
         collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
         collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
         collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
-        collectionEquals(other.selectedAlbumsBackupAssetsIds,
-            selectedAlbumsBackupAssetsIds) &&
+        collectionEquals(
+          other.selectedAlbumsBackupAssetsIds,
+          selectedAlbumsBackupAssetsIds,
+        ) &&
         other.currentUploadAsset == currentUploadAsset;
   }
 
