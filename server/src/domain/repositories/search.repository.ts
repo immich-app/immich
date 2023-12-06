@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetType } from '@app/infra/entities';
 
 export enum SearchStrategy {
   CLIP = 'CLIP',
@@ -53,10 +53,4 @@ export type SearchExploreItemSet<T> = Array<{
 export interface SearchExploreItem<T> {
   fieldName: string;
   items: SearchExploreItemSet<T>;
-}
-
-export const ISearchRepository = 'ISearchRepository';
-
-export interface ISearchRepository {
-  explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]>;
 }
