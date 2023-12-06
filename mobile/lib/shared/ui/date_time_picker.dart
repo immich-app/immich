@@ -86,11 +86,14 @@ class _DateTimePicker extends HookWidget {
     final timeZones = useMemoized(() => getAllTimeZones(), const []);
 
     void pickDate() async {
+      final now = DateTime.now();
+      // Handles cases where the date from the asset is far off in the future
+      final initialDate = date.value.isAfter(now) ? now : date.value;
       final newDate = await showDatePicker(
         context: context,
-        initialDate: date.value,
+        initialDate: initialDate,
         firstDate: DateTime(1800),
-        lastDate: DateTime.now(),
+        lastDate: now,
       );
       if (newDate == null) {
         return;
