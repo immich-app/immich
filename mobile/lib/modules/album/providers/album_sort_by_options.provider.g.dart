@@ -1,27 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'album_sort_options.provider.dart';
+part of 'album_sort_by_options.provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$albumSortFunctionHash() => r'2758b7d6274a1adc51e554e99cd6725bd875140f';
+String _$albumSortByOptionsHash() =>
+    r'8d22fa8b7cbca2d3d7ed20a83bf00211dc948004';
 
-/// See also [AlbumSortFunction].
-@ProviderFor(AlbumSortFunction)
-final albumSortFunctionProvider =
-    AutoDisposeNotifierProvider<AlbumSortFunction, AlbumSortMode>.internal(
-  AlbumSortFunction.new,
-  name: r'albumSortFunctionProvider',
+/// See also [AlbumSortByOptions].
+@ProviderFor(AlbumSortByOptions)
+final albumSortByOptionsProvider =
+    AutoDisposeNotifierProvider<AlbumSortByOptions, AlbumSortMode>.internal(
+  AlbumSortByOptions.new,
+  name: r'albumSortByOptionsProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$albumSortFunctionHash,
+      : _$albumSortByOptionsHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AlbumSortFunction = AutoDisposeNotifier<AlbumSortMode>;
+typedef _$AlbumSortByOptions = AutoDisposeNotifier<AlbumSortMode>;
 String _$albumSortOrderHash() => r'573dea45b4519e69386fc7104c72522e35713440';
 
 /// See also [AlbumSortOrder].

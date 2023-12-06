@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
-import 'package:immich_mobile/modules/album/providers/album_sort_options.provider.dart';
+import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -19,7 +19,7 @@ class LibraryPage extends HookConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider);
     final isDarkTheme = context.isDarkTheme;
-    final albumSortOption = ref.watch(albumSortFunctionProvider);
+    final albumSortOption = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
 
     useEffect(
@@ -69,7 +69,7 @@ class LibraryPage extends HookConsumerWidget {
                 .read(albumSortOrderProvider.notifier)
                 .changeSortDirection(!albumSortIsReverse);
           } else {
-            ref.read(albumSortFunctionProvider.notifier).changeSortMode(value);
+            ref.read(albumSortByOptionsProvider.notifier).changeSortMode(value);
           }
         },
         child: Row(

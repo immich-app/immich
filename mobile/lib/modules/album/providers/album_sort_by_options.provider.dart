@@ -4,7 +4,7 @@ import 'package:immich_mobile/modules/settings/services/app_settings.service.dar
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'album_sort_options.provider.g.dart';
+part 'album_sort_by_options.provider.g.dart';
 
 typedef AlbumSortFn = List<Album> Function(List<Album> albums, bool isReverse);
 
@@ -42,10 +42,10 @@ class _AlbumSortHandlers {
 
   static const AlbumSortFn mostRecent = _sortByMostRecent;
   static List<Album> _sortByMostRecent(List<Album> albums, bool isReverse) {
-    final sorted = albums
-        .where((a) => a.isRemote)
-        .sortedBy((album) => album.endDate ?? DateTime(1000))
-        .sorted((a, b) {
+    final sorted = albums.where((a) => a.isRemote).sorted((a, b) {
+      if (a.endDate != null && b.endDate != null) {
+        return a.endDate!.compareTo(b.endDate!);
+      }
       if (a.endDate == null) return 1;
       if (b.endDate == null) return -1;
       return 0;
@@ -55,10 +55,10 @@ class _AlbumSortHandlers {
 
   static const AlbumSortFn mostOldest = _sortByMostOldest;
   static List<Album> _sortByMostOldest(List<Album> albums, bool isReverse) {
-    final sorted = albums
-        .where((a) => a.isRemote)
-        .sortedBy((album) => album.startDate ?? DateTime.now())
-        .sorted((a, b) {
+    final sorted = albums.where((a) => a.isRemote).sorted((a, b) {
+      if (a.startDate != null && b.startDate != null) {
+        return a.startDate!.compareTo(b.startDate!);
+      }
       if (a.startDate == null) return 1;
       if (b.startDate == null) return -1;
       return 0;
@@ -96,7 +96,7 @@ enum AlbumSortMode {
 }
 
 @riverpod
-class AlbumSortFunction extends _$AlbumSortFunction {
+class AlbumSortByOptions extends _$AlbumSortByOptions {
   @override
   AlbumSortMode build() {
     final sortOpt = ref

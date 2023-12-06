@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/modules/album/providers/album_sort_options.provider.dart';
+import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';

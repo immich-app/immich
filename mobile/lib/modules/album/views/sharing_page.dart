@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/album/providers/album_sort_options.provider.dart';
+import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
@@ -18,7 +18,7 @@ class SharingPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumSortOption = ref.watch(albumSortFunctionProvider);
+    final albumSortOption = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
     final albums = ref.watch(sharedAlbumProvider);
     final sharedAlbums = albumSortOption.sortFn(albums, albumSortIsReverse);
