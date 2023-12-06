@@ -261,6 +261,8 @@ jobs:
 
       - name: Run SQL generation
         run: npm run sql:generate
+        env:
+          DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
