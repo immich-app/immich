@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -175,7 +176,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ListTile(
           leading: const Icon(Icons.share_rounded),
           onTap: () {
-            context.autoPush(SharedLinkEditRoute(albumId: album.remoteId));
+            context.pushRoute(SharedLinkEditRoute(albumId: album.remoteId));
             context.pop();
           },
           title: const Text(

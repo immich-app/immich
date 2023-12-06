@@ -334,7 +334,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     handleActivities() {
       if (album != null && album.shared && album.remoteId != null) {
-        context.autoPush(
+        context.pushRoute(
           ActivitiesRoute(
             albumId: album.remoteId!,
             assetId: asset().remoteId,

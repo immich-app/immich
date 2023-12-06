@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -62,7 +65,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     /// If they exist, add to selected asset state to show they are already selected.
     void onAddPhotosPressed(Album albumInfo) async {
       AssetSelectionPageResult? returnPayload =
-          await context.autoPush<AssetSelectionPageResult?>(
+          await context.pushRoute<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: albumInfo.assets,
           canDeselect: false,
@@ -84,7 +87,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     void onAddUsersPressed(Album album) async {
-      List<String>? sharedUserIds = await context.autoPush<List<String>?>(
+      List<String>? sharedUserIds = await context.pushRoute<List<String>?>(
         SelectAdditionalUserForSharingRoute(album: album),
       );
 
@@ -178,7 +181,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildSharedUserIconsRow(Album album) {
       return GestureDetector(
-        onTap: () => context.autoPush(AlbumOptionsRoute(album: album)),
+        onTap: () => context.pushRoute(AlbumOptionsRoute(album: album)),
         child: SizedBox(
           height: 50,
           child: ListView.builder(
@@ -214,7 +217,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     onActivitiesPressed(Album album) {
       if (album.remoteId != null) {
-        context.autoPush(
+        context.pushRoute(
           ActivitiesRoute(
             albumId: album.remoteId!,
             appBarTitle: album.name,

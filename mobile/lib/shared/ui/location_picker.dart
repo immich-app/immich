@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -97,7 +98,7 @@ class _LocationPicker extends HookWidget {
           zoom: 6,
           showAttribution: false,
           onTap: (p0, p1) async {
-            final newLatLng = await context.autoPush<LatLng?>(
+            final newLatLng = await context.pushRoute<LatLng?>(
               MapLocationPickerRoute(initialLatLng: latlng),
             );
             if (newLatLng != null) {

@@ -35,10 +35,6 @@ extension ContextHelper on BuildContext {
   // Pop-out from the current context with optional result
   void pop<T>([T? result]) => Navigator.of(this).pop(result);
 
-  // Auto-Push new route from the current context
-  Future<T?> autoPush<T extends Object?>(PageRouteInfo<dynamic> route) =>
-      AutoRouter.of(this).push(route);
-
   // Auto-Push navigate route from the current context
   Future<dynamic> autoNavigate<T extends Object?>(
     PageRouteInfo<dynamic> route,
