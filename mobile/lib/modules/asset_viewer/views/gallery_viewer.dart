@@ -214,7 +214,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isDeleted && isParent) {
           if (totalAssets == 1) {
             // Handle only one asset
-            context.autoPop();
+            context.popRoute();
           } else {
             // Go to next page otherwise
             controller.nextPage(
@@ -298,7 +298,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       final ratio = d.dy / max(d.dx.abs(), 1);
       if (d.dy > sensitivity && ratio > ratioThreshold) {
-        context.autoPop();
+        context.popRoute();
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
@@ -311,7 +311,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     handleArchive(Asset asset) {
       ref.watch(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
-        context.autoPop();
+        context.popRoute();
         return;
       }
       removeAssetFromStack();
@@ -517,7 +517,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                               stackElements.elementAt(stackIndex.value),
                             );
                         ctx.pop();
-                        context.autoPop();
+                        context.popRoute();
                       },
                       title: const Text(
                         "viewer_stack_use_as_main_asset",
@@ -544,7 +544,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                           childrenToRemove: [currentAsset],
                         );
                         ctx.pop();
-                        context.autoPop();
+                        context.popRoute();
                       } else {
                         await ref.read(assetStackServiceProvider).updateStack(
                           currentAsset,
@@ -572,7 +572,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                             childrenToRemove: stack,
                           );
                       ctx.pop();
-                      context.autoPop();
+                      context.popRoute();
                     },
                     title: const Text(
                       "viewer_unstack",

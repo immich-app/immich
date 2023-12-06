@@ -281,7 +281,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       } else {
         return IconButton(
-          onPressed: () async => await context.autoPop(),
+          onPressed: () async => await context.popRoute(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
           splashRadius: 25,
         );

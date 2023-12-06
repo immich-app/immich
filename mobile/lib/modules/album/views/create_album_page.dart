@@ -215,7 +215,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             selectedAssets.value = {};
-            context.autoPop();
+            context.popRoute();
           },
           icon: const Icon(Icons.close_rounded),
         ),

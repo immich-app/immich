@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -181,7 +182,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.autoPop(null),
+          onPressed: () => context.popRoute(null),
         ),
         centerTitle: true,
         title: Text("translated_text_options".tr()),
