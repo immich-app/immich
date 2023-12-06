@@ -102,9 +102,10 @@ class AlbumSortFunction extends _$AlbumSortFunction {
     final sortOpt = ref
         .watch(appSettingsServiceProvider)
         .getSetting(AppSettingsEnum.selectedAlbumSortOrder);
-    return sortOpt < AlbumSortMode.values.length && sortOpt >= 0
-        ? AlbumSortMode.values.firstWhere((e) => e.index == sortOpt)
-        : AlbumSortMode.title;
+    return AlbumSortMode.values.firstWhere(
+      (e) => e.index == sortOpt,
+      orElse: () => AlbumSortMode.title,
+    );
   }
 
   void changeSortMode(AlbumSortMode sortOption) {

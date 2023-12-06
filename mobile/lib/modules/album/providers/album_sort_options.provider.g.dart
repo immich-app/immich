@@ -6,7 +6,7 @@ part of 'album_sort_options.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$albumSortFunctionHash() => r'19a199c30181c19bb8f834f3105b27e6b0fb92f4';
+String _$albumSortFunctionHash() => r'2758b7d6274a1adc51e554e99cd6725bd875140f';
 
 /// See also [AlbumSortFunction].
 @ProviderFor(AlbumSortFunction)
