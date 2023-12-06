@@ -336,14 +336,18 @@ export class AssetService {
 
     res.set('Cache-Control', 'private, max-age=86400, no-transform');
     res.header('Content-Type', mimeTypes.lookup(filepath));
-    res.sendFile(filepath, options, (error: Error) => {
-      if (!error) {
-        return;
-      }
+    return new Promise((resolve, reject) => {
+      res.sendFile(filepath, options, (error: Error) => {
+        if (!error) {
+          resolve();
+          return;
+        }
 
-      if (error.message !== 'Request aborted') {
-        this.logger.error(`Unable to send file: ${error.name}`, error.stack);
-      }
+        if (error.message !== 'Request aborted') {
+          this.logger.error(`Unable to send file: ${error.name}`, error.stack);
+        }
+        reject(error);
+      });
     });
   }
 
