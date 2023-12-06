@@ -40,14 +40,19 @@ class AddToAlbumSliverList extends HookConsumerWidget {
               title: Text('common_shared'.tr()),
               tilePadding: const EdgeInsets.symmetric(horizontal: 10.0),
               leading: const Icon(Icons.group),
-              children: sortedSharedAlbums
-                  .map(
-                    (album) => AlbumThumbnailListTile(
-                      album: album,
-                      onTap: enabled ? () => onAddToAlbum(album) : () {},
-                    ),
-                  )
-                  .toList(),
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const ClampingScrollPhysics(),
+                  itemCount: sortedSharedAlbums.length,
+                  itemBuilder: (context, index) => AlbumThumbnailListTile(
+                    album: sortedSharedAlbums[index],
+                    onTap: enabled
+                        ? () => onAddToAlbum(sortedSharedAlbums[index])
+                        : () {},
+                  ),
+                ),
+              ],
             ),
           );
         }
