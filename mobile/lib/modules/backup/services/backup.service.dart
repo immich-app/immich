@@ -10,6 +10,8 @@ import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -26,6 +28,7 @@ final backupServiceProvider = Provider(
   (ref) => BackupService(
     ref.watch(apiServiceProvider),
     ref.watch(dbProvider),
+    ref.watch(appSettingsServiceProvider),
   ),
 );
 
@@ -34,8 +37,9 @@ class BackupService {
   final ApiService _apiService;
   final Isar _db;
   final Logger _log = Logger("BackupService");
+  final AppSettingsService _appSetting;
 
-  BackupService(this._apiService, this._db);
+  BackupService(this._apiService, this._db, this._appSetting);
 
   Future<List<String>?> getDeviceBackupAsset() async {
     final String deviceId = Store.get(StoreKey.deviceId);
@@ -209,6 +213,9 @@ class BackupService {
     Function(ErrorUploadAsset) errorCb, {
     bool sortAssets = false,
   }) async {
+    final bool isIgnoreIcloudAssets =
+        _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
+
     if (Platform.isAndroid &&
         !(await Permission.accessMediaLocation.status).isGranted) {
       // double check that permission is granted here, to guard against
@@ -246,6 +253,11 @@ class BackupService {
 
         // Handle getting files from iCloud
         if (!isAvailableLocally && Platform.isIOS) {
+          // Skip iCloud assets if the user has disabled this feature
+          if (isIgnoreIcloudAssets) {
+            continue;
+          }
+
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,

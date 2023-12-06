@@ -31,6 +31,9 @@ class BackupOptionsPage extends HookConsumerWidget {
     final settingsService = ref.watch(appSettingsServiceProvider);
     final showBackupFix = Platform.isAndroid &&
         settingsService.getSetting(AppSettingsEnum.advancedTroubleshooting);
+    final ignoreIcloudAssets = useState(
+      settingsService.getSetting(AppSettingsEnum.ignoreIcloudAssets),
+    );
     final appRefreshDisabled =
         Platform.isIOS && settings?.appRefreshEnabled != true;
     final checkInProgress = useState(false);
@@ -433,7 +436,6 @@ class BackupOptionsPage extends HookConsumerWidget {
               if (!isAutoBackup)
                 const Text(
                   "backup_controller_page_desc_backup",
-                  style: TextStyle(fontSize: 14),
                 ).tr(),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
@@ -453,6 +455,29 @@ class BackupOptionsPage extends HookConsumerWidget {
           ),
         ),
       );
+    }
+
+    void switchChanged(bool value) {
+      settingsService.setSetting(AppSettingsEnum.ignoreIcloudAssets, value);
+      ignoreIcloudAssets.value = value;
+      ref.invalidate(appSettingsServiceProvider);
+    }
+
+    buildIgnoreIcloudAssetSetting() {
+      return [
+        const Divider(),
+        SwitchListTile.adaptive(
+          title: const Text(
+            "Ignore iCloud photos",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: const Text(
+            "Photos that are stored on iCloud will not be uploaded to the Immich server",
+          ),
+          value: ignoreIcloudAssets.value,
+          onChanged: switchChanged,
+        ),
+      ];
     }
 
     return Scaffold(
@@ -487,6 +512,7 @@ class BackupOptionsPage extends HookConsumerWidget {
             ),
             if (showBackupFix) const Divider(),
             if (showBackupFix) buildCheckCorruptBackups(),
+            if (Platform.isIOS) ...buildIgnoreIcloudAssetSetting(),
           ],
         ),
       ),
