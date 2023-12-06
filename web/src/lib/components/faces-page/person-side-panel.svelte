@@ -16,6 +16,7 @@
   import { photoViewer } from '$lib/stores/assets.store';
   import UnassignedFacesSidePannel from './unassigned-faces-side-pannel.svelte';
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
+  import { cloneDeep } from 'lodash-es';
 
   export let assetId: string;
 
@@ -28,8 +29,10 @@
   let selectedPersonToReassign: (PersonResponseDto | null)[];
   let selectedPersonToCreate: (string | null)[];
   let selectedPersonToAdd: FaceWithGeneretedThumbnail[] = [];
+  let selectedPersonToUnassign: AssetFaceResponseDto[] = [];
   let selectedPersonToRemove: boolean[] = [];
   let unassignedFaces: (FaceWithGeneretedThumbnail | null)[] = [];
+  let unassignedFacesOriginal: (FaceWithGeneretedThumbnail | null)[] = [];
   let editedPersonIndex: number;
   let shouldRefresh: boolean = false;
 
@@ -91,6 +94,7 @@
           }
         }),
       );
+      unassignedFacesOriginal = cloneDeep(unassignedFaces);
     } catch (error) {
       handleError(error, "Can't get faces");
     } finally {
@@ -147,38 +151,31 @@
 
   const handleUnassignFaces = async () => {
     if (numberOfFacesToUnassign > 0) {
-      try {
-        for (let i = 0; i < peopleWithFaces.length; i++) {
-          if (selectedPersonToRemove[i]) {
-            await api.faceApi.unassignFace({
-              id: peopleWithFaces[i].id,
-            });
-            shouldRefresh = true;
-            peopleWithFaces[i].person = null;
-            const image = await zoomImageToBase64(peopleWithFaces[i], $photoViewer);
-            if (image) {
-              unassignedFaces[i] = { ...peopleWithFaces[i], customThumbnail: image };
-            }
+      for (let i = 0; i < peopleWithFaces.length; i++) {
+        if (selectedPersonToRemove[i]) {
+          const image = await zoomImageToBase64(peopleWithFaces[i], $photoViewer);
+          if (image) {
+            unassignedFaces[i] = { ...peopleWithFaces[i], customThumbnail: image };
+            selectedPersonToUnassign.push(peopleWithFaces[i]);
           }
         }
-
-        notificationController.show({
-          message: `Unassigned ${numberOfFacesToUnassign} face${numberOfFacesToUnassign > 1 ? 's' : ''}`,
-          type: NotificationType.Info,
-        });
-      } catch (error) {
-        handleError(error, "Can't apply changes");
       }
+      const uniqueIds = new Set(selectedPersonToUnassign.map((objA) => objA.id));
+      selectedPersonToAdd = selectedPersonToAdd.filter((objB) => !uniqueIds.has(objB.id));
     }
     isSelectingFaces = false;
   };
 
   const handleEditFaces = async () => {
     loaderLoadingDoneTimeout = setTimeout(() => (isShowLoadingDone = true), 100);
+    const uniqueIds = new Set(unassignedFacesOriginal.map((objA) => objA && objA.id));
+    selectedPersonToUnassign = selectedPersonToUnassign.filter((objB) => !uniqueIds.has(objB.id));
+
     const numberOfChanges =
       selectedPersonToCreate.filter((person) => person !== null).length +
       selectedPersonToReassign.filter((person) => person !== null).length +
-      selectedPersonToAdd.length;
+      selectedPersonToAdd.length +
+      selectedPersonToUnassign.length;
     if (numberOfChanges > 0) {
       try {
         for (let i = 0; i < peopleWithFaces.length; i++) {
@@ -212,6 +209,12 @@
               faceDto: { id: face.id },
             });
           }
+        }
+
+        for (const face of selectedPersonToUnassign) {
+          await api.faceApi.unassignFace({
+            id: face.id,
+          });
         }
 
         notificationController.show({
@@ -249,12 +252,16 @@
 
   const handleCreatePersonFromUnassignedFace = (face: FaceWithGeneretedThumbnail) => {
     selectedPersonToAdd.push(face);
+    const uniqueIds = new Set(selectedPersonToAdd.map((objA) => objA.id));
+    selectedPersonToUnassign = selectedPersonToUnassign.filter((objB) => !uniqueIds.has(objB.id));
     selectedPersonToAdd = selectedPersonToAdd;
     showUnassignedFaces = false;
   };
 
   const handleReassignFaceFromUnassignedFace = (face: FaceWithGeneretedThumbnail) => {
     selectedPersonToAdd.push(face);
+    const uniqueIds = new Set(selectedPersonToAdd.map((objA) => objA.id));
+    selectedPersonToUnassign = selectedPersonToUnassign.filter((objB) => !uniqueIds.has(objB.id));
     selectedPersonToAdd = selectedPersonToAdd;
     showUnassignedFaces = false;
   };
@@ -350,7 +357,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index}
-          {#if face.person}
+          {#if face.person && unassignedFaces[index] === null}
             <div class="relative z-[20001] h-[115px] w-[95px]">
               <div
                 role="button"
