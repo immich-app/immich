@@ -67,7 +67,7 @@
           <Icon path={mdiArrowLeftThin} size="24" />
         </div>
       </button>
-      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Faces Available</p>
+      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Faces available</p>
     </div>
   </div>
   {#if unassignedFaces.some((face) => face)}
