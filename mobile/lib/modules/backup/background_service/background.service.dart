@@ -342,7 +342,8 @@ class BackgroundService {
 
     ApiService apiService = ApiService();
     apiService.setAccessToken(Store.get(StoreKey.accessToken));
-    BackupService backupService = BackupService(apiService, db);
+    AppSettingsService settingService = AppSettingsService();
+    BackupService backupService = BackupService(apiService, db, settingService);
     AppSettingsService settingsService = AppSettingsService();
 
     final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
