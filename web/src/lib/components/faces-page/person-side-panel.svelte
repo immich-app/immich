@@ -163,8 +163,8 @@
         if (selectedPersonToRemove[i]) {
           const image = await zoomImageToBase64(peopleWithFaces[i], $photoViewer);
           if (image) {
-            unassignedFaces[i] = { ...peopleWithFaces[i], customThumbnail: image };
             selectedPersonToUnassign.push(peopleWithFaces[i]);
+            selectedPersonToUnassign = selectedPersonToUnassign;
             if (selectedPersonToReassign[i]) {
               selectedPersonToReassign[i] = null;
             }
@@ -177,6 +177,7 @@
       const uniqueIds = new Set(selectedPersonToUnassign.map((objA) => objA.id));
       selectedPersonToAdd = selectedPersonToAdd.filter((objB) => !uniqueIds.has(objB.id));
     }
+    selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
     isSelectingFaces = false;
   };
 
