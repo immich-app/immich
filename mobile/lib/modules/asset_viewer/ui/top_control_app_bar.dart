@@ -39,12 +39,8 @@ class TopControlAppBar extends HookConsumerWidget {
     const double iconSize = 22.0;
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
     final album = ref.watch(currentAlbumProvider);
-    final comments = album != null && album.remoteId != null
-        ? ref.watch(
-            activityStatisticsStateProvider(
-              (albumId: album.remoteId!, assetId: asset.remoteId),
-            ),
-          )
+    final comments = album != null
+        ? ref.watch(activityStatisticsProvider(album.remoteId!, asset.remoteId))
         : 0;
 
     Widget buildFavoriteButton(a) {

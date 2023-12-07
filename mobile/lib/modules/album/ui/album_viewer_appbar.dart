@@ -38,11 +38,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
     final isProcessing = useProcessingOverlay();
     final comments = album.shared
-        ? ref.watch(
-            activityStatisticsStateProvider(
-              (albumId: album.remoteId!, assetId: null),
-            ),
-          )
+        ? ref.watch(activityStatisticsProvider(album.remoteId!))
         : 0;
 
     deleteAlbum() async {

@@ -33,8 +33,7 @@ class ActivitiesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider =
-        activityStateProvider((albumId: albumId, assetId: assetId));
+    final provider = albumActivityProvider(albumId, assetId);
     final activities = ref.watch(provider);
     final inputController = useTextEditingController();
     final inputFocusNode = useFocusNode();
