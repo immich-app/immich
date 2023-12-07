@@ -12,7 +12,7 @@ RUN python -m venv /opt/venv
 ENV VIRTUAL_ENV="/opt/venv" PATH="/opt/venv/bin:${PATH}"
 
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --sync --no-interaction --no-ansi --no-root --only main --with openvino
+RUN poetry install --sync --no-interaction --no-ansi --no-root --only main,openvino
 
 FROM python:3.11-slim-bookworm@sha256:cc758519481092eb5a4a5ab0c1b303e288880d59afc601958d19e95b300bc86b
 
