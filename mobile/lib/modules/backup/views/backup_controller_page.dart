@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -287,7 +288,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     subtitle: "backup_controller_page_remainder_sub".tr(),
                     info: ref.watch(backupProvider).availableAlbums.isEmpty
                         ? "..."
-                        : "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
+                        : "${max(0, backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length)}",
                   ),
                   const Divider(),
                   const CurrentUploadingAssetInfoBox(),
