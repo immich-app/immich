@@ -8,7 +8,6 @@
   export let crop = { width: 0, height: 0 };
   export let scale = 1;
   export let translate = { x: 0, y: 0 };
-  export let aspectRatio = 0;
   export let ratio = 1; // ratio of the original image to the displayed image
   export let filter = {
     blur: 0,
@@ -23,9 +22,6 @@
   };
 
   export const start = async () => {
-    console.log('scale', scale);
-    console.log('aspectRatio', aspectRatio);
-
     isRendering = true;
 
     const img = new Image();

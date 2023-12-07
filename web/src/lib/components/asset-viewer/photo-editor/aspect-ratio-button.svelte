@@ -1,6 +1,6 @@
 <script lang="ts">
-  export let title: string = 'Free';
-  export let isActive: boolean = false;
+  export let title = 'Free';
+  export let isActive = false;
 </script>
 
 <div class="flex items-center text-white">

@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let isActive: boolean = false;
+  export let isActive = false;
   export let buttonName = 'Optimize';
 </script>
 

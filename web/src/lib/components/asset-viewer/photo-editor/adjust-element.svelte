@@ -2,9 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
 
   export let title = 'Free';
-
   export let type = false; // false = range from 0 to 100, true = range from 0 to 200 with default value of 100
-
   export let value = 0;
 
   let dispatch = createEventDispatcher();
@@ -44,7 +42,6 @@
     }
     progressBar.style.background = '#373737';
     progressBar.style.background = progressColor;
-    //console.log(progressColor);
     dispatch('applyFilter');
   };
 </script>

@@ -282,34 +282,15 @@
     if (!cropWrapperParent) {
       return;
     }
-    switch (activeButton) {
-      case 'autofix':
-        cropWrapperParent.classList.remove('p-24');
-        cropWrapperParent.classList.remove('pb-52');
-        setAspectRatio(currentAspectRatio);
-        break;
-      case 'crop':
-        initAngleSlider();
-        initAssetDrag();
-        initZoom();
-        if (!cropWrapperParent.classList.contains('p-24')) {
-          cropWrapperParent.classList.add('p-24');
-          cropWrapperParent.classList.add('pb-52');
-        }
-        setAspectRatio(currentAspectRatio);
-        break;
-      case 'adjust':
-        cropWrapperParent.classList.remove('p-24');
-        cropWrapperParent.classList.remove('pb-52');
-        setAspectRatio(currentAspectRatio);
-        break;
-      case 'filter':
-        cropWrapperParent.classList.remove('p-24');
-        cropWrapperParent.classList.remove('pb-52');
-        setAspectRatio(currentAspectRatio);
-        break;
-      default:
-        break;
+    if (activeButton == 'crop') {
+      initAngleSlider();
+      initAssetDrag();
+      initZoom();
+      if (!cropWrapperParent.classList.contains('p-24')) {
+        cropWrapperParent.classList.add('p-24');
+        cropWrapperParent.classList.add('pb-52');
+      }
+      setAspectRatio(currentAspectRatio);
     }
   };
 
@@ -412,10 +393,8 @@
       //cropElement.style.maxWidth = '100%';
     }
 
-    //console.log('cropElement.offsetWidth', cropElement.offsetWidth);
-    //console.log('cropElement.offsetHeight', cropElement.offsetHeight);
-
-    currentTranslate = { x: 0, y: 0 };
+    // Commenting the following line should fix translation not being persistent
+    //currentTranslate = { x: 0, y: 0 };
     calcImageElement(currentAngle);
     setImageWrapperTransform();
   };
@@ -807,6 +786,7 @@
     // Set the transform of the image wrapper.
 
     if (imageWrapper && imageWrapper.style) {
+      console.log('Transforming');
       imageWrapper.style.transform = transformString;
     }
   };
@@ -1209,7 +1189,6 @@
     angle={currentAngle - currentAngleOffset}
     scale={currentZoom}
     translate={currentTranslate}
-    aspectRatio={aspectRatioNum}
     crop={currentCrop}
     ratio={currentRatio}
     {filter}
