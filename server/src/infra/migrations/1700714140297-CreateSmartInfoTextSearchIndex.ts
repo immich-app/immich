@@ -4,18 +4,19 @@ export class CreateSmartInfoTextSearchIndex1700714140297 implements MigrationInt
   name = 'CreateSmartInfoTextSearchIndex1700714140297';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // https://dba.stackexchange.com/a/164081
     await queryRunner.query(`
-        CREATE OR REPLACE FUNCTION immutable_concat_ws(text, text[])
+        CREATE OR REPLACE FUNCTION f_concat_ws(text, text[])
         RETURNS text
-        LANGUAGE internal IMMUTABLE PARALLEL SAFE AS
-        'text_concat_ws'`);
+        LANGUAGE sql IMMUTABLE PARALLEL SAFE AS
+        'SELECT array_to_string($2, $1)'`);
 
     await queryRunner.query(`
         ALTER TABLE smart_info ADD "smartInfoTextSearchableColumn" tsvector
         GENERATED ALWAYS AS (
             TO_TSVECTOR(
                 'english', 
-                immutable_concat_ws(
+                f_concat_ws(
                     ' '::text, 
                     COALESCE(tags, array[]::text[]) || COALESCE(objects, array[]::text[])
                 )
