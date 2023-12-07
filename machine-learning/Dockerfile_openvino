@@ -26,7 +26,7 @@ RUN echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg]
     > /etc/apt/sources.list.d/intel-gpu-jammy.list
 
 RUN apt-get update && \
-    apt-get install intel-opencl-icd intel-level-zero-gpu && \
+    apt-get install -y intel-opencl-icd intel-level-zero-gpu && \
     apt remove -y gpg wget&&rm -rf /usr/share/keyrings/intel-graphics.gpg&& rm -rf/etc/apt/sources.list.d/
 
 WORKDIR /usr/src/app
