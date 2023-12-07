@@ -47,7 +47,8 @@ class ImageClassifier(InferenceModel):
         if "GPU" in Core().available_devices:
             model_path = self.cache_dir/ "ov_model"
             if model_path.exists():
-                model = ORTModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
+                print("exist: "+model_path)
+                model = OVModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
 
             else:
                 log.info(
