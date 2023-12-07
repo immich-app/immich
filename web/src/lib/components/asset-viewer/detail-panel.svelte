@@ -634,6 +634,7 @@
 {#if showEditFaces}
   <PersonSidePanel
     assetId={asset.id}
+    assetType={asset.type}
     on:close={() => {
       showEditFaces = false;
     }}
