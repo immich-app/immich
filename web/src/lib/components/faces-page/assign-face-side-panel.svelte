@@ -41,7 +41,6 @@
       const img: HTMLImageElement = new Image();
       img.src = data;
 
-      // Wait for the image to load
       await new Promise<void>((resolve) => {
         img.onload = () => resolve();
         img.onerror = () => resolve();
