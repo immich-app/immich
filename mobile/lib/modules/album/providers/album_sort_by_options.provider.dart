@@ -13,36 +13,32 @@ class _AlbumSortHandlers {
 
   static const AlbumSortFn created = _sortByCreated;
   static List<Album> _sortByCreated(List<Album> albums, bool isReverse) {
-    final sorted =
-        albums.where((a) => a.isRemote).sortedBy((album) => album.createdAt);
+    final sorted = albums.sortedBy((album) => album.createdAt);
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 
   static const AlbumSortFn title = _sortByTitle;
   static List<Album> _sortByTitle(List<Album> albums, bool isReverse) {
-    final sorted =
-        albums.where((a) => a.isRemote).sortedBy((album) => album.name);
+    final sorted = albums.sortedBy((album) => album.name);
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 
   static const AlbumSortFn lastModified = _sortByLastModified;
   static List<Album> _sortByLastModified(List<Album> albums, bool isReverse) {
-    final sorted =
-        albums.where((a) => a.isRemote).sortedBy((album) => album.modifiedAt);
+    final sorted = albums.sortedBy((album) => album.modifiedAt);
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 
   static const AlbumSortFn assetCount = _sortByAssetCount;
   static List<Album> _sortByAssetCount(List<Album> albums, bool isReverse) {
-    final sorted = albums
-        .where((a) => a.isRemote)
-        .sorted((a, b) => a.assetCount.compareTo(b.assetCount));
+    final sorted =
+        albums.sorted((a, b) => a.assetCount.compareTo(b.assetCount));
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 
   static const AlbumSortFn mostRecent = _sortByMostRecent;
   static List<Album> _sortByMostRecent(List<Album> albums, bool isReverse) {
-    final sorted = albums.where((a) => a.isRemote).sorted((a, b) {
+    final sorted = albums.sorted((a, b) {
       if (a.endDate != null && b.endDate != null) {
         return a.endDate!.compareTo(b.endDate!);
       }
@@ -55,7 +51,7 @@ class _AlbumSortHandlers {
 
   static const AlbumSortFn mostOldest = _sortByMostOldest;
   static List<Album> _sortByMostOldest(List<Album> albums, bool isReverse) {
-    final sorted = albums.where((a) => a.isRemote).sorted((a, b) {
+    final sorted = albums.sorted((a, b) {
       if (a.startDate != null && b.startDate != null) {
         return a.startDate!.compareTo(b.startDate!);
       }

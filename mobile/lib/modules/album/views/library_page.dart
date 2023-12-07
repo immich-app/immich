@@ -183,8 +183,8 @@ class LibraryPage extends HookConsumerWidget {
       );
     }
 
-    final sorted = albumSortOption.sortFn(albums, albumSortIsReverse);
-
+    final remote = albums.where((a) => a.isRemote).toList();
+    final sorted = albumSortOption.sortFn(remote, albumSortIsReverse);
     final local = albums.where((a) => a.isLocal).toList();
 
     Widget? shareTrashButton() {
