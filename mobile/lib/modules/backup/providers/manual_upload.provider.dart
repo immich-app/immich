@@ -208,10 +208,12 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
                 state.totalAssetsToUpload == 1;
         state =
             state.copyWith(showDetailedNotification: showDetailedNotification);
+        final pmProgressHandler = PMProgressHandler();
 
         final bool ok = await ref.read(backupServiceProvider).backupAsset(
               allUploadAssets,
               state.cancelToken,
+              pmProgressHandler,
               _onAssetUploaded,
               _onProgress,
               _onSetCurrentBackupAsset,

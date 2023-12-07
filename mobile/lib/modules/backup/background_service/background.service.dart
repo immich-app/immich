@@ -342,7 +342,8 @@ class BackgroundService {
 
     ApiService apiService = ApiService();
     apiService.setAccessToken(Store.get(StoreKey.accessToken));
-    BackupService backupService = BackupService(apiService, db);
+    AppSettingsService settingService = AppSettingsService();
+    BackupService backupService = BackupService(apiService, db, settingService);
     AppSettingsService settingsService = AppSettingsService();
 
     final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
@@ -452,9 +453,12 @@ class BackgroundService {
     );
 
     _cancellationToken = CancellationToken();
+    final pmProgressHandler = PMProgressHandler();
+
     final bool ok = await backupService.backupAsset(
       toUpload,
       _cancellationToken!,
+      pmProgressHandler,
       notifyTotalProgress ? _onAssetUploaded : (assetId, deviceId, isDup) {},
       notifySingleProgress ? _onProgress : (sent, total) {},
       notifySingleProgress ? _onSetCurrentBackupAsset : (asset) {},

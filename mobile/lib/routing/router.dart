@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
+import 'package:immich_mobile/modules/backup/views/backup_options_page.dart';
 import 'package:immich_mobile/modules/map/ui/map_location_picker.dart';
 import 'package:immich_mobile/modules/map/views/map_page.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
@@ -178,6 +179,7 @@ part 'router.gr.dart';
       page: MapLocationPickerPage,
       guards: [AuthGuard, DuplicateGuard],
     ),
+    AutoRoute(page: BackupOptionsPage, guards: [AuthGuard, DuplicateGuard]),
   ],
 )
 class AppRouter extends _$AppRouter {

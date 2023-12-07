@@ -371,6 +371,12 @@ class _$AppRouter extends RootStackRouter {
         barrierDismissible: false,
       );
     },
+    BackupOptionsRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const BackupOptionsPage(),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -718,6 +724,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           MapLocationPickerRoute.name,
           path: '/map-location-picker-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          BackupOptionsRoute.name,
+          path: '/backup-options-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1662,6 +1676,18 @@ class MapLocationPickerRouteArgs {
   String toString() {
     return 'MapLocationPickerRouteArgs{key: $key, initialLatLng: $initialLatLng}';
   }
+}
+
+/// generated route for
+/// [BackupOptionsPage]
+class BackupOptionsRoute extends PageRouteInfo<void> {
+  const BackupOptionsRoute()
+      : super(
+          BackupOptionsRoute.name,
+          path: '/backup-options-page',
+        );
+
+  static const String name = 'BackupOptionsRoute';
 }
 
 /// generated route for

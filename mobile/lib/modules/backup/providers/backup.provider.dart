@@ -61,7 +61,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               fileCreatedAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
+              iCloudAsset: false,
             ),
+            iCloudDownloadProgress: 0.0,
           ),
         );
 
@@ -444,9 +446,18 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       // Perform Backup
       state = state.copyWith(cancelToken: CancellationToken());
+
+      final pmProgressHandler = PMProgressHandler();
+
+      pmProgressHandler.stream.listen((event) {
+        final double progress = event.progress;
+        state = state.copyWith(iCloudDownloadProgress: progress);
+      });
+
       await _backupService.backupAsset(
         assetsWillBeBackup,
         state.cancelToken,
+        pmProgressHandler,
         _onAssetUploaded,
         _onUploadProgress,
         _onSetCurrentBackupAsset,

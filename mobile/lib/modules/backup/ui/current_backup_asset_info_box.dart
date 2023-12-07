@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,8 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     var uploadProgress = !isManualUpload
         ? ref.watch(backupProvider).progressInPercentage
         : ref.watch(manualUploadProvider).progressInPercentage;
+    var iCloudDownloadProgress =
+        ref.watch(backupProvider).iCloudDownloadProgress;
     final isShowThumbnail = useState(false);
 
     String getAssetCreationDate() {
@@ -143,6 +147,69 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
       }
     }
 
+    buildiCloudDownloadProgerssBar() {
+      if (asset.iCloudAsset != null && asset.iCloudAsset!) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 110,
+                child: Text(
+                  "iCloud Download",
+                  style: context.textTheme.labelSmall,
+                ),
+              ),
+              Expanded(
+                child: LinearProgressIndicator(
+                  minHeight: 10.0,
+                  value: uploadProgress / 100.0,
+                  backgroundColor: Colors.grey,
+                  color: context.primaryColor,
+                ),
+              ),
+              Text(
+                " ${iCloudDownloadProgress.toStringAsFixed(0)}%",
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return const SizedBox();
+    }
+
+    buildUploadProgressBar() {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Row(
+          children: [
+            if (asset.iCloudAsset != null && asset.iCloudAsset!)
+              SizedBox(
+                width: 110,
+                child: Text(
+                  "Immich Upload",
+                  style: context.textTheme.labelSmall,
+                ),
+              ),
+            Expanded(
+              child: LinearProgressIndicator(
+                minHeight: 10.0,
+                value: uploadProgress / 100.0,
+                backgroundColor: Colors.grey,
+                color: context.primaryColor,
+              ),
+            ),
+            Text(
+              " ${uploadProgress.toStringAsFixed(0)}%",
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+      );
+    }
+
     return FutureBuilder<Uint8List?>(
       future: buildAssetThumbnail(),
       builder: (context, thumbnail) => ListTile(
@@ -197,25 +264,8 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
         ),
         subtitle: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: LinearProgressIndicator(
-                      minHeight: 10.0,
-                      value: uploadProgress / 100.0,
-                      backgroundColor: Colors.grey,
-                      color: context.primaryColor,
-                    ),
-                  ),
-                  Text(
-                    " ${uploadProgress.toStringAsFixed(0)}%",
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
+            if (Platform.isIOS) buildiCloudDownloadProgerssBar(),
+            buildUploadProgressBar(),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: buildAssetInfoTable(),
