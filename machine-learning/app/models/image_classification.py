@@ -47,7 +47,7 @@ class ImageClassifier(InferenceModel):
             model_path = self.cache_dir/ "ov_model"
             if model_path.exists():
                 log.warn("loading local model")
-                model = OVModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
+                model = OVModelForImageClassification.from_pretrained(model_path, **model_kwargs)
 
             else:
                 log.info(
