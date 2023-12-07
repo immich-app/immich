@@ -57,7 +57,6 @@ class ImageClassifier(InferenceModel):
                         "Exporting optimized model for future use."
                     ),
                 )
-                self.sess_options.optimized_model_filepath = model_path.as_posix()
                 model = OVModelForImageClassification.from_pretrained(self.model_name, **model_kwargs)
             log.info("compiling for GPU")
             model.to("gpu")
