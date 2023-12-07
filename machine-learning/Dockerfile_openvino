@@ -18,9 +18,7 @@ FROM python:3.11-slim-bookworm@sha256:cc758519481092eb5a4a5ab0c1b303e288880d59af
 
 
 
-RUN apt-get update && apt-get install -y --no-install-recommends tini libmimalloc2.0 \
-                                                                 intel-opencl-icd intel-level-zero-gpu \
-                                                                 gpg \
+RUN apt-get update && apt-get install -y --no-install-recommends tini libmimalloc2.0 intel-opencl-icd intel-level-zero-gpu gpg \
                                                                  && rm -rf /var/lib/apt/lists/* \
                                                                  && apt-get remove gpg -y
 
