@@ -41,13 +41,13 @@ class ImageClassifier(InferenceModel):
             "cache_dir": self.cache_dir,
             "provider": self.providers[0],
             "provider_options": self.provider_options[0],
-            "session_options": self.sess_options,
         }
         # detect if Openvino compatible hardware exists in the environment
         if "GPU" in Core().available_devices:
             model_path = self.cache_dir/ "ov_model"
+            log.warn("exist: "+model_path)
             if model_path.exists():
-                print("exist: "+model_path)
+
                 model = OVModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
 
             else:
