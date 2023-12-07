@@ -16,8 +16,7 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
     const faceDimSize = faceDimQuery?.[0]?.['dimsize'] ?? 512;
     const clipDimSize = clipDimQuery?.[0]?.['dimsize'] ?? 512;
 
-    await queryRunner.query('DROP EXTENSION IF EXISTS vectors');
-    await queryRunner.query('CREATE EXTENSION vectors');
+    await queryRunner.query('CREATE EXTENSION IF NOT EXISTS vectors');
 
     await queryRunner.query(`
         ALTER TABLE asset_faces 
@@ -48,6 +47,5 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
         FROM smart_search s
         ON CONFLICT (s."assetId") DO UPDATE SET "clipEmbedding" = s.embedding`);
     await queryRunner.query(`DROP TABLE IF EXISTS smart_search`);
-    await queryRunner.query('DROP EXTENSION IF EXISTS vectors');
   }
 }
