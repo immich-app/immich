@@ -104,6 +104,7 @@ class HomePage extends HookConsumerWidget {
         onRefresh: refreshAssets,
         stackEnabled: true,
         archiveEnabled: true,
+        editEnabled: true,
       );
     }
 
