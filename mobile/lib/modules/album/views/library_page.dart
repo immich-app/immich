@@ -53,7 +53,7 @@ class LibraryPage extends HookConsumerWidget {
                     option.label.tr(),
                     style: TextStyle(
                       color: selected ? context.primaryColor : null,
-                      fontSize: 12.0,
+                      fontSize: 14.0,
                     ),
                   ),
                 ],
