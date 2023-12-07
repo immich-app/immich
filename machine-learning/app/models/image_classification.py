@@ -45,9 +45,8 @@ class ImageClassifier(InferenceModel):
         # detect if Openvino compatible hardware exists in the environment
         if "GPU" in Core().available_devices:
             model_path = self.cache_dir/ "ov_model"
-            log.warn(self.cache_dir)
             if model_path.exists():
-
+                log.warn("loading local model")
                 model = OVModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
 
             else:
@@ -57,12 +56,12 @@ class ImageClassifier(InferenceModel):
                         "Exporting optimized model for future use."
                     ),
                 )
-                model = OVModelForImageClassification.from_pretrained(self.model_name, **model_kwargs)
+                model = OVModelForImageClassification.from_pretrained(self.model_name, export=True, **model_kwargs)
             log.info("compiling for GPU")
             model.to("gpu")
             model.compile()
             model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
-            model.save_pretrained(model_path)
+            # model.save_pretrained(model_path)
             self.model = transformers_pipeline(self.model_type.value, model, feature_extractor=processor)
 
         else:
