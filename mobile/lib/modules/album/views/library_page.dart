@@ -1,15 +1,12 @@
-import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 
@@ -21,8 +18,9 @@ class LibraryPage extends HookConsumerWidget {
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider);
-    var isDarkTheme = context.isDarkTheme;
-    var settings = ref.watch(appSettingsServiceProvider);
+    final isDarkTheme = context.isDarkTheme;
+    final albumSortOption = ref.watch(albumSortByOptionsProvider);
+    final albumSortIsReverse = ref.watch(albumSortOrderProvider);
 
     useEffect(
       () {
@@ -32,64 +30,15 @@ class LibraryPage extends HookConsumerWidget {
       [],
     );
 
-    final selectedAlbumSortOrder =
-        useState(settings.getSetting(AppSettingsEnum.selectedAlbumSortOrder));
-
-    List<Album> sortedAlbums() {
-      // Created.
-      if (selectedAlbumSortOrder.value == 0) {
-        return albums
-            .where((a) => a.isRemote)
-            .sortedBy((album) => album.createdAt)
-            .reversed
-            .toList();
-      }
-      // Album title.
-      if (selectedAlbumSortOrder.value == 1) {
-        return albums.where((a) => a.isRemote).sortedBy((album) => album.name);
-      }
-      // Most recent photo, if unset (e.g. empty album, use modifiedAt / updatedAt).
-      if (selectedAlbumSortOrder.value == 2) {
-        return albums
-            .where((a) => a.isRemote)
-            .sorted(
-              (a, b) => a.lastModifiedAssetTimestamp != null &&
-                      b.lastModifiedAssetTimestamp != null
-                  ? a.lastModifiedAssetTimestamp!
-                      .compareTo(b.lastModifiedAssetTimestamp!)
-                  : a.modifiedAt.compareTo(b.modifiedAt),
-            )
-            .reversed
-            .toList();
-      }
-      // Last modified.
-      if (selectedAlbumSortOrder.value == 3) {
-        return albums
-            .where((a) => a.isRemote)
-            .sortedBy((album) => album.modifiedAt)
-            .reversed
-            .toList();
-      }
-
-      // Fallback: Album title.
-      return albums.where((a) => a.isRemote).sortedBy((album) => album.name);
-    }
-
     Widget buildSortButton() {
-      final options = [
-        "library_page_sort_created".tr(),
-        "library_page_sort_title".tr(),
-        "library_page_sort_most_recent_photo".tr(),
-        "library_page_sort_last_modified".tr(),
-      ];
-
       return PopupMenuButton(
         position: PopupMenuPosition.over,
         itemBuilder: (BuildContext context) {
-          return options.mapIndexed<PopupMenuEntry<int>>((index, option) {
-            final selected = selectedAlbumSortOrder.value == index;
+          return AlbumSortMode.values
+              .map<PopupMenuEntry<AlbumSortMode>>((option) {
+            final selected = albumSortOption == option;
             return PopupMenuItem(
-              value: index,
+              value: option,
               child: Row(
                 children: [
                   Padding(
@@ -101,10 +50,10 @@ class LibraryPage extends HookConsumerWidget {
                     ),
                   ),
                   Text(
-                    option,
+                    option.label.tr(),
                     style: TextStyle(
                       color: selected ? context.primaryColor : null,
-                      fontSize: 12.0,
+                      fontSize: 14.0,
                     ),
                   ),
                 ],
@@ -112,19 +61,31 @@ class LibraryPage extends HookConsumerWidget {
             );
           }).toList();
         },
-        onSelected: (int value) {
-          selectedAlbumSortOrder.value = value;
-          settings.setSetting(AppSettingsEnum.selectedAlbumSortOrder, value);
+        onSelected: (AlbumSortMode value) {
+          final selected = albumSortOption == value;
+          // Switch direction
+          if (selected) {
+            ref
+                .read(albumSortOrderProvider.notifier)
+                .changeSortDirection(!albumSortIsReverse);
+          } else {
+            ref.read(albumSortByOptionsProvider.notifier).changeSortMode(value);
+          }
         },
         child: Row(
           children: [
-            Icon(
-              Icons.swap_vert_rounded,
-              size: 18,
-              color: context.primaryColor,
+            Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: Icon(
+                albumSortIsReverse
+                    ? Icons.arrow_downward_rounded
+                    : Icons.arrow_upward_rounded,
+                size: 14,
+                color: context.primaryColor,
+              ),
             ),
             Text(
-              options[selectedAlbumSortOrder.value],
+              albumSortOption.label.tr(),
               style: context.textTheme.labelLarge?.copyWith(
                 color: context.primaryColor,
               ),
@@ -140,9 +101,8 @@ class LibraryPage extends HookConsumerWidget {
           var cardSize = constraints.maxWidth;
 
           return GestureDetector(
-            onTap: () {
-              context.autoPush(CreateAlbumRoute(isSharedAlbum: false));
-            },
+            onTap: () =>
+                context.autoPush(CreateAlbumRoute(isSharedAlbum: false)),
             child: Padding(
               padding:
                   const EdgeInsets.only(bottom: 32), // Adjust padding to suit
@@ -160,7 +120,7 @@ class LibraryPage extends HookConsumerWidget {
                             : const Color.fromARGB(255, 203, 203, 203),
                       ),
                       color: isDarkTheme ? Colors.grey[900] : Colors.grey[50],
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
                     ),
                     child: Center(
                       child: Icon(
@@ -223,15 +183,15 @@ class LibraryPage extends HookConsumerWidget {
       );
     }
 
-    final sorted = sortedAlbums();
-
+    final remote = albums.where((a) => a.isRemote).toList();
+    final sorted = albumSortOption.sortFn(remote, albumSortIsReverse);
     final local = albums.where((a) => a.isLocal).toList();
 
     Widget? shareTrashButton() {
       return trashEnabled
           ? InkWell(
               onTap: () => context.autoPush(const TrashRoute()),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
               child: const Icon(
                 Icons.delete_rounded,
                 size: 25,

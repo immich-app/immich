@@ -110,6 +110,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                         width: cardSize,
                         child: Text(
                           album.name,
+                          overflow: TextOverflow.ellipsis,
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: context.primaryColor,
                             fontWeight: FontWeight.w500,
