@@ -2,6 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/models/selection_state.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
@@ -12,37 +14,39 @@ import 'package:immich_mobile/shared/models/album.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
   final void Function(bool shareLocal) onShare;
-  final void Function() onFavorite;
-  final void Function() onArchive;
-  final void Function() onDelete;
+  final void Function()? onFavorite;
+  final void Function()? onArchive;
+  final void Function()? onDelete;
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
   final void Function() onUpload;
-  final void Function() onStack;
-  final void Function() onEditTime;
-  final void Function() onEditLocation;
+  final void Function()? onStack;
+  final void Function()? onEditTime;
+  final void Function()? onEditLocation;
+  final void Function()? onRemoveFromAlbum;
 
-  final List<Album> albums;
-  final List<Album> sharedAlbums;
   final bool enabled;
+  final bool unfavorite;
+  final bool unarchive;
   final SelectionAssetState selectionAssetState;
 
   const ControlBottomAppBar({
     Key? key,
     required this.onShare,
-    required this.onFavorite,
-    required this.onArchive,
-    required this.onDelete,
-    required this.sharedAlbums,
-    required this.albums,
+    this.onFavorite,
+    this.onArchive,
+    this.onDelete,
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.onUpload,
-    required this.onStack,
-    required this.onEditTime,
-    required this.onEditLocation,
+    this.onStack,
+    this.onEditTime,
+    this.onEditLocation,
+    this.onRemoveFromAlbum,
     this.selectionAssetState = const SelectionAssetState(),
     this.enabled = true,
+    this.unarchive = false,
+    this.unfavorite = false,
   }) : super(key: key);
 
   @override
@@ -52,6 +56,8 @@ class ControlBottomAppBar extends ConsumerWidget {
     var hasLocal = selectionAssetState.hasLocal;
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+    final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
+    final sharedAlbums = ref.watch(sharedAlbumProvider);
 
     List<Widget> renderActionButtons() {
       return [
@@ -66,55 +72,72 @@ class ControlBottomAppBar extends ConsumerWidget {
           label: "control_bottom_app_bar_share_to".tr(),
           onPressed: enabled ? () => onShare(true) : null,
         ),
-        if (hasRemote)
+        if (hasRemote && onArchive != null)
           ControlBoxButton(
-            iconData: Icons.archive,
-            label: "control_bottom_app_bar_archive".tr(),
+            iconData: unarchive ? Icons.unarchive : Icons.archive,
+            label: (unarchive
+                    ? "control_bottom_app_bar_unarchive"
+                    : "control_bottom_app_bar_archive")
+                .tr(),
             onPressed: enabled ? onArchive : null,
           ),
-        if (hasRemote)
+        if (hasRemote && onFavorite != null)
           ControlBoxButton(
-            iconData: Icons.favorite_border_rounded,
-            label: "control_bottom_app_bar_favorite".tr(),
+            iconData: unfavorite
+                ? Icons.favorite_border_rounded
+                : Icons.favorite_rounded,
+            label: (unfavorite
+                    ? "control_bottom_app_bar_unfavorite"
+                    : "control_bottom_app_bar_favorite")
+                .tr(),
             onPressed: enabled ? onFavorite : null,
           ),
-        if (hasRemote)
+        if (hasRemote && onEditTime != null)
           ControlBoxButton(
             iconData: Icons.edit_calendar_outlined,
             label: "control_bottom_app_bar_edit_time".tr(),
             onPressed: enabled ? onEditTime : null,
           ),
-        if (hasRemote)
+        if (hasRemote && onEditLocation != null)
           ControlBoxButton(
             iconData: Icons.edit_location_alt_outlined,
             label: "control_bottom_app_bar_edit_location".tr(),
             onPressed: enabled ? onEditLocation : null,
           ),
-        ControlBoxButton(
-          iconData: Icons.delete_outline_rounded,
-          label: "control_bottom_app_bar_delete".tr(),
-          onPressed: enabled
-              ? () {
-                  if (!trashEnabled) {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return DeleteDialog(
-                          onDelete: onDelete,
-                        );
-                      },
-                    );
-                  } else {
-                    onDelete();
+        if (onDelete != null)
+          ControlBoxButton(
+            iconData: Icons.delete_outline_rounded,
+            label: "control_bottom_app_bar_delete".tr(),
+            onPressed: enabled
+                ? () {
+                    if (!trashEnabled) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return DeleteDialog(
+                            onDelete: onDelete!,
+                          );
+                        },
+                      );
+                    } else {
+                      onDelete!();
+                    }
                   }
-                }
-              : null,
-        ),
-        if (!hasLocal && selectionAssetState.selectedCount > 1)
+                : null,
+          ),
+        if (!hasLocal &&
+            selectionAssetState.selectedCount > 1 &&
+            onStack != null)
           ControlBoxButton(
             iconData: Icons.filter_none_rounded,
             label: "control_bottom_app_bar_stack".tr(),
             onPressed: enabled ? onStack : null,
+          ),
+        if (onRemoveFromAlbum != null)
+          ControlBoxButton(
+            iconData: Icons.delete_sweep_rounded,
+            label: 'album_viewer_appbar_share_remove'.tr(),
+            onPressed: enabled ? onRemoveFromAlbum : null,
           ),
         if (hasLocal)
           ControlBoxButton(

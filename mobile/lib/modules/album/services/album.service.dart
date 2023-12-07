@@ -219,11 +219,6 @@ class AlbumService {
     );
   }
 
-  Stream<Album?> watchAlbum(int albumId) async* {
-    yield await _db.albums.get(albumId);
-    yield* _db.albums.watchObject(albumId);
-  }
-
   Future<AddAssetsResponse?> addAdditionalAssetToAlbum(
     Iterable<Asset> assets,
     Album album,
@@ -248,8 +243,12 @@ class AlbumService {
           }
         }
 
-        album.assets.addAll(successAssets);
-        await _db.writeTxn(() => album.assets.save());
+        await _db.writeTxn(() async {
+          await album.assets.update(link: successAssets);
+          final a = await _db.albums.get(album.id);
+          // trigger watcher
+          await _db.albums.put(a!);
+        });
 
         return AddAssetsResponse(
           alreadyInAlbum: duplicatedAssets,
@@ -359,8 +358,12 @@ class AlbumService {
           ids: assets.map((asset) => asset.remoteId!).toList(),
         ),
       );
-      album.assets.removeAll(assets);
-      await _db.writeTxn(() => album.assets.update(unlink: assets));
+      await _db.writeTxn(() async {
+        await album.assets.update(unlink: assets);
+        final a = await _db.albums.get(album.id);
+        // trigger watcher
+        await _db.albums.put(a!);
+      });
 
       return true;
     } catch (e) {
@@ -380,7 +383,12 @@ class AlbumService {
       );
 
       album.sharedUsers.remove(user);
-      await _db.writeTxn(() => album.sharedUsers.update(unlink: [user]));
+      await _db.writeTxn(() async {
+        await album.sharedUsers.update(unlink: [user]);
+        final a = await _db.albums.get(album.id);
+        // trigger watcher
+        await _db.albums.put(a!);
+      });
 
       return true;
     } catch (e) {

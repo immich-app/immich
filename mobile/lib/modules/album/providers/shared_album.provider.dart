@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -11,7 +10,7 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
 
 class SharedAlbumNotifier extends StateNotifier<List<Album>> {
-  SharedAlbumNotifier(this._albumService, Isar db, this._ref) : super([]) {
+  SharedAlbumNotifier(this._albumService, Isar db) : super([]) {
     final query = db.albums.filter().sharedEqualTo(true).sortByCreatedAtDesc();
     query.findAll().then((value) => state = value);
     _streamSub = query.watch().listen((data) => state = data);
@@ -19,7 +18,6 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
 
   final AlbumService _albumService;
   late final StreamSubscription<List<Album>> _streamSub;
-  final Ref _ref;
 
   Future<Album?> createSharedAlbum(
     String albumName,
@@ -68,15 +66,8 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
     return result;
   }
 
-  Future<bool> setActivityEnabled(Album album, bool activityEnabled) async {
-    final result =
-        await _albumService.setActivityEnabled(album, activityEnabled);
-
-    if (result) {
-      _ref.invalidate(albumDetailProvider(album.id));
-    }
-
-    return result;
+  Future<bool> setActivityEnabled(Album album, bool activityEnabled) {
+    return _albumService.setActivityEnabled(album, activityEnabled);
   }
 
   @override
@@ -91,6 +82,5 @@ final sharedAlbumProvider =
   return SharedAlbumNotifier(
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
-    ref,
   );
 });
