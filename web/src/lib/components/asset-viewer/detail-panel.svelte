@@ -205,12 +205,13 @@
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
             <CircleIconButton
               title="Show hidden people"
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
               padding="1"
+              buttonSize="32"
               on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
@@ -219,6 +220,7 @@
             icon={mdiPencil}
             padding="1"
             size="20"
+            buttonSize="32"
             on:click={() => (showEditFaces = true)}
           />
         </div>
@@ -337,7 +339,7 @@
         </div>
 
         {#if isOwner}
-          <button class="focus:outline-none">
+          <button class="focus:outline-none p-1">
             <Icon path={mdiPencil} size="20" />
           </button>
         {/if}
@@ -349,7 +351,7 @@
             <Icon path={mdiCalendar} size="24" />
           </div>
         </div>
-        <button class="focus:outline-none">
+        <button class="focus:outline-none p-1">
           <Icon path={mdiPencil} size="20" />
         </button>
       </div>
@@ -507,7 +509,7 @@
       </div>
     {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div
-        class="flex justify-between place-items-start gap-4 py-4 rounded-lg pr-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+        class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
         on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
         tabindex="0"
@@ -521,7 +523,7 @@
 
           <p>Add a location</p>
         </div>
-        <div class="focus:outline-none">
+        <div class="focus:outline-none p-1">
           <Icon path={mdiPencil} size="20" />
         </div>
       </div>
