@@ -6,7 +6,8 @@ from optimum.onnxruntime import ORTModelForImageClassification
 from optimum.intel.openvino import OVModelForImageClassification
 from optimum.pipelines import pipeline as optimum_pipeline
 from PIL import Image
-from transformers import AutoImageProcessor, pipeline as transformers_pipeline, 
+from transformers import AutoImageProcessor, pipeline as transformers_pipeline
+from openvino.runtime import Core
 from ..config import log
 from ..schemas import ModelType
 from .base import InferenceModel
@@ -42,14 +43,13 @@ class ImageClassifier(InferenceModel):
             "provider_options": self.provider_options[0],
             "session_options": self.sess_options,
         }
-        ## detect if Openvino comatiable hardware exists in the environment 
+        # detect if Openvino compatible hardware exists in the environment
         if "GPU" in Core().available_devices:
-            mode_path = self.cache_dir/ "model.openvino"
+            model_path = self.cache_dir/ "ov_model"
             if model_path.exists():
                 model = ORTModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
-                
-            
-             else:
+
+            else:
                 log.info(
                     (
                         f"Openvino model not found in cache directory for '{self.model_name}'."
@@ -57,16 +57,14 @@ class ImageClassifier(InferenceModel):
                     ),
                 )
                 self.sess_options.optimized_model_filepath = model_path.as_posix()
-                model = ORTModelForImageClassification.from_pretrained(self.model_name, **model_kwargs)
-               
-         model.to("gpu")
-         model.compile()
-         model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
-         self.model = transformers_pipeline(self.model_type.value, model, feature_extractor=processor)
-         
-         
+                model = OVModelForImageClassification.from_pretrained(self.model_name, **model_kwargs)
+            log.info("compiling for GPU")
+            model.to("gpu")
+            model.compile()
+            model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
+            model.save_pretrained(model_path)
+            self.model = transformers_pipeline(self.model_type.value, model, feature_extractor=processor)
 
-              
         else:
             model_path = self.cache_dir / "model.onnx"
             if model_path.exists():
@@ -86,8 +84,6 @@ class ImageClassifier(InferenceModel):
                     model_kwargs=model_kwargs,
                     feature_extractor=processor,
                 )
-           
-            
 
     def _predict(self, image: Image.Image | bytes) -> list[str]:
         if isinstance(image, bytes):
