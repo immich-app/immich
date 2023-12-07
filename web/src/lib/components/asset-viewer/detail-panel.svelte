@@ -229,6 +229,7 @@
       <div class="mt-2 flex flex-wrap gap-2">
         {#each people as person, index (person.id)}
           <div
+            class="w-[90px]"
             role="button"
             tabindex={index}
             on:focus={() => ($boundingBoxesArray = people[index].faces)}
@@ -237,7 +238,7 @@
           >
             <a
               href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-              class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
+              class=" {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
               on:click={() => dispatch('close-viewer')}
             >
               <div class="relative">
