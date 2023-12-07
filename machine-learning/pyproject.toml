@@ -42,7 +42,7 @@ ruff = "^0.0.272"
 pytest-mock = "^3.11.1"
 
 [tool.poetry.group.openvino.dependencies]
-optimum-intel = {git = "https://github.com/huggingface/optimum-intel.git", extras = ["openvino", "nncf"]}
+optimum-intel = {git = "https://github.com/huggingface/optimum-intel.git",branch = "main", extras = ["openvino", "nncf"]}
 
 [[tool.poetry.source]]
 name = "pytorch-cpu"
