@@ -22,9 +22,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends tini libmimallo
                                                                  && rm -rf /var/lib/apt/lists/*
 
 RUN wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+RUN echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" \
+    > /etc/apt/sources.list.d/intel-gpu-jammy.list \
+
 RUN apt-get update && \
     apt-get install intel-opencl-icd intel-level-zero-gpu && \
-    apt remove -y gpg wget&&rm -rf /usr/share/keyrings/intel-graphics.gpg
+    apt remove -y gpg wget&&rm -rf /usr/share/keyrings/intel-graphics.gpg&& rm -rf/etc/apt/sources.list.d/
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
