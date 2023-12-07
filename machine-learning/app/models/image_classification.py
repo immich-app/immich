@@ -1,13 +1,12 @@
 from io import BytesIO
 from pathlib import Path
 from typing import Any
-
 from huggingface_hub import snapshot_download
 from optimum.onnxruntime import ORTModelForImageClassification
-from optimum.pipelines import pipeline
+from optimum.intel.openvino import OVModelForImageClassification
+from optimum.pipelines import pipeline as optimum_pipeline
 from PIL import Image
-from transformers import AutoImageProcessor
-
+from transformers import AutoImageProcessor, pipeline as transformers_pipeline, 
 from ..config import log
 from ..schemas import ModelType
 from .base import InferenceModel
@@ -37,31 +36,58 @@ class ImageClassifier(InferenceModel):
 
     def _load(self) -> None:
         processor = AutoImageProcessor.from_pretrained(self.cache_dir, cache_dir=self.cache_dir)
-        model_path = self.cache_dir / "model.onnx"
         model_kwargs = {
             "cache_dir": self.cache_dir,
             "provider": self.providers[0],
             "provider_options": self.provider_options[0],
             "session_options": self.sess_options,
         }
+        ## detect if Openvino comatiable hardware exists in the environment 
+        if "GPU" in Core().available_devices:
+            mode_path = self.cache_dir/ "model.openvino"
+            if model_path.exists():
+                model = ORTModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
+                
+            
+             else:
+                log.info(
+                    (
+                        f"Openvino model not found in cache directory for '{self.model_name}'."
+                        "Exporting optimized model for future use."
+                    ),
+                )
+                self.sess_options.optimized_model_filepath = model_path.as_posix()
+                model = ORTModelForImageClassification.from_pretrained(self.model_name, **model_kwargs)
+               
+         model.to("gpu")
+         model.compile()
+         model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
+         self.model = transformers_pipeline(self.model_type.value, model, feature_extractor=processor)
+         
+         
 
-        if model_path.exists():
-            model = ORTModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
-            self.model = pipeline(self.model_type.value, model, feature_extractor=processor)
+              
         else:
-            log.info(
-                (
-                    f"ONNX model not found in cache directory for '{self.model_name}'."
-                    "Exporting optimized model for future use."
-                ),
-            )
-            self.sess_options.optimized_model_filepath = model_path.as_posix()
-            self.model = pipeline(
-                self.model_type.value,
-                self.model_name,
-                model_kwargs=model_kwargs,
-                feature_extractor=processor,
-            )
+            model_path = self.cache_dir / "model.onnx"
+            if model_path.exists():
+                model = ORTModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
+                self.model = optimum_pipeline(self.model_type.value, model, feature_extractor=processor)
+            else:
+                log.info(
+                    (
+                        f"ONNX model not found in cache directory for '{self.model_name}'."
+                        "Exporting optimized model for future use."
+                    ),
+                )
+                self.sess_options.optimized_model_filepath = model_path.as_posix()
+                self.model = optimum_pipeline(
+                    self.model_type.value,
+                    self.model_name,
+                    model_kwargs=model_kwargs,
+                    feature_extractor=processor,
+                )
+           
+            
 
     def _predict(self, image: Image.Image | bytes) -> list[str]:
         if isinstance(image, bytes):
