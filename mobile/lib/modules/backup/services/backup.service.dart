@@ -264,7 +264,7 @@ class BackupService {
               fileCreatedAt: entity.createDateTime.year == 1970
                   ? entity.modifiedDateTime
                   : entity.createDateTime,
-              fileName: "File from iCloud",
+              fileName: await entity.titleAsync,
               fileType: _getAssetType(entity.type),
               iCloudAsset: true,
             ),
