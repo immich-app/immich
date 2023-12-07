@@ -61,7 +61,7 @@ class ImageClassifier(InferenceModel):
             model.to("gpu")
             model.compile()
             model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
-            # model.save_pretrained(model_path)
+            model.save_pretrained(save_directory=model_path)
             self.model = transformers_pipeline(self.model_type.value, model, feature_extractor=processor)
 
         else:
@@ -89,7 +89,6 @@ class ImageClassifier(InferenceModel):
             image = Image.open(BytesIO(image))
         predictions: list[dict[str, Any]] = self.model(image)
         tags = [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
-
         return tags
 
     def configure(self, **model_kwargs: Any) -> None:
