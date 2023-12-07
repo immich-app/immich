@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -262,7 +264,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
         ),
         subtitle: Column(
           children: [
-            buildiCloudDownloadProgerssBar(),
+            if (Platform.isIOS) buildiCloudDownloadProgerssBar(),
             buildUploadProgressBar(),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),

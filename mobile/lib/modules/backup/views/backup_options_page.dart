@@ -510,9 +510,9 @@ class BackupOptionsPage extends HookConsumerWidget {
                       : buildBackgroundBackupController())
                   : buildBackgroundBackupController(),
             ),
+            if (Platform.isIOS) ...buildIgnoreIcloudAssetSetting(),
             if (showBackupFix) const Divider(),
             if (showBackupFix) buildCheckCorruptBackups(),
-            if (Platform.isIOS) ...buildIgnoreIcloudAssetSetting(),
           ],
         ),
       ),
