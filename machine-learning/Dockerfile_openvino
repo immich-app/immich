@@ -16,11 +16,15 @@ RUN poetry install --sync --no-interaction --no-ansi --no-root --only main --wit
 
 FROM python:3.11-slim-bookworm@sha256:cc758519481092eb5a4a5ab0c1b303e288880d59afc601958d19e95b300bc86b
 
-RUN wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+
 
 RUN apt-get update && apt-get install -y --no-install-recommends tini libmimalloc2.0 \
                                                                  intel-opencl-icd intel-level-zero-gpu \
-                                                                 && rm -rf /var/lib/apt/lists/*
+                                                                 gpg \
+                                                                 && rm -rf /var/lib/apt/lists/* \
+                                                                 && apt-get remove gpg -y
+
+RUN curl -sSL https://repositories.intel.com/gpu/intel-graphics.key | gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
