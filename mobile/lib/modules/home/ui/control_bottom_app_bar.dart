@@ -26,6 +26,8 @@ class ControlBottomAppBar extends ConsumerWidget {
   final void Function()? onRemoveFromAlbum;
 
   final bool enabled;
+  final bool unfavorite;
+  final bool unarchive;
   final SelectionAssetState selectionAssetState;
 
   const ControlBottomAppBar({
@@ -43,6 +45,8 @@ class ControlBottomAppBar extends ConsumerWidget {
     this.onRemoveFromAlbum,
     this.selectionAssetState = const SelectionAssetState(),
     this.enabled = true,
+    this.unarchive = false,
+    this.unfavorite = false,
   }) : super(key: key);
 
   @override
@@ -70,14 +74,22 @@ class ControlBottomAppBar extends ConsumerWidget {
         ),
         if (hasRemote && onArchive != null)
           ControlBoxButton(
-            iconData: Icons.archive,
-            label: "control_bottom_app_bar_archive".tr(),
+            iconData: unarchive ? Icons.unarchive : Icons.archive,
+            label: (unarchive
+                    ? "control_bottom_app_bar_unarchive"
+                    : "control_bottom_app_bar_archive")
+                .tr(),
             onPressed: enabled ? onArchive : null,
           ),
         if (hasRemote && onFavorite != null)
           ControlBoxButton(
-            iconData: Icons.favorite_border_rounded,
-            label: "control_bottom_app_bar_favorite".tr(),
+            iconData: unfavorite
+                ? Icons.favorite_border_rounded
+                : Icons.favorite_rounded,
+            label: (unfavorite
+                    ? "control_bottom_app_bar_unfavorite"
+                    : "control_bottom_app_bar_favorite")
+                .tr(),
             onPressed: enabled ? onFavorite : null,
           ),
         if (hasRemote && onEditTime != null)

@@ -41,6 +41,8 @@ class MultiselectGrid extends HookConsumerWidget {
     this.deleteEnabled = true,
     this.favoriteEnabled = true,
     this.editEnabled = false,
+    this.unarchive = false,
+    this.unfavorite = false,
   }) : super(key: key);
 
   final ProviderListenable<AsyncValue<RenderList>> renderListProvider;
@@ -50,8 +52,10 @@ class MultiselectGrid extends HookConsumerWidget {
   final Widget? topWidget;
   final bool stackEnabled;
   final bool archiveEnabled;
+  final bool unarchive;
   final bool deleteEnabled;
   final bool favoriteEnabled;
+  final bool unfavorite;
   final bool editEnabled;
 
   Widget buildDefaultLoadingIndicator() =>
@@ -400,6 +404,8 @@ class MultiselectGrid extends HookConsumerWidget {
               onStack: stackEnabled ? onStack : null,
               onEditTime: editEnabled ? onEditTime : null,
               onEditLocation: editEnabled ? onEditLocation : null,
+              unfavorite: unfavorite,
+              unarchive: unarchive,
               onRemoveFromAlbum: onRemoveFromAlbum != null
                   ? wrapLongRunningFun(
                       () => onRemoveFromAlbum!(selection.value),

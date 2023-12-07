@@ -103,6 +103,7 @@ class HomePage extends HookConsumerWidget {
         buildLoadingIndicator: buildLoadingIndicator,
         onRefresh: refreshAssets,
         stackEnabled: true,
+        archiveEnabled: true,
       );
     }
 
