@@ -3,7 +3,11 @@ FROM ghcr.io/immich-app/base-server-dev:main as dev
 
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
-RUN npm ci
+RUN npm ci && \
+    # sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
+    # they're marked as optional dependencies, so we need to copy them manually after pruning
+    rm -rf node_modules/@img/sharp-libvips* && \
+    rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
 
 
@@ -11,6 +15,7 @@ FROM dev AS prod
 
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
+COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 
 # web build
 FROM node:iron-alpine3.18 as web
