@@ -32,6 +32,7 @@
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
   import { user } from '$lib/stores/user.store';
+  import { currentAsset } from '$lib/stores/assets.store';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -59,6 +60,7 @@
     // Get latest description from server
     if (asset.id && !api.isSharedLink) {
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {
+        $currentAsset = res.data;
         people = res.data?.people?.people || [];
         textarea.value = res.data?.exifInfo?.description || '';
       });
@@ -637,8 +639,6 @@
 
 {#if showEditFaces}
   <PersonSidePanel
-    assetId={asset.id}
-    assetType={asset.type}
     on:close={() => {
       showEditFaces = false;
     }}

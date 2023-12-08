@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, AssetFaceResponseDto, AssetTypeEnum } from '@api';
+  import { api, type PersonResponseDto, AssetFaceResponseDto } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -13,12 +13,9 @@
   import { websocketStore } from '$lib/stores/websocket';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import { getPersonNameWithHiddenValue, zoomImageToBase64 } from '$lib/utils/person';
-  import { photoViewer } from '$lib/stores/assets.store';
+  import { currentAsset, photoViewer } from '$lib/stores/assets.store';
   import UnassignedFacesSidePannel from './unassigned-faces-side-pannel.svelte';
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
-
-  export let assetId: string;
-  export let assetType: AssetTypeEnum;
 
   // keep track of the changes
   let idsOfPersonToCreate: string[] = [];
@@ -74,21 +71,24 @@
   }
 
   onMount(async () => {
+    if ($currentAsset === null) {
+      return;
+    }
     const timeout = setTimeout(() => (isShowLoadingPeople = true), 100);
     try {
       const { data } = await api.personApi.getAllPeople({ withHidden: true });
       allPeople = data.people;
-      const result = await api.faceApi.getFaces({ id: assetId });
+      const result = await api.faceApi.getFaces({ id: $currentAsset.id });
       peopleWithFaces = result.data;
       selectedPersonToCreate = new Array<string | null>(peopleWithFaces.length);
       selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
       selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
       unassignedFaces = await Promise.all(
         peopleWithFaces.map(async (personWithFace) => {
-          if (personWithFace.person) {
+          if (personWithFace.person || $currentAsset === null) {
             return null;
           } else {
-            const image = await zoomImageToBase64(personWithFace, $photoViewer);
+            const image = await zoomImageToBase64(personWithFace, $photoViewer, $currentAsset.type, $currentAsset.id);
             return image ? { ...personWithFace, customThumbnail: image } : null;
           }
         }),
@@ -156,10 +156,13 @@
   };
 
   const handleUnassignFaces = async () => {
+    if ($currentAsset === null) {
+      return;
+    }
     if (numberOfFacesToUnassign > 0) {
       for (let i = 0; i < peopleWithFaces.length; i++) {
         if (selectedPersonToRemove[i]) {
-          const image = await zoomImageToBase64(peopleWithFaces[i], $photoViewer);
+          const image = await zoomImageToBase64(peopleWithFaces[i], $photoViewer, $currentAsset.type, $currentAsset.id);
           if (image) {
             selectedPersonToUnassign.push({ ...peopleWithFaces[i], customThumbnail: image });
             // Trigger reactivity
@@ -537,8 +540,6 @@
   <AssignFaceSidePanel
     personWithFace={peopleWithFaces[editedPersonIndex]}
     {allPeople}
-    {assetType}
-    {assetId}
     on:close={() => (showSeletecFaces = false)}
     on:createPerson={(event) => handleCreatePerson(event.detail)}
     on:reassign={(event) => handleReassignFace(event.detail)}

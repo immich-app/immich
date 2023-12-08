@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto } from '@api';
+  import { api, type AssetFaceResponseDto, type PersonResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -9,12 +9,10 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { getPersonNameWithHiddenValue, searchNameLocal, zoomImageToBase64 } from '$lib/utils/person';
   import { handleError } from '$lib/utils/handle-error';
-  import { photoViewer } from '$lib/stores/assets.store';
+  import { currentAsset, photoViewer } from '$lib/stores/assets.store';
 
   export let personWithFace: AssetFaceResponseDto;
   export let allPeople: PersonResponseDto[];
-  export let assetType: AssetTypeEnum;
-  export let assetId: string;
 
   // loading spinners
   let isShowLoadingNewPerson = false;
@@ -33,9 +31,13 @@
   };
 
   const handleCreatePerson = async () => {
+    if ($currentAsset === null) {
+      return;
+    }
+
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), 100);
 
-    const newFeaturePhoto = await zoomImageToBase64(personWithFace, $photoViewer, assetType, assetId);
+    const newFeaturePhoto = await zoomImageToBase64(personWithFace, $photoViewer, $currentAsset.type, $currentAsset.id);
 
     clearTimeout(timeout);
     isShowLoadingNewPerson = false;

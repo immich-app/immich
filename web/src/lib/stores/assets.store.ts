@@ -14,6 +14,8 @@ export enum BucketPosition {
 
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
 
+export const currentAsset = writable<AssetResponseDto | null>(null);
+
 export interface Viewport {
   width: number;
   height: number;
