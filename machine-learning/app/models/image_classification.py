@@ -56,12 +56,11 @@ class ImageClassifier(InferenceModel):
                         "Exporting optimized model for future use."
                     ),
                 )
-                model = OVModelForImageClassification.from_pretrained(self.model_name, export=True, **model_kwargs)
-            log.info("compiling for GPU")
-            model.to("gpu")
-            model.compile()
-            model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
-            model.save_pretrained(save_directory=model_path)
+                model = OVModelForImageClassification.from_pretrained(self.model_name, export=True, **model_kwargs,compile=False)
+                model.save_pretrained(model_path)
+                model.to("gpu")
+                model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
+                model.compile()
             self.model = transformers_pipeline(self.model_type.value, model, feature_extractor=processor)
 
         else:
