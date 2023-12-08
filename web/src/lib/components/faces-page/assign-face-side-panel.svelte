@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto, ThumbnailFormat } from '@api';
+  import { api, AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -35,7 +35,7 @@
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), 100);
 
-    const newFeaturePhoto = await zoomImageToBase64(personWithFace, $photoViewer,assetType,assetId);
+    const newFeaturePhoto = await zoomImageToBase64(personWithFace, $photoViewer, assetType, assetId);
 
     clearTimeout(timeout);
     isShowLoadingNewPerson = false;

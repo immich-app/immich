@@ -1,6 +1,11 @@
 import { AssetEntity, AssetFaceEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { PeopleWithFacesResponseDto, PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from '../../person/person.dto';
+import {
+  PeopleWithFacesResponseDto,
+  PersonWithFacesResponseDto,
+  mapFacesWithoutPerson,
+  mapPerson,
+} from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
