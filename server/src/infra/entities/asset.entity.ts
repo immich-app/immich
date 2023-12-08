@@ -20,6 +20,7 @@ import { ExifEntity } from './exif.entity';
 import { LibraryEntity } from './library.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
+import { SmartSearchEntity } from './smart-search.entity';
 import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
 
@@ -136,6 +137,9 @@ export class AssetEntity {
 
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
+
+  @OneToOne(() => SmartSearchEntity, (smartSearchEntity) => smartSearchEntity.asset)
+  smartSearch?: SmartSearchEntity;
 
   @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true })
   @JoinTable({ name: 'tag_asset' })

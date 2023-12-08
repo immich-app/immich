@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
+import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
@@ -17,8 +18,8 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.onFavorite,
     required this.onUploadPressed,
     required this.isOwner,
-    required this.shareAlbumId,
     required this.onActivitiesPressed,
+    required this.isPartner,
   }) : super(key: key);
 
   final Asset asset;
@@ -31,16 +32,17 @@ class TopControlAppBar extends HookConsumerWidget {
   final Function(Asset) onFavorite;
   final bool isPlayingMotionVideo;
   final bool isOwner;
-  final String? shareAlbumId;
+  final bool isPartner;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const double iconSize = 22.0;
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
-    final comments = shareAlbumId != null
+    final album = ref.watch(currentAlbumProvider);
+    final comments = album != null && album.remoteId != null
         ? ref.watch(
             activityStatisticsStateProvider(
-              (albumId: shareAlbumId!, assetId: asset.remoteId),
+              (albumId: album.remoteId!, assetId: asset.remoteId),
             ),
           )
         : 0;
@@ -169,8 +171,8 @@ class TopControlAppBar extends HookConsumerWidget {
         if (asset.livePhotoVideoId != null) buildLivePhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal && isOwner) buildDownloadButton(),
-        if (asset.isRemote && isOwner) buildAddToAlbumButtom(),
-        if (shareAlbumId != null) buildActivitiesButton(),
+        if (asset.isRemote && (isOwner || isPartner)) buildAddToAlbumButtom(),
+        if (album != null && album.shared) buildActivitiesButton(),
         buildMoreInfoButton(),
       ],
     );

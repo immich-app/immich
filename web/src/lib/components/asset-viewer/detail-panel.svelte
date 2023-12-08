@@ -207,12 +207,13 @@
     <section class="px-4 py-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
             <CircleIconButton
               title="Show hidden people"
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
               padding="1"
+              buttonSize="32"
               on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
@@ -221,14 +222,17 @@
             icon={mdiPencil}
             padding="1"
             size="20"
+            buttonSize="32"
             on:click={() => (showEditFaces = true)}
           />
         </div>
       </div>
-      {#if people.length > 0}
-        <div class="mt-2 flex flex-wrap gap-2">
-          {#each people as person, index (person.id)}
+
+      <div class="mt-2 flex flex-wrap gap-2">
+        {#each people as person, index (person.id)}
+          {#if showingHiddenPeople || !person.isHidden}
             <div
+              class="w-[90px]"
               role="button"
               tabindex={index}
               on:focus={() => ($boundingBoxesArray = people[index].faces)}
@@ -237,7 +241,6 @@
             >
               <a
                 href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-                class="w-[90px] {!showingHiddenPeople && person.isHidden ? 'hidden' : ''}"
                 on:click={() => dispatch('close-viewer')}
               >
                 <div class="relative">
@@ -272,9 +275,9 @@
                 {/if}
               </a>
             </div>
-          {/each}
-        </div>
-      {/if}
+          {/if}
+        {/each}
+      </div>
     </section>
   {/if}
 
@@ -340,7 +343,7 @@
         </div>
 
         {#if isOwner}
-          <button class="focus:outline-none">
+          <button class="focus:outline-none p-1">
             <Icon path={mdiPencil} size="20" />
           </button>
         {/if}
@@ -352,7 +355,7 @@
             <Icon path={mdiCalendar} size="24" />
           </div>
         </div>
-        <button class="focus:outline-none">
+        <button class="focus:outline-none p-1">
           <Icon path={mdiPencil} size="20" />
         </button>
       </div>
@@ -510,7 +513,7 @@
       </div>
     {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
       <div
-        class="flex justify-between place-items-start gap-4 py-4 rounded-lg pr-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+        class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
         on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
         tabindex="0"
@@ -524,7 +527,7 @@
 
           <p>Add a location</p>
         </div>
-        <div class="focus:outline-none">
+        <div class="focus:outline-none p-1">
           <Icon path={mdiPencil} size="20" />
         </div>
       </div>
@@ -635,6 +638,7 @@
 {#if showEditFaces}
   <PersonSidePanel
     assetId={asset.id}
+    assetType={asset.type}
     on:close={() => {
       showEditFaces = false;
     }}

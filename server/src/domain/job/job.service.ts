@@ -236,15 +236,5 @@ export class JobService {
         }
       }
     }
-
-    // In addition to the above jobs, all of these should queue `SEARCH_INDEX_ASSET`
-    switch (item.name) {
-      case JobName.CLASSIFY_IMAGE:
-      case JobName.ENCODE_CLIP:
-      case JobName.RECOGNIZE_FACES:
-      case JobName.LINK_LIVE_PHOTOS:
-        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
-        break;
-    }
   }
 }

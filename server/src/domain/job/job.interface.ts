@@ -2,11 +2,6 @@ export interface IBaseJob {
   force?: boolean;
 }
 
-export interface IAssetFaceJob extends IBaseJob {
-  assetId: string;
-  personId: string;
-}
-
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: 'upload' | 'sidecar-write';

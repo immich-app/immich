@@ -23,8 +23,7 @@ services:
       - database
 
   database:
-    image: postgres:14-alpine@sha256:6a0e35296341e676fe6bd8d236c72afffe2dfe3d7eb9c2405c0f3fc04500cd07
-    command: -c fsync=off
+    image: tensorchord/pgvecto-rs:pg14-v0.1.11
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres

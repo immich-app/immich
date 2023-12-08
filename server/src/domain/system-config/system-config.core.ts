@@ -210,7 +210,7 @@ export class SystemConfigCore {
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
       [FeatureFlag.SIDECAR]: true,
-      [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
+      [FeatureFlag.SEARCH]: true,
       [FeatureFlag.TRASH]: config.trash.enabled,
 
       // TODO: use these instead of `POST oauth/config`

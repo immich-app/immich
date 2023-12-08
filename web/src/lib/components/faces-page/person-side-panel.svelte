@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
   import { linear } from 'svelte/easing';
-  import { api, type PersonResponseDto, AssetFaceResponseDto } from '@api';
+  import { api, type PersonResponseDto, AssetFaceResponseDto, AssetTypeEnum } from '@api';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createEventDispatcher, onMount } from 'svelte';
@@ -18,6 +18,7 @@
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
 
   export let assetId: string;
+  export let assetType: AssetTypeEnum;
 
   // keep track of the changes
   let idsOfPersonToCreate: string[] = [];
@@ -536,6 +537,8 @@
   <AssignFaceSidePanel
     personWithFace={peopleWithFaces[editedPersonIndex]}
     {allPeople}
+    {assetType}
+    {assetId}
     on:close={() => (showSeletecFaces = false)}
     on:createPerson={(event) => handleCreatePerson(event.detail)}
     on:reassign={(event) => handleReassignFace(event.detail)}

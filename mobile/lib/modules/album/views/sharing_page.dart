@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/modules/partner/ui/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -18,7 +18,10 @@ class SharingPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
+    final albumSortOption = ref.watch(albumSortByOptionsProvider);
+    final albumSortIsReverse = ref.watch(albumSortOrderProvider);
+    final albums = ref.watch(sharedAlbumProvider);
+    final sharedAlbums = albumSortOption.sortFn(albums, albumSortIsReverse);
     final userId = ref.watch(currentUserProvider)?.id;
     final partner = ref.watch(partnerSharedWithProvider);
 
@@ -68,7 +71,7 @@ class SharingPage extends HookConsumerWidget {
             return ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 12),
               leading: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 child: ImmichImage(
                   album.thumbnail.value,
                   width: 60,
@@ -167,9 +170,9 @@ class SharingPage extends HookConsumerWidget {
           padding: const EdgeInsets.all(8.0),
           child: Card(
             elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: const BorderSide(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+              side: BorderSide(
                 color: Colors.grey,
                 width: 0.5,
               ),
@@ -212,7 +215,7 @@ class SharingPage extends HookConsumerWidget {
     Widget sharePartnerButton() {
       return InkWell(
         onTap: () => context.autoPush(const PartnerRoute()),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: const Icon(
           Icons.swap_horizontal_circle_rounded,
           size: 25,

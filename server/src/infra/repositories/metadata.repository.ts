@@ -5,8 +5,8 @@ import {
   ISystemMetadataRepository,
   ReverseGeocodeResult,
 } from '@app/domain';
+import { DatabaseLock, RequireLock } from '@app/infra';
 import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
-import { DatabaseLock } from '@app/infra/utils/database-locks';
 import { Inject, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
@@ -33,16 +33,14 @@ export class MetadataRepository implements IMetadataRepository {
 
   private logger = new Logger(MetadataRepository.name);
 
+  @RequireLock(DatabaseLock.GeodataImport)
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile('/usr/src/resources/geodata-date.txt', 'utf8');
 
-    await this.geodataPlacesRepository.query('SELECT pg_advisory_lock($1)', [DatabaseLock.GeodataImport]);
-
     const geocodingMetadata = await this.systemMetadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
 
     if (geocodingMetadata?.lastUpdate === geodataDate) {
-      await this.dataSource.query('SELECT pg_advisory_unlock($1)', [DatabaseLock.GeodataImport]);
       return;
     }
 
@@ -72,7 +70,6 @@ export class MetadataRepository implements IMetadataRepository {
       lastImportFileName: CITIES_FILE,
     });
 
-    await this.dataSource.query('SELECT pg_advisory_unlock($1)', [DatabaseLock.GeodataImport]);
     this.logger.log('Geodata import completed');
   }
 

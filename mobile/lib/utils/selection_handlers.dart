@@ -45,10 +45,11 @@ Future<void> handleArchiveAssets(
   WidgetRef ref,
   BuildContext context,
   List<Asset> selection, {
-  bool shouldArchive = true,
+  bool? shouldArchive,
   ToastGravity toastGravity = ToastGravity.BOTTOM,
 }) async {
   if (selection.isNotEmpty) {
+    shouldArchive ??= !selection.every((a) => a.isArchived);
     await ref
         .read(assetProvider.notifier)
         .toggleArchive(selection, shouldArchive);
@@ -69,10 +70,11 @@ Future<void> handleFavoriteAssets(
   WidgetRef ref,
   BuildContext context,
   List<Asset> selection, {
-  bool shouldFavorite = true,
+  bool? shouldFavorite,
   ToastGravity toastGravity = ToastGravity.BOTTOM,
 }) async {
   if (selection.isNotEmpty) {
+    shouldFavorite ??= !selection.every((a) => a.isFavorite);
     await ref
         .watch(assetProvider.notifier)
         .toggleFavorite(selection, shouldFavorite);

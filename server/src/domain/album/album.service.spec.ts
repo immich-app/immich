@@ -12,7 +12,6 @@ import {
 } from '@test';
 import _ from 'lodash';
 import { BulkIdErrorReason } from '../asset';
-import { JobName } from '../job';
 import { IAlbumRepository, IAssetRepository, IJobRepository, IUserRepository } from '../repositories';
 import { AlbumService } from './album.service';
 
@@ -188,11 +187,6 @@ describe(AlbumService.name, () => {
         assetIds: ['123'],
       });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.SEARCH_INDEX_ALBUM,
-        data: { ids: [albumStub.empty.id] },
-      });
-
       expect(albumMock.create).toHaveBeenCalledWith({
         ownerId: authStub.admin.id,
         albumName: albumStub.empty.albumName,
@@ -269,10 +263,6 @@ describe(AlbumService.name, () => {
       expect(albumMock.update).toHaveBeenCalledWith({
         id: 'album-4',
         albumName: 'new album name',
-      });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.SEARCH_INDEX_ALBUM,
-        data: { ids: [albumStub.oneAsset.id] },
       });
     });
   });

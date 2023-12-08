@@ -1,23 +1,26 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
+import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_editable_title.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
@@ -29,39 +32,30 @@ class AlbumViewerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
-    final album = ref.watch(albumDetailProvider(albumId));
+    final album = ref.watch(albumWatcher(albumId));
+    album.whenData(
+      (value) =>
+          Future((() => ref.read(currentAlbumProvider.notifier).state = value)),
+    );
     final userId = ref.watch(authenticationProvider).userId;
-    final selection = useState<Set<Asset>>({});
-    final multiSelectEnabled = useState(false);
     final isProcessing = useProcessingOverlay();
 
-    useEffect(
-      () {
-        // Fetch album updates, e.g., cover image
-        ref.invalidate(albumDetailProvider(albumId));
-        return null;
-      },
-      [],
-    );
+    Future<bool> onRemoveFromAlbumPressed(Iterable<Asset> assets) async {
+      final a = album.valueOrNull;
+      final bool isSuccess = a != null &&
+          await ref
+              .read(sharedAlbumProvider.notifier)
+              .removeAssetFromAlbum(a, assets);
 
-    Future<bool> onWillPop() async {
-      if (multiSelectEnabled.value) {
-        selection.value = {};
-        multiSelectEnabled.value = false;
-        return false;
+      if (!isSuccess) {
+        ImmichToast.show(
+          context: context,
+          msg: "album_viewer_appbar_share_err_remove".tr(),
+          toastType: ToastType.error,
+          gravity: ToastGravity.BOTTOM,
+        );
       }
-
-      return true;
-    }
-
-    void selectionListener(bool active, Set<Asset> selected) {
-      selection.value = selected;
-      multiSelectEnabled.value = selected.isNotEmpty;
-    }
-
-    void disableSelection() {
-      selection.value = {};
-      multiSelectEnabled.value = false;
+      return isSuccess;
     }
 
     /// Find out if the assets in album exist on the device
@@ -80,15 +74,10 @@ class AlbumViewerPage extends HookConsumerWidget {
         // Check if there is new assets add
         isProcessing.value = true;
 
-        var addAssetsResult =
-            await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
-                  returnPayload.selectedAssets,
-                  albumInfo,
-                );
-
-        if (addAssetsResult != null && addAssetsResult.successfullyAdded > 0) {
-          ref.invalidate(albumDetailProvider(albumId));
-        }
+        await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
+              returnPayload.selectedAssets,
+              albumInfo,
+            );
 
         isProcessing.value = false;
       }
@@ -102,13 +91,9 @@ class AlbumViewerPage extends HookConsumerWidget {
       if (sharedUserIds != null) {
         isProcessing.value = true;
 
-        var isSuccess = await ref
+        await ref
             .watch(albumServiceProvider)
             .addAdditionalUserToAlbum(sharedUserIds, album);
-
-        if (isSuccess) {
-          ref.invalidate(albumDetailProvider(album.id));
-        }
 
         isProcessing.value = false;
       }
@@ -193,10 +178,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     Widget buildSharedUserIconsRow(Album album) {
       return GestureDetector(
-        onTap: () async {
-          await context.autoPush(AlbumOptionsRoute(album: album));
-          ref.invalidate(albumDetailProvider(album.id));
-        },
+        onTap: () => context.autoPush(AlbumOptionsRoute(album: album)),
         child: SizedBox(
           height: 50,
           child: ListView.builder(
@@ -244,42 +226,32 @@ class AlbumViewerPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: album.when(
-        data: (data) => AlbumViewerAppbar(
-          titleFocusNode: titleFocusNode,
-          album: data,
-          userId: userId,
-          selected: selection.value,
-          selectionDisabled: disableSelection,
-          onAddPhotos: onAddPhotosPressed,
-          onAddUsers: onAddUsersPressed,
-          onActivities: onActivitiesPressed,
-        ),
-        error: (error, stackTrace) => AppBar(title: const Text("Error")),
-        loading: () => AppBar(),
-      ),
-      body: album.widgetWhen(
-        onData: (data) => WillPopScope(
-          onWillPop: onWillPop,
-          child: GestureDetector(
-            onTap: () => titleFocusNode.unfocus(),
-            child: ImmichAssetGrid(
-              renderList: data.renderList,
-              listener: selectionListener,
-              selectionActive: multiSelectEnabled.value,
-              showMultiSelectIndicator: false,
-              topWidget: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  buildHeader(data),
-                  if (data.isRemote) buildControlButton(data),
-                ],
+      appBar: ref.watch(multiselectProvider)
+          ? null
+          : album.when(
+              data: (data) => AlbumViewerAppbar(
+                titleFocusNode: titleFocusNode,
+                album: data,
+                userId: userId,
+                onAddPhotos: onAddPhotosPressed,
+                onAddUsers: onAddUsersPressed,
+                onActivities: onActivitiesPressed,
               ),
-              isOwner: userId == data.ownerId,
-              sharedAlbumId:
-                  data.shared && data.activityEnabled ? data.remoteId : null,
+              error: (error, stackTrace) => AppBar(title: const Text("Error")),
+              loading: () => AppBar(),
             ),
+      body: album.widgetWhen(
+        onData: (data) => MultiselectGrid(
+          renderListProvider: albumRenderlistProvider(albumId),
+          topWidget: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildHeader(data),
+              if (data.isRemote) buildControlButton(data),
+            ],
           ),
+          onRemoveFromAlbum: onRemoveFromAlbumPressed,
+          editEnabled: data.ownerId == userId,
         ),
       ),
     );

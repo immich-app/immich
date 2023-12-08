@@ -1,4 +1,4 @@
-import type { AssetFaceResponseDto, PersonResponseDto } from '@api';
+import { AssetTypeEnum, type AssetFaceResponseDto, type PersonResponseDto, ThumbnailFormat, api } from '@api';
 
 export const searchNameLocal = (
   name: string,
@@ -38,24 +38,41 @@ export const getPersonNameWithHiddenValue = (name: string, isHidden: boolean) =>
 export const zoomImageToBase64 = async (
   face: AssetFaceResponseDto,
   photoViewer: HTMLImageElement | null,
+  assetType: AssetTypeEnum,
+  assetId: string,
 ): Promise<string | null> => {
-  if (photoViewer === null) {
+  let image: HTMLImageElement | null = null;
+  if (assetType === AssetTypeEnum.Image) {
+    image = photoViewer;
+  } else if (assetType === AssetTypeEnum.Video) {
+    const data = await api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp);
+    const img: HTMLImageElement = new Image();
+    img.src = data;
+
+    await new Promise<void>((resolve) => {
+      img.onload = () => resolve();
+      img.onerror = () => resolve();
+    });
+
+    image = img;
+  }
+  if (image === null) {
     return null;
   }
   const { boundingBoxX1: x1, boundingBoxX2: x2, boundingBoxY1: y1, boundingBoxY2: y2 } = face;
 
   const coordinates = {
-    x1: (photoViewer.naturalWidth / face.imageWidth) * x1,
-    x2: (photoViewer.naturalWidth / face.imageWidth) * x2,
-    y1: (photoViewer.naturalHeight / face.imageHeight) * y1,
-    y2: (photoViewer.naturalHeight / face.imageHeight) * y2,
+    x1: (image.naturalWidth / face.imageWidth) * x1,
+    x2: (image.naturalWidth / face.imageWidth) * x2,
+    y1: (image.naturalHeight / face.imageHeight) * y1,
+    y2: (image.naturalHeight / face.imageHeight) * y2,
   };
 
   const faceWidth = coordinates.x2 - coordinates.x1;
   const faceHeight = coordinates.y2 - coordinates.y1;
 
   const faceImage = new Image();
-  faceImage.src = photoViewer.src;
+  faceImage.src = image.src;
 
   await new Promise((resolve) => {
     faceImage.onload = resolve;
