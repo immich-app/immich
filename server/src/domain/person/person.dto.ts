@@ -162,7 +162,7 @@ export function mapFacesWithoutPerson(face: AssetFaceEntity): AssetFaceWithoutPe
   };
 }
 
-export function mapFaces(face: AssetFaceEntity, authUser: AuthUserDto): AssetFaceResponseDto {
+export function mapFace(face: AssetFaceEntity, authUser: AuthUserDto): AssetFaceResponseDto {
   return {
     ...mapFacesWithoutPerson(face),
     person: face.person?.ownerId === authUser.id ? mapPerson(face.person) : null,

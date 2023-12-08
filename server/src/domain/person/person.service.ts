@@ -37,7 +37,7 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-  mapFaces,
+  mapFace,
   mapPerson,
 } from './person.dto';
 
@@ -128,7 +128,7 @@ export class PersonService {
       await this.createNewFeaturePhoto([face.person.id]);
     }
     face = await this.repository.getFaceById(id);
-    return mapFaces(face, authUser);
+    return mapFace(face, authUser);
   }
 
   async reassignFacesById(authUser: AuthUserDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
@@ -152,7 +152,7 @@ export class PersonService {
   async getFacesById(authUser: AuthUserDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.id);
     const faces = await this.repository.getFaces(dto.id);
-    return faces.map((asset) => mapFaces(asset, authUser));
+    return faces.map((asset) => mapFace(asset, authUser));
   }
 
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {

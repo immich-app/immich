@@ -31,7 +31,7 @@ import {
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
-import { PersonResponseDto, mapFaces, mapPerson } from './person.dto';
+import { PersonResponseDto, mapFace, mapPerson } from './person.dto';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
@@ -383,7 +383,7 @@ describe(PersonService.name, () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([faceStub.face1.assetId]));
       personMock.getFaces.mockResolvedValue([faceStub.primaryFace1]);
       await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
-        mapFaces(faceStub.primaryFace1, authStub.admin),
+        mapFace(faceStub.primaryFace1, authStub.admin),
       ]);
     });
     it('should reject if the user has not access to the asset', async () => {
@@ -458,15 +458,15 @@ describe(PersonService.name, () => {
 
   describe('unassignFace', () => {
     it('should unassign a face', async () => {
-      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+      personMock.getFaceById.mockResolvedValueOnce(faceStub.face1);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
       accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getRandomFace.mockResolvedValue(null);
-      personMock.getFaceById.mockResolvedValue(faceStub.unassignedFace);
+      personMock.getFaceById.mockResolvedValueOnce(faceStub.unassignedFace);
 
       await expect(sut.unassignFace(authStub.admin, faceStub.face1.id)).resolves.toStrictEqual(
-        mapFaces(faceStub.unassignedFace, authStub.admin),
+        mapFace(faceStub.unassignedFace, authStub.admin),
       );
     });
   });
@@ -863,7 +863,7 @@ describe(PersonService.name, () => {
 
   describe('mapFace', () => {
     it('should map a face', () => {
-      expect(mapFaces(faceStub.face1, personStub.withName.owner)).toEqual({
+      expect(mapFace(faceStub.face1, personStub.withName.owner)).toEqual({
         boundingBoxX1: 0,
         boundingBoxX2: 1,
         boundingBoxY1: 0,
@@ -876,11 +876,11 @@ describe(PersonService.name, () => {
     });
 
     it('should not map person if person is null', () => {
-      expect(mapFaces({ ...faceStub.face1, person: null }, authStub.user1).person).toBeNull();
+      expect(mapFace({ ...faceStub.face1, person: null }, authStub.user1).person).toBeNull();
     });
 
     it('should not map person if person does not match auth user id', () => {
-      expect(mapFaces(faceStub.face1, authStub.user1).person).toBeNull();
+      expect(mapFace(faceStub.face1, authStub.user1).person).toBeNull();
     });
   });
 });
