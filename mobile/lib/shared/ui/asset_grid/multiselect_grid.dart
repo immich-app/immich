@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -108,45 +109,21 @@ class MultiselectGrid extends HookConsumerWidget {
             )
         : null;
 
-    Iterable<Asset> remoteOnly(
-      Iterable<Asset> assets, {
-      void Function()? errorCallback,
-    }) {
-      final bool onlyRemote = assets.every((e) => e.isRemote);
-      if (!onlyRemote) {
-        if (errorCallback != null) errorCallback();
-        return assets.where((a) => a.isRemote);
-      }
-      return assets;
-    }
-
-    Iterable<Asset> ownedOnly(
-      Iterable<Asset> assets, {
-      void Function()? errorCallback,
-    }) {
-      if (currentUser == null) return [];
-      final userId = currentUser.isarId;
-      final bool onlyOwned = assets.every((e) => e.ownerId == userId);
-      if (!onlyOwned) {
-        if (errorCallback != null) errorCallback();
-        return assets.where((a) => a.ownerId == userId);
-      }
-      return assets;
-    }
-
     Iterable<Asset> ownedRemoteSelection({
       String? localErrorMessage,
       String? ownerErrorMessage,
     }) {
       final assets = selection.value;
-      return remoteOnly(
-        ownedOnly(assets, errorCallback: errorBuilder(ownerErrorMessage)),
-        errorCallback: errorBuilder(localErrorMessage),
-      );
+      return assets
+          .remoteOnly(errorCallback: errorBuilder(ownerErrorMessage))
+          .ownedOnly(
+            currentUser,
+            errorCallback: errorBuilder(localErrorMessage),
+          );
     }
 
-    Iterable<Asset> remoteSelection({String? errorMessage}) => remoteOnly(
-          selection.value,
+    Iterable<Asset> remoteSelection({String? errorMessage}) =>
+        selection.value.remoteOnly(
           errorCallback: errorBuilder(errorMessage),
         );
 
@@ -199,10 +176,12 @@ class MultiselectGrid extends HookConsumerWidget {
       try {
         final trashEnabled =
             ref.read(serverInfoProvider.select((v) => v.serverFeatures.trash));
-        final toDelete = ownedOnly(
-          selection.value,
-          errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
-        ).toList();
+        final toDelete = selection.value
+            .ownedOnly(
+              currentUser,
+              errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
+            )
+            .toList();
         await ref
             .read(assetProvider.notifier)
             .deleteAssets(toDelete, force: !trashEnabled);

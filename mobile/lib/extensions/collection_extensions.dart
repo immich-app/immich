@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 
 extension ListExtension<E> on List<E> {
   List<E> uniqueConsecutive({
@@ -37,5 +39,54 @@ extension IntListExtension on Iterable<int> {
     final list = Int64List(length);
     list.setAll(0, this);
     return list;
+  }
+}
+
+extension AssetListExtension on Iterable<Asset> {
+  Iterable<Asset> remoteOnly({
+    void Function()? errorCallback,
+  }) {
+    final bool onlyRemote = every((e) => e.isRemote);
+    if (!onlyRemote) {
+      if (errorCallback != null) errorCallback();
+      return where((a) => a.isRemote);
+    }
+    return this;
+  }
+
+  Iterable<Asset> ownedOnly(
+    User? owner, {
+    void Function()? errorCallback,
+  }) {
+    if (owner == null) return [];
+    final userId = owner.isarId;
+    final bool onlyOwned = every((e) => e.ownerId == userId);
+    if (!onlyOwned) {
+      if (errorCallback != null) errorCallback();
+      return where((a) => a.ownerId == userId);
+    }
+    return this;
+  }
+
+  Iterable<Asset> writableOnly({
+    void Function()? errorCallback,
+  }) {
+    final bool onlyWritable = every((e) => !e.isReadOnly);
+    if (!onlyWritable) {
+      if (errorCallback != null) errorCallback();
+      return where((a) => !a.isReadOnly);
+    }
+    return this;
+  }
+
+  Iterable<Asset> liveOnly({
+    void Function()? errorCallback,
+  }) {
+    final bool onlyLive = every((e) => !e.isOffline);
+    if (!onlyLive) {
+      if (errorCallback != null) errorCallback();
+      return where((a) => !a.isOffline);
+    }
+    return this;
   }
 }
