@@ -1,6 +1,6 @@
 import { AssetEntity, AssetFaceEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { PersonWithFacesResponseDto } from '../../person/person.dto';
+import { PersonWithFacesResponseDto, mapFacesWithoutPerson, mapPerson } from '../../person/person.dto';
 import { TagResponseDto, mapTag } from '../../tag';
 import { UserResponseDto, mapUser } from '../../user/response-dto/user-response.dto';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
@@ -62,7 +62,7 @@ const peopleWithFaces = (faces: AssetFaceEntity[]): PersonWithFacesResponseDto[]
         if (existingPersonEntry) {
           existingPersonEntry.faces.push(face);
         } else {
-          result.push({ ...face.person!, faces: [face] });
+          result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face)] });
         }
       }
     });
