@@ -60,7 +60,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: tensorchord/pgvecto-rs:pg14-v0.1.11
+    image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
     env_file:
       - .env
     environment:
