@@ -30,7 +30,9 @@
     people = peopleCopy.filter(
       (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
     );
-    people = searchNameLocal(name, people, 10);
+    if (name) {
+      people = searchNameLocal(name, people, 10);
+    }
   }
 
   const searchPeople = async (force: boolean) => {
