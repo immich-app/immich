@@ -130,7 +130,12 @@ class MultiselectGrid extends HookConsumerWidget {
     void onShareAssets(bool shareLocal) {
       processing.value = true;
       if (shareLocal) {
-        handleShareAssets(ref, context, selection.value.toList());
+        // Share = Download + Send to OS specific share sheet
+        // Filter offline assets since we cannot fetch their original file
+        final liveAssets = selection.value.liveOnly(
+          errorCallback: errorBuilder('asset_action_share_err_offline'.tr()),
+        );
+        handleShareAssets(ref, context, liveAssets);
       } else {
         final ids =
             remoteSelection(errorMessage: "home_page_share_err_local".tr())
@@ -180,6 +185,11 @@ class MultiselectGrid extends HookConsumerWidget {
             .ownedOnly(
               currentUser,
               errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
+            )
+            // Cannot delete readOnly / external assets. They are handled through library offline jobs
+            .writableOnly(
+              errorCallback:
+                  errorBuilder('asset_action_delete_err_read_only'.tr()),
             )
             .toList();
         await ref
@@ -310,6 +320,11 @@ class MultiselectGrid extends HookConsumerWidget {
         final remoteAssets = ownedRemoteSelection(
           localErrorMessage: 'home_page_favorite_err_local'.tr(),
           ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+        ).writableOnly(
+          // Assume readOnly assets to be present in a read-only mount. So do not write sidecar
+          errorCallback: errorBuilder(
+            'multiselect_grid_edit_date_time_err_read_only'.tr(),
+          ),
         );
         if (remoteAssets.isNotEmpty) {
           handleEditDateTime(ref, context, remoteAssets.toList());
@@ -324,6 +339,11 @@ class MultiselectGrid extends HookConsumerWidget {
         final remoteAssets = ownedRemoteSelection(
           localErrorMessage: 'home_page_favorite_err_local'.tr(),
           ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+        ).writableOnly(
+          // Assume readOnly assets to be present in a read-only mount. So do not write sidecar
+          errorCallback: errorBuilder(
+            'multiselect_grid_edit_gps_err_read_only'.tr(),
+          ),
         );
         if (remoteAssets.isNotEmpty) {
           handleEditLocation(ref, context, remoteAssets.toList());

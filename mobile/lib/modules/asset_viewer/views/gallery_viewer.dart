@@ -206,6 +206,16 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     void handleDelete(Asset deleteAsset) async {
+      // Cannot delete readOnly / external assets. They are handled through library offline jobs
+      if (asset().isReadOnly) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_delete_err_read_only'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
       Future<bool> onDelete(bool force) async {
         final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
           {deleteAsset},
@@ -305,6 +315,15 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     shareAsset() {
+      if (asset().isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_share_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
       ref.watch(imageViewerStateProvider.notifier).shareAsset(asset(), context);
     }
 
@@ -330,6 +349,26 @@ class GalleryViewerPage extends HookConsumerWidget {
           );
         },
       );
+    }
+
+    handleDownload() {
+      if (asset().isLocal) {
+        return;
+      }
+      if (asset().isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_share_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+
+      ref.watch(imageViewerStateProvider.notifier).downloadAsset(
+            asset(),
+            context,
+          );
     }
 
     handleActivities() {
@@ -634,13 +673,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isOwner) (_) => handleArchive(asset()),
         if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
         if (isOwner) (_) => handleDelete(asset()),
-        if (!isOwner)
-          (_) => asset().isLocal
-              ? null
-              : ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                    asset(),
-                    context,
-                  ),
+        if (!isOwner) (_) => handleDownload(),
       ];
 
       return IgnorePointer(
