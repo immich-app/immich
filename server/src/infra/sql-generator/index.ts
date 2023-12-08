@@ -1,3 +1,4 @@
+import { ISystemConfigRepository } from '@app/domain';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
@@ -18,6 +19,7 @@ import {
   PartnerRepository,
   PersonRepository,
   SharedLinkRepository,
+  SmartInfoRepository,
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
@@ -38,6 +40,7 @@ const repositories = [
   PartnerRepository,
   PersonRepository,
   SharedLinkRepository,
+  SmartInfoRepository,
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
@@ -82,7 +85,7 @@ class SqlGenerator {
         }),
         TypeOrmModule.forFeature(databaseEntities),
       ],
-      providers: repositories,
+      providers: [{ provide: ISystemConfigRepository, useClass: SystemConfigRepository }, ...repositories],
     }).compile();
 
     this.app = await moduleFixture.createNestApplication().init();

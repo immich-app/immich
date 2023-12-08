@@ -10,18 +10,14 @@ import {
   usePagination,
 } from '@app/domain';
 import { AssetController } from '@app/immich';
-import { AssetEntity, AssetType, LibraryType, SharedLinkType } from '@app/infra/entities';
+import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
 import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
-import { testApp } from '@test/test-utils';
+import { generateAsset, testApp, today, yesterday } from '@test/test-utils';
 import { randomBytes } from 'crypto';
-import { DateTime } from 'luxon';
 import request from 'supertest';
-
-const today = DateTime.fromObject({ year: 2023, month: 11, day: 3 });
-const yesterday = today.minus({ days: 1 });
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
   const dto: Record<string, any> = {
@@ -54,30 +50,14 @@ describe(`${AssetController.name} (e2e)`, () => {
   let asset4: AssetResponseDto;
   let asset5: AssetResponseDto;
 
-  let assetCount = 0;
-  const createAsset = async (loginResponse: LoginResponseDto, createdAt: Date, other: Partial<AssetEntity> = {}) => {
-    const id = assetCount++;
-    const asset = await assetRepository.create({
-      createdAt: today.toJSDate(),
-      updatedAt: today.toJSDate(),
-      ownerId: loginResponse.userId,
-      checksum: randomBytes(20),
-      originalPath: `/tests/test_${id}`,
-      deviceAssetId: `test_${id}`,
-      deviceId: 'e2e-test',
-      libraryId: (
-        libraries.find(
-          ({ ownerId, type }) => ownerId === loginResponse.userId && type === LibraryType.UPLOAD,
-        ) as LibraryResponseDto
-      ).id,
-      isVisible: true,
-      fileCreatedAt: createdAt,
-      fileModifiedAt: new Date(),
-      localDateTime: createdAt,
-      type: AssetType.IMAGE,
-      originalFileName: `test_${id}`,
-      ...other,
-    });
+  const createAsset = async (
+    loginResponse: LoginResponseDto,
+    fileCreatedAt: Date,
+    other: Partial<AssetEntity> = {},
+  ) => {
+    const asset = await assetRepository.create(
+      generateAsset(loginResponse.userId, libraries, { fileCreatedAt, ...other }),
+    );
 
     return mapAsset(asset);
   };
@@ -764,7 +744,11 @@ describe(`${AssetController.name} (e2e)`, () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
 
-      await personRepository.createFace({ assetId: asset1.id, personId: person.id });
+      await personRepository.createFace({
+        assetId: asset1.id,
+        personId: person.id,
+        embedding: Array.from({ length: 512 }, Math.random),
+      });
 
       const { status, body } = await request(server)
         .put(`/asset/${asset1.id}`)
@@ -1339,7 +1323,11 @@ describe(`${AssetController.name} (e2e)`, () => {
           beforeEach(async () => {
             const personRepository = app.get<IPersonRepository>(IPersonRepository);
             const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
-            await personRepository.createFace({ assetId: asset1.id, personId: person.id });
+            await personRepository.createFace({
+              assetId: asset1.id,
+              personId: person.id,
+              embedding: Array.from({ length: 512 }, Math.random),
+            });
           });
 
           it('should not return asset with facesRecognizedAt unset', async () => {

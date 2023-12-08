@@ -62,6 +62,9 @@
       "versioning": "node"
     }
   ],
+  "ignorePaths": [
+    "mobile/openapi/pubspec.yaml"
+  ],
   "ignoreDeps": [
     "http",
     "latlong2",

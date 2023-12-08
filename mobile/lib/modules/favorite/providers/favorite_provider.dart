@@ -17,6 +17,6 @@ final favoriteAssetsProvider = StreamProvider<RenderList>((ref) {
       .filter()
       .isFavoriteEqualTo(true)
       .isTrashedEqualTo(false)
-      .sortByFileCreatedAt();
+      .sortByFileCreatedAtDesc();
   return renderListGenerator(query, ref);
 });

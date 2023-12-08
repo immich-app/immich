@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 
 class AlbumNotifier extends StateNotifier<List<Album>> {
@@ -48,4 +50,25 @@ final albumProvider =
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
   );
+});
+
+final albumWatcher =
+    StreamProvider.autoDispose.family<Album, int>((ref, albumId) async* {
+  final db = ref.watch(dbProvider);
+  final a = await db.albums.get(albumId);
+  if (a != null) yield a;
+  await for (final a in db.albums.watchObject(albumId, fireImmediately: true)) {
+    if (a != null) yield a;
+  }
+});
+
+final albumRenderlistProvider =
+    StreamProvider.autoDispose.family<RenderList, int>((ref, albumId) {
+  final album = ref.watch(albumWatcher(albumId)).value;
+  if (album != null) {
+    final query =
+        album.assets.filter().isTrashedEqualTo(false).sortByFileCreatedAtDesc();
+    return renderListGeneratorWithGroupBy(query, GroupAssetsBy.none);
+  }
+  return const Stream.empty();
 });

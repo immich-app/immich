@@ -14,12 +14,12 @@
   export let person: PersonResponseDto;
   export let preload = false;
 
-  type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-faces' | 'hide-face';
+  type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-people' | 'hide-person';
   let dispatch = createEventDispatcher<{
     'change-name': void;
     'set-birth-date': void;
-    'merge-faces': void;
-    'hide-face': void;
+    'merge-people': void;
+    'hide-person': void;
   }>();
 
   let showVerticalDots = false;
@@ -82,10 +82,10 @@
 {#if showContextMenu}
   <Portal target="body">
     <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
-      <MenuOption on:click={() => onMenuClick('hide-face')} text="Hide face" />
+      <MenuOption on:click={() => onMenuClick('hide-person')} text="Hide Person" />
       <MenuOption on:click={() => onMenuClick('change-name')} text="Change name" />
       <MenuOption on:click={() => onMenuClick('set-birth-date')} text="Set date of birth" />
-      <MenuOption on:click={() => onMenuClick('merge-faces')} text="Merge faces" />
+      <MenuOption on:click={() => onMenuClick('merge-people')} text="Merge People" />
     </ContextMenu>
   </Portal>
 {/if}

@@ -3,6 +3,7 @@ import {
   assetStub,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
+  newCommunicationRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
@@ -19,8 +20,10 @@ import { constants } from 'fs/promises';
 import { when } from 'jest-when';
 import { JobName } from '../job';
 import {
+  CommunicationEvent,
   IAlbumRepository,
   IAssetRepository,
+  ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
   IMediaRepository,
@@ -46,6 +49,7 @@ describe(MetadataService.name, () => {
   let mediaMock: jest.Mocked<IMediaRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let sut: MetadataService;
 
   beforeEach(async () => {
@@ -57,6 +61,7 @@ describe(MetadataService.name, () => {
     metadataMock = newMetadataRepositoryMock();
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
     storageMock = newStorageRepositoryMock();
     mediaMock = newMediaRepositoryMock();
 
@@ -70,6 +75,7 @@ describe(MetadataService.name, () => {
       configMock,
       mediaMock,
       moveMock,
+      communicationMock,
       personMock,
     );
   });
@@ -171,6 +177,23 @@ describe(MetadataService.name, () => {
       });
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: false });
       expect(albumMock.removeAsset).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.id);
+    });
+
+    it('should notify clients on live photo link', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        {
+          ...assetStub.livePhotoStillAsset,
+          exifInfo: { livePhotoCID: assetStub.livePhotoMotionAsset.id } as ExifEntity,
+        },
+      ]);
+      assetMock.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
+
+      await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(true);
+      expect(communicationMock.send).toHaveBeenCalledWith(
+        CommunicationEvent.ASSET_HIDDEN,
+        assetStub.livePhotoMotionAsset.ownerId,
+        assetStub.livePhotoMotionAsset.id,
+      );
     });
   });
 

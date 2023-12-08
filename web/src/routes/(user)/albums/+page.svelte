@@ -207,7 +207,7 @@
   const removeAlbumsIfEmpty = async () => {
     try {
       for (const album of $albums) {
-        if (album.assetCount == 0 && album.albumName == 'Untitled') {
+        if (album.assetCount == 0 && album.albumName == '') {
           await deleteAlbum(album);
         }
       }

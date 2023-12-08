@@ -89,15 +89,6 @@ UPLOAD_LOCATION=absolute_location_on_your_machine_where_you_want_to_store_the_ba
 LOG_LEVEL=simple
 
 ###################################################################################
-# Typesense
-###################################################################################
-# TYPESENSE_ENABLED=false
-TYPESENSE_API_KEY=some-random-text
-# TYPESENSE_HOST: typesense
-# TYPESENSE_PORT: 8108
-# TYPESENSE_PROTOCOL: http
-
-###################################################################################
 # Reverse Geocoding
 #
 # Reverse geocoding is done locally which has a small impact on memory usage
@@ -137,7 +128,6 @@ PUBLIC_LOGIN_PAGE_MESSAGE="My Family Photos and Videos Backup Server"
 - Populate custom database information if necessary.
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
 - Consider changing `DB_PASSWORD` to something randomly generated
-- Consider changing `TYPESENSE_API_KEY` to something randomly generated
 
 ### Step 3 - Start the containers
 

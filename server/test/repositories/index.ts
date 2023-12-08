@@ -13,7 +13,6 @@ export * from './metadata.repository.mock';
 export * from './move.repository.mock';
 export * from './partner.repository.mock';
 export * from './person.repository.mock';
-export * from './search.repository.mock';
 export * from './shared-link.repository.mock';
 export * from './smart-info.repository.mock';
 export * from './storage.repository.mock';

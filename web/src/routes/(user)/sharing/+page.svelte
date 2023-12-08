@@ -23,7 +23,7 @@
     try {
       const { data: newAlbum } = await api.albumApi.createAlbum({
         createAlbumDto: {
-          albumName: 'Untitled',
+          albumName: '',
         },
       });
 

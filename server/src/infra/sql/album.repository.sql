@@ -207,7 +207,7 @@ SELECT
   "album"."id" AS "album_id",
   MIN("assets"."fileCreatedAt") AS "start_date",
   MAX("assets"."fileCreatedAt") AS "end_date",
-  COUNT("album_assets"."assetsId") AS "asset_count"
+  COUNT("assets"."id") AS "asset_count"
 FROM
   "albums" "album"
   LEFT JOIN "albums_assets_assets" "album_assets" ON "album_assets"."albumsId" = "album"."id"
