@@ -213,7 +213,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres@sha256:6dfee32131933ab4ca25a00360c3f427fdc134de56f9a90c6c9a4956b48aea85
+        image: tensorchord/pgvecto-rs:pg14-v0.1.11
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -261,6 +261,8 @@ jobs:
 
       - name: Run SQL generation
         run: npm run sql:generate
+        env:
+          DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1

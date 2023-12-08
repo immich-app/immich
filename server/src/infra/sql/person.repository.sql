@@ -12,7 +12,6 @@ SELECT
   "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
   "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
   "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
-  "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
   "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
   "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -138,7 +137,6 @@ SELECT
   "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
   "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
   "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
-  "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
   "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
   "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -169,7 +167,6 @@ FROM
       "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
       "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
       "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
-      "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
       "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
       "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
       "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -205,7 +202,6 @@ FROM
       "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
       "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
       "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
-      "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
       "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
       "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
       "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -351,7 +347,6 @@ FROM
       "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
       "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
       "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
-      "AssetEntity__AssetEntity_faces"."embedding" AS "AssetEntity__AssetEntity_faces_embedding",
       "AssetEntity__AssetEntity_faces"."imageWidth" AS "AssetEntity__AssetEntity_faces_imageWidth",
       "AssetEntity__AssetEntity_faces"."imageHeight" AS "AssetEntity__AssetEntity_faces_imageHeight",
       "AssetEntity__AssetEntity_faces"."boundingBoxX1" AS "AssetEntity__AssetEntity_faces_boundingBoxX1",
@@ -393,8 +388,7 @@ FROM
       "AssetEntity__AssetEntity_exifInfo"."profileDescription" AS "AssetEntity__AssetEntity_exifInfo_profileDescription",
       "AssetEntity__AssetEntity_exifInfo"."colorspace" AS "AssetEntity__AssetEntity_exifInfo_colorspace",
       "AssetEntity__AssetEntity_exifInfo"."bitsPerSample" AS "AssetEntity__AssetEntity_exifInfo_bitsPerSample",
-      "AssetEntity__AssetEntity_exifInfo"."fps" AS "AssetEntity__AssetEntity_exifInfo_fps",
-      "AssetEntity__AssetEntity_exifInfo"."exifTextSearchableColumn" AS "AssetEntity__AssetEntity_exifInfo_exifTextSearchableColumn"
+      "AssetEntity__AssetEntity_exifInfo"."fps" AS "AssetEntity__AssetEntity_exifInfo_fps"
     FROM
       "assets" "AssetEntity"
       LEFT JOIN "asset_faces" "AssetEntity__AssetEntity_faces" ON "AssetEntity__AssetEntity_faces"."assetId" = "AssetEntity"."id"
@@ -421,7 +415,6 @@ SELECT
   "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
   "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
   "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
-  "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
   "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
   "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -473,7 +466,6 @@ SELECT
   "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
   "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
   "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
-  "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
   "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
   "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",

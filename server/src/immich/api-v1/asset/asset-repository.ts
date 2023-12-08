@@ -1,6 +1,6 @@
 import { AssetCreate } from '@app/domain';
 import { AssetEntity } from '@app/infra/entities';
-import OptionalBetween from '@app/infra/utils/optional-between.util';
+import { OptionalBetween } from '@app/infra/infra.utils';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In } from 'typeorm/find-options/operator/In';

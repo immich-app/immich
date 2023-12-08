@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/entities';
+import { SystemConfig, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
@@ -18,7 +18,7 @@ import {
   JobHandler,
   JobItem,
 } from '../repositories';
-import { SystemConfigCore } from '../system-config/system-config.core';
+import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
 import { JobService } from './job.service';
 
@@ -271,7 +271,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },
-        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, JobName.SEARCH_INDEX_ASSET],
+        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
@@ -279,6 +279,10 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
+        jobs: [],
+      },
+      {
+        item: { name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: 'asset-1' } },
         jobs: [],
       },
       {
@@ -315,15 +319,15 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
       {
         item: { name: JobName.ENCODE_CLIP, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
       {
         item: { name: JobName.RECOGNIZE_FACES, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
     ];
 
@@ -355,6 +359,33 @@ describe(JobService.name, () => {
         await asyncTick(3);
 
         expect(jobMock.queue).not.toHaveBeenCalled();
+      });
+    }
+
+    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
+      {
+        queue: QueueName.CLIP_ENCODING,
+        feature: FeatureFlag.CLIP_ENCODE,
+        configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
+      },
+      {
+        queue: QueueName.OBJECT_TAGGING,
+        feature: FeatureFlag.TAG_IMAGE,
+        configKey: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED,
+      },
+      {
+        queue: QueueName.RECOGNIZE_FACES,
+        feature: FeatureFlag.FACIAL_RECOGNITION,
+        configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
+      },
+    ];
+
+    for (const { queue, feature, configKey } of featureTests) {
+      it(`should throw an error if attempting to queue ${queue} when ${feature} is disabled`, async () => {
+        configMock.load.mockResolvedValue([{ key: configKey, value: false }]);
+        jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+
+        await expect(sut.handleCommand(queue, { command: JobCommand.START, force: false })).rejects.toThrow();
       });
     }
   });

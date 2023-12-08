@@ -81,7 +81,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,
-        search: false,
+        search: true,
         sidecar: true,
         tagImage: false,
         trash: true,

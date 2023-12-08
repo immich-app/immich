@@ -12,7 +12,7 @@ import {
   newMediaRepositoryMock,
   newMoveRepositoryMock,
   newPersonRepositoryMock,
-  newSearchRepositoryMock,
+  newSmartInfoRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   personStub,
@@ -26,12 +26,12 @@ import {
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
-  ISearchRepository,
+  ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
-import { PersonResponseDto, mapFaces } from './person.dto';
+import { PersonResponseDto, mapFaces, mapPerson } from './person.dto';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
@@ -61,33 +61,6 @@ const detectFaceMock = {
   score: 0.2,
 };
 
-const faceSearch = {
-  noMatch: {
-    total: 0,
-    count: 0,
-    page: 1,
-    items: [],
-    distances: [],
-    facets: [],
-  },
-  oneMatch: {
-    total: 1,
-    count: 1,
-    page: 1,
-    items: [faceStub.face1],
-    distances: [0.1],
-    facets: [],
-  },
-  oneRemoteMatch: {
-    total: 1,
-    count: 1,
-    page: 1,
-    items: [faceStub.face1],
-    distances: [0.8],
-    facets: [],
-  },
-};
-
 describe(PersonService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
@@ -97,8 +70,8 @@ describe(PersonService.name, () => {
   let mediaMock: jest.Mocked<IMediaRepository>;
   let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
   let sut: PersonService;
 
   beforeEach(async () => {
@@ -110,8 +83,8 @@ describe(PersonService.name, () => {
     moveMock = newMoveRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     personMock = newPersonRepositoryMock();
-    searchMock = newSearchRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    smartInfoMock = newSmartInfoRepositoryMock();
     sut = new PersonService(
       accessMock,
       assetMock,
@@ -119,10 +92,10 @@ describe(PersonService.name, () => {
       moveMock,
       mediaMock,
       personMock,
-      searchMock,
       configMock,
       storageMock,
       jobMock,
+      smartInfoMock,
     );
 
     mediaMock.crop.mockResolvedValue(croppedFace);
@@ -283,10 +256,6 @@ describe(PersonService.name, () => {
 
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', name: 'Person 1' });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.SEARCH_INDEX_ASSET,
-        data: { ids: [assetStub.image.id] },
-      });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
@@ -320,10 +289,6 @@ describe(PersonService.name, () => {
 
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: false });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.SEARCH_INDEX_ASSET,
-        data: { ids: [assetStub.image.id] },
-      });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
     });
 
@@ -508,6 +473,17 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('handlePersonDelete', () => {
+    it('should delete person', async () => {
+      personMock.getById.mockResolvedValue(personStub.withName);
+
+      await sut.handlePersonDelete({ id: personStub.withName.id });
+
+      expect(personMock.delete).toHaveBeenCalledWith(personStub.withName);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.withName.thumbnailPath);
+    });
+  });
+
   describe('handlePersonCleanup', () => {
     it('should delete people without faces', async () => {
       personMock.getAllWithoutFaces.mockResolvedValue([personStub.noName]);
@@ -547,7 +523,7 @@ describe(PersonService.name, () => {
         hasNextPage: false,
       });
       personMock.getAll.mockResolvedValue([personStub.withName]);
-      searchMock.deleteAllFaces.mockResolvedValue(100);
+      personMock.deleteAll.mockResolvedValue(5);
 
       await sut.handleQueueRecognizeFaces({ force: true });
 
@@ -626,7 +602,7 @@ describe(PersonService.name, () => {
 
     it('should match existing people', async () => {
       machineLearningMock.detectFaces.mockResolvedValue([detectFaceMock]);
-      searchMock.searchFaces.mockResolvedValue(faceSearch.oneMatch);
+      smartInfoMock.searchFaces.mockResolvedValue([faceStub.face1]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
 
@@ -645,7 +621,7 @@ describe(PersonService.name, () => {
 
     it('should create a new person', async () => {
       machineLearningMock.detectFaces.mockResolvedValue([detectFaceMock]);
-      searchMock.searchFaces.mockResolvedValue(faceSearch.oneRemoteMatch);
+      smartInfoMock.searchFaces.mockResolvedValue([]);
       personMock.create.mockResolvedValue(personStub.noName);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       personMock.createFace.mockResolvedValue(faceStub.primaryFace1);
@@ -664,10 +640,6 @@ describe(PersonService.name, () => {
         imageHeight: 500,
         imageWidth: 400,
       });
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.SEARCH_INDEX_FACE, data: { personId: 'person-1', assetId: 'asset-id' } }],
-        [{ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: 'person-1' } }],
-      ]);
     });
   });
   describe('handleGeneratePersonThumbnail', () => {
@@ -871,6 +843,29 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.primaryPerson);
       await expect(sut.getStatistics(authStub.admin, 'person-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set(['person-1']));
+    });
+  });
+
+  describe('mapFace', () => {
+    it('should map a face', () => {
+      expect(mapFaces(faceStub.face1, personStub.withName.owner)).toEqual({
+        boundingBoxX1: 0,
+        boundingBoxX2: 1,
+        boundingBoxY1: 0,
+        boundingBoxY2: 1,
+        id: 'assetFaceId',
+        imageHeight: 1024,
+        imageWidth: 1024,
+        person: mapPerson(personStub.withName),
+      });
+    });
+
+    it('should not map person if person is null', () => {
+      expect(mapFaces({ ...faceStub.face1, person: null }, authStub.user1).person).toBeNull();
+    });
+
+    it('should not map person if person does not match auth user id', () => {
+      expect(mapFaces(faceStub.face1, authStub.user1).person).toBeNull();
     });
   });
 });

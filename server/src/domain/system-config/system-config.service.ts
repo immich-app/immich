@@ -1,6 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JobName } from '../job';
-import { CommunicationEvent, ICommunicationRepository, IJobRepository, ISystemConfigRepository } from '../repositories';
+import {
+  CommunicationEvent,
+  ICommunicationRepository,
+  IJobRepository,
+  ISmartInfoRepository,
+  ISystemConfigRepository,
+} from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
@@ -22,6 +28,7 @@ export class SystemConfigService {
     @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
   ) {
     this.core = SystemConfigCore.create(repository);
   }
@@ -41,10 +48,14 @@ export class SystemConfigService {
   }
 
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
-    const config = await this.core.updateConfig(dto);
+    const oldConfig = await this.core.getConfig();
+    const newConfig = await this.core.updateConfig(dto);
     await this.jobRepository.queue({ name: JobName.SYSTEM_CONFIG_CHANGE });
     this.communicationRepository.broadcast(CommunicationEvent.CONFIG_UPDATE, {});
-    return mapConfig(config);
+    if (oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
+      await this.smartInfoRepository.init(newConfig.machineLearning.clip.modelName);
+    }
+    return mapConfig(newConfig);
   }
 
   async refreshConfig() {

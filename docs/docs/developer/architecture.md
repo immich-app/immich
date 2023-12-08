@@ -45,7 +45,6 @@ The Immich backend is divided into several services, which are run as individual
 1. `immich-machine-learning` - Execute machine learning models
 1. `postgres` - Persistent data storage
 1. `redis`- Queue management for `immich-microservices`
-1. `typesense`- Specialized database for search, specifically with vector comparison features
 
 ### Immich Server
 
@@ -75,7 +74,6 @@ The Immich Microservices image uses the same `Dockerfile` as the Immich Server, 
 - Object Tagging
 - Facial Recognition
 - Storage Template Migration
-- Search (Typesense synchronization)
 - Sidecar (see [XMP Sidecars](/docs/features/xmp-sidecars.md))
 - Background jobs (file deletion, user deletion)
 
@@ -108,9 +106,3 @@ See [Database Migrations](./database-migrations.md) for more information about h
 ### Redis
 
 Immich uses [Redis](https://redis.com/) via [BullMQ](https://docs.bullmq.io/) to manage job queues. Some jobs trigger subsequent jobs. For example, object detection relies on thumbnail generation and automatically run after one is generated.
-
-### Typesense
-
-Immich synchronizes some of the Postgres data into Typesense, so it can execute vector related queries in order to implement certain features including, facial recognition and CLIP search.
-
-<!-- - [NGINX](https://www.nginx.com/) for internal communication between containers and load balancing when scaling. -->

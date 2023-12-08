@@ -1,29 +1,20 @@
-import { BadRequestException } from '@nestjs/common';
+import { SystemConfigKey } from '@app/infra/entities';
 import {
-  albumStub,
   assetStub,
-  asyncTick,
   authStub,
-  faceStub,
-  newAlbumRepositoryMock,
   newAssetRepositoryMock,
-  newJobRepositoryMock,
   newMachineLearningRepositoryMock,
   newPersonRepositoryMock,
-  newSearchRepositoryMock,
+  newSmartInfoRepositoryMock,
   newSystemConfigRepositoryMock,
-  searchStub,
+  personStub,
 } from '@test';
-import { plainToInstance } from 'class-transformer';
 import { mapAsset } from '../asset';
-import { JobName } from '../job';
 import {
-  IAlbumRepository,
   IAssetRepository,
-  IJobRepository,
   IMachineLearningRepository,
   IPersonRepository,
-  ISearchRepository,
+  ISmartInfoRepository,
   ISystemConfigRepository,
 } from '../repositories';
 import { SearchDto } from './dto';
@@ -33,401 +24,126 @@ jest.useFakeTimers();
 
 describe(SearchService.name, () => {
   let sut: SearchService;
-  let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
-  let searchMock: jest.Mocked<ISearchRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
+  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
 
-  beforeEach(async () => {
-    albumMock = newAlbumRepositoryMock();
+  beforeEach(() => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    personMock = newPersonRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    searchMock = newSearchRepositoryMock();
-
-    sut = new SearchService(albumMock, assetMock, jobMock, machineMock, personMock, searchMock, configMock);
-
-    searchMock.checkMigrationStatus.mockResolvedValue({ assets: false, albums: false, faces: false });
-
-    delete process.env.TYPESENSE_ENABLED;
-    await sut.init();
-  });
-
-  const disableSearch = () => {
-    searchMock.setup.mockClear();
-    searchMock.checkMigrationStatus.mockClear();
-    jobMock.queue.mockClear();
-    process.env.TYPESENSE_ENABLED = 'false';
-  };
-
-  afterEach(() => {
-    sut.teardown();
+    personMock = newPersonRepositoryMock();
+    smartInfoMock = newSmartInfoRepositoryMock();
+    sut = new SearchService(configMock, machineMock, personMock, smartInfoMock, assetMock);
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('request dto', () => {
-    it('should convert smartInfo.tags to a string list', () => {
-      const instance = plainToInstance(SearchDto, { 'smartInfo.tags': 'a,b,c' });
-      expect(instance['smartInfo.tags']).toEqual(['a', 'b', 'c']);
-    });
+  describe('searchPerson', () => {
+    it('should pass options to search', async () => {
+      const { name } = personStub.withName;
 
-    it('should handle empty smartInfo.tags', () => {
-      const instance = plainToInstance(SearchDto, {});
-      expect(instance['smartInfo.tags']).toBeUndefined();
-    });
+      await sut.searchPerson(authStub.user1, { name, withHidden: false });
 
-    it('should convert smartInfo.objects to a string list', () => {
-      const instance = plainToInstance(SearchDto, { 'smartInfo.objects': 'a,b,c' });
-      expect(instance['smartInfo.objects']).toEqual(['a', 'b', 'c']);
-    });
+      expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.id, name, { withHidden: false });
 
-    it('should handle empty smartInfo.objects', () => {
-      const instance = plainToInstance(SearchDto, {});
-      expect(instance['smartInfo.objects']).toBeUndefined();
-    });
-  });
+      await sut.searchPerson(authStub.user1, { name, withHidden: true });
 
-  describe(`init`, () => {
-    it('should skip when search is disabled', async () => {
-      disableSearch();
-      await sut.init();
-
-      expect(searchMock.setup).not.toHaveBeenCalled();
-      expect(searchMock.checkMigrationStatus).not.toHaveBeenCalled();
-      expect(jobMock.queue).not.toHaveBeenCalled();
-    });
-
-    it('should skip schema migration if not needed', async () => {
-      await sut.init();
-
-      expect(searchMock.setup).toHaveBeenCalled();
-      expect(jobMock.queue).not.toHaveBeenCalled();
-    });
-
-    it('should do schema migration if needed', async () => {
-      searchMock.checkMigrationStatus.mockResolvedValue({ assets: true, albums: true, faces: true });
-      await sut.init();
-
-      expect(searchMock.setup).toHaveBeenCalled();
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.SEARCH_INDEX_ASSETS }],
-        [{ name: JobName.SEARCH_INDEX_ALBUMS }],
-        [{ name: JobName.SEARCH_INDEX_FACES }],
-      ]);
+      expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.id, name, { withHidden: true });
     });
   });
 
   describe('getExploreData', () => {
-    it('should throw bad request exception if search is disabled', async () => {
-      disableSearch();
-      await expect(sut.getExploreData(authStub.admin)).rejects.toBeInstanceOf(BadRequestException);
-      expect(searchMock.explore).not.toHaveBeenCalled();
-    });
+    it('should get assets by city and tag', async () => {
+      assetMock.getAssetIdByCity.mockResolvedValueOnce({
+        fieldName: 'exifInfo.city',
+        items: [{ value: 'Paris', data: assetStub.image.id }],
+      });
+      assetMock.getAssetIdByTag.mockResolvedValueOnce({
+        fieldName: 'smartInfo.tags',
+        items: [{ value: 'train', data: assetStub.imageFrom2015.id }],
+      });
+      assetMock.getByIds.mockResolvedValueOnce([assetStub.image, assetStub.imageFrom2015]);
+      const expectedResponse = [
+        { fieldName: 'exifInfo.city', items: [{ value: 'Paris', data: mapAsset(assetStub.image) }] },
+        { fieldName: 'smartInfo.tags', items: [{ value: 'train', data: mapAsset(assetStub.imageFrom2015) }] },
+      ];
 
-    it('should return explore data if feature flag SEARCH is set', async () => {
-      searchMock.explore.mockResolvedValue([{ fieldName: 'name', items: [{ value: 'image', data: assetStub.image }] }]);
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      const result = await sut.getExploreData(authStub.user1);
 
-      await expect(sut.getExploreData(authStub.admin)).resolves.toEqual([
-        {
-          fieldName: 'name',
-          items: [{ value: 'image', data: mapAsset(assetStub.image) }],
-        },
-      ]);
-
-      expect(searchMock.explore).toHaveBeenCalledWith(authStub.admin.id);
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(result).toEqual(expectedResponse);
     });
   });
 
   describe('search', () => {
-    // it('should throw an error is search is disabled', async () => {
-    //   sut['enabled'] = false;
+    it('should throw an error if query is missing', async () => {
+      await expect(sut.search(authStub.user1, { q: '' })).rejects.toThrow('Missing query');
+    });
 
-    //   await expect(sut.search(authStub.admin, {})).rejects.toBeInstanceOf(BadRequestException);
-
-    //   expect(searchMock.searchAlbums).not.toHaveBeenCalled();
-    //   expect(searchMock.searchAssets).not.toHaveBeenCalled();
-    // });
-
-    it('should search assets and albums using text search', async () => {
-      searchMock.searchAssets.mockResolvedValue(searchStub.withImage);
-      searchMock.searchAlbums.mockResolvedValue(searchStub.emptyResults);
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-
-      await expect(sut.search(authStub.admin, {})).resolves.toEqual({
+    it('should search by metadata if `clip` option is false', async () => {
+      const dto: SearchDto = { q: 'test query', clip: false };
+      assetMock.searchMetadata.mockResolvedValueOnce([assetStub.image]);
+      const expectedResponse = {
         albums: {
           total: 0,
           count: 0,
-          page: 1,
           items: [],
           facets: [],
-          distances: [],
         },
         assets: {
           total: 1,
           count: 1,
-          page: 1,
           items: [mapAsset(assetStub.image)],
           facets: [],
-          distances: [],
         },
-      });
+      };
 
-      // expect(searchMock.searchAssets).toHaveBeenCalledWith('*', { userId: authStub.admin.id });
-      expect(searchMock.searchAlbums).toHaveBeenCalledWith('*', { userId: authStub.admin.id });
+      const result = await sut.search(authStub.user1, dto);
+
+      expect(result).toEqual(expectedResponse);
+      expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, authStub.user1.id, { numResults: 250 });
+      expect(smartInfoMock.searchCLIP).not.toHaveBeenCalled();
     });
 
-    it('should search assets and albums using vector search', async () => {
-      searchMock.vectorSearch.mockResolvedValue(searchStub.emptyResults);
-      searchMock.searchAlbums.mockResolvedValue(searchStub.emptyResults);
-      machineMock.encodeText.mockResolvedValue([123]);
-
-      await expect(sut.search(authStub.admin, { clip: true, query: 'foo' })).resolves.toEqual({
+    it('should search by CLIP if `clip` option is true', async () => {
+      const dto: SearchDto = { q: 'test query', clip: true };
+      const embedding = [1, 2, 3];
+      smartInfoMock.searchCLIP.mockResolvedValueOnce([assetStub.image]);
+      machineMock.encodeText.mockResolvedValueOnce(embedding);
+      const expectedResponse = {
         albums: {
           total: 0,
           count: 0,
-          page: 1,
           items: [],
           facets: [],
-          distances: [],
         },
         assets: {
-          total: 0,
-          count: 0,
-          page: 1,
-          items: [],
+          total: 1,
+          count: 1,
+          items: [mapAsset(assetStub.image)],
           facets: [],
-          distances: [],
         },
-      });
+      };
 
-      expect(machineMock.encodeText).toHaveBeenCalledWith(expect.any(String), { text: 'foo' }, expect.any(Object));
-      expect(searchMock.vectorSearch).toHaveBeenCalledWith([123], {
-        userId: authStub.admin.id,
-        clip: true,
-        query: 'foo',
-      });
-      expect(searchMock.searchAlbums).toHaveBeenCalledWith('foo', {
-        userId: authStub.admin.id,
-        clip: true,
-        query: 'foo',
-      });
-    });
-  });
+      const result = await sut.search(authStub.user1, dto);
 
-  describe('handleIndexAssets', () => {
-    it('should call done, even when there are no assets', async () => {
-      await sut.handleIndexAssets();
-
-      expect(searchMock.importAssets).toHaveBeenCalledWith([], true);
+      expect(result).toEqual(expectedResponse);
+      expect(smartInfoMock.searchCLIP).toHaveBeenCalledWith({ ownerId: authStub.user1.id, embedding, numResults: 100 });
+      expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });
 
-    it('should index all the assets', async () => {
-      assetMock.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
+    it('should throw an error if clip is requested but disabled', async () => {
+      const dto: SearchDto = { q: 'test query', clip: true };
+      configMock.load
+        .mockResolvedValueOnce([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }])
+        .mockResolvedValueOnce([{ key: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED, value: false }]);
 
-      await sut.handleIndexAssets();
-
-      expect(searchMock.importAssets.mock.calls).toEqual([
-        [[assetStub.image], false],
-        [[], true],
-      ]);
-    });
-
-    it('should skip if search is disabled', async () => {
-      sut['enabled'] = false;
-
-      await sut.handleIndexAssets();
-
-      expect(searchMock.importAssets).not.toHaveBeenCalled();
-      expect(searchMock.importAlbums).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('handleIndexAsset', () => {
-    it('should skip if search is disabled', () => {
-      sut['enabled'] = false;
-      sut.handleIndexAsset({ ids: [assetStub.image.id] });
-    });
-
-    it('should index the asset', () => {
-      sut.handleIndexAsset({ ids: [assetStub.image.id] });
-    });
-  });
-
-  describe('handleIndexAlbums', () => {
-    it('should skip if search is disabled', async () => {
-      sut['enabled'] = false;
-      await sut.handleIndexAlbums();
-    });
-
-    it('should index all the albums', async () => {
-      albumMock.getAll.mockResolvedValue([albumStub.empty]);
-
-      await sut.handleIndexAlbums();
-
-      expect(searchMock.importAlbums).toHaveBeenCalledWith([albumStub.empty], true);
-    });
-  });
-
-  describe('handleIndexAlbum', () => {
-    it('should skip if search is disabled', () => {
-      sut['enabled'] = false;
-      sut.handleIndexAlbum({ ids: [albumStub.empty.id] });
-    });
-
-    it('should index the album', () => {
-      sut.handleIndexAlbum({ ids: [albumStub.empty.id] });
-    });
-  });
-
-  describe('handleRemoveAlbum', () => {
-    it('should skip if search is disabled', () => {
-      sut['enabled'] = false;
-      sut.handleRemoveAlbum({ ids: ['album1'] });
-    });
-
-    it('should remove the album', () => {
-      sut.handleRemoveAlbum({ ids: ['album1'] });
-    });
-  });
-
-  describe('handleRemoveAsset', () => {
-    it('should skip if search is disabled', () => {
-      sut['enabled'] = false;
-      sut.handleRemoveAsset({ ids: ['asset1'] });
-    });
-
-    it('should remove the asset', () => {
-      sut.handleRemoveAsset({ ids: ['asset1'] });
-    });
-  });
-
-  describe('handleIndexFaces', () => {
-    it('should call done, even when there are no faces', async () => {
-      personMock.getAllFaces.mockResolvedValue([]);
-
-      await sut.handleIndexFaces();
-
-      expect(searchMock.importFaces).toHaveBeenCalledWith([], true);
-    });
-
-    it('should index all the faces', async () => {
-      personMock.getAllFaces.mockResolvedValue([faceStub.face1]);
-
-      await sut.handleIndexFaces();
-
-      expect(searchMock.importFaces.mock.calls).toEqual([
-        [
-          [
-            {
-              id: 'asset-id|person-1',
-              ownerId: 'user-id',
-              assetId: 'asset-id',
-              personId: 'person-1',
-              embedding: [1, 2, 3, 4],
-            },
-          ],
-          false,
-        ],
-        [[], true],
-      ]);
-    });
-
-    it('should skip if search is disabled', async () => {
-      sut['enabled'] = false;
-
-      await sut.handleIndexFaces();
-
-      expect(searchMock.importFaces).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('handleIndexAsset', () => {
-    it('should skip if search is disabled', async () => {
-      sut['enabled'] = false;
-      await sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
-
-      expect(searchMock.importFaces).not.toHaveBeenCalled();
-      expect(personMock.getFacesByIds).not.toHaveBeenCalled();
-    });
-
-    it('should index the face', async () => {
-      personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
-
-      await sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
-
-      expect(personMock.getFacesByIds).toHaveBeenCalledWith([{ assetId: 'asset-1', personId: 'person-1' }]);
-    });
-  });
-
-  describe('handleRemoveFace', () => {
-    it('should skip if search is disabled', () => {
-      sut['enabled'] = false;
-      sut.handleRemoveFace({ assetId: 'asset-1', personId: 'person-1' });
-    });
-
-    it('should remove the face', () => {
-      sut.handleRemoveFace({ assetId: 'asset-1', personId: 'person-1' });
-    });
-  });
-
-  describe('flush', () => {
-    it('should flush queued album updates', async () => {
-      albumMock.getByIds.mockResolvedValue([albumStub.empty]);
-
-      sut.handleIndexAlbum({ ids: ['album1'] });
-
-      jest.runOnlyPendingTimers();
-
-      await asyncTick(4);
-
-      expect(albumMock.getByIds).toHaveBeenCalledWith(['album1']);
-      expect(searchMock.importAlbums).toHaveBeenCalledWith([albumStub.empty], false);
-    });
-
-    it('should flush queued album deletes', async () => {
-      sut.handleRemoveAlbum({ ids: ['album1'] });
-
-      jest.runOnlyPendingTimers();
-
-      await asyncTick(4);
-
-      expect(searchMock.deleteAlbums).toHaveBeenCalledWith(['album1']);
-    });
-
-    it('should flush queued asset updates', async () => {
-      assetMock.getByIds.mockResolvedValue([assetStub.image]);
-
-      sut.handleIndexAsset({ ids: ['asset1'] });
-
-      jest.runOnlyPendingTimers();
-
-      await asyncTick(4);
-
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset1']);
-      expect(searchMock.importAssets).toHaveBeenCalledWith([assetStub.image], false);
-    });
-
-    it('should flush queued asset deletes', async () => {
-      sut.handleRemoveAsset({ ids: ['asset1'] });
-
-      jest.runOnlyPendingTimers();
-
-      await asyncTick(4);
-
-      expect(searchMock.deleteAssets).toHaveBeenCalledWith(['asset1']);
+      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('CLIP is not enabled');
+      await expect(sut.search(authStub.user1, dto)).rejects.toThrow('CLIP is not enabled');
     });
   });
 });

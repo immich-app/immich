@@ -1,15 +1,21 @@
-import { IJobRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
+import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
 import { dataSource } from '@app/infra';
+import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { randomBytes } from 'crypto';
 import * as fs from 'fs';
+import { DateTime } from 'luxon';
 import path from 'path';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../src/microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
+
+export const today = DateTime.fromObject({ year: 2023, month: 11, day: 3 });
+export const yesterday = today.minus({ days: 1 });
 
 export interface ResetOptions {
   entities?: EntityTarget<ObjectLiteral>[];
@@ -20,6 +26,7 @@ export const db = {
       await dataSource.initialize();
     }
 
+    await dataSource.query(`SET vectors.enable_prefilter = on`);
     await dataSource.transaction(async (em) => {
       const entities = options?.entities || [];
       const tableNames =
@@ -113,4 +120,38 @@ export async function restoreTempFolder(): Promise<void> {
   }
   // Create temp folder
   await fs.promises.mkdir(IMMICH_TEST_ASSET_TEMP_PATH);
+}
+
+function randomDate(start: Date, end: Date): Date {
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
+
+let assetCount = 0;
+export function generateAsset(
+  userId: string,
+  libraries: LibraryResponseDto[],
+  other: Partial<AssetEntity> = {},
+): AssetCreate {
+  const id = assetCount++;
+  const { fileCreatedAt = randomDate(new Date(1970, 1, 1), new Date(2023, 1, 1)) } = other;
+
+  return {
+    createdAt: today.toJSDate(),
+    updatedAt: today.toJSDate(),
+    ownerId: userId,
+    checksum: randomBytes(20),
+    originalPath: `/tests/test_${id}`,
+    deviceAssetId: `test_${id}`,
+    deviceId: 'e2e-test',
+    libraryId: (
+      libraries.find(({ ownerId, type }) => ownerId === userId && type === LibraryType.UPLOAD) as LibraryResponseDto
+    ).id,
+    isVisible: true,
+    fileCreatedAt,
+    fileModifiedAt: new Date(),
+    localDateTime: fileCreatedAt,
+    type: AssetType.IMAGE,
+    originalFileName: `test_${id}`,
+    ...other,
+  };
 }
