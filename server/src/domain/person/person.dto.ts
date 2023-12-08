@@ -144,7 +144,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   };
 }
 
-export function mapFace(face: AssetFaceEntity, authUser: AuthUserDto): AssetFaceResponseDto {
+export function mapFacesWithoutPerson(face: AssetFaceEntity): AssetFaceWithoutPersonResponseDto {
   return {
     id: face.id,
     imageHeight: face.imageHeight,
@@ -153,6 +153,12 @@ export function mapFace(face: AssetFaceEntity, authUser: AuthUserDto): AssetFace
     boundingBoxX2: face.boundingBoxX2,
     boundingBoxY1: face.boundingBoxY1,
     boundingBoxY2: face.boundingBoxY2,
-    person: face.person && face.person.ownerId === authUser.id ? mapPerson(face.person) : null,
+  };
+}
+
+export function mapFaces(face: AssetFaceEntity, authUser: AuthUserDto): AssetFaceResponseDto {
+  return {
+    ...mapFacesWithoutPerson(face),
+    person: face.person?.ownerId === authUser.id ? mapPerson(face.person) : null,
   };
 }

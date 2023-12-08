@@ -354,9 +354,12 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
-    Future<T> Function() wrapLongRunningFun<T>(Future<T> Function() fun) =>
+    Future<T> Function() wrapLongRunningFun<T>(
+      Future<T> Function() fun, {
+      bool showOverlay = true,
+    }) =>
         () async {
-          processing.value = true;
+          if (showOverlay) processing.value = true;
           try {
             final result = await fun();
             if (result.runtimeType != bool || result == true) {
@@ -364,7 +367,7 @@ class MultiselectGrid extends HookConsumerWidget {
             }
             return result;
           } finally {
-            processing.value = false;
+            if (showOverlay) processing.value = false;
           }
         };
 
@@ -383,7 +386,10 @@ class MultiselectGrid extends HookConsumerWidget {
                         selectionActive: selectionEnabledHook.value,
                         onRefresh: onRefresh == null
                             ? null
-                            : wrapLongRunningFun(onRefresh!),
+                            : wrapLongRunningFun(
+                                onRefresh!,
+                                showOverlay: false,
+                              ),
                         topWidget: topWidget,
                         showStack: stackEnabled,
                       ),

@@ -1,4 +1,3 @@
-import { mapAsset } from '@app/domain';
 import { SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
@@ -10,6 +9,7 @@ import {
   newSystemConfigRepositoryMock,
   personStub,
 } from '@test';
+import { mapAsset } from '../asset';
 import {
   IAssetRepository,
   IMachineLearningRepository,
