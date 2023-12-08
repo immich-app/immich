@@ -98,7 +98,7 @@ WITH
     WHERE
       "asset"."ownerId" = $2
     ORDER BY
-      "faces"."embedding" <= > $3 ASC
+      1 + ("faces"."embedding" <= > $3) ASC
     LIMIT
       100
   )
