@@ -46,9 +46,7 @@ class ImageClassifier(InferenceModel):
         if "GPU" in Core().available_devices:
             model_path = self.cache_dir/ "ov_model"
             if model_path.exists():
-                log.warn("loading local model")
-                model = OVModelForImageClassification.from_pretrained(model_path, **model_kwargs)
-
+                model = OVModelForImageClassification.from_pretrained(model_path,compile=False, **model_kwargs)
             else:
                 log.info(
                     (
@@ -56,11 +54,12 @@ class ImageClassifier(InferenceModel):
                         "Exporting optimized model for future use."
                     ),
                 )
-                model = OVModelForImageClassification.from_pretrained(self.model_name, export=True, **model_kwargs,compile=False)
+                model = OVModelForImageClassification.from_pretrained(self.model_name,  compile=False,**model_kwargs,export=True)
                 model.save_pretrained(model_path)
-                model.to("gpu")
-                model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
-                model.compile()
+
+            model.to("gpu")
+            model.reshape(batch_size=1, sequence_length=3, height=224, width=224)
+            model.compile()
             self.model = transformers_pipeline(self.model_type.value, model, feature_extractor=processor)
 
         else:
