@@ -1,16 +1,21 @@
+import sys
 from io import BytesIO
 from pathlib import Path
 from typing import Any
 from huggingface_hub import snapshot_download
 from optimum.onnxruntime import ORTModelForImageClassification
-from optimum.intel.openvino import OVModelForImageClassification
 from optimum.pipelines import pipeline as optimum_pipeline
 from PIL import Image
-from transformers import AutoImageProcessor, pipeline as transformers_pipeline
+from transformers import AutoImageProcessor
 from openvino.runtime import Core
 from ..config import log
 from ..schemas import ModelType
 from .base import InferenceModel
+try:
+    from optimum.intel.openvino import OVModelForImageClassification
+    from transformers import pipeline as transformers_pipeline
+except ImportError:
+    log.warn("the image is not built with openvino, hardware acceleration using openvino will be disabled")
 
 
 class ImageClassifier(InferenceModel):
@@ -42,8 +47,8 @@ class ImageClassifier(InferenceModel):
             "provider": self.providers[0],
             "provider_options": self.provider_options[0],
         }
-        # detect if Openvino compatible hardware exists in the environment
-        if "GPU" in Core().available_devices:
+        # detect if Openvino is built with and compatible hardware exists in the environment
+        if "optimum.intel.openvino" in sys.modules and "GPU" in Core().available_devices:
             model_path = self.cache_dir/ "ov_model"
             if model_path.exists():
                 model = OVModelForImageClassification.from_pretrained(model_path,compile=False, **model_kwargs)
@@ -63,6 +68,7 @@ class ImageClassifier(InferenceModel):
             self.model = transformers_pipeline(self.model_type.value, model, feature_extractor=processor)
 
         else:
+
             model_path = self.cache_dir / "model.onnx"
             if model_path.exists():
                 model = ORTModelForImageClassification.from_pretrained(self.cache_dir, **model_kwargs)
