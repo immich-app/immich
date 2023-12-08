@@ -413,6 +413,56 @@ class PersonApi {
     return null;
   }
 
+  /// Performs an HTTP 'DELETE /person' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [AssetFaceUpdateDto] assetFaceUpdateDto (required):
+  Future<Response> unassignFacesWithHttpInfo(AssetFaceUpdateDto assetFaceUpdateDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/person';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetFaceUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [AssetFaceUpdateDto] assetFaceUpdateDto (required):
+  Future<List<BulkIdResponseDto>?> unassignFaces(AssetFaceUpdateDto assetFaceUpdateDto,) async {
+    final response = await unassignFacesWithHttpInfo(assetFaceUpdateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'PUT /person' operation and returns the [Response].
   /// Parameters:
   ///

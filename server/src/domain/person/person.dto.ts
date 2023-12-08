@@ -105,16 +105,16 @@ export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
   person!: PersonResponseDto | null;
 }
 
+export class FaceDto {
+  @ValidateUUID()
+  id!: string;
+}
+
 export class AssetFaceUpdateDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetFaceUpdateItem)
   data!: AssetFaceUpdateItem[];
-}
-
-export class FaceDto {
-  @ValidateUUID()
-  id!: string;
 }
 
 export class AssetFaceUpdateItem {

@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getFaces**](FaceApi.md#getfaces) | **GET** /face | 
-[**reassignFacesById**](FaceApi.md#reassignfacesbyid) | **PUT** /face/{id} | 
+[**reassignFace**](FaceApi.md#reassignface) | **PUT** /face/{id} | 
 [**unassignFace**](FaceApi.md#unassignface) | **DELETE** /face/{id} | 
 
 
@@ -69,8 +69,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **reassignFacesById**
-> PersonResponseDto reassignFacesById(id, faceDto)
+# **reassignFace**
+> PersonResponseDto reassignFace(id, faceDto)
 
 
 
@@ -97,10 +97,10 @@ final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final faceDto = FaceDto(); // FaceDto | 
 
 try {
-    final result = api_instance.reassignFacesById(id, faceDto);
+    final result = api_instance.reassignFace(id, faceDto);
     print(result);
 } catch (e) {
-    print('Exception when calling FaceApi->reassignFacesById: $e\n');
+    print('Exception when calling FaceApi->reassignFace: $e\n');
 }
 ```
 

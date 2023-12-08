@@ -22,8 +22,8 @@ void main() {
       // TODO
     });
 
-    //Future<PersonResponseDto> reassignFacesById(String id, FaceDto faceDto) async
-    test('test reassignFacesById', () async {
+    //Future<PersonResponseDto> reassignFace(String id, FaceDto faceDto) async
+    test('test reassignFace', () async {
       // TODO
     });
 

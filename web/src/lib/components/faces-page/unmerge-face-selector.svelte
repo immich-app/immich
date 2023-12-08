@@ -6,7 +6,7 @@
   import { api, AssetFaceUpdateItem, type PersonResponseDto } from '@api';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import Button from '../elements/buttons/button.svelte';
-  import { mdiPlus, mdiMerge } from '@mdi/js';
+  import { mdiPlus, mdiMerge, mdiTagRemove } from '@mdi/js';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
@@ -21,6 +21,7 @@
   let disableButtons = false;
   let showLoadingSpinnerCreate = false;
   let showLoadingSpinnerReassign = false;
+  let showLoadingSpinnerUnassign = false;
   let hasSelection = false;
   let screenHeight: number;
 
@@ -33,7 +34,9 @@
   const selectedPeople: AssetFaceUpdateItem[] = [];
 
   for (const assetId of assetIds) {
+    console.log('h');
     selectedPeople.push({ assetId, personId: personAssets.id });
+    console.log(selectedPeople);
   }
 
   onMount(async () => {
@@ -109,6 +112,29 @@
     showLoadingSpinnerReassign = false;
     dispatch('confirm');
   };
+
+  const handleUnassign = async () => {
+    const timeout = setTimeout(() => (showLoadingSpinnerUnassign = true), 100);
+
+    try {
+      disableButtons = true;
+      await api.personApi.unassignFaces({
+        assetFaceUpdateDto: { data: selectedPeople },
+      });
+
+      notificationController.show({
+        message: `Un-assigned ${assetIds.length} asset${assetIds.length > 1 ? 's' : ''}`,
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, 'Unable to unassign assets');
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    showLoadingSpinnerCreate = false;
+    dispatch('confirm');
+  };
 </script>
 
 <svelte:window bind:innerHeight={screenHeight} />
@@ -124,6 +150,21 @@
     </svelte:fragment>
     <svelte:fragment slot="trailing">
       <div class="flex gap-4">
+        <Button
+          title={'Unassign selected assets to a new person'}
+          size={'sm'}
+          disabled={disableButtons || hasSelection}
+          on:click={() => {
+            handleUnassign();
+          }}
+        >
+          {#if !showLoadingSpinnerUnassign}
+            <Icon path={mdiTagRemove} size={18} />
+          {:else}
+            <LoadingSpinner />
+          {/if}
+          <span class="ml-2"> Unassign</span></Button
+        >
         <Button
           title={'Assign selected assets to a new person'}
           size={'sm'}

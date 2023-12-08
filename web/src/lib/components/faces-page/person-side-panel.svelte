@@ -197,14 +197,14 @@
           const personId = selectedPersonToReassign[i]?.id;
 
           if (personId) {
-            await api.faceApi.reassignFacesById({
+            await api.faceApi.reassignFace({
               id: personId,
               faceDto: { id: peopleWithFaces[i].id },
             });
           } else if (selectedPersonToCreate[i]) {
             const { data } = await api.personApi.createPerson();
             idsOfPersonToCreate.push(data.id);
-            await api.faceApi.reassignFacesById({
+            await api.faceApi.reassignFace({
               id: data.id,
               faceDto: { id: peopleWithFaces[i].id },
             });
@@ -212,14 +212,14 @@
         }
         for (const face of selectedPersonToAdd) {
           if (face.person) {
-            await api.faceApi.reassignFacesById({
+            await api.faceApi.reassignFace({
               id: face.person.id,
               faceDto: { id: face.id },
             });
           } else {
             const { data } = await api.personApi.createPerson();
             idsOfPersonToCreate.push(data.id);
-            await api.faceApi.reassignFacesById({
+            await api.faceApi.reassignFace({
               id: data.id,
               faceDto: { id: face.id },
             });

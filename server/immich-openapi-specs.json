@@ -3307,7 +3307,7 @@
         ]
       },
       "put": {
-        "operationId": "reassignFacesById",
+        "operationId": "reassignFace",
         "parameters": [
           {
             "name": "id",
@@ -4119,6 +4119,49 @@
       }
     },
     "/person": {
+      "delete": {
+        "operationId": "unassignFaces",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFaceUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      },
       "get": {
         "operationId": "getAllPeople",
         "parameters": [

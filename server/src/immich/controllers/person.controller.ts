@@ -13,7 +13,7 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -47,6 +47,11 @@ export class PersonController {
     @Body() dto: AssetFaceUpdateDto,
   ): Promise<PersonResponseDto[]> {
     return this.service.reassignFaces(authUser, id, dto);
+  }
+
+  @Delete()
+  unassignFaces(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetFaceUpdateDto): Promise<BulkIdResponseDto[]> {
+    return this.service.unassignFaces(authUser, dto);
   }
 
   @Put()

@@ -18,12 +18,12 @@ export class FaceController {
   }
 
   @Put(':id')
-  reassignFacesById(
+  reassignFace(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: FaceDto,
   ): Promise<PersonResponseDto> {
-    return this.service.reassignFacesById(authUser, id, dto);
+    return this.service.reassignFace(authUser, id, dto);
   }
 
   @Delete(':id')

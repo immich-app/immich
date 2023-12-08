@@ -406,7 +406,7 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('reassignFacesById', () => {
+  describe('reassignFace', () => {
     it('should create a new person', async () => {
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
       accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
@@ -415,7 +415,7 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       personMock.getRandomFace.mockResolvedValue(null);
       await expect(
-        sut.reassignFacesById(authStub.admin, personStub.noName.id, {
+        sut.reassignFace(authStub.admin, personStub.noName.id, {
           id: faceStub.face1.id,
         }),
       ).resolves.toEqual({
@@ -437,7 +437,7 @@ describe(PersonService.name, () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       personMock.getRandomFace.mockResolvedValue(null);
       await expect(
-        sut.reassignFacesById(authStub.admin, personStub.noName.id, {
+        sut.reassignFace(authStub.admin, personStub.noName.id, {
           id: faceStub.face1.id,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -468,6 +468,21 @@ describe(PersonService.name, () => {
       await expect(sut.unassignFace(authStub.admin, faceStub.face1.id)).resolves.toStrictEqual(
         mapFace(faceStub.unassignedFace, authStub.admin),
       );
+    });
+  });
+
+  describe('unassignFaces', () => {
+    it('should unassign a face', async () => {
+      personMock.getFacesByIds.mockResolvedValueOnce([faceStub.face1]);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
+      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
+      personMock.reassignFace.mockResolvedValue(1);
+      personMock.getRandomFace.mockResolvedValue(null);
+      personMock.getFaceById.mockResolvedValueOnce(faceStub.unassignedFace);
+
+      await expect(
+        sut.unassignFaces(authStub.admin, { data: [{ assetId: faceStub.face1.id, personId: 'person-1' }] }),
+      ).resolves.toStrictEqual([{ id: 'assetFaceId', success: true }]);
     });
   });
 

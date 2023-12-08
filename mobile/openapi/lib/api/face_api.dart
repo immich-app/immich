@@ -74,7 +74,7 @@ class FaceApi {
   /// * [String] id (required):
   ///
   /// * [FaceDto] faceDto (required):
-  Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto,) async {
+  Future<Response> reassignFaceWithHttpInfo(String id, FaceDto faceDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/face/{id}'
       .replaceAll('{id}', id);
@@ -105,8 +105,8 @@ class FaceApi {
   /// * [String] id (required):
   ///
   /// * [FaceDto] faceDto (required):
-  Future<PersonResponseDto?> reassignFacesById(String id, FaceDto faceDto,) async {
-    final response = await reassignFacesByIdWithHttpInfo(id, faceDto,);
+  Future<PersonResponseDto?> reassignFace(String id, FaceDto faceDto,) async {
+    final response = await reassignFaceWithHttpInfo(id, faceDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
