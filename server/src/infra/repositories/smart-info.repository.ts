@@ -11,13 +11,19 @@ import { asVector, isValidInteger } from '../infra.utils';
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {
   private logger = new Logger(SmartInfoRepository.name);
+  private faceColumns: string[];
 
   constructor(
     @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
-  ) {}
+  ) {
+    this.faceColumns = this.assetFaceRepository.manager.connection
+      .getMetadata(AssetFaceEntity)
+      .ownColumns.map((column) => column.propertyName)
+      .filter((propertyName) => propertyName !== 'embedding');
+  }
 
   async init(modelName: string): Promise<void> {
     const { dimSize } = getCLIPModelInfo(modelName);
@@ -79,12 +85,14 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       const cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
-        .addSelect('1 + (faces.embedding <=> :embedding)', 'distance')
+        .select('1 + (faces.embedding <=> :embedding)', 'distance')
         .innerJoin('faces.asset', 'asset')
         .where('asset.ownerId = :ownerId')
         .orderBy(`faces.embedding <=> :embedding`)
         .setParameters({ ownerId, embedding: asVector(embedding) })
         .limit(numResults);
+
+      this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
 
       results = await manager
         .createQueryBuilder()

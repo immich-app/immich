@@ -81,15 +81,15 @@ SET
 WITH
   "cte" AS (
     SELECT
-      "faces"."id" AS "faces_id",
-      "faces"."assetId" AS "faces_assetId",
-      "faces"."personId" AS "faces_personId",
-      "faces"."imageWidth" AS "faces_imageWidth",
-      "faces"."imageHeight" AS "faces_imageHeight",
-      "faces"."boundingBoxX1" AS "faces_boundingBoxX1",
-      "faces"."boundingBoxY1" AS "faces_boundingBoxY1",
-      "faces"."boundingBoxX2" AS "faces_boundingBoxX2",
-      "faces"."boundingBoxY2" AS "faces_boundingBoxY2",
+      "faces"."id" AS "id",
+      "faces"."assetId" AS "assetId",
+      "faces"."personId" AS "personId",
+      "faces"."imageWidth" AS "imageWidth",
+      "faces"."imageHeight" AS "imageHeight",
+      "faces"."boundingBoxX1" AS "boundingBoxX1",
+      "faces"."boundingBoxY1" AS "boundingBoxY1",
+      "faces"."boundingBoxX2" AS "boundingBoxX2",
+      "faces"."boundingBoxY2" AS "boundingBoxY2",
       1 + ("faces"."embedding" <= > $1) AS "distance"
     FROM
       "asset_faces" "faces"
