@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Duration } from 'luxon';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
+  import { mdiAlertCircle, mdiPauseCircle, mdiPlayCircle } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let url: string;
@@ -10,8 +10,8 @@
   export let playbackOnIconHover = false;
   export let showTime = true;
   export let curve = false;
-  export let playIcon = mdiPlayCircleOutline;
-  export let pauseIcon = mdiPauseCircleOutline;
+  export let playIcon = mdiPlayCircle;
+  export let pauseIcon = mdiPauseCircle;
 
   let remainingSeconds = durationInSeconds;
   let loading = true;
@@ -54,7 +54,7 @@
       {#if loading}
         <LoadingSpinner />
       {:else if error}
-        <Icon path={mdiAlertCircleOutline} size="24" class="text-red-600" />
+        <Icon path={mdiAlertCircle} size="24" class="text-red-600" />
       {:else}
         <Icon path={pauseIcon} size="24" />
       {/if}
