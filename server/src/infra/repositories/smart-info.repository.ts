@@ -92,7 +92,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .setParameters({ ownerId, embedding: asVector(embedding) })
         .limit(numResults);
 
-        this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
+      this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
 
       results = await manager
         .createQueryBuilder()
