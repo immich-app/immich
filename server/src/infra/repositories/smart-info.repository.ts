@@ -88,7 +88,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .select('1 + (faces.embedding <=> :embedding)', 'distance')
         .innerJoin('faces.asset', 'asset')
         .where('asset.ownerId = :ownerId')
-        .orderBy(`faces.embedding <=> :embedding`)
+        .orderBy(`distance`)
         .setParameters({ ownerId, embedding: asVector(embedding) })
         .limit(numResults);
 
