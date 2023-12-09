@@ -134,7 +134,7 @@ PUBLIC_LOGIN_PAGE_MESSAGE="My Family Photos and Videos Backup Server"
 From the directory you created in Step 1, (which should now contain your customized `docker-compose.yml` and `.env` files) run `docker-compose up -d`.
 
 ```bash title="Start the containers using docker compose command"
-docker compose up -d
+docker-compose up -d
 ```
 
 :::tip
