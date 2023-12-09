@@ -1,4 +1,4 @@
-import { AuthUserDto } from '@app/domain';
+import { AuthDto } from '@app/domain';
 
 export const adminSignupStub = {
   name: 'Immich Admin',
@@ -24,7 +24,7 @@ export const changePasswordStub = {
 };
 
 export const authStub = {
-  admin: Object.freeze<AuthUserDto>({
+  admin: Object.freeze<AuthDto>({
     id: 'admin_id',
     email: 'admin@test.com',
     isAdmin: true,
@@ -32,7 +32,7 @@ export const authStub = {
     isAllowUpload: true,
     externalPath: null,
   }),
-  user1: Object.freeze<AuthUserDto>({
+  user1: Object.freeze<AuthDto>({
     id: 'user-id',
     email: 'immich@test.com',
     isAdmin: false,
@@ -43,7 +43,7 @@ export const authStub = {
     accessTokenId: 'token-id',
     externalPath: null,
   }),
-  user2: Object.freeze<AuthUserDto>({
+  user2: Object.freeze<AuthDto>({
     id: 'user-2',
     email: 'user2@immich.app',
     isAdmin: false,
@@ -54,7 +54,7 @@ export const authStub = {
     accessTokenId: 'token-id',
     externalPath: null,
   }),
-  external1: Object.freeze<AuthUserDto>({
+  external1: Object.freeze<AuthDto>({
     id: 'user-id',
     email: 'immich@test.com',
     isAdmin: false,
@@ -65,7 +65,7 @@ export const authStub = {
     accessTokenId: 'token-id',
     externalPath: '/data/user1',
   }),
-  adminSharedLink: Object.freeze<AuthUserDto>({
+  adminSharedLink: Object.freeze<AuthDto>({
     id: 'admin_id',
     email: 'admin@test.com',
     isAdmin: true,
@@ -75,7 +75,7 @@ export const authStub = {
     isShowMetadata: true,
     sharedLinkId: '123',
   }),
-  adminSharedLinkNoExif: Object.freeze<AuthUserDto>({
+  adminSharedLinkNoExif: Object.freeze<AuthDto>({
     id: 'admin_id',
     email: 'admin@test.com',
     isAdmin: true,
@@ -85,7 +85,7 @@ export const authStub = {
     isShowMetadata: false,
     sharedLinkId: '123',
   }),
-  readonlySharedLink: Object.freeze<AuthUserDto>({
+  readonlySharedLink: Object.freeze<AuthDto>({
     id: 'admin_id',
     email: 'admin@test.com',
     isAdmin: true,

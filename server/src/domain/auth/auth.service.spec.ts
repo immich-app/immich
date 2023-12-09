@@ -31,7 +31,7 @@ import {
   IUserTokenRepository,
 } from '../repositories';
 import { AuthType } from './auth.constant';
-import { AuthUserDto, SignUpDto } from './auth.dto';
+import { AuthDto, SignUpDto } from './auth.dto';
 import { AuthService } from './auth.service';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
@@ -145,7 +145,7 @@ describe('AuthService', () => {
 
   describe('changePassword', () => {
     it('should change the password', async () => {
-      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const auth = { email: 'test@imimch.com' } as UserEntity;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       userMock.getByEmail.mockResolvedValue({
@@ -153,23 +153,23 @@ describe('AuthService', () => {
         password: 'hash-password',
       } as UserEntity);
 
-      await sut.changePassword(authUser, dto);
+      await sut.changePassword(auth, dto);
 
-      expect(userMock.getByEmail).toHaveBeenCalledWith(authUser.email, true);
+      expect(userMock.getByEmail).toHaveBeenCalledWith(auth.email, true);
       expect(cryptoMock.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
     it('should throw when auth user email is not found', async () => {
-      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const auth = { email: 'test@imimch.com' } as UserEntity;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       userMock.getByEmail.mockResolvedValue(null);
 
-      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should throw when password does not match existing password', async () => {
-      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const auth = { email: 'test@imimch.com' } as UserEntity;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       cryptoMock.compareBcrypt.mockReturnValue(false);
@@ -179,11 +179,11 @@ describe('AuthService', () => {
         password: 'hash-password',
       } as UserEntity);
 
-      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should throw when user does not have a password', async () => {
-      const authUser = { email: 'test@imimch.com' } as UserEntity;
+      const auth = { email: 'test@imimch.com' } as UserEntity;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       userMock.getByEmail.mockResolvedValue({
@@ -191,33 +191,33 @@ describe('AuthService', () => {
         password: '',
       } as UserEntity);
 
-      await expect(sut.changePassword(authUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 
   describe('logout', () => {
     it('should return the end session endpoint', async () => {
       configMock.load.mockResolvedValue(systemConfigStub.enabled);
-      const authUser = { id: '123' } as AuthUserDto;
-      await expect(sut.logout(authUser, AuthType.OAUTH)).resolves.toEqual({
+      const auth = { id: '123' } as AuthDto;
+      await expect(sut.logout(auth, AuthType.OAUTH)).resolves.toEqual({
         successful: true,
         redirectUri: 'http://end-session-endpoint',
       });
     });
 
     it('should return the default redirect', async () => {
-      const authUser = { id: '123' } as AuthUserDto;
+      const auth = { id: '123' } as AuthDto;
 
-      await expect(sut.logout(authUser, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
     });
 
     it('should delete the access token', async () => {
-      const authUser = { id: '123', accessTokenId: 'token123' } as AuthUserDto;
+      const auth = { id: '123', accessTokenId: 'token123' } as AuthDto;
 
-      await expect(sut.logout(authUser, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
@@ -226,9 +226,9 @@ describe('AuthService', () => {
     });
 
     it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {
-      const authUser = { id: '123' } as AuthUserDto;
+      const auth = { id: '123' } as AuthDto;
 
-      await expect(sut.logout(authUser, AuthType.OAUTH)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.OAUTH)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });

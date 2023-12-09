@@ -2,7 +2,7 @@ import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
   AuditService,
-  AuthUserDto,
+  AuthDto,
   FileChecksumDto,
   FileChecksumResponseDto,
   FileReportDto,
@@ -21,8 +21,8 @@ export class AuditController {
   constructor(private service: AuditService) {}
 
   @Get('deletes')
-  getAuditDeletes(@AuthUser() authUser: AuthUserDto, @Query() dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
-    return this.service.getDeletes(authUser, dto);
+  getAuditDeletes(@AuthUser() auth: AuthDto, @Query() dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
+    return this.service.getDeletes(auth, dto);
   }
 
   @AdminRoute()

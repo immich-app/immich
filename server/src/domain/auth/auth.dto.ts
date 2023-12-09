@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
-export class AuthUserDto {
+export class AuthDto {
   id!: string;
   email!: string;
   isAdmin!: boolean;

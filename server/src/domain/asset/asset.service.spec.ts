@@ -59,7 +59,7 @@ const statResponse: AssetStatsResponseDto = {
 
 const uploadFile = {
   nullAuth: {
-    authUser: null,
+    auth: null,
     fieldName: UploadFieldName.ASSET_DATA,
     file: {
       checksum: Buffer.from('checksum', 'utf8'),
@@ -69,7 +69,7 @@ const uploadFile = {
   },
   filename: (fieldName: UploadFieldName, filename: string) => {
     return {
-      authUser: authStub.admin,
+      auth: authStub.admin,
       fieldName,
       file: {
         mimeType: 'image/jpeg',

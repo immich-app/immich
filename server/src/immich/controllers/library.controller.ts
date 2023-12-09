@@ -1,5 +1,5 @@
 import {
-  AuthUserDto,
+  AuthDto,
   CreateLibraryDto as CreateDto,
   LibraryService,
   LibraryStatsResponseDto,
@@ -21,49 +21,46 @@ export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  getLibraries(@AuthUser() authUser: AuthUserDto): Promise<ResponseDto[]> {
-    return this.service.getAllForUser(authUser);
+  getLibraries(@AuthUser() auth: AuthDto): Promise<ResponseDto[]> {
+    return this.service.getAllForUser(auth);
   }
 
   @Post()
-  createLibrary(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto): Promise<ResponseDto> {
-    return this.service.create(authUser, dto);
+  createLibrary(@AuthUser() auth: AuthDto, @Body() dto: CreateDto): Promise<ResponseDto> {
+    return this.service.create(auth, dto);
   }
 
   @Put(':id')
   updateLibrary(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: UpdateDto,
   ): Promise<ResponseDto> {
-    return this.service.update(authUser, id, dto);
+    return this.service.update(auth, id, dto);
   }
 
   @Get(':id')
-  getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
-    return this.service.get(authUser, id);
+  getLibraryInfo(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
+    return this.service.get(auth, id);
   }
 
   @Delete(':id')
-  deleteLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.delete(authUser, id);
+  deleteLibrary(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.delete(auth, id);
   }
 
   @Get(':id/statistics')
-  getLibraryStatistics(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-  ): Promise<LibraryStatsResponseDto> {
-    return this.service.getStatistics(authUser, id);
+  getLibraryStatistics(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<LibraryStatsResponseDto> {
+    return this.service.getStatistics(auth, id);
   }
 
   @Post(':id/scan')
-  scanLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
-    return this.service.queueScan(authUser, id, dto);
+  scanLibrary(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
+    return this.service.queueScan(auth, id, dto);
   }
 
   @Post(':id/removeOffline')
-  removeOfflineFiles(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.queueRemoveOffline(authUser, id);
+  removeOfflineFiles(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto) {
+    return this.service.queueRemoveOffline(auth, id);
   }
 }

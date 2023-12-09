@@ -1,6 +1,6 @@
 import {
+  AuthDto,
   AuthService,
-  AuthUserDto,
   LoginDetails,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
@@ -58,12 +58,12 @@ export class OAuthController {
   }
 
   @Post('link')
-  linkOAuthAccount(@AuthUser() authUser: AuthUserDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
-    return this.service.link(authUser, dto);
+  linkOAuthAccount(@AuthUser() auth: AuthDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
+    return this.service.link(auth, dto);
   }
 
   @Post('unlink')
-  unlinkOAuthAccount(@AuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
-    return this.service.unlink(authUser);
+  unlinkOAuthAccount(@AuthUser() auth: AuthDto): Promise<UserResponseDto> {
+    return this.service.unlink(auth);
   }
 }

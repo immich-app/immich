@@ -1,6 +1,6 @@
-import { AuthUserDto } from '@app/domain';
+import { AuthDto } from '@app/domain';
 
-export const CLI_USER: AuthUserDto = {
+export const CLI_USER: AuthDto = {
   id: 'cli',
   email: 'cli@immich.app',
   isAdmin: true,

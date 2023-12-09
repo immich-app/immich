@@ -34,7 +34,7 @@ import {
 } from './auth.constant';
 import {
   AuthDeviceResponseDto,
-  AuthUserDto,
+  AuthDto,
   ChangePasswordDto,
   LoginCredentialDto,
   LoginResponseDto,
@@ -110,9 +110,9 @@ export class AuthService {
     return this.createLoginResponse(user, AuthType.PASSWORD, details);
   }
 
-  async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
-    if (authUser.accessTokenId) {
-      await this.userTokenRepository.delete(authUser.accessTokenId);
+  async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
+    if (auth.accessTokenId) {
+      await this.userTokenRepository.delete(auth.accessTokenId);
     }
 
     return {
@@ -121,9 +121,9 @@ export class AuthService {
     };
   }
 
-  async changePassword(authUser: AuthUserDto, dto: ChangePasswordDto) {
+  async changePassword(auth: AuthDto, dto: ChangePasswordDto) {
     const { password, newPassword } = dto;
-    const user = await this.userRepository.getByEmail(authUser.email, true);
+    const user = await this.userRepository.getByEmail(auth.email, true);
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -133,7 +133,7 @@ export class AuthService {
       throw new BadRequestException('Wrong password');
     }
 
-    return this.userCore.updateUser(authUser, authUser.id, { password: newPassword });
+    return this.userCore.updateUser(auth, auth.id, { password: newPassword });
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserResponseDto> {
@@ -154,7 +154,7 @@ export class AuthService {
     return mapUser(admin);
   }
 
-  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto> {
+  async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthDto> {
     const shareKey = (headers['x-immich-share-key'] || params.key) as string;
     const userToken = (headers['x-immich-user-token'] ||
       params.userToken ||
@@ -177,20 +177,20 @@ export class AuthService {
     throw new UnauthorizedException('Authentication required');
   }
 
-  async getDevices(authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
-    const userTokens = await this.userTokenRepository.getAll(authUser.id);
-    return userTokens.map((userToken) => mapUserToken(userToken, authUser.accessTokenId));
+  async getDevices(auth: AuthDto): Promise<AuthDeviceResponseDto[]> {
+    const userTokens = await this.userTokenRepository.getAll(auth.id);
+    return userTokens.map((userToken) => mapUserToken(userToken, auth.accessTokenId));
   }
 
-  async logoutDevice(authUser: AuthUserDto, id: string): Promise<void> {
-    await this.access.requirePermission(authUser, Permission.AUTH_DEVICE_DELETE, id);
+  async logoutDevice(auth: AuthDto, id: string): Promise<void> {
+    await this.access.requirePermission(auth, Permission.AUTH_DEVICE_DELETE, id);
     await this.userTokenRepository.delete(id);
   }
 
-  async logoutDevices(authUser: AuthUserDto): Promise<void> {
-    const devices = await this.userTokenRepository.getAll(authUser.id);
+  async logoutDevices(auth: AuthDto): Promise<void> {
+    const devices = await this.userTokenRepository.getAll(auth.id);
     for (const device of devices) {
-      if (device.id === authUser.accessTokenId) {
+      if (device.id === auth.accessTokenId) {
         continue;
       }
       await this.userTokenRepository.delete(device.id);
@@ -284,7 +284,7 @@ export class AuthService {
     return this.createLoginResponse(user, AuthType.OAUTH, loginDetails);
   }
 
-  async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
+  async link(user: AuthDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {
     const config = await this.configCore.getConfig();
     const { sub: oauthId } = await this.getOAuthProfile(config, dto.url);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
@@ -295,7 +295,7 @@ export class AuthService {
     return mapUser(await this.userRepository.update(user.id, { oauthId }));
   }
 
-  async unlink(user: AuthUserDto): Promise<UserResponseDto> {
+  async unlink(user: AuthDto): Promise<UserResponseDto> {
     return mapUser(await this.userRepository.update(user.id, { oauthId: '' }));
   }
 
@@ -371,7 +371,7 @@ export class AuthService {
     return cookies[IMMICH_ACCESS_COOKIE] || null;
   }
 
-  private async validateSharedLink(key: string | string[]): Promise<AuthUserDto> {
+  private async validateSharedLink(key: string | string[]): Promise<AuthDto> {
     key = Array.isArray(key) ? key[0] : key;
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
@@ -396,7 +396,7 @@ export class AuthService {
     throw new UnauthorizedException('Invalid share key');
   }
 
-  private async validateApiKey(key: string): Promise<AuthUserDto> {
+  private async validateApiKey(key: string): Promise<AuthDto> {
     const hashedKey = this.cryptoRepository.hashSha256(key);
     const keyEntity = await this.keyRepository.getKey(hashedKey);
     if (keyEntity?.user) {
@@ -422,7 +422,7 @@ export class AuthService {
     return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
   }
 
-  private async validateUserToken(tokenValue: string): Promise<AuthUserDto> {
+  private async validateUserToken(tokenValue: string): Promise<AuthDto> {
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
     let token = await this.userTokenRepository.getByToken(hashedToken);
 

@@ -1,5 +1,5 @@
 import {
-  AuthUserDto,
+  AuthDto,
   PersonResponseDto,
   SearchDto,
   SearchExploreResponseDto,
@@ -20,17 +20,17 @@ export class SearchController {
   constructor(private service: SearchService) {}
 
   @Get()
-  search(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
-    return this.service.search(authUser, dto);
+  search(@AuthUser() auth: AuthDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
+    return this.service.search(auth, dto);
   }
 
   @Get('explore')
-  getExploreData(@AuthUser() authUser: AuthUserDto): Promise<SearchExploreResponseDto[]> {
-    return this.service.getExploreData(authUser) as Promise<SearchExploreResponseDto[]>;
+  getExploreData(@AuthUser() auth: AuthDto): Promise<SearchExploreResponseDto[]> {
+    return this.service.getExploreData(auth) as Promise<SearchExploreResponseDto[]>;
   }
 
   @Get('person')
-  searchPerson(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return this.service.searchPerson(authUser, dto);
+  searchPerson(@AuthUser() auth: AuthDto, @Query() dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return this.service.searchPerson(auth, dto);
   }
 }

@@ -1,4 +1,4 @@
-import { AssetFaceResponseDto, AuthUserDto, FaceDto, PersonResponseDto, PersonService } from '@app/domain';
+import { AssetFaceResponseDto, AuthDto, FaceDto, PersonResponseDto, PersonService } from '@app/domain';
 import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUser, Authenticated } from '../app.guard';
@@ -13,16 +13,16 @@ export class FaceController {
   constructor(private service: PersonService) {}
 
   @Get()
-  getFaces(@AuthUser() authUser: AuthUserDto, @Query() dto: FaceDto): Promise<AssetFaceResponseDto[]> {
-    return this.service.getFacesById(authUser, dto);
+  getFaces(@AuthUser() auth: AuthDto, @Query() dto: FaceDto): Promise<AssetFaceResponseDto[]> {
+    return this.service.getFacesById(auth, dto);
   }
 
   @Put(':id')
   reassignFacesById(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: FaceDto,
   ): Promise<PersonResponseDto> {
-    return this.service.reassignFacesById(authUser, id, dto);
+    return this.service.reassignFacesById(auth, id, dto);
   }
 }

@@ -1,7 +1,7 @@
 import {
   AssetIdsDto,
   AssetIdsResponseDto,
-  AuthUserDto,
+  AuthDto,
   IMMICH_SHARED_LINK_ACCESS_COOKIE,
   SharedLinkCreateDto,
   SharedLinkEditDto,
@@ -24,14 +24,14 @@ export class SharedLinkController {
   constructor(private readonly service: SharedLinkService) {}
 
   @Get()
-  getAllSharedLinks(@AuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
-    return this.service.getAll(authUser);
+  getAllSharedLinks(@AuthUser() auth: AuthDto): Promise<SharedLinkResponseDto[]> {
+    return this.service.getAll(auth);
   }
 
   @SharedLinkRoute()
   @Get('me')
   async getMySharedLink(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Query() dto: SharedLinkPasswordDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -40,7 +40,7 @@ export class SharedLinkController {
     if (sharedLinkToken) {
       dto.token = sharedLinkToken;
     }
-    const sharedLinkResponse = await this.service.getMine(authUser, dto);
+    const sharedLinkResponse = await this.service.getMine(auth, dto);
     if (sharedLinkResponse.token) {
       res.cookie(IMMICH_SHARED_LINK_ACCESS_COOKIE, sharedLinkResponse.token, {
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
@@ -52,46 +52,46 @@ export class SharedLinkController {
   }
 
   @Get(':id')
-  getSharedLinkById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
-    return this.service.get(authUser, id);
+  getSharedLinkById(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
+    return this.service.get(auth, id);
   }
 
   @Post()
-  createSharedLink(@AuthUser() authUser: AuthUserDto, @Body() dto: SharedLinkCreateDto) {
-    return this.service.create(authUser, dto);
+  createSharedLink(@AuthUser() auth: AuthDto, @Body() dto: SharedLinkCreateDto) {
+    return this.service.create(auth, dto);
   }
 
   @Patch(':id')
   updateSharedLink(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: SharedLinkEditDto,
   ): Promise<SharedLinkResponseDto> {
-    return this.service.update(authUser, id, dto);
+    return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  removeSharedLink(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.remove(authUser, id);
+  removeSharedLink(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.remove(auth, id);
   }
 
   @SharedLinkRoute()
   @Put(':id/assets')
   addSharedLinkAssets(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: AssetIdsDto,
   ): Promise<AssetIdsResponseDto[]> {
-    return this.service.addAssets(authUser, id, dto);
+    return this.service.addAssets(auth, id, dto);
   }
 
   @SharedLinkRoute()
   @Delete(':id/assets')
   removeSharedLinkAssets(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: AssetIdsDto,
   ): Promise<AssetIdsResponseDto[]> {
-    return this.service.removeAssets(authUser, id, dto);
+    return this.service.removeAssets(auth, id, dto);
   }
 }

@@ -729,7 +729,7 @@ describe(AlbumService.name, () => {
 
   // //   await expect(
   // //     sut.removeAssetsFromAlbum(
-  // //       authUser,
+  // //       auth,
   // //       {
   // //         ids: ['1'],
   // //       },
@@ -755,6 +755,6 @@ describe(AlbumService.name, () => {
   //   albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
   //   albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-  //   await expect(sut.removeAssets(authUser, albumId, { ids: ['1'] })).rejects.toBeInstanceOf(ForbiddenException);
+  //   await expect(sut.removeAssets(auth, albumId, { ids: ['1'] })).rejects.toBeInstanceOf(ForbiddenException);
   // });
 });

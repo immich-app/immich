@@ -1,4 +1,4 @@
-import { AuthService, AuthUserDto, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
+import { AuthDto, AuthService, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
 import {
   CanActivate,
   ExecutionContext,
@@ -50,8 +50,8 @@ export const SharedLinkRoute = () =>
   applyDecorators(SetMetadata(Metadata.SHARED_ROUTE, true), ApiQuery({ name: 'key', type: String, required: false }));
 export const AdminRoute = (value = true) => SetMetadata(Metadata.ADMIN_ROUTE, value);
 
-export const AuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthUserDto => {
-  return ctx.switchToHttp().getRequest<{ user: AuthUserDto }>().user;
+export const AuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthDto => {
+  return ctx.switchToHttp().getRequest<{ user: AuthDto }>().user;
 });
 
 export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext): LoginDetails => {
@@ -67,7 +67,7 @@ export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext
 });
 
 export interface AuthRequest extends Request {
-  user?: AuthUserDto;
+  user?: AuthDto;
 }
 
 @Injectable()

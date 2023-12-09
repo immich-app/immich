@@ -4,7 +4,7 @@ import {
   AlbumInfoDto,
   AlbumResponseDto,
   AlbumService,
-  AuthUserDto,
+  AuthDto,
   BulkIdResponseDto,
   BulkIdsDto,
   CreateAlbumDto as CreateDto,
@@ -26,78 +26,78 @@ export class AlbumController {
   constructor(private service: AlbumService) {}
 
   @Get('count')
-  getAlbumCount(@AuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
-    return this.service.getCount(authUser);
+  getAlbumCount(@AuthUser() auth: AuthDto): Promise<AlbumCountResponseDto> {
+    return this.service.getCount(auth);
   }
 
   @Get()
-  getAllAlbums(@AuthUser() authUser: AuthUserDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
-    return this.service.getAll(authUser, query);
+  getAllAlbums(@AuthUser() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+    return this.service.getAll(auth, query);
   }
 
   @Post()
-  createAlbum(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto): Promise<AlbumResponseDto> {
-    return this.service.create(authUser, dto);
+  createAlbum(@AuthUser() auth: AuthDto, @Body() dto: CreateDto): Promise<AlbumResponseDto> {
+    return this.service.create(auth, dto);
   }
 
   @SharedLinkRoute()
   @Get(':id')
   getAlbumInfo(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Query() dto: AlbumInfoDto,
   ): Promise<AlbumResponseDto> {
-    return this.service.get(authUser, id, dto);
+    return this.service.get(auth, id, dto);
   }
 
   @Patch(':id')
   updateAlbumInfo(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: UpdateDto,
   ): Promise<AlbumResponseDto> {
-    return this.service.update(authUser, id, dto);
+    return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  deleteAlbum(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.delete(authUser, id);
+  deleteAlbum(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto) {
+    return this.service.delete(auth, id);
   }
 
   @SharedLinkRoute()
   @Put(':id/assets')
   addAssetsToAlbum(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: BulkIdsDto,
   ): Promise<BulkIdResponseDto[]> {
-    return this.service.addAssets(authUser, id, dto);
+    return this.service.addAssets(auth, id, dto);
   }
 
   @Delete(':id/assets')
   removeAssetFromAlbum(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Body() dto: BulkIdsDto,
     @Param() { id }: UUIDParamDto,
   ): Promise<BulkIdResponseDto[]> {
-    return this.service.removeAssets(authUser, id, dto);
+    return this.service.removeAssets(auth, id, dto);
   }
 
   @Put(':id/users')
   addUsersToAlbum(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: AddUsersDto,
   ): Promise<AlbumResponseDto> {
-    return this.service.addUsers(authUser, id, dto);
+    return this.service.addUsers(auth, id, dto);
   }
 
   @Delete(':id/user/:userId')
   removeUserFromAlbum(
-    @AuthUser() authUser: AuthUserDto,
+    @AuthUser() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {
-    return this.service.removeUser(authUser, id, userId);
+    return this.service.removeUser(auth, id, userId);
   }
 }
