@@ -6,8 +6,8 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:isar/isar.dart';
 
-import 'album.stub.dart';
-import 'asset.stub.dart';
+import 'fixtures/album.stub.dart';
+import 'fixtures/asset.stub.dart';
 
 void main() {
   late final Isar db;
