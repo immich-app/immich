@@ -173,8 +173,8 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void showInfo() {
       showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(15.0)),
         ),
         barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,
@@ -188,7 +188,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           }
           return Padding(
             padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
+              bottom: MediaQuery.viewInsetsOf(context).bottom,
             ),
             child: ExifBottomSheet(asset: asset()),
           );
@@ -324,11 +324,11 @@ class GalleryViewerPage extends HookConsumerWidget {
         );
         return;
       }
-      ref.watch(imageViewerStateProvider.notifier).shareAsset(asset(), context);
+      ref.read(imageViewerStateProvider.notifier).shareAsset(asset(), context);
     }
 
     handleArchive(Asset asset) {
-      ref.watch(assetProvider.notifier).toggleArchive([asset]);
+      ref.read(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
         context.autoPop();
         return;
@@ -365,7 +365,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         return;
       }
 
-      ref.watch(imageViewerStateProvider.notifier).downloadAsset(
+      ref.read(imageViewerStateProvider.notifier).downloadAsset(
             asset(),
             context,
           );
@@ -403,12 +403,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                   asset().isLocal ? () => handleUpload(asset()) : null,
               onDownloadPressed: asset().isLocal
                   ? null
-                  : () => ref
-                      .watch(imageViewerStateProvider.notifier)
-                      .downloadAsset(
-                        asset(),
-                        context,
-                      ),
+                  : () =>
+                      ref.read(imageViewerStateProvider.notifier).downloadAsset(
+                            asset(),
+                            context,
+                          ),
               onToggleMotionVideo: (() {
                 isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
               }),
