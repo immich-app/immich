@@ -9,7 +9,8 @@ services:
       context: ../
       dockerfile: server/Dockerfile
       target: dev
-    command: npm run test:e2e
+    entrypoint: [ "/usr/local/bin/npm", "run" ]
+    command: test:e2e
     volumes:
       - ../server:/usr/src/app
       - /usr/src/app/node_modules
