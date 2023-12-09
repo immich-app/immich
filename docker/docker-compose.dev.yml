@@ -29,7 +29,7 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich_server
-    command: npm run start:debug immich
+    command: [ "/usr/src/app/bin/immich-dev", "immich" ]
     <<: *server-common
     ports:
       - 3001:3001
@@ -40,7 +40,7 @@ services:
 
   immich-microservices:
     container_name: immich_microservices
-    command: npm run start:debug microservices
+    command: [ "/usr/src/app/bin/immich-dev", "microservices" ]
     <<: *server-common
     # extends:
     #   file: hwaccel.yml

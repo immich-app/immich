@@ -1,6 +1,7 @@
 # dev build
 FROM ghcr.io/immich-app/base-server-dev:20231207@sha256:175d55f2fff48e0edeaf359c1aa0572b923db0c19304c22136a39061b8bc8179 as dev
 
+RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
 RUN npm ci && \
@@ -9,6 +10,7 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
+ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
 FROM dev AS prod
