@@ -576,7 +576,7 @@ describe(PersonService.name, () => {
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.FACES);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.RECOGNIZE_FACES,
+          name: JobName.FACIAL_RECOGNITION,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -595,7 +595,7 @@ describe(PersonService.name, () => {
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.RECOGNIZE_FACES,
+          name: JobName.FACIAL_RECOGNITION,
           data: { id: assetStub.image.id },
         },
       ]);

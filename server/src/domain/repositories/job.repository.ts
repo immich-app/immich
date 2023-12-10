@@ -63,9 +63,11 @@ export type JobItem =
   | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
   | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
 
-  // Recognize Faces
-  | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
-  | { name: JobName.RECOGNIZE_FACES; data: IEntityJob }
+  // Facial Recognition
+  | { name: JobName.QUEUE_FACE_DETECTION; data: IBaseJob }
+  | { name: JobName.FACE_DETECTION; data: IEntityJob }
+  | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
+  | { name: JobName.FACIAL_RECOGNITION; data: IEntityJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
   | { name: JobName.PERSON_DELETE; data: IEntityJob }
 
@@ -111,4 +113,5 @@ export interface IJobRepository {
   clear(name: QueueName, type: QueueCleanType): Promise<string[]>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
+  waitForQueueCompletion(name: QueueName): Promise<void>;
 }

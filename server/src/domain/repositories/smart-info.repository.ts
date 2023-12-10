@@ -8,13 +8,17 @@ export interface EmbeddingSearch {
   userIds: string[];
   embedding: Embedding;
   numResults: number;
-  maxDistance?: number;
   withArchived?: boolean;
+}
+
+export interface FaceEmbeddingSearch extends EmbeddingSearch {
+  maxDistance?: number;
+  hasPerson?: boolean;
 }
 
 export interface ISmartInfoRepository {
   init(modelName: string): Promise<void>;
   searchCLIP(search: EmbeddingSearch): Promise<AssetEntity[]>;
-  searchFaces(search: EmbeddingSearch): Promise<AssetFaceEntity[]>;
+  searchFaces(search: FaceEmbeddingSearch): Promise<AssetFaceEntity[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }

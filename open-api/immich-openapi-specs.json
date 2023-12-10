@@ -6503,6 +6503,12 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "faceDetection": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "facialRecognition": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "library": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6543,7 +6549,8 @@
           "migration",
           "backgroundTask",
           "search",
-          "recognizeFaces",
+          "faceDetection",
+          "facialRecognition",
           "sidecar",
           "library"
         ],
@@ -7831,7 +7838,8 @@
           "thumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
-          "recognizeFaces",
+          "faceDetection",
+          "facialRecognition",
           "smartSearch",
           "backgroundTask",
           "storageTemplateMigration",
@@ -9212,6 +9220,12 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "faceDetection": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "facialRecognition": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9219,9 +9233,6 @@
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "migration": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "recognizeFaces": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "search": {
@@ -9248,7 +9259,8 @@
           "migration",
           "backgroundTask",
           "search",
-          "recognizeFaces",
+          "faceDetection",
+          "facialRecognition",
           "sidecar",
           "library"
         ],

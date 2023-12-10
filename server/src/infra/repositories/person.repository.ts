@@ -7,7 +7,7 @@ import {
   UpdateFacesData,
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Chunked, ChunkedArray, asVector } from '../infra.utils';
@@ -221,15 +221,11 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
-  async createFace(entity: AssetFaceEntity): Promise<AssetFaceEntity> {
-    if (!entity.personId) {
-      throw new Error('Person ID is required to create a face');
-    }
+  async createFace(entity: AssetFaceEntity): Promise<void> {
     if (!entity.embedding) {
       throw new Error('Embedding is required to create a face');
     }
     await this.assetFaceRepository.insert({ ...entity, embedding: () => asVector(entity.embedding, true) });
-    return this.assetFaceRepository.findOneByOrFail({ assetId: entity.assetId, personId: entity.personId });
   }
 
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {

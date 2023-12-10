@@ -1,4 +1,3 @@
-import { PersonEntity } from '@app/infra/entities';
 import { PersonPathType } from '@app/infra/entities/move.entity';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
@@ -7,7 +6,7 @@ import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { CacheControl, ImmichFileResponse, usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
   CropOptions,
@@ -257,7 +256,9 @@ export class PersonService {
 
     try {
       await this.repository.delete(person);
-      await this.storageRepository.unlink(person.thumbnailPath);
+      if (person.thumbnailPath) {
+        await this.storageRepository.unlink(person.thumbnailPath);
+      }
     } catch (error: Error | any) {
       this.logger.error(`Unable to delete person: ${error}`, error?.stack);
     }
@@ -277,7 +278,7 @@ export class PersonService {
     return true;
   }
 
-  async handleQueueRecognizeFaces({ force }: IBaseJob) {
+  async handleQueueDetectFaces({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
@@ -299,14 +300,14 @@ export class PersonService {
 
     for await (const assets of assetPagination) {
       await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.RECOGNIZE_FACES, data: { id: asset.id } })),
+        assets.map((asset) => ({ name: JobName.FACE_DETECTION, data: { id: asset.id } })),
       );
     }
 
     return true;
   }
 
-  async handleRecognizeFaces({ id }: IEntityJob) {
+  async handleDetectFaces({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
@@ -332,44 +333,109 @@ export class PersonService {
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
-    for (const { embedding, ...rest } of faces) {
-      const matches = await this.smartInfoRepository.searchFaces({
-        userIds: [asset.ownerId],
-        embedding,
-        numResults: 1,
-        maxDistance: machineLearning.facialRecognition.maxDistance,
-      });
-
-      let personId = matches[0]?.personId || null;
-      let newPerson: PersonEntity | null = null;
-      if (!personId) {
-        this.logger.debug('No matches, creating a new person.');
-        newPerson = await this.repository.create({ ownerId: asset.ownerId });
-        personId = newPerson.id;
-      }
-
-      const face = await this.repository.createFace({
+    for (const face of faces) {
+      const mappedFace = {
         assetId: asset.id,
-        personId,
-        embedding,
-        imageHeight: rest.imageHeight,
-        imageWidth: rest.imageWidth,
-        boundingBoxX1: rest.boundingBox.x1,
-        boundingBoxX2: rest.boundingBox.x2,
-        boundingBoxY1: rest.boundingBox.y1,
-        boundingBoxY2: rest.boundingBox.y2,
-      });
+        embedding: face.embedding,
+        imageHeight: face.imageHeight,
+        imageWidth: face.imageWidth,
+        boundingBoxX1: face.boundingBox.x1,
+        boundingBoxX2: face.boundingBox.x2,
+        boundingBoxY1: face.boundingBox.y1,
+        boundingBoxY2: face.boundingBox.y2,
+      };
 
-      if (newPerson) {
-        await this.repository.update({ id: personId, faceAssetId: face.id });
-        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
-      }
+      await this.repository.createFace(mappedFace);
     }
 
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
       facesRecognizedAt: new Date(),
     });
+
+    return true;
+  }
+
+  async handleQueueRecognizeFaces({ force }: IBaseJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    await this.jobRepository.waitForQueueCompletion(QueueName.FACE_DETECTION);
+
+    if (force) {
+      const people = await this.repository.getAll();
+      for (const person of people) {
+        await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
+      }
+      this.logger.debug(`Deleted ${people.length} people`);
+    }
+
+    let assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+      return force
+        ? this.assetRepository.getAll(pagination, {
+            order: 'DESC',
+            withExif: false,
+            withPeople: false,
+            withSmartInfo: false,
+            withStacked: false,
+          })
+        : this.assetRepository.getWithout(pagination, WithoutProperty.PERSON);
+    });
+
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id: asset.id } });
+      }
+    }
+
+    return true;
+  }
+
+  async handleRecognizeFaces({ id }: IEntityJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    const [asset] = await this.assetRepository.getByIds(
+      [id],
+      { faces: true },
+      { faces: { id: true, embedding: true, personId: true } },
+    );
+
+    if (!asset.faces || asset.faces.length === 0) {
+      return false;
+    }
+
+    for (const face of asset.faces) {
+      if (face.personId != null) {
+        continue;
+      }
+
+      // typeorm leaves the embedding as a string
+      const embedding = typeof face.embedding === 'string' ? JSON.parse(face.embedding) : face.embedding;
+      const matches = await this.smartInfoRepository.searchFaces({
+        ownerId: asset.ownerId,
+        embedding,
+        numResults: 100,
+        maxDistance: machineLearning.facialRecognition.maxDistance,
+        hasPerson: true,
+      });
+
+      this.logger.log(JSON.stringify(matches, null, 2));
+
+      let personId = matches[0]?.personId || null;
+      if (!personId) {
+        this.logger.log('No matches, creating a new person.');
+        const newPerson = await this.repository.create({ ownerId: asset.ownerId, faceAssetId: face.id });
+        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+        personId = newPerson.id;
+      }
+
+      await this.repository.reassignFace(face.id, personId);
+    }
 
     return true;
   }

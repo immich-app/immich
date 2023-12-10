@@ -48,7 +48,7 @@
 
   const onFaceConfirm = () => {
     faceConfirm = false;
-    handleCommand(JobName.RecognizeFaces, { command: JobCommand.Start, force: true });
+    handleCommand(JobName.FaceDetection, { command: JobCommand.Start, force: true });
   };
 
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
@@ -83,11 +83,17 @@
       subtitle: 'Run machine learning on assets to support smart search',
       disabled: !$featureFlags.clipEncode,
     },
-    [JobName.RecognizeFaces]: {
+    [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
       title: api.getJobName(JobName.RecognizeFaces),
-      subtitle: 'Run machine learning on assets to recognize faces',
+      subtitle: 'Detects the faces in your assets',
       handleCommand: handleFaceCommand,
+      disabled: !$featureFlags.facialRecognition,
+    },
+    [JobName.FacialRecognition]: {
+      icon: mdiVectorCircle,
+      title: api.getJobName(JobName.FacialRecognition),
+      subtitle: 'Group the faces in your assets into people',
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.VideoConversion]: {

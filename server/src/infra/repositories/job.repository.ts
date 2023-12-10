@@ -16,6 +16,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
 import { bullConfig } from '../infra.config';
+import { setTimeout } from 'timers/promises';
 
 @Injectable()
 export class JobRepository implements IJobRepository {
@@ -143,12 +144,24 @@ export class JobRepository implements IJobRepository {
     await this.queueAll([item]);
   }
 
+  async waitForQueueCompletion(name: QueueName): Promise<void> {
+    let { isActive } = await this.getQueueStatus(name);
+    while (isActive) {
+      this.logger.verbose(`Waiting for ${name} queue to stop...`);
+      await setTimeout(1000).then(async () => {
+        ({ isActive } = await this.getQueueStatus(name));
+      });
+    }
+  }
+
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
         return { jobId: item.data.id };
       case JobName.GENERATE_PERSON_THUMBNAIL:
         return { priority: 1 };
+      case JobName.QUEUE_FACIAL_RECOGNITION:
+        return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
 
       default:
         return null;

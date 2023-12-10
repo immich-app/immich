@@ -82,7 +82,7 @@
 
           <SettingSelect
             label="FACIAL RECOGNITION MODEL"
-            desc="Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Recognize Faces job for all images upon changing a model."
+            desc="Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Face Detection job for all images upon changing a model."
             name="facial-recognition-model"
             bind:value={config.machineLearning.facialRecognition.modelName}
             options={[

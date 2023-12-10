@@ -25,7 +25,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
 import path from 'path';
-import { And, Brackets, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
+import {
+  And, Brackets,
+  FindOptionsRelations,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  In,
+  IsNull,
+  LessThan,
+  Not,
+  Repository,
+} from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Chunked, ChunkedArray, OptionalBetween, paginate } from '../infra.utils';
@@ -103,6 +113,7 @@ export class AssetRepository implements IAssetRepository {
       withExif: _withExif,
       withStacked,
       withPeople,
+      withSmartInfo,
 
       order,
     } = options;
@@ -172,6 +183,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (withStacked) {
       builder.leftJoinAndSelect('asset.stack', 'stack');
+    }
+
+    if (withSmartInfo) {
+      builder.leftJoinAndSelect('asset.smartInfo', 'smartInfo');
     }
 
     if (withDeleted) {
@@ -250,7 +265,11 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
-  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
+  getByIds(
+    ids: string[],
+    relations?: FindOptionsRelations<AssetEntity>,
+    select?: FindOptionsSelect<AssetEntity>,
+  ): Promise<AssetEntity[]> {
     if (!relations) {
       relations = {
         exifInfo: true,
@@ -262,9 +281,11 @@ export class AssetRepository implements IAssetRepository {
         stack: true,
       };
     }
+
     return this.repository.find({
       where: { id: In(ids) },
       relations,
+      select,
       withDeleted: true,
     });
   }
@@ -325,11 +346,11 @@ export class AssetRepository implements IAssetRepository {
         deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
-        exifInfo: true,
-        smartInfo: true,
-        tags: true,
+        exifInfo: options.withExif !== false,
+        smartInfo: options.withSmartInfo !== false,
+        tags: options.withSmartInfo !== false,
         faces: {
-          person: true,
+          person: options.withPeople !== false,
         },
       },
       withDeleted: options.withDeleted ?? !!options.trashedBefore,
@@ -518,6 +539,20 @@ export class AssetRepository implements IAssetRepository {
           },
         };
         break;
+
+        case WithoutProperty.PERSON:
+          relations = {
+            faces: true,
+          };
+          where = {
+            resizePath: Not(IsNull()),
+            isVisible: true,
+            faces: {
+              assetId: Not(IsNull()),
+              personId: IsNull(),
+            },
+          };
+          break;
 
       case WithoutProperty.SIDECAR:
         where = [
