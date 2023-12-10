@@ -43,6 +43,7 @@ extension IntListExtension on Iterable<int> {
 }
 
 extension AssetListExtension on Iterable<Asset> {
+  /// Returns the assets that are already available in the Immich server
   Iterable<Asset> remoteOnly({
     void Function()? errorCallback,
   }) {
@@ -54,6 +55,8 @@ extension AssetListExtension on Iterable<Asset> {
     return this;
   }
 
+  /// Returns the assets that are owned by the user passed to the [owner] param
+  /// If [owner] is null, an empty list is returned
   Iterable<Asset> ownedOnly(
     User? owner, {
     void Function()? errorCallback,
@@ -68,6 +71,8 @@ extension AssetListExtension on Iterable<Asset> {
     return this;
   }
 
+  /// Returns the assets that are present on a file system which has write permission
+  /// This filters out assets on readOnly external library to which we cannot perform any write operation
   Iterable<Asset> writableOnly({
     void Function()? errorCallback,
   }) {
@@ -79,7 +84,8 @@ extension AssetListExtension on Iterable<Asset> {
     return this;
   }
 
-  Iterable<Asset> liveOnly({
+  /// Filters out offline assets and returns those that are still accessible by the Immich server
+  Iterable<Asset> nonOfflineOnly({
     void Function()? errorCallback,
   }) {
     final bool onlyLive = every((e) => !e.isOffline);
