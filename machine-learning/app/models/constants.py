@@ -50,12 +50,12 @@ _INSIGHTFACE_MODELS = {
     "buffalo_s",
 }
 
-SUPPORTED_PROVIDERS = {
+SUPPORTED_PROVIDERS = [
     "TensorrtExecutionProvider",
     "CUDAExecutionProvider",
     "OpenVINOExecutionProvider",
     "CPUExecutionProvider",
-}
+]
 
 
 def is_openclip(model_name: str) -> bool:

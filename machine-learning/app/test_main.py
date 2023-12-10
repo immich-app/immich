@@ -7,6 +7,7 @@ from unittest import mock
 
 import cv2
 import numpy as np
+import onnxruntime as ort
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
@@ -18,6 +19,95 @@ from .models.cache import ModelCache
 from .models.clip import OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
 from .schemas import ModelType
+
+
+class TestBase:
+    CPU_EP = ["CPUExecutionProvider"]
+    CUDA_EP = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+    TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
+    OV_EP = ["OpenVINOExecutionProvider", "CPUExecutionProvider"]
+    TRT_EP_OUT_OF_ORDER = ["CUDAExecutionProvider", "TensorrtExecutionProvider", "CPUExecutionProvider"]
+
+    @pytest.mark.providers(CPU_EP)
+    def test_sets_cpu_provider(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CPU_EP
+
+    @pytest.mark.providers(CUDA_EP)
+    def test_sets_cuda_provider_if_available(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CUDA_EP
+
+    @pytest.mark.providers(TRT_EP)
+    def test_sets_tensorrt_provider_if_available(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.TRT_EP
+
+    @pytest.mark.providers(OV_EP)
+    def test_sets_openvino_provider_if_available(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.OV_EP
+
+    @pytest.mark.providers(TRT_EP_OUT_OF_ORDER)
+    def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.TRT_EP
+
+    def test_sets_provider_kwarg(self) -> None:
+        providers = ["TensorrtExecutionProvider", "CUDAExecutionProvider"]
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=providers)
+
+        assert encoder.providers == providers
+
+    def test_sets_default_provider_options(self) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
+
+        assert encoder.provider_options == [
+            {"arena_extend_strategy": "kSameAsRequested"},
+            {"arena_extend_strategy": "kSameAsRequested"},
+        ]
+
+    def test_sets_provider_options_kwarg(self) -> None:
+        encoder = OpenCLIPEncoder(
+            "ViT-B-32__openai",
+            providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"],
+            provider_options=[],
+        )
+
+        assert encoder.provider_options == []
+
+    def test_sets_default_sess_options(self) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
+        assert encoder.sess_options.inter_op_num_threads == 1
+        assert encoder.sess_options.intra_op_num_threads == 2
+        assert encoder.sess_options.enable_cpu_mem_arena is False
+
+    def test_default_sets_parallel_sess_options_if_multiple_inter_op_threads(self, mocker: MockerFixture) -> None:
+        mock_settings = mocker.patch("app.models.base.settings")
+        mock_settings.model_inter_op_threads = 2
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.sess_options.inter_op_num_threads == 2
+        assert encoder.sess_options.execution_mode == ort.ExecutionMode.ORT_PARALLEL
+
+    def test_sets_sess_options_kwarg(self) -> None:
+        sess_options = ort.SessionOptions()
+        encoder = OpenCLIPEncoder(
+            "ViT-B-32__openai",
+            providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"],
+            provider_options=[],
+            sess_options=sess_options,
+        )
+
+        assert sess_options is encoder.sess_options
 
 
 class TestCLIP:
@@ -41,7 +131,7 @@ class TestCLIP:
         mocked.run.return_value = [[self.embedding]]
         mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
 
-        clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
+        clip_encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="vision")
         embedding = clip_encoder.predict(pil_image)
 
         assert clip_encoder.mode == "vision"
@@ -66,7 +156,7 @@ class TestCLIP:
         mocked.run.return_value = [[self.embedding]]
         mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
 
-        clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
+        clip_encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
         embedding = clip_encoder.predict("test search query")
 
         assert clip_encoder.mode == "text"
@@ -166,7 +256,7 @@ class TestEndpoints:
         pil_image.save(byte_image, format="jpeg")
         response = deployed_app.post(
             "http://localhost:3003/predict",
-            data={"modelName": "ViT-B-32::openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
+            data={"modelName": "ViT-B-32__openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
             files={"image": byte_image.getvalue()},
         )
         assert response.status_code == 200
@@ -176,7 +266,7 @@ class TestEndpoints:
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={
-                "modelName": "ViT-B-32::openai",
+                "modelName": "ViT-B-32__openai",
                 "modelType": "clip",
                 "text": "test search query",
                 "options": json.dumps({"mode": "text"}),

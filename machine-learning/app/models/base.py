@@ -141,16 +141,14 @@ class InferenceModel(ABC):
     @providers.setter
     def providers(self, providers: list[str]) -> None:
         log.debug(
-            (
-                f"Setting '{self.model_name}' execution providers to {self.providers}, "
-                "in descending order of preference"
-            ),
+            (f"Setting '{self.model_name}' execution providers to {providers}, " "in descending order of preference"),
         )
         self._providers = providers
 
     @property
     def providers_default(self) -> list[str]:
-        return list(SUPPORTED_PROVIDERS & set(ort.get_available_providers()))
+        available_providers = set(ort.get_available_providers())
+        return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
     @property
     def provider_options(self) -> list[dict[str, Any]]:
@@ -158,7 +156,7 @@ class InferenceModel(ABC):
 
     @provider_options.setter
     def provider_options(self, provider_options: list[dict[str, Any]]) -> None:
-        log.debug(f"Setting execution provider options to {self.provider_options}")
+        log.debug(f"Setting execution provider options to {provider_options}")
         self._provider_options = provider_options
 
     @property

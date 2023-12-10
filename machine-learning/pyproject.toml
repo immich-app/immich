@@ -84,3 +84,6 @@ select = ["E", "F", "I"]
 [tool.black]
 line-length = 120
 target-version = ['py311']
+
+[tool.pytest.ini_options]
+markers = ["providers"]
