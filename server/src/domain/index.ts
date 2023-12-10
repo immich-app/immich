@@ -14,6 +14,7 @@ export * from './job';
 export * from './library';
 export * from './media';
 export * from './metadata';
+export * from './metrics';
 export * from './partner';
 export * from './person';
 export * from './repositories';

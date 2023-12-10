@@ -81,6 +81,9 @@ export enum JobName {
   SIDECAR_DISCOVERY = 'sidecar-discovery',
   SIDECAR_SYNC = 'sidecar-sync',
   SIDECAR_WRITE = 'sidecar-write',
+
+  // metrics
+  METRICS = 'metrics',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -95,6 +98,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
+  [JobName.METRICS]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
