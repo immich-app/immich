@@ -5,7 +5,7 @@ import { Stats } from 'node:fs';
 import path from 'node:path';
 import { basename, parse } from 'path';
 import { AccessCore, Permission } from '../access';
-import { AuthUserDto } from '../auth';
+import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
@@ -70,22 +70,22 @@ export class LibraryService {
     });
   }
 
-  async getStatistics(authUser: AuthUserDto, id: string): Promise<LibraryStatsResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, id);
+  async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
     return this.repository.getStatistics(id);
   }
 
-  async getCount(authUser: AuthUserDto): Promise<number> {
-    return this.repository.getCountForUser(authUser.id);
+  async getCount(auth: AuthDto): Promise<number> {
+    return this.repository.getCountForUser(auth.user.id);
   }
 
-  async getAllForUser(authUser: AuthUserDto): Promise<LibraryResponseDto[]> {
-    const libraries = await this.repository.getAllByUserId(authUser.id);
+  async getAllForUser(auth: AuthDto): Promise<LibraryResponseDto[]> {
+    const libraries = await this.repository.getAllByUserId(auth.user.id);
     return libraries.map((library) => mapLibrary(library));
   }
 
-  async get(authUser: AuthUserDto, id: string): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, id);
+  async get(auth: AuthDto, id: string): Promise<LibraryResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
     const library = await this.findOrFail(id);
     return mapLibrary(library);
   }
@@ -99,7 +99,7 @@ export class LibraryService {
     return true;
   }
 
-  async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+  async create(auth: AuthDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
     switch (dto.type) {
       case LibraryType.EXTERNAL:
         if (!dto.name) {
@@ -120,7 +120,7 @@ export class LibraryService {
     }
 
     const library = await this.repository.create({
-      ownerId: authUser.id,
+      ownerId: auth.user.id,
       name: dto.name,
       type: dto.type,
       importPaths: dto.importPaths ?? [],
@@ -131,17 +131,17 @@ export class LibraryService {
     return mapLibrary(library);
   }
 
-  async update(authUser: AuthUserDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+  async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update({ id, ...dto });
     return mapLibrary(library);
   }
 
-  async delete(authUser: AuthUserDto, id: string) {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_DELETE, id);
+  async delete(auth: AuthDto, id: string) {
+    await this.access.requirePermission(auth, Permission.LIBRARY_DELETE, id);
 
     const library = await this.findOrFail(id);
-    const uploadCount = await this.repository.getUploadLibraryCount(authUser.id);
+    const uploadCount = await this.repository.getUploadLibraryCount(auth.user.id);
     if (library.type === LibraryType.UPLOAD && uploadCount <= 1) {
       throw new BadRequestException('Cannot delete the last upload library');
     }
@@ -294,8 +294,8 @@ export class LibraryService {
     return true;
   }
 
-  async queueScan(authUser: AuthUserDto, id: string, dto: ScanLibraryDto) {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+  async queueScan(auth: AuthDto, id: string, dto: ScanLibraryDto) {
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
 
     const library = await this.repository.get(id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
@@ -312,9 +312,9 @@ export class LibraryService {
     });
   }
 
-  async queueRemoveOffline(authUser: AuthUserDto, id: string) {
+  async queueRemoveOffline(auth: AuthDto, id: string) {
     this.logger.verbose(`Removing offline files from library: ${id}`);
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
 
     await this.jobRepository.queue({
       name: JobName.LIBRARY_REMOVE_OFFLINE,

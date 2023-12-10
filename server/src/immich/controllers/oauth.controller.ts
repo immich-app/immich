@@ -1,6 +1,6 @@
 import {
+  AuthDto,
   AuthService,
-  AuthUserDto,
   LoginDetails,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
@@ -12,7 +12,7 @@ import {
 import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { AuthUser, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
+import { Auth, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 
 @ApiTags('OAuth')
@@ -58,12 +58,12 @@ export class OAuthController {
   }
 
   @Post('link')
-  linkOAuthAccount(@AuthUser() authUser: AuthUserDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
-    return this.service.link(authUser, dto);
+  linkOAuthAccount(@Auth() auth: AuthDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
+    return this.service.link(auth, dto);
   }
 
   @Post('unlink')
-  unlinkOAuthAccount(@AuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
-    return this.service.unlink(authUser);
+  unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserResponseDto> {
+    return this.service.unlink(auth);
   }
 }

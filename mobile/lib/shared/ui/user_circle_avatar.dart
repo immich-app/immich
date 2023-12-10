@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/transparent_image.dart';
@@ -34,15 +35,16 @@ class UserCircleAvatar extends ConsumerWidget {
         color: isDarkTheme && user.avatarColor == AvatarColorEnum.primary
             ? Colors.black
             : Colors.white,
+        backgroundColor: user.avatarColor.toColor(),
       ),
     );
     return CircleAvatar(
-      backgroundColor: user.avatarColor.toColor(),
+      backgroundColor: context.primaryColor,
       radius: radius,
       child: user.profileImagePath.isEmpty
           ? textIcon
           : ClipRRect(
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: const BorderRadius.all(Radius.circular(50)),
               child: CachedNetworkImage(
                 fit: BoxFit.cover,
                 cacheKey: user.profileImagePath,

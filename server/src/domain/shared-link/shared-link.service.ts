@@ -2,7 +2,7 @@ import { AssetEntity, SharedLinkEntity, SharedLinkType } from '@app/infra/entiti
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AccessCore, Permission } from '../access';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
-import { AuthUserDto } from '../auth';
+import { AuthDto } from '../auth';
 import { IAccessRepository, ICryptoRepository, ISharedLinkRepository } from '../repositories';
 import { SharedLinkResponseDto, mapSharedLink, mapSharedLinkWithoutMetadata } from './shared-link-response.dto';
 import { SharedLinkCreateDto, SharedLinkEditDto, SharedLinkPasswordDto } from './shared-link.dto';
@@ -19,42 +19,36 @@ export class SharedLinkService {
     this.access = AccessCore.create(accessRepository);
   }
 
-  getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
-    return this.repository.getAll(authUser.id).then((links) => links.map(mapSharedLink));
+  getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
+    return this.repository.getAll(auth.user.id).then((links) => links.map(mapSharedLink));
   }
 
-  async getMine(authUser: AuthUserDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
-    const { sharedLinkId: id, isPublicUser, isShowMetadata: isShowExif } = authUser;
-
-    if (!isPublicUser || !id) {
+  async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
+    if (!auth.sharedLink) {
       throw new ForbiddenException();
     }
 
-    const sharedLink = await this.findOrFail(authUser, id);
-
-    let newToken;
+    const sharedLink = await this.findOrFail(auth, auth.sharedLink.id);
+    const response = this.map(sharedLink, { withExif: sharedLink.showExif });
     if (sharedLink.password) {
-      newToken = this.validateAndRefreshToken(sharedLink, dto);
+      response.token = this.validateAndRefreshToken(sharedLink, dto);
     }
 
-    return {
-      ...this.map(sharedLink, { withExif: isShowExif ?? true }),
-      token: newToken,
-    };
+    return response;
   }
 
-  async get(authUser: AuthUserDto, id: string): Promise<SharedLinkResponseDto> {
-    const sharedLink = await this.findOrFail(authUser, id);
+  async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
+    const sharedLink = await this.findOrFail(auth, id);
     return this.map(sharedLink, { withExif: true });
   }
 
-  async create(authUser: AuthUserDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
+  async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
     switch (dto.type) {
       case SharedLinkType.ALBUM:
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
-        await this.access.requirePermission(authUser, Permission.ALBUM_SHARE, dto.albumId);
+        await this.access.requirePermission(auth, Permission.ALBUM_SHARE, dto.albumId);
         break;
 
       case SharedLinkType.INDIVIDUAL:
@@ -62,14 +56,14 @@ export class SharedLinkService {
           throw new BadRequestException('Invalid assetIds');
         }
 
-        await this.access.requirePermission(authUser, Permission.ASSET_SHARE, dto.assetIds);
+        await this.access.requirePermission(auth, Permission.ASSET_SHARE, dto.assetIds);
 
         break;
     }
 
     const sharedLink = await this.repository.create({
       key: this.cryptoRepository.randomBytes(50),
-      userId: authUser.id,
+      userId: auth.user.id,
       type: dto.type,
       albumId: dto.albumId || null,
       assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
@@ -84,11 +78,11 @@ export class SharedLinkService {
     return this.map(sharedLink, { withExif: true });
   }
 
-  async update(authUser: AuthUserDto, id: string, dto: SharedLinkEditDto) {
-    await this.findOrFail(authUser, id);
+  async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
+    await this.findOrFail(auth, id);
     const sharedLink = await this.repository.update({
       id,
-      userId: authUser.id,
+      userId: auth.user.id,
       description: dto.description,
       password: dto.password,
       expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
@@ -99,21 +93,21 @@ export class SharedLinkService {
     return this.map(sharedLink, { withExif: true });
   }
 
-  async remove(authUser: AuthUserDto, id: string): Promise<void> {
-    const sharedLink = await this.findOrFail(authUser, id);
+  async remove(auth: AuthDto, id: string): Promise<void> {
+    const sharedLink = await this.findOrFail(auth, id);
     await this.repository.remove(sharedLink);
   }
 
-  private async findOrFail(authUser: AuthUserDto, id: string) {
-    const sharedLink = await this.repository.get(authUser.id, id);
+  private async findOrFail(auth: AuthDto, id: string) {
+    const sharedLink = await this.repository.get(auth.user.id, id);
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');
     }
     return sharedLink;
   }
 
-  async addAssets(authUser: AuthUserDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
-    const sharedLink = await this.findOrFail(authUser, id);
+  async addAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
+    const sharedLink = await this.findOrFail(auth, id);
 
     if (sharedLink.type !== SharedLinkType.INDIVIDUAL) {
       throw new BadRequestException('Invalid shared link type');
@@ -121,7 +115,7 @@ export class SharedLinkService {
 
     const existingAssetIds = new Set(sharedLink.assets.map((asset) => asset.id));
     const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
-    const allowedAssetIds = await this.access.checkAccess(authUser, Permission.ASSET_SHARE, notPresentAssetIds);
+    const allowedAssetIds = await this.access.checkAccess(auth, Permission.ASSET_SHARE, notPresentAssetIds);
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
@@ -146,8 +140,8 @@ export class SharedLinkService {
     return results;
   }
 
-  async removeAssets(authUser: AuthUserDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
-    const sharedLink = await this.findOrFail(authUser, id);
+  async removeAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
+    const sharedLink = await this.findOrFail(auth, id);
 
     if (sharedLink.type !== SharedLinkType.INDIVIDUAL) {
       throw new BadRequestException('Invalid shared link type');

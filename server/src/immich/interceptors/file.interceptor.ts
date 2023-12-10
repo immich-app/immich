@@ -44,7 +44,7 @@ const callbackify = async <T>(fn: (...args: any[]) => T, callback: Callback<T>) 
 
 const asRequest = (req: AuthRequest, file: Express.Multer.File) => {
   return {
-    authUser: req.user || null,
+    auth: req.user || null,
     fieldName: file.fieldname as UploadFieldName,
     file: mapToUploadFile(file as ImmichFile),
   };

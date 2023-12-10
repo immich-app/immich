@@ -1,4 +1,4 @@
-import { AuthService, AuthUserDto, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
+import { AuthDto, AuthService, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
 import {
   CanActivate,
   ExecutionContext,
@@ -50,8 +50,8 @@ export const SharedLinkRoute = () =>
   applyDecorators(SetMetadata(Metadata.SHARED_ROUTE, true), ApiQuery({ name: 'key', type: String, required: false }));
 export const AdminRoute = (value = true) => SetMetadata(Metadata.ADMIN_ROUTE, value);
 
-export const AuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthUserDto => {
-  return ctx.switchToHttp().getRequest<{ user: AuthUserDto }>().user;
+export const Auth = createParamDecorator((data, ctx: ExecutionContext): AuthDto => {
+  return ctx.switchToHttp().getRequest<{ user: AuthDto }>().user;
 });
 
 export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext): LoginDetails => {
@@ -67,7 +67,7 @@ export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext
 });
 
 export interface AuthRequest extends Request {
-  user?: AuthUserDto;
+  user?: AuthDto;
 }
 
 @Injectable()
@@ -93,12 +93,12 @@ export class AppGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<AuthRequest>();
 
     const authDto = await this.authService.validate(req.headers, req.query as Record<string, string>);
-    if (authDto.isPublicUser && !isSharedRoute) {
+    if (authDto.sharedLink && !isSharedRoute) {
       this.logger.warn(`Denied access to non-shared route: ${req.path}`);
       return false;
     }
 
-    if (isAdminRoute && !authDto.isAdmin) {
+    if (isAdminRoute && !authDto.user.isAdmin) {
       this.logger.warn(`Denied access to admin only route: ${req.path}`);
       return false;
     }

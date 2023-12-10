@@ -1,7 +1,7 @@
 import { AssetEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AssetResponseDto, mapAsset } from '../asset';
-import { AuthUserDto } from '../auth';
+import { AuthDto } from '../auth';
 import { PersonResponseDto } from '../person';
 import {
   IAssetRepository,
@@ -31,16 +31,16 @@ export class SearchService {
     this.configCore = SystemConfigCore.create(configRepository);
   }
 
-  async searchPerson(authUser: AuthUserDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return this.personRepository.getByName(authUser.id, dto.name, { withHidden: dto.withHidden });
+  async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
+    return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
   }
 
-  async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
+  async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     await this.configCore.requireFeature(FeatureFlag.SEARCH);
     const options = { maxFields: 12, minAssetsPerField: 5 };
     const results = await Promise.all([
-      this.assetRepository.getAssetIdByCity(authUser.id, options),
-      this.assetRepository.getAssetIdByTag(authUser.id, options),
+      this.assetRepository.getAssetIdByCity(auth.user.id, options),
+      this.assetRepository.getAssetIdByTag(auth.user.id, options),
     ]);
     const assetIds = new Set<string>(results.flatMap((field) => field.items.map((item) => item.data)));
     const assets = await this.assetRepository.getByIds(Array.from(assetIds));
@@ -52,7 +52,7 @@ export class SearchService {
     }));
   }
 
-  async search(authUser: AuthUserDto, dto: SearchDto): Promise<SearchResponseDto> {
+  async search(auth: AuthDto, dto: SearchDto): Promise<SearchResponseDto> {
     const { machineLearning } = await this.configCore.getConfig();
     const query = dto.q || dto.query;
     if (!query) {
@@ -73,10 +73,10 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        assets = await this.smartInfoRepository.searchCLIP({ ownerId: authUser.id, embedding, numResults: 100 });
+        assets = await this.smartInfoRepository.searchCLIP({ ownerId: auth.user.id, embedding, numResults: 100 });
         break;
       case SearchStrategy.TEXT:
-        assets = await this.assetRepository.searchMetadata(query, authUser.id, { numResults: 250 });
+        assets = await this.assetRepository.searchMetadata(query, auth.user.id, { numResults: 250 });
       default:
         break;
     }
