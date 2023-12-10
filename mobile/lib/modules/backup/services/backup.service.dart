@@ -206,7 +206,7 @@ class BackupService {
   Future<bool> backupAsset(
     Iterable<AssetEntity> assetList,
     http.CancellationToken cancelToken,
-    PMProgressHandler pmProgressHandler,
+    PMProgressHandler? pmProgressHandler,
     Function(String, String, bool) uploadSuccessCb,
     Function(int, int) uploadProgressCb,
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
