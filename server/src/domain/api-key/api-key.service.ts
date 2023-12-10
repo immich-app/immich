@@ -16,34 +16,34 @@ export class APIKeyService {
     const entity = await this.repository.create({
       key: this.crypto.hashSha256(secret),
       name: dto.name || 'API Key',
-      userId: auth.id,
+      userId: auth.user.id,
     });
 
     return { secret, apiKey: this.map(entity) };
   }
 
   async update(auth: AuthDto, id: string, dto: APIKeyCreateDto): Promise<APIKeyResponseDto> {
-    const exists = await this.repository.getById(auth.id, id);
+    const exists = await this.repository.getById(auth.user.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
     }
 
-    const key = await this.repository.update(auth.id, id, { name: dto.name });
+    const key = await this.repository.update(auth.user.id, id, { name: dto.name });
 
     return this.map(key);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    const exists = await this.repository.getById(auth.id, id);
+    const exists = await this.repository.getById(auth.user.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
     }
 
-    await this.repository.delete(auth.id, id);
+    await this.repository.delete(auth.user.id, id);
   }
 
   async getById(auth: AuthDto, id: string): Promise<APIKeyResponseDto> {
-    const key = await this.repository.getById(auth.id, id);
+    const key = await this.repository.getById(auth.user.id, id);
     if (!key) {
       throw new BadRequestException('API Key not found');
     }
@@ -51,7 +51,7 @@ export class APIKeyService {
   }
 
   async getAll(auth: AuthDto): Promise<APIKeyResponseDto[]> {
-    const keys = await this.repository.getByUserId(auth.id);
+    const keys = await this.repository.getByUserId(auth.user.id);
     return keys.map((key) => this.map(key));
   }
 

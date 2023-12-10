@@ -10,7 +10,7 @@ export class TagService {
   constructor(@Inject(ITagRepository) private repository: ITagRepository) {}
 
   getAll(auth: AuthDto) {
-    return this.repository.getAll(auth.id).then((tags) => tags.map(mapTag));
+    return this.repository.getAll(auth.user.id).then((tags) => tags.map(mapTag));
   }
 
   async getById(auth: AuthDto, id: string): Promise<TagResponseDto> {
@@ -19,13 +19,13 @@ export class TagService {
   }
 
   async create(auth: AuthDto, dto: CreateTagDto) {
-    const duplicate = await this.repository.hasName(auth.id, dto.name);
+    const duplicate = await this.repository.hasName(auth.user.id, dto.name);
     if (duplicate) {
       throw new BadRequestException(`A tag with that name already exists`);
     }
 
     const tag = await this.repository.create({
-      userId: auth.id,
+      userId: auth.user.id,
       name: dto.name,
       type: dto.type,
     });
@@ -46,7 +46,7 @@ export class TagService {
 
   async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
     await this.findOrFail(auth, id);
-    const assets = await this.repository.getAssets(auth.id, id);
+    const assets = await this.repository.getAssets(auth.user.id, id);
     return assets.map((asset) => mapAsset(asset));
   }
 
@@ -55,7 +55,7 @@ export class TagService {
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const hasAsset = await this.repository.hasAsset(auth.id, id, assetId);
+      const hasAsset = await this.repository.hasAsset(auth.user.id, id, assetId);
       if (hasAsset) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.DUPLICATE });
       } else {
@@ -64,7 +64,7 @@ export class TagService {
     }
 
     await this.repository.addAssets(
-      auth.id,
+      auth.user.id,
       id,
       results.filter((result) => result.success).map((result) => result.assetId),
     );
@@ -77,7 +77,7 @@ export class TagService {
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const hasAsset = await this.repository.hasAsset(auth.id, id, assetId);
+      const hasAsset = await this.repository.hasAsset(auth.user.id, id, assetId);
       if (!hasAsset) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
       } else {
@@ -86,7 +86,7 @@ export class TagService {
     }
 
     await this.repository.removeAssets(
-      auth.id,
+      auth.user.id,
       id,
       results.filter((result) => result.success).map((result) => result.assetId),
     );
@@ -95,7 +95,7 @@ export class TagService {
   }
 
   private async findOrFail(auth: AuthDto, id: string) {
-    const tag = await this.repository.getById(auth.id, id);
+    const tag = await this.repository.getById(auth.user.id, id);
     if (!tag) {
       throw new BadRequestException('Tag not found');
     }

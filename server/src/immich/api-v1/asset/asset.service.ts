@@ -101,7 +101,7 @@ export class AssetService {
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
-        const [duplicate] = await this._assetRepository.getAssetsByChecksums(auth.id, checksums);
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(auth.user.id, checksums);
         return { id: duplicate.id, duplicate: true };
       }
 
@@ -111,11 +111,11 @@ export class AssetService {
   }
 
   public async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
-    return this._assetRepository.getAllByDeviceId(auth.id, deviceId);
+    return this._assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
   public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    const userId = dto.userId || auth.id;
+    const userId = dto.userId || auth.user.id;
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset));
@@ -124,16 +124,15 @@ export class AssetService {
   public async getAssetById(auth: AuthDto, assetId: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_READ, assetId);
 
-    const includeMetadata = this.getExifPermission(auth);
     const asset = await this._assetRepository.getById(assetId);
-    if (includeMetadata) {
+    if (!auth.sharedLink || auth.sharedLink?.showExif) {
       const data = mapAsset(asset, { withStack: true });
 
-      if (data.ownerId !== auth.id) {
+      if (data.ownerId !== auth.user.id) {
         data.people = [];
       }
 
-      if (auth.isPublicUser) {
+      if (auth.sharedLink) {
         delete data.owner;
       }
 
@@ -172,7 +171,7 @@ export class AssetService {
       throw new NotFoundException('Asset does not exist');
     }
 
-    const allowOriginalFile = !!(!auth.isPublicUser || auth.isAllowDownload);
+    const allowOriginalFile = !!(!auth.sharedLink || auth.sharedLink?.allowDownload);
 
     const filepath =
       asset.type === AssetType.IMAGE
@@ -185,7 +184,7 @@ export class AssetService {
   async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {
     const possibleSearchTerm = new Set<string>();
 
-    const rows = await this._assetRepository.getSearchPropertiesByUserId(auth.id);
+    const rows = await this._assetRepository.getSearchPropertiesByUserId(auth.user.id);
     rows.forEach((row: SearchPropertiesDto) => {
       // tags
       row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
@@ -216,11 +215,11 @@ export class AssetService {
   }
 
   async getCuratedLocation(auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
-    return this._assetRepository.getLocationsByUserId(auth.id);
+    return this._assetRepository.getLocationsByUserId(auth.user.id);
   }
 
   async getCuratedObject(auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
-    return this._assetRepository.getDetectedObjectsByUserId(auth.id);
+    return this._assetRepository.getDetectedObjectsByUserId(auth.user.id);
   }
 
   async checkExistingAssets(
@@ -228,7 +227,7 @@ export class AssetService {
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return {
-      existingIds: await this._assetRepository.getExistingAssets(auth.id, checkExistingAssetsDto),
+      existingIds: await this._assetRepository.getExistingAssets(auth.user.id, checkExistingAssetsDto),
     };
   }
 
@@ -241,7 +240,7 @@ export class AssetService {
     }
 
     const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
-    const results = await this._assetRepository.getAssetsByChecksums(auth.id, checksums);
+    const results = await this._assetRepository.getAssetsByChecksums(auth.user.id, checksums);
     const checksumMap: Record<string, string> = {};
 
     for (const { id, checksum } of results) {
@@ -268,10 +267,6 @@ export class AssetService {
         };
       }),
     };
-  }
-
-  getExifPermission(auth: AuthDto) {
-    return !auth.isPublicUser || auth.isShowMetadata;
   }
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
@@ -353,10 +348,10 @@ export class AssetService {
       return libraryId;
     }
 
-    let library = await this.libraryRepository.getDefaultUploadLibrary(auth.id);
+    let library = await this.libraryRepository.getDefaultUploadLibrary(auth.user.id);
     if (!library) {
       library = await this.libraryRepository.create({
-        ownerId: auth.id,
+        ownerId: auth.user.id,
         name: 'Default Library',
         assets: [],
         type: LibraryType.UPLOAD,

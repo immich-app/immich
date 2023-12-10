@@ -49,11 +49,11 @@ describe(SearchService.name, () => {
 
       await sut.searchPerson(authStub.user1, { name, withHidden: false });
 
-      expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.id, name, { withHidden: false });
+      expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.user.id, name, { withHidden: false });
 
       await sut.searchPerson(authStub.user1, { name, withHidden: true });
 
-      expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.id, name, { withHidden: true });
+      expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.user.id, name, { withHidden: true });
     });
   });
 
@@ -105,7 +105,7 @@ describe(SearchService.name, () => {
       const result = await sut.search(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
-      expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, authStub.user1.id, { numResults: 250 });
+      expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, authStub.user1.user.id, { numResults: 250 });
       expect(smartInfoMock.searchCLIP).not.toHaveBeenCalled();
     });
 
@@ -132,7 +132,11 @@ describe(SearchService.name, () => {
       const result = await sut.search(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
-      expect(smartInfoMock.searchCLIP).toHaveBeenCalledWith({ ownerId: authStub.user1.id, embedding, numResults: 100 });
+      expect(smartInfoMock.searchCLIP).toHaveBeenCalledWith({
+        ownerId: authStub.user1.user.id,
+        embedding,
+        numResults: 100,
+      });
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });
 

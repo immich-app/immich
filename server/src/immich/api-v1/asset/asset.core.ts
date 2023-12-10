@@ -18,7 +18,7 @@ export class AssetCore {
     sidecarPath?: string,
   ): Promise<AssetEntity> {
     const asset = await this.repository.create({
-      ownerId: auth.id,
+      ownerId: auth.user.id,
       libraryId: dto.libraryId,
 
       checksum: file.checksum,

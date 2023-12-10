@@ -20,27 +20,21 @@ export class SharedLinkService {
   }
 
   getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
-    return this.repository.getAll(auth.id).then((links) => links.map(mapSharedLink));
+    return this.repository.getAll(auth.user.id).then((links) => links.map(mapSharedLink));
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
-    const { sharedLinkId: id, isPublicUser, isShowMetadata: isShowExif } = auth;
-
-    if (!isPublicUser || !id) {
+    if (!auth.sharedLink) {
       throw new ForbiddenException();
     }
 
-    const sharedLink = await this.findOrFail(auth, id);
-
-    let newToken;
+    const sharedLink = await this.findOrFail(auth, auth.sharedLink.id);
+    const response = this.map(sharedLink, { withExif: sharedLink.showExif });
     if (sharedLink.password) {
-      newToken = this.validateAndRefreshToken(sharedLink, dto);
+      response.token = this.validateAndRefreshToken(sharedLink, dto);
     }
 
-    return {
-      ...this.map(sharedLink, { withExif: isShowExif ?? true }),
-      token: newToken,
-    };
+    return response;
   }
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
@@ -69,7 +63,7 @@ export class SharedLinkService {
 
     const sharedLink = await this.repository.create({
       key: this.cryptoRepository.randomBytes(50),
-      userId: auth.id,
+      userId: auth.user.id,
       type: dto.type,
       albumId: dto.albumId || null,
       assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
@@ -88,7 +82,7 @@ export class SharedLinkService {
     await this.findOrFail(auth, id);
     const sharedLink = await this.repository.update({
       id,
-      userId: auth.id,
+      userId: auth.user.id,
       description: dto.description,
       password: dto.password,
       expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
@@ -105,7 +99,7 @@ export class SharedLinkService {
   }
 
   private async findOrFail(auth: AuthDto, id: string) {
-    const sharedLink = await this.repository.get(auth.id, id);
+    const sharedLink = await this.repository.get(auth.user.id, id);
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');
     }

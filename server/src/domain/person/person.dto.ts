@@ -159,6 +159,6 @@ export function mapFacesWithoutPerson(face: AssetFaceEntity): AssetFaceWithoutPe
 export function mapFaces(face: AssetFaceEntity, auth: AuthDto): AssetFaceResponseDto {
   return {
     ...mapFacesWithoutPerson(face),
-    person: face.person?.ownerId === auth.id ? mapPerson(face.person) : null,
+    person: face.person?.ownerId === auth.user.id ? mapPerson(face.person) : null,
   };
 }

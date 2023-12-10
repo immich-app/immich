@@ -76,11 +76,11 @@ export class LibraryService {
   }
 
   async getCount(auth: AuthDto): Promise<number> {
-    return this.repository.getCountForUser(auth.id);
+    return this.repository.getCountForUser(auth.user.id);
   }
 
   async getAllForUser(auth: AuthDto): Promise<LibraryResponseDto[]> {
-    const libraries = await this.repository.getAllByUserId(auth.id);
+    const libraries = await this.repository.getAllByUserId(auth.user.id);
     return libraries.map((library) => mapLibrary(library));
   }
 
@@ -120,7 +120,7 @@ export class LibraryService {
     }
 
     const library = await this.repository.create({
-      ownerId: auth.id,
+      ownerId: auth.user.id,
       name: dto.name,
       type: dto.type,
       importPaths: dto.importPaths ?? [],
@@ -141,7 +141,7 @@ export class LibraryService {
     await this.access.requirePermission(auth, Permission.LIBRARY_DELETE, id);
 
     const library = await this.findOrFail(id);
-    const uploadCount = await this.repository.getUploadLibraryCount(auth.id);
+    const uploadCount = await this.repository.getUploadLibraryCount(auth.user.id);
     if (library.type === LibraryType.UPLOAD && uploadCount <= 1) {
       throw new BadRequestException('Cannot delete the last upload library');
     }

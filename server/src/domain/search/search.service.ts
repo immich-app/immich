@@ -32,15 +32,15 @@ export class SearchService {
   }
 
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return this.personRepository.getByName(auth.id, dto.name, { withHidden: dto.withHidden });
+    return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
   }
 
   async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     await this.configCore.requireFeature(FeatureFlag.SEARCH);
     const options = { maxFields: 12, minAssetsPerField: 5 };
     const results = await Promise.all([
-      this.assetRepository.getAssetIdByCity(auth.id, options),
-      this.assetRepository.getAssetIdByTag(auth.id, options),
+      this.assetRepository.getAssetIdByCity(auth.user.id, options),
+      this.assetRepository.getAssetIdByTag(auth.user.id, options),
     ]);
     const assetIds = new Set<string>(results.flatMap((field) => field.items.map((item) => item.data)));
     const assets = await this.assetRepository.getByIds(Array.from(assetIds));
@@ -73,10 +73,10 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        assets = await this.smartInfoRepository.searchCLIP({ ownerId: auth.id, embedding, numResults: 100 });
+        assets = await this.smartInfoRepository.searchCLIP({ ownerId: auth.user.id, embedding, numResults: 100 });
         break;
       case SearchStrategy.TEXT:
-        assets = await this.assetRepository.searchMetadata(query, auth.id, { numResults: 250 });
+        assets = await this.assetRepository.searchMetadata(query, auth.user.id, { numResults: 250 });
       default:
         break;
     }

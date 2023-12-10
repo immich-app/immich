@@ -226,7 +226,7 @@ describe('AssetService', () => {
         ],
       });
 
-      expect(assetRepositoryMock.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.id, [file1, file2]);
+      expect(assetRepositoryMock.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
     });
   });
 
@@ -235,7 +235,10 @@ describe('AssetService', () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
       assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
       await sut.getAssetById(authStub.admin, assetStub.image.id);
-      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, new Set([assetStub.image.id]));
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
     });
 
     it('should allow shared link access', async () => {
@@ -243,7 +246,7 @@ describe('AssetService', () => {
       assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
       await sut.getAssetById(authStub.adminSharedLink, assetStub.image.id);
       expect(accessMock.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
-        authStub.adminSharedLink.sharedLinkId,
+        authStub.adminSharedLink.sharedLink?.id,
         new Set([assetStub.image.id]),
       );
     });
@@ -253,7 +256,7 @@ describe('AssetService', () => {
       assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
       await sut.getAssetById(authStub.admin, assetStub.image.id);
       expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(
-        authStub.admin.id,
+        authStub.admin.user.id,
         new Set([assetStub.image.id]),
       );
     });
@@ -262,7 +265,10 @@ describe('AssetService', () => {
       accessMock.asset.checkAlbumAccess.mockResolvedValue(new Set([assetStub.image.id]));
       assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
       await sut.getAssetById(authStub.admin, assetStub.image.id);
-      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.id, new Set([assetStub.image.id]));
+      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
     });
 
     it('should throw an error for no access', async () => {

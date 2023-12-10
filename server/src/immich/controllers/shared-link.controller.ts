@@ -40,15 +40,15 @@ export class SharedLinkController {
     if (sharedLinkToken) {
       dto.token = sharedLinkToken;
     }
-    const sharedLinkResponse = await this.service.getMine(auth, dto);
-    if (sharedLinkResponse.token) {
-      res.cookie(IMMICH_SHARED_LINK_ACCESS_COOKIE, sharedLinkResponse.token, {
+    const response = await this.service.getMine(auth, dto);
+    if (response.token) {
+      res.cookie(IMMICH_SHARED_LINK_ACCESS_COOKIE, response.token, {
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
         httpOnly: true,
         sameSite: 'lax',
       });
     }
-    return sharedLinkResponse;
+    return response;
   }
 
   @Get(':id')

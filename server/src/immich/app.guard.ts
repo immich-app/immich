@@ -93,12 +93,12 @@ export class AppGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<AuthRequest>();
 
     const authDto = await this.authService.validate(req.headers, req.query as Record<string, string>);
-    if (authDto.isPublicUser && !isSharedRoute) {
+    if (authDto.sharedLink && !isSharedRoute) {
       this.logger.warn(`Denied access to non-shared route: ${req.path}`);
       return false;
     }
 
-    if (isAdminRoute && !authDto.isAdmin) {
+    if (isAdminRoute && !authDto.user.isAdmin) {
       this.logger.warn(`Denied access to admin only route: ${req.path}`);
       return false;
     }

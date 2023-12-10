@@ -49,7 +49,7 @@ export class AuditService {
   }
 
   async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
-    const userId = dto.userId || auth.id;
+    const userId = dto.userId || auth.user.id;
     await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
 
     const audits = await this.repository.getAfter(dto.after, {

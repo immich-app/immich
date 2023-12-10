@@ -47,7 +47,7 @@ export class ActivityService {
     await this.access.requirePermission(auth, Permission.ACTIVITY_CREATE, dto.albumId);
 
     const common = {
-      userId: auth.id,
+      userId: auth.user.id,
       assetId: dto.assetId,
       albumId: dto.albumId,
     };

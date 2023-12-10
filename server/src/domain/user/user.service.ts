@@ -51,7 +51,7 @@ export class UserService {
   }
 
   getMe(auth: AuthDto): Promise<UserResponseDto> {
-    return this.findOrFail(auth.id, {}).then(mapUser);
+    return this.findOrFail(auth.user.id, {}).then(mapUser);
   }
 
   create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
@@ -60,14 +60,10 @@ export class UserService {
 
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
     await this.findOrFail(dto.id, {});
-    return this.userCore.updateUser(auth, dto.id, dto).then(mapUser);
+    return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
   async delete(auth: AuthDto, id: string): Promise<UserResponseDto> {
-    if (!auth.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-
     const user = await this.findOrFail(id, {});
     if (user.isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');
@@ -79,10 +75,6 @@ export class UserService {
   }
 
   async restore(auth: AuthDto, id: string): Promise<UserResponseDto> {
-    if (!auth.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-
     let user = await this.findOrFail(id, { withDeleted: true });
     user = await this.userRepository.restore(user);
     await this.albumRepository.restoreAll(id);
@@ -90,8 +82,8 @@ export class UserService {
   }
 
   async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
-    const { profileImagePath: oldpath } = await this.findOrFail(auth.id, { withDeleted: false });
-    const updatedUser = await this.userRepository.update(auth.id, { profileImagePath: fileInfo.path });
+    const { profileImagePath: oldpath } = await this.findOrFail(auth.user.id, { withDeleted: false });
+    const updatedUser = await this.userRepository.update(auth.user.id, { profileImagePath: fileInfo.path });
     if (oldpath !== '') {
       await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldpath] } });
     }
@@ -99,11 +91,11 @@ export class UserService {
   }
 
   async deleteProfileImage(auth: AuthDto): Promise<void> {
-    const user = await this.findOrFail(auth.id, { withDeleted: false });
+    const user = await this.findOrFail(auth.user.id, { withDeleted: false });
     if (user.profileImagePath === '') {
       throw new BadRequestException("Can't delete a missing profile Image");
     }
-    await this.userRepository.update(auth.id, { profileImagePath: '' });
+    await this.userRepository.update(auth.user.id, { profileImagePath: '' });
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 

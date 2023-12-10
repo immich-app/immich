@@ -109,7 +109,7 @@ export class AssetService {
         ...dto,
         order,
         checksum,
-        ownerId: auth.id,
+        ownerId: auth.user.id,
       })
       .then((assets) =>
         assets.map((asset) =>
@@ -174,9 +174,9 @@ export class AssetService {
   getUploadFolder({ auth, fieldName }: UploadRequest): string {
     auth = this.access.requireUploadAccess(auth);
 
-    let folder = StorageCore.getFolderLocation(StorageFolder.UPLOAD, auth.id);
+    let folder = StorageCore.getFolderLocation(StorageFolder.UPLOAD, auth.user.id);
     if (fieldName === UploadFieldName.PROFILE_DATA) {
-      folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.id);
+      folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
     }
 
     this.storageRepository.mkdirSync(folder);
@@ -185,12 +185,12 @@ export class AssetService {
   }
 
   getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    return this.assetRepository.getMapMarkers(auth.id, options);
+    return this.assetRepository.getMapMarkers(auth.user.id, options);
   }
 
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const currentYear = new Date().getFullYear();
-    const assets = await this.assetRepository.getByDayOfYear(auth.id, dto);
+    const assets = await this.assetRepository.getByDayOfYear(auth.user.id, dto);
 
     return _.chain(assets)
       .filter((asset) => asset.localDateTime.getFullYear() < currentYear)
@@ -211,7 +211,7 @@ export class AssetService {
     if (dto.albumId) {
       await this.access.requirePermission(auth, Permission.ALBUM_READ, [dto.albumId]);
     } else {
-      dto.userId = dto.userId || auth.id;
+      dto.userId = dto.userId || auth.user.id;
     }
 
     if (dto.userId) {
@@ -248,7 +248,7 @@ export class AssetService {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
     const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
-    if (auth.isShowMetadata) {
+    if (!auth.sharedLink || auth.sharedLink?.showExif) {
       return assets.map((asset) => mapAsset(asset, { withStack: true }));
     } else {
       return assets.map((asset) => mapAsset(asset, { stripMetadata: true }));
@@ -263,7 +263,7 @@ export class AssetService {
       userIds = [userId];
 
       if (dto.withPartners) {
-        const partners = await this.partnerRepository.getAll(auth.id);
+        const partners = await this.partnerRepository.getAll(auth.user.id);
         const partnersIds = partners
           .filter((partner) => partner.sharedBy && partner.sharedWith && partner.inTimeline)
           .map((partner) => partner.sharedById);
@@ -377,17 +377,17 @@ export class AssetService {
   }
 
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
-    const stats = await this.assetRepository.getStatistics(auth.id, dto);
+    const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
     return mapStats(stats);
   }
 
   async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const assets = await this.assetRepository.getRandom(auth.id, count);
+    const assets = await this.assetRepository.getRandom(auth.user.id, count);
     return assets.map((a) => mapAsset(a));
   }
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
-    return this.assetRepository.getAllByDeviceId(auth.id, deviceId);
+    return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
@@ -430,7 +430,7 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(ids, options);
-    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, auth.id, ids);
+    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, auth.user.id, ids);
   }
 
   async handleAssetDeletionCheck() {
@@ -504,20 +504,20 @@ export class AssetService {
       }
     } else {
       await this.assetRepository.softDeleteAll(ids);
-      this.communicationRepository.send(CommunicationEvent.ASSET_TRASH, auth.id, ids);
+      this.communicationRepository.send(CommunicationEvent.ASSET_TRASH, auth.user.id, ids);
     }
   }
 
   async handleTrashAction(auth: AuthDto, action: TrashAction): Promise<void> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getByUserId(pagination, auth.id, { trashedBefore: DateTime.now().toJSDate() }),
+      this.assetRepository.getByUserId(pagination, auth.user.id, { trashedBefore: DateTime.now().toJSDate() }),
     );
 
     if (action == TrashAction.RESTORE_ALL) {
       for await (const assets of assetPagination) {
         const ids = assets.map((a) => a.id);
         await this.assetRepository.restoreAll(ids);
-        this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, auth.id, ids);
+        this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, auth.user.id, ids);
       }
       return;
     }
@@ -536,7 +536,7 @@ export class AssetService {
     const { ids } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_RESTORE, ids);
     await this.assetRepository.restoreAll(ids);
-    this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, auth.id, ids);
+    this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, auth.user.id, ids);
   }
 
   async updateStackParent(auth: AuthDto, dto: UpdateStackParentDto): Promise<void> {
@@ -552,7 +552,7 @@ export class AssetService {
       childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
     }
 
-    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, auth.id, [...childIds, newParentId]);
+    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId]);
     await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
     // Remove ParentId of new parent if this was previously a child of some other asset
     return this.assetRepository.updateAll([newParentId], { stackParentId: null });

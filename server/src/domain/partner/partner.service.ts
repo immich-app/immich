@@ -17,7 +17,7 @@ export class PartnerService {
   }
 
   async create(auth: AuthDto, sharedWithId: string): Promise<PartnerResponseDto> {
-    const partnerId: PartnerIds = { sharedById: auth.id, sharedWithId };
+    const partnerId: PartnerIds = { sharedById: auth.user.id, sharedWithId };
     const exists = await this.repository.get(partnerId);
     if (exists) {
       throw new BadRequestException(`Partner already exists`);
@@ -28,7 +28,7 @@ export class PartnerService {
   }
 
   async remove(auth: AuthDto, sharedWithId: string): Promise<void> {
-    const partnerId: PartnerIds = { sharedById: auth.id, sharedWithId };
+    const partnerId: PartnerIds = { sharedById: auth.user.id, sharedWithId };
     const partner = await this.repository.get(partnerId);
     if (!partner) {
       throw new BadRequestException('Partner not found');
@@ -38,17 +38,17 @@ export class PartnerService {
   }
 
   async getAll(auth: AuthDto, direction: PartnerDirection): Promise<PartnerResponseDto[]> {
-    const partners = await this.repository.getAll(auth.id);
+    const partners = await this.repository.getAll(auth.user.id);
     const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
     return partners
       .filter((partner) => partner.sharedBy && partner.sharedWith) // Filter out soft deleted users
-      .filter((partner) => partner[key] === auth.id)
+      .filter((partner) => partner[key] === auth.user.id)
       .map((partner) => this.map(partner, direction));
   }
 
   async update(auth: AuthDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerResponseDto> {
     await this.access.requirePermission(auth, Permission.PARTNER_UPDATE, sharedById);
-    const partnerId: PartnerIds = { sharedById, sharedWithId: auth.id };
+    const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
     const entity = await this.repository.update({ ...partnerId, inTimeline: dto.inTimeline });
     return this.map(entity, PartnerDirection.SharedWith);

@@ -1,4 +1,5 @@
 import { AuthDto } from '@app/domain';
+import { SharedLinkEntity, UserEntity, UserTokenEntity } from '../../src/infra/entities';
 
 export const adminSignupStub = {
   name: 'Immich Admin',
@@ -25,76 +26,83 @@ export const changePasswordStub = {
 
 export const authStub = {
   admin: Object.freeze<AuthDto>({
-    id: 'admin_id',
-    email: 'admin@test.com',
-    isAdmin: true,
-    isPublicUser: false,
-    isAllowUpload: true,
-    externalPath: null,
+    user: {
+      id: 'admin_id',
+      email: 'admin@test.com',
+      isAdmin: true,
+    } as UserEntity,
   }),
   user1: Object.freeze<AuthDto>({
-    id: 'user-id',
-    email: 'immich@test.com',
-    isAdmin: false,
-    isPublicUser: false,
-    isAllowUpload: true,
-    isAllowDownload: true,
-    isShowMetadata: true,
-    accessTokenId: 'token-id',
-    externalPath: null,
+    user: {
+      id: 'user-id',
+      email: 'immich@test.com',
+      isAdmin: false,
+    } as UserEntity,
+    userToken: {
+      id: 'token-id',
+    } as UserTokenEntity,
   }),
   user2: Object.freeze<AuthDto>({
-    id: 'user-2',
-    email: 'user2@immich.app',
-    isAdmin: false,
-    isPublicUser: false,
-    isAllowUpload: true,
-    isAllowDownload: true,
-    isShowMetadata: true,
-    accessTokenId: 'token-id',
-    externalPath: null,
+    user: {
+      id: 'user-2',
+      email: 'user2@immich.app',
+      isAdmin: false,
+    } as UserEntity,
+    userToken: {
+      id: 'token-id',
+    } as UserTokenEntity,
   }),
   external1: Object.freeze<AuthDto>({
-    id: 'user-id',
-    email: 'immich@test.com',
-    isAdmin: false,
-    isPublicUser: false,
-    isAllowUpload: true,
-    isAllowDownload: true,
-    isShowMetadata: true,
-    accessTokenId: 'token-id',
-    externalPath: '/data/user1',
+    user: {
+      id: 'user-id',
+      email: 'immich@test.com',
+      isAdmin: false,
+      externalPath: '/data/user1',
+    } as UserEntity,
+    userToken: {
+      id: 'token-id',
+    } as UserTokenEntity,
   }),
   adminSharedLink: Object.freeze<AuthDto>({
-    id: 'admin_id',
-    email: 'admin@test.com',
-    isAdmin: true,
-    isAllowUpload: true,
-    isAllowDownload: true,
-    isPublicUser: true,
-    isShowMetadata: true,
-    sharedLinkId: '123',
+    user: {
+      id: 'admin_id',
+      email: 'admin@test.com',
+      isAdmin: true,
+    } as UserEntity,
+    sharedLink: {
+      id: '123',
+      showExif: true,
+      allowDownload: true,
+      allowUpload: true,
+      key: Buffer.from('shared-link-key'),
+    } as SharedLinkEntity,
   }),
   adminSharedLinkNoExif: Object.freeze<AuthDto>({
-    id: 'admin_id',
-    email: 'admin@test.com',
-    isAdmin: true,
-    isAllowUpload: true,
-    isAllowDownload: true,
-    isPublicUser: true,
-    isShowMetadata: false,
-    sharedLinkId: '123',
+    user: {
+      id: 'admin_id',
+      email: 'admin@test.com',
+      isAdmin: true,
+    } as UserEntity,
+    sharedLink: {
+      id: '123',
+      showExif: false,
+      allowDownload: true,
+      allowUpload: true,
+      key: Buffer.from('shared-link-key'),
+    } as SharedLinkEntity,
   }),
   readonlySharedLink: Object.freeze<AuthDto>({
-    id: 'admin_id',
-    email: 'admin@test.com',
-    isAdmin: true,
-    isAllowUpload: false,
-    isAllowDownload: false,
-    isPublicUser: true,
-    isShowMetadata: true,
-    sharedLinkId: '123',
-    accessTokenId: 'token-id',
+    user: {
+      id: 'admin_id',
+      email: 'admin@test.com',
+      isAdmin: true,
+    } as UserEntity,
+    sharedLink: {
+      id: '123',
+      allowUpload: false,
+      allowDownload: false,
+      showExif: true,
+    } as SharedLinkEntity,
   }),
 };
 

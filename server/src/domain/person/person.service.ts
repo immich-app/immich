@@ -67,7 +67,7 @@ export class PersonService {
 
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { machineLearning } = await this.configCore.getConfig();
-    const people = await this.repository.getAllForUser(auth.id, {
+    const people = await this.repository.getAllForUser(auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
@@ -84,7 +84,7 @@ export class PersonService {
   }
 
   createPerson(auth: AuthDto): Promise<PersonResponseDto> {
-    return this.repository.create({ ownerId: auth.id });
+    return this.repository.create({ ownerId: auth.user.id });
   }
 
   async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
