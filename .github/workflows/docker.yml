@@ -24,15 +24,21 @@ jobs:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
       matrix:
+        image: ["immich-machine-learning", "immich-server"]
+        platform: ["linux/amd64", "linux/arm64"]
+        device: ["cpu"]
         include:
           - context: "machine-learning"
             file: "machine-learning/Dockerfile"
             image: "immich-machine-learning"
-            platforms: "linux/amd64,linux/arm64"
+          - context: "machine-learning"
+            file: "machine-learning/Dockerfile"
+            image: "immich-machine-learning"
+            platforms: "linux/amd64"
+            device: "openvino"
           - context: "."
             file: "server/Dockerfile"
             image: "immich-server"
-            platforms: "linux/arm64,linux/amd64"
 
     steps:
       - name: Checkout
@@ -79,12 +85,12 @@ jobs:
             name=altran1502/${{matrix.image}},enable=${{ github.event_name == 'release' }}
           tags: |
             # Tag with branch name
-            type=ref,event=branch
+            type=ref,event=branch,suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
             # Tag with pr-number
-            type=ref,event=pr
+            type=ref,event=pr,suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
             # Tag with git tag on release
             type=ref,event=tag
-            type=raw,value=release,enable=${{ github.event_name == 'release' }}
+            type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
 
       - name: Determine build cache output
         id: cache-target
@@ -106,5 +112,7 @@ jobs:
           push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{matrix.image}}
           cache-to: ${{ steps.cache-target.outputs.cache-to }}
+          build-args: |
+            DEVICE=${{ matrix.device }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
