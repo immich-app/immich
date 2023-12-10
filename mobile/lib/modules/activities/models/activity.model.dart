@@ -46,19 +46,7 @@ class Activity {
         type = dto.type == ActivityResponseDtoTypeEnum.comment
             ? ActivityType.comment
             : ActivityType.like,
-        user = User(
-          email: dto.user.email,
-          name: dto.user.name,
-          avatarColor: dto.user.avatarColor.toAvatarColor(),
-          profileImagePath: dto.user.profileImagePath,
-          id: dto.user.id,
-          // Placeholder values
-          isAdmin: false,
-          updatedAt: DateTime.now(),
-          isPartnerSharedBy: false,
-          isPartnerSharedWith: false,
-          memoryEnabled: false,
-        );
+        user = User.fromSimpleUserDto(dto.user);
 
   @override
   String toString() {
