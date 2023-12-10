@@ -47,6 +47,9 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    # extends:
+    #   file: hwaccel.yml
+    #   service: hwaccel
     volumes:
       - model-cache:/cache
     env_file:

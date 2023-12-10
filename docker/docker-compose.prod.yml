@@ -40,6 +40,9 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     image: immich-machine-learning:latest
+    # extends:
+    #   file: hwaccel.yml
+    #   service: hwaccel
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
