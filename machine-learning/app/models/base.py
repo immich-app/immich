@@ -12,6 +12,8 @@ from typing_extensions import Buffer
 
 import ann.ann
 
+from app.models.constants import SUPPORTED_PROVIDERS
+
 from ..config import get_cache_dir, get_hf_model_name, log, settings
 from ..schemas import ModelType
 from .ann import AnnSession
@@ -24,36 +26,16 @@ class InferenceModel(ABC):
         self,
         model_name: str,
         cache_dir: Path | str | None = None,
-        inter_op_num_threads: int = settings.model_inter_op_threads,
-        intra_op_num_threads: int = settings.model_intra_op_threads,
-        **model_kwargs: Any,
+        providers: list[str] | None = None,
+        provider_options: list[dict[str, Any]] | None = None,
+        sess_options: ort.SessionOptions | None = None,
     ) -> None:
-        self.model_name = model_name
         self.loaded = False
-        self._cache_dir = Path(cache_dir) if cache_dir is not None else None
-        self.providers = model_kwargs.pop("providers", ["CPUExecutionProvider"])
-        #  don't pre-allocate more memory than needed
-        self.provider_options = model_kwargs.pop(
-            "provider_options", [{"arena_extend_strategy": "kSameAsRequested"}] * len(self.providers)
-        )
-        log.debug(
-            (
-                f"Setting '{self.model_name}' execution providers to {self.providers} "
-                "in descending order of preference"
-            ),
-        )
-        log.debug(f"Setting execution provider options to {self.provider_options}")
-        self.sess_options = PicklableSessionOptions()
-        # avoid thread contention between models
-        if inter_op_num_threads > 1:
-            self.sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
-
-        log.debug(f"Setting execution_mode to {self.sess_options.execution_mode.name}")
-        log.debug(f"Setting inter_op_num_threads to {inter_op_num_threads}")
-        log.debug(f"Setting intra_op_num_threads to {intra_op_num_threads}")
-        self.sess_options.inter_op_num_threads = inter_op_num_threads
-        self.sess_options.intra_op_num_threads = intra_op_num_threads
-        self.sess_options.enable_cpu_mem_arena = False
+        self.model_name = model_name
+        self.cache_dir = cache_dir if cache_dir is not None else self.cache_dir_default
+        self.providers = providers if providers is not None else self.providers_default
+        self.provider_options = provider_options if provider_options is not None else self.provider_options_default
+        self.sess_options = sess_options if sess_options is not None else self.sess_options_default
 
     def download(self) -> None:
         if not self.cached:
@@ -95,30 +77,6 @@ class InferenceModel(ABC):
     def _load(self) -> None:
         ...
 
-    @property
-    def model_type(self) -> ModelType:
-        return self._model_type
-
-    @property
-    def cache_dir(self) -> Path:
-        return self._cache_dir if self._cache_dir is not None else get_cache_dir(self.model_name, self.model_type)
-
-    @cache_dir.setter
-    def cache_dir(self, cache_dir: Path) -> None:
-        self._cache_dir = cache_dir
-
-    @property
-    def cached(self) -> bool:
-        return self.cache_dir.exists() and any(self.cache_dir.iterdir())
-
-    @classmethod
-    def from_model_type(cls, model_type: ModelType, model_name: str, **model_kwargs: Any) -> InferenceModel:
-        subclasses = {subclass._model_type: subclass for subclass in cls.__subclasses__()}
-        if model_type not in subclasses:
-            raise ValueError(f"Unsupported model type: {model_type}")
-
-        return subclasses[model_type](model_name, **model_kwargs)
-
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
             log.warn(
@@ -155,6 +113,81 @@ class InferenceModel(ABC):
         else:
             raise ValueError(f"the file model_path='{model_path}' does not exist")
         return session
+
+    @property
+    def model_type(self) -> ModelType:
+        return self._model_type
+
+    @property
+    def cache_dir(self) -> Path:
+        return self._cache_dir
+
+    @cache_dir.setter
+    def cache_dir(self, cache_dir: Path) -> None:
+        self._cache_dir = cache_dir
+
+    @property
+    def cache_dir_default(self) -> Path:
+        return get_cache_dir(self.model_name, self.model_type)
+
+    @property
+    def cached(self) -> bool:
+        return self.cache_dir.exists() and any(self.cache_dir.iterdir())
+
+    @property
+    def providers(self) -> list[str]:
+        return self._providers
+
+    @providers.setter
+    def providers(self, providers: list[str]) -> None:
+        log.debug(
+            (
+                f"Setting '{self.model_name}' execution providers to {self.providers}, "
+                "in descending order of preference"
+            ),
+        )
+        self._providers = providers
+
+    @property
+    def providers_default(self) -> list[str]:
+        return list(SUPPORTED_PROVIDERS & set(ort.get_available_providers()))
+
+    @property
+    def provider_options(self) -> list[dict[str, Any]]:
+        return self._provider_options
+
+    @provider_options.setter
+    def provider_options(self, provider_options: list[dict[str, Any]]) -> None:
+        log.debug(f"Setting execution provider options to {self.provider_options}")
+        self._provider_options = provider_options
+
+    @property
+    def provider_options_default(self) -> list[dict[str, Any]]:
+        return [{"arena_extend_strategy": "kSameAsRequested"}] * len(self.providers)
+
+    @property
+    def sess_options(self) -> list[str]:
+        return self._sess_options
+
+    @sess_options.setter
+    def sess_options(self, sess_options: ort.SessionOptions) -> None:
+        log.debug(f"Setting execution_mode to {sess_options.execution_mode.name}")
+        log.debug(f"Setting inter_op_num_threads to {sess_options.inter_op_num_threads}")
+        log.debug(f"Setting intra_op_num_threads to {sess_options.intra_op_num_threads}")
+        self._sess_options = sess_options
+
+    @property
+    def sess_options_default(self) -> ort.SessionOptions:
+        sess_options = PicklableSessionOptions()
+
+        # avoid thread contention between models
+        sess_options.inter_op_num_threads = settings.model_inter_op_threads
+        sess_options.intra_op_num_threads = settings.model_intra_op_threads
+        sess_options.enable_cpu_mem_arena = False
+        if sess_options.inter_op_num_threads > 1:
+            sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
+
+        return sess_options
 
 
 # HF deep copies configs, so we need to make session options picklable
