@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -22,7 +21,6 @@ import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:cancellation_token_http/http.dart' as http;
-import 'package:path/path.dart' as p;
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -273,7 +271,6 @@ class BackupService {
           );
 
           file = await entity.loadFile(progressHandler: pmProgressHandler);
-          // TODO: verify if this is needed
           livePhotoFile = await entity.loadFile(
             withSubtype: true,
             progressHandler: pmProgressHandler,
