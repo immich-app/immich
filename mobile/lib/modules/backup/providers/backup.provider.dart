@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
@@ -447,9 +449,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       // Perform Backup
       state = state.copyWith(cancelToken: CancellationToken());
 
-      final pmProgressHandler = PMProgressHandler();
+      final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
-      pmProgressHandler.stream.listen((event) {
+      pmProgressHandler?.stream.listen((event) {
         final double progress = event.progress;
         state = state.copyWith(iCloudDownloadProgress: progress);
       });

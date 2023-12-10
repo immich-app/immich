@@ -3,7 +3,7 @@ import { PersonPathType } from '@app/infra/entities/move.entity';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
-import { AuthUserDto } from '../auth';
+import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
@@ -65,9 +65,9 @@ export class PersonService {
     this.storageCore = StorageCore.create(assetRepository, moveRepository, repository, storageRepository);
   }
 
-  async getAll(authUser: AuthUserDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
+  async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { machineLearning } = await this.configCore.getConfig();
-    const people = await this.repository.getAllForUser(authUser.id, {
+    const people = await this.repository.getAllForUser(auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
@@ -83,12 +83,12 @@ export class PersonService {
     };
   }
 
-  createPerson(authUser: AuthUserDto): Promise<PersonResponseDto> {
-    return this.repository.create({ ownerId: authUser.id });
+  createPerson(auth: AuthDto): Promise<PersonResponseDto> {
+    return this.repository.create({ ownerId: auth.user.id });
   }
 
-  async reassignFaces(authUser: AuthUserDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
+  async reassignFaces(auth: AuthDto, personId: string, dto: AssetFaceUpdateDto): Promise<PersonResponseDto[]> {
+    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
     const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
@@ -96,7 +96,7 @@ export class PersonService {
       const faces = await this.repository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
       for (const face of faces) {
-        await this.access.requirePermission(authUser, Permission.PERSON_CREATE, face.id);
+        await this.access.requirePermission(auth, Permission.PERSON_CREATE, face.id);
         if (person.faceAssetId === null) {
           changeFeaturePhoto.push(person.id);
         }
@@ -116,10 +116,10 @@ export class PersonService {
     return result;
   }
 
-  async reassignFacesById(authUser: AuthUserDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, personId);
+  async reassignFacesById(auth: AuthDto, personId: string, dto: FaceDto): Promise<PersonResponseDto> {
+    await this.access.requirePermission(auth, Permission.PERSON_WRITE, personId);
 
-    await this.access.requirePermission(authUser, Permission.PERSON_CREATE, dto.id);
+    await this.access.requirePermission(auth, Permission.PERSON_CREATE, dto.id);
     const face = await this.repository.getFaceById(dto.id);
     const person = await this.findOrFail(personId);
 
@@ -134,10 +134,10 @@ export class PersonService {
     return await this.findOrFail(personId).then(mapPerson);
   }
 
-  async getFacesById(authUser: AuthUserDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
-    await this.access.requirePermission(authUser, Permission.ASSET_READ, dto.id);
+  async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
+    await this.access.requirePermission(auth, Permission.ASSET_READ, dto.id);
     const faces = await this.repository.getFaces(dto.id);
-    return faces.map((asset) => mapFaces(asset, authUser));
+    return faces.map((asset) => mapFaces(asset, auth));
   }
 
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
@@ -163,18 +163,18 @@ export class PersonService {
     }
   }
 
-  async getById(authUser: AuthUserDto, id: string): Promise<PersonResponseDto> {
-    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+  async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
+    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
     return this.findOrFail(id).then(mapPerson);
   }
 
-  async getStatistics(authUser: AuthUserDto, id: string): Promise<PersonStatisticsResponseDto> {
-    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+  async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
+    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
     return this.repository.getStatistics(id);
   }
 
-  async getThumbnail(authUser: AuthUserDto, id: string): Promise<ImmichReadStream> {
-    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+  async getThumbnail(auth: AuthDto, id: string): Promise<ImmichReadStream> {
+    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
     const person = await this.repository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
@@ -183,14 +183,14 @@ export class PersonService {
     return this.storageRepository.createReadStream(person.thumbnailPath, mimeTypes.lookup(person.thumbnailPath));
   }
 
-  async getAssets(authUser: AuthUserDto, id: string): Promise<AssetResponseDto[]> {
-    await this.access.requirePermission(authUser, Permission.PERSON_READ, id);
+  async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {
+    await this.access.requirePermission(auth, Permission.PERSON_READ, id);
     const assets = await this.repository.getAssets(id);
     return assets.map((asset) => mapAsset(asset));
   }
 
-  async update(authUser: AuthUserDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, id);
+  async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
+    await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
     let person = await this.findOrFail(id);
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
@@ -200,7 +200,7 @@ export class PersonService {
     }
 
     if (assetId) {
-      await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
+      await this.access.requirePermission(auth, Permission.ASSET_READ, assetId);
       const [face] = await this.repository.getFacesByIds([{ personId: id, assetId }]);
       if (!face) {
         throw new BadRequestException('Invalid assetId for feature face');
@@ -213,11 +213,11 @@ export class PersonService {
     return mapPerson(person);
   }
 
-  async updatePeople(authUser: AuthUserDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
+  async updatePeople(auth: AuthDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
     const results: BulkIdResponseDto[] = [];
     for (const person of dto.people) {
       try {
-        await this.update(authUser, person.id, {
+        await this.update(auth, person.id, {
           isHidden: person.isHidden,
           name: person.name,
           birthDate: person.birthDate,
@@ -438,15 +438,15 @@ export class PersonService {
     return true;
   }
 
-  async mergePerson(authUser: AuthUserDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
+  async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
     const mergeIds = dto.ids;
-    await this.access.requirePermission(authUser, Permission.PERSON_WRITE, id);
+    await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
     const primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 
     const results: BulkIdResponseDto[] = [];
 
-    const allowedIds = await this.access.checkAccess(authUser, Permission.PERSON_MERGE, mergeIds);
+    const allowedIds = await this.access.checkAccess(auth, Permission.PERSON_MERGE, mergeIds);
 
     for (const mergeId of mergeIds) {
       const hasAccess = allowedIds.has(mergeId);

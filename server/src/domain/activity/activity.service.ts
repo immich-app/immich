@@ -1,7 +1,7 @@
 import { ActivityEntity } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
 import { AccessCore, Permission } from '../access';
-import { AuthUserDto } from '../auth';
+import { AuthDto } from '../auth';
 import { IAccessRepository, IActivityRepository } from '../repositories';
 import {
   ActivityCreateDto,
@@ -26,8 +26,8 @@ export class ActivityService {
     this.access = AccessCore.create(accessRepository);
   }
 
-  async getAll(authUser: AuthUserDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
-    await this.access.requirePermission(authUser, Permission.ALBUM_READ, dto.albumId);
+  async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
+    await this.access.requirePermission(auth, Permission.ALBUM_READ, dto.albumId);
     const activities = await this.repository.search({
       userId: dto.userId,
       albumId: dto.albumId,
@@ -38,16 +38,16 @@ export class ActivityService {
     return activities.map(mapActivity);
   }
 
-  async getStatistics(authUser: AuthUserDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
-    await this.access.requirePermission(authUser, Permission.ALBUM_READ, dto.albumId);
+  async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
+    await this.access.requirePermission(auth, Permission.ALBUM_READ, dto.albumId);
     return { comments: await this.repository.getStatistics(dto.assetId, dto.albumId) };
   }
 
-  async create(authUser: AuthUserDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
-    await this.access.requirePermission(authUser, Permission.ACTIVITY_CREATE, dto.albumId);
+  async create(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
+    await this.access.requirePermission(auth, Permission.ACTIVITY_CREATE, dto.albumId);
 
     const common = {
-      userId: authUser.id,
+      userId: auth.user.id,
       assetId: dto.assetId,
       albumId: dto.albumId,
     };
@@ -77,8 +77,8 @@ export class ActivityService {
     return { duplicate, value: mapActivity(activity) };
   }
 
-  async delete(authUser: AuthUserDto, id: string): Promise<void> {
-    await this.access.requirePermission(authUser, Permission.ACTIVITY_DELETE, id);
+  async delete(auth: AuthDto, id: string): Promise<void> {
+    await this.access.requirePermission(auth, Permission.ACTIVITY_DELETE, id);
     await this.repository.delete(id);
   }
 }

@@ -21,7 +21,7 @@ export const userDto = {
 
 export const userStub = {
   admin: Object.freeze<UserEntity>({
-    ...authStub.admin,
+    ...authStub.admin.user,
     password: 'admin_password',
     name: 'admin_name',
     storageLabel: 'admin',
@@ -38,7 +38,7 @@ export const userStub = {
     avatarColor: UserAvatarColor.PRIMARY,
   }),
   user1: Object.freeze<UserEntity>({
-    ...authStub.user1,
+    ...authStub.user1.user,
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: null,
@@ -55,7 +55,7 @@ export const userStub = {
     avatarColor: UserAvatarColor.PRIMARY,
   }),
   user2: Object.freeze<UserEntity>({
-    ...authStub.user2,
+    ...authStub.user2.user,
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: null,
@@ -72,7 +72,7 @@ export const userStub = {
     avatarColor: UserAvatarColor.PRIMARY,
   }),
   storageLabel: Object.freeze<UserEntity>({
-    ...authStub.user1,
+    ...authStub.user1.user,
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',
@@ -89,7 +89,7 @@ export const userStub = {
     avatarColor: UserAvatarColor.PRIMARY,
   }),
   externalPath1: Object.freeze<UserEntity>({
-    ...authStub.user1,
+    ...authStub.user1.user,
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',
@@ -106,7 +106,7 @@ export const userStub = {
     avatarColor: UserAvatarColor.PRIMARY,
   }),
   externalPath2: Object.freeze<UserEntity>({
-    ...authStub.user1,
+    ...authStub.user1.user,
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',
@@ -123,7 +123,7 @@ export const userStub = {
     avatarColor: UserAvatarColor.PRIMARY,
   }),
   profilePath: Object.freeze<UserEntity>({
-    ...authStub.user1,
+    ...authStub.user1.user,
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',
