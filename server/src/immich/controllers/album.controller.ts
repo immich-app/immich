@@ -14,7 +14,7 @@ import {
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
-import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
+import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -26,24 +26,24 @@ export class AlbumController {
   constructor(private service: AlbumService) {}
 
   @Get('count')
-  getAlbumCount(@AuthUser() auth: AuthDto): Promise<AlbumCountResponseDto> {
+  getAlbumCount(@Auth() auth: AuthDto): Promise<AlbumCountResponseDto> {
     return this.service.getCount(auth);
   }
 
   @Get()
-  getAllAlbums(@AuthUser() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  getAllAlbums(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     return this.service.getAll(auth, query);
   }
 
   @Post()
-  createAlbum(@AuthUser() auth: AuthDto, @Body() dto: CreateDto): Promise<AlbumResponseDto> {
+  createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateDto): Promise<AlbumResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @SharedLinkRoute()
   @Get(':id')
   getAlbumInfo(
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Query() dto: AlbumInfoDto,
   ): Promise<AlbumResponseDto> {
@@ -52,7 +52,7 @@ export class AlbumController {
 
   @Patch(':id')
   updateAlbumInfo(
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: UpdateDto,
   ): Promise<AlbumResponseDto> {
@@ -60,14 +60,14 @@ export class AlbumController {
   }
 
   @Delete(':id')
-  deleteAlbum(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto) {
+  deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }
 
   @SharedLinkRoute()
   @Put(':id/assets')
   addAssetsToAlbum(
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: BulkIdsDto,
   ): Promise<BulkIdResponseDto[]> {
@@ -76,7 +76,7 @@ export class AlbumController {
 
   @Delete(':id/assets')
   removeAssetFromAlbum(
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,
     @Param() { id }: UUIDParamDto,
   ): Promise<BulkIdResponseDto[]> {
@@ -85,7 +85,7 @@ export class AlbumController {
 
   @Put(':id/users')
   addUsersToAlbum(
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: AddUsersDto,
   ): Promise<AlbumResponseDto> {
@@ -94,7 +94,7 @@ export class AlbumController {
 
   @Delete(':id/user/:userId')
   removeUserFromAlbum(
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {

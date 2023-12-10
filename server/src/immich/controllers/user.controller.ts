@@ -23,7 +23,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { AdminRoute, AuthUser, Authenticated } from '../app.guard';
+import { AdminRoute, Auth, Authenticated } from '../app.guard';
 import { UseValidation, asStreamableFile } from '../app.utils';
 import { FileUploadInterceptor, Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -36,7 +36,7 @@ export class UserController {
   constructor(private service: UserService) {}
 
   @Get()
-  getAllUsers(@AuthUser() auth: AuthDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
+  getAllUsers(@Auth() auth: AuthDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
     return this.service.getAll(auth, isAll);
   }
 
@@ -46,7 +46,7 @@ export class UserController {
   }
 
   @Get('me')
-  getMyUserInfo(@AuthUser() auth: AuthDto): Promise<UserResponseDto> {
+  getMyUserInfo(@Auth() auth: AuthDto): Promise<UserResponseDto> {
     return this.service.getMe(auth);
   }
 
@@ -58,25 +58,25 @@ export class UserController {
 
   @Delete('profile-image')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteProfileImage(@AuthUser() auth: AuthDto): Promise<void> {
+  deleteProfileImage(@Auth() auth: AuthDto): Promise<void> {
     return this.service.deleteProfileImage(auth);
   }
 
   @AdminRoute()
   @Delete(':id')
-  deleteUser(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+  deleteUser(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
     return this.service.delete(auth, id);
   }
 
   @AdminRoute()
   @Post(':id/restore')
-  restoreUser(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+  restoreUser(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
     return this.service.restore(auth, id);
   }
 
   // TODO: replace with @Put(':id')
   @Put()
-  updateUser(@AuthUser() auth: AuthDto, @Body() updateUserDto: UpdateDto): Promise<UserResponseDto> {
+  updateUser(@Auth() auth: AuthDto, @Body() updateUserDto: UpdateDto): Promise<UserResponseDto> {
     return this.service.update(auth, updateUserDto);
   }
 
@@ -85,7 +85,7 @@ export class UserController {
   @ApiBody({ description: 'A new avatar for the user', type: CreateProfileImageDto })
   @Post('profile-image')
   createProfileImage(
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
     @UploadedFile() fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
     return this.service.createProfileImage(auth, fileInfo);

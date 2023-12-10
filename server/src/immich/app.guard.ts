@@ -50,7 +50,7 @@ export const SharedLinkRoute = () =>
   applyDecorators(SetMetadata(Metadata.SHARED_ROUTE, true), ApiQuery({ name: 'key', type: String, required: false }));
 export const AdminRoute = (value = true) => SetMetadata(Metadata.ADMIN_ROUTE, value);
 
-export const AuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthDto => {
+export const Auth = createParamDecorator((data, ctx: ExecutionContext): AuthDto => {
   return ctx.switchToHttp().getRequest<{ user: AuthDto }>().user;
 });
 

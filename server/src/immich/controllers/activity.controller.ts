@@ -10,7 +10,7 @@ import {
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { AuthUser, Authenticated } from '../app.guard';
+import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -22,18 +22,18 @@ export class ActivityController {
   constructor(private service: ActivityService) {}
 
   @Get()
-  getActivities(@AuthUser() auth: AuthDto, @Query() dto: ActivitySearchDto): Promise<ResponseDto[]> {
+  getActivities(@Auth() auth: AuthDto, @Query() dto: ActivitySearchDto): Promise<ResponseDto[]> {
     return this.service.getAll(auth, dto);
   }
 
   @Get('statistics')
-  getActivityStatistics(@AuthUser() auth: AuthDto, @Query() dto: ActivityDto): Promise<StatsResponseDto> {
+  getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<StatsResponseDto> {
     return this.service.getStatistics(auth, dto);
   }
 
   @Post()
   async createActivity(
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
     @Body() dto: CreateDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ResponseDto> {
@@ -46,7 +46,7 @@ export class ActivityController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteActivity(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
 }

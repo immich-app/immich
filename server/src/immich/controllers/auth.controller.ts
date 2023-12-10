@@ -17,7 +17,7 @@ import {
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { AuthUser, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
+import { Auth, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -47,19 +47,19 @@ export class AuthController {
   }
 
   @Get('devices')
-  getAuthDevices(@AuthUser() auth: AuthDto): Promise<AuthDeviceResponseDto[]> {
+  getAuthDevices(@Auth() auth: AuthDto): Promise<AuthDeviceResponseDto[]> {
     return this.service.getDevices(auth);
   }
 
   @Delete('devices')
   @HttpCode(HttpStatus.NO_CONTENT)
-  logoutAuthDevices(@AuthUser() auth: AuthDto): Promise<void> {
+  logoutAuthDevices(@Auth() auth: AuthDto): Promise<void> {
     return this.service.logoutDevices(auth);
   }
 
   @Delete('devices/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  logoutAuthDevice(@AuthUser() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  logoutAuthDevice(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.logoutDevice(auth, id);
   }
 
@@ -71,7 +71,7 @@ export class AuthController {
 
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
-  changePassword(@AuthUser() auth: AuthDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
+  changePassword(@Auth() auth: AuthDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
     return this.service.changePassword(auth, dto).then(mapUser);
   }
 
@@ -80,7 +80,7 @@ export class AuthController {
   logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @AuthUser() auth: AuthDto,
+    @Auth() auth: AuthDto,
   ): Promise<LogoutResponseDto> {
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
