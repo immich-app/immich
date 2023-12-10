@@ -1,9 +1,11 @@
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
-import 'package:immich_mobile/modules/activities/services/activity.service.dart';
+import 'package:immich_mobile/modules/activities/providers/activity_service.provider.dart';
+import 'package:immich_mobile/modules/activities/providers/activity_statistics.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'activity.provider.g.dart';
 
+/// Maintains the current list of all activities for <share-album-id, asset>
 @riverpod
 class AlbumActivity extends _$AlbumActivity {
   @override
@@ -59,18 +61,4 @@ class AlbumActivity extends _$AlbumActivity {
       }
     }
   }
-}
-
-@riverpod
-class ActivityStatistics extends _$ActivityStatistics {
-  @override
-  Future<int> build(String albumId, [String? assetId]) async {
-    return ref
-        .watch(activityServiceProvider)
-        .getStatistics(albumId, assetId: assetId);
-  }
-
-  void addActivity() => state = state.whenData((count) => count + 1);
-
-  void removeActivity() => state = state.whenData((count) => count - 1);
 }

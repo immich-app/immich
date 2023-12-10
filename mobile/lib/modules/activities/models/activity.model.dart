@@ -49,6 +49,7 @@ class Activity {
         user = User(
           email: dto.user.email,
           name: dto.user.name,
+          avatarColor: dto.user.avatarColor.toAvatarColor(),
           profileImagePath: dto.user.profileImagePath,
           id: dto.user.id,
           // Placeholder values
@@ -65,11 +66,10 @@ class Activity {
   }
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(covariant Activity other) {
     if (identical(this, other)) return true;
 
-    return other is Activity &&
-        other.id == id &&
+    return other.id == id &&
         other.assetId == assetId &&
         other.comment == comment &&
         other.createdAt == createdAt &&

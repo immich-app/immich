@@ -11,6 +11,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
@@ -105,6 +106,12 @@ class GalleryViewerPage extends HookConsumerWidget {
         .contains(asset().ownerId);
 
     bool isParent = stackIndex.value == -1 || stackIndex.value == 0;
+
+    useValueChanged(
+      asset(),
+      (_, __) =>
+          ref.read(currentAssetProvider.notifier).updateCurrentAsset(asset()),
+    );
 
     useEffect(
       () {
@@ -334,14 +341,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     handleActivities() {
       if (album != null && album.shared && album.remoteId != null) {
-        context.pushRoute(
-          ActivitiesRoute(
-            albumId: album.remoteId!,
-            assetId: asset().remoteId,
-            withAssetThumbs: false,
-            isOwner: isOwner,
-          ),
-        );
+        context.pushRoute(const ActivitiesRoute());
       }
     }
 

@@ -1,14 +1,9 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/errors.dart';
 import 'package:immich_mobile/mixins/error_logger.mixin.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
-import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-
-final activityServiceProvider =
-    Provider((ref) => ActivityService(ref.watch(apiServiceProvider)));
 
 class ActivityService with ErrorLoggerMixin {
   final ApiService _apiService;

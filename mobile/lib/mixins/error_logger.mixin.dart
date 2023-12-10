@@ -8,8 +8,10 @@ mixin ErrorLoggerMixin {
 
   /// Returns an AsyncValue<T> if the future is successfully executed
   /// Else, logs the error to the overrided logger and returns and AsyncError<>
-  AsyncFuture<T> guardError<T>(Future<T> Function() fn,
-      {Level logLevel = Level.SEVERE}) async {
+  AsyncFuture<T> guardError<T>(
+    Future<T> Function() fn, {
+    Level logLevel = Level.SEVERE,
+  }) async {
     try {
       final result = await fn();
       return AsyncData(result);

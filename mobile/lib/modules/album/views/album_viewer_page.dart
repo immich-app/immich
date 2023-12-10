@@ -218,12 +218,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     onActivitiesPressed(Album album) {
       if (album.remoteId != null) {
         context.pushRoute(
-          ActivitiesRoute(
-            albumId: album.remoteId!,
-            appBarTitle: album.name,
-            isOwner: userId == album.ownerId,
-            isReadOnly: !album.activityEnabled,
-          ),
+          const ActivitiesRoute(),
         );
       }
     }
