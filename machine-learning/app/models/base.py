@@ -32,7 +32,7 @@ class InferenceModel(ABC):
     ) -> None:
         self.loaded = False
         self.model_name = model_name
-        self.cache_dir = cache_dir if cache_dir is not None else self.cache_dir_default
+        self.cache_dir = Path(cache_dir) if cache_dir is not None else self.cache_dir_default
         self.providers = providers if providers is not None else self.providers_default
         self.provider_options = provider_options if provider_options is not None else self.provider_options_default
         self.sess_options = sess_options if sess_options is not None else self.sess_options_default
@@ -166,7 +166,7 @@ class InferenceModel(ABC):
         return [{"arena_extend_strategy": "kSameAsRequested"}] * len(self.providers)
 
     @property
-    def sess_options(self) -> list[str]:
+    def sess_options(self) -> ort.SessionOptions:
         return self._sess_options
 
     @sess_options.setter
