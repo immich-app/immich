@@ -13,7 +13,7 @@
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
   import { boundingBoxesArray } from '$lib/stores/people.store';
 
-  export let unassignedFaces: (FaceWithGeneretedThumbnail | null)[];
+  export let unassignedFaces: FaceWithGeneretedThumbnail[];
   export let allPeople: PersonResponseDto[];
   export let selectedPersonToAdd: FaceWithGeneretedThumbnail[];
 
@@ -74,7 +74,7 @@
     <div class="px-4 py-4 text-sm">
       <div class="mt-4 flex flex-wrap gap-2">
         {#each unassignedFaces as face, index}
-          {#if face && !selectedPersonToAdd.some((faceToAdd) => face && faceToAdd.id === face.id)}
+          {#if !selectedPersonToAdd.some((faceToAdd) => face && faceToAdd.id === face.id)}
             <div class="relative z-[20001] h-[115px] w-[95px]">
               <button
                 tabindex={index}

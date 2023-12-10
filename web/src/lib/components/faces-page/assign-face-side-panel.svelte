@@ -22,8 +22,18 @@
   let searchedPeople: PersonResponseDto[] = [];
   let searchedPeopleCopy: PersonResponseDto[] = [];
   let searchWord: string;
-  let searchFaces = false;
+  let isSearchingPerson = false;
   let searchName = '';
+
+  $: {
+    searchedPeople = searchedPeopleCopy.filter(
+      (person) => personWithFace.person && personWithFace.person.id !== person.id,
+    );
+
+    if (searchName) {
+      searchedPeople = searchNameLocal(searchName, searchedPeople, 10);
+    }
+  }
 
   const dispatch = createEventDispatcher();
   const handleBackButton = () => {
@@ -63,10 +73,6 @@
     isShowLoadingSearch = false;
   };
 
-  $: {
-    searchedPeople = searchNameLocal(searchName, searchedPeopleCopy, 10);
-  }
-
   const initInput = (element: HTMLInputElement) => {
     element.focus();
   };
@@ -77,7 +83,7 @@
   class="absolute top-0 z-[2002] h-full w-[360px] overflow-x-hidden p-2 bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
 >
   <div class="flex place-items-center justify-between gap-2">
-    {#if !searchFaces}
+    {#if !isSearchingPerson}
       <div class="flex items-center gap-2">
         <button
           class="flex place-content-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
@@ -94,7 +100,7 @@
           class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
           title="Search existing person"
           on:click={() => {
-            searchFaces = true;
+            isSearchingPerson = true;
           }}
         >
           <div>
@@ -143,7 +149,7 @@
       </div>
       <button
         class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-        on:click={() => (searchFaces = false)}
+        on:click={() => (isSearchingPerson = false)}
       >
         <div>
           <Icon path={mdiClose} size="24" />
@@ -182,26 +188,24 @@
         {/each}
       {:else}
         {#each searchedPeople as person (person.id)}
-          {#if person.id !== personWithFace.person?.id}
-            <div class="w-fit">
-              <button class="w-[90px]" on:click={() => dispatch('reassign', person)}>
-                <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
-                    altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
-                    title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                    hidden={person.isHidden}
-                  />
-                </div>
-                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-              </button>
-            </div>
-          {/if}
+          <div class="w-fit">
+            <button class="w-[90px]" on:click={() => dispatch('reassign', person)}>
+              <div class="relative">
+                <ImageThumbnail
+                  curve
+                  shadow
+                  url={api.getPeopleThumbnailUrl(person.id)}
+                  altText={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                  title={getPersonNameWithHiddenValue(person.name, person.isHidden)}
+                  widthStyle="90px"
+                  heightStyle="90px"
+                  thumbhash={null}
+                  hidden={person.isHidden}
+                />
+              </div>
+              <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
+            </button>
+          </div>
         {/each}
       {/if}
     </div>

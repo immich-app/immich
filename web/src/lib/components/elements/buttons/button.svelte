@@ -11,7 +11,7 @@
     | 'transparent-gray'
     | 'dark-gray'
     | 'overlay-primary';
-  export type Size = 'tiny' | 'icon' | 'link' | 'sm' | 'base' | 'lg';
+  export type Size = 'tiny' | 'xs' | 'icon' | 'link' | 'sm' | 'base' | 'lg';
   export type Rounded = 'lg' | '3xl' | 'full' | false;
   export type Shadow = 'md' | false;
 </script>
@@ -47,6 +47,7 @@
 
   const sizeClasses: Record<Size, string> = {
     tiny: 'p-0 ml-2 mr-0 align-top',
+    xs: 'p-2',
     icon: 'p-2.5',
     link: 'p-2 font-medium',
     sm: 'px-4 py-2 text-sm font-medium',

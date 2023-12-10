@@ -16,6 +16,7 @@
   import { currentAsset, photoViewer } from '$lib/stores/assets.store';
   import UnassignedFacesSidePannel from './unassigned-faces-side-pannel.svelte';
   import type { FaceWithGeneretedThumbnail } from '$lib/utils/people-utils';
+  import Button from '../elements/buttons/button.svelte';
 
   // keep track of the changes
   let idsOfPersonToCreate: string[] = [];
@@ -28,7 +29,7 @@
   let selectedPersonToAdd: FaceWithGeneretedThumbnail[] = [];
   let selectedPersonToUnassign: FaceWithGeneretedThumbnail[] = [];
   let selectedPersonToRemove: boolean[] = [];
-  let unassignedFaces: (FaceWithGeneretedThumbnail | null)[] = [];
+  let unassignedFaces: FaceWithGeneretedThumbnail[] = [];
   let editedPersonIndex: number;
   let shouldRefresh: boolean = false;
 
@@ -83,16 +84,18 @@
       selectedPersonToCreate = new Array<string | null>(peopleWithFaces.length);
       selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
       selectedPersonToRemove = new Array<boolean>(peopleWithFaces.length);
-      unassignedFaces = await Promise.all(
-        peopleWithFaces.map(async (personWithFace) => {
-          if (personWithFace.person || $currentAsset === null) {
-            return null;
-          } else {
-            const image = await zoomImageToBase64(personWithFace, $photoViewer, $currentAsset.type, $currentAsset.id);
-            return image ? { ...personWithFace, customThumbnail: image } : null;
-          }
-        }),
-      );
+      unassignedFaces = (
+        await Promise.all(
+          peopleWithFaces.map(async (personWithFace) => {
+            if (personWithFace.person || $currentAsset === null) {
+              return null;
+            } else {
+              const image = await zoomImageToBase64(personWithFace, $photoViewer, $currentAsset.type, $currentAsset.id);
+              return image ? { ...personWithFace, customThumbnail: image } : null;
+            }
+          }),
+        )
+      ).filter((item): item is FaceWithGeneretedThumbnail => item !== null);
     } catch (error) {
       handleError(error, "Can't get faces");
     } finally {
@@ -149,9 +152,10 @@
 
   const handleAddRemovedFace = (indexToRemove: number) => {
     $boundingBoxesArray = [];
-    unassignedFaces = unassignedFaces.map((obj) =>
-      obj && obj.id === selectedPersonToUnassign[indexToRemove].id ? null : obj,
-    );
+    unassignedFaces = unassignedFaces
+      .map((obj) => (obj && obj.id === selectedPersonToUnassign[indexToRemove].id ? null : obj))
+      .filter((item): item is FaceWithGeneretedThumbnail => item !== null) as FaceWithGeneretedThumbnail[];
+
     selectedPersonToUnassign = selectedPersonToUnassign.filter((_, index) => index !== indexToRemove);
   };
 
@@ -343,16 +347,20 @@
           </div>
         </div>
       {:else}
-        <div>Visible faces</div>
+        <div>Faces visible</div>
       {/if}
 
       {#if isSelectingFaces && selectedPersonToRemove && selectedPersonToRemove.filter((value) => value).length > 0}
-        <button
-          class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
+        <Button
+          size="xs"
+          color="red"
+          title="Unassign faces"
+          shadow={false}
+          rounded="full"
           on:click={handleUnassignFaces}
         >
-          Unassign faces
-        </button>
+          Unassign Faces
+        </Button>
       {/if}
     </div>
     <div class="mt-2 flex flex-wrap gap-2">
@@ -362,7 +370,7 @@
         </div>
       {:else}
         {#each peopleWithFaces as face, index}
-          {#if face.person && unassignedFaces[index] === null && !selectedPersonToUnassign.some((unassignedFace) => unassignedFace.id === face.id)}
+          {#if face.person && !unassignedFaces.some((unassignedFace) => unassignedFace.id === face.id) && !selectedPersonToUnassign.some((unassignedFace) => unassignedFace.id === face.id)}
             <div class="relative z-[20001] h-[115px] w-[95px]">
               <div
                 role="button"
