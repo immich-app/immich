@@ -1,7 +1,7 @@
 import {
   AuthDeviceResponseDto,
+  AuthDto,
   AuthService,
-  AuthUserDto,
   ChangePasswordDto,
   IMMICH_ACCESS_COOKIE,
   IMMICH_AUTH_TYPE_COOKIE,
@@ -17,7 +17,7 @@ import {
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { AuthUser, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
+import { Auth, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -47,20 +47,20 @@ export class AuthController {
   }
 
   @Get('devices')
-  getAuthDevices(@AuthUser() authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
-    return this.service.getDevices(authUser);
+  getAuthDevices(@Auth() auth: AuthDto): Promise<AuthDeviceResponseDto[]> {
+    return this.service.getDevices(auth);
   }
 
   @Delete('devices')
   @HttpCode(HttpStatus.NO_CONTENT)
-  logoutAuthDevices(@AuthUser() authUser: AuthUserDto): Promise<void> {
-    return this.service.logoutDevices(authUser);
+  logoutAuthDevices(@Auth() auth: AuthDto): Promise<void> {
+    return this.service.logoutDevices(auth);
   }
 
   @Delete('devices/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  logoutAuthDevice(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.logoutDevice(authUser, id);
+  logoutAuthDevice(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.logoutDevice(auth, id);
   }
 
   @Post('validateToken')
@@ -71,8 +71,8 @@ export class AuthController {
 
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
-  changePassword(@AuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
-    return this.service.changePassword(authUser, dto).then(mapUser);
+  changePassword(@Auth() auth: AuthDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
+    return this.service.changePassword(auth, dto).then(mapUser);
   }
 
   @Post('logout')
@@ -80,11 +80,11 @@ export class AuthController {
   logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
   ): Promise<LogoutResponseDto> {
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
 
-    return this.service.logout(authUser, (req.cookies || {})[IMMICH_AUTH_TYPE_COOKIE]);
+    return this.service.logout(auth, (req.cookies || {})[IMMICH_AUTH_TYPE_COOKIE]);
   }
 }

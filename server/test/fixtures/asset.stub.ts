@@ -403,7 +403,7 @@ export const assetStub = {
   livePhotoMotionAsset: Object.freeze({
     id: 'live-photo-motion-asset',
     originalPath: fileStub.livePhotoMotion.originalPath,
-    ownerId: authStub.user1.id,
+    ownerId: authStub.user1.user.id,
     type: AssetType.VIDEO,
     isVisible: false,
     fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
@@ -418,7 +418,7 @@ export const assetStub = {
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
     originalPath: fileStub.livePhotoStill.originalPath,
-    ownerId: authStub.user1.id,
+    ownerId: authStub.user1.user.id,
     type: AssetType.IMAGE,
     livePhotoVideoId: 'live-photo-motion-asset',
     isVisible: true,

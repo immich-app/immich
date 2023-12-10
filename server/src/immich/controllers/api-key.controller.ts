@@ -4,11 +4,11 @@ import {
   APIKeyResponseDto,
   APIKeyService,
   APIKeyUpdateDto,
-  AuthUserDto,
+  AuthDto,
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthUser, Authenticated } from '../app.guard';
+import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -20,31 +20,31 @@ export class APIKeyController {
   constructor(private service: APIKeyService) {}
 
   @Post()
-  createApiKey(@AuthUser() authUser: AuthUserDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
-    return this.service.create(authUser, dto);
+  createApiKey(@Auth() auth: AuthDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
+    return this.service.create(auth, dto);
   }
 
   @Get()
-  getApiKeys(@AuthUser() authUser: AuthUserDto): Promise<APIKeyResponseDto[]> {
-    return this.service.getAll(authUser);
+  getApiKeys(@Auth() auth: AuthDto): Promise<APIKeyResponseDto[]> {
+    return this.service.getAll(auth);
   }
 
   @Get(':id')
-  getApiKey(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
-    return this.service.getById(authUser, id);
+  getApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
+    return this.service.getById(auth, id);
   }
 
   @Put(':id')
   updateApiKey(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: APIKeyUpdateDto,
   ): Promise<APIKeyResponseDto> {
-    return this.service.update(authUser, id, dto);
+    return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
-  deleteApiKey(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.delete(authUser, id);
+  deleteApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.delete(auth, id);
   }
 }

@@ -19,10 +19,10 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`Websocket Connect:    ${client.id}`);
-      const user = await this.authService.validate(client.request.headers, {});
-      await client.join(user.id);
+      const auth = await this.authService.validate(client.request.headers, {});
+      await client.join(auth.user.id);
       for (const callback of this.onConnectCallbacks) {
-        await callback(user.id);
+        await callback(auth.user.id);
       }
     } catch (error: Error | any) {
       this.logger.error(`Websocket connection error: ${error}`, error?.stack);

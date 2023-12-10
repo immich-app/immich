@@ -1,7 +1,7 @@
 import {
   AssetFaceUpdateDto,
   AssetResponseDto,
-  AuthUserDto,
+  AuthDto,
   BulkIdResponseDto,
   ImmichReadStream,
   MergePersonDto,
@@ -15,7 +15,7 @@ import {
 } from '@app/domain';
 import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { AuthUser, Authenticated } from '../app.guard';
+import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -31,49 +31,46 @@ export class PersonController {
   constructor(private service: PersonService) {}
 
   @Get()
-  getAllPeople(@AuthUser() authUser: AuthUserDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
-    return this.service.getAll(authUser, withHidden);
+  getAllPeople(@Auth() auth: AuthDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
+    return this.service.getAll(auth, withHidden);
   }
 
   @Post()
-  createPerson(@AuthUser() authUser: AuthUserDto): Promise<PersonResponseDto> {
-    return this.service.createPerson(authUser);
+  createPerson(@Auth() auth: AuthDto): Promise<PersonResponseDto> {
+    return this.service.createPerson(auth);
   }
 
   @Put(':id/reassign')
   reassignFaces(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: AssetFaceUpdateDto,
   ): Promise<PersonResponseDto[]> {
-    return this.service.reassignFaces(authUser, id, dto);
+    return this.service.reassignFaces(auth, id, dto);
   }
 
   @Put()
-  updatePeople(@AuthUser() authUser: AuthUserDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
-    return this.service.updatePeople(authUser, dto);
+  updatePeople(@Auth() auth: AuthDto, @Body() dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
+    return this.service.updatePeople(auth, dto);
   }
 
   @Get(':id')
-  getPerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
-    return this.service.getById(authUser, id);
+  getPerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
+    return this.service.getById(auth, id);
   }
 
   @Put(':id')
   updatePerson(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: PersonUpdateDto,
   ): Promise<PersonResponseDto> {
-    return this.service.update(authUser, id, dto);
+    return this.service.update(auth, id, dto);
   }
 
   @Get(':id/statistics')
-  getPersonStatistics(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-  ): Promise<PersonStatisticsResponseDto> {
-    return this.service.getStatistics(authUser, id);
+  getPersonStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonStatisticsResponseDto> {
+    return this.service.getStatistics(auth, id);
   }
 
   @Get(':id/thumbnail')
@@ -82,21 +79,21 @@ export class PersonController {
       'image/jpeg': { schema: { type: 'string', format: 'binary' } },
     },
   })
-  getPersonThumbnail(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.getThumbnail(authUser, id).then(asStreamableFile);
+  getPersonThumbnail(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
+    return this.service.getThumbnail(auth, id).then(asStreamableFile);
   }
 
   @Get(':id/assets')
-  getPersonAssets(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
-    return this.service.getAssets(authUser, id);
+  getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
+    return this.service.getAssets(auth, id);
   }
 
   @Post(':id/merge')
   mergePerson(
-    @AuthUser() authUser: AuthUserDto,
+    @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: MergePersonDto,
   ): Promise<BulkIdResponseDto[]> {
-    return this.service.mergePerson(authUser, id, dto);
+    return this.service.mergePerson(auth, id, dto);
   }
 }
