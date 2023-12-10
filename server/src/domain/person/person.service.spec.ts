@@ -573,7 +573,7 @@ describe(PersonService.name, () => {
       });
       await sut.handleQueueRecognizeFaces({});
 
-      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.FACES);
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.PERSON);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
@@ -694,7 +694,6 @@ describe(PersonService.name, () => {
       smartInfoMock.searchFaces.mockResolvedValue([]);
       personMock.create.mockResolvedValue(personStub.noName);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      personMock.createFace.mockResolvedValue(faceStub.primaryFace1);
 
       await sut.handleRecognizeFaces({ id: assetStub.image.id });
 
