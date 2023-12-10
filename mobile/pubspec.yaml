@@ -58,6 +58,7 @@ dependencies:
   wakelock_plus: ^1.1.1
   flutter_local_notifications: ^15.1.0+1
   timezone: ^0.9.2
+  mocktail: ^1.0.1
 
   openapi:
     path: openapi
@@ -84,7 +85,6 @@ dev_dependencies:
   flutter_launcher_icons: "^0.9.2"
   flutter_native_splash: ^2.2.16
   isar_generator: *isar_version
-  mockito: ^5.3.2
   integration_test:
     sdk: flutter
   custom_lint: ^0.5.6
