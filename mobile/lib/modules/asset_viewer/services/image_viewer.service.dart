@@ -21,7 +21,7 @@ class ImageViewerService {
   Future<bool> downloadAssetToDevice(Asset asset) async {
     try {
       // Download LivePhotos image and motion part
-      if (asset.isImage && asset.livePhotoVideoId != null) {
+      if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
         var imageResponse = await _apiService.assetApi.downloadFileWithHttpInfo(
           asset.remoteId!,
         );
