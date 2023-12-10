@@ -1,5 +1,5 @@
 import { envName, getLogLevels, isDev, serverVersion } from '@app/domain';
-import { RedisIoAdapter, enablePrefilter } from '@app/infra';
+import { WebSocketAdapter, enablePrefilter } from '@app/infra';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -21,7 +21,7 @@ export async function bootstrap() {
   if (isDev) {
     app.enableCors();
   }
-  app.useWebSocketAdapter(new RedisIoAdapter(app));
+  app.useWebSocketAdapter(new WebSocketAdapter(app));
   useSwagger(app, isDev);
 
   const excludePaths = ['/.well-known/immich', '/custom.css'];

@@ -9,7 +9,8 @@ services:
       context: ../
       dockerfile: server/Dockerfile
       target: dev
-    command: npm run test:e2e
+    entrypoint: [ "/usr/local/bin/npm", "run" ]
+    command: test:e2e
     volumes:
       - ../server:/usr/src/app
       - /usr/src/app/node_modules
@@ -23,7 +24,7 @@ services:
       - database
 
   database:
-    image: tensorchord/pgvecto-rs:pg14-v0.1.11
+    image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres

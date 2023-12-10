@@ -68,7 +68,7 @@
               </Button>
             </Badge>
           {/if}
-          {#if jobCounts.delayed > 0 || true}
+          {#if jobCounts.delayed > 0}
             <Badge color="secondary">
               <span class="text-sm">
                 {jobCounts.delayed.toLocaleString($locale)} delayed
