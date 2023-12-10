@@ -6,6 +6,7 @@ import {
   IAccessRepository,
   IJobRepository,
   ILibraryRepository,
+  isConnectionAborted,
   JobName,
   mapAsset,
   mimeTypes,
@@ -20,6 +21,7 @@ import { constants } from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
 import { QueryFailedError } from 'typeorm';
+import { promisify } from 'util';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
@@ -41,6 +43,10 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
+
+// TODO: move file sending logic to an interceptor
+const sendFile = (res: Response, path: string, options: SendFileOptions) =>
+  promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);
 
 @Injectable()
 export class AssetService {
@@ -336,19 +342,16 @@ export class AssetService {
 
     res.set('Cache-Control', 'private, max-age=86400, no-transform');
     res.header('Content-Type', mimeTypes.lookup(filepath));
-    return new Promise((resolve, reject) => {
-      res.sendFile(filepath, options, (error: Error) => {
-        if (!error) {
-          resolve();
-          return;
-        }
 
-        if (error.message !== 'Request aborted') {
-          this.logger.error(`Unable to send file: ${error.name}`, error.stack);
-        }
-        reject(error);
-      });
-    });
+    try {
+      await sendFile(res, filepath, options);
+    } catch (error: Error | any) {
+      if (!isConnectionAborted(error)) {
+        this.logger.error(`Unable to send file: ${error.name}`, error.stack);
+      }
+      // throwing closes the connection and prevents `Error: write EPIPE`
+      throw error;
+    }
   }
 
   private async getLibraryId(authUser: AuthUserDto, libraryId?: string) {

@@ -21,6 +21,8 @@ export type Options = {
   each?: boolean;
 };
 
+export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
+
 export function ValidateUUID({ optional, each }: Options = { optional: false, each: false }) {
   return applyDecorators(
     IsUUID('4', { each }),
