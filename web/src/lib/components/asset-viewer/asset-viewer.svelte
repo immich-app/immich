@@ -258,6 +258,11 @@
 
     const key = event.key;
     const shiftKey = event.shiftKey;
+    const ctrlKey = event.ctrlKey;
+
+    if (ctrlKey) {
+      return;
+    }
 
     switch (key) {
       case 'a':
