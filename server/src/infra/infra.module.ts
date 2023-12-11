@@ -15,7 +15,6 @@ import {
   IMoveRepository,
   IPartnerRepository,
   IPersonRepository,
-  ISearchRepository,
   IServerInfoRepository,
   ISharedLinkRepository,
   ISmartInfoRepository,
@@ -36,10 +35,10 @@ import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
 import {
-  APIKeyRepository,
   AccessRepository,
   ActivityRepository,
   AlbumRepository,
+  ApiKeyRepository,
   AssetRepository,
   AuditRepository,
   CommunicationRepository,
@@ -59,7 +58,6 @@ import {
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
-  TypesenseRepository,
   UserRepository,
   UserTokenRepository,
 } from './repositories';
@@ -74,13 +72,12 @@ const providers: Provider[] = [
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
-  { provide: IKeyRepository, useClass: APIKeyRepository },
+  { provide: IKeyRepository, useClass: ApiKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: IMetadataRepository, useClass: MetadataRepository },
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
-  { provide: ISearchRepository, useClass: TypesenseRepository },
   { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISmartInfoRepository, useClass: SmartInfoRepository },

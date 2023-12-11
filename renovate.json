@@ -52,7 +52,8 @@
     },
     {
       "groupName": "base-image",
-      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"]
+      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"],
+      "minimumReleaseAge": "0"
     },
     {
       "matchDatasources": ["docker"],
@@ -60,6 +61,9 @@
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
       "versioning": "node"
     }
+  ],
+  "ignorePaths": [
+    "mobile/openapi/pubspec.yaml"
   ],
   "ignoreDeps": [
     "http",

@@ -4,11 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { LibraryEntity, LibraryType } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
   constructor(@InjectRepository(LibraryEntity) private repository: Repository<LibraryEntity>) {}
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   get(id: string, withDeleted = false): Promise<LibraryEntity | null> {
     return this.repository.findOneOrFail({
       where: {
@@ -19,6 +21,7 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   existsByName(name: string, withDeleted = false): Promise<boolean> {
     return this.repository.exist({
       where: {
@@ -28,10 +31,12 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getCountForUser(ownerId: string): Promise<number> {
     return this.repository.countBy({ ownerId });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null> {
     return this.repository.findOne({
       where: {
@@ -44,6 +49,7 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getUploadLibraryCount(ownerId: string): Promise<number> {
     return this.repository.count({
       where: {
@@ -53,6 +59,7 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getAllByUserId(ownerId: string, type?: LibraryType): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: {
@@ -69,6 +76,7 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  @GenerateSql({ params: [] })
   getAll(withDeleted = false, type?: LibraryType): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: { type },
@@ -82,6 +90,7 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  @GenerateSql()
   getAllDeleted(): Promise<LibraryEntity[]> {
     return this.repository.find({
       where: {
@@ -114,6 +123,7 @@ export class LibraryRepository implements ILibraryRepository {
     return this.save(library);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
     const stats = await this.repository
       .createQueryBuilder('libraries')
@@ -134,6 +144,7 @@ export class LibraryRepository implements ILibraryRepository {
     };
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getOnlineAssetPaths(libraryId: string): Promise<string[]> {
     // Return all non-offline asset paths for a given library
     const rawResults = await this.repository
@@ -153,6 +164,7 @@ export class LibraryRepository implements ILibraryRepository {
     return results;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
     let query = await this.repository
       .createQueryBuilder('library')

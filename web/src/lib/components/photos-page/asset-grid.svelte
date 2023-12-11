@@ -8,7 +8,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto, UserResponseDto } from '@api';
+  import type { AlbumResponseDto, AssetResponseDto } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -27,7 +27,6 @@
   export let removeAction: AssetAction | null = null;
   export let withStacked = false;
   export let isShared = false;
-  export let user: UserResponseDto | null = null;
   export let album: AlbumResponseDto | null = null;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
@@ -129,13 +128,28 @@
 
   const handleClose = () => assetViewingStore.showAssetViewer(false);
 
-  const handleAction = async (asset: AssetResponseDto, action: AssetAction) => {
-    if (removeAction === action) {
-      // find the next asset to show or close the viewer
-      (await handleNext()) || (await handlePrevious()) || handleClose();
+  const handleAction = async (action: AssetAction, asset: AssetResponseDto) => {
+    switch (action) {
+      case removeAction:
+      case AssetAction.TRASH:
+      case AssetAction.DELETE:
+        // find the next asset to show or close the viewer
+        (await handleNext()) || (await handlePrevious()) || handleClose();
 
-      // delete after find the next one
-      assetStore.removeAsset(asset.id);
+        // delete after find the next one
+        assetStore.removeAsset(asset.id);
+        break;
+
+      case AssetAction.ARCHIVE:
+      case AssetAction.UNARCHIVE:
+      case AssetAction.FAVORITE:
+      case AssetAction.UNFAVORITE:
+        assetStore.updateAsset(asset);
+        break;
+
+      case AssetAction.ADD:
+        assetStore.addAsset(asset);
+        break;
     }
   };
 
@@ -394,7 +408,6 @@
 <Portal target="body">
   {#if $showAssetViewer}
     <AssetViewer
-      {user}
       {withStacked}
       {assetStore}
       asset={$viewingAsset}
@@ -404,11 +417,7 @@
       on:previous={() => handlePrevious()}
       on:next={() => handleNext()}
       on:close={() => handleClose()}
-      on:archived={({ detail: asset }) => handleAction(asset, AssetAction.ARCHIVE)}
-      on:unarchived={({ detail: asset }) => handleAction(asset, AssetAction.UNARCHIVE)}
-      on:favorite={({ detail: asset }) => handleAction(asset, AssetAction.FAVORITE)}
-      on:unfavorite={({ detail: asset }) => handleAction(asset, AssetAction.UNFAVORITE)}
-      on:unstack={() => handleClose()}
+      on:action={({ detail: action }) => handleAction(action.type, action.asset)}
     />
   {/if}
 </Portal>

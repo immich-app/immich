@@ -22,12 +22,12 @@
   >
     <div class="flex items-center">
       <CircleIconButton icon={mdiClose} on:click={() => dispatch('closeClick')} />
-      <p class="ml-4 hidden sm:block">Show & hide faces</p>
+      <p class="ml-4 hidden sm:block">Show & hide people</p>
     </div>
     <div class="flex items-center justify-end">
       <div class="flex items-center md:mr-8">
         <CircleIconButton
-          title="Reset faces visibility"
+          title="Reset people visibility"
           icon={mdiRestart}
           on:click={() => dispatch('reset-visibility')}
         />

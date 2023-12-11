@@ -29,7 +29,7 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich_server
-    command: npm run start:debug immich
+    command: [ "/usr/src/app/bin/immich-dev", "immich" ]
     <<: *server-common
     ports:
       - 3001:3001
@@ -37,11 +37,10 @@ services:
     depends_on:
       - redis
       - database
-      - typesense
 
   immich-microservices:
     container_name: immich_microservices
-    command: npm run start:debug microservices
+    command: [ "/usr/src/app/bin/immich-dev", "microservices" ]
     <<: *server-common
     # extends:
     #   file: hwaccel.yml
@@ -51,7 +50,6 @@ services:
     depends_on:
       - database
       - immich-server
-      - typesense
 
   immich-web:
     container_name: immich_web
@@ -95,24 +93,13 @@ services:
       - database
     restart: unless-stopped
 
-  typesense:
-    container_name: immich_typesense
-    image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
-    environment:
-      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
-      - TYPESENSE_DATA_DIR=/data
-      # remove this to get debug messages
-      - GLOG_minloglevel=1
-    volumes:
-      - ${UPLOAD_LOCATION}/typesense:/data
-
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:80cc8518800438c684a53ed829c621c94afd1087aaeb59b0d4343ed3e7bcf6c5
+    image: redis:6.2-alpine@sha256:b6124ab2e45cc332e16398022a411d7e37181f21ff7874835e0180f56a09e82a
 
   database:
     container_name: immich_postgres
-    image: postgres:14-alpine@sha256:50d9be76e9a90da4c781554955e0ffc79d9d5c4226838e64b36aacc97cbc35ad
+    image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
     env_file:
       - .env
     environment:

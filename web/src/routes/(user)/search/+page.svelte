@@ -3,6 +3,8 @@
   import { page } from '$app/stores';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
@@ -104,21 +106,25 @@
 
 <section>
   {#if isMultiSelectionMode}
-    <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-      <CreateSharedLink />
-      <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add">
-        <AddToAlbum />
-        <AddToAlbum shared />
-      </AssetSelectContextMenu>
-      <DeleteAssets {onAssetDelete} />
+    <div class="fixed z-[100] top-0 left-0 w-full">
+      <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
+        <CreateSharedLink />
+        <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
+        <AssetSelectContextMenu icon={mdiPlus} title="Add">
+          <AddToAlbum />
+          <AddToAlbum shared />
+        </AssetSelectContextMenu>
+        <DeleteAssets {onAssetDelete} />
 
-      <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
-        <DownloadAction menuItem />
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-        <ArchiveAction menuItem unarchive={isAllArchived} />
-      </AssetSelectContextMenu>
-    </AssetSelectControlBar>
+        <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
+          <DownloadAction menuItem />
+          <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+          <ArchiveAction menuItem unarchive={isAllArchived} />
+          <ChangeDate menuItem />
+          <ChangeLocation menuItem />
+        </AssetSelectContextMenu>
+      </AssetSelectControlBar>
+    </div>
   {:else}
     <ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
       <div class="w-full flex-1 pl-4">

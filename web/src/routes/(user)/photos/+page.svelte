@@ -2,6 +2,8 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
@@ -21,6 +23,8 @@
   import type { PageData } from './$types';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let data: PageData;
 
@@ -29,6 +33,8 @@
   const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+
+  $user = data.user;
 
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
 
@@ -70,6 +76,8 @@
       {#if $selectedAssets.size > 1}
         <StackAction onStack={(ids) => assetStore.removeAssets(ids)} />
       {/if}
+      <ChangeDate menuItem />
+      <ChangeLocation menuItem />
       <AssetJobActions />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
@@ -93,3 +101,4 @@
     />
   </AssetGrid>
 </UserPageLayout>
+<UpdatePanel {assetStore} />

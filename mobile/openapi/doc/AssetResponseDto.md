@@ -30,7 +30,7 @@ Name | Type | Description | Notes
 **originalPath** | **String** |  | 
 **owner** | [**UserResponseDto**](UserResponseDto.md) |  | [optional] 
 **ownerId** | **String** |  | 
-**people** | [**List<PersonResponseDto>**](PersonResponseDto.md) |  | [optional] [default to const []]
+**people** | [**List<PersonWithFacesResponseDto>**](PersonWithFacesResponseDto.md) |  | [optional] [default to const []]
 **resized** | **bool** |  | 
 **smartInfo** | [**SmartInfoResponseDto**](SmartInfoResponseDto.md) |  | [optional] 
 **stack** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [optional] [default to const []]

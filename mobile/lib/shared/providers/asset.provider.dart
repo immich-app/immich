@@ -202,7 +202,8 @@ class AssetNotifier extends StateNotifier<bool> {
     return isSuccess ? remote : [];
   }
 
-  Future<void> toggleFavorite(List<Asset> assets, bool status) async {
+  Future<void> toggleFavorite(List<Asset> assets, [bool? status]) async {
+    status ??= !assets.every((a) => a.isFavorite);
     final newAssets = await _assetService.changeFavoriteStatus(assets, status);
     for (Asset? newAsset in newAssets) {
       if (newAsset == null) {
@@ -212,7 +213,8 @@ class AssetNotifier extends StateNotifier<bool> {
     }
   }
 
-  Future<void> toggleArchive(List<Asset> assets, bool status) async {
+  Future<void> toggleArchive(List<Asset> assets, [bool? status]) async {
+    status ??= assets.every((a) => a.isArchived);
     final newAssets = await _assetService.changeArchiveStatus(assets, status);
     int i = 0;
     for (Asset oldAsset in assets) {

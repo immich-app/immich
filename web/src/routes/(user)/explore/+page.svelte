@@ -3,16 +3,8 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { SearchExploreResponseDto, api } from '@api';
   import type { PageData } from './$types';
-  import {
-    mdiHeartMultipleOutline,
-    mdiClockOutline,
-    mdiPlayCircleOutline,
-    mdiMotionPlayOutline,
-    mdiRotate360,
-  } from '@mdi/js';
 
   export let data: PageData;
 
@@ -123,58 +115,4 @@
   {/if}
 
   <hr class="mb-4 dark:border-immich-dark-gray" />
-
-  <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-    <div class="flex flex-col gap-6 dark:text-immich-dark-fg">
-      <p class="text-sm">YOUR ACTIVITY</p>
-      <div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
-        <a
-          href={AppRoute.FAVORITES}
-          class="flex w-full content-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-          draggable="false"
-        >
-          <Icon path={mdiHeartMultipleOutline} size={24} />
-          <span>Favorites</span>
-        </a>
-        <a
-          href="/search?recent=true"
-          class="flex w-full content-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-          draggable="false"
-        >
-          <Icon path={mdiClockOutline} size={24} />
-          <span>Recently added</span>
-        </a>
-      </div>
-    </div>
-    <div class="flex flex-col gap-6 dark:text-immich-dark-fg">
-      <p class="text-sm">CATEGORIES</p>
-      <div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
-        <a
-          href="/search?type={AssetTypeEnum.Video}"
-          class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-        >
-          <Icon path={mdiPlayCircleOutline} size={24} />
-          <span>Videos</span>
-        </a>
-        <div>
-          <a
-            href="/search?motion=true"
-            class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-          >
-            <Icon path={mdiMotionPlayOutline} size={24} />
-            <span>Motion photos</span>
-          </a>
-        </div>
-        <div>
-          <a
-            href="/search?exifInfo.projectionType=EQUIRECTANGULAR"
-            class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-          >
-            <Icon path={mdiRotate360} size={24} />
-            <span>Panorama photos</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
 </UserPageLayout>

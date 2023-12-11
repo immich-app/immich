@@ -58,7 +58,8 @@ describe(LibraryService.name, () => {
       ctime: new Date('2023-01-01'),
     } as Stats);
 
-    accessMock.library.checkOwnerAccess.mockResolvedValue(new Set([authStub.admin.id]));
+    // Always validate owner access for library.
+    accessMock.library.checkOwnerAccess.mockImplementation(async (_, libraryIds) => libraryIds);
 
     sut = new LibraryService(
       accessMock,
@@ -631,7 +632,7 @@ describe(LibraryService.name, () => {
 
       await expect(sut.getCount(authStub.admin)).resolves.toBe(17);
 
-      expect(libraryMock.getCountForUser).toHaveBeenCalledWith(authStub.admin.id);
+      expect(libraryMock.getCountForUser).toHaveBeenCalledWith(authStub.admin.user.id);
     });
   });
 
@@ -672,7 +673,7 @@ describe(LibraryService.name, () => {
         }),
       ]);
 
-      expect(libraryMock.getAllByUserId).toHaveBeenCalledWith(authStub.admin.id);
+      expect(libraryMock.getAllByUserId).toHaveBeenCalledWith(authStub.admin.user.id);
     });
   });
 
@@ -962,10 +963,10 @@ describe(LibraryService.name, () => {
   describe('update', () => {
     it('can update library ', async () => {
       libraryMock.update.mockResolvedValue(libraryStub.uploadLibrary1);
-      await expect(sut.update(authStub.admin, authStub.admin.id, {})).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, {})).resolves.toBeTruthy();
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: authStub.admin.id,
+          id: authStub.admin.user.id,
         }),
       );
     });

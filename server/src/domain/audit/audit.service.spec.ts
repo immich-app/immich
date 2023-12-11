@@ -66,7 +66,7 @@ describe(AuditService.name, () => {
 
       expect(auditMock.getAfter).toHaveBeenCalledWith(date, {
         action: DatabaseAction.DELETE,
-        ownerId: authStub.admin.id,
+        ownerId: authStub.admin.user.id,
         entityType: EntityType.ASSET,
       });
     });
@@ -83,7 +83,7 @@ describe(AuditService.name, () => {
 
       expect(auditMock.getAfter).toHaveBeenCalledWith(date, {
         action: DatabaseAction.DELETE,
-        ownerId: authStub.admin.id,
+        ownerId: authStub.admin.user.id,
         entityType: EntityType.ASSET,
       });
     });

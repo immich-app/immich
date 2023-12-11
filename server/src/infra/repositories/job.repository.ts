@@ -1,4 +1,13 @@
-import { IJobRepository, JobCounts, JobItem, JobName, JOBS_TO_QUEUE, QueueName, QueueStatus } from '@app/domain';
+import {
+  IJobRepository,
+  JobCounts,
+  JobItem,
+  JobName,
+  JOBS_TO_QUEUE,
+  QueueCleanType,
+  QueueName,
+  QueueStatus,
+} from '@app/domain';
 import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
@@ -89,6 +98,10 @@ export class JobRepository implements IJobRepository {
 
   empty(name: QueueName) {
     return this.getQueue(name).drain();
+  }
+
+  clear(name: QueueName, type: QueueCleanType) {
+    return this.getQueue(name).clean(0, 1000, type);
   }
 
   getJobCounts(name: QueueName): Promise<JobCounts> {

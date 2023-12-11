@@ -1,5 +1,4 @@
 import { PersonEntity } from '@app/infra/entities';
-import { assetStub } from '@test/fixtures/asset.stub';
 import { userStub } from './user.stub';
 
 export const personStub = {
@@ -41,7 +40,7 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/path/to/thumbnail.jpg',
     faces: [],
-    faceAssetId: null,
+    faceAssetId: 'assetFaceId',
     faceAsset: null,
     isHidden: false,
   }),
@@ -97,8 +96,8 @@ export const personStub = {
     birthDate: null,
     thumbnailPath: '/new/path/to/thumbnail.jpg',
     faces: [],
-    faceAssetId: assetStub.image.id,
-    faceAsset: assetStub.image,
+    faceAssetId: 'asset-id',
+    faceAsset: null,
     isHidden: false,
   }),
   primaryPerson: Object.freeze<PersonEntity>({

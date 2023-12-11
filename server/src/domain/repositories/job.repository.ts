@@ -2,13 +2,12 @@ import { JobName, QueueName } from '../job/job.constants';
 
 import {
   IAssetDeletionJob,
-  IAssetFaceJob,
   IBaseJob,
-  IBulkEntityJob,
   IDeleteFilesJob,
   IEntityJob,
   ILibraryFileJob,
   ILibraryRefreshJob,
+  ISidecarWriteJob,
 } from '../job/job.interface';
 
 export interface JobCounts {
@@ -23,6 +22,10 @@ export interface JobCounts {
 export interface QueueStatus {
   isActive: boolean;
   isPaused: boolean;
+}
+
+export enum QueueCleanType {
+  FAILED = 'failed',
 }
 
 export type JobItem =
@@ -54,11 +57,11 @@ export type JobItem =
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
   | { name: JobName.LINK_LIVE_PHOTOS; data: IEntityJob }
-
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
   | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
+  | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
@@ -91,18 +94,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
-  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
-
-  // Search
-  | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }
-  | { name: JobName.SEARCH_INDEX_ASSET; data: IBulkEntityJob }
-  | { name: JobName.SEARCH_INDEX_FACES; data?: IBaseJob }
-  | { name: JobName.SEARCH_INDEX_FACE; data: IAssetFaceJob }
-  | { name: JobName.SEARCH_INDEX_ALBUMS; data?: IBaseJob }
-  | { name: JobName.SEARCH_INDEX_ALBUM; data: IBulkEntityJob }
-  | { name: JobName.SEARCH_REMOVE_ASSET; data: IBulkEntityJob }
-  | { name: JobName.SEARCH_REMOVE_ALBUM; data: IBulkEntityJob }
-  | { name: JobName.SEARCH_REMOVE_FACE; data: IAssetFaceJob };
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
 
 export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
 export type JobItemHandler = (item: JobItem) => Promise<void>;
@@ -119,6 +111,7 @@ export interface IJobRepository {
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;
+  clear(name: QueueName, type: QueueCleanType): Promise<string[]>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
 }

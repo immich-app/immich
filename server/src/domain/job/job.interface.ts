@@ -2,14 +2,9 @@ export interface IBaseJob {
   force?: boolean;
 }
 
-export interface IAssetFaceJob extends IBaseJob {
-  assetId: string;
-  personId: string;
-}
-
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload';
+  source?: 'upload' | 'sidecar-write';
 }
 
 export interface IAssetDeletionJob extends IEntityJob {
@@ -32,4 +27,11 @@ export interface IBulkEntityJob extends IBaseJob {
 
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
+}
+
+export interface ISidecarWriteJob extends IEntityJob {
+  description?: string;
+  dateTimeOriginal?: string;
+  latitude?: number;
+  longitude?: number;
 }

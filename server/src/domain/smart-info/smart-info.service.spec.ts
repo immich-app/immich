@@ -16,6 +16,7 @@ import {
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
+import { cleanModelName, getCLIPModelInfo } from './smart-info.constant';
 import { SmartInfoService } from './smart-info.service';
 
 const asset = {
@@ -195,10 +196,29 @@ describe(SmartInfoService.name, () => {
         { imagePath: 'path/to/resize.ext' },
         { enabled: true, modelName: 'ViT-B-32__openai' },
       );
-      expect(smartMock.upsert).toHaveBeenCalledWith({
-        assetId: 'asset-1',
-        clipEmbedding: [0.01, 0.02, 0.03],
-      });
+      expect(smartMock.upsert).toHaveBeenCalledWith(
+        {
+          assetId: 'asset-1',
+        },
+        [0.01, 0.02, 0.03],
+      );
+    });
+  });
+
+  describe('cleanModelName', () => {
+    it('should clean name', () => {
+      expect(cleanModelName('ViT-B-32::openai')).toEqual('ViT-B-32__openai');
+      expect(cleanModelName('M-CLIP/XLM-Roberta-Large-Vit-L-14')).toEqual('XLM-Roberta-Large-Vit-L-14');
+    });
+  });
+
+  describe('getCLIPModelInfo', () => {
+    it('should return the model info', () => {
+      expect(getCLIPModelInfo('ViT-B-32__openai')).toEqual({ dimSize: 512 });
+    });
+
+    it('should throw an error if the model is not present', () => {
+      expect(() => getCLIPModelInfo('test-model')).toThrow('Unknown CLIP model: test-model');
     });
   });
 });

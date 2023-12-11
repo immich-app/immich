@@ -1,5 +1,5 @@
 import { envName, getLogLevels, isDev, serverVersion } from '@app/domain';
-import { RedisIoAdapter } from '@app/infra';
+import { WebSocketAdapter, enablePrefilter } from '@app/infra';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -21,13 +21,15 @@ export async function bootstrap() {
   if (isDev) {
     app.enableCors();
   }
-  app.useWebSocketAdapter(new RedisIoAdapter(app));
+  app.useWebSocketAdapter(new WebSocketAdapter(app));
   useSwagger(app, isDev);
 
   const excludePaths = ['/.well-known/immich', '/custom.css'];
   app.setGlobalPrefix('api', { exclude: excludePaths });
   app.useStaticAssets('www');
   app.use(indexFallback(excludePaths));
+
+  await enablePrefilter();
 
   const server = await app.listen(port);
   server.requestTimeout = 30 * 60 * 1000;

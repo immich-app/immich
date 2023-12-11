@@ -3,16 +3,20 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
+import _ from 'lodash';
 import { Duration } from 'luxon';
 import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
+  CommunicationEvent,
   ExifDuration,
   IAlbumRepository,
   IAssetRepository,
+  ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
+  IMediaRepository,
   IMetadataRepository,
   IMoveRepository,
   IPersonRepository,
@@ -48,6 +52,17 @@ interface DirectoryEntry {
   Item: DirectoryItem;
 }
 
+export enum Orientation {
+  Horizontal = '1',
+  MirrorHorizontal = '2',
+  Rotate180 = '3',
+  MirrorVertical = '4',
+  MirrorHorizontalRotate270CW = '5',
+  Rotate90CW = '6',
+  MirrorHorizontalRotate90CW = '7',
+  Rotate270CW = '8',
+}
+
 type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
   ExifEntity,
   'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
@@ -79,7 +94,6 @@ export class MetadataService {
   private logger = new Logger(MetadataService.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
-  private oldCities?: string;
   private subscription: Subscription | null = null;
 
   constructor(
@@ -90,7 +104,9 @@ export class MetadataService {
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
@@ -154,6 +170,9 @@ export class MetadataService {
     await this.assetRepository.save({ id: motionAsset.id, isVisible: false });
     await this.albumRepository.removeAsset(motionAsset.id);
 
+    // Notify clients to hide the linked live photo asset
+    this.communicationRepository.send(CommunicationEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
+
     return true;
   }
 
@@ -181,6 +200,27 @@ export class MetadataService {
     }
 
     const { exifData, tags } = await this.exifData(asset);
+
+    if (asset.type === AssetType.VIDEO) {
+      const { videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+
+      if (videoStreams[0]) {
+        switch (videoStreams[0].rotation) {
+          case -90:
+            exifData.orientation = Orientation.Rotate90CW;
+            break;
+          case 0:
+            exifData.orientation = Orientation.Horizontal;
+            break;
+          case 90:
+            exifData.orientation = Orientation.Rotate270CW;
+            break;
+          case 180:
+            exifData.orientation = Orientation.Rotate180;
+            break;
+        }
+      }
+    }
 
     await this.applyMotionPhotos(asset, tags);
     await this.applyReverseGeocoding(asset, exifData);
@@ -240,6 +280,37 @@ export class MetadataService {
     }
 
     await this.assetRepository.save({ id: asset.id, sidecarPath });
+
+    return true;
+  }
+
+  async handleSidecarWrite(job: ISidecarWriteJob) {
+    const { id, description, dateTimeOriginal, latitude, longitude } = job;
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset) {
+      return false;
+    }
+
+    const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
+    const exif = _.omitBy<Tags>(
+      {
+        ImageDescription: description,
+        CreationDate: dateTimeOriginal,
+        GPSLatitude: latitude,
+        GPSLongitude: longitude,
+      },
+      _.isUndefined,
+    );
+
+    if (Object.keys(exif).length === 0) {
+      return true;
+    }
+
+    await this.repository.writeTags(sidecarPath, exif);
+
+    if (!asset.sidecarPath) {
+      await this.assetRepository.save({ id, sidecarPath });
+    }
 
     return true;
   }
@@ -346,8 +417,8 @@ export class MetadataService {
     asset: AssetEntity,
   ): Promise<{ exifData: ExifEntityWithoutGeocodeAndTypeOrm; tags: ImmichTags }> {
     const stats = await this.storageRepository.stat(asset.originalPath);
-    const mediaTags = await this.repository.getExifTags(asset.originalPath);
-    const sidecarTags = asset.sidecarPath ? await this.repository.getExifTags(asset.sidecarPath) : null;
+    const mediaTags = await this.repository.readTags(asset.originalPath);
+    const sidecarTags = asset.sidecarPath ? await this.repository.readTags(asset.sidecarPath) : null;
 
     // ensure date from sidecar is used if present
     const hasDateOverride = !!this.getDateTimeOriginal(sidecarTags);
@@ -361,35 +432,40 @@ export class MetadataService {
 
     this.logger.verbose('Exif Tags', tags);
 
-    return {
-      exifData: {
-        // altitude: tags.GPSAltitude ?? null,
-        assetId: asset.id,
-        bitsPerSample: this.getBitsPerSample(tags),
-        colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-        exifImageHeight: validate(tags.ImageHeight),
-        exifImageWidth: validate(tags.ImageWidth),
-        exposureTime: tags.ExposureTime ?? null,
-        fileSizeInByte: stats.size,
-        fNumber: validate(tags.FNumber),
-        focalLength: validate(tags.FocalLength),
-        fps: validate(tags.VideoFrameRate),
-        iso: validate(tags.ISO),
-        latitude: validate(tags.GPSLatitude),
-        lensModel: tags.LensModel ?? null,
-        livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
-        longitude: validate(tags.GPSLongitude),
-        make: tags.Make ?? null,
-        model: tags.Model ?? null,
-        modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
-        orientation: validate(tags.Orientation)?.toString() ?? null,
-        profileDescription: tags.ProfileDescription || tags.ProfileName || null,
-        projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
-        timeZone: tags.tz ?? null,
-      },
-      tags,
+    const exifData = {
+      // altitude: tags.GPSAltitude ?? null,
+      assetId: asset.id,
+      bitsPerSample: this.getBitsPerSample(tags),
+      colorspace: tags.ColorSpace ?? null,
+      dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
+      exifImageHeight: validate(tags.ImageHeight),
+      exifImageWidth: validate(tags.ImageWidth),
+      exposureTime: tags.ExposureTime ?? null,
+      fileSizeInByte: stats.size,
+      fNumber: validate(tags.FNumber),
+      focalLength: validate(tags.FocalLength),
+      fps: validate(tags.VideoFrameRate),
+      iso: validate(tags.ISO),
+      latitude: validate(tags.GPSLatitude),
+      lensModel: tags.LensModel ?? null,
+      livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
+      longitude: validate(tags.GPSLongitude),
+      make: tags.Make ?? null,
+      model: tags.Model ?? null,
+      modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
+      orientation: validate(tags.Orientation)?.toString() ?? null,
+      profileDescription: tags.ProfileDescription || tags.ProfileName || null,
+      projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
+      timeZone: tags.tz ?? null,
     };
+
+    if (exifData.latitude === 0 && exifData.longitude === 0) {
+      console.warn('Exif data has latitude and longitude of 0, setting to null');
+      exifData.latitude = null;
+      exifData.longitude = null;
+    }
+
+    return { exifData, tags };
   }
 
   private getDateTimeOriginal(tags: ImmichTags | Tags | null) {

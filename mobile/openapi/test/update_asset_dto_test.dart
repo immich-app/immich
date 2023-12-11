@@ -16,6 +16,11 @@ void main() {
   // final instance = UpdateAssetDto();
 
   group('test UpdateAssetDto', () {
+    // String dateTimeOriginal
+    test('to test the property `dateTimeOriginal`', () async {
+      // TODO
+    });
+
     // String description
     test('to test the property `description`', () async {
       // TODO
@@ -28,6 +33,16 @@ void main() {
 
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
+      // TODO
+    });
+
+    // num latitude
+    test('to test the property `latitude`', () async {
+      // TODO
+    });
+
+    // num longitude
+    test('to test the property `longitude`', () async {
       // TODO
     });
 
