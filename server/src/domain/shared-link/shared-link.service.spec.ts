@@ -256,4 +256,27 @@ describe(SharedLinkService.name, () => {
       expect(shareMock.update).toHaveBeenCalledWith({ ...sharedLinkStub.individual, assets: [] });
     });
   });
+
+  describe('getMetadataTags', () => {
+    it('should return null when auth is not a shared link', async () => {
+      await expect(sut.getMetadataTags(authStub.admin)).resolves.toBe(null);
+      expect(shareMock.get).not.toHaveBeenCalled();
+    });
+
+    it('should return null when shared link has a password', async () => {
+      await expect(sut.getMetadataTags(authStub.passwordSharedLink)).resolves.toBe(null);
+      expect(shareMock.get).not.toHaveBeenCalled();
+    });
+
+    it('should return metadata tags', async () => {
+      shareMock.get.mockResolvedValue(sharedLinkStub.individual);
+      await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
+        description: '1 shared photos & videos',
+        imageUrl:
+          '/api/asset/thumbnail/asset-id?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0',
+        title: 'Public Share',
+      });
+      expect(shareMock.get).toHaveBeenCalled();
+    });
+  });
 });

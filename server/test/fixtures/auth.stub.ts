@@ -104,6 +104,20 @@ export const authStub = {
       showExif: true,
     } as SharedLinkEntity,
   }),
+  passwordSharedLink: Object.freeze<AuthDto>({
+    user: {
+      id: 'admin_id',
+      email: 'admin@test.com',
+      isAdmin: true,
+    } as UserEntity,
+    sharedLink: {
+      id: '123',
+      allowUpload: false,
+      allowDownload: false,
+      password: 'password-123',
+      showExif: true,
+    } as SharedLinkEntity,
+  }),
 };
 
 export const loginResponseStub = {
