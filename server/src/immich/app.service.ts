@@ -20,14 +20,14 @@ const render = (index: string, meta: OpenGraphTags) => {
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${meta.title}" />
     <meta property="og:description" content="${meta.description}" />
-    ${meta.imageUrl && `<meta property="og:image" content="${meta.imageUrl}" />`}
+    ${meta.imageUrl ? `<meta property="og:image" content="${meta.imageUrl}" />` : ''}
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${meta.title}" />
     <meta name="twitter:description" content="${meta.description}" />
 
-    ${meta.imageUrl && `<meta name="twitter:image" content="${meta.imageUrl}" />`}`;
+    ${meta.imageUrl ? `<meta name="twitter:image" content="${meta.imageUrl}" />` : ''}`;
 
   return index.replace('<!-- metadata:tags -->', tags);
 };
