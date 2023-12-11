@@ -1,47 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  ICommunicationRepository,
-  IServerInfoRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-} from '../repositories';
+import { serverVersion } from '../domain.constant';
 import { IMetricsRepository, SharedMetrics } from '../repositories/metrics.repository';
-import { ServerInfoService } from '../server-info';
 import { MetricsDto } from './metrics.dto';
 
 @Injectable()
 export class MetricsService {
-  private serverInfo: ServerInfoService;
-
-  constructor(
-    @Inject(ICommunicationRepository) communicationRepository: ICommunicationRepository,
-    @Inject(IMetricsRepository) private repository: IMetricsRepository,
-    @Inject(IUserRepository) userRepository: IUserRepository,
-    @Inject(IServerInfoRepository) serverInfoRepository: IServerInfoRepository,
-    @Inject(IStorageRepository) storageRepository: IStorageRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-  ) {
-    this.serverInfo = new ServerInfoService(
-      communicationRepository,
-      configRepository,
-      userRepository,
-      serverInfoRepository,
-      storageRepository,
-    );
-  }
+  constructor(@Inject(IMetricsRepository) private repository: IMetricsRepository) {}
 
   async shareMetrics(metrics: SharedMetrics) {
     const metricsPayload = new MetricsDto();
     if (metrics.serverInfo) {
-      metricsPayload.serverInfo.version = this.serverInfo.getVersion().toString();
-      metricsPayload.serverInfo.diskUse = (await this.serverInfo.getInfo()).diskUse;
+      metricsPayload.serverInfo.version = serverVersion.toString();
+      metricsPayload.serverInfo.cpuCount = this.repository.getCpuCount();
+      metricsPayload.serverInfo.cpuModel = this.repository.getCpuModel();
+      metricsPayload.serverInfo.memoryCount = this.repository.getMemoryCount();
     }
 
     if (metrics.assetCount) {
-      const stats = await this.serverInfo.getStatistics();
-      metricsPayload.assetCount.photo = stats.photos;
-      metricsPayload.assetCount.video = stats.videos;
+      metricsPayload.assetCount.image = await this.repository.getImageCount();
+      metricsPayload.assetCount.video = await this.repository.getVideoCount();
+      metricsPayload.assetCount.total = await this.repository.getAssetCount();
     }
 
     await this.repository.sendMetrics(metricsPayload);

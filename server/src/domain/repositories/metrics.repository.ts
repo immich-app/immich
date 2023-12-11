@@ -8,5 +8,11 @@ export interface SharedMetrics {
 }
 
 export interface IMetricsRepository {
+  getAssetCount(): Promise<number>;
+  getCpuCount(): number;
+  getCpuModel(): string;
+  getMemoryCount(): number;
+  getImageCount(): Promise<number>;
+  getVideoCount(): Promise<number>;
   sendMetrics(payload: MetricsDto): Promise<void>;
 }

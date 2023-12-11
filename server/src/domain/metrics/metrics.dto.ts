@@ -1,11 +1,14 @@
 export class MetricsServerInfoDto {
+  cpuCount?: number;
+  cpuModel?: string;
+  memoryCount?: number;
   version?: string;
-  diskUse?: string;
 }
 
 export class MetricsAssetCountDto {
-  photo?: number;
+  image?: number;
   video?: number;
+  total?: number;
 }
 
 export class MetricsDto {
