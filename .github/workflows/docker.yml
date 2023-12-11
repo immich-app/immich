@@ -46,12 +46,6 @@ jobs:
           - image: "immich-machine-learning"
             context: "machine-learning"
             file: "machine-learning/Dockerfile"
-            platform: "linux/arm64"
-            device: "cuda"
-
-          - image: "immich-machine-learning"
-            context: "machine-learning"
-            file: "machine-learning/Dockerfile"
             platform: "linux/amd64"
             device: "openvino"
 
