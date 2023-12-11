@@ -9,7 +9,7 @@ import {
   createParamDecorator,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ApiBearerAuth, ApiCookieAuth, ApiQuery, ApiSecurity } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
 import { UAParser } from 'ua-parser-js';
 
@@ -53,6 +53,11 @@ export const AdminRoute = (value = true) => SetMetadata(Metadata.ADMIN_ROUTE, va
 export const Auth = createParamDecorator((data, ctx: ExecutionContext): AuthDto => {
   return ctx.switchToHttp().getRequest<{ user: AuthDto }>().user;
 });
+
+export const FileResponse = () =>
+  ApiOkResponse({
+    content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
+  });
 
 export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext): LoginDetails => {
   const req = ctx.switchToHttp().getRequest<Request>();

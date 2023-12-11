@@ -16,6 +16,16 @@ import { CronJob } from 'cron';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 
+export class ImmichFileResponse {
+  public readonly path!: string;
+  public readonly contentType!: string;
+  public readonly cacheControl!: boolean;
+
+  constructor(response: ImmichFileResponse) {
+    Object.assign(this, response);
+  }
+}
+
 export interface OpenGraphTags {
   title: string;
   description: string;

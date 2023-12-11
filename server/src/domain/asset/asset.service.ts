@@ -7,7 +7,7 @@ import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { HumanReadableSize, usePagination } from '../domain.util';
+import { HumanReadableSize, ImmichFileResponse, usePagination } from '../domain.util';
 import { IAssetDeletionJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import {
   CommunicationEvent,
@@ -274,7 +274,7 @@ export class AssetService {
 
     return { ...options, userIds };
   }
-  async downloadFile(auth: AuthDto, id: string): Promise<ImmichReadStream> {
+  async downloadFile(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, id);
 
     const [asset] = await this.assetRepository.getByIds([id]);
@@ -286,7 +286,11 @@ export class AssetService {
       throw new BadRequestException('Asset is offline');
     }
 
-    return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
+    return new ImmichFileResponse({
+      path: asset.originalPath,
+      contentType: mimeTypes.lookup(asset.originalPath),
+      cacheControl: false,
+    });
   }
 
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
