@@ -53,7 +53,7 @@ dependencies:
   isar_flutter_libs: *isar_version # contains Isar Core
   permission_handler: ^10.2.0
   device_info_plus: ^8.1.0
-  connectivity_plus: ^4.0.1
+  connectivity_plus: ^5.0.0
   crypto: ^3.0.3 # TODO remove once native crypto is used on iOS
   wakelock_plus: ^1.1.1
   flutter_local_notifications: ^15.1.0+1
