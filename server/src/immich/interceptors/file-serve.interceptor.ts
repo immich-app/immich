@@ -1,10 +1,9 @@
 import { ImmichFileResponse, isConnectionAborted } from '@app/domain';
-import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Logger, NestInterceptor } from '@nestjs/common';
 import { Response } from 'express';
 import { access, constants } from 'fs/promises';
 import { isAbsolute } from 'path';
 import { Observable, mergeMap } from 'rxjs';
-import { Logger } from 'testcontainers/build/common';
 import { promisify } from 'util';
 
 type SendFile = Parameters<Response['sendFile']>;
