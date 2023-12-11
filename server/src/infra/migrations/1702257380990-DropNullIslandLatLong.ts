@@ -7,7 +7,7 @@ export class DropNullIslandLatLong1702257380990 implements MigrationInterface {
     );
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(): Promise<void> {
     // There's no way to know which assets used to have 0/0 lat-long if we've
     // already run this migration.
   }

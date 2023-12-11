@@ -432,7 +432,7 @@ export class MetadataService {
 
     this.logger.verbose('Exif Tags', tags);
 
-    let exifData = {
+    const exifData = {
       // altitude: tags.GPSAltitude ?? null,
       assetId: asset.id,
       bitsPerSample: this.getBitsPerSample(tags),
