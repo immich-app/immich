@@ -61,7 +61,12 @@ export class AppService {
   }
 
   ssr(excludePaths: string[]) {
-    const index = readFileSync('/usr/src/app/www/index.html').toString();
+    let index = '';
+    try {
+      index = readFileSync('/usr/src/app/www/index.html').toString();
+    } catch (error: Error | any) {
+      this.logger.warn('Unable to open `www/index.html, skipping SSR.');
+    }
 
     return async (req: Request, res: Response, next: NextFunction) => {
       if (
