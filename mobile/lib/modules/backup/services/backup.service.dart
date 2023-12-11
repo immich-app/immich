@@ -327,7 +327,7 @@ class BackupService {
               );
               final fileStream = livePhotoFile.openRead();
               final livePhotoRawUploadData = http.MultipartFile(
-                "assetData",
+                "livePhotoData",
                 fileStream,
                 livePhotoFile.lengthSync(),
                 filename: livePhotoTitle,
