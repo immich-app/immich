@@ -1,6 +1,7 @@
 import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
+import { getSavedUser } from '$lib/stores/user.store';
 
 export interface AuthOptions {
   admin?: true;
@@ -19,7 +20,9 @@ export const getAuthUser = async () => {
 export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
 
-  const user = await getAuthUser();
+  const savedUser = getSavedUser();
+  const user = savedUser ? savedUser : await getAuthUser();
+
   if (!user) {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }

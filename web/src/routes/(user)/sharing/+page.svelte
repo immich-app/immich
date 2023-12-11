@@ -27,7 +27,7 @@
         },
       });
 
-      goto('/albums/' + newAlbum.id);
+      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     } catch (e) {
       notificationController.show({
         message: 'Error creating album, check console for more details',
