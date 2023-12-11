@@ -320,9 +320,23 @@ class BackupService {
           req.files.add(assetRawUploadData);
 
           if (entity.isLivePhoto) {
-            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
-            if (livePhotoRawUploadData != null) {
+            if (livePhotoFile != null) {
+              final livePhotoTitle = p.setExtension(
+                originalFileName,
+                p.extension(livePhotoFile.path),
+              );
+              final fileStream = livePhotoFile.openRead();
+              final livePhotoRawUploadData = http.MultipartFile(
+                "assetData",
+                fileStream,
+                livePhotoFile.lengthSync(),
+                filename: livePhotoTitle,
+              );
               req.files.add(livePhotoRawUploadData);
+            } else {
+              _log.warning(
+                "Failed to obtain motion part of the livePhoto - $originalFileName",
+              );
             }
           }
 
@@ -388,21 +402,6 @@ class BackupService {
       await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
     return !anyErrors;
-  }
-
-  Future<MultipartFile?> _getLivePhotoMultiPart(File? livePhotoFile) async {
-    if (livePhotoFile != null) {
-      var fileStream = livePhotoFile.openRead();
-      String fileName = p.basename(livePhotoFile.path);
-      return http.MultipartFile(
-        "livePhotoData",
-        fileStream,
-        livePhotoFile.lengthSync(),
-        filename: fileName,
-      );
-    }
-
-    return null;
   }
 
   String _getAssetType(AssetType assetType) {
