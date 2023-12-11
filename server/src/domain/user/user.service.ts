@@ -107,7 +107,7 @@ export class UserService {
 
     return new ImmichFileResponse({
       path: user.profileImagePath,
-      contentType: 'immich/jpeg',
+      contentType: 'image/jpeg',
       cacheControl: false,
     });
   }

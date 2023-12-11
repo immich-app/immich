@@ -16,6 +16,7 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
+import { ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   AssetStats,
@@ -474,15 +475,16 @@ describe(AssetService.name, () => {
     });
 
     it('should download a file', async () => {
-      const stream = new Readable();
-
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      storageMock.createReadStream.mockResolvedValue({ stream });
 
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual({ stream });
-
-      expect(storageMock.createReadStream).toHaveBeenCalledWith(assetStub.image.originalPath, 'image/jpeg');
+      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/original/path.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: false,
+        }),
+      );
     });
 
     it('should download an archive', async () => {
