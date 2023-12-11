@@ -19,4 +19,7 @@ services:
     #       devices:
     #         - driver: nvidia
     #           count: 1
-    #           capabilities: [gpu,video]
+    #           capabilities:
+    #             - gpu
+    #             - compute # for CUDA
+    #             - video # for NVENC/NVDEC
