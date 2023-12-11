@@ -16,6 +16,12 @@ import { CronJob } from 'cron';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 
+export interface OpenGraphTags {
+  title: string;
+  description: string;
+  imageUrl?: string;
+}
+
 export type Options = {
   optional?: boolean;
   each?: boolean;

@@ -1,4 +1,3 @@
-import featurePanelUrl from '$lib/assets/feature-panel.png';
 import { getAuthUser } from '$lib/utils/auth';
 import { api, ThumbnailFormat } from '@api';
 import { error } from '@sveltejs/kit';
@@ -21,7 +20,9 @@ export const load = (async ({ params }) => {
       meta: {
         title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
         description: sharedLink.description || `${assetCount} shared photos & videos.`,
-        imageUrl: assetId ? api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key) : featurePanelUrl,
+        imageUrl: assetId
+          ? api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
+          : '/feature-panel.png',
       },
     };
   } catch (e) {

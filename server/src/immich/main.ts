@@ -6,7 +6,8 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { indexFallback, useSwagger } from './app.utils';
+import { AppService } from './app.service';
+import { useSwagger } from './app.utils';
 
 const logger = new Logger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;
@@ -27,7 +28,7 @@ export async function bootstrap() {
   const excludePaths = ['/.well-known/immich', '/custom.css'];
   app.setGlobalPrefix('api', { exclude: excludePaths });
   app.useStaticAssets('www');
-  app.use(indexFallback(excludePaths));
+  app.use(app.get(AppService).ssr(excludePaths));
 
   await enablePrefilter();
 
