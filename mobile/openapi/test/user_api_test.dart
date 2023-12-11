@@ -47,7 +47,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> getProfileImage(String id) async
+    //Future<MultipartFile> getProfileImage(String id) async
     test('test getProfileImage', () async {
       // TODO
     });
