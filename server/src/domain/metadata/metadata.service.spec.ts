@@ -304,6 +304,18 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should discard latitude and longitude on null island', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
+      metadataMock.readTags.mockResolvedValue({
+        GPSLatitude: 0,
+        GPSLongitude: 0,
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ latitude: null, longitude: null }));
+    });
+
     it('should not apply motion photos if asset is video', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoMotionAsset, isVisible: true }]);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
