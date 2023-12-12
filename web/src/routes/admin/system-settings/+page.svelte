@@ -44,7 +44,7 @@
   </div>
 {/if}
 
-<UserPageLayout user={data.user} title={data.meta.title} admin>
+<UserPageLayout title={data.meta.title} admin>
   <div class="flex justify-end gap-2" slot="buttons">
     <LinkButton on:click={() => copyToClipboard(JSON.stringify(configs, null, 2))}>
       <div class="flex place-items-center gap-2 text-sm">
@@ -95,11 +95,7 @@
         subtitle="Manage the folder structure and file name of the upload asset"
         isOpen={$page.url.searchParams.get('open') === 'storage-template'}
       >
-        <StorageTemplateSettings
-          disabled={$featureFlags.configFile}
-          storageConfig={configs.storageTemplate}
-          user={data.user}
-        />
+        <StorageTemplateSettings disabled={$featureFlags.configFile} storageConfig={configs.storageTemplate} />
       </SettingAccordion>
 
       <SettingAccordion title="Theme Settings" subtitle="Manage customization of the Immich web interface">

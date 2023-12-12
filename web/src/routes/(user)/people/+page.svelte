@@ -357,7 +357,7 @@
   </FullScreenModal>
 {/if}
 
-<UserPageLayout user={data.user} title="People">
+<UserPageLayout title="People">
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
       <IconButton on:click={() => (selectHidden = !selectHidden)}>

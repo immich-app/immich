@@ -6,7 +6,7 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ params }) => {
   const { key } = params;
-  const user = await getAuthUser();
+  await getAuthUser();
 
   try {
     const { data: sharedLink } = await api.sharedLinkApi.getMySharedLink({ key });
@@ -15,7 +15,6 @@ export const load = (async ({ params }) => {
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
 
     return {
-      user,
       sharedLink,
       meta: {
         title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',

@@ -245,7 +245,7 @@
   </FullScreenModal>
 {/if}
 
-<UserPageLayout user={data.user} title={data.meta.title}>
+<UserPageLayout title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
     <LinkButton on:click={handleCreateAlbum}>
       <div class="flex place-items-center gap-2 text-sm">
@@ -291,11 +291,7 @@
       <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
         {#each $albums as album (album.id)}
           <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
-            <AlbumCard
-              {album}
-              on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
-              user={data.user}
-            />
+            <AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} />
           </a>
         {/each}
       </div>

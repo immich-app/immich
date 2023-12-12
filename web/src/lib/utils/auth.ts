@@ -34,8 +34,13 @@ export const authenticate = async (options?: AuthOptions) => {
   if (!savedUser) {
     setUser(user);
   }
-
-  return user;
 };
 
-export const isLoggedIn = async () => getAuthUser().then((user) => !!user);
+export const isLoggedIn = async () => {
+  const savedUser = getSavedUser();
+  const user = savedUser || (await getAuthUser());
+  if (!savedUser) {
+    setUser(user);
+  }
+  return user;
+};

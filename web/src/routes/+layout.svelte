@@ -7,7 +7,6 @@
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-  import type { LayoutData } from './$types';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
@@ -19,9 +18,9 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { api } from '@api';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
+  import { user } from '$lib/stores/user.store';
 
   let showNavigationLoadingBar = false;
-  export let data: LayoutData;
   let albumId: string | undefined;
 
   const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
@@ -122,7 +121,7 @@
 <UploadPanel />
 <NotificationList />
 
-{#if data.user?.isAdmin}
+{#if $user?.isAdmin}
   <VersionAnnouncementBox />
 {/if}
 

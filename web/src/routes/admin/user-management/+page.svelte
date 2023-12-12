@@ -13,6 +13,7 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import type { PageData } from './$types';
   import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { user } from '$lib/stores/user.store';
 
   export let data: PageData;
 
@@ -104,7 +105,7 @@
   };
 </script>
 
-<UserPageLayout user={data.user} title={data.meta.title} admin>
+<UserPageLayout title={data.meta.title} admin>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if shouldShowCreateUserForm}
@@ -117,7 +118,7 @@
         <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
           <EditUserForm
             user={selectedUser}
-            canResetPassword={selectedUser?.id !== data.user.id}
+            canResetPassword={selectedUser?.id !== $user.id}
             on:edit-success={onEditUserSuccess}
             on:reset-password-success={onEditPasswordSuccess}
           />
@@ -175,21 +176,21 @@
         </thead>
         <tbody class="block max-h-[320px] w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#if allUsers}
-            {#each allUsers as user, i}
+            {#each allUsers as immichUser, i}
               <tr
                 class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  isDeleted(user)
+                  isDeleted(immichUser)
                     ? 'bg-red-300 dark:bg-red-900'
                     : i % 2 == 0
                       ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
                       : 'bg-immich-bg dark:bg-immich-dark-gray/50'
                 }`}
               >
-                <td class="w-4/12 text-ellipsis break-all px-2 text-sm">{user.email}</td>
-                <td class="w-2/12 text-ellipsis break-all px-2 text-sm">{user.name}</td>
+                <td class="w-4/12 text-ellipsis break-all px-2 text-sm">{immichUser.email}</td>
+                <td class="w-2/12 text-ellipsis break-all px-2 text-sm">{immichUser.name}</td>
                 <td class="w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
-                    {#if user.externalPath}
+                    {#if immichUser.externalPath}
                       <Icon path={mdiCheck} size="16" />
                     {:else}
                       <Icon path={mdiClose} size="16" />
@@ -197,27 +198,27 @@
                   </div>
                 </td>
                 <td class="w-2/12 text-ellipsis break-all px-4 text-sm">
-                  {#if !isDeleted(user)}
+                  {#if !isDeleted(immichUser)}
                     <button
-                      on:click={() => editUserHandler(user)}
+                      on:click={() => editUserHandler(immichUser)}
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                     >
                       <Icon path={mdiPencilOutline} size="16" />
                     </button>
-                    {#if user.id !== data.user.id}
+                    {#if immichUser.id !== $user.id}
                       <button
-                        on:click={() => deleteUserHandler(user)}
+                        on:click={() => deleteUserHandler(immichUser)}
                         class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
                       >
                         <Icon path={mdiTrashCanOutline} size="16" />
                       </button>
                     {/if}
                   {/if}
-                  {#if isDeleted(user)}
+                  {#if isDeleted(immichUser)}
                     <button
-                      on:click={() => restoreUserHandler(user)}
+                      on:click={() => restoreUserHandler(immichUser)}
                       class="rounded-full bg-immich-primary p-3 text-gray-100 transition-all duration-150 hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:text-gray-700"
-                      title={`scheduled removal on ${getDeleteDate(user)}`}
+                      title={`scheduled removal on ${getDeleteDate(immichUser)}`}
                     >
                       <Icon path={mdiDeleteRestore} size="16" />
                     </button>
