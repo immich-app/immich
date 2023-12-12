@@ -17,16 +17,14 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
     final isDarkTheme = context.isDarkTheme;
-    final allAlbums = ref.watch(backupProvider).availableAlbums;
-
+    final albums = ref.watch(backupProvider).availableAlbums;
     // Albums which are displayed to the user
     // by filtering out based on search
-    final filteredAlbums = useState(allAlbums);
-    final albums = filteredAlbums.value;
 
     useEffect(
       () {
         ref.watch(backupProvider.notifier).getBackupInfo();
+
         return null;
       },
       [],
@@ -158,17 +156,17 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 8.0),
         child: TextFormField(
           onChanged: (searchValue) {
-            if (searchValue.isEmpty) {
-              filteredAlbums.value = allAlbums;
-            } else {
-              filteredAlbums.value = allAlbums
-                  .where(
-                    (album) => album.name
-                        .toLowerCase()
-                        .contains(searchValue.toLowerCase()),
-                  )
-                  .toList();
-            }
+            // if (searchValue.isEmpty) {
+            //   albums = availableAlbums;
+            // } else {
+            //   albums.value = availableAlbums
+            //       .where(
+            //         (album) => album.name
+            //             .toLowerCase()
+            //             .contains(searchValue.toLowerCase()),
+            //       )
+            //       .toList();
+            // }
           },
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(

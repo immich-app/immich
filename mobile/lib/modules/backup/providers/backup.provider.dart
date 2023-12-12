@@ -255,7 +255,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         albumMap[album.id] = album;
       }
     }
-
     state = state.copyWith(availableAlbums: availableAlbums);
 
     final List<BackupAlbum> excludedBackupAlbums =
