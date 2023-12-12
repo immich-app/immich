@@ -6,7 +6,7 @@ import {
   IAccessRepository,
   IJobRepository,
   ILibraryRepository,
-  isConnectionAborted,
+  ImmichFileResponse,
   JobName,
   mapAsset,
   mimeTypes,
@@ -16,12 +16,7 @@ import {
 } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-import { Response as Res, Response } from 'express';
-import { constants } from 'fs';
-import fs from 'fs/promises';
-import path from 'path';
 import { QueryFailedError } from 'typeorm';
-import { promisify } from 'util';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
@@ -40,13 +35,6 @@ import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-res
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-
-type SendFile = Parameters<Response['sendFile']>;
-type SendFileOptions = SendFile[1];
-
-// TODO: move file sending logic to an interceptor
-const sendFile = (res: Response, path: string, options: SendFileOptions) =>
-  promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);
 
 @Injectable()
 export class AssetService {
@@ -148,7 +136,7 @@ export class AssetService {
     }
   }
 
-  async serveThumbnail(auth: AuthDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
+  async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
     const asset = await this._assetRepository.get(assetId);
@@ -156,19 +144,12 @@ export class AssetService {
       throw new NotFoundException('Asset not found');
     }
 
-    try {
-      await this.sendFile(res, this.getThumbnailPath(asset, query.format));
-    } catch (e) {
-      res.header('Cache-Control', 'none');
-      this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
-      throw new InternalServerErrorException(
-        `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
-        { cause: e as Error },
-      );
-    }
+    const filepath = this.getThumbnailPath(asset, dto.format);
+
+    return new ImmichFileResponse({ path: filepath, contentType: mimeTypes.lookup(filepath), cacheControl: true });
   }
 
-  public async serveFile(auth: AuthDto, assetId: string, query: ServeFileDto, res: Res) {
+  public async serveFile(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
     // this is not quite right as sometimes this returns the original still
     await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
@@ -181,10 +162,10 @@ export class AssetService {
 
     const filepath =
       asset.type === AssetType.IMAGE
-        ? this.getServePath(asset, query, allowOriginalFile)
+        ? this.getServePath(asset, dto, allowOriginalFile)
         : asset.encodedVideoPath || asset.originalPath;
 
-    await this.sendFile(res, filepath);
+    return new ImmichFileResponse({ path: filepath, contentType: mimeTypes.lookup(filepath), cacheControl: true });
   }
 
   async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {
@@ -292,13 +273,13 @@ export class AssetService {
     }
   }
 
-  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): string {
+  private getServePath(asset: AssetEntity, dto: ServeFileDto, allowOriginalFile: boolean): string {
     const mimeType = mimeTypes.lookup(asset.originalPath);
 
     /**
      * Serve file viewer on the web
      */
-    if (query.isWeb && mimeType != 'image/gif') {
+    if (dto.isWeb && mimeType != 'image/gif') {
       if (!asset.resizePath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
@@ -310,7 +291,7 @@ export class AssetService {
     /**
      * Serve thumbnail image for both web and mobile app
      */
-    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && mimeType === 'image/gif')) {
+    if ((!dto.isThumb && allowOriginalFile) || (dto.isWeb && mimeType === 'image/gif')) {
       return asset.originalPath;
     }
 
@@ -323,27 +304,6 @@ export class AssetService {
     }
 
     return asset.resizePath;
-  }
-
-  private async sendFile(res: Res, filepath: string): Promise<void> {
-    await fs.access(filepath, constants.R_OK);
-    const options: SendFileOptions = { dotfiles: 'allow' };
-    if (!path.isAbsolute(filepath)) {
-      options.root = process.cwd();
-    }
-
-    res.set('Cache-Control', 'private, max-age=86400, no-transform');
-    res.header('Content-Type', mimeTypes.lookup(filepath));
-
-    try {
-      await sendFile(res, filepath, options);
-    } catch (error: Error | any) {
-      if (!isConnectionAborted(error)) {
-        this.logger.error(`Unable to send file: ${error.name}`, error.stack);
-      }
-      // throwing closes the connection and prevents `Error: write EPIPE`
-      throw error;
-    }
   }
 
   private async getLibraryId(auth: AuthDto, libraryId?: string) {

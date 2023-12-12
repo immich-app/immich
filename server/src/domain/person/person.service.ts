@@ -5,7 +5,7 @@ import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { usePagination } from '../domain.util';
+import { ImmichFileResponse, usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
@@ -20,7 +20,6 @@ import {
   ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
-  ImmichReadStream,
   UpdateFacesData,
   WithoutProperty,
 } from '../repositories';
@@ -173,14 +172,18 @@ export class PersonService {
     return this.repository.getStatistics(id);
   }
 
-  async getThumbnail(auth: AuthDto, id: string): Promise<ImmichReadStream> {
+  async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.PERSON_READ, id);
     const person = await this.repository.getById(id);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
     }
 
-    return this.storageRepository.createReadStream(person.thumbnailPath, mimeTypes.lookup(person.thumbnailPath));
+    return new ImmichFileResponse({
+      path: person.thumbnailPath,
+      contentType: mimeTypes.lookup(person.thumbnailPath),
+      cacheControl: true,
+    });
   }
 
   async getAssets(auth: AuthDto, id: string): Promise<AssetResponseDto[]> {

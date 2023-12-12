@@ -14,9 +14,9 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
-import { Auth, Authenticated, SharedLinkRoute } from '../../app.guard';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
@@ -83,35 +83,24 @@ export class AssetController {
 
   @SharedLinkRoute()
   @Get('/file/:id')
-  @ApiOkResponse({
-    content: {
-      'application/octet-stream': { schema: { type: 'string', format: 'binary' } },
-    },
-  })
-  async serveFile(
+  @FileResponse()
+  serveFile(
     @Auth() auth: AuthDto,
-    @Response() res: Res,
-    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param() { id }: UUIDParamDto,
+    @Query(new ValidationPipe({ transform: true })) dto: ServeFileDto,
   ) {
-    await this.assetService.serveFile(auth, id, query, res);
+    return this.assetService.serveFile(auth, id, dto);
   }
 
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
-  @ApiOkResponse({
-    content: {
-      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
-      'image/webp': { schema: { type: 'string', format: 'binary' } },
-    },
-  })
-  async getAssetThumbnail(
+  @FileResponse()
+  getAssetThumbnail(
     @Auth() auth: AuthDto,
-    @Response() res: Res,
     @Param() { id }: UUIDParamDto,
-    @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
+    @Query(new ValidationPipe({ transform: true })) dto: GetAssetThumbnailDto,
   ) {
-    await this.assetService.serveThumbnail(auth, id, query, res);
+    return this.assetService.serveThumbnail(auth, id, dto);
   }
 
   @Get('/curated-objects')

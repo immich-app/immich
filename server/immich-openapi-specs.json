@@ -1466,6 +1466,15 @@
         "operationId": "serveFile",
         "parameters": [
           {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "isThumb",
             "required": false,
             "in": "query",
@@ -1481,15 +1490,6 @@
             "schema": {
               "title": "Is request made from web",
               "type": "boolean"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
             }
           },
           {
@@ -1926,13 +1926,7 @@
         "responses": {
           "200": {
             "content": {
-              "image/jpeg": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              },
-              "image/webp": {
+              "application/octet-stream": {
                 "schema": {
                   "format": "binary",
                   "type": "string"
@@ -4499,7 +4493,7 @@
         "responses": {
           "200": {
             "content": {
-              "image/jpeg": {
+              "application/octet-stream": {
                 "schema": {
                   "format": "binary",
                   "type": "string"
@@ -6080,9 +6074,10 @@
         "responses": {
           "200": {
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "format": "binary",
+                  "type": "string"
                 }
               }
             },

@@ -32,7 +32,7 @@ import {
   TagController,
   UserController,
 } from './controllers';
-import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
+import { ErrorInterceptor, FileServeInterceptor, FileUploadInterceptor } from './interceptors';
 
 @Module({
   imports: [
@@ -66,6 +66,7 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: FileServeInterceptor },
     { provide: APP_GUARD, useClass: AppGuard },
     { provide: IAssetRepository, useClass: AssetRepository },
     AppService,
