@@ -8,12 +8,13 @@
   import { api, SharedLinkType } from '@api';
   import type { PageData } from './$types';
   import { handleError } from '$lib/utils/handle-error';
+  import { savedUser } from '$lib/stores/user.store';
 
   export let data: PageData;
   let { sharedLink, passwordRequired, sharedLinkKey: key } = data;
   let { title, description } = data.meta;
 
-  let isOwned = data.user ? data.user.id === sharedLink?.userId : false;
+  let isOwned = $savedUser ? $savedUser.id === sharedLink?.userId : false;
   let password = '';
 
   const handlePasswordSubmit = async () => {
@@ -21,7 +22,7 @@
       const result = await api.sharedLinkApi.getMySharedLink({ password, key });
       passwordRequired = false;
       sharedLink = result.data;
-      isOwned = data.user ? data.user.id === sharedLink.userId : false;
+      isOwned = $savedUser ? $savedUser.id === sharedLink.userId : false;
       title = (sharedLink.album ? sharedLink.album.albumName : 'Public Share') + ' - Immich';
       description = sharedLink.description || `${sharedLink.assets.length} shared photos & videos.`;
     } catch (error) {

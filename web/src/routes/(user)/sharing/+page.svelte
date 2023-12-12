@@ -39,7 +39,7 @@
   };
 </script>
 
-<UserPageLayout user={data.user} title={data.meta.title}>
+<UserPageLayout title={data.meta.title}>
   <div class="flex" slot="buttons">
     <LinkButton on:click={createSharedAlbum}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
@@ -96,7 +96,7 @@
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
           {#each data.sharedAlbums as album (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard {album} user={data.user} isSharingView showContextMenu={false} />
+              <AlbumCard {album} isSharingView showContextMenu={false} />
             </a>
           {/each}
         </div>

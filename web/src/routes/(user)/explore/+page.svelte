@@ -36,7 +36,7 @@
 
 <svelte:window bind:innerWidth={screenSize} />
 
-<UserPageLayout user={data.user} title={data.meta.title}>
+<UserPageLayout title={data.meta.title}>
   {#if hasPeople}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">

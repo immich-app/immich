@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -23,6 +22,7 @@
   import { createEventDispatcher } from 'svelte';
   import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let asset: AssetResponseDto;
   export let showCopyButton: boolean;
@@ -34,7 +34,7 @@
   export let showSlideshow = false;
   export let hasStackChildren = false;
 
-  $: isOwner = asset.ownerId === $page.data.user?.id;
+  $: isOwner = asset.ownerId === $user?.id;
 
   type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'unstack';
 

@@ -4,7 +4,7 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { createEventDispatcher } from 'svelte';
   import { fade, fly } from 'svelte/transition';
-  import { api, UserResponseDto } from '@api';
+  import { api } from '@api';
   import ThemeButton from '../theme-button.svelte';
   import { AppRoute } from '../../../constants';
   import AccountInfoPanel from './account-info-panel.svelte';
@@ -16,7 +16,8 @@
   import UserAvatar from '../user-avatar.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiMagnify, mdiTrayArrowUp, mdiCog } from '@mdi/js';
-  export let user: UserResponseDto;
+  import { user } from '$lib/stores/user.store';
+
   export let showUploadButton = true;
 
   let shouldShowAccountInfo = false;
@@ -71,7 +72,7 @@
           </div>
         {/if}
 
-        {#if user.isAdmin}
+        {#if $user.isAdmin}
           <a
             data-sveltekit-preload-data="hover"
             href={AppRoute.ADMIN_USER_MANAGEMENT}
@@ -121,8 +122,8 @@
             on:mouseleave={() => (shouldShowAccountInfo = false)}
             on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
-            {#key user}
-              <UserAvatar {user} size="lg" showTitle={false} interactive />
+            {#key $user}
+              <UserAvatar user={$user} size="lg" showTitle={false} interactive />
             {/key}
           </button>
 
@@ -132,13 +133,13 @@
               out:fade={{ delay: 200, duration: 150 }}
               class="absolute -bottom-12 right-5 rounded-md border bg-gray-500 p-2 text-[12px] text-gray-100 shadow-md dark:border-immich-dark-gray dark:bg-immich-dark-gray"
             >
-              <p>{user.name}</p>
-              <p>{user.email}</p>
+              <p>{$user.name}</p>
+              <p>{$user.email}</p>
             </div>
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel bind:user on:logout={logOut} />
+            <AccountInfoPanel user={$user} on:logout={logOut} />
           {/if}
         </div>
       </section>

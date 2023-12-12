@@ -8,10 +8,10 @@
   import type { OnClick, OnShowContextMenu } from './album-card';
   import { getContextMenuPosition } from '../../utils/context-menu';
   import { mdiDotsVertical } from '@mdi/js';
+  import { user } from '$lib/stores/user.store';
 
   export let album: AlbumResponseDto;
   export let isSharingView = false;
-  export let user: UserResponseDto;
   export let showItemCount = true;
   export let showContextMenu = true;
   let showVerticalDots = false;
@@ -119,7 +119,7 @@
 
       {#if isSharingView}
         {#await getAlbumOwnerInfo() then albumOwner}
-          {#if user.email == albumOwner.email}
+          {#if $user.email == albumOwner.email}
             <p>Owned</p>
           {:else}
             <p>

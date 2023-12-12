@@ -142,7 +142,7 @@
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
           {#each albums as album (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} showContextMenu={false} />
+              <AlbumCard {album} isSharingView={false} showItemCount={false} showContextMenu={false} />
             </a>
           {/each}
         </div>
