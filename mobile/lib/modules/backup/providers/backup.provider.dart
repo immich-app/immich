@@ -345,7 +345,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     if (allUniqueAssets.isEmpty) {
-      log.info("Not found albums or assets on the device to backup");
+      log.info("No assets are selected for back up");
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
