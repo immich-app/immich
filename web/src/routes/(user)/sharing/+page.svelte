@@ -27,7 +27,7 @@
         },
       });
 
-      goto('/albums/' + newAlbum.id);
+      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     } catch (e) {
       notificationController.show({
         message: 'Error creating album, check console for more details',
@@ -66,7 +66,7 @@
         <div class="flex flex-row flex-wrap gap-4">
           {#each data.partners as partner (partner.id)}
             <a
-              href="/partners/{partner.id}"
+              href="{AppRoute.PARTNERS}/{partner.id}"
               class="flex gap-4 rounded-lg px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <UserAvatar user={partner} size="lg" />

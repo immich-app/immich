@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import { AppRoute } from '$lib/constants';
 </script>
 
 <section class="flex h-screen w-screen place-content-center place-items-center">
@@ -12,8 +12,10 @@
     <h1 class="font-immich-title text-4xl font-bold text-immich-primary dark:text-immich-dark-primary">
       Welcome to IMMICH Web
     </h1>
-    <Button size="lg" rounded="lg" on:click={() => goto('/auth/register')}>
-      <span class="px-2 font-bold">Getting Started</span>
-    </Button>
+    <a href={AppRoute.AUTH_REGISTER}>
+      <Button size="lg" rounded="lg">
+        <span class="px-2 font-bold">Getting Started</span>
+      </Button>
+    </a>
   </div>
 </section>
