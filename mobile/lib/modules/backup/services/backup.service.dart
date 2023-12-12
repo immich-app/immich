@@ -225,8 +225,6 @@ class BackupService {
     }
     final String deviceId = Store.get(StoreKey.deviceId);
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-    File? file;
-    File? livePhotoFile;
     bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
 
@@ -248,6 +246,9 @@ class BackupService {
         : assetList.toList();
 
     for (var entity in assetsToUpload) {
+      File? file;
+      File? livePhotoFile;
+
       try {
         final isAvailableLocally =
             await entity.isLocallyAvailable(isOrigin: true);
@@ -393,14 +394,8 @@ class BackupService {
         continue;
       } finally {
         if (Platform.isIOS) {
-          try {
-            await file?.delete();
-            file = null;
-            await livePhotoFile?.delete();
-            livePhotoFile = null;
-          } catch (e) {
-            debugPrint("ERROR deleting file: ${e.toString()}");
-          }
+          file?.deleteSync();
+          livePhotoFile?.deleteSync();
         }
       }
     }
