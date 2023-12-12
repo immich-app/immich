@@ -41,8 +41,8 @@ void main() {
           album.assets.saveSync();
         }
       });
-      expect(db.albums.countSync(), 4);
-      expect(db.assets.countSync(), 2);
+      expect(4, db.albums.countSync());
+      expect(2, db.assets.countSync());
     });
 
     group("Album sort - Created Time", () {
@@ -199,7 +199,7 @@ void main() {
         () => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortOrder),
       ).thenReturn(0);
 
-      expect(AlbumSortMode.created, container.read(albumSortByOptionsProvider));
+      expect(container.read(albumSortByOptionsProvider), AlbumSortMode.created);
     });
 
     test('Returns the correct sort mode with index from Store', () {
@@ -209,8 +209,8 @@ void main() {
       ).thenReturn(3);
 
       expect(
-        AlbumSortMode.lastModified,
         container.read(albumSortByOptionsProvider),
+        AlbumSortMode.lastModified,
       );
     });
 
@@ -279,7 +279,7 @@ void main() {
         () => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortReverse),
       ).thenReturn(false);
 
-      expect(false, container.read(albumSortOrderProvider));
+      expect(container.read(albumSortOrderProvider), false);
     });
 
     test('Properly saves the correct order', () {
