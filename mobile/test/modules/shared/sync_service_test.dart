@@ -7,11 +7,11 @@ import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
-import 'package:immich_mobile/shared/services/hash.service.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
-import 'package:mocktail/mocktail.dart';
+
+import 'shared_mocks.dart';
 
 void main() {
   Asset makeAsset({
@@ -172,5 +172,3 @@ void main() {
 
 Future<(List<Asset>?, List<String>?)> _failDiff(User user, DateTime time) =>
     Future.value((null, null));
-
-class MockHashService extends Mock implements HashService {}

@@ -2,16 +2,17 @@ import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'fixtures/album.stub.dart';
-import 'fixtures/asset.stub.dart';
-import 'mocks/app_settings_provider.mock.dart';
-import 'test_utils.dart';
+import '../../fixtures/album.stub.dart';
+import '../../fixtures/asset.stub.dart';
+import '../../test_utils.dart';
+import '../settings/settings_mocks.dart';
 
 void main() {
   /// Verify the sort modes
@@ -186,7 +187,9 @@ void main() {
     setUp(() async {
       settingsMock = AppSettingsServiceMock();
       container = TestUtils.createContainer(
-        overrides: [getAppSettingsServiceMock(settingsMock)],
+        overrides: [
+          appSettingsServiceProvider.overrideWith((ref) => settingsMock),
+        ],
       );
     });
 
@@ -265,7 +268,9 @@ void main() {
     setUp(() async {
       settingsMock = AppSettingsServiceMock();
       container = TestUtils.createContainer(
-        overrides: [getAppSettingsServiceMock(settingsMock)],
+        overrides: [
+          appSettingsServiceProvider.overrideWith((ref) => settingsMock),
+        ],
       );
     });
 
