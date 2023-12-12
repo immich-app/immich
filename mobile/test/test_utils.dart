@@ -16,7 +16,6 @@ import 'package:mocktail/mocktail.dart';
 
 // Listener Mock to test when a provider notifies its listeners
 class ListenerMock<T> extends Mock {
-  // ignore: avoid-declaring-call-method
   void call(T? previous, T next);
 }
 
