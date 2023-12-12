@@ -44,11 +44,9 @@
     mdiViewGridOutline,
     mdiDeleteOutline,
   } from '@mdi/js';
-  import { user } from '$lib/stores/user.store';
 
   export let data: PageData;
 
-  $user = data.user;
   let shouldShowEditUserForm = false;
   let selectedAlbum: AlbumResponseDto;
 

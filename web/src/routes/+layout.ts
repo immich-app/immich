@@ -1,6 +1,6 @@
 import { api } from '@api';
 import type { LayoutLoad } from './$types';
-import { getSavedUser } from '$lib/stores/user.store';
+import { getSavedUser, setUser } from '$lib/stores/user.store';
 
 const getUser = async () => {
   try {
@@ -16,7 +16,11 @@ export const csr = true;
 
 export const load = (async () => {
   const savedUser = getSavedUser();
-  const user = savedUser ? savedUser : await getUser();
+  const user = savedUser || (await getUser());
+
+  if (!savedUser) {
+    setUser(user);
+  }
 
   return {
     user,
