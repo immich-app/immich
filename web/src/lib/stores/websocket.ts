@@ -2,6 +2,7 @@ import type { AssetResponseDto, ServerVersionResponseDto } from '@api';
 import { Socket, io } from 'socket.io-client';
 import { writable } from 'svelte/store';
 import { loadConfig } from './server-config.store';
+import { getSavedUser } from './user.store';
 
 export interface ReleaseEvent {
   isAvailable: boolean;
@@ -25,7 +26,7 @@ let websocket: Socket | null = null;
 
 export const openWebsocketConnection = () => {
   try {
-    if (websocket) {
+    if (websocket || !getSavedUser()) {
       return;
     }
 
