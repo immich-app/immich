@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -227,6 +226,7 @@ class BackupService {
     final String deviceId = Store.get(StoreKey.deviceId);
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
     File? file;
+    File? livePhotoFile;
     bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
 
@@ -249,7 +249,8 @@ class BackupService {
 
     for (var entity in assetsToUpload) {
       try {
-        final isAvailableLocally = await entity.isLocallyAvailable();
+        final isAvailableLocally =
+            await entity.isLocallyAvailable(isOrigin: true);
 
         // Handle getting files from iCloud
         if (!isAvailableLocally && Platform.isIOS) {
@@ -271,11 +272,19 @@ class BackupService {
           );
 
           file = await entity.loadFile(progressHandler: pmProgressHandler);
+          livePhotoFile = await entity.loadFile(
+            withSubtype: true,
+            progressHandler: pmProgressHandler,
+          );
         } else {
           if (entity.type == AssetType.video) {
             file = await entity.originFile;
           } else {
             file = await entity.originFile.timeout(const Duration(seconds: 5));
+            if (entity.isLivePhoto) {
+              livePhotoFile = await entity.originFileWithSubtype
+                  .timeout(const Duration(seconds: 5));
+            }
           }
         }
 
@@ -311,9 +320,23 @@ class BackupService {
           req.files.add(assetRawUploadData);
 
           if (entity.isLivePhoto) {
-            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
-            if (livePhotoRawUploadData != null) {
+            if (livePhotoFile != null) {
+              final livePhotoTitle = p.setExtension(
+                originalFileName,
+                p.extension(livePhotoFile.path),
+              );
+              final fileStream = livePhotoFile.openRead();
+              final livePhotoRawUploadData = http.MultipartFile(
+                "livePhotoData",
+                fileStream,
+                livePhotoFile.lengthSync(),
+                filename: livePhotoTitle,
+              );
               req.files.add(livePhotoRawUploadData);
+            } else {
+              _log.warning(
+                "Failed to obtain motion part of the livePhoto - $originalFileName",
+              );
             }
           }
 
@@ -371,6 +394,7 @@ class BackupService {
       } finally {
         if (Platform.isIOS) {
           file?.deleteSync();
+          livePhotoFile?.deleteSync();
         }
       }
     }
@@ -378,25 +402,6 @@ class BackupService {
       await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
     return !anyErrors;
-  }
-
-  Future<MultipartFile?> _getLivePhotoFile(AssetEntity entity) async {
-    var motionFilePath = await entity.getMediaUrl();
-
-    if (motionFilePath != null) {
-      var validPath = motionFilePath.replaceAll('file://', '');
-      var motionFile = File(validPath);
-      var fileStream = motionFile.openRead();
-      String fileName = p.basename(motionFile.path);
-      return http.MultipartFile(
-        "livePhotoData",
-        fileStream,
-        motionFile.lengthSync(),
-        filename: fileName,
-      );
-    }
-
-    return null;
   }
 
   String _getAssetType(AssetType assetType) {
