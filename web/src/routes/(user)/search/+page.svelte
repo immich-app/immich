@@ -76,6 +76,10 @@
       previousRoute = from.url.href;
     }
 
+    if (from?.route.id === '/(user)/people/[personId]') {
+      previousRoute = AppRoute.PHOTOS;
+    }
+
     if (from?.route.id === '/(user)/albums/[albumId]') {
       previousRoute = AppRoute.EXPLORE;
     }
