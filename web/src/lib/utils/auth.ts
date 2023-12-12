@@ -42,4 +42,5 @@ export const isLoggedIn = async () => {
   if (!savedUser) {
     setUser(user);
   }
+  return user;
 };
