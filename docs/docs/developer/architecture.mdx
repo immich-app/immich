@@ -10,7 +10,7 @@ Immich uses a traditional client-server design, with a dedicated database for da
 
 ## High Level Diagram
 
-<img alt="Docusaurus themed image" src={AppArchitecture} className="p-4 dark:bg-immich-dark-primary my-4" />
+<img alt="Immich Architecture" src={AppArchitecture} className="p-4 dark:bg-immich-dark-primary my-4" />
 
 The diagram shows clients communicating with the server's API via REST. The server communicates with downstream systems (i.e. Redis, Postgres, Machine Learning, file system) through repository interfaces. Not shown in the diagram, is that the server is split into two separate containers `immich-server` and `immich-microservices`. The microservices container does not handle API requests or schedule cron jobs, but primarily handles incoming job requests from Redis.
 
