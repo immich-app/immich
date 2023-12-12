@@ -68,8 +68,6 @@
 
   let album = data.album;
 
-  $user = data.user;
-
   $: album = data.album;
 
   $: {
