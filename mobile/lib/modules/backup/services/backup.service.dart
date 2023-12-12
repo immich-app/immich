@@ -393,8 +393,14 @@ class BackupService {
         continue;
       } finally {
         if (Platform.isIOS) {
-          file?.deleteSync();
-          livePhotoFile?.deleteSync();
+          try {
+            await file?.delete();
+            file = null;
+            await livePhotoFile?.delete();
+            livePhotoFile = null;
+          } catch (e) {
+            debugPrint("ERROR deleting file: ${e.toString()}");
+          }
         }
       }
     }
