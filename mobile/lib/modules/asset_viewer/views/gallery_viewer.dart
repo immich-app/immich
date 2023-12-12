@@ -110,7 +110,11 @@ class GalleryViewerPage extends HookConsumerWidget {
     useValueChanged(
       asset(),
       (_, __) =>
-          ref.read(currentAssetProvider.notifier).updateCurrentAsset(asset()),
+          // Delay state update to after the execution of build method
+          Future(
+        () =>
+            ref.read(currentAssetProvider.notifier).updateCurrentAsset(asset()),
+      ),
     );
 
     useEffect(
