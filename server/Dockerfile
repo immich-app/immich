@@ -10,6 +10,7 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
+ENV PATH="${PATH}:/usr/src/app/bin"
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
