@@ -289,9 +289,13 @@
     <!-- Album Card -->
     {#if $albumViewSettings.view === AlbumViewMode.Cover}
       <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-        {#each $albums as album (album.id)}
+        {#each $albums as album, idx (album.id)}
           <a data-sveltekit-preload-data="hover" href="{AppRoute.ALBUMS}/{album.id}" animate:flip={{ duration: 200 }}>
-            <AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} />
+            <AlbumCard
+              preload={idx < 20}
+              {album}
+              on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
+            />
           </a>
         {/each}
       </div>
