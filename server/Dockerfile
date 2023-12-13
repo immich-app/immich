@@ -23,7 +23,7 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 FROM node:iron-alpine3.18 as web
 
 WORKDIR /usr/src/app
-COPY web/package.json web/package-lock.json ./
+COPY web/package*.json web/svelte.config.js .
 RUN npm ci
 COPY web .
 RUN npm run build
