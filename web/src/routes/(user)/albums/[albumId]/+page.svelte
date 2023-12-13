@@ -68,8 +68,6 @@
 
   let album = data.album;
 
-  $user = data.user;
-
   $: album = data.album;
 
   $: {
@@ -111,8 +109,8 @@
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
-  $: isOwned = data.user.id == album.ownerId;
-  $: isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === data.user.id);
+  $: isOwned = $user.id == album.ownerId;
+  $: isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === $user.id);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
   $: {
     if (isShowActivity) {
@@ -345,7 +343,7 @@
   };
 
   const handleRemoveUser = async (userId: string) => {
-    if (userId == 'me' || userId === data.user.id) {
+    if (userId == 'me' || userId === $user.id) {
       goto(backUrl);
       return;
     }

@@ -371,7 +371,7 @@ export class AuthService {
     return cookies[IMMICH_ACCESS_COOKIE] || null;
   }
 
-  private async validateSharedLink(key: string | string[]): Promise<AuthDto> {
+  async validateSharedLink(key: string | string[]): Promise<AuthDto> {
     key = Array.isArray(key) ? key[0] : key;
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');

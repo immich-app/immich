@@ -238,7 +238,9 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
+                href="{AppRoute.PEOPLE}/{person.id}?previousRoute={albumId
+                  ? `${AppRoute.ALBUMS}/${albumId}`
+                  : AppRoute.PHOTOS}"
                 on:click={() => dispatch('close-viewer')}
               >
                 <div class="relative">

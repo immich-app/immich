@@ -7,6 +7,7 @@
   import { handleError } from '../../utils/handle-error';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAccountEditOutline } from '@mdi/js';
+  import { AppRoute } from '$lib/constants';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -99,7 +100,7 @@
 
       <p>
         Note: To apply the Storage Label to previously uploaded assets, run the
-        <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary">
+        <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
           Storage Migration Job</a
         >
       </p>

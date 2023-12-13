@@ -17843,7 +17843,7 @@ export const UserApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getProfileImage(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async getProfileImage(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getProfileImage(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -17945,7 +17945,7 @@ export const UserApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProfileImage(requestParameters: UserApiGetProfileImageRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+        getProfileImage(requestParameters: UserApiGetProfileImageRequest, options?: AxiosRequestConfig): AxiosPromise<File> {
             return localVarFp.getProfileImage(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**

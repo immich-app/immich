@@ -27,7 +27,7 @@
         },
       });
 
-      goto('/albums/' + newAlbum.id);
+      goto(`${AppRoute.ALBUMS}/${newAlbum.id}`);
     } catch (e) {
       notificationController.show({
         message: 'Error creating album, check console for more details',
@@ -39,7 +39,7 @@
   };
 </script>
 
-<UserPageLayout user={data.user} title={data.meta.title}>
+<UserPageLayout title={data.meta.title}>
   <div class="flex" slot="buttons">
     <LinkButton on:click={createSharedAlbum}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
@@ -66,7 +66,7 @@
         <div class="flex flex-row flex-wrap gap-4">
           {#each data.partners as partner (partner.id)}
             <a
-              href="/partners/{partner.id}"
+              href="{AppRoute.PARTNERS}/{partner.id}"
               class="flex gap-4 rounded-lg px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <UserAvatar user={partner} size="lg" />
@@ -96,7 +96,7 @@
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
           {#each data.sharedAlbums as album (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard {album} user={data.user} isSharingView showContextMenu={false} />
+              <AlbumCard {album} isSharingView showContextMenu={false} />
             </a>
           {/each}
         </div>

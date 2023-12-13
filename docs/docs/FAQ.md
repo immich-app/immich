@@ -60,6 +60,10 @@ This is fixed by running the storage migration job.
 
 The default image tagging model is relatively small. You can change this for a larger model like `google/vit-base-patch16-224` by setting the model name under Settings > Machine Learning Settings > Image Tagging. You can then re-run the Image Tagging job to get improved tags.
 
+### Why are there so many thumbnail generation jobs?
+
+Immich generates three thumbnails for each asset (blurred, small, and large), as well as a thumbnail for each recognized face.
+
 ### How can I see Immich logs?
 
 Most Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/docs/guides/docker-help.md)

@@ -101,7 +101,7 @@
 </script>
 
 {#if $featureFlags.loaded && $featureFlags.map}
-  <UserPageLayout user={data.user} title={data.meta.title}>
+  <UserPageLayout title={data.meta.title}>
     <div class="isolate h-full w-full">
       <Map bind:mapMarkers bind:showSettingsModal on:selected={(event) => onViewAssets(event.detail)} />
     </div></UserPageLayout

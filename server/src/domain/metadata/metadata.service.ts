@@ -432,35 +432,40 @@ export class MetadataService {
 
     this.logger.verbose('Exif Tags', tags);
 
-    return {
-      exifData: {
-        // altitude: tags.GPSAltitude ?? null,
-        assetId: asset.id,
-        bitsPerSample: this.getBitsPerSample(tags),
-        colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-        exifImageHeight: validate(tags.ImageHeight),
-        exifImageWidth: validate(tags.ImageWidth),
-        exposureTime: tags.ExposureTime ?? null,
-        fileSizeInByte: stats.size,
-        fNumber: validate(tags.FNumber),
-        focalLength: validate(tags.FocalLength),
-        fps: validate(tags.VideoFrameRate),
-        iso: validate(tags.ISO),
-        latitude: validate(tags.GPSLatitude),
-        lensModel: tags.LensModel ?? null,
-        livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
-        longitude: validate(tags.GPSLongitude),
-        make: tags.Make ?? null,
-        model: tags.Model ?? null,
-        modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
-        orientation: validate(tags.Orientation)?.toString() ?? null,
-        profileDescription: tags.ProfileDescription || tags.ProfileName || null,
-        projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
-        timeZone: tags.tz ?? null,
-      },
-      tags,
+    const exifData = {
+      // altitude: tags.GPSAltitude ?? null,
+      assetId: asset.id,
+      bitsPerSample: this.getBitsPerSample(tags),
+      colorspace: tags.ColorSpace ?? null,
+      dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
+      exifImageHeight: validate(tags.ImageHeight),
+      exifImageWidth: validate(tags.ImageWidth),
+      exposureTime: tags.ExposureTime ?? null,
+      fileSizeInByte: stats.size,
+      fNumber: validate(tags.FNumber),
+      focalLength: validate(tags.FocalLength),
+      fps: validate(tags.VideoFrameRate),
+      iso: validate(tags.ISO),
+      latitude: validate(tags.GPSLatitude),
+      lensModel: tags.LensModel ?? null,
+      livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
+      longitude: validate(tags.GPSLongitude),
+      make: tags.Make ?? null,
+      model: tags.Model ?? null,
+      modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
+      orientation: validate(tags.Orientation)?.toString() ?? null,
+      profileDescription: tags.ProfileDescription || tags.ProfileName || null,
+      projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
+      timeZone: tags.tz ?? null,
     };
+
+    if (exifData.latitude === 0 && exifData.longitude === 0) {
+      console.warn('Exif data has latitude and longitude of 0, setting to null');
+      exifData.latitude = null;
+      exifData.longitude = null;
+    }
+
+    return { exifData, tags };
   }
 
   private getDateTimeOriginal(tags: ImmichTags | Tags | null) {

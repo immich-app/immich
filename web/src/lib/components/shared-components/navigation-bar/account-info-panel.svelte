@@ -10,6 +10,7 @@
   import { notificationController, NotificationType } from '../notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import AvatarSelector from './avatar-selector.svelte';
+  import { setUser } from '$lib/stores/user.store';
 
   export let user: UserResponseDto;
 
@@ -33,6 +34,7 @@
       });
 
       user = data;
+      setUser(user);
       isShowSelectAvatar = false;
 
       notificationController.show({

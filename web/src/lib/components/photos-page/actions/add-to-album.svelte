@@ -10,6 +10,7 @@
   import { AlbumResponseDto, api } from '@api';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { AppRoute } from '$lib/constants';
 
   export let shared = false;
   let showAlbumPicker = false;
@@ -37,7 +38,7 @@
 
       clearSelect();
 
-      goto('/albums/' + id);
+      goto(`${AppRoute.ALBUMS}/${id}`);
     });
   };
 

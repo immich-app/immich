@@ -14,6 +14,7 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
+  import { AppRoute } from '$lib/constants';
 
   export let sharedLink: SharedLinkResponseDto;
   export let isOwned: boolean;
@@ -78,7 +79,7 @@
       {/if}
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar on:close-button-click={() => goto('/photos')} backIcon={mdiArrowLeft} showBackButton={false}>
+    <ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
         <a
           data-sveltekit-preload-data="hover"

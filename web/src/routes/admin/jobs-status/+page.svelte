@@ -30,7 +30,7 @@
   });
 </script>
 
-<UserPageLayout user={data.user} title={data.meta.title} admin>
+<UserPageLayout title={data.meta.title} admin>
   <div class="flex justify-end" slot="buttons">
     <a href="{AppRoute.ADMIN_SETTINGS}?open=job-settings">
       <LinkButton>
