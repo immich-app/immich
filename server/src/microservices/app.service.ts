@@ -55,7 +55,6 @@ export class AppService {
       [JobName.QUEUE_MIGRATION]: () => this.mediaService.handleQueueMigration(),
       [JobName.MIGRATE_ASSET]: (data) => this.mediaService.handleAssetMigration(data),
       [JobName.MIGRATE_PERSON]: (data) => this.personService.handlePersonMigration(data),
-      [JobName.SYSTEM_CONFIG_CHANGE]: () => this.systemConfigService.refreshConfig(),
       [JobName.QUEUE_GENERATE_THUMBNAILS]: (data) => this.mediaService.handleQueueGenerateThumbnails(data),
       [JobName.GENERATE_JPEG_THUMBNAIL]: (data) => this.mediaService.handleGenerateJpegThumbnail(data),
       [JobName.GENERATE_WEBP_THUMBNAIL]: (data) => this.mediaService.handleGenerateWebpThumbnail(data),

@@ -1,6 +1,6 @@
 export const ICommunicationRepository = 'ICommunicationRepository';
 
-export enum CommunicationEvent {
+export enum ClientEvent {
   UPLOAD_SUCCESS = 'on_upload_success',
   ASSET_DELETE = 'on_asset_delete',
   ASSET_TRASH = 'on_asset_trash',
@@ -13,10 +13,17 @@ export enum CommunicationEvent {
   NEW_RELEASE = 'on_new_release',
 }
 
-export type Callback = (userId: string) => Promise<void>;
+export enum ServerEvent {
+  CONFIG_UPDATE = 'config:update',
+}
+
+export type OnConnectCallback = (userId: string) => Promise<void>;
+export type OnServerEventCallback = () => Promise<void>;
 
 export interface ICommunicationRepository {
-  send(event: CommunicationEvent, userId: string, data: any): void;
-  broadcast(event: CommunicationEvent, data: any): void;
-  addEventListener(event: 'connect', callback: Callback): void;
+  send(event: ClientEvent, userId: string, data: any): void;
+  broadcast(event: ClientEvent, data: any): void;
+  on(event: 'connect', callback: OnConnectCallback): void;
+  on(event: ServerEvent, callback: OnServerEventCallback): void;
+  sendServerEvent(event: ServerEvent): void;
 }

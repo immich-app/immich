@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
-  CommunicationEvent,
+  ClientEvent,
   ExifDuration,
   IAlbumRepository,
   IAssetRepository,
@@ -171,7 +171,7 @@ export class MetadataService {
     await this.albumRepository.removeAsset(motionAsset.id);
 
     // Notify clients to hide the linked live photo asset
-    this.communicationRepository.send(CommunicationEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
+    this.communicationRepository.send(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
 
     return true;
   }
@@ -460,7 +460,7 @@ export class MetadataService {
     };
 
     if (exifData.latitude === 0 && exifData.longitude === 0) {
-      console.warn('Exif data has latitude and longitude of 0, setting to null');
+      this.logger.warn('Exif data has latitude and longitude of 0, setting to null');
       exifData.latitude = null;
       exifData.longitude = null;
     }

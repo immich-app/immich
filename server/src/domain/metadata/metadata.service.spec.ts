@@ -20,7 +20,7 @@ import { constants } from 'fs/promises';
 import { when } from 'jest-when';
 import { JobName } from '../job';
 import {
-  CommunicationEvent,
+  ClientEvent,
   IAlbumRepository,
   IAssetRepository,
   ICommunicationRepository,
@@ -190,7 +190,7 @@ describe(MetadataService.name, () => {
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(true);
       expect(communicationMock.send).toHaveBeenCalledWith(
-        CommunicationEvent.ASSET_HIDDEN,
+        ClientEvent.ASSET_HIDDEN,
         assetStub.livePhotoMotionAsset.ownerId,
         assetStub.livePhotoMotionAsset.id,
       );

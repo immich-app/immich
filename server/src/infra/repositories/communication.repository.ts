@@ -1,19 +1,60 @@
-import { AuthService, Callback, CommunicationEvent, ICommunicationRepository } from '@app/domain';
+import {
+  AuthService,
+  ClientEvent,
+  ICommunicationRepository,
+  OnConnectCallback,
+  OnServerEventCallback,
+  ServerEvent,
+} from '@app/domain';
 import { Logger } from '@nestjs/common';
-import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({ cors: true, path: '/api/socket.io' })
-export class CommunicationRepository implements OnGatewayConnection, OnGatewayDisconnect, ICommunicationRepository {
+export class CommunicationRepository
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, ICommunicationRepository
+{
   private logger = new Logger(CommunicationRepository.name);
-  private onConnectCallbacks: Callback[] = [];
+  private onConnectCallbacks: OnConnectCallback[] = [];
+  private onServerEventCallbacks: Record<ServerEvent, OnServerEventCallback[]> = {
+    [ServerEvent.CONFIG_UPDATE]: [],
+  };
+
+  @WebSocketServer()
+  private server?: Server;
 
   constructor(private authService: AuthService) {}
 
-  @WebSocketServer() server?: Server;
+  afterInit(server: Server) {
+    this.logger.log('Initialized websocket server');
 
-  addEventListener(event: 'connect', callback: Callback) {
-    this.onConnectCallbacks.push(callback);
+    for (const event of Object.values(ServerEvent)) {
+      server.on(event, async () => {
+        this.logger.debug(`Server event: ${event} (receive)`);
+        const callbacks = this.onServerEventCallbacks[event];
+        for (const callback of callbacks) {
+          await callback();
+        }
+      });
+    }
+  }
+
+  on(event: 'connect' | ServerEvent, callback: OnConnectCallback | OnServerEventCallback) {
+    switch (event) {
+      case 'connect':
+        this.onConnectCallbacks.push(callback);
+        break;
+
+      default:
+        this.onServerEventCallbacks[event].push(callback as OnServerEventCallback);
+        break;
+    }
   }
 
   async handleConnection(client: Socket) {
@@ -36,11 +77,16 @@ export class CommunicationRepository implements OnGatewayConnection, OnGatewayDi
     await client.leave(client.nsp.name);
   }
 
-  send(event: CommunicationEvent, userId: string, data: any) {
+  send(event: ClientEvent, userId: string, data: any) {
     this.server?.to(userId).emit(event, data);
   }
 
-  broadcast(event: CommunicationEvent, data: any) {
+  broadcast(event: ClientEvent, data: any) {
     this.server?.emit(event, data);
+  }
+
+  sendServerEvent(event: ServerEvent) {
+    this.logger.debug(`Server event: ${event} (send)`);
+    this.server?.serverSideEmit(event);
   }
 }

@@ -11,14 +11,9 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
-import { JobName, QueueName } from '../job';
-import {
-  ICommunicationRepository,
-  IJobRepository,
-  ISmartInfoRepository,
-  ISystemConfigRepository,
-} from '../repositories';
+import { newCommunicationRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { QueueName } from '../job';
+import { ICommunicationRepository, ISmartInfoRepository, ISystemConfigRepository, ServerEvent } from '../repositories';
 import { defaults, SystemConfigValidator } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
@@ -137,15 +132,13 @@ describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
   let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
 
   beforeEach(async () => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    sut = new SystemConfigService(configMock, communicationMock, jobMock, smartInfoMock);
+    sut = new SystemConfigService(configMock, communicationMock, smartInfoMock);
   });
 
   it('should work', () => {
@@ -269,13 +262,14 @@ describe(SystemConfigService.name, () => {
   });
 
   describe('updateConfig', () => {
-    it('should notify the microservices process', async () => {
+    it('should update the config and emit client and server events', async () => {
       configMock.load.mockResolvedValue(updates);
 
       await expect(sut.updateConfig(updatedConfig)).resolves.toEqual(updatedConfig);
 
+      expect(communicationMock.broadcast).toHaveBeenCalled();
+      expect(communicationMock.sendServerEvent).toHaveBeenCalledWith(ServerEvent.CONFIG_UPDATE);
       expect(configMock.saveAll).toHaveBeenCalledWith(updates);
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SYSTEM_CONFIG_CHANGE });
     });
 
     it('should throw an error if the config is not valid', async () => {
