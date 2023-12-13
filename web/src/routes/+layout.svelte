@@ -83,7 +83,6 @@
   <title>{$page.data.meta?.title || 'Web'} - Immich</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="currentColor" />
-  <FaviconHeader />
   <AppleHeader />
 
   {#if $page.data.meta}
