@@ -5,6 +5,7 @@ on:
     types: [labeled, unlabeled, opened, edited, synchronize]
 jobs:
   enforce-label:
+    name: Enforce label
     runs-on: ubuntu-latest
     steps:
     - if: toJson(github.event.pull_request.labels) == '[]'
