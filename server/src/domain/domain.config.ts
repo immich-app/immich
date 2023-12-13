@@ -20,8 +20,7 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_URL: Joi.string().optional(),
     LOG_LEVEL: Joi.string()
       .optional()
-      .valid(...Object.values(LogLevel))
-      .default(LogLevel.LOG),
+      .valid(...Object.values(LogLevel)),
     MACHINE_LEARNING_PORT: Joi.number().optional(),
     MICROSERVICES_PORT: Joi.number().optional(),
     SERVER_PORT: Joi.number().optional(),
