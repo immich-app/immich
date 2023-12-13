@@ -321,6 +321,8 @@ class ApiClient {
           return LibraryStatsResponseDto.fromJson(value);
         case 'LibraryType':
           return LibraryTypeTypeTransformer().decode(value);
+        case 'LogLevel':
+          return LogLevelTypeTransformer().decode(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
@@ -427,6 +429,8 @@ class ApiClient {
           return SystemConfigLibraryDto.fromJson(value);
         case 'SystemConfigLibraryScanDto':
           return SystemConfigLibraryScanDto.fromJson(value);
+        case 'SystemConfigLoggingDto':
+          return SystemConfigLoggingDto.fromJson(value);
         case 'SystemConfigMachineLearningDto':
           return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigMapDto':
