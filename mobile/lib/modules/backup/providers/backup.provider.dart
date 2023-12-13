@@ -294,6 +294,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       excludedBackupAlbums: excludedAlbums,
     );
 
+    log.info(
+      "_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums",
+    );
     debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }
 
