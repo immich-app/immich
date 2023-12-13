@@ -5,16 +5,16 @@ changelog:
         - breaking-change
     - title: Server
       labels:
-        - server
+        - 🗄️server
     - title: Mobile
       labels:
-        - mobile
+        - 📱mobile
     - title: Web
       labels:
-        - web
+        - 🖥️web
     - title: Machine Learning
       labels:
-        - machine-learning
+        - 🧠machine-learning
     - title: CLI
       labels:
         - cli
