@@ -255,7 +255,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         albumMap[album.id] = album;
       }
     }
-
     state = state.copyWith(availableAlbums: availableAlbums);
 
     final List<BackupAlbum> excludedBackupAlbums =
@@ -295,6 +294,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       excludedBackupAlbums: excludedAlbums,
     );
 
+    log.info(
+      "_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums",
+    );
     debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }
 
