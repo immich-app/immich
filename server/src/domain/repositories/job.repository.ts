@@ -46,7 +46,6 @@ export type JobItem =
   // Storage Template
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION; data?: IBaseJob }
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IEntityJob }
-  | { name: JobName.SYSTEM_CONFIG_CHANGE; data?: IBaseJob }
 
   // Migration
   | { name: JobName.QUEUE_MIGRATION; data?: IBaseJob }

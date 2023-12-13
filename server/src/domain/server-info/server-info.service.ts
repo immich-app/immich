@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { ServerVersion, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import {
-  CommunicationEvent,
+  ClientEvent,
   ICommunicationRepository,
   IServerInfoRepository,
   IStorageRepository,
@@ -38,7 +38,7 @@ export class ServerInfoService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.communicationRepository.addEventListener('connect', (userId) => this.handleConnect(userId));
+    this.communicationRepository.on('connect', (userId) => this.handleConnect(userId));
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
@@ -154,12 +154,12 @@ export class ServerInfoService {
   }
 
   private async handleConnect(userId: string) {
-    this.communicationRepository.send(CommunicationEvent.SERVER_VERSION, userId, serverVersion);
+    this.communicationRepository.send(ClientEvent.SERVER_VERSION, userId, serverVersion);
     this.newReleaseNotification(userId);
   }
 
   private newReleaseNotification(userId?: string) {
-    const event = CommunicationEvent.NEW_RELEASE;
+    const event = ClientEvent.NEW_RELEASE;
     const payload = {
       isAvailable: this.releaseVersion.isNewerThan(serverVersion),
       checkedAt: this.releaseVersionCheckedAt,

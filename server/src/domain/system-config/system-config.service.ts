@@ -1,11 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { JobName } from '../job';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  CommunicationEvent,
+  ClientEvent,
   ICommunicationRepository,
-  IJobRepository,
   ISmartInfoRepository,
   ISystemConfigRepository,
+  ServerEvent,
 } from '../repositories';
 import { SystemConfigDto, mapConfig } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
@@ -23,14 +22,16 @@ import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
 
 @Injectable()
 export class SystemConfigService {
+  private logger = new Logger(SystemConfigService.name);
   private core: SystemConfigCore;
+
   constructor(
     @Inject(ISystemConfigRepository) private repository: ISystemConfigRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
   ) {
     this.core = SystemConfigCore.create(repository);
+    this.communicationRepository.on(ServerEvent.CONFIG_UPDATE, () => this.handleConfigUpdate());
   }
 
   get config$() {
@@ -50,15 +51,19 @@ export class SystemConfigService {
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     const oldConfig = await this.core.getConfig();
     const newConfig = await this.core.updateConfig(dto);
-    await this.jobRepository.queue({ name: JobName.SYSTEM_CONFIG_CHANGE });
-    this.communicationRepository.broadcast(CommunicationEvent.CONFIG_UPDATE, {});
+
+    this.communicationRepository.broadcast(ClientEvent.CONFIG_UPDATE, {});
+    this.communicationRepository.sendServerEvent(ServerEvent.CONFIG_UPDATE);
+
     if (oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
       await this.smartInfoRepository.init(newConfig.machineLearning.clip.modelName);
     }
     return mapConfig(newConfig);
   }
 
+  // this is only used by the cli on config change, and it's not actually needed anymore
   async refreshConfig() {
+    this.communicationRepository.sendServerEvent(ServerEvent.CONFIG_UPDATE);
     await this.core.refreshConfig();
     return true;
   }
@@ -96,5 +101,9 @@ export class SystemConfigService {
   async getCustomCss(): Promise<string> {
     const { theme } = await this.core.getConfig();
     return theme.customCss;
+  }
+
+  private async handleConfigUpdate() {
+    await this.core.refreshConfig();
   }
 }

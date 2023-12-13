@@ -20,7 +20,7 @@ import { ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   AssetStats,
-  CommunicationEvent,
+  ClientEvent,
   IAssetRepository,
   ICommunicationRepository,
   ICryptoRepository,
@@ -764,7 +764,7 @@ describe(AssetService.name, () => {
         stackParentId: 'parent',
       });
 
-      expect(communicationMock.send).toHaveBeenCalledWith(CommunicationEvent.ASSET_UPDATE, authStub.user1.user.id, [
+      expect(communicationMock.send).toHaveBeenCalledWith(ClientEvent.ASSET_UPDATE, authStub.user1.user.id, [
         'asset-1',
       ]);
     });
