@@ -23,7 +23,7 @@ import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';
 
-export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
+export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
 export const defaults = Object.freeze<SystemConfig>({
   ffmpeg: {
@@ -259,14 +259,16 @@ export class SystemConfigCore {
     return config;
   }
 
-  public async updateConfig(config: SystemConfig): Promise<SystemConfig> {
+  public async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
     if (await this.hasFeature(FeatureFlag.CONFIG_FILE)) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
     }
 
+    const oldConfig = await this.getConfig();
+
     try {
       for (const validator of this.validators) {
-        await validator(config);
+        await validator(newConfig, oldConfig);
       }
     } catch (e) {
       this.logger.warn(`Unable to save system config due to a validation error: ${e}`);
@@ -278,9 +280,9 @@ export class SystemConfigCore {
 
     for (const key of Object.values(SystemConfigKey)) {
       // get via dot notation
-      const item = { key, value: _.get(config, key) as SystemConfigValue };
+      const item = { key, value: _.get(newConfig, key) as SystemConfigValue };
       const defaultValue = _.get(defaults, key);
-      const isMissing = !_.has(config, key);
+      const isMissing = !_.has(newConfig, key);
 
       if (
         isMissing ||
@@ -304,11 +306,11 @@ export class SystemConfigCore {
       await this.repository.deleteKeys(deletes.map((item) => item.key));
     }
 
-    const newConfig = await this.getConfig();
+    const config = await this.getConfig();
 
-    this.config$.next(newConfig);
+    this.config$.next(config);
 
-    return newConfig;
+    return config;
   }
 
   public async refreshConfig() {
