@@ -58,7 +58,6 @@ dependencies:
   wakelock_plus: ^1.1.1
   flutter_local_notifications: ^15.1.0+1
   timezone: ^0.9.2
-  mocktail: ^1.0.1
 
   openapi:
     path: openapi
@@ -90,6 +89,7 @@ dev_dependencies:
   custom_lint: ^0.5.6
   riverpod_lint: ^2.1.0
   riverpod_generator: ^2.3.3
+  mocktail: ^1.0.1
 
 flutter:
   uses-material-design: true
