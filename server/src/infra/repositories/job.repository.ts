@@ -8,8 +8,9 @@ import {
   QueueName,
   QueueStatus,
 } from '@app/domain';
+import { ImmichLogger } from '@app/infra/logger';
 import { getQueueToken } from '@nestjs/bullmq';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
@@ -19,7 +20,7 @@ import { bullConfig } from '../infra.config';
 @Injectable()
 export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
-  private logger = new Logger(JobRepository.name);
+  private logger = new ImmichLogger(JobRepository.name);
 
   constructor(
     private moduleRef: ModuleRef,

@@ -1,9 +1,9 @@
 import { AuthDto, AuthService, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
+import { ImmichLogger } from '@app/infra/logger';
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  Logger,
   SetMetadata,
   applyDecorators,
   createParamDecorator,
@@ -77,7 +77,7 @@ export interface AuthRequest extends Request {
 
 @Injectable()
 export class AppGuard implements CanActivate {
-  private logger = new Logger(AppGuard.name);
+  private logger = new ImmichLogger(AppGuard.name);
 
   constructor(
     private reflector: Reflector,

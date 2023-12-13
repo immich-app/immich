@@ -2,6 +2,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  LogLevel,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -56,6 +57,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
     tonemap: ToneMapping.HABLE,
+  },
+  logging: {
+    enabled: true,
+    level: LogLevel.LOG,
   },
   machineLearning: {
     enabled: true,

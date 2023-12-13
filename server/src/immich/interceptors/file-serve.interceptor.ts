@@ -1,5 +1,6 @@
 import { ImmichFileResponse, isConnectionAborted } from '@app/domain';
-import { CallHandler, ExecutionContext, Logger, NestInterceptor } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { Response } from 'express';
 import { access, constants } from 'fs/promises';
 import { isAbsolute } from 'path';
@@ -10,7 +11,7 @@ type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
 export class FileServeInterceptor implements NestInterceptor {
-  private logger = new Logger(FileServeInterceptor.name);
+  private logger = new ImmichLogger(FileServeInterceptor.name);
 
   intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
     const http = context.switchToHttp();

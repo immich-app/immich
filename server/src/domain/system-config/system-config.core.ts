@@ -2,6 +2,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  LogLevel,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -11,7 +12,8 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -56,6 +58,10 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
+  },
+  logging: {
+    enabled: true,
+    level: LogLevel.LOG,
   },
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
@@ -149,7 +155,7 @@ let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
-  private logger = new Logger(SystemConfigCore.name);
+  private logger = new ImmichLogger(SystemConfigCore.name);
   private validators: SystemConfigValidator[] = [];
   private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
 

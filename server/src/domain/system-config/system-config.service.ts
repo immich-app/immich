@@ -1,4 +1,6 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { SystemConfig } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   ClientEvent,
   ICommunicationRepository,
@@ -22,7 +24,7 @@ import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
 
 @Injectable()
 export class SystemConfigService {
-  private logger = new Logger(SystemConfigService.name);
+  private logger = new ImmichLogger(SystemConfigService.name);
   private core: SystemConfigCore;
 
   constructor(
@@ -32,6 +34,18 @@ export class SystemConfigService {
   ) {
     this.core = SystemConfigCore.create(repository);
     this.communicationRepository.on(ServerEvent.CONFIG_UPDATE, () => this.handleConfigUpdate());
+    this.core.config$.subscribe((config) => this.setLogLevel(config));
+  }
+
+  async init() {
+    const config = await this.core.getConfig();
+    await this.setLogLevel(config);
+  }
+
+  private async setLogLevel({ logging }: SystemConfig) {
+    const level = logging.enabled ? logging.level : false;
+    ImmichLogger.setLogLevel(level);
+    this.logger.log(`LogLevel=${level}`);
   }
 
   get config$() {

@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { setTimeout } from 'timers/promises';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
@@ -15,7 +16,7 @@ import { SystemConfigCore } from '../system-config';
 @Injectable()
 export class SmartInfoService {
   private configCore: SystemConfigCore;
-  private logger = new Logger(SmartInfoService.name);
+  private logger = new ImmichLogger(SmartInfoService.name);
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,

@@ -1,3 +1,4 @@
+import { ImmichLogger } from '@app/infra/logger';
 import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
 import { ActivityService } from './activity';
 import { AlbumService } from './album';
@@ -43,6 +44,7 @@ const providers: Provider[] = [
   SystemConfigService,
   TagService,
   UserService,
+  ImmichLogger,
   {
     provide: INITIAL_SYSTEM_CONFIG,
     inject: [SystemConfigService],
