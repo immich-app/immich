@@ -477,8 +477,8 @@
       {#each people as person, idx (person.id)}
         <button
           class="relative"
-          style:width={`${thumbnailWidth}px`}
-          style:height={`${thumbnailWidth}px`}
+          style:width="{thumbnailWidth}px"
+          style:height="{thumbnailWidth}px"
           on:click={() => (person.isHidden = !person.isHidden)}
           on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
           on:mouseleave={() => (eyeColorMap[person.id] = 'white')}

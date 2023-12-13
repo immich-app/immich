@@ -46,8 +46,8 @@
   on:mouseenter={() => (showVerticalDots = true)}
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
-  style:width={`${width}px`}
-  style:height={`${height}px`}
+  style:width="{width}px"
+  style:height="{height}px"
 >
   <a href="{AppRoute.PEOPLE}/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
     <div class="rounded-xl brightness-95 filter">
