@@ -110,7 +110,7 @@ jobs:
             # Tag with pr-number
             type=ref,event=pr,suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
             # Tag with git tag on release
-            type=ref,event=tag
+            type=ref,event=tag,suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
             type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
 
       - name: Determine build cache output
