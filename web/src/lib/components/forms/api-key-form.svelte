@@ -7,15 +7,15 @@
   import { mdiKeyVariant } from '@mdi/js';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
-  export let apiKey: APIKeyResponseDto;
+  export let apiKey: Partial<APIKeyResponseDto>;
   export let title = 'API Key';
   export let cancelText = 'Cancel';
   export let submitText = 'Save';
-  export let apiKeyName = '';
+  export let apiKeyName = 'API Key';
 
   const dispatch = createEventDispatcher<{
     cancel: void;
-    submit: APIKeyResponseDto;
+    submit: Partial<APIKeyResponseDto>;
   }>();
   const handleCancel = () => dispatch('cancel');
   const handleSubmit = () => {
