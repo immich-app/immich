@@ -23,10 +23,9 @@
     closeMenu();
   };
 
-  const handleAddToNewAlbum = (event: CustomEvent) => {
+  const handleAddToNewAlbum = (albumName: string) => {
     showAlbumPicker = false;
 
-    const { albumName }: { albumName: string } = event.detail;
     const assetIds = Array.from(getAssets()).map((asset) => asset.id);
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds } }).then((response) => {
       const { id, albumName } = response.data;
@@ -55,8 +54,8 @@
 {#if showAlbumPicker}
   <AlbumSelectionModal
     {shared}
-    on:newAlbum={handleAddToNewAlbum}
-    on:newSharedAlbum={handleAddToNewAlbum}
+    on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
+    on:newSharedAlbum={({ detail }) => handleAddToNewAlbum(detail)}
     on:album={({ detail }) => handleAddToAlbum(detail)}
     on:close={handleHideAlbumPicker}
   />
