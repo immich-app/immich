@@ -207,15 +207,15 @@ describe(JobService.name, () => {
     });
   });
 
-  describe('registerHandlers', () => {
+  describe('init', () => {
     it('should register a handler for each queue', async () => {
-      await sut.registerHandlers(makeMockHandlers(true));
+      await sut.init(makeMockHandlers(true));
       expect(configMock.load).toHaveBeenCalled();
       expect(jobMock.addHandler).toHaveBeenCalledTimes(Object.keys(QueueName).length);
     });
 
     it('should subscribe to config changes', async () => {
-      await sut.registerHandlers(makeMockHandlers(false));
+      await sut.init(makeMockHandlers(false));
 
       SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
         job: {
@@ -323,7 +323,7 @@ describe(JobService.name, () => {
           assetMock.getByIds.mockResolvedValue([]);
         }
 
-        await sut.registerHandlers(makeMockHandlers(true));
+        await sut.init(makeMockHandlers(true));
         await jobMock.addHandler.mock.calls[0][2](item);
         await asyncTick(3);
 
@@ -334,7 +334,7 @@ describe(JobService.name, () => {
       });
 
       it(`should not queue any jobs when ${item.name} finishes with 'false'`, async () => {
-        await sut.registerHandlers(makeMockHandlers(false));
+        await sut.init(makeMockHandlers(false));
         await jobMock.addHandler.mock.calls[0][2](item);
         await asyncTick(3);
 

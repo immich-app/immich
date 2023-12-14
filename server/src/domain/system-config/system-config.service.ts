@@ -42,7 +42,7 @@ export class SystemConfigService {
 
   async init() {
     const config = await this.core.getConfig();
-    await this.setLogLevel(config);
+    this.config$.next(config);
   }
 
   get config$() {
