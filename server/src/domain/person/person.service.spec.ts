@@ -112,7 +112,6 @@ describe(PersonService.name, () => {
       personMock.getNumberOfPeople.mockResolvedValue(1);
       await expect(sut.getAll(authStub.admin, { withHidden: undefined })).resolves.toEqual({
         total: 1,
-        visible: 1,
         people: [responseDto],
       });
       expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
@@ -125,7 +124,6 @@ describe(PersonService.name, () => {
       personMock.getNumberOfPeople.mockResolvedValue(2);
       await expect(sut.getAll(authStub.admin, { withHidden: false })).resolves.toEqual({
         total: 2,
-        visible: 1,
         people: [responseDto],
       });
       expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
@@ -138,7 +136,6 @@ describe(PersonService.name, () => {
       personMock.getNumberOfPeople.mockResolvedValue(2);
       await expect(sut.getAll(authStub.admin, { withHidden: true })).resolves.toEqual({
         total: 2,
-        visible: 1,
         people: [
           responseDto,
           {

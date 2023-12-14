@@ -80,7 +80,6 @@ export class PersonService {
     return {
       people: persons.filter((person) => dto.withHidden || !person.isHidden),
       total,
-      visible: persons.filter((person: PersonResponseDto) => !person.isHidden).length,
     };
   }
 

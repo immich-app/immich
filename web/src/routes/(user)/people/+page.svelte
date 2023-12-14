@@ -34,7 +34,6 @@
   let people = data.people.people;
   const peopleCopy = data.people.people;
   let countTotalPeople = data.people.total;
-  let countVisiblePeople = data.people.visible;
   let searchPeopleCopy: PersonResponseDto[] = [];
   let searchName = '';
   let searchWord: string;
@@ -63,6 +62,8 @@
       people = peopleCopy;
     }
   }
+
+  $: countVisiblePeople = people.filter((person) => !person.isHidden).length;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
@@ -130,9 +131,6 @@
 
           // Update the initial hidden values
           initialHiddenValues[person.id] = person.isHidden;
-
-          // Update the count of hidden/visible people
-          countVisiblePeople += person.isHidden ? -1 : 1;
         }
       }
 
@@ -178,7 +176,6 @@
         id: personMerge2.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
-      countVisiblePeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
 
       notificationController.show({
@@ -245,8 +242,6 @@
       people.forEach((person: PersonResponseDto) => {
         initialHiddenValues[person.id] = person.isHidden;
       });
-
-      countVisiblePeople--;
 
       showChangeNameModal = false;
 

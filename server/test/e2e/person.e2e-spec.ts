@@ -75,7 +75,6 @@ describe(`${PersonController.name}`, () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         total: 2,
-        visible: 1,
         people: [
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ name: 'hidden_person' }),
@@ -88,8 +87,7 @@ describe(`${PersonController.name}`, () => {
 
       expect(status).toBe(200);
       expect(body).toEqual({
-        total: 1,
-        visible: 1,
+        total: 2,
         people: [expect.objectContaining({ name: 'visible_person' })],
       });
     });

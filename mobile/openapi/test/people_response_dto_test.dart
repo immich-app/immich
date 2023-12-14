@@ -26,11 +26,6 @@ void main() {
       // TODO
     });
 
-    // int visible
-    test('to test the property `visible`', () async {
-      // TODO
-    });
-
 
   });
 

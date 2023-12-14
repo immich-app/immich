@@ -8254,14 +8254,10 @@
           },
           "total": {
             "type": "integer"
-          },
-          "visible": {
-            "type": "integer"
           }
         },
         "required": [
           "total",
-          "visible",
           "people"
         ],
         "type": "object"
