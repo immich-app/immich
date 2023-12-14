@@ -21,6 +21,7 @@
   import type { PageData } from './$types';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
   import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
+  import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
 
   export let data: PageData;
@@ -44,7 +45,7 @@
   </div>
 {/if}
 
-<UserPageLayout user={data.user} title={data.meta.title} admin>
+<UserPageLayout title={data.meta.title} admin>
   <div class="flex justify-end gap-2" slot="buttons">
     <LinkButton on:click={() => copyToClipboard(JSON.stringify(configs, null, 2))}>
       <div class="flex place-items-center gap-2 text-sm">
@@ -74,6 +75,10 @@
         <LibrarySettings disabled={$featureFlags.configFile} libraryConfig={configs.library} />
       </SettingAccordion>
 
+      <SettingAccordion title="Logging" subtitle="Manage log settings">
+        <LoggingSettings disabled={$featureFlags.configFile} loggingConfig={configs.logging} />
+      </SettingAccordion>
+
       <SettingAccordion title="Machine Learning Settings" subtitle="Manage machine learning features and settings">
         <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
       </SettingAccordion>
@@ -95,11 +100,7 @@
         subtitle="Manage the folder structure and file name of the upload asset"
         isOpen={$page.url.searchParams.get('open') === 'storage-template'}
       >
-        <StorageTemplateSettings
-          disabled={$featureFlags.configFile}
-          storageConfig={configs.storageTemplate}
-          user={data.user}
-        />
+        <StorageTemplateSettings disabled={$featureFlags.configFile} storageConfig={configs.storageTemplate} />
       </SettingAccordion>
 
       <SettingAccordion title="Theme Settings" subtitle="Manage customization of the Immich web interface">

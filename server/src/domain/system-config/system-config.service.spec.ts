@@ -2,6 +2,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  LogLevel,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -11,14 +12,9 @@ import {
   VideoCodec,
 } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { newCommunicationRepositoryMock, newJobRepositoryMock, newSystemConfigRepositoryMock } from '@test';
-import { JobName, QueueName } from '../job';
-import {
-  ICommunicationRepository,
-  IJobRepository,
-  ISmartInfoRepository,
-  ISystemConfigRepository,
-} from '../repositories';
+import { newCommunicationRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+import { QueueName } from '../job';
+import { ICommunicationRepository, ISmartInfoRepository, ISystemConfigRepository, ServerEvent } from '../repositories';
 import { defaults, SystemConfigValidator } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
@@ -61,6 +57,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
     tonemap: ToneMapping.HABLE,
+  },
+  logging: {
+    enabled: true,
+    level: LogLevel.LOG,
   },
   machineLearning: {
     enabled: true,
@@ -137,15 +137,13 @@ describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
   let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
 
   beforeEach(async () => {
     delete process.env.IMMICH_CONFIG_FILE;
     configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    sut = new SystemConfigService(configMock, communicationMock, jobMock, smartInfoMock);
+    sut = new SystemConfigService(configMock, communicationMock, smartInfoMock);
   });
 
   it('should work', () => {
@@ -166,7 +164,7 @@ describe(SystemConfigService.name, () => {
       const validator: SystemConfigValidator = jest.fn();
       sut.addValidator(validator);
       await sut.updateConfig(defaults);
-      expect(validator).toHaveBeenCalledWith(defaults);
+      expect(validator).toHaveBeenCalledWith(defaults, defaults);
     });
   });
 
@@ -269,13 +267,14 @@ describe(SystemConfigService.name, () => {
   });
 
   describe('updateConfig', () => {
-    it('should notify the microservices process', async () => {
+    it('should update the config and emit client and server events', async () => {
       configMock.load.mockResolvedValue(updates);
 
       await expect(sut.updateConfig(updatedConfig)).resolves.toEqual(updatedConfig);
 
+      expect(communicationMock.broadcast).toHaveBeenCalled();
+      expect(communicationMock.sendServerEvent).toHaveBeenCalledWith(ServerEvent.CONFIG_UPDATE);
       expect(configMock.saveAll).toHaveBeenCalledWith(updates);
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SYSTEM_CONFIG_CHANGE });
     });
 
     it('should throw an error if the config is not valid', async () => {
@@ -285,7 +284,7 @@ describe(SystemConfigService.name, () => {
 
       await expect(sut.updateConfig(updatedConfig)).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(validator).toHaveBeenCalledWith(updatedConfig);
+      expect(validator).toHaveBeenCalledWith(updatedConfig, defaults);
       expect(configMock.saveAll).not.toHaveBeenCalled();
     });
 

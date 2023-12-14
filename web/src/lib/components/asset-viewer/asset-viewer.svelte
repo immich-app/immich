@@ -19,7 +19,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
-  import { AssetAction, ProjectionType } from '$lib/constants';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -435,7 +435,7 @@
     const { albumName }: { albumName: string } = event.detail;
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
       const album = response.data;
-      goto('/albums/' + album.id);
+      goto(`${AppRoute.ALBUMS}/${album.id}`);
     });
   };
 
@@ -730,9 +730,9 @@
         albumId={album?.id}
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
-        on:close-viewer={handleCloseViewer}
-        on:description-focus-in={disableKeyDownEvent}
-        on:description-focus-out={enableKeyDownEvent}
+        on:closeViewer={handleCloseViewer}
+        on:descriptionFocusIn={disableKeyDownEvent}
+        on:descriptionFocusOut={enableKeyDownEvent}
       />
     </div>
   {/if}

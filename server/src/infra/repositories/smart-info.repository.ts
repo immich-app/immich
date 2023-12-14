@@ -2,7 +2,8 @@ import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { DatabaseLock, RequireLock, asyncLock } from '@app/infra';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
-import { Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DummyValue, GenerateSql } from '../infra.util';
@@ -10,7 +11,7 @@ import { asVector, isValidInteger } from '../infra.utils';
 
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {
-  private logger = new Logger(SmartInfoRepository.name);
+  private logger = new ImmichLogger(SmartInfoRepository.name);
   private faceColumns: string[];
 
   constructor(

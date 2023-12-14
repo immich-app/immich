@@ -17,7 +17,7 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { Readable } from 'stream';
+import { ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAlbumRepository,
@@ -390,15 +390,17 @@ describe(UserService.name, () => {
     });
 
     it('should return the profile picture', async () => {
-      const stream = new Readable();
-
       userMock.get.mockResolvedValue(userStub.profilePath);
-      storageMock.createReadStream.mockResolvedValue({ stream });
 
-      await expect(sut.getProfileImage(userStub.profilePath.id)).resolves.toEqual({ stream });
+      await expect(sut.getProfileImage(userStub.profilePath.id)).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/path/to/profile.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: false,
+        }),
+      );
 
       expect(userMock.get).toHaveBeenCalledWith(userStub.profilePath.id, {});
-      expect(storageMock.createReadStream).toHaveBeenCalledWith('/path/to/profile.jpg', 'image/jpeg');
     });
   });
 

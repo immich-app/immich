@@ -91,8 +91,7 @@ The default configuration looks like this:
     "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
   },
   "reverseGeocoding": {
-    "enabled": true,
-    "citiesFileOverride": "cities500"
+    "enabled": true
   },
   "oauth": {
     "enabled": false,

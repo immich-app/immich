@@ -44,7 +44,7 @@
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
+<UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
     <EmptyPlaceholder
       text="Archive photos and videos to hide them from your Photos view"

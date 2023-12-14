@@ -1,5 +1,6 @@
 import { AssetPathType, DatabaseAction, PersonPathType, UserPathType } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AccessCore, Permission } from '../access';
@@ -29,7 +30,7 @@ import {
 @Injectable()
 export class AuditService {
   private access: AccessCore;
-  private logger = new Logger(AuditService.name);
+  private logger = new ImmichLogger(AuditService.name);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,

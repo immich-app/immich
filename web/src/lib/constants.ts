@@ -30,6 +30,7 @@ export enum AppRoute {
   USER_SETTINGS = '/user-settings',
   MEMORY = '/memory',
   TRASH = '/trash',
+  PARTNERS = '/partners',
 
   AUTH_LOGIN = '/auth/login',
   AUTH_LOGOUT = '/auth/logout',

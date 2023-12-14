@@ -16,6 +16,7 @@ class SystemConfigDto {
     required this.ffmpeg,
     required this.job,
     required this.library_,
+    required this.logging,
     required this.machineLearning,
     required this.map,
     required this.newVersionCheck,
@@ -33,6 +34,8 @@ class SystemConfigDto {
   SystemConfigJobDto job;
 
   SystemConfigLibraryDto library_;
+
+  SystemConfigLoggingDto logging;
 
   SystemConfigMachineLearningDto machineLearning;
 
@@ -59,6 +62,7 @@ class SystemConfigDto {
      other.ffmpeg == ffmpeg &&
      other.job == job &&
      other.library_ == library_ &&
+     other.logging == logging &&
      other.machineLearning == machineLearning &&
      other.map == map &&
      other.newVersionCheck == newVersionCheck &&
@@ -76,6 +80,7 @@ class SystemConfigDto {
     (ffmpeg.hashCode) +
     (job.hashCode) +
     (library_.hashCode) +
+    (logging.hashCode) +
     (machineLearning.hashCode) +
     (map.hashCode) +
     (newVersionCheck.hashCode) +
@@ -88,13 +93,14 @@ class SystemConfigDto {
     (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, library_=$library_, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'ffmpeg'] = this.ffmpeg;
       json[r'job'] = this.job;
       json[r'library'] = this.library_;
+      json[r'logging'] = this.logging;
       json[r'machineLearning'] = this.machineLearning;
       json[r'map'] = this.map;
       json[r'newVersionCheck'] = this.newVersionCheck;
@@ -119,6 +125,7 @@ class SystemConfigDto {
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         library_: SystemConfigLibraryDto.fromJson(json[r'library'])!,
+        logging: SystemConfigLoggingDto.fromJson(json[r'logging'])!,
         machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
         newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
@@ -179,6 +186,7 @@ class SystemConfigDto {
     'ffmpeg',
     'job',
     'library',
+    'logging',
     'machineLearning',
     'map',
     'newVersionCheck',

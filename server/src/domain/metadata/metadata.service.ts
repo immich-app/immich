@@ -1,5 +1,6 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
@@ -9,7 +10,7 @@ import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
-  CommunicationEvent,
+  ClientEvent,
   ExifDuration,
   IAlbumRepository,
   IAssetRepository,
@@ -91,7 +92,7 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 
 @Injectable()
 export class MetadataService {
-  private logger = new Logger(MetadataService.name);
+  private logger = new ImmichLogger(MetadataService.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
   private subscription: Subscription | null = null;
@@ -171,7 +172,7 @@ export class MetadataService {
     await this.albumRepository.removeAsset(motionAsset.id);
 
     // Notify clients to hide the linked live photo asset
-    this.communicationRepository.send(CommunicationEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
+    this.communicationRepository.send(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
 
     return true;
   }
@@ -432,35 +433,40 @@ export class MetadataService {
 
     this.logger.verbose('Exif Tags', tags);
 
-    return {
-      exifData: {
-        // altitude: tags.GPSAltitude ?? null,
-        assetId: asset.id,
-        bitsPerSample: this.getBitsPerSample(tags),
-        colorspace: tags.ColorSpace ?? null,
-        dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
-        exifImageHeight: validate(tags.ImageHeight),
-        exifImageWidth: validate(tags.ImageWidth),
-        exposureTime: tags.ExposureTime ?? null,
-        fileSizeInByte: stats.size,
-        fNumber: validate(tags.FNumber),
-        focalLength: validate(tags.FocalLength),
-        fps: validate(tags.VideoFrameRate),
-        iso: validate(tags.ISO),
-        latitude: validate(tags.GPSLatitude),
-        lensModel: tags.LensModel ?? null,
-        livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
-        longitude: validate(tags.GPSLongitude),
-        make: tags.Make ?? null,
-        model: tags.Model ?? null,
-        modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
-        orientation: validate(tags.Orientation)?.toString() ?? null,
-        profileDescription: tags.ProfileDescription || tags.ProfileName || null,
-        projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
-        timeZone: tags.tz ?? null,
-      },
-      tags,
+    const exifData = {
+      // altitude: tags.GPSAltitude ?? null,
+      assetId: asset.id,
+      bitsPerSample: this.getBitsPerSample(tags),
+      colorspace: tags.ColorSpace ?? null,
+      dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
+      exifImageHeight: validate(tags.ImageHeight),
+      exifImageWidth: validate(tags.ImageWidth),
+      exposureTime: tags.ExposureTime ?? null,
+      fileSizeInByte: stats.size,
+      fNumber: validate(tags.FNumber),
+      focalLength: validate(tags.FocalLength),
+      fps: validate(tags.VideoFrameRate),
+      iso: validate(tags.ISO),
+      latitude: validate(tags.GPSLatitude),
+      lensModel: tags.LensModel ?? null,
+      livePhotoCID: (tags.ContentIdentifier || tags.MediaGroupUUID) ?? null,
+      longitude: validate(tags.GPSLongitude),
+      make: tags.Make ?? null,
+      model: tags.Model ?? null,
+      modifyDate: exifDate(tags.ModifyDate) ?? asset.fileModifiedAt,
+      orientation: validate(tags.Orientation)?.toString() ?? null,
+      profileDescription: tags.ProfileDescription || tags.ProfileName || null,
+      projectionType: tags.ProjectionType ? String(tags.ProjectionType).toUpperCase() : null,
+      timeZone: tags.tz ?? null,
     };
+
+    if (exifData.latitude === 0 && exifData.longitude === 0) {
+      this.logger.warn('Exif data has latitude and longitude of 0, setting to null');
+      exifData.latitude = null;
+      exifData.longitude = null;
+    }
+
+    return { exifData, tags };
   }
 
   private getDateTimeOriginal(tags: ImmichTags | Tags | null) {

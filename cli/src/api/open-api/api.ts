@@ -2178,6 +2178,24 @@ export type LibraryType = typeof LibraryType[keyof typeof LibraryType];
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const LogLevel = {
+    Verbose: 'verbose',
+    Debug: 'debug',
+    Log: 'log',
+    Warn: 'warn',
+    Error: 'error',
+    Fatal: 'fatal'
+} as const;
+
+export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
+
+
+/**
+ * 
+ * @export
  * @interface LoginCredentialDto
  */
 export interface LoginCredentialDto {
@@ -3598,6 +3616,12 @@ export interface SystemConfigDto {
     'library': SystemConfigLibraryDto;
     /**
      * 
+     * @type {SystemConfigLoggingDto}
+     * @memberof SystemConfigDto
+     */
+    'logging': SystemConfigLoggingDto;
+    /**
+     * 
      * @type {SystemConfigMachineLearningDto}
      * @memberof SystemConfigDto
      */
@@ -3879,6 +3903,27 @@ export interface SystemConfigLibraryScanDto {
      */
     'enabled': boolean;
 }
+/**
+ * 
+ * @export
+ * @interface SystemConfigLoggingDto
+ */
+export interface SystemConfigLoggingDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigLoggingDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {LogLevel}
+     * @memberof SystemConfigLoggingDto
+     */
+    'level': LogLevel;
+}
+
+
 /**
  * 
  * @export
@@ -18036,7 +18081,7 @@ export const UserApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getProfileImage(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async getProfileImage(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getProfileImage(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -18138,7 +18183,7 @@ export const UserApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProfileImage(requestParameters: UserApiGetProfileImageRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+        getProfileImage(requestParameters: UserApiGetProfileImageRequest, options?: AxiosRequestConfig): AxiosPromise<File> {
             return localVarFp.getProfileImage(requestParameters.id, options).then((request) => request(axios, basePath));
         },
         /**

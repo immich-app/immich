@@ -1,10 +1,10 @@
+import { ImmichLogger } from '@app/infra/logger';
 import {
   CallHandler,
   ExecutionContext,
   HttpException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
@@ -13,7 +13,7 @@ import { routeToErrorMessage } from '../app.utils';
 
 @Injectable()
 export class ErrorInterceptor implements NestInterceptor {
-  private logger = new Logger(ErrorInterceptor.name);
+  private logger = new ImmichLogger(ErrorInterceptor.name);
 
   async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
     return next.handle().pipe(

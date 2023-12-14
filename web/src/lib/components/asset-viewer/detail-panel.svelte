@@ -90,7 +90,13 @@
     unsubscribe();
   });
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    descriptionFocusIn: void;
+    descriptionFocusOut: void;
+    click: AlbumResponseDto;
+    closeViewer: void;
+  }>();
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -118,11 +124,11 @@
   };
 
   const handleFocusIn = () => {
-    dispatch('description-focus-in');
+    dispatch('descriptionFocusIn');
   };
 
   const handleFocusOut = async () => {
-    dispatch('description-focus-out');
+    dispatch('descriptionFocusOut');
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
@@ -242,8 +248,10 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-                on:click={() => dispatch('close-viewer')}
+                href="{AppRoute.PEOPLE}/{person.id}?previousRoute={albumId
+                  ? `${AppRoute.ALBUMS}/${albumId}`
+                  : AppRoute.PHOTOS}"
+                on:click={() => dispatch('closeViewer')}
               >
                 <div class="relative">
                   <ImageThumbnail

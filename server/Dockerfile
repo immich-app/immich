@@ -10,6 +10,7 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
+ENV PATH="${PATH}:/usr/src/app/bin"
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
@@ -23,7 +24,7 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 FROM node:iron-alpine3.18 as web
 
 WORKDIR /usr/src/app
-COPY web/package.json web/package-lock.json ./
+COPY web/package*.json web/svelte.config.js .
 RUN npm ci
 COPY web .
 RUN npm run build

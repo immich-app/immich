@@ -170,7 +170,7 @@
   };
 </script>
 
-<UserPageLayout user={data.user} title={data.meta.title} admin>
+<UserPageLayout title={data.meta.title} admin>
   <svelte:fragment slot="sidebar" />
   <div class="flex justify-end gap-2" slot="buttons">
     <LinkButton on:click={() => handleRepair()} disabled={matches.length === 0 || repairing}>

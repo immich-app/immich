@@ -20,7 +20,7 @@ import { constants } from 'fs/promises';
 import { when } from 'jest-when';
 import { JobName } from '../job';
 import {
-  CommunicationEvent,
+  ClientEvent,
   IAlbumRepository,
   IAssetRepository,
   ICommunicationRepository,
@@ -190,7 +190,7 @@ describe(MetadataService.name, () => {
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(true);
       expect(communicationMock.send).toHaveBeenCalledWith(
-        CommunicationEvent.ASSET_HIDDEN,
+        ClientEvent.ASSET_HIDDEN,
         assetStub.livePhotoMotionAsset.ownerId,
         assetStub.livePhotoMotionAsset.id,
       );
@@ -302,6 +302,18 @@ describe(MetadataService.name, () => {
         fileCreatedAt: assetStub.withLocation.createdAt,
         localDateTime: new Date('2023-02-22T05:06:29.716Z'),
       });
+    });
+
+    it('should discard latitude and longitude on null island', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
+      metadataMock.readTags.mockResolvedValue({
+        GPSLatitude: 0,
+        GPSLongitude: 0,
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ latitude: null, longitude: null }));
     });
 
     it('should not apply motion photos if asset is video', async () => {

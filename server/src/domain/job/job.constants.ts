@@ -49,7 +49,6 @@ export enum JobName {
   // storage template
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
-  SYSTEM_CONFIG_CHANGE = 'system-config-change',
 
   // migration
   QUEUE_MIGRATION = 'queue-migration',
@@ -101,7 +100,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
-  [JobName.SYSTEM_CONFIG_CHANGE]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,

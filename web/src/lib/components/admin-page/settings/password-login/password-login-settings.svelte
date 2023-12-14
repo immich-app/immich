@@ -10,12 +10,21 @@
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let passwordLoginConfig: SystemConfigPasswordLoginDto; // this is the config that is being edited
   export let disabled = false;
 
   let savedConfig: SystemConfigPasswordLoginDto;
   let defaultConfig: SystemConfigPasswordLoginDto;
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
@@ -107,9 +116,8 @@
             />
 
             <SettingButtonsRow
-              on:reset={reset}
+              on:reset={({ detail }) => handleReset(detail)}
               on:save={saveSetting}
-              on:reset-to-default={resetToDefault}
               showResetToDefault={!isEqual(savedConfig, defaultConfig)}
               {disabled}
             />

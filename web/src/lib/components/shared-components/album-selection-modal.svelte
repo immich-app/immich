@@ -12,7 +12,18 @@
   let loading = true;
   let search = '';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    newAlbum: {
+      albumName: string;
+    };
+    album: {
+      album: AlbumResponseDto;
+    };
+    newSharedAlbum: {
+      albumName: string;
+    };
+    close: void;
+  }>();
 
   export let shared: boolean;
 

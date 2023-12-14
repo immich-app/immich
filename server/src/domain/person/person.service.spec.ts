@@ -18,6 +18,7 @@ import {
   personStub,
 } from '@test';
 import { BulkIdErrorReason } from '../asset';
+import { ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAssetRepository,
@@ -203,8 +204,13 @@ describe(PersonService.name, () => {
     it('should serve the thumbnail', async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
-      await sut.getThumbnail(authStub.admin, 'person-1');
-      expect(storageMock.createReadStream).toHaveBeenCalledWith('/path/to/thumbnail.jpg', 'image/jpeg');
+      await expect(sut.getThumbnail(authStub.admin, 'person-1')).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/path/to/thumbnail.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: true,
+        }),
+      );
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
   });

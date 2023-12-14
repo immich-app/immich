@@ -49,7 +49,7 @@
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
+<UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
     <EmptyPlaceholder
       text="Add favorites to quickly find your best pictures and videos"

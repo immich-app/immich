@@ -2,15 +2,17 @@
 sidebar_position: 1
 ---
 
+import AppArchitecture from './img/app-architecture.png';
+
 # Architecture
 
-Immich uses a traditional client-server design, with a dedicated database for data persistence. The frontend clients communicate with backend services over HTTP using REST APIs.
+Immich uses a traditional client-server design, with a dedicated database for data persistence. The frontend clients communicate with backend services over HTTP using REST APIs. Below is a high level diagram of the architecture.
 
 ## High Level Diagram
 
-![Immich Architecture](./img/app-architecture.png)
+<img alt="Immich Architecture" src={AppArchitecture} className="p-4 dark:bg-immich-dark-primary my-4" />
 
-The diagram shows clients communicating with the server via REST, as well as the flow of database between backend services.
+The diagram shows clients communicating with the server's API via REST. The server communicates with downstream systems (i.e. Redis, Postgres, Machine Learning, file system) through repository interfaces. Not shown in the diagram, is that the server is split into two separate containers `immich-server` and `immich-microservices`. The microservices container does not handle API requests or schedule cron jobs, but primarily handles incoming job requests from Redis.
 
 ## Clients
 

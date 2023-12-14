@@ -44,7 +44,6 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       SCHEDULE: "@daily"
-      BACKUP_NUM_KEEP: 7
       BACKUP_DIR: /db_dumps
     volumes:
       - ./db_dumps:/db_dumps

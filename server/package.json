@@ -153,9 +153,6 @@
         "statements": 90
       }
     },
-    "setupFilesAfterEnv": [
-      "<rootDir>/test/setup.ts"
-    ],
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^@test(|/.*)$": "<rootDir>/test/$1",

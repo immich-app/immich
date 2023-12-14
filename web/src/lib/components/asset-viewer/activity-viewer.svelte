@@ -50,7 +50,12 @@
   let message = '';
   let isSendingMessage = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    deleteComment: void;
+    deleteLike: void;
+    addComment: void;
+    close: void;
+  }>();
 
   $: showDeleteReaction = Array(reactions.length).fill(false);
   $: {
