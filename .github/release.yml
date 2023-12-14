@@ -24,3 +24,6 @@ changelog:
     - title: Dependency updates
       labels:
         - renovate
+    - title: Other changes
+      labels:
+        - "*"
