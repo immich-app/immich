@@ -12,8 +12,8 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated, FileResponse } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
