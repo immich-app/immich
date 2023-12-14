@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 from typing import Any, Iterator
 from unittest import mock
 
@@ -8,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from .main import app, init_state
+from .main import app
 from .schemas import ndarray_f32
 
 
@@ -29,9 +28,9 @@ def mock_get_model() -> Iterator[mock.Mock]:
 
 
 @pytest.fixture(scope="session")
-def deployed_app() -> TestClient:
-    init_state()
-    return TestClient(app)
+def deployed_app() -> Iterator[TestClient]:
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture(scope="session")
