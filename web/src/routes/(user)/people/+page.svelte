@@ -26,14 +26,14 @@
   import { searchNameLocal } from '$lib/utils/person';
 
   export let data: PageData;
-  let selectHidden = false;
-  let initialHiddenValues: Record<string, boolean> = {};
-
-  let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
   let people = data.people.people;
-  const peopleCopy = data.people.people;
   let countTotalPeople = data.people.total;
+
+  let selectHidden = false;
+  let initialHiddenValues: Record<string, boolean> = {};
+  let eyeColorMap: Record<string, 'black' | 'white'> = {};
+
   let searchPeopleCopy: PersonResponseDto[] = [];
   let searchName = '';
   let searchWord: string;
@@ -51,9 +51,11 @@
   let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
 
-  people.forEach((person: PersonResponseDto) => {
+  let peopleCopy = data.people.people;
+
+  for (const person of peopleCopy) {
     initialHiddenValues[person.id] = person.isHidden;
-  });
+  }
 
   $: {
     if (searchName) {
@@ -89,7 +91,7 @@
   };
 
   const handleCloseClick = () => {
-    for (const person of people) {
+    for (const person of peopleCopy) {
       person.isHidden = initialHiddenValues[person.id];
     }
     // trigger reactivity
@@ -102,7 +104,7 @@
   };
 
   const handleResetVisibility = () => {
-    for (const person of people) {
+    for (const person of peopleCopy) {
       person.isHidden = initialHiddenValues[person.id];
     }
 
@@ -177,7 +179,7 @@
         mergePersonDto: { ids: [personToMerge.id] },
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
-
+      peopleCopy = peopleCopy.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       notificationController.show({
         message: 'Merge people succesfully',
         type: NotificationType.Info,
@@ -196,6 +198,13 @@
         await api.personApi.updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
         for (const person of people) {
           if (person.id === personToBeMergedIn.id) {
+            peopleCopy = peopleCopy.map((person) => {
+              if (person.id === person.id) {
+                person.name = personName;
+                return person;
+              }
+              return person;
+            });
             person.name = personName;
             break;
           }
@@ -232,6 +241,12 @@
         personUpdateDto: { isHidden: true },
       });
 
+      peopleCopy = peopleCopy.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
       people = people.map((person: PersonResponseDto) => {
         if (person.id === updatedPerson.id) {
           return updatedPerson;
@@ -239,9 +254,9 @@
         return person;
       });
 
-      people.forEach((person: PersonResponseDto) => {
+      for (const person of peopleCopy) {
         initialHiddenValues[person.id] = person.isHidden;
-      });
+      }
 
       showChangeNameModal = false;
 
@@ -345,7 +360,12 @@
         }
         return person;
       });
-
+      peopleCopy = peopleCopy.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
       notificationController.show({
         message: 'Date of birth saved succesfully',
         type: NotificationType.Info,
@@ -369,6 +389,12 @@
       });
 
       people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+      peopleCopy = peopleCopy.map((person: PersonResponseDto) => {
         if (person.id === updatedPerson.id) {
           return updatedPerson;
         }
@@ -523,7 +549,7 @@
     bind:showLoadingSpinner
     bind:toggleVisibility
   >
-    {#each people as person, idx (person.id)}
+    {#each peopleCopy as person, index (person.id)}
       <button
         class="relative h-36 w-36 md:h-48 md:w-48"
         on:click={() => (person.isHidden = !person.isHidden)}
@@ -531,7 +557,7 @@
         on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
       >
         <ImageThumbnail
-          preload={idx < 20}
+          preload={index < 20}
           bind:hidden={person.isHidden}
           shadow
           url={api.getPeopleThumbnailUrl(person.id)}
