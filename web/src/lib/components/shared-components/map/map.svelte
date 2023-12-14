@@ -115,7 +115,7 @@
     attributionControl={false}
     diffStyleUpdates={true}
     let:map
-    on:load={(event) => event.detail.setMaxZoom(14)}
+    on:load={(event) => event.detail.setMaxZoom(18)}
     on:load={(event) => event.detail.on('click', handleMapClick)}
     bind:map
   >
