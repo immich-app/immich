@@ -11,7 +11,9 @@
 
   let showMoreInformation = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    selected: void;
+  }>();
   const onButtonClicked = () => dispatch('selected');
 </script>
 

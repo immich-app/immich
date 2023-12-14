@@ -19,7 +19,9 @@
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    escape: void;
+  }>();
 
   let isShowConfirmation = false;
   let loading = false;

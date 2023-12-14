@@ -18,7 +18,11 @@
 
   let isShowResetPasswordConfirmation = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    resetPasswordSuccess: void;
+    editSuccess: void;
+  }>();
 
   const editUser = async () => {
     try {
@@ -34,7 +38,7 @@
       });
 
       if (status === 200) {
-        dispatch('edit-success');
+        dispatch('editSuccess');
       }
     } catch (error) {
       handleError(error, 'Unable to update user');
@@ -54,7 +58,7 @@
       });
 
       if (status == 200) {
-        dispatch('reset-password-success');
+        dispatch('resetPasswordSuccess');
       }
     } catch (e) {
       console.error('Error reseting user password', e);

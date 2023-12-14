@@ -10,12 +10,21 @@
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let thumbnailConfig: SystemConfigThumbnailDto; // this is the config that is being edited
   export let disabled = false;
 
   let savedConfig: SystemConfigThumbnailDto;
   let defaultConfig: SystemConfigThumbnailDto;
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
@@ -133,9 +142,8 @@
 
         <div class="ml-4">
           <SettingButtonsRow
-            on:reset={reset}
+            on:reset={({ detail }) => handleReset(detail)}
             on:save={saveSetting}
-            on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
             {disabled}
           />

@@ -29,7 +29,10 @@
   let canCopyImagesToClipboard = true;
   let enablePassword = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    escape: void;
+  }>();
 
   const expiredDateOption: ImmichDropDownOption = {
     default: 'Never',

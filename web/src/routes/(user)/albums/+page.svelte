@@ -239,7 +239,7 @@
   <FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
     <EditAlbumForm
       album={selectedAlbum}
-      on:edit-success={() => successModifyAlbum()}
+      on:editSuccess={() => successModifyAlbum()}
       on:cancel={() => (shouldShowEditUserForm = false)}
     />
   </FullScreenModal>

@@ -119,7 +119,7 @@
           <EditUserForm
             user={selectedUser}
             canResetPassword={selectedUser?.id !== $user.id}
-            on:edit-success={onEditUserSuccess}
+            on:editSuccess={onEditUserSuccess}
             on:reset-password-success={onEditPasswordSuccess}
             on:close={() => (shouldShowEditUserForm = false)}
           />

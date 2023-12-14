@@ -23,7 +23,9 @@
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    uploadClicked: void;
+  }>();
 
   const logOut = async () => {
     const { data } = await api.authenticationApi.logout();
