@@ -25,7 +25,7 @@
   let isShowConfirmation = false;
 
   let dispatch = createEventDispatcher<{
-    goBack: void;
+    back: void;
     merge: void;
   }>();
 
@@ -40,7 +40,7 @@
   });
 
   const onClose = () => {
-    dispatch('goBack');
+    dispatch('back');
   };
 
   const handleSwapPeople = () => {

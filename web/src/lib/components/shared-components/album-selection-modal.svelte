@@ -15,7 +15,6 @@
   const dispatch = createEventDispatcher<{
     newAlbum: string;
     album: AlbumResponseDto;
-    newSharedAlbum: string;
     close: void;
   }>();
 
@@ -45,11 +44,7 @@
   };
 
   const handleNew = () => {
-    if (shared) {
-      dispatch('newAlbum', search.length > 0 ? search : '');
-    } else {
-      dispatch('newSharedAlbum', search.length > 0 ? search : '');
-    }
+    dispatch('newAlbum', search.length > 0 ? search : '');
   };
 </script>
 

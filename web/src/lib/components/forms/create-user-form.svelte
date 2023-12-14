@@ -25,7 +25,7 @@
     }
   }
   const dispatch = createEventDispatcher<{
-    userCreated: void;
+    submit: void;
     cancel: void;
   }>();
 
@@ -55,7 +55,7 @@
         if (status === 201) {
           success = 'New user created';
 
-          dispatch('userCreated');
+          dispatch('submit');
 
           isCreatingUser = false;
           return;

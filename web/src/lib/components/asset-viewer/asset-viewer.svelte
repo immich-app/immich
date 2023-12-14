@@ -424,6 +424,13 @@
     addToSharedAlbum = shared;
   };
 
+  const handleNewAlbum = (detail: { name: string; shared: boolean }) => {
+    if (detail.shared) {
+      handleAddToNewAlbum(detail.name);
+    } else {
+    }
+  };
+
   const handleAddToNewAlbum = (albumName: string) => {
     isShowAlbumPicker = false;
 
@@ -573,7 +580,7 @@
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         hasStackChildren={$stackAssetsStore.length > 0}
-        on:goBack={closeViewer}
+        on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
         on:delete={trashOrDelete}
@@ -758,7 +765,6 @@
     <AlbumSelectionModal
       shared={addToSharedAlbum}
       on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
-      on:newSharedAlbum={({ detail }) => handleAddToNewAlbum(detail)}
       on:album={({ detail }) => handleAddToAlbum(detail)}
       on:close={() => (isShowAlbumPicker = false)}
     />

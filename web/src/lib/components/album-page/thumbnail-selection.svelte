@@ -12,7 +12,7 @@
   let selectedThumbnail: AssetResponseDto | undefined;
   const dispatch = createEventDispatcher<{
     close: void;
-    thumbnailSelected: { asset: AssetResponseDto | undefined };
+    thumbnail: AssetResponseDto | undefined;
   }>();
 
   $: isSelected = (id: string): boolean | undefined => {
@@ -38,7 +38,7 @@
         size="sm"
         rounded="lg"
         disabled={selectedThumbnail == undefined}
-        on:click={() => dispatch('thumbnailSelected', { asset: selectedThumbnail })}
+        on:click={() => dispatch('thumbnail', selectedThumbnail)}
       >
         Done
       </Button>

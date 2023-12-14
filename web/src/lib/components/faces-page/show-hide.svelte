@@ -8,10 +8,10 @@
   import { mdiClose, mdiEye, mdiEyeOff, mdiRestart } from '@mdi/js';
 
   const dispatch = createEventDispatcher<{
-    closeClick: void;
-    resetVisibility: void;
-    toggleVisibility: void;
-    doneClick: void;
+    close: void;
+    reset: void;
+    change: void;
+    done: void;
   }>();
 
   export let showLoadingSpinner: boolean;
@@ -26,24 +26,20 @@
     class="sticky top-0 z-10 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
   >
     <div class="flex items-center">
-      <CircleIconButton icon={mdiClose} on:click={() => dispatch('closeClick')} />
+      <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
       <p class="ml-4 hidden sm:block">Show & hide people</p>
     </div>
     <div class="flex items-center justify-end">
       <div class="flex items-center md:mr-8">
-        <CircleIconButton
-          title="Reset people visibility"
-          icon={mdiRestart}
-          on:click={() => dispatch('resetVisibility')}
-        />
+        <CircleIconButton title="Reset people visibility" icon={mdiRestart} on:click={() => dispatch('reset')} />
         <CircleIconButton
           title="Toggle visibility"
           icon={toggleVisibility ? mdiEye : mdiEyeOff}
-          on:click={() => dispatch('toggleVisibility')}
+          on:click={() => dispatch('change')}
         />
       </div>
       {#if !showLoadingSpinner}
-        <IconButton on:click={() => dispatch('doneClick')}>Done</IconButton>
+        <IconButton on:click={() => dispatch('done')}>Done</IconButton>
       {:else}
         <LoadingSpinner />
       {/if}

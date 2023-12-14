@@ -110,7 +110,7 @@
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
         <FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
-          <CreateUserForm on:userCreated={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
+          <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
         </FullScreenModal>
       {/if}
 
