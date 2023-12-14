@@ -20,7 +20,7 @@
   const handleCancel = () => dispatch('cancel');
   const handleSubmit = () => {
     if (apiKeyName) {
-      dispatch('submit', { ...apiKey, name: apiKey.name });
+      dispatch('submit', { ...apiKey, name: apiKeyName });
     } else {
       notificationController.show({
         message: "Your API Key name shouldn't be empty",
