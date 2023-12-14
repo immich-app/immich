@@ -6,7 +6,7 @@ import {
   OnServerEventCallback,
   ServerEvent,
 } from '@app/domain';
-import { Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -20,7 +20,7 @@ import { Server, Socket } from 'socket.io';
 export class CommunicationRepository
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, ICommunicationRepository
 {
-  private logger = new Logger(CommunicationRepository.name);
+  private logger = new ImmichLogger(CommunicationRepository.name);
   private onConnectCallbacks: OnConnectCallback[] = [];
   private onServerEventCallbacks: Record<ServerEvent, OnServerEventCallback[]> = {
     [ServerEvent.CONFIG_UPDATE]: [],

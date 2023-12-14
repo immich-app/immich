@@ -1,5 +1,5 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
@@ -10,6 +10,7 @@ import { mimeTypes } from '../domain.constant';
 import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
+import { ImmichLogger } from '@app/infra/logger';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -33,7 +34,7 @@ import {
 
 @Injectable()
 export class LibraryService {
-  readonly logger = new Logger(LibraryService.name);
+  readonly logger = new ImmichLogger(LibraryService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
 

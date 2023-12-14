@@ -1,5 +1,6 @@
 import { AssetEntity, LibraryType } from '@app/infra/entities';
-import { BadRequestException, Inject, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'path';
@@ -75,7 +76,7 @@ export interface UploadFile {
 }
 
 export class AssetService {
-  private logger = new Logger(AssetService.name);
+  private logger = new ImmichLogger(AssetService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
 

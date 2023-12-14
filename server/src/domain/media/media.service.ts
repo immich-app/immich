@@ -7,7 +7,8 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
-import { Inject, Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
@@ -39,7 +40,7 @@ import {
 
 @Injectable()
 export class MediaService {
-  private logger = new Logger(MediaService.name);
+  private logger = new ImmichLogger(MediaService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
 

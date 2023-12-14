@@ -2,6 +2,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  LogLevel,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -56,6 +57,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     transcode: TranscodePolicy.REQUIRED,
     accel: TranscodeHWAccel.DISABLED,
     tonemap: ToneMapping.HABLE,
+  },
+  logging: {
+    enabled: true,
+    level: LogLevel.LOG,
   },
   machineLearning: {
     enabled: true,
@@ -159,7 +164,7 @@ describe(SystemConfigService.name, () => {
       const validator: SystemConfigValidator = jest.fn();
       sut.addValidator(validator);
       await sut.updateConfig(defaults);
-      expect(validator).toHaveBeenCalledWith(defaults);
+      expect(validator).toHaveBeenCalledWith(defaults, defaults);
     });
   });
 
@@ -279,7 +284,7 @@ describe(SystemConfigService.name, () => {
 
       await expect(sut.updateConfig(updatedConfig)).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(validator).toHaveBeenCalledWith(updatedConfig);
+      expect(validator).toHaveBeenCalledWith(updatedConfig, defaults);
       expect(configMock.saveAll).not.toHaveBeenCalled();
     });
 

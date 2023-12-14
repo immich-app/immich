@@ -7,7 +7,8 @@ import {
 } from '@app/domain';
 import { DatabaseLock, RequireLock } from '@app/infra';
 import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
-import { Inject, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
 import { createReadStream, existsSync } from 'fs';
@@ -31,7 +32,7 @@ export class MetadataRepository implements IMetadataRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  private logger = new Logger(MetadataRepository.name);
+  private logger = new ImmichLogger(MetadataRepository.name);
 
   @RequireLock(DatabaseLock.GeodataImport)
   async init(): Promise<void> {

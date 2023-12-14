@@ -7949,6 +7949,17 @@
         ],
         "type": "string"
       },
+      "LogLevel": {
+        "enum": [
+          "verbose",
+          "debug",
+          "log",
+          "warn",
+          "error",
+          "fatal"
+        ],
+        "type": "string"
+      },
       "LoginCredentialDto": {
         "properties": {
           "email": {
@@ -9039,6 +9050,9 @@
           "library": {
             "$ref": "#/components/schemas/SystemConfigLibraryDto"
           },
+          "logging": {
+            "$ref": "#/components/schemas/SystemConfigLoggingDto"
+          },
           "machineLearning": {
             "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
@@ -9072,6 +9086,7 @@
         },
         "required": [
           "ffmpeg",
+          "logging",
           "machineLearning",
           "map",
           "newVersionCheck",
@@ -9240,6 +9255,21 @@
         "required": [
           "enabled",
           "cronExpression"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLoggingDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "level": {
+            "$ref": "#/components/schemas/LogLevel"
+          }
+        },
+        "required": [
+          "level",
+          "enabled"
         ],
         "type": "object"
       },

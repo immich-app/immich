@@ -2178,6 +2178,24 @@ export type LibraryType = typeof LibraryType[keyof typeof LibraryType];
 /**
  * 
  * @export
+ * @enum {string}
+ */
+
+export const LogLevel = {
+    Verbose: 'verbose',
+    Debug: 'debug',
+    Log: 'log',
+    Warn: 'warn',
+    Error: 'error',
+    Fatal: 'fatal'
+} as const;
+
+export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
+
+
+/**
+ * 
+ * @export
  * @interface LoginCredentialDto
  */
 export interface LoginCredentialDto {
@@ -3579,6 +3597,12 @@ export interface SystemConfigDto {
     'library': SystemConfigLibraryDto;
     /**
      * 
+     * @type {SystemConfigLoggingDto}
+     * @memberof SystemConfigDto
+     */
+    'logging': SystemConfigLoggingDto;
+    /**
+     * 
      * @type {SystemConfigMachineLearningDto}
      * @memberof SystemConfigDto
      */
@@ -3860,6 +3884,27 @@ export interface SystemConfigLibraryScanDto {
      */
     'enabled': boolean;
 }
+/**
+ * 
+ * @export
+ * @interface SystemConfigLoggingDto
+ */
+export interface SystemConfigLoggingDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigLoggingDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {LogLevel}
+     * @memberof SystemConfigLoggingDto
+     */
+    'level': LogLevel;
+}
+
+
 /**
  * 
  * @export

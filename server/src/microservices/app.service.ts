@@ -8,37 +8,33 @@ import {
   MediaService,
   MetadataService,
   PersonService,
-  ServerInfoService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,
   SystemConfigService,
   UserService,
 } from '@app/domain';
-
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  private logger = new Logger(AppService.name);
-
   constructor(
     private auditService: AuditService,
     private assetService: AssetService,
+    private configService: SystemConfigService,
     private jobService: JobService,
     private libraryService: LibraryService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
     private personService: PersonService,
-    private serverInfoService: ServerInfoService,
     private smartInfoService: SmartInfoService,
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
-    private systemConfigService: SystemConfigService,
     private userService: UserService,
   ) {}
 
   async init() {
+    await this.configService.init();
     await this.jobService.registerHandlers({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),

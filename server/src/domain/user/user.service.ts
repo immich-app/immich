@@ -1,5 +1,6 @@
 import { UserEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { AuthDto } from '../auth';
 import { ImmichFileResponse } from '../domain.util';
@@ -21,7 +22,7 @@ import { UserCore } from './user.core';
 
 @Injectable()
 export class UserService {
-  private logger = new Logger(UserService.name);
+  private logger = new ImmichLogger(UserService.name);
   private userCore: UserCore;
 
   constructor(

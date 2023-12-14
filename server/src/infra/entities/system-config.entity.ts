@@ -45,6 +45,12 @@ export enum SystemConfigKey {
   JOB_LIBRARY_CONCURRENCY = 'job.library.concurrency',
   JOB_MIGRATION_CONCURRENCY = 'job.migration.concurrency',
 
+  LIBRARY_SCAN_ENABLED = 'library.scan.enabled',
+  LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
+
+  LOGGING_ENABLED = 'logging.enabled',
+  LOGGING_LEVEL = 'logging.level',
+
   MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
   MACHINE_LEARNING_URL = 'machineLearning.url',
 
@@ -94,9 +100,6 @@ export enum SystemConfigKey {
   TRASH_DAYS = 'trash.days',
 
   THEME_CUSTOM_CSS = 'theme.customCss',
-
-  LIBRARY_SCAN_ENABLED = 'library.scan.enabled',
-  LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
 }
 
 export enum TranscodePolicy {
@@ -144,6 +147,15 @@ export enum Colorspace {
   P3 = 'p3',
 }
 
+export enum LogLevel {
+  VERBOSE = 'verbose',
+  DEBUG = 'debug',
+  LOG = 'log',
+  WARN = 'warn',
+  ERROR = 'error',
+  FATAL = 'fatal',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -165,6 +177,10 @@ export interface SystemConfig {
     tonemap: ToneMapping;
   };
   job: Record<QueueName, { concurrency: number }>;
+  logging: {
+    enabled: boolean;
+    level: LogLevel;
+  };
   machineLearning: {
     enabled: boolean;
     url: string;
