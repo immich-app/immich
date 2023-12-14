@@ -109,6 +109,7 @@ describe(PersonService.name, () => {
   describe('getAll', () => {
     it('should get all people with thumbnails', async () => {
       personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.noThumbnail]);
+      personMock.getNumberOfPeople.mockResolvedValue(1);
       await expect(sut.getAll(authStub.admin, { withHidden: undefined })).resolves.toEqual({
         total: 1,
         visible: 1,
@@ -121,6 +122,7 @@ describe(PersonService.name, () => {
     });
     it('should get all visible people with thumbnails', async () => {
       personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.hidden]);
+      personMock.getNumberOfPeople.mockResolvedValue(2);
       await expect(sut.getAll(authStub.admin, { withHidden: false })).resolves.toEqual({
         total: 2,
         visible: 1,
@@ -133,6 +135,7 @@ describe(PersonService.name, () => {
     });
     it('should get all hidden and visible people with thumbnails', async () => {
       personMock.getAllForUser.mockResolvedValue([personStub.withName, personStub.hidden]);
+      personMock.getNumberOfPeople.mockResolvedValue(2);
       await expect(sut.getAll(authStub.admin, { withHidden: true })).resolves.toEqual({
         total: 2,
         visible: 1,
