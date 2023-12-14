@@ -55,7 +55,6 @@
   <AlbumSelectionModal
     {shared}
     on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
-    on:newSharedAlbum={({ detail }) => handleAddToNewAlbum(detail)}
     on:album={({ detail }) => handleAddToAlbum(detail)}
     on:close={handleHideAlbumPicker}
   />
