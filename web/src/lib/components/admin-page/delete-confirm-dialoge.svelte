@@ -7,21 +7,21 @@
   export let user: UserResponseDto;
 
   const dispatch = createEventDispatcher<{
-    userDeleteSuccess: void;
-    userDeleteFail: void;
+    success: void;
+    fail: void;
   }>();
 
   const deleteUser = async () => {
     try {
       const deletedUser = await api.userApi.deleteUser({ id: user.id });
       if (deletedUser.data.deletedAt != null) {
-        dispatch('userDeleteSuccess');
+        dispatch('success');
       } else {
-        dispatch('userDeleteFail');
+        dispatch('fail');
       }
     } catch (error) {
       handleError(error, 'Unable to delete user');
-      dispatch('userDeleteFail');
+      dispatch('fail');
     }
   };
 </script>
