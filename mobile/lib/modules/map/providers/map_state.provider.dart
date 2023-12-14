@@ -44,7 +44,7 @@ class MapStateNotifier extends StateNotifier<MapState> {
       state.mapStyle != null && state.mapStyle!.rasterTileProvider != null;
 
   double get maxZoom =>
-      (isRaster ? state.mapStyle!.rasterTileProvider!.maximumZoom : 14)
+      (isRaster ? state.mapStyle!.rasterTileProvider!.maximumZoom : 18)
           .toDouble();
 
   void switchTheme(bool isDarkTheme) {
