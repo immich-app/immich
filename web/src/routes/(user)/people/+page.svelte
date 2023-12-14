@@ -35,7 +35,6 @@
   const peopleCopy = data.people.people;
   let countTotalPeople = data.people.total;
   let countVisiblePeople = data.people.visible;
-  let numberOfPeople = data.people.numberOfPeople;
   let searchPeopleCopy: PersonResponseDto[] = [];
   let searchName = '';
   let searchWord: string;
@@ -406,7 +405,7 @@
 
 <UserPageLayout
   title="People"
-  titleAltText={numberOfPeople !== 0 ? `${numberOfPeople} ${numberOfPeople > 1 ? 'people' : 'person'}` : undefined}
+  titleAltText={countTotalPeople !== 0 ? `${countTotalPeople} ${countTotalPeople > 1 ? 'people' : 'person'}` : undefined}
 >
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}

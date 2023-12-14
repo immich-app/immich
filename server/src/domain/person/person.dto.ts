@@ -132,9 +132,6 @@ export class PeopleResponseDto {
   visible!: number;
 
   people!: PersonResponseDto[];
-
-  @ApiProperty({ type: 'integer' })
-  numberOfPeople!: number;
 }
 
 export function mapPerson(person: PersonEntity): PersonResponseDto {

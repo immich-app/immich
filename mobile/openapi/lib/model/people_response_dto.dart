@@ -13,13 +13,10 @@ part of openapi.api;
 class PeopleResponseDto {
   /// Returns a new [PeopleResponseDto] instance.
   PeopleResponseDto({
-    required this.numberOfPeople,
     this.people = const [],
     required this.total,
     required this.visible,
   });
-
-  int numberOfPeople;
 
   List<PersonResponseDto> people;
 
@@ -29,7 +26,6 @@ class PeopleResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
-     other.numberOfPeople == numberOfPeople &&
      other.people == people &&
      other.total == total &&
      other.visible == visible;
@@ -37,17 +33,15 @@ class PeopleResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (numberOfPeople.hashCode) +
     (people.hashCode) +
     (total.hashCode) +
     (visible.hashCode);
 
   @override
-  String toString() => 'PeopleResponseDto[numberOfPeople=$numberOfPeople, people=$people, total=$total, visible=$visible]';
+  String toString() => 'PeopleResponseDto[people=$people, total=$total, visible=$visible]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'numberOfPeople'] = this.numberOfPeople;
       json[r'people'] = this.people;
       json[r'total'] = this.total;
       json[r'visible'] = this.visible;
@@ -62,7 +56,6 @@ class PeopleResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PeopleResponseDto(
-        numberOfPeople: mapValueOfType<int>(json, r'numberOfPeople')!,
         people: PersonResponseDto.listFromJson(json[r'people']),
         total: mapValueOfType<int>(json, r'total')!,
         visible: mapValueOfType<int>(json, r'visible')!,
@@ -113,7 +106,6 @@ class PeopleResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'numberOfPeople',
     'people',
     'total',
     'visible',

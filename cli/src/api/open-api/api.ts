@@ -2583,12 +2583,6 @@ export type PathType = typeof PathType[keyof typeof PathType];
 export interface PeopleResponseDto {
     /**
      * 
-     * @type {number}
-     * @memberof PeopleResponseDto
-     */
-    'numberOfPeople': number;
-    /**
-     * 
      * @type {Array<PersonResponseDto>}
      * @memberof PeopleResponseDto
      */

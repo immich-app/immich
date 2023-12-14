@@ -8246,9 +8246,6 @@
       },
       "PeopleResponseDto": {
         "properties": {
-          "numberOfPeople": {
-            "type": "integer"
-          },
           "people": {
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
@@ -8265,7 +8262,6 @@
         "required": [
           "total",
           "visible",
-          "numberOfPeople",
           "people"
         ],
         "type": "object"
