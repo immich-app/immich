@@ -424,13 +424,6 @@
     addToSharedAlbum = shared;
   };
 
-  const handleNewAlbum = (detail: { name: string; shared: boolean }) => {
-    if (detail.shared) {
-      handleAddToNewAlbum(detail.name);
-    } else {
-    }
-  };
-
   const handleAddToNewAlbum = (albumName: string) => {
     isShowAlbumPicker = false;
 
