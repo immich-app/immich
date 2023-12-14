@@ -71,7 +71,7 @@
 <div
   class="relative max-h-screen w-[500px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
 >
-  <div class="absolute inset-y-0 right-0 px-2 py-2 h-fit">
+  <div class="absolute top-0 right-0 px-2 py-2 h-fit">
     <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
   </div>
 
