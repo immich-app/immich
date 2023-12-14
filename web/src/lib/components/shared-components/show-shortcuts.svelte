@@ -19,7 +19,9 @@
       { key: ['Del'], action: 'Delete Asset' },
     ],
   };
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+  }>();
 </script>
 
 <FullScreenModal on:clickOutside={() => dispatch('close')} on:escape={() => dispatch('close')}>

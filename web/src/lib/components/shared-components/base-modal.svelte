@@ -7,7 +7,10 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiClose } from '@mdi/js';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    escape: void;
+    close: void;
+  }>();
   export let zIndex = 9999;
   export let ignoreClickOutside = false;
 

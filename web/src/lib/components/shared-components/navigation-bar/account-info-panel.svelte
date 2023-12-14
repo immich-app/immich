@@ -16,7 +16,10 @@
 
   let isShowSelectAvatar = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    logout: void;
+    close: void;
+  }>();
 
   const handleSaveProfile = async (color: UserAvatarColor) => {
     try {

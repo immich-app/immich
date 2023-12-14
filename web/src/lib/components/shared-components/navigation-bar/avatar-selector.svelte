@@ -8,7 +8,10 @@
 
   export let user: UserResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    choose: UserAvatarColor;
+  }>();
   const colors: UserAvatarColor[] = Object.values(UserAvatarColor);
 </script>
 

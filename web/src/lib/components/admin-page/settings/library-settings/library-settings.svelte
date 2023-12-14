@@ -11,6 +11,7 @@
   import { fade } from 'svelte/transition';
   import { handleError } from '../../../../utils/handle-error';
   import SettingAccordion from '../setting-accordion.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let libraryConfig: SystemConfigLibraryDto; // this is the config that is being edited
   export let disabled = false;
@@ -24,6 +25,14 @@
 
   let savedConfig: SystemConfigLibraryDto;
   let defaultConfig: SystemConfigLibraryDto;
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
@@ -131,9 +140,8 @@
 
           <div class="ml-4">
             <SettingButtonsRow
-              on:reset={reset}
+              on:reset={({ detail }) => handleReset(detail)}
               on:save={saveSetting}
-              on:reset-to-default={resetToDefault}
               showResetToDefault={!isEqual(savedConfig, defaultConfig)}
               {disabled}
             />
