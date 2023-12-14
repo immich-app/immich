@@ -72,7 +72,6 @@ export class PersonService {
       withHidden: dto.withHidden || false,
     });
     const numberOfPeople = await this.repository.getNumberOfPeople(auth.user.id);
-    console.log(numberOfPeople);
     const persons: PersonResponseDto[] = people
       // with thumbnails
       .filter((person) => !!person.thumbnailPath)
