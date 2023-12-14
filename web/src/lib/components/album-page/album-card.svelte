@@ -14,6 +14,7 @@
   export let isSharingView = false;
   export let showItemCount = true;
   export let showContextMenu = true;
+  export let preload = false;
   let showVerticalDots = false;
 
   $: imageData = album.albumThumbnailAssetId
@@ -83,6 +84,7 @@
 
   <div class={`relative aspect-square`}>
     <img
+      loading={preload ? 'eager' : 'lazy'}
       src={imageData}
       alt={album.id}
       class={`z-0 h-full w-full rounded-3xl object-cover transition-all duration-300 hover:shadow-lg`}
