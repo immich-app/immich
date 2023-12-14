@@ -405,7 +405,9 @@
 
 <UserPageLayout
   title="People"
-  titleAltText={countTotalPeople !== 0 ? `${countTotalPeople} ${countTotalPeople > 1 ? 'people' : 'person'}` : undefined}
+  titleAltText={countTotalPeople !== 0
+    ? `${countTotalPeople} ${countTotalPeople > 1 ? 'people' : 'person'}`
+    : undefined}
 >
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
