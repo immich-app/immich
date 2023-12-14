@@ -6,16 +6,16 @@
   export let user: UserResponseDto;
 
   const dispatch = createEventDispatcher<{
-    userRestoreSuccess: void;
-    userRestoreFail: void;
+    success: void;
+    fail: void;
   }>();
 
   const restoreUser = async () => {
     const restoredUser = await api.userApi.restoreUser({ id: user.id });
     if (restoredUser.data.deletedAt == null) {
-      dispatch('userRestoreSuccess');
+      dispatch('success');
     } else {
-      dispatch('userRestoreFail');
+      dispatch('fail');
     }
   };
 </script>

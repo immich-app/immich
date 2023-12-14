@@ -138,8 +138,8 @@
       {#if shouldShowRestoreDialog}
         <RestoreDialogue
           user={selectedUser}
-          on:userRestoreSuccess={onUserRestoreSuccess}
-          on:userRestoreFail={onUserRestoreFail}
+          on:success={onUserRestoreSuccess}
+          on:fail={onUserRestoreFail}
           on:cancel={() => (shouldShowRestoreDialog = false)}
         />
       {/if}
