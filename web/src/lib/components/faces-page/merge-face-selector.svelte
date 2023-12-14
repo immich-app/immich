@@ -24,7 +24,10 @@
   let screenHeight: number;
   let isShowConfirmation = false;
 
-  let dispatch = createEventDispatcher();
+  let dispatch = createEventDispatcher<{
+    goBack: void;
+    merge: void;
+  }>();
 
   $: hasSelection = selectedPeople.length > 0;
   $: unselectedPeople = people.filter(
@@ -37,7 +40,7 @@
   });
 
   const onClose = () => {
-    dispatch('go-back');
+    dispatch('goBack');
   };
 
   const handleSwapPeople = () => {

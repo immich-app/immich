@@ -42,9 +42,8 @@
     });
   };
 
-  const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
+  const handleAddToAlbum = async (album: AlbumResponseDto) => {
     showAlbumPicker = false;
-    const album = event.detail.album;
     const assetIds = Array.from(getAssets()).map((asset) => asset.id);
     await addAssetsToAlbum(album.id, assetIds);
     clearSelect();
@@ -58,7 +57,7 @@
     {shared}
     on:newAlbum={handleAddToNewAlbum}
     on:newSharedAlbum={handleAddToNewAlbum}
-    on:album={handleAddToAlbum}
+    on:album={({ detail }) => handleAddToAlbum(detail)}
     on:close={handleHideAlbumPicker}
   />
 {/if}

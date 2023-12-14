@@ -13,7 +13,9 @@
 
   let appBarBorder = 'bg-immich-bg border border-transparent';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    closeButtonClick: void;
+  }>();
 
   const onScroll = () => {
     if (window.pageYOffset > 80) {
@@ -50,7 +52,7 @@
     <div class="flex place-items-center gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
         <CircleIconButton
-          on:click={() => dispatch('close-button-click')}
+          on:click={() => dispatch('closeButtonClick')}
           icon={backIcon}
           backgroundColor={'transparent'}
           hoverColor={'#e2e7e9'}

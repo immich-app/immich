@@ -374,7 +374,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} on:merge={handleMerge} />
+  <MergeFaceSelector person={data.person} on:goBack={handleGoBack} on:merge={handleMerge} />
 {/if}
 
 <header>

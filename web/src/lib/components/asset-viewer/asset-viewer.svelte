@@ -424,19 +424,17 @@
     addToSharedAlbum = shared;
   };
 
-  const handleAddToNewAlbum = (event: CustomEvent) => {
+  const handleAddToNewAlbum = (albumName: string) => {
     isShowAlbumPicker = false;
 
-    const { albumName }: { albumName: string } = event.detail;
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
       const album = response.data;
       goto(`${AppRoute.ALBUMS}/${album.id}`);
     });
   };
 
-  const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
+  const handleAddToAlbum = async (album: AlbumResponseDto) => {
     isShowAlbumPicker = false;
-    const album = event.detail.album;
 
     await addAssetsToAlbum(album.id, [asset.id]);
     await getAllAlbums();
@@ -759,9 +757,9 @@
   {#if isShowAlbumPicker}
     <AlbumSelectionModal
       shared={addToSharedAlbum}
-      on:newAlbum={handleAddToNewAlbum}
-      on:newSharedAlbum={handleAddToNewAlbum}
-      on:album={handleAddToAlbum}
+      on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
+      on:newSharedAlbum={({ detail }) => handleAddToNewAlbum(detail)}
+      on:album={({ detail }) => handleAddToAlbum(detail)}
       on:close={() => (isShowAlbumPicker = false)}
     />
   {/if}
@@ -784,11 +782,7 @@
   {/if}
 
   {#if isShowProfileImageCrop}
-    <ProfileImageCropper
-      {asset}
-      on:close={() => (isShowProfileImageCrop = false)}
-      on:close-viewer={handleCloseViewer}
-    />
+    <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
   {/if}
 </section>
 

@@ -7,7 +7,12 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiClose, mdiEye, mdiEyeOff, mdiRestart } from '@mdi/js';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    closeClick: void;
+    resetVisibility: void;
+    toggleVisibility: void;
+    doneClick: void;
+  }>();
 
   export let showLoadingSpinner: boolean;
   export let toggleVisibility: boolean;
@@ -29,12 +34,12 @@
         <CircleIconButton
           title="Reset people visibility"
           icon={mdiRestart}
-          on:click={() => dispatch('reset-visibility')}
+          on:click={() => dispatch('resetVisibility')}
         />
         <CircleIconButton
           title="Toggle visibility"
           icon={toggleVisibility ? mdiEye : mdiEyeOff}
-          on:click={() => dispatch('toggle-visibility')}
+          on:click={() => dispatch('toggleVisibility')}
         />
       </div>
       {#if !showLoadingSpinner}

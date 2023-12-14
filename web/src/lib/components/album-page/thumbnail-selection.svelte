@@ -10,7 +10,10 @@
   export let album: AlbumResponseDto;
 
   let selectedThumbnail: AssetResponseDto | undefined;
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    thumbnailSelected: { asset: AssetResponseDto | undefined };
+  }>();
 
   $: isSelected = (id: string): boolean | undefined => {
     if (!selectedThumbnail && album.albumThumbnailAssetId == id) {
@@ -35,7 +38,7 @@
         size="sm"
         rounded="lg"
         disabled={selectedThumbnail == undefined}
-        on:click={() => dispatch('thumbnail-selected', { asset: selectedThumbnail })}
+        on:click={() => dispatch('thumbnailSelected', { asset: selectedThumbnail })}
       >
         Done
       </Button>

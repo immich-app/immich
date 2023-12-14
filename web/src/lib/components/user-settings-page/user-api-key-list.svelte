@@ -13,7 +13,7 @@
 
   export let keys: APIKeyResponseDto[];
 
-  let newKey: Partial<APIKeyResponseDto> | null = null;
+  let newKey: APIKeyResponseDto | null = null;
   let editKey: APIKeyResponseDto | null = null;
   let deleteKey: APIKeyResponseDto | null = null;
   let secret = '';
@@ -112,7 +112,7 @@
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button size="sm" on:click={() => (newKey = { name: 'API Key' })}>New API Key</Button>
+      <Button size="sm" on:click={() => (newKey ? (newKey.name = 'API Key') : '')}>New API Key</Button>
     </div>
 
     {#if keys.length > 0}

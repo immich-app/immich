@@ -440,8 +440,8 @@
   <ShowHide
     on:doneClick={handleDoneClick}
     on:closeClick={handleCloseClick}
-    on:reset-visibility={handleResetVisibility}
-    on:toggle-visibility={handleToggleVisibility}
+    on:resetVisibility={handleResetVisibility}
+    on:toggleVisibility={handleToggleVisibility}
     bind:showLoadingSpinner
     bind:toggleVisibility
   >

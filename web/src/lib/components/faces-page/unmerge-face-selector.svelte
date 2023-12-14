@@ -28,7 +28,10 @@
     ? people.filter((person) => selectedPerson && person.id !== selectedPerson.id && personAssets.id !== person.id)
     : people;
 
-  let dispatch = createEventDispatcher();
+  let dispatch = createEventDispatcher<{
+    confirm: void;
+    close: void;
+  }>();
 
   const selectedPeople: AssetFaceUpdateItem[] = [];
 

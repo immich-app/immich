@@ -6,19 +6,22 @@
 
   export let user: UserResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    userDeleteSuccess: void;
+    userDeleteFail: void;
+  }>();
 
   const deleteUser = async () => {
     try {
       const deletedUser = await api.userApi.deleteUser({ id: user.id });
       if (deletedUser.data.deletedAt != null) {
-        dispatch('user-delete-success');
+        dispatch('userDeleteSuccess');
       } else {
-        dispatch('user-delete-fail');
+        dispatch('userDeleteFail');
       }
     } catch (error) {
       handleError(error, 'Unable to delete user');
-      dispatch('user-delete-fail');
+      dispatch('userDeleteFail');
     }
   };
 </script>
