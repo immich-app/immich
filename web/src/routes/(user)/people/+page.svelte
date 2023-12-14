@@ -20,8 +20,10 @@
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
+  import { mdiAccountOff, mdiClose, mdiEyeOutline, mdiMagnify } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { searchNameLocal } from '$lib/utils/person';
 
   export let data: PageData;
   let selectHidden = false;
@@ -30,8 +32,14 @@
   let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
   let people = data.people.people;
+  const peopleCopy = data.people.people;
   let countTotalPeople = data.people.total;
   let countVisiblePeople = data.people.visible;
+  let numberOfPeople = data.people.numberOfPeople;
+  let searchPeopleCopy: PersonResponseDto[] = [];
+  let searchName = '';
+  let searchWord: string;
+  let isSearchingPeople = false;
 
   let showLoadingSpinner = false;
   let toggleVisibility = false;
@@ -48,6 +56,14 @@
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
   });
+
+  $: {
+    if (searchName) {
+      people = searchNameLocal(searchName, searchPeopleCopy, 10);
+    } else {
+      people = peopleCopy;
+    }
+  }
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
@@ -248,6 +264,37 @@
     goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge&previousRoute=${AppRoute.PEOPLE}`);
   };
 
+  const resetSearch = () => {
+    searchName = '';
+    searchPeopleCopy = [];
+  };
+
+  const searchPeople = async (force: boolean) => {
+    if (searchName === '') {
+      people = peopleCopy;
+      return;
+    }
+    if (!force) {
+      if (people.length < 20 && searchName.startsWith(searchWord)) {
+        return;
+      }
+    }
+
+    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    try {
+      const { data } = await api.searchApi.searchPerson({ name: searchName, withHidden: false });
+      people = data;
+      searchPeopleCopy = data;
+      searchWord = searchName;
+    } catch (error) {
+      handleError(error, "Can't search people");
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    isSearchingPeople = false;
+  };
+
   const submitNameChange = async () => {
     potentialMergePeople = [];
     showChangeNameModal = false;
@@ -357,15 +404,48 @@
   </FullScreenModal>
 {/if}
 
-<UserPageLayout title="People">
+<UserPageLayout
+  title="People"
+  titleAltText={numberOfPeople !== 0 ? `${numberOfPeople} ${numberOfPeople > 1 ? 'people' : 'person'}` : undefined}
+>
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
-      <IconButton on:click={() => (selectHidden = !selectHidden)}>
-        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-          <Icon path={mdiEyeOutline} size="18" />
-          <p class="ml-2">Show & hide people</p>
+      <div class="flex gap-2 items-center justify-center">
+        <div
+          class="flex items-center text-sm w-40 sm:w-48 md:w-80 h-10 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 gap-2 place-items-center"
+        >
+          <button on:click={() => searchPeople(true)}>
+            <div class="w-fit">
+              <Icon path={mdiMagnify} size="24" />
+            </div>
+          </button>
+          <!-- svelte-ignore a11y-autofocus -->
+          <input
+            autofocus
+            class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
+            type="text"
+            placeholder="Search names"
+            bind:value={searchName}
+            on:input={() => searchPeople(false)}
+          />
+          {#if searchName}
+            <button on:click={resetSearch}>
+              <Icon path={mdiClose} />
+            </button>
+          {/if}
+          {#if isSearchingPeople}
+            <div class="flex place-items-center">
+              <LoadingSpinner />
+            </div>
+          {/if}
         </div>
-      </IconButton>
+        <IconButton on:click={() => (selectHidden = !selectHidden)}>
+          <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+            <Icon path={mdiEyeOutline} size="18" />
+            <p class="ml-2">Show & hide people</p>
+          </div>
+        </IconButton>
+      </div>
     {/if}
   </svelte:fragment>
 

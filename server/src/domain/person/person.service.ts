@@ -71,12 +71,15 @@ export class PersonService {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden: dto.withHidden || false,
     });
+    const numberOfPeople = await this.repository.getNumberOfPeople(auth.user.id);
+    console.log(numberOfPeople);
     const persons: PersonResponseDto[] = people
       // with thumbnails
       .filter((person) => !!person.thumbnailPath)
       .map((person) => mapPerson(person));
 
     return {
+      numberOfPeople,
       people: persons.filter((person) => dto.withHidden || !person.isHidden),
       total: persons.length,
       visible: persons.filter((person: PersonResponseDto) => !person.isHidden).length,
