@@ -119,7 +119,6 @@
 
     try {
       const libraryId = libraries[updateLibraryIndex].id;
-      console.log(event);
       await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
     } catch (error) {
       handleError(error, 'Unable to update library');
