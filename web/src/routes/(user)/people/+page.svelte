@@ -48,6 +48,7 @@
   let visiblePeopleGridWidth: number;
   let allPeopleGridWidth: number;
   let innerWidth: number;
+  let thumbnailWidth: string | null = null;
 
   $: thumbnailWidth = selectHidden
     ? calculateOptimalThumbnailWidth(allPeopleGridWidth, innerWidth)
@@ -397,7 +398,7 @@
     {/if}
   </svelte:fragment>
 
-  {#if countVisiblePeople > 0}
+  {#if countVisiblePeople > 0 && thumbnailWidth}
     <div class="flex flex-row flex-wrap gap-1" bind:clientWidth={visiblePeopleGridWidth}>
       {#each people as person, idx (person.id)}
         {#if !person.isHidden}
@@ -464,7 +465,7 @@
     />
   {/if}
 </UserPageLayout>
-{#if selectHidden}
+{#if selectHidden && thumbnailWidth}
   <ShowHide
     on:doneClick={handleDoneClick}
     on:closeClick={handleCloseClick}
