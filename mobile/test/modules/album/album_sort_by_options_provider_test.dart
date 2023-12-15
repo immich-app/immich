@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album_sort_by_options.provider.dart';
@@ -41,23 +40,32 @@ void main() {
           album.assets.saveSync();
         }
       });
-      expect(4, db.albums.countSync());
-      expect(2, db.assets.countSync());
+      expect(db.albums.countSync(), 4);
+      expect(db.assets.countSync(), 2);
     });
 
     group("Album sort - Created Time", () {
       const created = AlbumSortMode.created;
       test("Created time - ASC", () {
         final sorted = created.sortFn(albums, false);
-        expect(sorted.isSortedBy((a) => a.createdAt), true);
+        final sortedList = [
+          AlbumStub.emptyAlbum,
+          AlbumStub.twoAsset,
+          AlbumStub.oneAsset,
+          AlbumStub.sharedWithUser,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
 
       test("Created time - DESC", () {
         final sorted = created.sortFn(albums, true);
-        expect(
-          sorted.isSorted((b, a) => a.createdAt.compareTo(b.createdAt)),
-          true,
-        );
+        final sortedList = [
+          AlbumStub.sharedWithUser,
+          AlbumStub.oneAsset,
+          AlbumStub.twoAsset,
+          AlbumStub.emptyAlbum,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
     });
 
@@ -65,18 +73,24 @@ void main() {
       const assetCount = AlbumSortMode.assetCount;
       test("Asset Count - ASC", () {
         final sorted = assetCount.sortFn(albums, false);
-        expect(
-          sorted.isSorted((a, b) => a.assetCount.compareTo(b.assetCount)),
-          true,
-        );
+        final sortedList = [
+          AlbumStub.emptyAlbum,
+          AlbumStub.sharedWithUser,
+          AlbumStub.oneAsset,
+          AlbumStub.twoAsset,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
 
       test("Asset Count - DESC", () {
         final sorted = assetCount.sortFn(albums, true);
-        expect(
-          sorted.isSorted((b, a) => a.assetCount.compareTo(b.assetCount)),
-          true,
-        );
+        final sortedList = [
+          AlbumStub.twoAsset,
+          AlbumStub.oneAsset,
+          AlbumStub.sharedWithUser,
+          AlbumStub.emptyAlbum,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
     });
 
@@ -84,18 +98,24 @@ void main() {
       const lastModified = AlbumSortMode.lastModified;
       test("Last modified - ASC", () {
         final sorted = lastModified.sortFn(albums, false);
-        expect(
-          sorted.isSorted((a, b) => a.modifiedAt.compareTo(b.modifiedAt)),
-          true,
-        );
+        final sortedList = [
+          AlbumStub.twoAsset,
+          AlbumStub.emptyAlbum,
+          AlbumStub.sharedWithUser,
+          AlbumStub.oneAsset,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
 
       test("Last modified - DESC", () {
         final sorted = lastModified.sortFn(albums, true);
-        expect(
-          sorted.isSorted((b, a) => a.modifiedAt.compareTo(b.modifiedAt)),
-          true,
-        );
+        final sortedList = [
+          AlbumStub.oneAsset,
+          AlbumStub.sharedWithUser,
+          AlbumStub.emptyAlbum,
+          AlbumStub.twoAsset,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
     });
 
@@ -103,18 +123,24 @@ void main() {
       const created = AlbumSortMode.created;
       test("Created - ASC", () {
         final sorted = created.sortFn(albums, false);
-        expect(
-          sorted.isSorted((a, b) => a.createdAt.compareTo(b.createdAt)),
-          true,
-        );
+        final sortedList = [
+          AlbumStub.emptyAlbum,
+          AlbumStub.twoAsset,
+          AlbumStub.oneAsset,
+          AlbumStub.sharedWithUser,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
 
       test("Created - DESC", () {
         final sorted = created.sortFn(albums, true);
-        expect(
-          sorted.isSorted((b, a) => a.createdAt.compareTo(b.createdAt)),
-          true,
-        );
+        final sortedList = [
+          AlbumStub.sharedWithUser,
+          AlbumStub.oneAsset,
+          AlbumStub.twoAsset,
+          AlbumStub.emptyAlbum,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
     });
 
@@ -123,28 +149,24 @@ void main() {
 
       test("Most Recent - ASC", () {
         final sorted = mostRecent.sortFn(albums, false);
-        expect(
-          sorted,
-          [
-            AlbumStub.sharedWithUser,
-            AlbumStub.twoAsset,
-            AlbumStub.oneAsset,
-            AlbumStub.emptyAlbum,
-          ],
-        );
+        final sortedList = [
+          AlbumStub.sharedWithUser,
+          AlbumStub.twoAsset,
+          AlbumStub.oneAsset,
+          AlbumStub.emptyAlbum,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
 
       test("Most Recent - DESC", () {
         final sorted = mostRecent.sortFn(albums, true);
-        expect(
-          sorted,
-          [
-            AlbumStub.emptyAlbum,
-            AlbumStub.oneAsset,
-            AlbumStub.twoAsset,
-            AlbumStub.sharedWithUser,
-          ],
-        );
+        final sortedList = [
+          AlbumStub.emptyAlbum,
+          AlbumStub.oneAsset,
+          AlbumStub.twoAsset,
+          AlbumStub.sharedWithUser,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
     });
 
@@ -153,28 +175,24 @@ void main() {
 
       test("Most Oldest - ASC", () {
         final sorted = mostOldest.sortFn(albums, false);
-        expect(
-          sorted,
-          [
-            AlbumStub.twoAsset,
-            AlbumStub.emptyAlbum,
-            AlbumStub.oneAsset,
-            AlbumStub.sharedWithUser,
-          ],
-        );
+        final sortedList = [
+          AlbumStub.twoAsset,
+          AlbumStub.emptyAlbum,
+          AlbumStub.oneAsset,
+          AlbumStub.sharedWithUser,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
 
       test("Most Oldest - DESC", () {
         final sorted = mostOldest.sortFn(albums, true);
-        expect(
-          sorted,
-          [
-            AlbumStub.sharedWithUser,
-            AlbumStub.oneAsset,
-            AlbumStub.emptyAlbum,
-            AlbumStub.twoAsset,
-          ],
-        );
+        final sortedList = [
+          AlbumStub.sharedWithUser,
+          AlbumStub.oneAsset,
+          AlbumStub.emptyAlbum,
+          AlbumStub.twoAsset,
+        ];
+        expect(sorted, orderedEquals(sortedList));
       });
     });
   });
@@ -278,7 +296,7 @@ void main() {
         () => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortReverse),
       ).thenReturn(false);
 
-      expect(container.read(albumSortOrderProvider), false);
+      expect(container.read(albumSortOrderProvider), isFalse);
     });
 
     test('Properly saves the correct order', () {
