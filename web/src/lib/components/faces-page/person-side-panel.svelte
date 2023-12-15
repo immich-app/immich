@@ -40,7 +40,10 @@
   let automaticRefreshTimeout: NodeJS.Timeout;
 
   const { onPersonThumbnail } = websocketStore;
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    refresh: void;
+  }>();
 
   // Reset value
   $onPersonThumbnail = '';

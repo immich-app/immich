@@ -374,7 +374,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector person={data.person} on:go-back={handleGoBack} on:merge={handleMerge} />
+  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={handleMerge} />
 {/if}
 
 <header>
@@ -398,7 +398,7 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(previousRoute)}>
+      <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
             <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_PERSON)} />
@@ -414,7 +414,7 @@
     {/if}
 
     {#if viewMode === ViewMode.SELECT_PERSON}
-      <ControlAppBar on:close-button-click={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+      <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
         <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
       </ControlAppBar>
     {/if}

@@ -438,10 +438,10 @@
 </UserPageLayout>
 {#if selectHidden}
   <ShowHide
-    on:doneClick={handleDoneClick}
-    on:closeClick={handleCloseClick}
-    on:reset-visibility={handleResetVisibility}
-    on:toggle-visibility={handleToggleVisibility}
+    on:done={handleDoneClick}
+    on:close={handleCloseClick}
+    on:reset={handleResetVisibility}
+    on:change={handleToggleVisibility}
     bind:showLoadingSpinner
     bind:toggleVisibility
   >

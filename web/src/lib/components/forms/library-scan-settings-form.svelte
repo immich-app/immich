@@ -26,13 +26,16 @@
     }
   });
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    cancel: void;
+    submit: { library: Partial<LibraryResponseDto>; type: LibraryType };
+  }>();
   const handleCancel = () => {
     dispatch('cancel');
   };
 
   const handleSubmit = () => {
-    dispatch('submit', { ...library, libraryType: LibraryType.External });
+    dispatch('submit', { library, type: LibraryType.External });
   };
 
   const handleAddExclusionPattern = async () => {
