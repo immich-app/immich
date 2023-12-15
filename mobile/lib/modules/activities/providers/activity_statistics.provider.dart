@@ -19,3 +19,6 @@ class ActivityStatistics extends _$ActivityStatistics {
 
   void removeActivity() => state = state - 1;
 }
+
+/// Mock class for testing
+abstract class ActivityStatisticsInternal extends _$ActivityStatistics {}

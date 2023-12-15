@@ -19,7 +19,7 @@ void main() {
         activityServiceProvider.overrideWith((ref) => activityMock),
       ],
     );
-    listener = ListenerMock<int>();
+    listener = ListenerMock();
   });
 
   test('Returns the proper count family', () async {

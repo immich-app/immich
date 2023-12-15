@@ -12,7 +12,7 @@ class AlbumActivity extends _$AlbumActivity {
   Future<List<Activity>> build(String albumId, [String? assetId]) async {
     return ref
         .watch(activityServiceProvider)
-        .getAllActivities(albumId, assetId);
+        .getAllActivities(albumId, assetId: assetId);
   }
 
   Future<void> removeActivity(String id) async {

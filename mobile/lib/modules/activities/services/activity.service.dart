@@ -14,9 +14,9 @@ class ActivityService with ErrorLoggerMixin {
   ActivityService(this._apiService);
 
   Future<List<Activity>> getAllActivities(
-    String albumId,
+    String albumId, {
     String? assetId,
-  ) async {
+  }) async {
     return logError(
       () async {
         final list = await _apiService.activityApi
