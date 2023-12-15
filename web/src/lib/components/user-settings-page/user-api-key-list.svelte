@@ -29,10 +29,9 @@
     keys = data;
   }
 
-  const handleCreate = async (event: CustomEvent<APIKeyResponseDto>) => {
+  const handleCreate = async (detail: Partial<APIKeyResponseDto>) => {
     try {
-      const dto = event.detail;
-      const { data } = await api.keyApi.createApiKey({ aPIKeyCreateDto: dto });
+      const { data } = await api.keyApi.createApiKey({ aPIKeyCreateDto: detail });
       secret = data.secret;
     } catch (error) {
       handleError(error, 'Unable to create a new API Key');
@@ -42,15 +41,13 @@
     }
   };
 
-  const handleUpdate = async (event: CustomEvent<APIKeyResponseDto>) => {
-    if (!editKey) {
+  const handleUpdate = async (detail: Partial<APIKeyResponseDto>) => {
+    if (!editKey || !detail.name) {
       return;
     }
 
-    const dto = event.detail;
-
     try {
-      await api.keyApi.updateApiKey({ id: editKey.id, aPIKeyUpdateDto: { name: dto.name } });
+      await api.keyApi.updateApiKey({ id: editKey.id, aPIKeyUpdateDto: { name: detail.name } });
       notificationController.show({
         message: `Saved API Key`,
         type: NotificationType.Info,
@@ -88,7 +85,7 @@
     title="New API Key"
     submitText="Create"
     apiKey={newKey}
-    on:submit={handleCreate}
+    on:submit={({ detail }) => handleCreate(detail)}
     on:cancel={() => (newKey = null)}
   />
 {/if}
@@ -98,7 +95,12 @@
 {/if}
 
 {#if editKey}
-  <APIKeyForm submitText="Save" apiKey={editKey} on:submit={handleUpdate} on:cancel={() => (editKey = null)} />
+  <APIKeyForm
+    submitText="Save"
+    apiKey={editKey}
+    on:submit={({ detail }) => handleUpdate(detail)}
+    on:cancel={() => (editKey = null)}
+  />
 {/if}
 
 {#if deleteKey}

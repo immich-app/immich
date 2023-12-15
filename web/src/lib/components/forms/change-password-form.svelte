@@ -22,7 +22,9 @@
     }
   }
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    success: void;
+  }>();
 
   async function changePassword() {
     if (changeChagePassword) {

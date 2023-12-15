@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, UpdateLibraryDto, LibraryResponseDto, LibraryType, LibraryStatsResponseDto } from '@api';
+  import { api, LibraryResponseDto, LibraryType, LibraryStatsResponseDto } from '@api';
   import { onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
@@ -112,16 +112,15 @@
     }
   };
 
-  const handleUpdate = async (event: CustomEvent<UpdateLibraryDto>) => {
+  const handleUpdate = async (event: Partial<LibraryResponseDto>) => {
     if (updateLibraryIndex === null) {
       return;
     }
 
     try {
-      const dto = event.detail;
       const libraryId = libraries[updateLibraryIndex].id;
 
-      await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: dto });
+      await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
     } catch (error) {
       handleError(error, 'Unable to update library');
     } finally {
@@ -375,19 +374,27 @@
             </tr>
             {#if renameLibrary === index}
               <div transition:slide={{ duration: 250 }}>
-                <LibraryRenameForm {library} on:submit={handleUpdate} on:cancel={() => (renameLibrary = null)} />
+                <LibraryRenameForm
+                  {library}
+                  on:submit={({ detail }) => handleUpdate(detail)}
+                  on:cancel={() => (renameLibrary = null)}
+                />
               </div>
             {/if}
             {#if editImportPaths === index}
               <div transition:slide={{ duration: 250 }}>
-                <LibraryImportPathsForm {library} on:submit={handleUpdate} on:cancel={() => (editImportPaths = null)} />
+                <LibraryImportPathsForm
+                  {library}
+                  on:submit={({ detail }) => handleUpdate(detail)}
+                  on:cancel={() => (editImportPaths = null)}
+                />
               </div>
             {/if}
             {#if editScanSettings === index}
               <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                 <LibraryScanSettingsForm
                   {library}
-                  on:submit={handleUpdate}
+                  on:submit={({ detail }) => handleUpdate(detail)}
                   on:cancel={() => (editScanSettings = null)}
                 />
               </div>

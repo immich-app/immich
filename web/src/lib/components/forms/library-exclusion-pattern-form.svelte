@@ -9,7 +9,11 @@
   export let canDelete = false;
   export let submitText = 'Submit';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    cancel: void;
+    submit: { excludePattern: string };
+    delete: void;
+  }>();
   const handleCancel = () => dispatch('cancel');
   const handleSubmit = () => dispatch('submit', { excludePattern: exclusionPattern });
 </script>

@@ -11,7 +11,11 @@
   export let submitText = 'Save';
   export let canDelete = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    cancel: void;
+    submit: { importPath: string };
+    delete: void;
+  }>();
   const handleCancel = () => dispatch('cancel');
   const handleSubmit = () => dispatch('submit', { importPath });
 </script>

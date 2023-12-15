@@ -110,7 +110,7 @@
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
         <FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
-          <CreateUserForm on:user-created={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
+          <CreateUserForm on:submit={onUserCreated} on:cancel={() => (shouldShowCreateUserForm = false)} />
         </FullScreenModal>
       {/if}
 
@@ -120,7 +120,7 @@
             user={selectedUser}
             canResetPassword={selectedUser?.id !== $user.id}
             on:editSuccess={onEditUserSuccess}
-            on:reset-password-success={onEditPasswordSuccess}
+            on:resetPasswordSuccess={onEditPasswordSuccess}
             on:close={() => (shouldShowEditUserForm = false)}
           />
         </FullScreenModal>
@@ -129,8 +129,8 @@
       {#if shouldShowDeleteConfirmDialog}
         <DeleteConfirmDialog
           user={selectedUser}
-          on:user-delete-success={onUserDeleteSuccess}
-          on:user-delete-fail={onUserDeleteFail}
+          on:succes={onUserDeleteSuccess}
+          on:fail={onUserDeleteFail}
           on:cancel={() => (shouldShowDeleteConfirmDialog = false)}
         />
       {/if}
@@ -138,8 +138,8 @@
       {#if shouldShowRestoreDialog}
         <RestoreDialogue
           user={selectedUser}
-          on:user-restore-success={onUserRestoreSuccess}
-          on:user-restore-fail={onUserRestoreFail}
+          on:success={onUserRestoreSuccess}
+          on:fail={onUserRestoreFail}
           on:cancel={() => (shouldShowRestoreDialog = false)}
         />
       {/if}

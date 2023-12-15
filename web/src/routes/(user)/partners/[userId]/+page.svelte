@@ -37,7 +37,7 @@
       <DownloadAction />
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
+    <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(AppRoute.SHARING)}>
       <svelte:fragment slot="leading">
         <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
           {data.partner.name}'s photos
