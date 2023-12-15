@@ -119,7 +119,7 @@
 
     try {
       const libraryId = libraries[updateLibraryIndex].id;
-
+      console.log(event);
       await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
     } catch (error) {
       handleError(error, 'Unable to update library');
@@ -394,7 +394,7 @@
               <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                 <LibraryScanSettingsForm
                   {library}
-                  on:submit={({ detail }) => handleUpdate(detail)}
+                  on:submit={({ detail }) => handleUpdate(detail.library)}
                   on:cancel={() => (editScanSettings = null)}
                 />
               </div>
