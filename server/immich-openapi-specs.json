@@ -6470,9 +6470,6 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "clipEncoding": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
           "library": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6494,6 +6491,9 @@
           "sidecar": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "smartSearch": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6509,7 +6509,7 @@
           "metadataExtraction",
           "videoConversion",
           "objectTagging",
-          "clipEncoding",
+          "smartSearch",
           "storageTemplateMigration",
           "migration",
           "backgroundTask",
@@ -7821,7 +7821,7 @@
           "videoConversion",
           "objectTagging",
           "recognizeFaces",
-          "clipEncoding",
+          "smartSearch",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",
@@ -9182,9 +9182,6 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "clipEncoding": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9206,6 +9203,9 @@
           "sidecar": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "smartSearch": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9221,7 +9221,7 @@
           "metadataExtraction",
           "videoConversion",
           "objectTagging",
-          "clipEncoding",
+          "smartSearch",
           "storageTemplateMigration",
           "migration",
           "backgroundTask",

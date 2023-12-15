@@ -360,12 +360,6 @@ export interface AllJobStatusResponseDto {
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'clipEncoding': JobStatusDto;
-    /**
-     * 
-     * @type {JobStatusDto}
-     * @memberof AllJobStatusResponseDto
-     */
     'library': JobStatusDto;
     /**
      * 
@@ -403,6 +397,12 @@ export interface AllJobStatusResponseDto {
      * @memberof AllJobStatusResponseDto
      */
     'sidecar': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'smartSearch': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
@@ -2017,7 +2017,7 @@ export const JobName = {
     VideoConversion: 'videoConversion',
     ObjectTagging: 'objectTagging',
     RecognizeFaces: 'recognizeFaces',
-    ClipEncoding: 'clipEncoding',
+    SmartSearch: 'smartSearch',
     BackgroundTask: 'backgroundTask',
     StorageTemplateMigration: 'storageTemplateMigration',
     Migration: 'migration',
@@ -3790,12 +3790,6 @@ export interface SystemConfigJobDto {
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
-    'clipEncoding': JobSettingsDto;
-    /**
-     * 
-     * @type {JobSettingsDto}
-     * @memberof SystemConfigJobDto
-     */
     'library': JobSettingsDto;
     /**
      * 
@@ -3833,6 +3827,12 @@ export interface SystemConfigJobDto {
      * @memberof SystemConfigJobDto
      */
     'sidecar': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'smartSearch': JobSettingsDto;
     /**
      * 
      * @type {JobSettingsDto}
