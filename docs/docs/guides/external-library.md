@@ -1,3 +1,5 @@
+# External Library
+
 This guide walks you through adding an [External Library](../features/libraries#external-libraries).
 This guide assumes you are running Immich in Docker and that the files you wish to access are stored
 in a directory on the same machine.
