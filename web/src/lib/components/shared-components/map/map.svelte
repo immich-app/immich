@@ -167,7 +167,7 @@
       >
         <img
           src={api.getAssetThumbnailUrl(feature.properties?.id)}
-          class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150"
+          class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-contain bg-immich-primary"
           alt={`Image with id ${feature.properties?.id}`}
         />
         {#if $$slots.popup}
