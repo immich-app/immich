@@ -159,6 +159,9 @@ describe(JobService.name, () => {
 
     it('should handle a start object tagging command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
 
       await sut.handleCommand(QueueName.OBJECT_TAGGING, { command: JobCommand.START, force: false });
 
