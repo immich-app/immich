@@ -120,7 +120,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close-button-click={onClose}>
+  <ControlAppBar on:close={onClose}>
     <svelte:fragment slot="leading">
       <slot name="header" />
       <div />
