@@ -84,8 +84,6 @@ class SearchResultPage extends HookConsumerWidget {
         focusNode: searchFocusNode,
         autofocus: false,
         onTap: () {
-          searchTermController.clear();
-          ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
           searchFocusNode?.requestFocus();
         },
         textInputAction: TextInputAction.search,
