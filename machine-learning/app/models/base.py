@@ -29,6 +29,7 @@ class InferenceModel(ABC):
         providers: list[str] | None = None,
         provider_options: list[dict[str, Any]] | None = None,
         sess_options: ort.SessionOptions | None = None,
+        **model_kwargs: Any,
     ) -> None:
         self.loaded = False
         self.model_name = model_name
