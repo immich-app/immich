@@ -24,9 +24,8 @@ class ActivitiesPage extends HookConsumerWidget {
     final album = ref.watch(currentAlbumProvider)!;
     final asset = ref.watch(currentAssetProvider);
     final user = ref.watch(currentUserProvider);
-    final activityNotifier = ref.read(
-      albumActivityProvider(album.remoteId!, asset?.remoteId).notifier,
-    );
+    final activityNotifier = ref
+        .read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
     final activities =
         ref.watch(albumActivityProvider(album.remoteId!, asset?.remoteId));
 

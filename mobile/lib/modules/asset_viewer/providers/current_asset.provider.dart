@@ -10,3 +10,6 @@ class CurrentAsset extends _$CurrentAsset {
 
   void updateCurrentAsset(Asset a) => state = a;
 }
+
+/// Mock class for testing
+abstract class CurrentAssetInternal extends _$CurrentAsset {}

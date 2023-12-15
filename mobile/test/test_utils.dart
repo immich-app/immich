@@ -24,7 +24,11 @@ final class TestUtils {
 
   /// Downloads Isar binaries (if required) and initializes a new Isar db
   static Future<Isar> initIsar() async {
-    await Isar.initializeIsarCore(download: true);
+    final instance = Isar.getInstance();
+    if (instance != null) {
+      return instance;
+    }
+
     final db = await Isar.open(
       [
         StoreValueSchema,
@@ -40,7 +44,7 @@ final class TestUtils {
         IOSDeviceAssetSchema,
       ],
       maxSizeMiB: 256,
-      directory: ".",
+      directory: "test/",
     );
     // Clear and close db on test end
     addTearDown(() async {
