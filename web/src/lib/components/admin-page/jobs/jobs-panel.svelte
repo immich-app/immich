@@ -56,12 +56,12 @@
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: api.getJobName(JobName.ThumbnailGeneration),
-      subtitle: 'Regenerate JPEG and WebP thumbnails',
+      subtitle: 'Generate large, small and blurred thumbnails for each asset, as well as thumbnails for each person',
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: api.getJobName(JobName.MetadataExtraction),
-      subtitle: 'Extract metadata information i.e. GPS, resolution...etc',
+      subtitle: 'Extract metadata information from each asset, such as GPS and resolution',
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
@@ -100,7 +100,7 @@
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: api.getJobName(JobName.VideoConversion),
-      subtitle: 'Transcode videos not in the desired format',
+      subtitle: 'Transcode videos for wider compatibility with browsers and devices',
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
