@@ -14,7 +14,7 @@ export class UserCore {
     private cryptoRepository: ICryptoRepository,
     private libraryRepository: ILibraryRepository,
     private userRepository: IUserRepository,
-  ) {}
+  ) { }
 
   static create(
     cryptoRepository: ICryptoRepository,
