@@ -81,7 +81,7 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-H-14-quickgelu__dfn5b': {
     dimSize: 1024,
   },
-  'ViT-H-14-378-quickgelu__dfn5b ': {
+  'ViT-H-14-378-quickgelu__dfn5b': {
     dimSize: 1024,
   },
   'ViT-g-14__laion2b-s12b-b42k': {
