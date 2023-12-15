@@ -97,7 +97,7 @@ describe(JobService.name, () => {
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
         [QueueName.BACKGROUND_TASK]: expectedJobStatus,
-        [QueueName.CLIP_ENCODING]: expectedJobStatus,
+        [QueueName.SMART_SEARCH]: expectedJobStatus,
         [QueueName.METADATA_EXTRACTION]: expectedJobStatus,
         [QueueName.OBJECT_TAGGING]: expectedJobStatus,
         [QueueName.SEARCH]: expectedJobStatus,
@@ -171,7 +171,7 @@ describe(JobService.name, () => {
     it('should handle a start clip encoding command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.handleCommand(QueueName.CLIP_ENCODING, { command: JobCommand.START, force: false });
+      await sut.handleCommand(QueueName.SMART_SEARCH, { command: JobCommand.START, force: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_ENCODE_CLIP, data: { force: false } });
     });
@@ -232,7 +232,7 @@ describe(JobService.name, () => {
       SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
-          [QueueName.CLIP_ENCODING]: { concurrency: 10 },
+          [QueueName.SMART_SEARCH]: { concurrency: 10 },
           [QueueName.METADATA_EXTRACTION]: { concurrency: 10 },
           [QueueName.OBJECT_TAGGING]: { concurrency: 10 },
           [QueueName.RECOGNIZE_FACES]: { concurrency: 10 },
@@ -247,7 +247,7 @@ describe(JobService.name, () => {
       } as SystemConfig);
 
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.BACKGROUND_TASK, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.CLIP_ENCODING, 10);
+      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SMART_SEARCH, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.OBJECT_TAGGING, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.RECOGNIZE_FACES, 10);
@@ -367,7 +367,7 @@ describe(JobService.name, () => {
 
     const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
       {
-        queue: QueueName.CLIP_ENCODING,
+        queue: QueueName.SMART_SEARCH,
         feature: FeatureFlag.CLIP_ENCODE,
         configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
       },
