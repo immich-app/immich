@@ -117,7 +117,7 @@
     "prettier-plugin-organize-imports": "^3.2.3",
     "rimraf": "^5.0.1",
     "source-map-support": "^0.5.21",
-    "sql-formatter": "^14.0.0",
+    "sql-formatter": "^15.0.0",
     "supertest": "^6.3.3",
     "testcontainers": "^10.2.1",
     "ts-jest": "^29.1.1",
