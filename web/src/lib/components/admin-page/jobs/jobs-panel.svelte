@@ -84,10 +84,10 @@
       subtitle: 'Run machine learning to tag objects\nNote that some assets may not have any objects detected',
       disabled: !$featureFlags.tagImage,
     },
-    [JobName.ClipEncoding]: {
+    [JobName.SmartSearch]: {
       icon: mdiVectorCircle,
-      title: api.getJobName(JobName.ClipEncoding),
-      subtitle: 'Run machine learning to generate clip embeddings',
+      title: api.getJobName(JobName.SmartSearch),
+      subtitle: 'Run machine learning to support smart search on assets',
       disabled: !$featureFlags.clipEncode,
     },
     [JobName.RecognizeFaces]: {
