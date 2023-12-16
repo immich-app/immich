@@ -81,7 +81,8 @@
     [JobName.ObjectTagging]: {
       icon: mdiTagMultiple,
       title: api.getJobName(JobName.ObjectTagging),
-      subtitle: 'Run machine learning on assets to tag objects\nNote that some assets may not have any objects detected',
+      subtitle:
+        'Run machine learning on assets to tag objects\nNote that some assets may not have any objects detected',
       disabled: !$featureFlags.tagImage,
     },
     [JobName.SmartSearch]: {
