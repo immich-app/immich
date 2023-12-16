@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { asVector } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -107,6 +108,48 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
+  getFaces(assetId: string): Promise<AssetFaceEntity[]> {
+    return this.assetFaceRepository.find({
+      where: { assetId },
+      relations: {
+        person: true,
+      },
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getFaceById(id: string): Promise<AssetFaceEntity> {
+    return this.assetFaceRepository.findOneOrFail({
+      where: { id },
+      relations: {
+        person: true,
+      },
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null> {
+    return this.assetFaceRepository.findOne({
+      where: { id },
+      relations: {
+        person: true,
+        asset: true,
+      },
+    });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async reassignFace(assetFaceId: string, newPersonId: string): Promise<number> {
+    const result = await this.assetFaceRepository
+      .createQueryBuilder()
+      .update()
+      .set({ personId: newPersonId })
+      .where({ id: assetFaceId })
+      .execute();
+
+    return result.affected ?? 0;
+  }
+
   getById(personId: string): Promise<PersonEntity | null> {
     return this.personRepository.findOne({ where: { id: personId } });
   }
@@ -173,8 +216,15 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
-  createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
-    return this.assetFaceRepository.save(entity);
+  async createFace(entity: AssetFaceEntity): Promise<AssetFaceEntity> {
+    if (!entity.personId) {
+      throw new Error('Person ID is required to create a face');
+    }
+    if (!entity.embedding) {
+      throw new Error('Embedding is required to create a face');
+    }
+    await this.assetFaceRepository.insert({ ...entity, embedding: () => asVector(entity.embedding, true) });
+    return this.assetFaceRepository.findOneByOrFail({ assetId: entity.assetId, personId: entity.personId });
   }
 
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {

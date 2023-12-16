@@ -9,7 +9,6 @@
     AssetTypeEnum,
     ReactionType,
     SharedLinkResponseDto,
-    UserResponseDto,
   } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
@@ -20,7 +19,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
-  import { ProjectionType } from '$lib/constants';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -43,6 +42,7 @@
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import SlideshowBar from './slideshow-bar.svelte';
+  import { user } from '$lib/stores/user.store';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
@@ -52,7 +52,6 @@
   export let force = false;
   export let withStacked = false;
   export let isShared = false;
-  export let user: UserResponseDto | null = null;
   export let album: AlbumResponseDto | null = null;
 
   let reactions: ActivityResponseDto[] = [];
@@ -66,14 +65,10 @@
   } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
-    archived: AssetResponseDto;
-    unarchived: AssetResponseDto;
-    favorite: AssetResponseDto;
-    unfavorite: AssetResponseDto;
+    action: { type: AssetAction; asset: AssetResponseDto };
     close: void;
     next: void;
     previous: void;
-    unstack: void;
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
@@ -144,10 +139,10 @@
   };
 
   const getFavorite = async () => {
-    if (album && user) {
+    if (album && $user) {
       try {
         const { data } = await api.activityApi.getActivities({
-          userId: user.id,
+          userId: $user.id,
           assetId: asset.id,
           albumId: album.id,
           type: ReactionType.Like,
@@ -378,9 +373,7 @@
     try {
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
 
-      await navigateAssetForward();
-
-      assetStore?.removeAsset(asset.id);
+      dispatch('action', { type: AssetAction.TRASH, asset });
 
       notificationController.show({
         message: 'Moved to trash',
@@ -395,9 +388,7 @@
     try {
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
 
-      await navigateAssetForward();
-
-      assetStore?.removeAsset(asset.id);
+      dispatch('action', { type: AssetAction.DELETE, asset });
 
       notificationController.show({
         message: 'Permanently deleted asset',
@@ -420,8 +411,7 @@
       });
 
       asset.isFavorite = data.isFavorite;
-      assetStore?.updateAsset(data);
-      dispatch(data.isFavorite ? 'favorite' : 'unfavorite', data);
+      dispatch('action', { type: data.isFavorite ? AssetAction.FAVORITE : AssetAction.UNFAVORITE, asset: data });
 
       notificationController.show({
         type: NotificationType.Info,
@@ -437,19 +427,17 @@
     addToSharedAlbum = shared;
   };
 
-  const handleAddToNewAlbum = (event: CustomEvent) => {
+  const handleAddToNewAlbum = (albumName: string) => {
     isShowAlbumPicker = false;
 
-    const { albumName }: { albumName: string } = event.detail;
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
       const album = response.data;
-      goto('/albums/' + album.id);
+      goto(`${AppRoute.ALBUMS}/${album.id}`);
     });
   };
 
-  const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
+  const handleAddToAlbum = async (album: AlbumResponseDto) => {
     isShowAlbumPicker = false;
-    const album = event.detail.album;
 
     await addAssetsToAlbum(album.id, [asset.id]);
     await getAllAlbums();
@@ -477,8 +465,7 @@
       });
 
       asset.isArchived = data.isArchived;
-      assetStore?.updateAsset(data);
-      dispatch(data.isArchived ? 'archived' : 'unarchived', data);
+      dispatch('action', { type: data.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: data });
 
       notificationController.show({
         type: NotificationType.Info,
@@ -562,10 +549,10 @@
         child.stackParentId = null;
         child.stackCount = 0;
         child.stack = [];
-        assetStore?.addAsset(child);
+        dispatch('action', { type: AssetAction.ADD, asset: child });
       }
 
-      dispatch('unstack');
+      dispatch('close');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
     } catch (error) {
       await handleError(error, `Unable to unstack`);
@@ -575,7 +562,7 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
+  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
 >
   <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None}
@@ -590,7 +577,7 @@
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         hasStackChildren={$stackAssetsStore.length > 0}
-        on:goBack={closeViewer}
+        on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
         on:delete={trashOrDelete}
@@ -741,14 +728,14 @@
         albumId={album?.id}
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
-        on:close-viewer={handleCloseViewer}
-        on:description-focus-in={disableKeyDownEvent}
-        on:description-focus-out={enableKeyDownEvent}
+        on:closeViewer={handleCloseViewer}
+        on:descriptionFocusIn={disableKeyDownEvent}
+        on:descriptionFocusOut={enableKeyDownEvent}
       />
     </div>
   {/if}
 
-  {#if isShared && album && isShowActivity && user}
+  {#if isShared && album && isShowActivity && $user}
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
@@ -756,7 +743,7 @@
       translate="yes"
     >
       <ActivityViewer
-        {user}
+        user={$user}
         disabled={!album.isActivityEnabled}
         assetType={asset.type}
         albumOwnerId={album.ownerId}
@@ -775,9 +762,8 @@
   {#if isShowAlbumPicker}
     <AlbumSelectionModal
       shared={addToSharedAlbum}
-      on:newAlbum={handleAddToNewAlbum}
-      on:newSharedAlbum={handleAddToNewAlbum}
-      on:album={handleAddToAlbum}
+      on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
+      on:album={({ detail }) => handleAddToAlbum(detail)}
       on:close={() => (isShowAlbumPicker = false)}
     />
   {/if}
@@ -803,11 +789,7 @@
     <PhotoEditor {asset} on:close={() => (shouldShowPhotoEditor = false)} />
   {/if}
   {#if isShowProfileImageCrop}
-    <ProfileImageCropper
-      {asset}
-      on:close={() => (isShowProfileImageCrop = false)}
-      on:close-viewer={handleCloseViewer}
-    />
+    <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
   {/if}
 </section>
 

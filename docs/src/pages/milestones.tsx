@@ -26,12 +26,14 @@ import {
   mdiMagnify,
   mdiMap,
   mdiMaterialDesign,
+  mdiMatrix,
   mdiMerge,
   mdiMonitor,
   mdiMotionPlayOutline,
   mdiPalette,
   mdiPanVertical,
   mdiPartyPopper,
+  mdiPencil,
   mdiRaw,
   mdiRotate360,
   mdiSecurity,
@@ -52,6 +54,24 @@ import React from 'react';
 import Timeline, { DateType, Item } from '../components/timeline';
 
 const items: Item[] = [
+  {
+    icon: mdiMatrix,
+    description: 'Moved the search from typesense to pgvecto.rs',
+    title: 'Search improvement with pgvecto.rs',
+    release: 'v1.91.0',
+    tag: 'v1.91.0',
+    date: new Date(2023, 11, 7),
+    dateType: DateType.RELEASE,
+  },
+  {
+    icon: mdiPencil,
+    description: "Edit a photo or video's date, time, hours, timezone, and GPS information",
+    title: 'Edit metadata',
+    release: 'v1.90.0',
+    tag: 'v1.90.0',
+    date: new Date(2023, 11, 7),
+    dateType: DateType.RELEASE,
+  },
   {
     icon: mdiVectorCombine,
     description:

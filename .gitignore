@@ -11,3 +11,4 @@ coverage
 mobile/gradle.properties
 mobile/openapi/pubspec.lock
 mobile/*.jks
+mobile/libisar.dylib

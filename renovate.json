@@ -52,7 +52,8 @@
     },
     {
       "groupName": "base-image",
-      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"]
+      "matchPackagePrefixes": ["ghcr.io/immich-app/base-server"],
+      "minimumReleaseAge": "0"
     },
     {
       "matchDatasources": ["docker"],
@@ -61,11 +62,15 @@
       "versioning": "node"
     }
   ],
+  "ignorePaths": [
+    "mobile/openapi/pubspec.yaml"
+  ],
   "ignoreDeps": [
     "http",
     "latlong2",
     "vector_map_tiles",
     "flutter_map",
     "flutter_map_heatmap"
-  ]
+  ],
+  "labels": ["renovate"]
 }

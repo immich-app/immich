@@ -24,7 +24,10 @@
       canCreateUser = true;
     }
   }
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    submit: void;
+    cancel: void;
+  }>();
 
   async function registerUser(event: SubmitEvent) {
     if (canCreateUser && !isCreatingUser) {
@@ -52,7 +55,7 @@
         if (status === 201) {
           success = 'New user created';
 
-          dispatch('user-created');
+          dispatch('submit');
 
           isCreatingUser = false;
           return;

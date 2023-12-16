@@ -1,6 +1,8 @@
+import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
+import { setTimeout } from 'timers/promises';
 import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
   IAssetRepository,
   IJobRepository,
@@ -14,6 +16,7 @@ import { SystemConfigCore } from '../system-config';
 @Injectable()
 export class SmartInfoService {
   private configCore: SystemConfigCore;
+  private logger = new ImmichLogger(SmartInfoService.name);
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -23,6 +26,24 @@ export class SmartInfoService {
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
+  }
+
+  async init() {
+    await this.jobRepository.pause(QueueName.CLIP_ENCODING);
+
+    let { isActive } = await this.jobRepository.getQueueStatus(QueueName.CLIP_ENCODING);
+    while (isActive) {
+      this.logger.verbose('Waiting for CLIP encoding queue to stop...');
+      await setTimeout(1000).then(async () => {
+        ({ isActive } = await this.jobRepository.getQueueStatus(QueueName.CLIP_ENCODING));
+      });
+    }
+
+    const { machineLearning } = await this.configCore.getConfig();
+
+    await this.repository.init(machineLearning.clip.modelName);
+
+    await this.jobRepository.resume(QueueName.CLIP_ENCODING);
   }
 
   async handleQueueObjectTagging({ force }: IBaseJob) {
@@ -105,7 +126,7 @@ export class SmartInfoService {
       machineLearning.clip,
     );
 
-    await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
+    await this.repository.upsert({ assetId: asset.id }, clipEmbedding);
 
     return true;
   }

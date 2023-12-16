@@ -18,6 +18,7 @@ export enum JobCommand {
   PAUSE = 'pause',
   RESUME = 'resume',
   EMPTY = 'empty',
+  CLEAR_FAILED = 'clear-failed',
 }
 
 export enum JobName {
@@ -48,7 +49,6 @@ export enum JobName {
   // storage template
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
-  SYSTEM_CONFIG_CHANGE = 'system-config-change',
 
   // migration
   QUEUE_MIGRATION = 'queue-migration',
@@ -77,17 +77,6 @@ export enum JobName {
   DELETE_FILES = 'delete-files',
   CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
 
-  // search
-  SEARCH_INDEX_ASSETS = 'search-index-assets',
-  SEARCH_INDEX_ASSET = 'search-index-asset',
-  SEARCH_INDEX_FACE = 'search-index-face',
-  SEARCH_INDEX_FACES = 'search-index-faces',
-  SEARCH_INDEX_ALBUMS = 'search-index-albums',
-  SEARCH_INDEX_ALBUM = 'search-index-album',
-  SEARCH_REMOVE_ALBUM = 'search-remove-album',
-  SEARCH_REMOVE_ASSET = 'search-remove-asset',
-  SEARCH_REMOVE_FACE = 'search-remove-face',
-
   // clip
   QUEUE_ENCODE_CLIP = 'queue-clip-encode',
   ENCODE_CLIP = 'clip-encode',
@@ -111,7 +100,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
-  [JobName.SYSTEM_CONFIG_CHANGE]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
@@ -149,21 +137,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // clip
   [JobName.QUEUE_ENCODE_CLIP]: QueueName.CLIP_ENCODING,
   [JobName.ENCODE_CLIP]: QueueName.CLIP_ENCODING,
-
-  // search - albums
-  [JobName.SEARCH_INDEX_ALBUMS]: QueueName.SEARCH,
-  [JobName.SEARCH_INDEX_ALBUM]: QueueName.SEARCH,
-  [JobName.SEARCH_REMOVE_ALBUM]: QueueName.SEARCH,
-
-  // search - assets
-  [JobName.SEARCH_INDEX_ASSETS]: QueueName.SEARCH,
-  [JobName.SEARCH_INDEX_ASSET]: QueueName.SEARCH,
-  [JobName.SEARCH_REMOVE_ASSET]: QueueName.SEARCH,
-
-  // search - faces
-  [JobName.SEARCH_INDEX_FACES]: QueueName.SEARCH,
-  [JobName.SEARCH_INDEX_FACE]: QueueName.SEARCH,
-  [JobName.SEARCH_REMOVE_FACE]: QueueName.SEARCH,
 
   // XMP sidecars
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,

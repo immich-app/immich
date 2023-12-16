@@ -19,9 +19,11 @@ class ImageViewerService {
   ImageViewerService(this._apiService);
 
   Future<bool> downloadAssetToDevice(Asset asset) async {
+    File? imageFile;
+    File? videoFile;
     try {
       // Download LivePhotos image and motion part
-      if (asset.isImage && asset.livePhotoVideoId != null) {
+      if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
         var imageResponse = await _apiService.assetApi.downloadFileWithHttpInfo(
           asset.remoteId!,
         );
@@ -40,11 +42,11 @@ class ImageViewerService {
           return false;
         }
 
-        final AssetEntity? entity;
+        AssetEntity? entity;
 
         final tempDir = await getTemporaryDirectory();
-        File videoFile = await File('${tempDir.path}/livephoto.mov').create();
-        File imageFile = await File('${tempDir.path}/livephoto.heic').create();
+        videoFile = await File('${tempDir.path}/livephoto.mov').create();
+        imageFile = await File('${tempDir.path}/livephoto.heic').create();
         videoFile.writeAsBytesSync(motionReponse.bodyBytes);
         imageFile.writeAsBytesSync(imageResponse.bodyBytes);
 
@@ -53,6 +55,17 @@ class ImageViewerService {
           videoFile: videoFile,
           title: asset.fileName,
         );
+
+        if (entity == null) {
+          _log.warning(
+            "Asset cannot be saved as a live photo. This is most likely a motion photo. Saving only the image file",
+          );
+
+          entity = await PhotoManager.editor.saveImage(
+            imageResponse.bodyBytes,
+            title: asset.fileName,
+          );
+        }
 
         return entity != null;
       } else {
@@ -75,17 +88,20 @@ class ImageViewerService {
           );
         } else {
           final tempDir = await getTemporaryDirectory();
-          File tempFile =
-              await File('${tempDir.path}/${asset.fileName}').create();
-          tempFile.writeAsBytesSync(res.bodyBytes);
+          videoFile = await File('${tempDir.path}/${asset.fileName}').create();
+          videoFile.writeAsBytesSync(res.bodyBytes);
           entity = await PhotoManager.editor
-              .saveVideo(tempFile, title: asset.fileName);
+              .saveVideo(videoFile, title: asset.fileName);
         }
         return entity != null;
       }
     } catch (error, stack) {
       _log.severe("Error saving file ${error.toString()}", error, stack);
       return false;
+    } finally {
+      // Clear temp files
+      imageFile?.delete();
+      videoFile?.delete();
     }
   }
 }

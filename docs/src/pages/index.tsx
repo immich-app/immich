@@ -32,6 +32,15 @@ function HomepageHeader() {
           >
             Demo portal
           </Link>
+
+          <a
+            href="https://github.com/sponsors/immich-app"
+            target="_blank"
+            rel="noreferrer"
+            className="flex place-items-center place-content-center py-3 px-8 border bg-immich-sponsor rounded-full no-underline hover:no-underline text-white dark:text-immich-dark-bg dark:bg-immich-sponsor hover:text-white font-bold uppercase"
+          >
+            Sponsor
+          </a>
         </div>
 
         <img src="/img/immich-screenshots.png" alt="screenshots" width={'85%'} />

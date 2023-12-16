@@ -16,9 +16,9 @@ export const useAlbums = (props: AlbumsProps) => {
       const { data } = await api.albumApi.getAllAlbums();
       albums.set(data);
 
-      // Delete album that has no photos and is named 'Untitled'
+      // Delete album that has no photos and is named ''
       for (const album of data) {
-        if (album.albumName === 'Untitled' && album.assetCount === 0) {
+        if (album.albumName === '' && album.assetCount === 0) {
           setTimeout(async () => {
             await deleteAlbum(album);
           }, 500);
@@ -36,7 +36,7 @@ export const useAlbums = (props: AlbumsProps) => {
     try {
       const { data: newAlbum } = await api.albumApi.createAlbum({
         createAlbumDto: {
-          albumName: 'Untitled',
+          albumName: '',
         },
       });
 

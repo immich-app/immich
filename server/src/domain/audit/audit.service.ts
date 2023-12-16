@@ -1,9 +1,10 @@
 import { AssetPathType, DatabaseAction, PersonPathType, UserPathType } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AccessCore, Permission } from '../access';
-import { AuthUserDto } from '../auth';
+import { AuthDto } from '../auth';
 import { AUDIT_LOG_MAX_DURATION } from '../domain.constant';
 import { usePagination } from '../domain.util';
 import { JOBS_ASSET_PAGINATION_SIZE } from '../job';
@@ -29,7 +30,7 @@ import {
 @Injectable()
 export class AuditService {
   private access: AccessCore;
-  private logger = new Logger(AuditService.name);
+  private logger = new ImmichLogger(AuditService.name);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -48,9 +49,9 @@ export class AuditService {
     return true;
   }
 
-  async getDeletes(authUser: AuthUserDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
-    const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
+  async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
+    const userId = dto.userId || auth.user.id;
+    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
 
     const audits = await this.repository.getAfter(dto.after, {
       ownerId: userId,

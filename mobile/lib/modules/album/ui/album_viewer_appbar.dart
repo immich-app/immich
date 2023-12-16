@@ -5,14 +5,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
-import 'package:immich_mobile/modules/album/providers/album_detail.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
-import 'package:immich_mobile/shared/ui/share_dialog.dart';
-import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
@@ -22,8 +18,6 @@ class AlbumViewerAppbar extends HookConsumerWidget
     Key? key,
     required this.album,
     required this.userId,
-    required this.selected,
-    required this.selectionDisabled,
     required this.titleFocusNode,
     this.onAddPhotos,
     this.onAddUsers,
@@ -32,8 +26,6 @@ class AlbumViewerAppbar extends HookConsumerWidget
 
   final Album album;
   final String userId;
-  final Set<Asset> selected;
-  final void Function() selectionDisabled;
   final FocusNode titleFocusNode;
   final Function(Album album)? onAddPhotos;
   final Function(Album album)? onAddUsers;
@@ -144,109 +136,27 @@ class AlbumViewerAppbar extends HookConsumerWidget
       isProcessing.value = false;
     }
 
-    void onRemoveFromAlbumPressed() async {
-      isProcessing.value = true;
-
-      bool isSuccess =
-          await ref.watch(sharedAlbumProvider.notifier).removeAssetFromAlbum(
-                album,
-                selected,
-              );
-
-      if (isSuccess) {
-        context.pop();
-        selectionDisabled();
-        ref.watch(albumProvider.notifier).getAllAlbums();
-        ref.invalidate(albumDetailProvider(album.id));
-      } else {
-        context.pop();
-        ImmichToast.show(
-          context: context,
-          msg: "album_viewer_appbar_share_err_remove".tr(),
-          toastType: ToastType.error,
-          gravity: ToastGravity.BOTTOM,
-        );
-      }
-
-      isProcessing.value = false;
-    }
-
-    void handleShareAssets(
-      WidgetRef ref,
-      BuildContext context,
-      Set<Asset> selection,
-    ) {
-      showDialog(
-        context: context,
-        builder: (BuildContext buildContext) {
-          ref.watch(shareServiceProvider).shareAssets(selection.toList()).then(
-            (bool status) {
-              if (!status) {
-                ImmichToast.show(
-                  context: context,
-                  msg: 'image_viewer_page_state_provider_share_error'.tr(),
-                  toastType: ToastType.error,
-                  gravity: ToastGravity.BOTTOM,
-                );
-              }
-              buildContext.pop();
-            },
-          );
-          return const ShareDialog();
-        },
-        barrierDismissible: false,
-      );
-    }
-
-    void onShareAssetsTo() async {
-      isProcessing.value = true;
-      handleShareAssets(ref, context, selected);
-      isProcessing.value = false;
-    }
-
     buildBottomSheetActions() {
-      if (selected.isNotEmpty) {
-        return [
-          ListTile(
-            leading: const Icon(Icons.ios_share_rounded),
-            title: const Text(
-              'album_viewer_appbar_share_to',
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ).tr(),
-            onTap: () => onShareAssetsTo(),
-          ),
-          album.ownerId == userId
-              ? ListTile(
-                  leading: const Icon(Icons.delete_sweep_rounded),
-                  title: const Text(
-                    'album_viewer_appbar_share_remove',
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ).tr(),
-                  onTap: () => onRemoveFromAlbumPressed(),
-                )
-              : const SizedBox(),
-        ];
-      } else {
-        return [
-          album.ownerId == userId
-              ? ListTile(
-                  leading: const Icon(Icons.delete_forever_rounded),
-                  title: const Text(
-                    'album_viewer_appbar_share_delete',
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ).tr(),
-                  onTap: () => onDeleteAlbumPressed(),
-                )
-              : ListTile(
-                  leading: const Icon(Icons.person_remove_rounded),
-                  title: const Text(
-                    'album_viewer_appbar_share_leave',
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ).tr(),
-                  onTap: () => onLeaveAlbumPressed(),
-                ),
-        ];
-      }
+      return [
+        album.ownerId == userId
+            ? ListTile(
+                leading: const Icon(Icons.delete_forever_rounded),
+                title: const Text(
+                  'album_viewer_appbar_share_delete',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ).tr(),
+                onTap: () => onDeleteAlbumPressed(),
+              )
+            : ListTile(
+                leading: const Icon(Icons.person_remove_rounded),
+                title: const Text(
+                  'album_viewer_appbar_share_leave',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ).tr(),
+                onTap: () => onLeaveAlbumPressed(),
+              ),
+      ];
+      // }
     }
 
     void buildBottomSheet() {
@@ -308,10 +218,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ...buildBottomSheetActions(),
-                  if (selected.isEmpty && onAddPhotos != null) ...commonActions,
-                  if (selected.isEmpty &&
-                      onAddPhotos != null &&
-                      userId == album.ownerId)
+                  if (onAddPhotos != null) ...commonActions,
+                  if (onAddPhotos != null && userId == album.ownerId)
                     ...ownerActions,
                 ],
               ),
@@ -349,13 +257,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     buildLeadingButton() {
-      if (selected.isNotEmpty) {
-        return IconButton(
-          onPressed: selectionDisabled,
-          icon: const Icon(Icons.close_rounded),
-          splashRadius: 25,
-        );
-      } else if (isEditAlbum) {
+      if (isEditAlbum) {
         return IconButton(
           onPressed: () async {
             bool isSuccess = await ref
@@ -388,7 +290,6 @@ class AlbumViewerAppbar extends HookConsumerWidget
     return AppBar(
       elevation: 0,
       leading: buildLeadingButton(),
-      title: selected.isNotEmpty ? Text('${selected.length}') : null,
       centerTitle: false,
       actions: [
         if (album.shared && (album.activityEnabled || comments != 0))

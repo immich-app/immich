@@ -42,7 +42,7 @@ class UserCircleAvatar extends ConsumerWidget {
       child: user.profileImagePath.isEmpty
           ? textIcon
           : ClipRRect(
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: const BorderRadius.all(Radius.circular(50)),
               child: CachedNetworkImage(
                 fit: BoxFit.cover,
                 cacheKey: user.profileImagePath,

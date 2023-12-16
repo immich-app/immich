@@ -1,8 +1,9 @@
 import { AssetType } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { mapAsset } from '../asset';
 import {
-  CommunicationEvent,
+  ClientEvent,
   IAssetRepository,
   ICommunicationRepository,
   IJobRepository,
@@ -10,6 +11,7 @@ import {
   ISystemConfigRepository,
   JobHandler,
   JobItem,
+  QueueCleanType,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
@@ -17,7 +19,7 @@ import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from './job.dto'
 
 @Injectable()
 export class JobService {
-  private logger = new Logger(JobService.name);
+  private logger = new ImmichLogger(JobService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -48,6 +50,11 @@ export class JobService {
 
       case JobCommand.EMPTY:
         await this.jobRepository.empty(queueName);
+        break;
+
+      case JobCommand.CLEAR_FAILED:
+        const failedJobs = await this.jobRepository.clear(queueName, QueueCleanType.FAILED);
+        this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
         break;
     }
 
@@ -175,7 +182,7 @@ export class JobService {
         if (item.data.source === 'sidecar-write') {
           const [asset] = await this.assetRepository.getByIds([item.data.id]);
           if (asset) {
-            this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
+            this.communicationRepository.send(ClientEvent.ASSET_UPDATE, asset.ownerId, mapAsset(asset));
           }
         }
         await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
@@ -195,7 +202,7 @@ export class JobService {
         const { id } = item.data;
         const person = await this.personRepository.getById(id);
         if (person) {
-          this.communicationRepository.send(CommunicationEvent.PERSON_THUMBNAIL, person.ownerId, id);
+          this.communicationRepository.send(ClientEvent.PERSON_THUMBNAIL, person.ownerId, person.id);
         }
         break;
 
@@ -223,20 +230,12 @@ export class JobService {
         }
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
-        if (asset) {
-          this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
+
+        // Only live-photo motion part will be marked as not visible immediately on upload. Skip notifying clients
+        if (asset && asset.isVisible) {
+          this.communicationRepository.send(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
       }
-    }
-
-    // In addition to the above jobs, all of these should queue `SEARCH_INDEX_ASSET`
-    switch (item.name) {
-      case JobName.CLASSIFY_IMAGE:
-      case JobName.ENCODE_CLIP:
-      case JobName.RECOGNIZE_FACES:
-      case JobName.LINK_LIVE_PHOTOS:
-        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
-        break;
     }
   }
 }

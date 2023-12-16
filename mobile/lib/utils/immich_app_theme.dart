@@ -20,7 +20,7 @@ final immichThemeProvider = StateProvider<ThemeMode>((ref) {
   }
 });
 
-ThemeData base = ThemeData(
+final ThemeData base = ThemeData(
   chipTheme: const ChipThemeData(
     side: BorderSide.none,
   ),
@@ -30,7 +30,7 @@ ThemeData base = ThemeData(
   ),
 );
 
-ThemeData immichLightTheme = ThemeData(
+final ThemeData immichLightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
   primarySwatch: Colors.indigo,
@@ -153,7 +153,7 @@ ThemeData immichLightTheme = ThemeData(
   ),
 );
 
-ThemeData immichDarkTheme = ThemeData(
+final ThemeData immichDarkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   primarySwatch: Colors.indigo,

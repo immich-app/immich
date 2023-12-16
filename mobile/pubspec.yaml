@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.89.0+113
+version: 1.91.0+115
 isar_version: &isar_version 3.1.0+1
 
 environment:
@@ -84,12 +84,12 @@ dev_dependencies:
   flutter_launcher_icons: "^0.9.2"
   flutter_native_splash: ^2.2.16
   isar_generator: *isar_version
-  mockito: ^5.3.2
   integration_test:
     sdk: flutter
   custom_lint: ^0.5.6
   riverpod_lint: ^2.1.0
   riverpod_generator: ^2.3.3
+  mocktail: ^1.0.1
 
 flutter:
   uses-material-design: true

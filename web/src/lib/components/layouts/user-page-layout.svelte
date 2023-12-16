@@ -1,11 +1,9 @@
 <script lang="ts">
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import type { UserResponseDto } from '@api';
   import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
   import SideBar from '../shared-components/side-bar/side-bar.svelte';
   import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
 
-  export let user: UserResponseDto;
   export let hideNavbar = false;
   export let showUploadButton = false;
   export let title: string | undefined = undefined;
@@ -18,7 +16,7 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar {user} {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
+    <NavigationBar {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
   {/if}
 
   <slot name="header" />

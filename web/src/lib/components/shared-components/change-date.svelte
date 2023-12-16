@@ -59,12 +59,27 @@
       dispatch('confirm', value);
     }
   };
+
   const handleKeydown = (event: KeyboardEvent) => {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
       event.stopPropagation();
     }
   };
+
   let isDropdownOpen = false;
+  let isSearching = false;
+
+  const onSearchFocused = () => {
+    isSearching = true;
+
+    openDropdown();
+  };
+
+  const onSearchBlurred = () => {
+    isSearching = false;
+
+    closeDropdown();
+  };
 
   const openDropdown = () => {
     isDropdownOpen = true;
@@ -84,42 +99,46 @@
   <ConfirmDialogue
     confirmColor="primary"
     cancelColor="secondary"
-    title="Change Date"
+    title="Edit date & time"
     prompt="Please select a new date:"
     {disabled}
     on:confirm={handleConfirm}
     on:cancel={handleCancel}
   >
-    <div class="flex flex-col text-md px-4 py-5 text-center gap-2" slot="prompt">
+    <div class="flex flex-col text-md px-4 text-center gap-2" slot="prompt">
       <div class="mt-2" />
       <div class="flex flex-col">
         <label for="datetime">Date and Time</label>
         <input
-          class="immich-form-label text-sm mt-2 w-full text-black"
+          class="text-sm my-4 w-full bg-gray-200 p-4 rounded-lg dark:text-white dark:bg-gray-600"
           id="datetime"
           type="datetime-local"
           bind:value={selectedDate}
         />
       </div>
-      <div class="flex flex-col w-full">
+      <div class="flex flex-col w-full mt-2">
         <label for="timezone">Timezone</label>
+
         <div class="relative">
           <input
-            class="immich-form-label text-sm mt-2 w-full text-black"
+            class="text-sm my-4 w-full bg-gray-200 p-3 rounded-lg dark:text-white dark:bg-gray-600"
             id="timezoneSearch"
             type="text"
             placeholder="Search timezone..."
             bind:value={searchQuery}
             on:input={updateSearchQuery}
-            on:focus={openDropdown}
+            on:focus={onSearchFocused}
+            on:blur={onSearchBlurred}
           />
           <Dropdown
+            class="h-[400px]"
             selectedOption={initialOption}
             options={filteredTimezones}
             render={(item) => (item ? `${item.zone} (${item.offset})` : '(not selected)')}
             on:select={({ detail: item }) => handleSelectTz(item)}
             controlable={true}
             bind:showMenu={isDropdownOpen}
+            on:click-outside={isSearching ? null : closeDropdown}
           />
         </div>
       </div>

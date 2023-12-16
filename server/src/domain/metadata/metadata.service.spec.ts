@@ -3,13 +3,16 @@ import {
   assetStub,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
+  newCommunicationRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
+  newMediaRepositoryMock,
   newMetadataRepositoryMock,
   newMoveRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  probeStub,
 } from '@test';
 import { randomBytes } from 'crypto';
 import { Stats } from 'fs';
@@ -17,10 +20,13 @@ import { constants } from 'fs/promises';
 import { when } from 'jest-when';
 import { JobName } from '../job';
 import {
+  ClientEvent,
   IAlbumRepository,
   IAssetRepository,
+  ICommunicationRepository,
   ICryptoRepository,
   IJobRepository,
+  IMediaRepository,
   IMetadataRepository,
   IMoveRepository,
   IPersonRepository,
@@ -30,7 +36,7 @@ import {
   WithProperty,
   WithoutProperty,
 } from '../repositories';
-import { MetadataService } from './metadata.service';
+import { MetadataService, Orientation } from './metadata.service';
 
 describe(MetadataService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
@@ -40,8 +46,10 @@ describe(MetadataService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let metadataMock: jest.Mocked<IMetadataRepository>;
   let moveMock: jest.Mocked<IMoveRepository>;
+  let mediaMock: jest.Mocked<IMediaRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let sut: MetadataService;
 
   beforeEach(async () => {
@@ -53,7 +61,9 @@ describe(MetadataService.name, () => {
     metadataMock = newMetadataRepositoryMock();
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    mediaMock = newMediaRepositoryMock();
 
     sut = new MetadataService(
       albumMock,
@@ -63,7 +73,9 @@ describe(MetadataService.name, () => {
       metadataMock,
       storageMock,
       configMock,
+      mediaMock,
       moveMock,
+      communicationMock,
       personMock,
     );
   });
@@ -165,6 +177,23 @@ describe(MetadataService.name, () => {
       });
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: false });
       expect(albumMock.removeAsset).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.id);
+    });
+
+    it('should notify clients on live photo link', async () => {
+      assetMock.getByIds.mockResolvedValue([
+        {
+          ...assetStub.livePhotoStillAsset,
+          exifInfo: { livePhotoCID: assetStub.livePhotoMotionAsset.id } as ExifEntity,
+        },
+      ]);
+      assetMock.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
+
+      await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(true);
+      expect(communicationMock.send).toHaveBeenCalledWith(
+        ClientEvent.ASSET_HIDDEN,
+        assetStub.livePhotoMotionAsset.ownerId,
+        assetStub.livePhotoMotionAsset.id,
+      );
     });
   });
 
@@ -275,8 +304,21 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should discard latitude and longitude on null island', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
+      metadataMock.readTags.mockResolvedValue({
+        GPSLatitude: 0,
+        GPSLongitude: 0,
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ latitude: null, longitude: null }));
+    });
+
     it('should not apply motion photos if asset is video', async () => {
       assetMock.getByIds.mockResolvedValue([{ ...assetStub.livePhotoMotionAsset, isVisible: true }]);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id });
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id]);
@@ -284,6 +326,19 @@ describe(MetadataService.name, () => {
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalledWith(
         expect.objectContaining({ assetType: AssetType.VIDEO, isVisible: false }),
+      );
+    });
+
+    it('should extract the correct video orientation', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
+      metadataMock.readTags.mockResolvedValue(null);
+
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id]);
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ orientation: Orientation.Rotate270CW }),
       );
     });
 

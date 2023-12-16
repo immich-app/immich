@@ -12,6 +12,7 @@
   import SettingSwitch from '../setting-switch.svelte';
   import SettingAccordion from '../setting-accordion.svelte';
   import SettingSelect from '../setting-select.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let machineLearningConfig: SystemConfigMachineLearningDto; // this is the config that is being edited
   export let disabled = false;
@@ -32,6 +33,14 @@
     savedConfig = { ...resetConfig.machineLearning };
     notificationController.show({ message: 'Reset to the last saved settings', type: NotificationType.Info });
   }
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function saveSetting() {
     try {
@@ -212,9 +221,8 @@
         </SettingAccordion>
 
         <SettingButtonsRow
-          on:reset={reset}
+          on:reset={({ detail }) => handleReset(detail)}
           on:save={saveSetting}
-          on:reset-to-default={resetToDefault}
           showResetToDefault={!isEqual(savedConfig, defaultConfig)}
           {disabled}
         />

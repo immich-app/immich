@@ -106,7 +106,7 @@ const albumResponse: AlbumResponseDto = {
 export const sharedLinkStub = {
   individual: Object.freeze({
     id: '123',
-    userId: authStub.admin.id,
+    userId: authStub.admin.user.id,
     user: userStub.admin,
     key: sharedLinkBytes,
     type: SharedLinkType.INDIVIDUAL,
@@ -121,7 +121,7 @@ export const sharedLinkStub = {
   } as SharedLinkEntity),
   valid: Object.freeze({
     id: '123',
-    userId: authStub.admin.id,
+    userId: authStub.admin.user.id,
     user: userStub.admin,
     key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,
@@ -138,7 +138,7 @@ export const sharedLinkStub = {
   } as SharedLinkEntity),
   expired: Object.freeze({
     id: '123',
-    userId: authStub.admin.id,
+    userId: authStub.admin.user.id,
     user: userStub.admin,
     key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,
@@ -154,7 +154,7 @@ export const sharedLinkStub = {
   } as SharedLinkEntity),
   readonlyNoExif: Object.freeze<SharedLinkEntity>({
     id: '123',
-    userId: authStub.admin.id,
+    userId: authStub.admin.user.id,
     user: userStub.admin,
     key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,
@@ -169,7 +169,7 @@ export const sharedLinkStub = {
     albumId: 'album-123',
     album: {
       id: 'album-123',
-      ownerId: authStub.admin.id,
+      ownerId: authStub.admin.user.id,
       owner: userStub.admin,
       albumName: 'Test Album',
       description: '',
@@ -209,7 +209,6 @@ export const sharedLinkStub = {
             tags: [],
             objects: ['a', 'b', 'c'],
             asset: null as any,
-            clipEmbedding: [0.12, 0.13, 0.14],
           },
           webpPath: '',
           thumbhash: null,
@@ -261,7 +260,7 @@ export const sharedLinkStub = {
   }),
   passwordRequired: Object.freeze<SharedLinkEntity>({
     id: '123',
-    userId: authStub.admin.id,
+    userId: authStub.admin.user.id,
     user: userStub.admin,
     key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,

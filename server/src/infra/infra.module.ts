@@ -15,7 +15,6 @@ import {
   IMoveRepository,
   IPartnerRepository,
   IPersonRepository,
-  ISearchRepository,
   IServerInfoRepository,
   ISharedLinkRepository,
   ISmartInfoRepository,
@@ -59,7 +58,6 @@ import {
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
-  TypesenseRepository,
   UserRepository,
   UserTokenRepository,
 } from './repositories';
@@ -80,7 +78,6 @@ const providers: Provider[] = [
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
-  { provide: ISearchRepository, useClass: TypesenseRepository },
   { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISmartInfoRepository, useClass: SmartInfoRepository },

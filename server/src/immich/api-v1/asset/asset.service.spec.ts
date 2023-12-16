@@ -226,60 +226,61 @@ describe('AssetService', () => {
         ],
       });
 
-      expect(assetRepositoryMock.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.id, [file1, file2]);
+      expect(assetRepositoryMock.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
     });
   });
 
   describe('getAssetById', () => {
     it('should allow owner access', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
       assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
       await sut.getAssetById(authStub.admin, assetStub.image.id);
-      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetStub.image.id);
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
     });
 
     it('should allow shared link access', async () => {
-      accessMock.asset.hasSharedLinkAccess.mockResolvedValue(true);
+      accessMock.asset.checkSharedLinkAccess.mockResolvedValue(new Set([assetStub.image.id]));
       assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
       await sut.getAssetById(authStub.adminSharedLink, assetStub.image.id);
-      expect(accessMock.asset.hasSharedLinkAccess).toHaveBeenCalledWith(
-        authStub.adminSharedLink.sharedLinkId,
-        assetStub.image.id,
+      expect(accessMock.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
+        authStub.adminSharedLink.sharedLink?.id,
+        new Set([assetStub.image.id]),
       );
     });
 
     it('should allow partner sharing access', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
-      accessMock.asset.hasPartnerAccess.mockResolvedValue(true);
+      accessMock.asset.checkPartnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
       assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
       await sut.getAssetById(authStub.admin, assetStub.image.id);
-      expect(accessMock.asset.hasPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetStub.image.id);
+      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
     });
 
     it('should allow shared album access', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
-      accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
-      accessMock.asset.hasAlbumAccess.mockResolvedValue(true);
+      accessMock.asset.checkAlbumAccess.mockResolvedValue(new Set([assetStub.image.id]));
       assetRepositoryMock.getById.mockResolvedValue(assetStub.image);
       await sut.getAssetById(authStub.admin, assetStub.image.id);
-      expect(accessMock.asset.hasAlbumAccess).toHaveBeenCalledWith(authStub.admin.id, assetStub.image.id);
+      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
     });
 
     it('should throw an error for no access', async () => {
-      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
-      accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
-      accessMock.asset.hasSharedLinkAccess.mockResolvedValue(false);
-      accessMock.asset.hasAlbumAccess.mockResolvedValue(false);
       await expect(sut.getAssetById(authStub.admin, assetStub.image.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(assetRepositoryMock.getById).not.toHaveBeenCalled();
     });
 
     it('should throw an error for an invalid shared link', async () => {
-      accessMock.asset.hasSharedLinkAccess.mockResolvedValue(false);
       await expect(sut.getAssetById(authStub.adminSharedLink, assetStub.image.id)).rejects.toBeInstanceOf(
         BadRequestException,
       );
-      expect(accessMock.asset.hasOwnerAccess).not.toHaveBeenCalled();
+      expect(accessMock.asset.checkOwnerAccess).not.toHaveBeenCalled();
       expect(assetRepositoryMock.getById).not.toHaveBeenCalled();
     });
   });

@@ -17,7 +17,8 @@
     "format:fix": "prettier --write .",
     "test": "jest",
     "test:cov": "jest --coverage",
-    "test:watch": "npm test -- --watch"
+    "test:watch": "npm test -- --watch",
+    "prepare": "svelte-kit sync"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.20.2",

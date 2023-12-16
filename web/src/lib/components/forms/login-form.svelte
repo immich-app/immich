@@ -16,7 +16,10 @@
   let loading = false;
   let oauthLoading = true;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    success: void;
+    firstLogin: void;
+  }>();
 
   onMount(async () => {
     if (!$featureFlags.oauth) {
@@ -62,7 +65,7 @@
       });
 
       if (!data.isAdmin && data.shouldChangePassword) {
-        dispatch('first-login');
+        dispatch('firstLogin');
         return;
       }
 

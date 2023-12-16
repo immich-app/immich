@@ -71,30 +71,10 @@ class SearchApi {
   ///
   /// * [String] type:
   ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [String] exifInfoPeriodCity:
-  ///
-  /// * [String] exifInfoPeriodState:
-  ///
-  /// * [String] exifInfoPeriodCountry:
-  ///
-  /// * [String] exifInfoPeriodMake:
-  ///
-  /// * [String] exifInfoPeriodModel:
-  ///
-  /// * [String] exifInfoPeriodProjectionType:
-  ///
-  /// * [List<String>] smartInfoPeriodObjects:
-  ///
-  /// * [List<String>] smartInfoPeriodTags:
-  ///
   /// * [bool] recent:
   ///
   /// * [bool] motion:
-  Future<Response> searchWithHttpInfo({ String? q, String? query, bool? clip, String? type, bool? isFavorite, bool? isArchived, String? exifInfoPeriodCity, String? exifInfoPeriodState, String? exifInfoPeriodCountry, String? exifInfoPeriodMake, String? exifInfoPeriodModel, String? exifInfoPeriodProjectionType, List<String>? smartInfoPeriodObjects, List<String>? smartInfoPeriodTags, bool? recent, bool? motion, }) async {
+  Future<Response> searchWithHttpInfo({ String? q, String? query, bool? clip, String? type, bool? recent, bool? motion, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search';
 
@@ -116,36 +96,6 @@ class SearchApi {
     }
     if (type != null) {
       queryParams.addAll(_queryParams('', 'type', type));
-    }
-    if (isFavorite != null) {
-      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
-    }
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
-    if (exifInfoPeriodCity != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.city', exifInfoPeriodCity));
-    }
-    if (exifInfoPeriodState != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.state', exifInfoPeriodState));
-    }
-    if (exifInfoPeriodCountry != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.country', exifInfoPeriodCountry));
-    }
-    if (exifInfoPeriodMake != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.make', exifInfoPeriodMake));
-    }
-    if (exifInfoPeriodModel != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.model', exifInfoPeriodModel));
-    }
-    if (exifInfoPeriodProjectionType != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.projectionType', exifInfoPeriodProjectionType));
-    }
-    if (smartInfoPeriodObjects != null) {
-      queryParams.addAll(_queryParams('multi', 'smartInfo.objects', smartInfoPeriodObjects));
-    }
-    if (smartInfoPeriodTags != null) {
-      queryParams.addAll(_queryParams('multi', 'smartInfo.tags', smartInfoPeriodTags));
     }
     if (recent != null) {
       queryParams.addAll(_queryParams('', 'recent', recent));
@@ -178,31 +128,11 @@ class SearchApi {
   ///
   /// * [String] type:
   ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [String] exifInfoPeriodCity:
-  ///
-  /// * [String] exifInfoPeriodState:
-  ///
-  /// * [String] exifInfoPeriodCountry:
-  ///
-  /// * [String] exifInfoPeriodMake:
-  ///
-  /// * [String] exifInfoPeriodModel:
-  ///
-  /// * [String] exifInfoPeriodProjectionType:
-  ///
-  /// * [List<String>] smartInfoPeriodObjects:
-  ///
-  /// * [List<String>] smartInfoPeriodTags:
-  ///
   /// * [bool] recent:
   ///
   /// * [bool] motion:
-  Future<SearchResponseDto?> search({ String? q, String? query, bool? clip, String? type, bool? isFavorite, bool? isArchived, String? exifInfoPeriodCity, String? exifInfoPeriodState, String? exifInfoPeriodCountry, String? exifInfoPeriodMake, String? exifInfoPeriodModel, String? exifInfoPeriodProjectionType, List<String>? smartInfoPeriodObjects, List<String>? smartInfoPeriodTags, bool? recent, bool? motion, }) async {
-    final response = await searchWithHttpInfo( q: q, query: query, clip: clip, type: type, isFavorite: isFavorite, isArchived: isArchived, exifInfoPeriodCity: exifInfoPeriodCity, exifInfoPeriodState: exifInfoPeriodState, exifInfoPeriodCountry: exifInfoPeriodCountry, exifInfoPeriodMake: exifInfoPeriodMake, exifInfoPeriodModel: exifInfoPeriodModel, exifInfoPeriodProjectionType: exifInfoPeriodProjectionType, smartInfoPeriodObjects: smartInfoPeriodObjects, smartInfoPeriodTags: smartInfoPeriodTags, recent: recent, motion: motion, );
+  Future<SearchResponseDto?> search({ String? q, String? query, bool? clip, String? type, bool? recent, bool? motion, }) async {
+    final response = await searchWithHttpInfo( q: q, query: query, clip: clip, type: type, recent: recent, motion: motion, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

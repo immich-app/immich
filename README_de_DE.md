@@ -11,7 +11,7 @@
 <p align="center">
 <img src="design/immich-logo.svg" width="150" title="Login mit eigener URL">
 </p>
-<h3 align="center">Immich - Hoch performante, selbst gehostete Backup Lösung für Fotos und Videos</h3>
+<h3 align="center">Immich - Hoch performante, selbst gehostete Backup-Lösung für Fotos und Videos</h3>
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Haupt-Screenshot">
@@ -32,10 +32,10 @@
 
 ## Warnung
 
-- ⚠️ Das Projekt befindet sich unter **sehr aktiver** Entwicklung.
+- ⚠️ Das Projekt befindet sich in **sehr aktiver** Entwicklung.
 - ⚠️ Erwarte Fehler und Änderungen mit Breaking-Changes.
 - ⚠️ **Nutze die App auf keinen Fall als einziges Speichermedium für deine Fotos und Videos.**
-- ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup Regel für deine wertvollen Fotos und Videos!
+- ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
 
 ## Inhalt
 
@@ -54,9 +54,9 @@ Die Hauptdokumentation, inklusive Installationsanleitungen, ist unter https://im
 
 ## Demo
 
-Die Web-Demo kannst du unter https://demo.immich.app finden.
+Die Web-Demo kannst Du unter https://demo.immich.app finden.
 
-Für die Handy-App kannst du `https://demo.immich.app/api` als `Server Endpoint URL` angeben.
+Für die Handy-App kannst Du `https://demo.immich.app/api` als `Server Endpoint URL` angeben.
 
 ```bash title="Demo Credential"
 Die Anmeldedaten
@@ -73,8 +73,8 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Funktionen                                           | Mobil  | Web   |
 | ---------------------------------------------------- | ------ | ----- |
 | Fotos & Videos hochladen und ansehen                 | Ja     | Ja    |
-| Automatisches Backup wenn die App offen ist          | Ja     | n. a. |
-| Selektive Auswahl von Alben zum Backup               | Ja     | n. a. |
+| Automatisches Backup wenn die App geöffnet ist       | Ja     | n. a. |
+| Selektive Auswahl von Alben zum Sichern              | Ja     | n. a. |
 | Fotos und Videos auf das Gerät herunterladen         | Ja     | Ja    |
 | Unterstützt mehrere Benutzer                         | Ja     | Ja    |
 | Album und geteilte Alben                             | Ja     | Ja    |
@@ -82,7 +82,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Unterstützt RAW Formate                              | Ja     | Ja    |
 | Metadaten anzeigen (EXIF, Karte)                     | Ja     | Ja    |
 | Suchen nach Metadaten, Objekten, Gesichtern und CLIP | Ja     | Ja    |
-| Administrative Funktionen (Nutzerverwaltung)         | Nein   | Ja    |
+| Administrative Funktionen (Benutzerverwaltung)       | Nein   | Ja    |
 | Backup im Hintergrund                                | Ja     | n. a. |
 | Virtuelles Scrollen                                  | Ja     | Ja    |
 | OAuth Unterstützung                                  | Ja     | Ja    |
@@ -101,22 +101,22 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 ## Unterstütze das Projekt
 
-Ich habe mich diesem Projekt verpflichtet und werde nicht aufgeben. Ich werde die Dokumentation weiter aktualisieren, neue Funktionen hinzufügen und Fehler beheben. Allerdings kann ich das nicht alleine schaffen. Daher brauche ich Eure Unterstützung mir zusätzliche Motivation zu geben um weiterzumachen.
+Ich habe mich diesem Projekt verpflichtet und werde nicht aufgeben. Ich werde die Dokumentation weiter aktualisieren, neue Funktionen hinzufügen und Fehler beheben. Allerdings kann ich das nicht alleine schaffen. Daher brauche ich Eure Unterstützung, um mir zusätzliche Motivation zu geben, weiterzumachen.
 
 Wie unsere Gastgeber in der [selfhosted.show - In der Episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) gesagt haben, ist dies ein riesiges Unterfangen, welchem das Team und ich uns annehmen. In Zukunft würde ich liebend gerne Vollzeit an dem Projekt arbeiten und bitte daher um Eure Unterstützung.
 
-Wenn Du denkst, dass dies die richtige Sache ist und dich selbst die App für eine längere Zeit nutzen siehst, dann denke bitte darüber nach das Projekt mit einer der unten aufgelisteten Optionen zu unterstützen.  
+Wenn Du denkst, dass dies die richtige Sache ist und dich selbst die App für eine längere Zeit nutzen siehst, dann denke bitte darüber nach, das Projekt mit einer der unten aufgelisteten Optionen zu unterstützen.  
 
 ### Spenden
 
-- [Monatliche Spende](https://github.com/sponsors/alextran1502) via GitHub Sponsors
-- [Einmalige Spende](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
+- [Monatliche Spende](https://github.com/sponsors/immich-app) via GitHub Sponsors
+- [Einmalige Spende](https://github.com/sponsors/immich-app?frequency=one-time&sponsor=immich-app) via GitHub Sponsors
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
 - ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
 
-## Unterstützer
+## Mitwirkende
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

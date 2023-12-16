@@ -10,12 +10,21 @@
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let trashConfig: SystemConfigTrashDto; // this is the config that is being edited
   export let disabled = false;
 
   let savedConfig: SystemConfigTrashDto;
   let defaultConfig: SystemConfigTrashDto;
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
@@ -90,9 +99,8 @@
           />
 
           <SettingButtonsRow
-            on:reset={reset}
+            on:reset={({ detail }) => handleReset(detail)}
             on:save={saveSetting}
-            on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
             {disabled}
           />
