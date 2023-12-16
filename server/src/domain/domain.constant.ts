@@ -58,6 +58,8 @@ export const serverVersion = ServerVersion.fromString(pkg.version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 
+export const WEB_ROOT_PATH = process.env.IMMICH_WEB_ROOT || '/usr/src/app/www/index.html';
+
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
   '.ari': ['image/ari', 'image/x-arriflex-ari'],
