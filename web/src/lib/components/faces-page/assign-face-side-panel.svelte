@@ -35,7 +35,11 @@
     }
   }
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    createPerson: string | null;
+    reassign: PersonResponseDto;
+  }>();
   const handleBackButton = () => {
     dispatch('close');
   };

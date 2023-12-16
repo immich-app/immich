@@ -10,6 +10,7 @@
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import SettingSelect from '../setting-select.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let loggingConfig: SystemConfigLoggingDto; // this is the config that is being edited
   export let disabled = false;
@@ -23,6 +24,14 @@
       api.systemConfigApi.getConfigDefaults().then((res) => res.data.logging),
     ]);
   }
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function saveSetting() {
     try {
@@ -96,9 +105,8 @@
             />
 
             <SettingButtonsRow
-              on:reset={reset}
+              on:reset={({ detail }) => handleReset(detail)}
               on:save={saveSetting}
-              on:reset-to-default={resetToDefault}
               showResetToDefault={!isEqual(savedConfig, defaultConfig)}
               {disabled}
             />

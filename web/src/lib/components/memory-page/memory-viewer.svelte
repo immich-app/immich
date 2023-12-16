@@ -101,7 +101,7 @@
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if currentMemory}
-    <ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} forceDark>
+    <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} forceDark>
       <svelte:fragment slot="leading">
         <p class="text-lg">
           {currentMemory.title}
