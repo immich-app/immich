@@ -73,7 +73,7 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each places as item (item.data.id)}
-          <a class="relative" href="{AppRoute.SEARCH}?{Field.CITY}={item.value}" draggable="false">
+          <a class="relative" href="{AppRoute.SEARCH}?q={item.value}" draggable="false">
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
@@ -97,7 +97,7 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each things as item}
-          <a class="relative" href="{AppRoute.SEARCH}?{Field.OBJECTS}={item.value}" draggable="false">
+          <a class="relative" href="{AppRoute.SEARCH}?q={item.value}" draggable="false">
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
