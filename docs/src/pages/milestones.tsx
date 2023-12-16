@@ -60,7 +60,7 @@ const items: Item[] = [
     title: 'Search improvement with pgvecto.rs',
     release: 'v1.91.0',
     tag: 'v1.91.0',
-    date: new Date(2023, 11, 7),
+    date: new Date(2023, 11, 15),
     dateType: DateType.RELEASE,
   },
   {
