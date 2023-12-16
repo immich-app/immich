@@ -20,9 +20,8 @@
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { mdiAccountOff, mdiClose, mdiEyeOutline, mdiMagnify } from '@mdi/js';
+  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { searchNameLocal } from '$lib/utils/person';
   import SearchBar from '$lib/components/faces-page/search-bar.svelte';
 

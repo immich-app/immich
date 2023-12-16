@@ -2,10 +2,7 @@
   import { api, type PersonResponseDto } from '@api';
   import FaceThumbnail from './face-thumbnail.svelte';
   import { createEventDispatcher } from 'svelte';
-  import Icon from '../elements/icon.svelte';
-  import { mdiClose, mdiMagnify } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { searchNameLocal } from '$lib/utils/person';
   import SearchBar from './search-bar.svelte';
 
