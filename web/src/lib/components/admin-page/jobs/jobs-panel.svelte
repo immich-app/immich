@@ -81,19 +81,19 @@
     [JobName.ObjectTagging]: {
       icon: mdiTagMultiple,
       title: api.getJobName(JobName.ObjectTagging),
-      subtitle: 'Run machine learning to tag objects\nNote that some assets may not have any objects detected',
+      subtitle: 'Run machine learning on assets to tag objects\nNote that some assets may not have any objects detected',
       disabled: !$featureFlags.tagImage,
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,
       title: api.getJobName(JobName.SmartSearch),
-      subtitle: 'Run machine learning to support smart search on assets',
+      subtitle: 'Run machine learning on assets to support smart search',
       disabled: !$featureFlags.clipEncode,
     },
     [JobName.RecognizeFaces]: {
       icon: mdiFaceRecognition,
       title: api.getJobName(JobName.RecognizeFaces),
-      subtitle: 'Run machine learning to recognize faces',
+      subtitle: 'Run machine learning on assets to recognize faces',
       handleCommand: handleFaceCommand,
       disabled: !$featureFlags.facialRecognition,
     },
