@@ -8,12 +8,6 @@
   import { mdiSelectInverse } from '@mdi/js'; // Selective
   import { mdiPillar } from '@mdi/js'; // Pillarbox
 
-  import { onMount, SvelteComponent } from 'svelte';
-  import { api, AssetResponseDto } from '@api';
-  import { handleError } from '$lib/utils/handle-error';
-
-  import Icon from '$lib/components/elements/icon.svelte';
-
   import { mdiAutoFix } from '@mdi/js'; // Auto
   import { mdiImageFilterHdr } from '@mdi/js'; // HDR
   import { mdiWeatherSunny } from '@mdi/js'; // Exposure
@@ -32,6 +26,14 @@
   import { mdiFlipVertical } from '@mdi/js'; // Flip vertical
   import { mdiFormatRotate90 } from '@mdi/js'; // Rotate
   import { mdiTriangleSmallUp } from '@mdi/js'; // Triangle
+
+  import { onMount, SvelteComponent } from 'svelte';
+  import { api, AssetResponseDto } from '@api';
+  import { handleError } from '$lib/utils/handle-error';
+
+  import Icon from '$lib/components/elements/icon.svelte';
+
+  import { pinch } from 'svelte-gestures';
 
   import SuggestionsButton from './suggestions-button.svelte';
   import AspectRatioButton from './aspect-ratio-button.svelte';
@@ -74,7 +76,6 @@
   };
 
   // Render
-  let renderedImage: string;
 
   let renderElement: SvelteComponent;
   let editorElement: HTMLDivElement;
@@ -132,6 +133,7 @@
 
   export let asset: AssetResponseDto;
   let assetData: string;
+  let assetBlob: Blob;
   let thumbData: string;
   let publicSharedKey = '';
 
@@ -175,6 +177,11 @@
       filter.opacity
     }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
     //console.log('applied filter');
+  };
+
+  const handlePinch = (event: CustomEvent) => {
+    let scale = event.detail.scale;
+    console.log('scale', scale);
   };
 
   onMount(async () => {
@@ -228,7 +235,7 @@
     // Load original image
     try {
       const { data } = await api.assetApi.serveFile(
-        { id: asset.id, isThumb: false, isWeb: false, key: publicSharedKey },
+        { id: asset.id },
         {
           responseType: 'blob',
         },
@@ -237,10 +244,11 @@
       if (!(data instanceof Blob)) {
         return;
       }
-
+      assetBlob = data;
       assetData = URL.createObjectURL(data);
       originalImage = document.createElement('img');
       originalImage.src = assetData;
+
       //return assetData;
     } catch {
       // Do nothing
@@ -830,7 +838,7 @@
   </div>
   <div class="relative col-span-3 col-start-1 row-span-full row-start-1">
     <!-- TODO: fix only allow drag from crop Element or imageWrapper -->
-    <div class="flex h-full w-full justify-center" bind:this={assetDragHandle}>
+    <div class="flex h-full w-full justify-center" use:pinch on:pinch={handlePinch} bind:this={assetDragHandle}>
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
       <div class="-z-10 flex h-full w-full items-center justify-center">
         <div bind:this={cropElementWrapper} class="relative flex h-full w-full items-center justify-center">
@@ -839,7 +847,7 @@
               <div
                 class="{isLoaded
                   ? 'hidden'
-                  : 'flex'} absolute z-[1001] left-0 top-0 w-full h-full bg-black justify-center items-center gap-1"
+                  : 'flex'} absolute left-0 top-0 w-full h-full bg-black justify-center items-center gap-1"
               >
                 <span>Loading</span>
                 <LoadingSpinner />
@@ -849,7 +857,7 @@
             <div
               bind:this={cropElement}
               id="cropElement"
-              class="absolute left-1/2 top-1/2 z-[1000] mx-auto -translate-x-1/2 -translate-y-1/2 bg-transparent {activeButton ===
+              class="absolute left-1/2 top-1/2 z-[1004] mx-auto -translate-x-1/2 -translate-y-1/2 bg-transparent {activeButton ===
               'crop'
                 ? 'shadow-[0_0_5000px_5000px_rgba(0,0,0,0.8)]'
                 : 'shadow-[0_0_5000px_5000px_#000000]'}"
@@ -1184,14 +1192,14 @@
   </div>
   <Render
     bind:this={renderElement}
-    {assetData}
-    editedImage={renderedImage}
     angle={currentAngle - currentAngleOffset}
     scale={currentZoom}
     translate={currentTranslate}
     crop={currentCrop}
     ratio={currentRatio}
     {filter}
+    {assetBlob}
+    assetName={asset.originalFileName}
     bind:isRendering
   />
 </div>

@@ -1,9 +1,11 @@
 <script lang="ts">
   import 'context-filter-polyfill'; // polyfill for canvas filters
+  //import copyExifWithoutOrientation from './copyExifWithoutOrientation';
+  import copyExif from './copyExif';
 
-  export let editedImage: string;
   export let isRendering = false;
-  export let assetData: string;
+  export let assetName: string;
+  export let assetBlob: Blob;
   export let angle = 0;
   export let crop = { width: 0, height: 0 };
   export let scale = 1;
@@ -25,7 +27,12 @@
     isRendering = true;
 
     const img = new Image();
-    img.src = assetData;
+    img.src = URL.createObjectURL(assetBlob);
+    await new Promise((resolve) => {
+      img.onload = (event) => {
+        resolve(event);
+      };
+    });
 
     const imgWidth = img.width;
     const imgHeight = img.height;
@@ -108,14 +115,32 @@
     return { scaledWidth, scaledHeight };
   };
 
-  const downloadImage = (canvas: HTMLCanvasElement) => {
-    window.setTimeout(() => {
-      const dataURL = canvas.toDataURL('image/png');
-      editedImage = dataURL;
+  const downloadImage = async (canvas: HTMLCanvasElement) => {
+    window.setTimeout(async () => {
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            }
+          },
+          'image/jpeg',
+          1,
+        );
+      });
 
+      if (!blob) {
+        isRendering = false;
+        // Error handling
+        return;
+      }
+      //const exifBlob = await copyExifWithoutOrientation(assetBlob, blob);
+      const exifBlob = await copyExif(assetBlob, blob);
+
+      const dataURL = URL.createObjectURL(exifBlob);
       const link = document.createElement('a');
       link.href = dataURL;
-      link.download = 'test.png';
+      link.download = assetName;
       link.click();
 
       isRendering = false;
