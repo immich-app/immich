@@ -47,7 +47,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
-    [QueueName.CLIP_ENCODING]: { concurrency: 2 },
+    [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
     [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
