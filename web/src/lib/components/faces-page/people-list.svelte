@@ -7,6 +7,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { searchNameLocal } from '$lib/utils/person';
+  import SearchBar from './search-bar.svelte';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
@@ -20,11 +21,6 @@
   let dispatch = createEventDispatcher<{
     select: PersonResponseDto;
   }>();
-
-  const resetSearch = () => {
-    name = '';
-    people = peopleCopy;
-  };
 
   $: {
     people = peopleCopy.filter(
@@ -61,31 +57,15 @@
   };
 </script>
 
-<div class="flex w-40 sm:w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-2 place-items-center">
-  <button on:click={() => searchPeople(true)}>
-    <div class="w-fit">
-      <Icon path={mdiMagnify} size="24" />
-    </div>
-  </button>
-  <!-- svelte-ignore a11y-autofocus -->
-  <input
-    autofocus
-    class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
-    type="text"
-    placeholder="Search names"
-    bind:value={name}
-    on:input={() => searchPeople(false)}
+<div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">
+  <SearchBar
+    bind:name
+    {isSearchingPeople}
+    on:reset={() => {
+      people = peopleCopy;
+    }}
+    on:search={({ detail }) => searchPeople(detail.force ?? false)}
   />
-  {#if name}
-    <button on:click={resetSearch}>
-      <Icon path={mdiClose} />
-    </button>
-  {/if}
-  {#if isSearchingPeople}
-    <div class="flex place-items-center">
-      <LoadingSpinner />
-    </div>
-  {/if}
 </div>
 
 <div

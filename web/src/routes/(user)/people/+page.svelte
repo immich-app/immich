@@ -24,6 +24,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { searchNameLocal } from '$lib/utils/person';
+  import SearchBar from '$lib/components/faces-page/search-bar.svelte';
 
   export let data: PageData;
 
@@ -273,11 +274,6 @@
     goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge&previousRoute=${AppRoute.PEOPLE}`);
   };
 
-  const resetSearch = () => {
-    searchName = '';
-    searchPeopleCopy = [];
-  };
-
   const searchPeople = async (force: boolean) => {
     if (searchName === '') {
       people = peopleCopy;
@@ -434,33 +430,15 @@
     {#if countTotalPeople > 0}
       <div class="flex gap-2 items-center justify-center">
         <div class="hidden sm:block">
-          <div
-            class="flex items-center text-sm w-40 sm:w-48 md:w-52 lg:w-80 h-10 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 gap-2 place-items-center"
-          >
-            <button on:click={() => searchPeople(true)}>
-              <div class="w-fit">
-                <Icon path={mdiMagnify} size="24" />
-              </div>
-            </button>
-            <!-- svelte-ignore a11y-autofocus -->
-            <input
-              autofocus
-              class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
-              type="text"
-              placeholder="Search names"
-              bind:value={searchName}
-              on:input={() => searchPeople(false)}
+          <div class=" w-40 sm:w-48 md:w-52 lg:w-80 h-10">
+            <SearchBar
+              bind:name={searchName}
+              {isSearchingPeople}
+              on:reset={() => {
+                searchPeopleCopy = [];
+              }}
+              on:search={({ detail }) => searchPeople(detail.force ?? false)}
             />
-            {#if searchName}
-              <button on:click={resetSearch}>
-                <Icon path={mdiClose} />
-              </button>
-            {/if}
-            {#if isSearchingPeople}
-              <div class="flex place-items-center">
-                <LoadingSpinner />
-              </div>
-            {/if}
           </div>
         </div>
         <IconButton on:click={() => (selectHidden = !selectHidden)}>
