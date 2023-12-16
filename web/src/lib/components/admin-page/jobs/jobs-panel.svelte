@@ -15,7 +15,7 @@
     mdiLibraryShelves,
     mdiTable,
     mdiTagMultiple,
-    mdiVectorCircle,
+    mdiImageSearch,
     mdiVideo,
   } from '@mdi/js';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
@@ -85,7 +85,7 @@
       disabled: !$featureFlags.tagImage,
     },
     [JobName.SmartSearch]: {
-      icon: mdiVectorCircle,
+      icon: mdiImageSearch,
       title: api.getJobName(JobName.SmartSearch),
       subtitle: 'Run machine learning to support smart search on assets',
       disabled: !$featureFlags.clipEncode,
