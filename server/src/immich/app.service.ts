@@ -67,7 +67,7 @@ export class AppService {
   ssr(excludePaths: string[]) {
     let index = '';
     try {
-      index = readFileSync('/usr/src/app/www/index.html').toString();
+      index = readFileSync(process.env.WEB_PATH || '/usr/src/app/www/index.html').toString();
     } catch (error: Error | any) {
       this.logger.warn('Unable to open `www/index.html, skipping SSR.');
     }
