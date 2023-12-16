@@ -12,10 +12,10 @@
     mdiFileJpgBox,
     mdiFileXmlBox,
     mdiFolderMove,
+    mdiImageSearch,
     mdiLibraryShelves,
     mdiTable,
     mdiTagMultiple,
-    mdiImageSearch,
     mdiVideo,
   } from '@mdi/js';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
