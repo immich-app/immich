@@ -572,7 +572,7 @@
     <Map
       mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
       center={latlng}
-      zoom={14}
+      zoom={15}
       simplified
       useLocationPin
     >
