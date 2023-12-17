@@ -20,8 +20,10 @@
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
+  import { mdiAccountOff, mdiClose, mdiEyeOutline, mdiMagnify } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { searchNameLocal } from '$lib/utils/person';
 
   export let data: PageData;
   let selectHidden = false;
@@ -30,6 +32,7 @@
   let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
   let people = data.people.people;
+  let peopleCopy = data.people.people;
   let countTotalPeople = data.people.total;
   let countVisiblePeople = data.people.visible;
 
@@ -48,6 +51,46 @@
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
   });
+
+  let name = data.name;
+  let searchWord: string;
+  let isSearchingPeople = false;
+
+  const resetSearch = () => {
+    name = '';
+    people = peopleCopy;
+  };
+
+  $: {
+    if (name) {
+      people = searchNameLocal(name, people, 100);
+    }
+  }
+
+  const searchPeople = async (force: boolean) => {
+    if (name === '') {
+      people = peopleCopy;
+      return;
+    }
+    if (!force) {
+      if (people.length < 20 && name.startsWith(searchWord)) {
+        return;
+      }
+    }
+
+    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    try {
+      const { data } = await api.searchApi.searchPerson({ name });
+      people = data;
+      searchWord = name;
+    } catch (error) {
+      handleError(error, "Can't search people");
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    isSearchingPeople = false;
+  };
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
@@ -306,7 +349,7 @@
       });
 
       notificationController.show({
-        message: 'Date of birth saved succesfully',
+        message: 'Date of birth saved successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -327,20 +370,27 @@
         personUpdateDto: { name: personName },
       });
 
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
+      people = updatePeopleArray(people, updatedPerson);
+      peopleCopy = updatePeopleArray(peopleCopy, updatedPerson);
 
       notificationController.show({
-        message: 'Change name succesfully',
+        message: 'Name changed successfully',
         type: NotificationType.Info,
       });
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
+  };
+
+  const updatePeopleArray = (peopleArray: PersonResponseDto[], updatedPerson: PersonResponseDto) => {
+    peopleArray = peopleArray.map((person: PersonResponseDto) => {
+      if (person.id === updatedPerson.id) {
+        return updatedPerson;
+      }
+      return person;
+    });
+
+    return peopleArray;
   };
 </script>
 
@@ -369,6 +419,33 @@
     {/if}
   </svelte:fragment>
 
+  <div class="flex w-40 sm:w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-2 place-items-center">
+    <button on:click={() => searchPeople(true)}>
+      <div class="w-fit">
+        <Icon path={mdiMagnify} size="24" />
+      </div>
+    </button>
+    <!-- svelte-ignore a11y-autofocus -->
+    <input
+      autofocus
+      class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
+      type="text"
+      placeholder="Search names"
+      bind:value={name}
+      on:input={() => searchPeople(false)}
+    />
+    {#if name}
+      <button on:click={resetSearch}>
+        <Icon path={mdiClose} />
+      </button>
+    {/if}
+    {#if isSearchingPeople}
+      <div class="flex place-items-center">
+        <LoadingSpinner />
+      </div>
+    {/if}
+  </div>
+
   {#if countVisiblePeople > 0}
     <div class="pl-4">
       <div class="flex flex-row flex-wrap gap-1">
@@ -377,6 +454,7 @@
             <PeopleCard
               {person}
               preload={idx < 20}
+              previousSearchParams={{ name }}
               on:change-name={() => handleChangeName(person)}
               on:set-birth-date={() => handleSetBirthDate(person)}
               on:merge-people={() => handleMergePeople(person)}

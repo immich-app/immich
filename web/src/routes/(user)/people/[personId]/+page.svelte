@@ -141,11 +141,7 @@
       return;
     }
   };
-  afterNavigate(({ from }) => {
-    // Prevent setting previousRoute to the current page.
-    if (from && from.route.id !== $page.route.id) {
-      previousRoute = from.url.href;
-    }
+  afterNavigate(() => {
     if (previousPersonId !== data.person.id) {
       assetStore = new AssetStore({
         isArchived: false,
