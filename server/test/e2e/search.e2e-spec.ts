@@ -167,10 +167,7 @@ describe(`${SearchController.name}`, () => {
     beforeEach(async () => {
       const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
       await assetRepository.upsertExif({ assetId, ...searchStub.exif });
-      await smartInfoRepository.upsert(
-        { assetId: asset1.id, ...searchStub.smartInfo },
-        Array.from({ length: 512 }, Math.random),
-      );
+      await smartInfoRepository.upsert({ assetId, ...searchStub.smartInfo }, Array.from({ length: 512 }, Math.random));
 
       const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true, smartInfo: true });
       if (!assetWithMetadata) {

@@ -808,9 +808,11 @@ export class AssetRepository implements IAssetRepository {
   async searchMetadata(query: string, ownerId: string, { numResults }: MetadataSearchOptions): Promise<AssetEntity[]> {
     const rows = await this.getBuilder({
       userIds: [ownerId],
-      exifInfo: true,
+      exifInfo: false,
       isArchived: false,
     })
+      .select('asset.*')
+      .addSelect('e.*')
       .addSelect('COALESCE(si.tags, array[]::text[])', 'tags')
       .addSelect('COALESCE(si.objects, array[]::text[])', 'objects')
       .innerJoin('exif', 'e', 'asset."id" = e."assetId"')
