@@ -56,3 +56,25 @@ export const dateFormats = {
     year: 'numeric',
   },
 };
+
+export enum QueryParameter {
+  ACTION = 'action',
+  ASSET = 'asset',
+  CLIP = 'clip',
+  MEMORY = 'memory',
+  OPEN_SETTING = 'openSetting',
+  QUERY = 'query',
+  PREVIOUS_ROUTE = 'previousRoute',
+  SEARCHED_PEOPLE = 'searchedPeople',
+  SEARCH_TERM = 'q',
+}
+
+export enum OpenSettingQueryParameterValue {
+  OAUTH = 'oauth',
+  JOB = 'job',
+  STORAGE_TEMPLATE = 'storageTemplate',
+}
+
+export enum ActionQueryParameterValue {
+  MERGE = 'merge',
+}

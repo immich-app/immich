@@ -23,6 +23,7 @@
   import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
   import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
+  import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
 
   export let data: PageData;
 
@@ -66,7 +67,7 @@
       <SettingAccordion
         title="Job Settings"
         subtitle="Manage job concurrency"
-        isOpen={$page.url.searchParams.get('open') === 'job-settings'}
+        isOpen={$page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenSettingQueryParameterValue.JOB}
       >
         <JobSettings disabled={$featureFlags.configFile} jobConfig={configs.job} />
       </SettingAccordion>
@@ -98,7 +99,8 @@
       <SettingAccordion
         title="Storage Template"
         subtitle="Manage the folder structure and file name of the upload asset"
-        isOpen={$page.url.searchParams.get('open') === 'storage-template'}
+        isOpen={$page.url.searchParams.get(QueryParameter.OPEN_SETTING) ===
+          OpenSettingQueryParameterValue.STORAGE_TEMPLATE}
       >
         <StorageTemplateSettings disabled={$featureFlags.configFile} storageConfig={configs.storageTemplate} />
       </SettingAccordion>

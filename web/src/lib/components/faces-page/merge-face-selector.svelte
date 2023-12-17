@@ -11,7 +11,7 @@
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -45,7 +45,7 @@
 
   const handleSwapPeople = () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
-    $page.url.searchParams.set('action', 'merge');
+    $page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
     goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
   };
 

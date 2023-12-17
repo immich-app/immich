@@ -14,6 +14,7 @@
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
   import { user } from '$lib/stores/user.store';
+  import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
 
   export let keys: APIKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
@@ -48,7 +49,8 @@
   <SettingAccordion
     title="OAuth"
     subtitle="Manage your OAuth connection"
-    isOpen={oauthOpen || $page.url.searchParams.get('open') === 'oauth'}
+    isOpen={oauthOpen ||
+      $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenSettingQueryParameterValue.OAUTH}
   >
     <OAuthSettings user={$user} />
   </SettingAccordion>

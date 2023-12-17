@@ -6,7 +6,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { api, PeopleUpdateItem, updateArray, type PersonResponseDto } from '@api';
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import {
     NotificationType,
@@ -62,6 +62,10 @@
     if (searchName) {
       people = searchNameLocal(searchName, searchPeopleCopy, 10);
     } else {
+      if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
+        $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
+        goto($page.url);
+      }
       people = peopleCopy;
     }
   }
@@ -72,7 +76,7 @@
 
   onMount(() => {
     document.addEventListener('keydown', onKeyboardPress);
-    const getSearchedPeople = $page.url.searchParams.get('searchedPeople');
+    const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
       searchPeople(true);
@@ -97,7 +101,7 @@
   };
 
   const handleSearch = (force: boolean) => {
-    $page.url.searchParams.set('searchedPeople', searchName);
+    $page.url.searchParams.set(QueryParameter.SEARCHED_PEOPLE, searchName);
     goto($page.url);
     searchPeople(force);
   };
@@ -269,7 +273,9 @@
   };
 
   const handleMergePeople = (detail: PersonResponseDto) => {
-    goto(`${AppRoute.PEOPLE}/${detail.id}?action=merge&previousRoute=${AppRoute.PEOPLE}`);
+    goto(
+      `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
+    );
   };
 
   const searchPeople = async (force: boolean) => {

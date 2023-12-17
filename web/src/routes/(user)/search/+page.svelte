@@ -18,7 +18,7 @@
   import type { PageData } from './$types';
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import { flip } from 'svelte/animate';
   import { onDestroy, onMount } from 'svelte';
@@ -86,8 +86,8 @@
   });
 
   $: term = (() => {
-    let term = $page.url.searchParams.get('q') || data.term || '';
-    const isMetadataSearch = $page.url.searchParams.get('clip') === 'false';
+    let term = $page.url.searchParams.get(QueryParameter.SEARCH_TERM) || data.term || '';
+    const isMetadataSearch = $page.url.searchParams.get(QueryParameter.CLIP) === 'false';
     if (isMetadataSearch && term !== '') {
       term = `m:${term}`;
     }

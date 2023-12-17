@@ -25,7 +25,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketStore } from '$lib/stores/websocket';
@@ -120,8 +120,8 @@
   }
 
   onMount(() => {
-    const action = $page.url.searchParams.get('action');
-    const getPreviousRoute = $page.url.searchParams.get('previousRoute');
+    const action = $page.url.searchParams.get(QueryParameter.ACTION);
+    const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
     if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
       previousRoute = getPreviousRoute;
     }
@@ -338,8 +338,8 @@
 
   const handleGoBack = () => {
     viewMode = ViewMode.VIEW_ASSETS;
-    if ($page.url.searchParams.has('action')) {
-      $page.url.searchParams.delete('action');
+    if ($page.url.searchParams.has(QueryParameter.ACTION)) {
+      $page.url.searchParams.delete(QueryParameter.ACTION);
       goto($page.url);
     }
   };

@@ -6,7 +6,7 @@
   import { goto } from '$app/navigation';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import { page } from '$app/stores';
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -18,8 +18,8 @@
 
   const parseIndex = (s: string | null, max: number | null) => Math.max(Math.min(parseInt(s ?? '') || 0, max ?? 0), 0);
 
-  $: memoryIndex = parseIndex($page.url.searchParams.get('memory'), $memoryStore?.length - 1);
-  $: assetIndex = parseIndex($page.url.searchParams.get('asset'), currentMemory?.assets.length - 1);
+  $: memoryIndex = parseIndex($page.url.searchParams.get(QueryParameter.MEMORY), $memoryStore?.length - 1);
+  $: assetIndex = parseIndex($page.url.searchParams.get(QueryParameter.ASSET), currentMemory?.assets.length - 1);
 
   $: previousMemory = $memoryStore?.[memoryIndex - 1];
   $: currentMemory = $memoryStore?.[memoryIndex];
