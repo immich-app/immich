@@ -806,9 +806,11 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [DummyValue.STRING, DummyValue.UUID, { numResults: 250 }] })
   async searchMetadata(query: string, ownerId: string, { numResults }: MetadataSearchOptions): Promise<AssetEntity[]> {
-    const rows = await this.repository
-      .createQueryBuilder('assets')
-      .select('assets.*')
+    const rows = await this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: false,
+      isArchived: false,
+    })
       .addSelect('e.country', 'country')
       .addSelect('e.state', 'state')
       .addSelect('e.city', 'city')
@@ -817,9 +819,8 @@ export class AssetRepository implements IAssetRepository {
       .addSelect('e.make', 'make')
       .addSelect('COALESCE(si.tags, array[]::text[])', 'tags')
       .addSelect('COALESCE(si.objects, array[]::text[])', 'objects')
-      .innerJoin('exif', 'e', 'assets."id" = e."assetId"')
-      .leftJoin('smart_info', 'si', 'si."assetId" = assets."id"')
-      .where('assets.ownerId = :ownerId', { ownerId })
+      .innerJoin('exif', 'e', 'asset."id" = e."assetId"')
+      .leftJoin('smart_info', 'si', 'si."assetId" = asset."id"')
       .andWhere(
         `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
         @@ PLAINTO_TSQUERY('english', :query)`,

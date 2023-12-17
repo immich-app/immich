@@ -671,29 +671,60 @@ LIMIT
 
 -- AssetRepository.searchMetadata
 SELECT
+  "asset"."id" AS "asset_id",
+  "asset"."deviceAssetId" AS "asset_deviceAssetId",
+  "asset"."ownerId" AS "asset_ownerId",
+  "asset"."libraryId" AS "asset_libraryId",
+  "asset"."deviceId" AS "asset_deviceId",
+  "asset"."type" AS "asset_type",
+  "asset"."originalPath" AS "asset_originalPath",
+  "asset"."resizePath" AS "asset_resizePath",
+  "asset"."webpPath" AS "asset_webpPath",
+  "asset"."thumbhash" AS "asset_thumbhash",
+  "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
+  "asset"."createdAt" AS "asset_createdAt",
+  "asset"."updatedAt" AS "asset_updatedAt",
+  "asset"."deletedAt" AS "asset_deletedAt",
+  "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
+  "asset"."localDateTime" AS "asset_localDateTime",
+  "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
+  "asset"."isFavorite" AS "asset_isFavorite",
+  "asset"."isArchived" AS "asset_isArchived",
+  "asset"."isExternal" AS "asset_isExternal",
+  "asset"."isReadOnly" AS "asset_isReadOnly",
+  "asset"."isOffline" AS "asset_isOffline",
+  "asset"."checksum" AS "asset_checksum",
+  "asset"."duration" AS "asset_duration",
+  "asset"."isVisible" AS "asset_isVisible",
+  "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
+  "asset"."originalFileName" AS "asset_originalFileName",
+  "asset"."sidecarPath" AS "asset_sidecarPath",
+  "asset"."stackParentId" AS "asset_stackParentId",
   "e"."description" AS "description",
   "e"."city" AS "city",
   "e"."state" AS "state",
   "e"."country" AS "country",
   "e"."make" AS "make",
   "e"."model" AS "model",
-  assets.*,
   COALESCE("si"."tags", array[]::text []) AS "tags",
   COALESCE("si"."objects", array[]::text []) AS "objects"
 FROM
-  "assets" "assets"
-  INNER JOIN "exif" "e" ON assets."id" = e."assetId"
-  LEFT JOIN "smart_info" "si" ON si."assetId" = assets."id"
+  "assets" "asset"
+  INNER JOIN "exif" "e" ON asset."id" = e."assetId"
+  LEFT JOIN "smart_info" "si" ON si."assetId" = asset."id"
 WHERE
   (
-    "assets"."ownerId" = $1
+    "asset"."isVisible" = true
+    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."ownerId" IN ($1)
+    AND "asset"."isArchived" = $2
     AND (
       e."exifTextSearchableColumn" || COALESCE(
         si."smartInfoTextSearchableColumn",
         to_tsvector('english', '')
       )
-    ) @@ PLAINTO_TSQUERY('english', $2)
+    ) @@ PLAINTO_TSQUERY('english', $3)
   )
-  AND ("assets"."deletedAt" IS NULL)
+  AND ("asset"."deletedAt" IS NULL)
 LIMIT
   250
