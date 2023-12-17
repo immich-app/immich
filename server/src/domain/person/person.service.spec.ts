@@ -777,9 +777,10 @@ describe(PersonService.name, () => {
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
 
-      await expect(
-        sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] }),
-      ).resolves.toEqual({ results: [{ id: 'person-2', success: true }], person: personStub.primaryPerson });
+      await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual({
+        results: [{ id: 'person-2', success: true }],
+        person: personStub.primaryPerson,
+      });
 
       expect(personMock.reassignFaces).toHaveBeenCalledWith({
         newPersonId: personStub.primaryPerson.id,
@@ -803,9 +804,7 @@ describe(PersonService.name, () => {
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-3']));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
 
-      await expect(
-        sut.mergePerson(authStub.admin, 'person-3', { ids: ['person-1'] }),
-      ).resolves.toEqual({
+      await expect(sut.mergePerson(authStub.admin, 'person-3', { ids: ['person-1'] })).resolves.toEqual({
         results: [{ id: 'person-1', success: true }],
         person: { ...personStub.RandomPerson, name: personStub.primaryPerson.name },
       });
@@ -862,9 +861,7 @@ describe(PersonService.name, () => {
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
 
-      await expect(
-        sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2']}),
-      ).resolves.toEqual({
+      await expect(sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] })).resolves.toEqual({
         results: [{ id: 'person-2', success: false, error: BulkIdErrorReason.UNKNOWN }],
         person: personStub.primaryPerson,
       });
