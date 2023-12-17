@@ -6,7 +6,13 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { api, PeopleUpdateItem, updateArray, type PersonResponseDto } from '@api';
   import { goto } from '$app/navigation';
-  import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
+  import {
+    ActionQueryParameterValue,
+    AppRoute,
+    QueryParameter,
+    maximumLengthSearchPeople,
+    timeBeforeShowLoadingSpinner,
+  } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import {
     NotificationType,
@@ -60,7 +66,7 @@
 
   $: {
     if (searchName) {
-      people = searchNameLocal(searchName, searchPeopleCopy, 20);
+      people = searchNameLocal(searchName, searchPeopleCopy, maximumLengthSearchPeople);
     } else {
       if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
         $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
@@ -283,12 +289,12 @@
       return;
     }
     if (!force) {
-      if (people.length < 20 && searchName.startsWith(searchWord)) {
+      if (people.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
         return;
       }
     }
 
-    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.searchApi.searchPerson({ name: searchName, withHidden: false });
       people = data;

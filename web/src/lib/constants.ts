@@ -78,3 +78,7 @@ export enum OpenSettingQueryParameterValue {
 export enum ActionQueryParameterValue {
   MERGE = 'merge',
 }
+
+export const maximumLengthSearchPeople: number = 20;
+
+export const timeBeforeShowLoadingSpinner: number = 100;

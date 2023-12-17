@@ -5,6 +5,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
   import SearchBar from './search-bar.svelte';
+  import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
 
   export let screenHeight: number;
   export let people: PersonResponseDto[];
@@ -24,7 +25,7 @@
       (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
     );
     if (name) {
-      people = searchNameLocal(name, people, 20);
+      people = searchNameLocal(name, people, maximumLengthSearchPeople);
     }
   }
 
@@ -34,12 +35,12 @@
       return;
     }
     if (!force) {
-      if (people.length < 20 && name.startsWith(searchWord)) {
+      if (people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) {
         return;
       }
     }
 
-    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;

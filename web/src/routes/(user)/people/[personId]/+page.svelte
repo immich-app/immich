@@ -25,7 +25,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AppRoute, QueryParameter, maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketStore } from '$lib/stores/websocket';
@@ -90,10 +90,10 @@
   let isSearchingPeople = false;
 
   const searchPeople = async () => {
-    if ((people.length < 20 && name.startsWith(searchWord)) || name === '') {
+    if ((people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) || name === '') {
       return;
     }
-    const timeout = setTimeout(() => (isSearchingPeople = true), 100);
+    const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
       people = data;
