@@ -337,6 +337,8 @@ class ApiClient {
           return MemoryLaneResponseDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
+        case 'MergePersonResponseDto':
+          return MergePersonResponseDto.fromJson(value);
         case 'ModelType':
           return ModelTypeTypeTransformer().decode(value);
         case 'OAuthAuthorizeResponseDto':

@@ -348,7 +348,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **mergePerson**
-> List<BulkIdResponseDto> mergePerson(id, mergePersonDto)
+> MergePersonResponseDto mergePerson(id, mergePersonDto)
 
 
 
@@ -391,7 +391,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List<BulkIdResponseDto>**](BulkIdResponseDto.md)
+[**MergePersonResponseDto**](MergePersonResponseDto.md)
 
 ### Authorization
 

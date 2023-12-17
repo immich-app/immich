@@ -31,6 +31,7 @@ import {
   AssetFaceUpdateDto,
   FaceDto,
   MergePersonDto,
+  MergePersonResponseDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonResponseDto,
@@ -442,46 +443,59 @@ export class PersonService {
     return true;
   }
 
-  async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
+  async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<MergePersonResponseDto> {
     const mergeIds = dto.ids;
+    if (!(mergeIds instanceof Array)) {
+      throw new BadRequestException('ids is not an array');
+    }
     await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
-    const primaryPerson = await this.findOrFail(id);
+    let primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 
     const results: BulkIdResponseDto[] = [];
 
     const allowedIds = await this.access.checkAccess(auth, Permission.PERSON_MERGE, mergeIds);
 
-    for (const mergeId of mergeIds) {
-      const hasAccess = allowedIds.has(mergeId);
+    for (let i = 0; i < mergeIds.length; i++) {
+      const hasAccess = allowedIds.has(mergeIds[i]);
       if (!hasAccess) {
-        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
+        results.push({ id: mergeIds[i], success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
 
       try {
-        const mergePerson = await this.repository.getById(mergeId);
+        const mergePerson = await this.repository.getById(mergeIds[i]);
         if (!mergePerson) {
-          results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
+          results.push({ id: mergeIds[i], success: false, error: BulkIdErrorReason.NOT_FOUND });
           continue;
         }
-
+        if (mergeIds.length === 1 && i === 0) {
+          if ((!primaryPerson.name && mergePerson.name) || (!primaryPerson.birthDate && mergePerson.birthDate)) {
+            primaryPerson = await this.repository.update({
+              id: primaryPerson.id,
+              name: mergePerson.name || undefined,
+              birthDate: mergePerson.birthDate || undefined,
+            });
+          }
+        }
         const mergeName = mergePerson.name || mergePerson.id;
-        const mergeData: UpdateFacesData = { oldPersonId: mergeId, newPersonId: id };
+        const mergeData: UpdateFacesData = { oldPersonId: mergeIds[i], newPersonId: id };
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
 
         await this.repository.reassignFaces(mergeData);
         await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: mergePerson.id } });
 
         this.logger.log(`Merged ${mergeName} into ${primaryName}`);
-        results.push({ id: mergeId, success: true });
+        results.push({ id: mergeIds[i], success: true });
       } catch (error: Error | any) {
-        this.logger.error(`Unable to merge ${mergeId} into ${id}: ${error}`, error?.stack);
-        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
+        this.logger.error(`Unable to merge ${mergeIds[i]} into ${id}: ${error}`, error?.stack);
+        results.push({ id: mergeIds[i], success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
-
-    return results;
+    return {
+      results,
+      person: primaryPerson,
+    };
   }
 
   private async findOrFail(id: string) {

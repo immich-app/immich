@@ -4,6 +4,7 @@ import {
   AuthDto,
   BulkIdResponseDto,
   MergePersonDto,
+  MergePersonResponseDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonResponseDto,
@@ -84,7 +85,7 @@ export class PersonController {
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: MergePersonDto,
-  ): Promise<BulkIdResponseDto[]> {
+  ): Promise<MergePersonResponseDto> {
     return this.service.mergePerson(auth, id, dto);
   }
 }
