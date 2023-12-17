@@ -686,7 +686,7 @@ FROM
   LEFT JOIN "smart_info" "si" ON si."assetId" = assets."id"
 WHERE
   (
-    a.ownerId = $1
+    "assets"."ownerId" = $1
     AND (
       e."exifTextSearchableColumn" || COALESCE(
         si."smartInfoTextSearchableColumn",

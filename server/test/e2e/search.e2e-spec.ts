@@ -8,6 +8,7 @@ import {
 } from '@app/domain';
 import { SearchController } from '@app/immich';
 import { dataSource } from '@app/infra';
+import { SmartInfoEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub } from '@test/fixtures';
@@ -190,7 +191,10 @@ describe(`${SearchController.name}`, () => {
     });
 
     afterEach(async () => {
-      await dataSource.manager.query(`DELETE FROM smart_info WHERE "assetId" = $1`, [asset1.id]);
+      await dataSource.manager.createQueryBuilder(SmartInfoEntity, 'si')
+        .delete()
+        .whereInIds([asset1.id])
+        .execute();
     });
 
     it('should return assets when searching by object', async () => {

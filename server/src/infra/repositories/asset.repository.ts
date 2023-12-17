@@ -819,10 +819,10 @@ export class AssetRepository implements IAssetRepository {
       .addSelect('COALESCE(si.objects, array[]::text[])', 'objects')
       .innerJoin('exif', 'e', 'assets."id" = e."assetId"')
       .leftJoin('smart_info', 'si', 'si."assetId" = assets."id"')
-      .where('a.ownerId = :ownerId', { ownerId })
+      .where('assets.ownerId = :ownerId', { ownerId })
       .andWhere(
         `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
-        @@ PLAINTO_TSQUERY(\'english\', :query)`,
+        @@ PLAINTO_TSQUERY('english', :query)`,
         { query },
       )
       .limit(numResults)
