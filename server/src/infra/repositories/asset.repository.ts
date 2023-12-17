@@ -706,9 +706,7 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('e')
       .select('city')
       .groupBy('city')
-      .having('count(city) >= :minAssetsPerField', { minAssetsPerField })
-      .orderBy('random()')
-      .limit(maxFields);
+      .having('count(city) >= :minAssetsPerField', { minAssetsPerField });
 
     const items = await this.getBuilder({
       userIds: [ownerId],
@@ -737,9 +735,7 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('si')
       .select('unnest(tags)', 'tag')
       .groupBy('tag')
-      .having('count(*) >= :minAssetsPerField', { minAssetsPerField })
-      .orderBy('random()')
-      .limit(maxFields);
+      .having('count(*) >= :minAssetsPerField', { minAssetsPerField });
 
     const items = await this.getBuilder({
       userIds: [ownerId],
