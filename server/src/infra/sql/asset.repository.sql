@@ -668,3 +668,32 @@ WHERE
   AND ("asset"."deletedAt" IS NULL)
 LIMIT
   12
+
+-- AssetRepository.searchMetadata
+SELECT
+  "e"."description" AS "description",
+  "e"."city" AS "city",
+  "e"."state" AS "state",
+  "e"."country" AS "country",
+  "e"."make" AS "make",
+  "e"."model" AS "model",
+  assets.*,
+  COALESCE("si"."tags", array[]::text []) AS "tags",
+  COALESCE("si"."objects", array[]::text []) AS "objects"
+FROM
+  "assets" "assets"
+  INNER JOIN "exif" "e" ON assets."id" = e."assetId"
+  LEFT JOIN "smart_info" "si" ON si."assetId" = assets."id"
+WHERE
+  (
+    a.ownerId = $1
+    AND (
+      e."exifTextSearchableColumn" || COALESCE(
+        si."smartInfoTextSearchableColumn",
+        to_tsvector('english', '')
+      )
+    ) @@ PLAINTO_TSQUERY('english', $2)
+  )
+  AND ("assets"."deletedAt" IS NULL)
+LIMIT
+  250

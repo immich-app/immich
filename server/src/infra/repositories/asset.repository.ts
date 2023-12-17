@@ -804,6 +804,7 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
+  @GenerateSql({ params: [DummyValue.STRING, DummyValue.UUID, { numResults: 250 }] })
   async searchMetadata(query: string, ownerId: string, { numResults }: MetadataSearchOptions): Promise<AssetEntity[]> {
     const rows = await this.repository
       .createQueryBuilder('assets')
@@ -816,11 +817,12 @@ export class AssetRepository implements IAssetRepository {
       .addSelect('e.make', 'make')
       .addSelect('COALESCE(si.tags, array[]::text[])', 'tags')
       .addSelect('COALESCE(si.objects, array[]::text[])', 'objects')
-      .innerJoin('smart_info', 'si', 'si."assetId" = assets."id"')
       .innerJoin('exif', 'e', 'assets."id" = e."assetId"')
+      .leftJoin('smart_info', 'si', 'si."assetId" = assets."id"')
       .where('a.ownerId = :ownerId', { ownerId })
-      .where(
-        '(e."exifTextSearchableColumn" || si."smartInfoTextSearchableColumn") @@ PLAINTO_TSQUERY(\'english\', :query)',
+      .andWhere(
+        `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
+        @@ PLAINTO_TSQUERY(\'english\', :query)`,
         { query },
       )
       .limit(numResults)
