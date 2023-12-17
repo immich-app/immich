@@ -46,7 +46,7 @@
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
-  let edittingPerson: PersonResponseDto | null = null;
+  let editingPerson: PersonResponseDto | null = null;
 
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
@@ -70,7 +70,7 @@
 
   const searchPeople = async (force: boolean) => {
     preserveSearchParams.delete('name');
-    if (name === '') {
+    if (name.trim() === '') {
       people = peopleCopy;
       preserveSearchParams = preserveSearchParams;
       return;
@@ -98,6 +98,10 @@
 
     isSearchingPeople = false;
   };
+
+  if (name === null || name.trim() !== '') {
+    searchPeople(true);
+  }
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
@@ -205,7 +209,7 @@
     const [personToMerge, personToBeMergedIn] = response;
     showMergeModal = false;
 
-    if (!edittingPerson) {
+    if (!editingPerson) {
       return;
     }
     try {
@@ -223,7 +227,7 @@
     } catch (error) {
       handleError(error, 'Unable to save name');
     }
-    if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
+    if (personToBeMergedIn.name !== personName && editingPerson.id === personToBeMergedIn.id) {
       /*
        *
        * If the user merges one of the suggested people into the person he's editing it, it's merging the suggested person AND renames
@@ -255,12 +259,12 @@
     showChangeNameModal = true;
     personName = detail.name;
     personMerge1 = detail;
-    edittingPerson = detail;
+    editingPerson = detail;
   };
 
   const handleSetBirthDate = (detail: PersonResponseDto) => {
     showSetBirthDateModal = true;
-    edittingPerson = detail;
+    editingPerson = detail;
   };
 
   const handleHidePerson = async (detail: PersonResponseDto) => {
@@ -301,7 +305,7 @@
   const submitNameChange = async () => {
     potentialMergePeople = [];
     showChangeNameModal = false;
-    if (!edittingPerson || personName === edittingPerson.name) {
+    if (!editingPerson || personName === editingPerson.name) {
       return;
     }
     if (personName === '') {
@@ -315,8 +319,8 @@
     const existingPerson = data.find(
       (person: PersonResponseDto) =>
         person.name.toLowerCase() === personName.toLowerCase() &&
-        edittingPerson &&
-        person.id !== edittingPerson.id &&
+        editingPerson &&
+        person.id !== editingPerson.id &&
         person.name,
     );
     if (existingPerson) {
@@ -338,13 +342,13 @@
 
   const submitBirthDateChange = async (value: string) => {
     showSetBirthDateModal = false;
-    if (!edittingPerson || value === edittingPerson.birthDate) {
+    if (!editingPerson || value === editingPerson.birthDate) {
       return;
     }
 
     try {
       const { data: updatedPerson } = await api.personApi.updatePerson({
-        id: edittingPerson.id,
+        id: editingPerson.id,
         personUpdateDto: { birthDate: value.length > 0 ? value : null },
       });
 
@@ -368,12 +372,12 @@
     showMergeModal = false;
     showChangeNameModal = false;
 
-    if (!edittingPerson) {
+    if (!editingPerson) {
       return;
     }
     try {
       const { data: updatedPerson } = await api.personApi.updatePerson({
-        id: edittingPerson.id,
+        id: editingPerson.id,
         personUpdateDto: { name: personName },
       });
 
@@ -416,42 +420,46 @@
 
 <UserPageLayout title="People">
   <svelte:fragment slot="buttons">
-    {#if countTotalPeople > 0}
-      <IconButton on:click={() => (selectHidden = !selectHidden)}>
-        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-          <Icon path={mdiEyeOutline} size="18" />
-          <p class="ml-2">Show & hide people</p>
+    <div class="flex flex-wrap">
+      {#if countTotalPeople > 0}
+        <div class="flex flex-wrap place-items-center gap-x-1 text-sm">
+          <button
+            type="button"
+            class="flex-shrink-0 inline-flex justify-center items-center"
+            on:click={() => searchPeople(true)}
+          >
+            <Icon path={mdiMagnify} size="18" />
+          </button>
+          <!-- svelte-ignore a11y-autofocus -->
+          <input
+            autofocus
+            class="hs-leading-button-add-on-with-icon dark:text-white"
+            type="text"
+            placeholder="Search names"
+            bind:value={name}
+            on:input={() => searchPeople(false)}
+          />
+          {#if name}
+            <button on:click={resetSearch}>
+              <Icon path={mdiClose} />
+            </button>
+          {/if}
+          {#if isSearchingPeople}
+            <div class="flex place-items-center">
+              <LoadingSpinner />
+            </div>
+          {/if}
         </div>
-      </IconButton>
-    {/if}
-  </svelte:fragment>
 
-  <div class="flex w-40 sm:w-48 md:w-96 h-14 rounded-lg bg-gray-100 p-2 dark:bg-gray-700 mb-8 gap-2 place-items-center">
-    <button on:click={() => searchPeople(true)}>
-      <div class="w-fit">
-        <Icon path={mdiMagnify} size="24" />
-      </div>
-    </button>
-    <!-- svelte-ignore a11y-autofocus -->
-    <input
-      autofocus
-      class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
-      type="text"
-      placeholder="Search names"
-      bind:value={name}
-      on:input={() => searchPeople(false)}
-    />
-    {#if name}
-      <button on:click={resetSearch}>
-        <Icon path={mdiClose} />
-      </button>
-    {/if}
-    {#if isSearchingPeople}
-      <div class="flex place-items-center">
-        <LoadingSpinner />
-      </div>
-    {/if}
-  </div>
+        <IconButton on:click={() => (selectHidden = !selectHidden)}>
+          <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+            <Icon path={mdiEyeOutline} size="18" />
+            <p class="ml-2">Show & hide people</p>
+          </div>
+        </IconButton>
+      {/if}
+    </div>
+  </svelte:fragment>
 
   {#if countVisiblePeople > 0}
     <div class="pl-4">
@@ -515,7 +523,7 @@
 
   {#if showSetBirthDateModal}
     <SetBirthDateModal
-      birthDate={edittingPerson?.birthDate ?? ''}
+      birthDate={editingPerson?.birthDate ?? ''}
       on:close={() => (showSetBirthDateModal = false)}
       on:updated={(event) => submitBirthDateChange(event.detail)}
     />
