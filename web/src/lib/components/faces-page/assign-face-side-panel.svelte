@@ -122,7 +122,7 @@
   };
 
   $: {
-    searchedPeople = searchNameLocal(searchName, searchedPeopleCopy, 10);
+    searchedPeople = searchNameLocal(searchName, searchedPeopleCopy, 20);
   }
 
   const initInput = (element: HTMLInputElement) => {

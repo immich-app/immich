@@ -24,7 +24,7 @@
       (person) => !unselectedPeople.some((unselectedPerson) => unselectedPerson.id === person.id),
     );
     if (name) {
-      people = searchNameLocal(name, people, 10);
+      people = searchNameLocal(name, people, 20);
     }
   }
 

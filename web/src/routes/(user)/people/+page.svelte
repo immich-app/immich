@@ -60,7 +60,7 @@
 
   $: {
     if (searchName) {
-      people = searchNameLocal(searchName, searchPeopleCopy, 10);
+      people = searchNameLocal(searchName, searchPeopleCopy, 20);
     } else {
       if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
         $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
