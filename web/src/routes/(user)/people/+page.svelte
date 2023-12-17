@@ -55,6 +55,7 @@
   let name = data.name;
   let searchWord: string;
   let isSearchingPeople = false;
+  let preserveSearchParams = new URLSearchParams();
 
   const resetSearch = () => {
     name = '';
@@ -68,12 +69,16 @@
   }
 
   const searchPeople = async (force: boolean) => {
+    preserveSearchParams.delete('name');
     if (name === '') {
       people = peopleCopy;
+      preserveSearchParams = preserveSearchParams;
       return;
     }
     if (!force) {
       if (people.length < 20 && name.startsWith(searchWord)) {
+        preserveSearchParams.append('name', name);
+        preserveSearchParams = preserveSearchParams;
         return;
       }
     }
@@ -81,6 +86,8 @@
     const timeout = setTimeout(() => (isSearchingPeople = true), 100);
     try {
       const { data } = await api.searchApi.searchPerson({ name });
+      preserveSearchParams.append('name', name);
+      preserveSearchParams = preserveSearchParams;
       people = data;
       searchWord = name;
     } catch (error) {
@@ -454,7 +461,7 @@
             <PeopleCard
               {person}
               preload={idx < 20}
-              previousSearchParams={{ name }}
+              previousSearchParams={preserveSearchParams}
               on:change-name={() => handleChangeName(person)}
               on:set-birth-date={() => handleSetBirthDate(person)}
               on:merge-people={() => handleMergePeople(person)}

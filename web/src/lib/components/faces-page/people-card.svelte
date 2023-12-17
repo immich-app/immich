@@ -13,7 +13,9 @@
 
   export let person: PersonResponseDto;
   export let preload = false;
-  export let previousSearchParams: { [key: string]: string } = {};
+  export let previousSearchParams: URLSearchParams = new URLSearchParams();
+  let previousSearchParamsString = '';
+  $: previousSearchParamsString = previousSearchParams.size > 0 ? '?' + previousSearchParams.toString() : '';
 
   type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-people' | 'hide-person';
   let dispatch = createEventDispatcher<{
@@ -37,19 +39,6 @@
     onMenuExit();
     dispatch(event);
   };
-
-  const createQueryString = () => {
-    if (Object.keys(previousSearchParams).length > 0) {
-      return (
-        '?' +
-        Object.entries(previousSearchParams)
-          .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-          .join('&')
-      );
-    }
-
-    return '';
-  };
 </script>
 
 <div
@@ -59,7 +48,7 @@
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
 >
-  <a href="{AppRoute.PEOPLE}/{person.id}?previousRoute={AppRoute.PEOPLE}{createQueryString()}" draggable="false">
+  <a href="{AppRoute.PEOPLE}/{person.id}?previousRoute={AppRoute.PEOPLE}{previousSearchParamsString}" draggable="false">
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
