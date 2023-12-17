@@ -32,7 +32,7 @@ The default configuration looks like this:
     "backgroundTask": {
       "concurrency": 5
     },
-    "clipEncoding": {
+    "smartSearch": {
       "concurrency": 2
     },
     "metadataExtraction": {
@@ -66,11 +66,15 @@ The default configuration looks like this:
       "concurrency": 1
     }
   },
+  "logging": {
+    "enabled": true,
+    "level": "log"
+  },
   "machineLearning": {
     "enabled": true,
     "url": "http://immich-machine-learning:3003",
     "classification": {
-      "enabled": true,
+      "enabled": false,
       "modelName": "microsoft/resnet-50",
       "minScore": 0.9
     },
@@ -88,7 +92,8 @@ The default configuration looks like this:
   },
   "map": {
     "enabled": true,
-    "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    "lightStyle": "",
+    "darkStyle": ""
   },
   "reverseGeocoding": {
     "enabled": true
@@ -133,9 +138,6 @@ The default configuration looks like this:
       "enabled": true,
       "cronExpression": "0 0 * * *"
     }
-  },
-  "stylesheets": {
-    "css": ""
   }
 }
 ```
