@@ -1,16 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/etag.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
 
+import '../../test_utils.dart';
 import 'shared_mocks.dart';
 
 void main() {
@@ -39,22 +36,6 @@ void main() {
     );
   }
 
-  Isar loadDb() {
-    return Isar.openSync(
-      [
-        ExifInfoSchema,
-        AssetSchema,
-        AlbumSchema,
-        UserSchema,
-        StoreValueSchema,
-        LoggerMessageSchema,
-        ETagSchema,
-      ],
-      maxSizeMiB: 256,
-      directory: ".",
-    );
-  }
-
   group('Test SyncService grouped', () {
     late final Isar db;
     final MockHashService hs = MockHashService();
@@ -67,8 +48,7 @@ void main() {
     );
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
-      await Isar.initializeIsarCore(download: true);
-      db = loadDb();
+      db = await TestUtils.initIsar();
       ImmichLogger();
       db.writeTxnSync(() => db.clearSync());
       Store.init(db);

@@ -1,3 +1,7 @@
+import 'dart:ffi';
+import 'dart:io';
+
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
@@ -14,6 +18,8 @@ import 'package:immich_mobile/shared/models/user.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'mock_http_override.dart';
+
 // Listener Mock to test when a provider notifies its listeners
 class ListenerMock<T> extends Mock {
   void call(T? previous, T next);
@@ -24,6 +30,15 @@ final class TestUtils {
 
   /// Downloads Isar binaries (if required) and initializes a new Isar db
   static Future<Isar> initIsar() async {
+    await Isar.initializeIsarCore(
+      libraries: {
+        Abi.macosX64: '.dart_tool/libisar_macos.dylib',
+        Abi.macosArm64: '.dart_tool/libisar_macos.dylib',
+        Abi.linuxX64: '.dart_tool/libisar_linux_x64.so',
+        Abi.windowsX64: '.dart_tool/isar_windows_x64.dll',
+      },
+    );
+
     final instance = Isar.getInstance();
     if (instance != null) {
       return instance;
@@ -46,6 +61,7 @@ final class TestUtils {
       maxSizeMiB: 256,
       directory: "test/",
     );
+
     // Clear and close db on test end
     addTearDown(() async {
       await db.writeTxn(() => db.clear());
@@ -70,5 +86,12 @@ final class TestUtils {
     addTearDown(container.dispose);
 
     return container;
+  }
+
+  static void init() {
+    // Turn off easy localization logging
+    EasyLocalization.logger.enableBuildModes = [];
+    WidgetController.hitTestWarningShouldBeFatal = true;
+    HttpOverrides.global = MockHttpOverrides();
   }
 }

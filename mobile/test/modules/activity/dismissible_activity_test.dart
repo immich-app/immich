@@ -7,17 +7,21 @@ import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provi
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 
 import '../../fixtures/user.stub.dart';
+import '../../test_utils.dart';
 import '../../widget_tester_extensions.dart';
 import '../asset_viewer/asset_viewer_mocks.dart';
 
+final activity = Activity(
+  id: '1',
+  createdAt: DateTime(100),
+  type: ActivityType.like,
+  user: UserStub.admin,
+);
+
 void main() {
-  final activity = Activity(
-    id: '1',
-    createdAt: DateTime(100),
-    type: ActivityType.like,
-    user: UserStub.admin,
-  );
   late MockCurrentAsset assetProvider;
+
+  setUpAll(() => TestUtils.init());
 
   setUp(() {
     assetProvider = MockCurrentAsset();

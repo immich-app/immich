@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
+import 'package:isar/isar.dart';
 
+import '../../fixtures/user.stub.dart';
+import '../../test_utils.dart';
 import '../../widget_tester_extensions.dart';
 import '../shared/shared_mocks.dart';
 
 void main() {
-  late MockCurrentUserProvider userProvider;
+  late Isar db;
 
-  setUp(() {
-    userProvider = MockCurrentUserProvider();
+  setUpAll(() async {
+    TestUtils.init();
+    db = await TestUtils.initIsar();
+    Store.init(db);
+    Store.put(StoreKey.currentUser, UserStub.admin);
+    Store.put(StoreKey.serverEndpoint, '');
   });
 
   testWidgets('Displays Input text field', (tester) async {
@@ -20,13 +28,14 @@ void main() {
         onSubmit: (_) {},
         onSuffixTapped: (_) {},
       ),
-      overrides: [currentUserProvider.overrideWith((ref) => userProvider)],
     );
 
     expect(find.byType(TextField), findsOneWidget);
   });
 
   testWidgets('No UserCircleAvatar when user == null', (tester) async {
+    final userProvider = MockCurrentUserProvider();
+
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (_) {},
@@ -38,21 +47,16 @@ void main() {
     expect(find.byType(UserCircleAvatar), findsNothing);
   });
 
-  testWidgets(
-    'UserCircleAvatar displayed when user != null',
-    (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTextField(
-          onSubmit: (_) {},
-          onSuffixTapped: (_) {},
-        ),
-        overrides: [currentUserProvider.overrideWith((ref) => userProvider)],
-      );
+  testWidgets('UserCircleAvatar displayed when user != null', (tester) async {
+    await tester.pumpConsumerWidget(
+      ActivityTextField(
+        onSubmit: (_) {},
+        onSuffixTapped: (_) {},
+      ),
+    );
 
-      expect(find.byType(UserCircleAvatar), findsOneWidget);
-    }, // TODO: Remove skip once migrated to IsarCore 4 or store migrated to provider
-    skip: true,
-  );
+    expect(find.byType(UserCircleAvatar), findsOneWidget);
+  });
 
   testWidgets(
     'Filled icon if likedId != null',
@@ -63,7 +67,6 @@ void main() {
           onSuffixTapped: (_) {},
           likeId: '1',
         ),
-        overrides: [currentUserProvider.overrideWith((ref) => userProvider)],
       );
 
       expect(
@@ -83,7 +86,6 @@ void main() {
         onSubmit: (_) {},
         onSuffixTapped: (_) {},
       ),
-      overrides: [currentUserProvider.overrideWith((ref) => userProvider)],
     );
 
     expect(
@@ -106,7 +108,6 @@ void main() {
         onSuffixTapped: (likeId) => receivedLikeId = likeId,
         likeId: 'test-suffix',
       ),
-      overrides: [currentUserProvider.overrideWith((ref) => userProvider)],
     );
 
     final suffixIcon = find.byType(IconButton);
@@ -123,7 +124,6 @@ void main() {
         onSuffixTapped: (_) {},
         likeId: 'test-suffix',
       ),
-      overrides: [currentUserProvider.overrideWith((ref) => userProvider)],
     );
 
     final textField = find.byType(TextField);
@@ -143,11 +143,10 @@ void main() {
         isEnabled: false,
         likeId: 'test-suffix',
       ),
-      overrides: [currentUserProvider.overrideWith((ref) => userProvider)],
     );
 
     final suffixIcon = find.byType(IconButton);
-    await tester.tap(suffixIcon);
+    await tester.tap(suffixIcon, warnIfMissed: false);
 
     final textField = find.byType(TextField);
     await tester.enterText(textField, 'This is a test comment');
