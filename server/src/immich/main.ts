@@ -1,6 +1,6 @@
-import { envName, getLogLevels, isDev, serverVersion } from '@app/domain';
+import { envName, isDev, serverVersion } from '@app/domain';
 import { WebSocketAdapter, enablePrefilter } from '@app/infra';
-import { Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
@@ -9,12 +9,13 @@ import { AppModule } from './app.module';
 import { AppService } from './app.service';
 import { useSwagger } from './app.utils';
 
-const logger = new Logger('ImmichServer');
+const logger = new ImmichLogger('ImmichServer');
 const port = Number(process.env.SERVER_PORT) || 3001;
 
 export async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: getLogLevels() });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
 
+  app.useLogger(app.get(ImmichLogger));
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.set('etag', 'strong');
   app.use(cookieParser());

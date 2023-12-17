@@ -9,8 +9,10 @@
   import { fade } from 'svelte/transition';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let newVersionCheckConfig: SystemConfigNewVersionCheckDto; // this is the config that is being edited
+  export let disabled = false;
 
   let savedConfig: SystemConfigNewVersionCheckDto;
   let defaultConfig: SystemConfigNewVersionCheckDto;
@@ -21,6 +23,14 @@
       api.systemConfigApi.getConfigDefaults().then((res) => res.data.newVersionCheck),
     ]);
   }
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function saveSetting() {
     try {
@@ -77,12 +87,13 @@
               title="ENABLED"
               subtitle="Enable period requests to GitHub to check for new releases"
               bind:checked={newVersionCheckConfig.enabled}
+              {disabled}
             />
             <SettingButtonsRow
-              on:reset={reset}
+              on:reset={({ detail }) => handleReset(detail)}
               on:save={saveSetting}
-              on:reset-to-default={resetToDefault}
               showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+              {disabled}
             />
           </div>
         </div>

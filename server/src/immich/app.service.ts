@@ -6,8 +6,11 @@ import {
   ServerInfoService,
   SharedLinkService,
   StorageService,
+  SystemConfigService,
+  WEB_ROOT_PATH,
 } from '@app/domain';
-import { Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'fs';
@@ -34,10 +37,11 @@ const render = (index: string, meta: OpenGraphTags) => {
 
 @Injectable()
 export class AppService {
-  private logger = new Logger(AppService.name);
+  private logger = new ImmichLogger(AppService.name);
 
   constructor(
     private authService: AuthService,
+    private configService: SystemConfigService,
     private jobService: JobService,
     private serverService: ServerInfoService,
     private sharedLinkService: SharedLinkService,
@@ -55,6 +59,7 @@ export class AppService {
   }
 
   async init() {
+    await this.configService.init();
     this.storageService.init();
     await this.serverService.handleVersionCheck();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
@@ -63,7 +68,7 @@ export class AppService {
   ssr(excludePaths: string[]) {
     let index = '';
     try {
-      index = readFileSync('/usr/src/app/www/index.html').toString();
+      index = readFileSync(WEB_ROOT_PATH).toString();
     } catch (error: Error | any) {
       this.logger.warn('Unable to open `www/index.html, skipping SSR.');
     }

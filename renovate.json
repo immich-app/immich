@@ -71,5 +71,6 @@
     "vector_map_tiles",
     "flutter_map",
     "flutter_map_heatmap"
-  ]
+  ],
+  "labels": ["renovate"]
 }

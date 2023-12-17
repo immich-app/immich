@@ -12,7 +12,11 @@
   export let link: SharedLinkResponseDto;
 
   let expirationCountdown: luxon.DurationObjectUnits;
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    delete: void;
+    copy: void;
+    edit: void;
+  }>();
 
   const getThumbnail = async (): Promise<AssetResponseDto> => {
     let assetId = '';

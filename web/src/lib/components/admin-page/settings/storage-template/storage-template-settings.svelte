@@ -14,6 +14,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import { user } from '$lib/stores/user.store';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let storageConfig: SystemConfigStorageTemplateDto;
   export let disabled = false;
@@ -22,6 +23,14 @@
   let defaultConfig: SystemConfigStorageTemplateDto;
   let templateOptions: SystemConfigTemplateStorageOptionDto;
   let selectedPreset = '';
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function getConfigs() {
     [savedConfig, defaultConfig, templateOptions] = await Promise.all([
@@ -232,9 +241,8 @@
           </div>
 
           <SettingButtonsRow
-            on:reset={reset}
+            on:reset={({ detail }) => handleReset(detail)}
             on:save={saveSetting}
-            on:reset-to-default={resetToDefault}
             showResetToDefault={!isEqual(savedConfig, defaultConfig)}
             {disabled}
           />

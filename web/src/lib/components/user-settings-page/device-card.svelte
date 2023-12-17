@@ -17,7 +17,9 @@
 
   export let device: AuthDeviceResponseDto;
 
-  const dispatcher = createEventDispatcher();
+  const dispatcher = createEventDispatcher<{
+    delete: void;
+  }>();
 
   const options: ToRelativeCalendarOptions = {
     unit: 'days',

@@ -136,7 +136,7 @@ class ImmichApi {
       [JobName.MetadataExtraction]: 'Extract Metadata',
       [JobName.Sidecar]: 'Sidecar Metadata',
       [JobName.ObjectTagging]: 'Tag Objects',
-      [JobName.ClipEncoding]: 'Encode Clip',
+      [JobName.SmartSearch]: 'Smart Search',
       [JobName.RecognizeFaces]: 'Recognize Faces',
       [JobName.VideoConversion]: 'Transcode Videos',
       [JobName.StorageTemplateMigration]: 'Storage Template Migration',

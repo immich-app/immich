@@ -1,4 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { LogLevel, SystemConfig } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
+import { instanceToPlain } from 'class-transformer';
+import _ from 'lodash';
 import {
   ClientEvent,
   ICommunicationRepository,
@@ -22,7 +26,7 @@ import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
 
 @Injectable()
 export class SystemConfigService {
-  private logger = new Logger(SystemConfigService.name);
+  private logger = new ImmichLogger(SystemConfigService.name);
   private core: SystemConfigCore;
 
   constructor(
@@ -32,6 +36,13 @@ export class SystemConfigService {
   ) {
     this.core = SystemConfigCore.create(repository);
     this.communicationRepository.on(ServerEvent.CONFIG_UPDATE, () => this.handleConfigUpdate());
+    this.core.config$.subscribe((config) => this.setLogLevel(config));
+    this.core.addValidator((newConfig, oldConfig) => this.validateConfig(newConfig, oldConfig));
+  }
+
+  async init() {
+    const config = await this.core.getConfig();
+    await this.setLogLevel(config);
   }
 
   get config$() {
@@ -105,5 +116,23 @@ export class SystemConfigService {
 
   private async handleConfigUpdate() {
     await this.core.refreshConfig();
+  }
+
+  private async setLogLevel({ logging }: SystemConfig) {
+    const envLevel = this.getEnvLogLevel();
+    const configLevel = logging.enabled ? logging.level : false;
+    const level = envLevel ? envLevel : configLevel;
+    ImmichLogger.setLogLevel(level);
+    this.logger.log(`LogLevel=${level} ${envLevel ? '(set via LOG_LEVEL)' : '(set via system config)'}`);
+  }
+
+  private getEnvLogLevel() {
+    return process.env.LOG_LEVEL as LogLevel;
+  }
+
+  private async validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
+    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
+      throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
+    }
   }
 }

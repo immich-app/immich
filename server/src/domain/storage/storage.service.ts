@@ -1,11 +1,12 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { IDeleteFilesJob } from '../job';
 import { IStorageRepository } from '../repositories';
 import { StorageCore, StorageFolder } from './storage.core';
 
 @Injectable()
 export class StorageService {
-  private logger = new Logger(StorageService.name);
+  private logger = new ImmichLogger(StorageService.name);
 
   constructor(@Inject(IStorageRepository) private storageRepository: IStorageRepository) {}
 

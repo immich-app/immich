@@ -25,6 +25,11 @@ ENV NODE_ENV=production \
   PATH="/opt/venv/bin:$PATH" \
   PYTHONPATH=/usr/src
 
+# prevent core dumps
+RUN echo "hard core 0" >> /etc/security/limits.conf && \
+    echo "fs.suid_dumpable 0" >> /etc/sysctl.conf && \
+    echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
+
 COPY --from=builder /opt/venv /opt/venv
 COPY start.sh log_conf.json ./
 COPY app .

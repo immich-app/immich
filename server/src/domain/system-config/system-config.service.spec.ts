@@ -2,6 +2,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  LogLevel,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -26,7 +27,7 @@ const updates: SystemConfigEntity[] = [
 const updatedConfig = Object.freeze<SystemConfig>({
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
-    [QueueName.CLIP_ENCODING]: { concurrency: 2 },
+    [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
     [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
@@ -57,11 +58,15 @@ const updatedConfig = Object.freeze<SystemConfig>({
     accel: TranscodeHWAccel.DISABLED,
     tonemap: ToneMapping.HABLE,
   },
+  logging: {
+    enabled: true,
+    level: LogLevel.LOG,
+  },
   machineLearning: {
     enabled: true,
     url: 'http://immich-machine-learning:3003',
     classification: {
-      enabled: true,
+      enabled: false,
       modelName: 'microsoft/resnet-50',
       minScore: 0.9,
     },
@@ -159,7 +164,7 @@ describe(SystemConfigService.name, () => {
       const validator: SystemConfigValidator = jest.fn();
       sut.addValidator(validator);
       await sut.updateConfig(defaults);
-      expect(validator).toHaveBeenCalledWith(defaults);
+      expect(validator).toHaveBeenCalledWith(defaults, defaults);
     });
   });
 
@@ -279,7 +284,7 @@ describe(SystemConfigService.name, () => {
 
       await expect(sut.updateConfig(updatedConfig)).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(validator).toHaveBeenCalledWith(updatedConfig);
+      expect(validator).toHaveBeenCalledWith(updatedConfig, defaults);
       expect(configMock.saveAll).not.toHaveBeenCalled();
     });
 

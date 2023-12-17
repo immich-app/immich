@@ -1,5 +1,5 @@
 import { AssetEntity, AssetPathType, PathType, PersonEntity, PersonPathType } from '@app/infra/entities';
-import { Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
 import { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
 import { IAssetRepository, IMoveRepository, IPersonRepository, IStorageRepository } from '../repositories';
@@ -24,7 +24,7 @@ type GeneratedAssetPath = AssetPathType.JPEG_THUMBNAIL | AssetPathType.WEBP_THUM
 let instance: StorageCore | null;
 
 export class StorageCore {
-  private logger = new Logger(StorageCore.name);
+  private logger = new ImmichLogger(StorageCore.name);
 
   private constructor(
     private assetRepository: IAssetRepository,

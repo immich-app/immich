@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { ServerVersion, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
@@ -25,7 +26,7 @@ import {
 
 @Injectable()
 export class ServerInfoService {
-  private logger = new Logger(ServerInfoService.name);
+  private logger = new ImmichLogger(ServerInfoService.name);
   private configCore: SystemConfigCore;
   private releaseVersion = serverVersion;
   private releaseVersionCheckedAt: DateTime | null = null;

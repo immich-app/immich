@@ -1,5 +1,6 @@
 import { AssetType } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { mapAsset } from '../asset';
 import {
   ClientEvent,
@@ -18,7 +19,7 @@ import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from './job.dto'
 
 @Injectable()
 export class JobService {
-  private logger = new Logger(JobService.name);
+  private logger = new ImmichLogger(JobService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -97,7 +98,7 @@ export class JobService {
         await this.configCore.requireFeature(FeatureFlag.TAG_IMAGE);
         return this.jobRepository.queue({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force } });
 
-      case QueueName.CLIP_ENCODING:
+      case QueueName.SMART_SEARCH:
         await this.configCore.requireFeature(FeatureFlag.CLIP_ENCODE);
         return this.jobRepository.queue({ name: JobName.QUEUE_ENCODE_CLIP, data: { force } });
 

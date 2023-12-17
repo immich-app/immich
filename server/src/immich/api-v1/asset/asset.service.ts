@@ -15,7 +15,8 @@ import {
   UploadFile,
 } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
@@ -38,7 +39,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 
 @Injectable()
 export class AssetService {
-  readonly logger = new Logger(AssetService.name);
+  readonly logger = new ImmichLogger(AssetService.name);
   private assetCore: AssetCore;
   private access: AccessCore;
 

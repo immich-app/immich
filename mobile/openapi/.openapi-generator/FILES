@@ -82,6 +82,7 @@ doc/LibraryApi.md
 doc/LibraryResponseDto.md
 doc/LibraryStatsResponseDto.md
 doc/LibraryType.md
+doc/LogLevel.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -142,6 +143,7 @@ doc/SystemConfigFFmpegDto.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigLibraryDto.md
 doc/SystemConfigLibraryScanDto.md
+doc/SystemConfigLoggingDto.md
 doc/SystemConfigMachineLearningDto.md
 doc/SystemConfigMapDto.md
 doc/SystemConfigNewVersionCheckDto.md
@@ -274,6 +276,7 @@ lib/model/job_status_dto.dart
 lib/model/library_response_dto.dart
 lib/model/library_stats_response_dto.dart
 lib/model/library_type.dart
+lib/model/log_level.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -327,6 +330,7 @@ lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_library_dto.dart
 lib/model/system_config_library_scan_dto.dart
+lib/model/system_config_logging_dto.dart
 lib/model/system_config_machine_learning_dto.dart
 lib/model/system_config_map_dto.dart
 lib/model/system_config_new_version_check_dto.dart
@@ -439,6 +443,7 @@ test/library_api_test.dart
 test/library_response_dto_test.dart
 test/library_stats_response_dto_test.dart
 test/library_type_test.dart
+test/log_level_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
@@ -499,6 +504,7 @@ test/system_config_f_fmpeg_dto_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_library_dto_test.dart
 test/system_config_library_scan_dto_test.dart
+test/system_config_logging_dto_test.dart
 test/system_config_machine_learning_dto_test.dart
 test/system_config_map_dto_test.dart
 test/system_config_new_version_check_dto_test.dart
