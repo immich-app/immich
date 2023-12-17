@@ -12,20 +12,18 @@ describe('Executor Queue test', function () {
   });
 
   it('should respect concurrency parameter', function () {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const eq = new ExecutorQueue({ concurrency: 3 });
 
-    const finished = jest.fn();
-    const started = jest.fn();
+    const finished = vi.fn();
+    const started = vi.fn();
 
     const timeoutPromiseBuilder = (delay: number, id: string) =>
       new Promise((resolve) => {
-        console.log('Task is running: ', id);
         started();
         setTimeout(() => {
-          console.log('Finished ' + id + ' after', delay, 'ms');
           finished();
-          resolve(undefined);
+          resolve(id);
         }, delay);
       });
 
@@ -39,16 +37,16 @@ describe('Executor Queue test', function () {
     expect(finished).not.toBeCalled();
     expect(started).toHaveBeenCalledTimes(3);
 
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
     expect(finished).toHaveBeenCalledTimes(1);
 
-    jest.advanceTimersByTime(250);
+    vi.advanceTimersByTime(250);
     expect(finished).toHaveBeenCalledTimes(3);
     // expect(started).toHaveBeenCalledTimes(4)
 
     //TODO : fix The test ...
 
-    jest.runAllTimers();
-    jest.useRealTimers();
+    vi.runAllTimers();
+    vi.useRealTimers();
   });
 });
