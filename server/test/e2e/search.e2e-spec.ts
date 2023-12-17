@@ -7,6 +7,7 @@ import {
   mapAsset,
 } from '@app/domain';
 import { SearchController } from '@app/immich';
+import { dataSource } from '@app/infra';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import { errorStub } from '@test/fixtures';
@@ -21,6 +22,7 @@ describe(`${SearchController.name}`, () => {
   let libraries: LibraryResponseDto[];
   let assetRepository: IAssetRepository;
   let smartInfoRepository: ISmartInfoRepository;
+  let assetId1: string;
   let asset1: AssetResponseDto;
 
   beforeAll(async () => {
@@ -40,9 +42,9 @@ describe(`${SearchController.name}`, () => {
     accessToken = loginResponse.accessToken;
     libraries = await api.libraryApi.getAll(server, accessToken);
 
-    const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+    assetId1 = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
     await assetRepository.upsertExif({
-      assetId,
+      assetId: assetId1,
       latitude: 90,
       longitude: 90,
       city: 'Immich',
@@ -52,19 +54,16 @@ describe(`${SearchController.name}`, () => {
       model: 'EOS Rebel T7',
       lensModel: 'Fancy lens',
     });
-    await smartInfoRepository.upsert(
-      { assetId, objects: ['car', 'tree'], tags: ['accident'] },
-      Array.from({ length: 512 }, Math.random),
-    );
-    const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true, smartInfo: true });
-    if (!assetWithMetadata) {
-      throw new Error('Asset not found');
-    }
-    asset1 = mapAsset(assetWithMetadata);
   });
 
-  describe('GET /search', () => {
-    beforeEach(async () => {});
+  describe('GET /search (exif)', () => {
+    beforeEach(async () => {
+      const assetWithMetadata = await assetRepository.getById(assetId1, { exifInfo: true });
+      if (!assetWithMetadata) {
+        throw new Error('Asset not found');
+      }
+      asset1 = mapAsset(assetWithMetadata);
+    });
 
     it('should require authentication', async () => {
       const { status, body } = await request(server).get('/search');
@@ -173,6 +172,25 @@ describe(`${SearchController.name}`, () => {
           facets: [],
         },
       });
+    });
+  });
+
+  describe('GET /search (smart info)', () => {
+    beforeEach(async () => {
+      await smartInfoRepository.upsert(
+        { assetId: asset1.id, objects: ['car', 'tree'], tags: ['accident'] },
+        Array.from({ length: 512 }, Math.random),
+      );
+
+      const assetWithMetadata = await assetRepository.getById(assetId1, { exifInfo: true, smartInfo: true });
+      if (!assetWithMetadata) {
+        throw new Error('Asset not found');
+      }
+      asset1 = mapAsset(assetWithMetadata);
+    });
+
+    afterEach(async () => {
+      await dataSource.manager.query(`DELETE FROM smart_info WHERE "assetId" = $1`, [asset1.id]);
     });
 
     it('should return assets when searching by object', async () => {
