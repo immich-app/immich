@@ -22,6 +22,8 @@
     saturation: 1,
     sepia: 0,
   };
+  export let flipX = false;
+  export let flipY = false;
 
   export const start = async () => {
     isRendering = true;
@@ -49,7 +51,16 @@
       return;
     }
 
-    drawImageOnCanvas(ctx, img, (dx + translateX) * scale, (dy + translateY) * scale, imgWidth, imgHeight);
+    drawImageOnCanvas(
+      ctx,
+      img,
+      (dx + translateX) * scale,
+      (dy + translateY) * scale,
+      imgWidth,
+      imgHeight,
+      flipX,
+      flipY,
+    );
 
     const canvas2 = createCanvas(crop.width * ratio, crop.height * ratio);
     const cropCtx = getCanvasContext(canvas2);
@@ -94,10 +105,19 @@
     y: number,
     originalWidth: number,
     originalHeight: number,
+    flipX: boolean,
+    flipY: boolean,
   ) => {
     ctx.save();
     ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
+
     ctx.rotate((angle * Math.PI) / 180);
+    if (flipX) {
+      ctx.scale(-1, 1);
+    }
+    if (flipY) {
+      ctx.scale(1, -1);
+    }
     ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${
       filter.grayscale
     }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${
@@ -112,6 +132,9 @@
   const scaleImage = (width: number, height: number) => {
     const scaledWidth = width * scale;
     const scaledHeight = height * scale;
+
+    console.log('scaledWidth', scaledWidth);
+    console.log('scaledHeight', scaledHeight);
     return { scaledWidth, scaledHeight };
   };
 

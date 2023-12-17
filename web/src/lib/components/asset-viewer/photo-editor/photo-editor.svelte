@@ -34,6 +34,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
 
   import { pinch } from 'svelte-gestures';
+  import { pan } from 'svelte-gestures';
 
   import SuggestionsButton from './suggestions-button.svelte';
   import AspectRatioButton from './aspect-ratio-button.svelte';
@@ -104,7 +105,7 @@
   let currentTranslate = { x: 0, y: 0 };
   let currentZoom = 1;
 
-  const zoomSpeed = 0.1;
+  const zoomSpeed = 0.02;
 
   let angleSlider: HTMLElement;
   let angleSliderHandle: HTMLElement;
@@ -149,6 +150,51 @@
   const pinchHandler = (event: CustomEvent) => {
     let scale = event.detail.scale;
     console.log('scale', scale);
+
+    if (scale > 1) {
+      if (currentZoom <= 5) {
+        currentZoom += zoomSpeed * scale;
+      }
+    } else {
+      if (currentZoom > 1) {
+        currentZoom -= zoomSpeed * scale * 3;
+      }
+    }
+
+    if (currentZoom < 1) {
+      currentZoom = 1;
+    }
+    if (currentZoom > 5) {
+      currentZoom = 5;
+    }
+    setImageWrapperTransform();
+    console.log('currentZoom', currentZoom);
+  };
+
+  const anglePanHandler = (event: CustomEvent) => {
+    const x = event.detail.x - 250;
+    const y = event.detail.y;
+    console.log('x', x);
+
+    let a = angleSlider.offsetLeft - x;
+    if (a < 0) {
+      a = Math.max(a, (-125 / 49) * 45);
+    } else {
+      a = Math.min(a, (125 / 49) * 45);
+    }
+    let angle = Math.round((a / 125) * 49);
+    //angle = angle * -1;
+
+    console.log('angle', angle);
+
+    angle = currentAngle + angle;
+    if (angle > 45) {
+      angle = 45;
+    } else if (angle < -45) {
+      angle = -45;
+    }
+
+    rotate(angle, currentAngleOffset);
   };
 
   const isFilter = (f: Preset) => {
@@ -184,11 +230,6 @@
     //console.log('applied filter');
   };
 
-  const handlePinch = (event: CustomEvent) => {
-    let scale = event.detail.scale;
-    console.log('scale', scale);
-  };
-
   onMount(async () => {
     isLoaded = false;
     try {
@@ -209,11 +250,11 @@
     document.onwheel = (e: WheelEvent) => {
       if (e.deltaY > 0) {
         if (currentZoom <= 5) {
-          currentZoom += zoomSpeed;
+          currentZoom += zoomSpeed * 5;
         }
       } else {
         if (currentZoom > 1) {
-          currentZoom -= zoomSpeed;
+          currentZoom -= zoomSpeed * 5;
         }
       }
       setImageWrapperTransform();
@@ -298,7 +339,7 @@
     if (activeButton == 'crop') {
       //initAngleSlider();
       //initAssetDrag();
-      //initZoom();
+      initZoom();
       if (!cropWrapperParent.classList.contains('p-24')) {
         cropWrapperParent.classList.add('p-24');
         cropWrapperParent.classList.add('pb-52');
@@ -440,7 +481,6 @@
       }
 
       //console.log('a', a);
-
       let angle = Math.round((a / 125) * 49);
       angle = angle * -1;
 
@@ -843,12 +883,12 @@
   </div>
   <div class="relative col-span-3 col-start-1 row-span-full row-start-1">
     <!-- TODO: fix only allow drag from crop Element or imageWrapper -->
-    <div class="flex h-full w-full justify-center" use:pinch on:pinch={handlePinch} bind:this={assetDragHandle}>
+    <div class="flex h-full w-full justify-center" use:pinch on:pinch={pinchHandler} bind:this={assetDragHandle}>
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
       <div class="-z-10 flex h-full w-full items-center justify-center">
         <div bind:this={cropElementWrapper} class="relative flex h-full w-full items-center justify-center">
           <div>
-            <div use:pinch on:pinch={pinchHandler} bind:this={imageWrapper}>
+            <div bind:this={imageWrapper}>
               <div
                 class="{isLoaded
                   ? 'hidden'
@@ -906,7 +946,7 @@
           </button>
         </div>
 
-        <div class="relative z-0 h-[50px] w-[500px]">
+        <div class="relative z-3000 h-[50px] w-[500px]" use:pan on:pan={anglePanHandler}>
           <!-- Angle selector slider -->
           <div
             bind:this={angleSlider}
@@ -1205,6 +1245,8 @@
     {filter}
     {assetBlob}
     assetName={asset.originalFileName}
+    flipX={currentFlipX}
+    flipY={currentFlipY}
     bind:isRendering
   />
 </div>
