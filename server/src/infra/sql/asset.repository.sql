@@ -618,10 +618,6 @@ WITH
       city
     HAVING
       count(city) >= $1
-    ORDER BY
-      random() ASC
-    LIMIT
-      12
   )
 SELECT DISTINCT
   ON (c.city) "asset"."id" AS "data",
@@ -653,10 +649,6 @@ WITH
       tag
     HAVING
       count(*) >= $1
-    ORDER BY
-      random() ASC
-    LIMIT
-      12
   )
 SELECT DISTINCT
   ON (unnest("si"."tags")) "asset"."id" AS "data",
