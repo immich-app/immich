@@ -4,7 +4,7 @@
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { api, PeopleUpdateItem, type PersonResponseDto } from '@api';
+  import { api, PeopleUpdateItem, updateArray, type PersonResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -196,19 +196,14 @@
        */
       try {
         await api.personApi.updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
-        for (const person of people) {
-          if (person.id === personToBeMergedIn.id) {
-            peopleCopy = peopleCopy.map((person) => {
-              if (person.id === person.id) {
-                person.name = personName;
-                return person;
-              }
-              return person;
-            });
-            person.name = personName;
-            break;
-          }
-        }
+
+        people = updateArray(people, personToBeMergedIn, (person) => person.id === personToBeMergedIn.id);
+        peopleCopy = updateArray(peopleCopy, personToBeMergedIn, (person) => person.id === personToBeMergedIn.id);
+        searchPeopleCopy = updateArray(
+          searchPeopleCopy,
+          personToBeMergedIn,
+          (person) => person.id === personToBeMergedIn.id,
+        );
         notificationController.show({
           message: 'Change name succesfully',
           type: NotificationType.Info,
@@ -241,18 +236,9 @@
         personUpdateDto: { isHidden: true },
       });
 
-      peopleCopy = peopleCopy.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
+      people = updateArray(people, updatedPerson, (person) => person.id === updatedPerson.id);
+      peopleCopy = updateArray(peopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
+      searchPeopleCopy = updateArray(searchPeopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
 
       for (const person of peopleCopy) {
         initialHiddenValues[person.id] = person.isHidden;
@@ -349,18 +335,9 @@
         personUpdateDto: { birthDate: value.length > 0 ? value : null },
       });
 
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-      peopleCopy = peopleCopy.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
+      people = updateArray(people, updatedPerson, (person) => person.id === updatedPerson.id);
+      peopleCopy = updateArray(peopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
+      searchPeopleCopy = updateArray(searchPeopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
       notificationController.show({
         message: 'Date of birth saved succesfully',
         type: NotificationType.Info,
@@ -382,20 +359,9 @@
         id: edittingPerson.id,
         personUpdateDto: { name: personName },
       });
-
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-      peopleCopy = peopleCopy.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-
+      people = updateArray(people, updatedPerson, (person) => person.id === updatedPerson.id);
+      peopleCopy = updateArray(peopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
+      searchPeopleCopy = updateArray(searchPeopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
       notificationController.show({
         message: 'Change name succesfully',
         type: NotificationType.Info,

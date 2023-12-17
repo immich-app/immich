@@ -52,3 +52,7 @@ export const oauth = {
     return api.oauthApi.unlinkOAuthAccount();
   },
 };
+
+export const updateArray = <T>(array: T[], updatedItem: T, condition: (item: T) => boolean): T[] => {
+  return array.map((item) => (condition(item) ? updatedItem : item));
+};
