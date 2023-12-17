@@ -26,6 +26,7 @@ export const retrieveExif = (imageBlob) => {
 
       offset += 2;
 
+      //TODO: Use some kind of validation to make sure we don't get stuck in an infinite loop
       while (true) {
         const marker = dataView.getUint16(offset);
 

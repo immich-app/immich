@@ -149,7 +149,6 @@
 
   const pinchHandler = (event: CustomEvent) => {
     let scale = event.detail.scale;
-    console.log('scale', scale);
 
     if (scale > 1) {
       if (currentZoom <= 5) {
@@ -168,13 +167,10 @@
       currentZoom = 5;
     }
     setImageWrapperTransform();
-    console.log('currentZoom', currentZoom);
   };
 
   const anglePanHandler = (event: CustomEvent) => {
     const x = event.detail.x - 250;
-    const y = event.detail.y;
-    console.log('x', x);
 
     let a = angleSlider.offsetLeft - x;
     if (a < 0) {
@@ -184,8 +180,6 @@
     }
     let angle = Math.round((a / 125) * 49);
     //angle = angle * -1;
-
-    console.log('angle', angle);
 
     angle = currentAngle + angle;
     if (angle > 45) {
@@ -337,8 +331,7 @@
       return;
     }
     if (activeButton == 'crop') {
-      //initAngleSlider();
-      //initAssetDrag();
+      initAssetDrag();
       initZoom();
       if (!cropWrapperParent.classList.contains('p-24')) {
         cropWrapperParent.classList.add('p-24');
@@ -451,85 +444,6 @@
     //currentTranslate = { x: 0, y: 0 };
     calcImageElement(currentAngle);
     setImageWrapperTransform();
-  };
-
-  //function for dragging the angle selection slider
-  const initAngleSlider = async () => {
-    console.log('initAngleSlider');
-    let pos1 = 0,
-      pos2 = 0;
-
-    const closeDragElement = () => {
-      // stop moving when mouse button is released:
-      document.onmouseup = null;
-      document.onmousemove = null;
-      document.ontouchend = null;
-      document.ontouchmove = null;
-    };
-
-    const elementDrag = async (e: MouseEvent) => {
-      e.preventDefault();
-      // calculate the new cursor position:
-      pos1 = pos2 - e.clientX;
-      pos2 = e.clientX;
-      // set the element's new position:
-      let a = angleSlider.offsetLeft - pos1;
-      if (a < 0) {
-        a = Math.max(a, (-125 / 49) * 45);
-      } else {
-        a = Math.min(a, (125 / 49) * 45);
-      }
-
-      //console.log('a', a);
-      let angle = Math.round((a / 125) * 49);
-      angle = angle * -1;
-
-      rotate(angle, currentAngleOffset);
-    };
-
-    const elementDragTouch = async (e: TouchEvent) => {
-      e.preventDefault();
-      // calculate the new cursor position:
-      pos1 = pos2 - e.touches[0].clientX;
-      pos2 = e.touches[0].clientX;
-      // set the element's new position:
-      let a = angleSlider.offsetLeft - pos1;
-
-      //console.log('a', a);
-      if (a < 0) {
-        a = Math.max(a, (-125 / 49) * 45);
-      } else {
-        a = Math.min(a, (125 / 49) * 45);
-      }
-
-      console.log('a', a);
-
-      let angle = Math.round((a / 125) * 49);
-      angle = angle * -1;
-
-      rotate(angle, currentAngleOffset);
-    };
-
-    const dragMouseDown = (e: MouseEvent) => {
-      e.preventDefault();
-      // get the mouse cursor position at startup:
-      pos2 = e.clientX;
-      document.onmouseup = closeDragElement;
-      // call a function whenever the cursor moves:
-      document.onmousemove = elementDrag;
-    };
-
-    const dragTouchStart = (e: TouchEvent) => {
-      e.preventDefault();
-      //console.log('dragTouchStart');
-      // get the mouse cursor position at startup:
-      pos2 = e.touches[0].clientX;
-      document.ontouchend = closeDragElement;
-      // call a function whenever the cursor moves:
-      document.ontouchmove = elementDragTouch;
-    };
-    angleSliderHandle.onmousedown = dragMouseDown;
-    angleSliderHandle.ontouchstart = dragTouchStart;
   };
 
   const initAssetDrag = async () => {
