@@ -93,7 +93,7 @@ describe(ActivityService.name, () => {
     });
 
     it('should create a comment', async () => {
-      accessMock.activity.hasCreateAccess.mockResolvedValue(true);
+      accessMock.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
       activityMock.create.mockResolvedValue(activityStub.oneComment);
 
       await sut.create(authStub.admin, {
@@ -114,7 +114,6 @@ describe(ActivityService.name, () => {
 
     it('should fail because activity is disabled for the album', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      accessMock.activity.hasCreateAccess.mockResolvedValue(false);
       activityMock.create.mockResolvedValue(activityStub.oneComment);
 
       await expect(
@@ -128,7 +127,7 @@ describe(ActivityService.name, () => {
     });
 
     it('should create a like', async () => {
-      accessMock.activity.hasCreateAccess.mockResolvedValue(true);
+      accessMock.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
       activityMock.create.mockResolvedValue(activityStub.liked);
       activityMock.search.mockResolvedValue([]);
 
@@ -148,7 +147,7 @@ describe(ActivityService.name, () => {
 
     it('should skip if like exists', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      accessMock.activity.hasCreateAccess.mockResolvedValue(true);
+      accessMock.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
       activityMock.search.mockResolvedValue([activityStub.liked]);
 
       await sut.create(authStub.admin, {
@@ -163,19 +162,18 @@ describe(ActivityService.name, () => {
 
   describe('delete', () => {
     it('should require access', async () => {
-      accessMock.activity.hasOwnerAccess.mockResolvedValue(false);
       await expect(sut.delete(authStub.admin, activityStub.oneComment.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(activityMock.delete).not.toHaveBeenCalled();
     });
 
     it('should let the activity owner delete a comment', async () => {
-      accessMock.activity.hasOwnerAccess.mockResolvedValue(true);
+      accessMock.activity.checkOwnerAccess.mockResolvedValue(new Set(['activity-id']));
       await sut.delete(authStub.admin, 'activity-id');
       expect(activityMock.delete).toHaveBeenCalledWith('activity-id');
     });
 
     it('should let the album owner delete a comment', async () => {
-      accessMock.activity.hasAlbumOwnerAccess.mockResolvedValue(true);
+      accessMock.activity.checkAlbumOwnerAccess.mockResolvedValue(new Set(['activity-id']));
       await sut.delete(authStub.admin, 'activity-id');
       expect(activityMock.delete).toHaveBeenCalledWith('activity-id');
     });
