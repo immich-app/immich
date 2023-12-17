@@ -146,6 +146,11 @@
 
   $: currentRatio = originalImage ? originalImage.naturalWidth / imageWrapper.offsetWidth : 0;
 
+  const pinchHandler = (event: CustomEvent) => {
+    let scale = event.detail.scale;
+    console.log('scale', scale);
+  };
+
   const isFilter = (f: Preset) => {
     return (
       f &&
@@ -291,9 +296,9 @@
       return;
     }
     if (activeButton == 'crop') {
-      initAngleSlider();
-      initAssetDrag();
-      initZoom();
+      //initAngleSlider();
+      //initAssetDrag();
+      //initZoom();
       if (!cropWrapperParent.classList.contains('p-24')) {
         cropWrapperParent.classList.add('p-24');
         cropWrapperParent.classList.add('pb-52');
@@ -843,7 +848,7 @@
       <div class="-z-10 flex h-full w-full items-center justify-center">
         <div bind:this={cropElementWrapper} class="relative flex h-full w-full items-center justify-center">
           <div>
-            <div bind:this={imageWrapper}>
+            <div use:pinch on:pinch={pinchHandler} bind:this={imageWrapper}>
               <div
                 class="{isLoaded
                   ? 'hidden'
