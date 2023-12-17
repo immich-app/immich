@@ -24,6 +24,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { searchNameLocal } from '$lib/utils/person';
   import SearchBar from '$lib/components/faces-page/search-bar.svelte';
+  import { page } from '$app/stores';
 
   export let data: PageData;
 
@@ -71,6 +72,11 @@
 
   onMount(() => {
     document.addEventListener('keydown', onKeyboardPress);
+    const getSearchedPeople = $page.url.searchParams.get('searchedPeople');
+    if (getSearchedPeople) {
+      searchName = getSearchedPeople;
+      searchPeople(true);
+    }
   });
 
   onDestroy(() => {
@@ -88,6 +94,12 @@
         handleCloseClick();
         return;
     }
+  };
+
+  const handleSearch = (force: boolean) => {
+    $page.url.searchParams.set('searchedPeople', searchName);
+    goto($page.url);
+    searchPeople(force);
   };
 
   const handleCloseClick = () => {
@@ -178,6 +190,7 @@
         id: personMerge2.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
+      countTotalPeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       peopleCopy = peopleCopy.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       notificationController.show({
@@ -402,7 +415,7 @@
               on:reset={() => {
                 searchPeopleCopy = [];
               }}
-              on:search={({ detail }) => searchPeople(detail.force ?? false)}
+              on:search={({ detail }) => handleSearch(detail.force ?? false)}
             />
           </div>
         </div>
