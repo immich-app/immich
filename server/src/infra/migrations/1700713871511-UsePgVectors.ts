@@ -31,7 +31,9 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
         INSERT INTO smart_search("assetId", embedding)
         SELECT si."assetId", si."clipEmbedding"
         FROM smart_info si
-        WHERE "clipEmbedding" IS NOT NULL AND CARDINALITY("clipEmbedding"::real[]) = ${clipDimSize}`);
+        WHERE "clipEmbedding" IS NOT NULL
+        AND CARDINALITY("clipEmbedding"::real[]) = ${clipDimSize}
+        AND array_position(si."clipEmbedding", NULL) IS NULL`);
 
     await queryRunner.query(`ALTER TABLE smart_info DROP COLUMN IF EXISTS "clipEmbedding"`);
     }
