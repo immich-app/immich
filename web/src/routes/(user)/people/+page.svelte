@@ -422,7 +422,9 @@
   <svelte:fragment slot="buttons">
     <div class="flex flex-wrap">
       {#if countTotalPeople > 0}
-        <div class="flex flex-wrap place-items-center gap-x-1 text-sm">
+        <div
+          class="flex items-center text-sm rounded-lg bg-gray-100 p-2 dark:bg-gray-700 gap-2 place-items-center h-full"
+        >
           <button
             type="button"
             class="flex-shrink-0 inline-flex justify-center items-center"
@@ -433,7 +435,7 @@
           <!-- svelte-ignore a11y-autofocus -->
           <input
             autofocus
-            class="hs-leading-button-add-on-with-icon dark:text-white"
+            class="hs-leading-button-add-on-with-icon w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
             type="text"
             placeholder="Search names"
             bind:value={name}
