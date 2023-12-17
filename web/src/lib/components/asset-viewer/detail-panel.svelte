@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
@@ -53,7 +52,7 @@
     }
   }
 
-  $: isOwner = $page?.data?.user?.id === asset.ownerId;
+  $: isOwner = $user.id === asset.ownerId;
 
   $: {
     // Get latest description from server
@@ -570,7 +569,13 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+    <Map
+      mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+      center={latlng}
+      zoom={15}
+      simplified
+      useLocationPin
+    >
       <svelte:fragment slot="popup" let:marker>
         {@const { lat, lon } = marker}
         <div class="flex flex-col items-center gap-1">

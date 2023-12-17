@@ -13,15 +13,8 @@
   let search = '';
 
   const dispatch = createEventDispatcher<{
-    newAlbum: {
-      albumName: string;
-    };
-    album: {
-      album: AlbumResponseDto;
-    };
-    newSharedAlbum: {
-      albumName: string;
-    };
+    newAlbum: string;
+    album: AlbumResponseDto;
     close: void;
   }>();
 
@@ -47,15 +40,11 @@
   }
 
   const handleSelect = (album: AlbumResponseDto) => {
-    dispatch('album', { album });
+    dispatch('album', album);
   };
 
   const handleNew = () => {
-    if (shared) {
-      dispatch('newAlbum', { albumName: search.length > 0 ? search : '' });
-    } else {
-      dispatch('newSharedAlbum', { albumName: search.length > 0 ? search : '' });
-    }
+    dispatch('newAlbum', search.length > 0 ? search : '');
   };
 </script>
 

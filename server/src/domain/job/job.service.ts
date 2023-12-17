@@ -98,7 +98,7 @@ export class JobService {
         await this.configCore.requireFeature(FeatureFlag.TAG_IMAGE);
         return this.jobRepository.queue({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force } });
 
-      case QueueName.CLIP_ENCODING:
+      case QueueName.SMART_SEARCH:
         await this.configCore.requireFeature(FeatureFlag.CLIP_ENCODE);
         return this.jobRepository.queue({ name: JobName.QUEUE_ENCODE_CLIP, data: { force } });
 

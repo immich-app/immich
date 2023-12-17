@@ -48,6 +48,12 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('handleQueueObjectTagging', () => {
+    beforeEach(async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
+    });
+
     it('should do nothing if machine learning is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
 
@@ -58,6 +64,9 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should queue the assets without tags', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
       assetMock.getWithout.mockResolvedValue({
         items: [assetStub.image],
         hasNextPage: false,
@@ -70,6 +79,9 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should queue all the assets', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
       assetMock.getAll.mockResolvedValue({
         items: [assetStub.image],
         hasNextPage: false,
@@ -103,6 +115,9 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should save the returned tags', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
       machineMock.classifyImage.mockResolvedValue(['tag1', 'tag2', 'tag3']);
 
       await sut.handleClassifyImage({ id: asset.id });
@@ -121,6 +136,9 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should always overwrite old tags', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
       machineMock.classifyImage.mockResolvedValue([]);
 
       await sut.handleClassifyImage({ id: asset.id });

@@ -42,16 +42,15 @@
     />
 
     {#if disabled}
-      <span class="slider-disable cursor-not-allowed" />
+      <span class="slider slider-disabled cursor-not-allowed" />
     {:else}
-      <span class="slider cursor-pointer" />
+      <span class="slider slider-enabled cursor-pointer" />
     {/if}
   </label>
 </div>
 
 <style>
-  .slider,
-  .slider-disable {
+  .slider {
     position: absolute;
     top: 0;
     left: 0;
@@ -67,8 +66,7 @@
     cursor: not-allowed;
   }
 
-  .slider:before,
-  .slider-disable:before {
+  .slider:before {
     position: absolute;
     content: '';
     height: 20px;
@@ -82,18 +80,18 @@
     border-radius: 50%;
   }
 
-  input:checked + .slider-disable {
-    background-color: gray;
-  }
-
-  input:checked + .slider {
-    background-color: #adcbfa;
-  }
-
   input:checked + .slider:before {
     -webkit-transform: translateX(18px);
     -ms-transform: translateX(18px);
     transform: translateX(18px);
     background-color: #4250af;
+  }
+
+  input:checked + .slider-disabled {
+    background-color: gray;
+  }
+
+  input:checked + .slider-enabled {
+    background-color: #adcbfa;
   }
 </style>

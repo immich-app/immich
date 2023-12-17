@@ -79,7 +79,7 @@
       {/if}
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
+    <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
         <a
           data-sveltekit-preload-data="hover"

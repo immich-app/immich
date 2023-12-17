@@ -12,6 +12,7 @@
   import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let newVersionCheckConfig: SystemConfigNewVersionCheckDto; // this is the config that is being edited
+  export let disabled = false;
 
   let savedConfig: SystemConfigNewVersionCheckDto;
   let defaultConfig: SystemConfigNewVersionCheckDto;
@@ -86,11 +87,13 @@
               title="ENABLED"
               subtitle="Enable period requests to GitHub to check for new releases"
               bind:checked={newVersionCheckConfig.enabled}
+              {disabled}
             />
             <SettingButtonsRow
               on:reset={({ detail }) => handleReset(detail)}
               on:save={saveSetting}
               showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+              {disabled}
             />
           </div>
         </div>
