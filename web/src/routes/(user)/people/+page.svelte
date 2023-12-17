@@ -274,7 +274,6 @@
 
   const searchPeople = async (force: boolean) => {
     if (searchName === '') {
-      people = peopleCopy;
       return;
     }
     if (!force) {
