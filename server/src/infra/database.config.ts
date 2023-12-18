@@ -1,4 +1,4 @@
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 const url = process.env.DB_URL;
@@ -42,7 +42,7 @@ export async function enablePrefilter() {
 
 export async function getExtensionVersion(extName: string): Promise<string | null> {
   const res = await dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extName]);
-  return res[0]?.["extversion"] ?? null;
+  return res[0]?.['extversion'] ?? null;
 }
 
 export async function getPostgresVersion(): Promise<string> {
