@@ -15,6 +15,7 @@
     "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "rootDirs": ["src", "../server/src"],
     "baseUrl": "./",
     "paths": {
       "@test": ["../server/test"],

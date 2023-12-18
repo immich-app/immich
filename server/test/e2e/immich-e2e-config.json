@@ -4,5 +4,8 @@
   },
   "machineLearning": {
     "enabled": false
+  },
+  "logging": {
+    "enabled": false
   }
 }

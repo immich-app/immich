@@ -12,7 +12,7 @@ describe(`upload (e2e)`, () => {
   spyOnConsole();
 
   beforeAll(async () => {
-    server = (await testApp.create({ jobs: true })).getHttpServer();
+    server = (await testApp.create()).getHttpServer();
   });
 
   afterAll(async () => {
@@ -40,7 +40,10 @@ describe(`upload (e2e)`, () => {
       recursive: true,
       album: true,
     });
+
     const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
     expect(albums.length).toEqual(1);
+    const natureAlbum = albums[0];
+    expect(natureAlbum.albumName).toEqual('nature');
   });
 });

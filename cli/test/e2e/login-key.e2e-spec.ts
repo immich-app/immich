@@ -14,7 +14,7 @@ describe(`login-key (e2e)`, () => {
   spyOnConsole();
 
   beforeAll(async () => {
-    server = (await testApp.create({ jobs: true })).getHttpServer();
+    server = (await testApp.create()).getHttpServer();
     if (!process.env.IMMICH_INSTANCE_URL) {
       throw new Error('IMMICH_INSTANCE_URL environment variable not set');
     } else {
