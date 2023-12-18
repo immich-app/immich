@@ -208,7 +208,7 @@ describe(PersonService.name, () => {
         new ImmichFileResponse({
           path: '/path/to/thumbnail.jpg',
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+          cacheControl: CacheControl.PRIVATE_WITHOUT_CACHE,
         }),
       );
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));

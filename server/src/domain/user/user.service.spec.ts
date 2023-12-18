@@ -396,7 +396,7 @@ describe(UserService.name, () => {
         new ImmichFileResponse({
           path: '/path/to/profile.jpg',
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PRIVATE_WITHOUT_CACHE,
+          cacheControl: CacheControl.NONE,
         }),
       );
 
