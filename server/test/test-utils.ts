@@ -95,6 +95,7 @@ export const testApp = {
     return app;
   },
   reset: async (options?: ResetOptions) => {
+    await app.get(AppService).init();
     await db.reset(options);
   },
   teardown: async () => {
