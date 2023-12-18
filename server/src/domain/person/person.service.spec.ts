@@ -18,7 +18,7 @@ import {
   personStub,
 } from '@test';
 import { BulkIdErrorReason } from '../asset';
-import { ImmichFileResponse } from '../domain.util';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAssetRepository,
@@ -208,7 +208,7 @@ describe(PersonService.name, () => {
         new ImmichFileResponse({
           path: '/path/to/thumbnail.jpg',
           contentType: 'image/jpeg',
-          cacheControl: true,
+          cacheControl: CacheControl.PRIVATE_WITHOUT_CACHE,
         }),
       );
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));

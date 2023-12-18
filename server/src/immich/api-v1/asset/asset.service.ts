@@ -2,6 +2,7 @@ import {
   AccessCore,
   AssetResponseDto,
   AuthDto,
+  CacheControl,
   getLivePhotoMotionFilename,
   IAccessRepository,
   IJobRepository,
@@ -147,7 +148,11 @@ export class AssetService {
 
     const filepath = this.getThumbnailPath(asset, dto.format);
 
-    return new ImmichFileResponse({ path: filepath, contentType: mimeTypes.lookup(filepath), cacheControl: true });
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
   public async serveFile(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
@@ -166,7 +171,11 @@ export class AssetService {
         ? this.getServePath(asset, dto, allowOriginalFile)
         : asset.encodedVideoPath || asset.originalPath;
 
-    return new ImmichFileResponse({ path: filepath, contentType: mimeTypes.lookup(filepath), cacheControl: true });
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
   async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {
