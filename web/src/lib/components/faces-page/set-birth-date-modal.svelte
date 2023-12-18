@@ -5,35 +5,18 @@
   import { mdiCake } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
-  export let birthDate: string;
-  let error = '';
+  export let birthDate: string | null = null;
 
   const dispatch = createEventDispatcher<{
     close: void;
-    updated: string;
+    updated: string | null;
   }>();
 
-  // Calculate today's date in the local time zone and format it
   const todayFormatted = new Date().toISOString().split('T')[0];
-
-  $: {
-    if (birthDate && birthDate > todayFormatted) {
-      // If the birthDate is set in the future, set error message
-      error = 'Date of birth cannot be in the future.';
-    } else if (birthDate === '') {
-      // If birthDate is intentionally cleared, reset error and allow empty submission
-      error = '';
-    } else {
-      // Reset error for valid dates
-      error = '';
-    }
-  }
 
   const handleCancel = () => dispatch('close');
   const handleSubmit = () => {
-    if (!error) {
-      dispatch('updated', birthDate);
-    }
+    dispatch('updated', birthDate);
   };
 </script>
 
@@ -52,10 +35,6 @@
       </p>
     </div>
 
-    {#if error}
-      <p class="text-sm text-red-500">{error}</p>
-    {/if}
-
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
         <input
@@ -69,7 +48,7 @@
       </div>
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-        <Button type="submit" fullwidth disabled={!!error}>Set</Button>
+        <Button type="submit" fullwidth>Set</Button>
       </div>
     </form>
   </div>

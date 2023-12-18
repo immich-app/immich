@@ -2,7 +2,6 @@ import { PersonEntity } from '@app/infra/entities';
 import { PersonPathType } from '@app/infra/entities/move.entity';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Check } from 'typeorm';
 import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
@@ -43,7 +42,6 @@ import {
 } from './person.dto';
 
 @Injectable()
-@Check(`"birthDate" <= CURRENT_DATE`)
 export class PersonService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
