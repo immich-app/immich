@@ -19,9 +19,6 @@ pull-stage:
 test-server-e2e:
 	docker compose -f ./server/test/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
-test-cli-e2e:
-	cd cli && npm run test:e2e
-
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 

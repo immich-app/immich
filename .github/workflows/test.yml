@@ -116,11 +116,10 @@ jobs:
 
   cli-e2e-tests:
     name: CLI (e2e)
-    strategy:
-      matrix:
-        os: [ubuntu-latest] # TODO: macos and windows
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cli
 
     steps:
       - name: Checkout code
@@ -128,8 +127,15 @@ jobs:
         with:
           submodules: "recursive"
 
+      - name: Run npm install in cli
+        run: npm ci
+
+      - name: Run npm install in server
+        run: npm ci
+        working-directory: ./server
+
       - name: Run e2e tests
-        run: make test-cli-e2e
+        run: npm run test:e2e
 
   web-unit-tests:
     name: Web
