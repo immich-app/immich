@@ -55,7 +55,7 @@ export async function assertVectors(runner: DataSource | QueryRunner) {
   const expected = ['0.1.1', '0.1.11'];
   const image = `tensorchord/pgvecto-rs:pg${postgresVersion}-v${expected[expected.length - 1]}`;
 
-  await dataSource.query('CREATE EXTENSION IF NOT EXISTS vectors').catch((err) => {
+  await runner.query('CREATE EXTENSION IF NOT EXISTS vectors').catch((err) => {
     console.error(
       'Failed to create pgvecto.rs extension. ' +
         `If you have not updated your Postgres instance to an image that supports pgvecto.rs (such as '${image}'), please do so. ` +
