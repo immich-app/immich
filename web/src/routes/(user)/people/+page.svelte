@@ -4,7 +4,7 @@
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { api, PeopleUpdateItem, updateArray, type PersonResponseDto } from '@api';
+  import { api, PeopleUpdateItem, type PersonResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import {
     ActionQueryParameterValue,
@@ -41,7 +41,7 @@
   let initialHiddenValues: Record<string, boolean> = {};
   let eyeColorMap: Record<string, 'black' | 'white'> = {};
 
-  let searchPeopleCopy: PersonResponseDto[] = [];
+  let searchedPeople: PersonResponseDto[] = [];
   let searchName = '';
   let searchWord: string;
   let isSearchingPeople = false;
@@ -58,23 +58,11 @@
   let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
 
-  let peopleCopy = data.people.people;
-
-  for (const person of peopleCopy) {
+  for (const person of people) {
     initialHiddenValues[person.id] = person.isHidden;
   }
 
-  $: {
-    if (searchName) {
-      people = searchNameLocal(searchName, searchPeopleCopy, maximumLengthSearchPeople);
-    } else {
-      if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
-        $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
-        goto($page.url);
-      }
-      people = peopleCopy;
-    }
-  }
+  $: searchedPeopleLocal = searchName ? searchNameLocal(searchName, searchedPeople, maximumLengthSearchPeople) : [];
 
   $: countVisiblePeople = people.filter((person) => !person.isHidden).length;
 
@@ -113,7 +101,7 @@
   };
 
   const handleCloseClick = () => {
-    for (const person of peopleCopy) {
+    for (const person of people) {
       person.isHidden = initialHiddenValues[person.id];
     }
     // trigger reactivity
@@ -126,7 +114,7 @@
   };
 
   const handleResetVisibility = () => {
-    for (const person of peopleCopy) {
+    for (const person of people) {
       person.isHidden = initialHiddenValues[person.id];
     }
 
@@ -202,7 +190,6 @@
       });
       countTotalPeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
-      peopleCopy = peopleCopy.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       notificationController.show({
         message: 'Merge people succesfully',
         type: NotificationType.Info,
@@ -220,13 +207,12 @@
       try {
         await api.personApi.updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
 
-        people = updateArray(people, personToBeMergedIn, (person) => person.id === personToBeMergedIn.id);
-        peopleCopy = updateArray(peopleCopy, personToBeMergedIn, (person) => person.id === personToBeMergedIn.id);
-        searchPeopleCopy = updateArray(
-          searchPeopleCopy,
-          personToBeMergedIn,
-          (person) => person.id === personToBeMergedIn.id,
-        );
+        for (const person of people) {
+          if (person.id === personToBeMergedIn.id) {
+            person.name = personName;
+            break;
+          }
+        }
         notificationController.show({
           message: 'Change name succesfully',
           type: NotificationType.Info,
@@ -259,11 +245,14 @@
         personUpdateDto: { isHidden: true },
       });
 
-      people = updateArray(people, updatedPerson, (person) => person.id === updatedPerson.id);
-      peopleCopy = updateArray(peopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
-      searchPeopleCopy = updateArray(searchPeopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
 
-      for (const person of peopleCopy) {
+      for (const person of people) {
         initialHiddenValues[person.id] = person.isHidden;
       }
 
@@ -286,6 +275,10 @@
 
   const searchPeople = async (force: boolean) => {
     if (searchName === '') {
+      if ($page.url.searchParams.has(QueryParameter.SEARCHED_PEOPLE)) {
+        $page.url.searchParams.delete(QueryParameter.SEARCHED_PEOPLE);
+        goto($page.url);
+      }
       return;
     }
     if (!force) {
@@ -297,8 +290,8 @@
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       const { data } = await api.searchApi.searchPerson({ name: searchName, withHidden: false });
-      people = data;
-      searchPeopleCopy = data;
+
+      searchedPeople = data;
       searchWord = searchName;
     } catch (error) {
       handleError(error, "Can't search people");
@@ -359,9 +352,12 @@
         personUpdateDto: { birthDate: value.length > 0 ? value : null },
       });
 
-      people = updateArray(people, updatedPerson, (person) => person.id === updatedPerson.id);
-      peopleCopy = updateArray(peopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
-      searchPeopleCopy = updateArray(searchPeopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
       notificationController.show({
         message: 'Date of birth saved succesfully',
         type: NotificationType.Info,
@@ -383,9 +379,12 @@
         id: edittingPerson.id,
         personUpdateDto: { name: personName },
       });
-      people = updateArray(people, updatedPerson, (person) => person.id === updatedPerson.id);
-      peopleCopy = updateArray(peopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
-      searchPeopleCopy = updateArray(searchPeopleCopy, updatedPerson, (person) => person.id === updatedPerson.id);
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
       notificationController.show({
         message: 'Change name succesfully',
         type: NotificationType.Info,
@@ -424,7 +423,7 @@
               bind:name={searchName}
               {isSearchingPeople}
               on:reset={() => {
-                searchPeopleCopy = [];
+                searchedPeople = [];
               }}
               on:search={({ detail }) => handleSearch(detail.force ?? false)}
             />
@@ -440,11 +439,11 @@
     {/if}
   </svelte:fragment>
 
-  {#if countVisiblePeople > 0}
+  {#if countVisiblePeople > 0 && searchName ? searchedPeopleLocal.length !== 0 : true}
     <div class="pl-4">
       <div class="flex flex-row flex-wrap gap-1">
         {#each people as person, idx (person.id)}
-          {#if !person.isHidden}
+          {#if !person.isHidden && (searchName ? searchedPeopleLocal.some((searchedPerson) => searchedPerson.id === person.id) : true)}
             <PeopleCard
               {person}
               preload={idx < 20}
@@ -516,7 +515,7 @@
     bind:showLoadingSpinner
     bind:toggleVisibility
   >
-    {#each peopleCopy as person, index (person.id)}
+    {#each people as person, index (person.id)}
       <button
         class="relative h-36 w-36 md:h-48 md:w-48"
         on:click={() => (person.isHidden = !person.isHidden)}
