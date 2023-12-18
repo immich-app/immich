@@ -1,6 +1,6 @@
 import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
-import { dataSource, databaseChecks } from '@app/infra';
+import { dataSource } from '@app/infra';
 import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -24,7 +24,6 @@ export interface ResetOptions {
 }
 export const db = {
   reset: async (options?: ResetOptions) => {
-    await databaseChecks();
     await dataSource.transaction(async (em) => {
       const entities = options?.entities || [];
       const tableNames =
@@ -63,7 +62,7 @@ interface TestAppOptions {
 let app: INestApplication;
 
 export const testApp = {
-  create: async (options?: TestAppOptions): Promise<INestApplication> => {
+  create: async (options?: TestAppOptions): Promise<[any, INestApplication]> => {
     const { jobs } = options || { jobs: false };
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
@@ -87,10 +86,7 @@ export const testApp = {
 
     app = await moduleFixture.createNestApplication().init();
     await app.listen(0);
-
-    if (jobs) {
-      await app.get(AppService).init();
-    }
+    await app.get(AppService).init();
 
     const port = app.getHttpServer().address().port;
     const protocol = app instanceof Server ? 'https' : 'http';

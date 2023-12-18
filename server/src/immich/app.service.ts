@@ -1,5 +1,6 @@
 import {
   AuthService,
+  DatabaseService,
   JobService,
   ONE_HOUR,
   OpenGraphTags,
@@ -46,6 +47,7 @@ export class AppService {
     private serverService: ServerInfoService,
     private sharedLinkService: SharedLinkService,
     private storageService: StorageService,
+    private databaseService: DatabaseService,
   ) {}
 
   @Interval(ONE_HOUR.as('milliseconds'))
@@ -59,6 +61,7 @@ export class AppService {
   }
 
   async init() {
+    await this.databaseService.init();
     await this.configService.init();
     this.storageService.init();
     await this.serverService.handleVersionCheck();
