@@ -31,8 +31,8 @@ export async function databaseChecks() {
     await dataSource.initialize();
   }
 
-  await enablePrefilter();
   await assertVectors();
+  await enablePrefilter();
   await dataSource.runMigrations();
 }
 
