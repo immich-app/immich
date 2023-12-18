@@ -24,7 +24,7 @@ void main() {
     Store.put(StoreKey.serverEndpoint, '');
   });
 
-  testWidgets('Displays Input text field', (tester) async {
+  testWidgets('Returns an Input text field', (tester) async {
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (_) {},

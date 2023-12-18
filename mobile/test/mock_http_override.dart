@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:immich_mobile/shared/ui/transparent_image.dart';
 import 'package:mocktail/mocktail.dart';
 
+/// Mocks the http client to always return a transparent image for all the requests. Only useful in widget
+/// tests to return network images
 class MockHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
