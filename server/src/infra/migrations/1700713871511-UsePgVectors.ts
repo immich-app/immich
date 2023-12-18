@@ -1,6 +1,6 @@
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { assertVectors } from '..';
+import { assertVectors } from '../database.config';
 
 export class UsePgVectors1700713871511 implements MigrationInterface {
   name = 'UsePgVectors1700713871511';
