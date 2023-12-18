@@ -9,7 +9,7 @@ import {
 import { SearchController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
-import { errorStub } from '@test/fixtures';
+import { errorStub, searchStub } from '@test/fixtures';
 import { generateAsset, testApp } from '@test/test-utils';
 import request from 'supertest';
 
@@ -39,32 +39,19 @@ describe(`${SearchController.name}`, () => {
     loginResponse = await api.authApi.adminLogin(server);
     accessToken = loginResponse.accessToken;
     libraries = await api.libraryApi.getAll(server, accessToken);
-
-    const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
-    await assetRepository.upsertExif({
-      assetId,
-      latitude: 90,
-      longitude: 90,
-      city: 'Immich',
-      state: 'Nebraska',
-      country: 'United States',
-      make: 'Canon',
-      model: 'EOS Rebel T7',
-      lensModel: 'Fancy lens',
-    });
-    await smartInfoRepository.upsert(
-      { assetId, objects: ['car', 'tree'], tags: ['accident'] },
-      Array.from({ length: 512 }, Math.random),
-    );
-    const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true, smartInfo: true });
-    if (!assetWithMetadata) {
-      throw new Error('Asset not found');
-    }
-    asset1 = mapAsset(assetWithMetadata);
   });
 
-  describe('GET /search', () => {
-    beforeEach(async () => {});
+  describe('GET /search (exif)', () => {
+    beforeEach(async () => {
+      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      await assetRepository.upsertExif({ assetId, ...searchStub.exif });
+
+      const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true });
+      if (!assetWithMetadata) {
+        throw new Error('Asset not found');
+      }
+      asset1 = mapAsset(assetWithMetadata);
+    });
 
     it('should require authentication', async () => {
       const { status, body } = await request(server).get('/search');
@@ -173,6 +160,20 @@ describe(`${SearchController.name}`, () => {
           facets: [],
         },
       });
+    });
+  });
+
+  describe('GET /search (smart info)', () => {
+    beforeEach(async () => {
+      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      await assetRepository.upsertExif({ assetId, ...searchStub.exif });
+      await smartInfoRepository.upsert({ assetId, ...searchStub.smartInfo }, Array.from({ length: 512 }, Math.random));
+
+      const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true, smartInfo: true });
+      if (!assetWithMetadata) {
+        throw new Error('Asset not found');
+      }
+      asset1 = mapAsset(assetWithMetadata);
     });
 
     it('should return assets when searching by object', async () => {

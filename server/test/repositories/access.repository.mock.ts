@@ -18,9 +18,9 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
 
   return {
     activity: {
-      hasOwnerAccess: jest.fn(),
-      hasAlbumOwnerAccess: jest.fn(),
-      hasCreateAccess: jest.fn(),
+      checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkAlbumOwnerAccess: jest.fn().mockResolvedValue(new Set()),
+      checkCreateAccess: jest.fn().mockResolvedValue(new Set()),
     },
 
     asset: {
@@ -50,7 +50,7 @@ export const newAccessRepositoryMock = (reset = true): IAccessRepositoryMock => 
     },
 
     person: {
-      hasFaceOwnerAccess: jest.fn(),
+      checkFaceOwnerAccess: jest.fn().mockResolvedValue(new Set()),
       checkOwnerAccess: jest.fn().mockResolvedValue(new Set()),
     },
 

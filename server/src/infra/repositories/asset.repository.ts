@@ -804,23 +804,22 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
+  @GenerateSql({ params: [DummyValue.STRING, DummyValue.UUID, { numResults: 250 }] })
   async searchMetadata(query: string, ownerId: string, { numResults }: MetadataSearchOptions): Promise<AssetEntity[]> {
-    const rows = await this.repository
-      .createQueryBuilder('assets')
-      .select('assets.*')
-      .addSelect('e.country', 'country')
-      .addSelect('e.state', 'state')
-      .addSelect('e.city', 'city')
-      .addSelect('e.description', 'description')
-      .addSelect('e.model', 'model')
-      .addSelect('e.make', 'make')
+    const rows = await this.getBuilder({
+      userIds: [ownerId],
+      exifInfo: false,
+      isArchived: false,
+    })
+      .select('asset.*')
+      .addSelect('e.*')
       .addSelect('COALESCE(si.tags, array[]::text[])', 'tags')
       .addSelect('COALESCE(si.objects, array[]::text[])', 'objects')
-      .innerJoin('smart_info', 'si', 'si."assetId" = assets."id"')
-      .innerJoin('exif', 'e', 'assets."id" = e."assetId"')
-      .where('a.ownerId = :ownerId', { ownerId })
-      .where(
-        '(e."exifTextSearchableColumn" || si."smartInfoTextSearchableColumn") @@ PLAINTO_TSQUERY(\'english\', :query)',
+      .innerJoin('exif', 'e', 'asset."id" = e."assetId"')
+      .leftJoin('smart_info', 'si', 'si."assetId" = asset."id"')
+      .andWhere(
+        `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
+        @@ PLAINTO_TSQUERY('english', :query)`,
         { query },
       )
       .limit(numResults)

@@ -142,7 +142,7 @@
         }),
       }}
       id="geojson"
-      cluster={{ radius: 500, maxZoom: 42 }}
+      cluster={{ radius: 500, maxZoom: 24 }}
     >
       <MarkerLayer
         applyToClusters
