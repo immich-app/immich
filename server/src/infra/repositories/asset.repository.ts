@@ -826,15 +826,53 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
 
     return rows.map(
-      ({ tags, objects, country, state, city, description, model, make, ...assetInfo }) =>
+      ({
+        tags,
+        objects,
+        country,
+        state,
+        city,
+        description,
+        model,
+        make,
+        dateTimeOriginal,
+        exifImageHeight,
+        exifImageWidth,
+        exposureTime,
+        fNumber,
+        fileSizeInByte,
+        focalLength,
+        iso,
+        latitude,
+        lensModel,
+        longitude,
+        modifyDate,
+        projectionType,
+        timeZone,
+        ...assetInfo
+      }) =>
         ({
           exifInfo: {
-            country,
-            state,
             city,
+            country,
+            dateTimeOriginal,
             description,
-            model,
+            exifImageHeight,
+            exifImageWidth,
+            exposureTime,
+            fNumber,
+            fileSizeInByte,
+            focalLength,
+            iso,
+            latitude,
+            lensModel,
+            longitude,
             make,
+            model,
+            modifyDate,
+            projectionType,
+            state,
+            timeZone,
           },
           smartInfo: {
             tags,
