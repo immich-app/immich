@@ -6,4 +6,5 @@ export class UploadOptionsDto {
   delete = false;
   readOnly = true;
   album = false;
+  albumName = '';
 }

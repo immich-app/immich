@@ -21,6 +21,7 @@ program
       .env('IMMICH_AUTO_CREATE_ALBUM')
       .default(false),
   )
+  .addOption(new Option('-N, --album-name <name>', 'Add all assets to the specified album name').conflicts('album'))
   .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")
       .env('IMMICH_DRY_RUN')
