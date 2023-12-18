@@ -18,10 +18,13 @@
 
   $: {
     if (birthDate && birthDate > todayFormatted) {
-      // If the birthDate is set in the future, force the date to today's date
-      birthDate = todayFormatted;
+      // If the birthDate is set in the future, set error message
       error = 'Date of birth cannot be in the future.';
+    } else if (birthDate === '') {
+      // If birthDate is intentionally cleared, reset error and allow empty submission
+      error = '';
     } else {
+      // Reset error for valid dates
       error = '';
     }
   }
@@ -59,7 +62,7 @@
       </div>
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
-        <Button type="submit" fullwidth>Set</Button>
+        <Button type="submit" fullwidth disabled={!!error}>Set</Button>
       </div>
     </form>
   </div>

@@ -40,8 +40,11 @@ import {
   mapFaces,
   mapPerson,
 } from './person.dto';
+import { Check } from 'typeorm';
+
 
 @Injectable()
+@Check(`"birthDate" <= CURRENT_DATE`)
 export class PersonService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
