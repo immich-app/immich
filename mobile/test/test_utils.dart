@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -30,14 +29,7 @@ final class TestUtils {
 
   /// Downloads Isar binaries (if required) and initializes a new Isar db
   static Future<Isar> initIsar() async {
-    await Isar.initializeIsarCore(
-      libraries: {
-        Abi.macosX64: '.dart_tool/libisar_macos.dylib',
-        Abi.macosArm64: '.dart_tool/libisar_macos.dylib',
-        Abi.linuxX64: '.dart_tool/libisar_linux_x64.so',
-        Abi.windowsX64: '.dart_tool/isar_windows_x64.dll',
-      },
-    );
+    await Isar.initializeIsarCore(download: true);
 
     final instance = Isar.getInstance();
     if (instance != null) {
