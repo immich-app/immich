@@ -1,13 +1,10 @@
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { assertVectors } from '../database.config';
 
 export class UsePgVectors1700713871511 implements MigrationInterface {
   name = 'UsePgVectors1700713871511';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await assertVectors(queryRunner);
-
     const faceDimQuery = await queryRunner.query(`
         SELECT CARDINALITY(embedding::real[]) as dimsize
         FROM asset_faces
