@@ -19,6 +19,7 @@
 
   $: {
     if (birthDate && birthDate > today.toISOString().split('T')[0]) {
+      // If the birthDate is set in the future, the date will be reset to today's date
       birthDate = today.toISOString().split('T')[0];
       error = 'Date of birth cannot be in the future.';
     } else {
