@@ -6,14 +6,32 @@
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let birthDate: string;
+  let error = '';
 
   const dispatch = createEventDispatcher<{
     close: void;
     updated: string;
   }>();
 
+  // Calculate today's date in the local time zone
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset time to midnight
+
+  $: {
+    if (birthDate && birthDate > today.toISOString().split('T')[0]) {
+      birthDate = today.toISOString().split('T')[0];
+      error = 'Date of birth cannot be in the future.';
+    } else {
+      error = '';
+    }
+  }
+
   const handleCancel = () => dispatch('close');
-  const handleSubmit = () => dispatch('updated', birthDate);
+  const handleSubmit = () => {
+    if (!error) {
+      dispatch('updated', birthDate);
+    }
+  };
 </script>
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>
@@ -30,6 +48,10 @@
         Date of birth is used to calculate the age of this person at the time of a photo.
       </p>
     </div>
+
+    {#if error}
+      <p class="text-sm text-red-500">{error}</p>
+    {/if}
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
