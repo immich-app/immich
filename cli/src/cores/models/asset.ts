@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'graceful-fs';
 import { basename } from 'node:path';
 import crypto from 'crypto';
 import Os from 'os';
