@@ -1,10 +1,13 @@
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { assertVectors } from '../database.config';
 
 export class UsePgVectors1700713871511 implements MigrationInterface {
   name = 'UsePgVectors1700713871511';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await assertVectors(queryRunner);
+
     const faceDimQuery = await queryRunner.query(`
         SELECT CARDINALITY(embedding::real[]) as dimsize
         FROM asset_faces
@@ -14,8 +17,6 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
     const clipModelNameQuery = await queryRunner.query(`SELECT value FROM system_config WHERE key = 'machineLearning.clip.modelName'`);
     const clipModelName: string = clipModelNameQuery?.[0]?.['value'] ?? 'ViT-B-32__openai';
     const clipDimSize = getCLIPModelInfo(clipModelName.replace(/"/g, '')).dimSize;
-
-    await queryRunner.query('CREATE EXTENSION IF NOT EXISTS vectors');
 
     await queryRunner.query(`
         ALTER TABLE asset_faces 
