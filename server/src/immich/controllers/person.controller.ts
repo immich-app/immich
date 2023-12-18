@@ -13,7 +13,7 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, Header, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, Authenticated, FileResponse } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -70,7 +70,6 @@ export class PersonController {
   }
 
   @Get(':id/thumbnail')
-  @Header('Cache-Control', 'private, no-cache, no-transform')
   @FileResponse()
   getPersonThumbnail(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<ImmichFileResponse> {
     return this.service.getThumbnail(auth, id, false);
