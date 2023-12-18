@@ -1,5 +1,5 @@
 import { envName, serverVersion } from '@app/domain';
-import { WebSocketAdapter } from '@app/infra';
+import { WebSocketAdapter, databaseChecks } from '@app/infra';
 import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
 import { MicroservicesModule } from './microservices.module';
@@ -13,6 +13,7 @@ export async function bootstrap() {
   app.useLogger(app.get(ImmichLogger));
   app.useWebSocketAdapter(new WebSocketAdapter(app));
 
+  await databaseChecks();
   await app.listen(port);
 
   logger.log(`Immich Microservices is listening on ${await app.getUrl()} [v${serverVersion}] [${envName}] `);
