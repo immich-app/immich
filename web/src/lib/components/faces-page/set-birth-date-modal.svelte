@@ -5,11 +5,11 @@
   import { mdiCake } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
-  export let birthDate: string | null = null;
+  export let birthDate: string;
 
   const dispatch = createEventDispatcher<{
     close: void;
-    updated: string | null;
+    updated: string;
   }>();
 
   const todayFormatted = new Date().toISOString().split('T')[0];
