@@ -673,8 +673,8 @@ LIMIT
 SELECT
   asset.*,
   e.*,
-  COALESCE("si"."tags", array[]::text[]) AS "tags",
-  COALESCE("si"."objects", array[]::text[]) AS "objects"
+  COALESCE("si"."tags", array[]::text []) AS "tags",
+  COALESCE("si"."objects", array[]::text []) AS "objects"
 FROM
   "assets" "asset"
   INNER JOIN "exif" "e" ON asset."id" = e."assetId"
