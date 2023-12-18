@@ -13,14 +13,13 @@
     updated: string;
   }>();
 
-  // Calculate today's date in the local time zone
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Reset time to midnight
+  // Calculate today's date in the local time zone and format it
+  const todayFormatted = new Date().toISOString().split('T')[0];
 
   $: {
-    if (birthDate && birthDate > today.toISOString().split('T')[0]) {
-      // If the birthDate is set in the future, the date will be reset to today's date
-      birthDate = today.toISOString().split('T')[0];
+    if (birthDate && birthDate > todayFormatted) {
+      // If the birthDate is set in the future, force the date to today's date
+      birthDate = todayFormatted;
       error = 'Date of birth cannot be in the future.';
     } else {
       error = '';
@@ -56,7 +55,7 @@
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <input class="immich-form-input" id="birthDate" name="birthDate" type="date" bind:value={birthDate} />
+        <input class="immich-form-input" id="birthDate" name="birthDate" type="date" bind:value={birthDate} max={todayFormatted} />
       </div>
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
