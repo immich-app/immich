@@ -75,7 +75,7 @@ export default class Upload extends BaseCommand {
         });
 
         let skipUpload = false;
-        if (!options.skipHash) {
+        if (!options.skipHash && !options.album) {
           const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
 
           const checkResponse = await this.immichApi.assetApi.checkBulkUpload({
