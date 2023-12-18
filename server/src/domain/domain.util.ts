@@ -16,10 +16,16 @@ import { CronJob } from 'cron';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 
+export enum CacheControl {
+  PRIVATE_WITH_CACHE = 'private_with_cache',
+  PRIVATE_WITHOUT_CACHE = 'private_without_cache',
+  NONE = 'none',
+}
+
 export class ImmichFileResponse {
   public readonly path!: string;
   public readonly contentType!: string;
-  public readonly cacheControl!: boolean;
+  public readonly cacheControl!: CacheControl;
 
   constructor(response: ImmichFileResponse) {
     Object.assign(this, response);

@@ -3,7 +3,6 @@ import {
   CreateUserDto as CreateDto,
   CreateProfileImageDto,
   CreateProfileImageResponseDto,
-  ImmichFileResponse,
   UpdateUserDto as UpdateDto,
   UserResponseDto,
   UserService,
@@ -13,19 +12,21 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
   HttpCode,
   HttpStatus,
+  Next,
   Param,
   Post,
   Put,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
 import { AdminRoute, Auth, Authenticated, FileResponse } from '../app.guard';
-import { UseValidation } from '../app.utils';
+import { UseValidation, sendFile } from '../app.utils';
 import { FileUploadInterceptor, Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -93,9 +94,8 @@ export class UserController {
   }
 
   @Get('profile-image/:id')
-  @Header('Cache-Control', 'private, no-cache, no-transform')
   @FileResponse()
-  getProfileImage(@Param() { id }: UUIDParamDto): Promise<ImmichFileResponse> {
-    return this.service.getProfileImage(id);
+  async getProfileImage(@Res() res: Response, @Next() next: NextFunction, @Param() { id }: UUIDParamDto) {
+    await sendFile(res, next, () => this.service.getProfileImage(id));
   }
 }

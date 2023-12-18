@@ -22,7 +22,7 @@ export class ErrorInterceptor implements NestInterceptor {
           if (error instanceof HttpException === false) {
             const errorMessage = routeToErrorMessage(context.getHandler().name);
             if (!isConnectionAborted(error)) {
-              this.logger.error(errorMessage, error, error?.errors);
+              this.logger.error(errorMessage, error, error?.errors, error?.stack);
             }
             return new InternalServerErrorException(errorMessage);
           } else {

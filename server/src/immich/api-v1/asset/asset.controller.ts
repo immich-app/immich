@@ -5,18 +5,20 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Next,
   Param,
   ParseFilePipe,
   Post,
   Query,
-  Response,
+  Res,
   UploadedFiles,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Response as Res } from 'express';
+import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
+import { sendFile } from '../../app.utils';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
@@ -58,7 +60,7 @@ export class AssetController {
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body(new ValidationPipe({ transform: true })) dto: CreateAssetDto,
-    @Response({ passthrough: true }) res: Res,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<AssetFileUploadResponseDto> {
     const file = mapToUploadFile(files.assetData[0]);
     const _livePhotoFile = files.livePhotoData?.[0];
@@ -84,23 +86,27 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/file/:id')
   @FileResponse()
-  serveFile(
+  async serveFile(
+    @Res() res: Response,
+    @Next() next: NextFunction,
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) dto: ServeFileDto,
   ) {
-    return this.assetService.serveFile(auth, id, dto);
+    await sendFile(res, next, () => this.assetService.serveFile(auth, id, dto));
   }
 
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
   @FileResponse()
-  getAssetThumbnail(
+  async getAssetThumbnail(
+    @Res() res: Response,
+    @Next() next: NextFunction,
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) dto: GetAssetThumbnailDto,
   ) {
-    return this.assetService.serveThumbnail(auth, id, dto);
+    await sendFile(res, next, () => this.assetService.serveThumbnail(auth, id, dto));
   }
 
   @Get('/curated-objects')
