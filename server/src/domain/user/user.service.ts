@@ -3,7 +3,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { AuthDto } from '../auth';
-import { ImmichFileResponse } from '../domain.util';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IEntityJob, JobName } from '../job';
 import {
   IAlbumRepository,
@@ -109,7 +109,7 @@ export class UserService {
     return new ImmichFileResponse({
       path: user.profileImagePath,
       contentType: 'image/jpeg',
-      cacheControl: false,
+      cacheControl: CacheControl.NONE,
     });
   }
 

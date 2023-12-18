@@ -16,7 +16,7 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
-import { ImmichFileResponse } from '../domain.util';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   AssetStats,
@@ -482,7 +482,7 @@ describe(AssetService.name, () => {
         new ImmichFileResponse({
           path: '/original/path.jpg',
           contentType: 'image/jpeg',
-          cacheControl: false,
+          cacheControl: CacheControl.NONE,
         }),
       );
     });

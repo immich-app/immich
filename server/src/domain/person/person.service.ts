@@ -6,7 +6,7 @@ import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { ImmichFileResponse, usePagination } from '../domain.util';
+import { CacheControl, ImmichFileResponse, usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
@@ -183,7 +183,7 @@ export class PersonService {
     return new ImmichFileResponse({
       path: person.thumbnailPath,
       contentType: mimeTypes.lookup(person.thumbnailPath),
-      cacheControl: true,
+      cacheControl: CacheControl.PRIVATE_WITHOUT_CACHE,
     });
   }
 
