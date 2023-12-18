@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 const url = process.env.DB_URL;
@@ -31,27 +31,27 @@ export async function databaseChecks() {
     await dataSource.initialize();
   }
 
-  await assertVectors();
-  await enablePrefilter();
+  await assertVectors(dataSource);
+  await enablePrefilter(dataSource);
   await dataSource.runMigrations();
 }
 
-export async function enablePrefilter() {
-  await dataSource.query(`SET vectors.enable_prefilter = on`);
+export async function enablePrefilter(runner: DataSource | QueryRunner) {
+  await runner.query(`SET vectors.enable_prefilter = on`);
 }
 
-export async function getExtensionVersion(extName: string): Promise<string | null> {
-  const res = await dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extName]);
+export async function getExtensionVersion(extName: string, runner: DataSource | QueryRunner): Promise<string | null> {
+  const res = await runner.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extName]);
   return res[0]?.['extversion'] ?? null;
 }
 
-export async function getPostgresVersion(): Promise<string> {
-  const res = await dataSource.query(`SHOW server_version`);
+export async function getPostgresVersion(runner: DataSource | QueryRunner): Promise<string> {
+  const res = await runner.query(`SHOW server_version`);
   return res[0]['server_version'].split('.')[0];
 }
 
-export async function assertVectors() {
-  const postgresVersion = await getPostgresVersion();
+export async function assertVectors(runner: DataSource | QueryRunner) {
+  const postgresVersion = await getPostgresVersion(runner);
   const expected = ['0.1.1', '0.1.11'];
   const image = `tensorchord/pgvecto-rs:pg${postgresVersion}-v${expected[expected.length - 1]}`;
 
@@ -64,7 +64,7 @@ export async function assertVectors() {
     throw err;
   });
 
-  const version = await getExtensionVersion('vectors');
+  const version = await getExtensionVersion('vectors', runner);
   if (version != null && !expected.includes(version)) {
     throw new Error(
       `The pgvecto.rs extension version is ${version} instead of the expected version ${
