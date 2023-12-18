@@ -15,8 +15,6 @@ export class UsePgVectors1700713871511 implements MigrationInterface {
     const clipModelName: string = clipModelNameQuery?.[0]?.['value'] ?? 'ViT-B-32__openai';
     const clipDimSize = getCLIPModelInfo(clipModelName.replace(/"/g, '')).dimSize;
 
-    await queryRunner.query('CREATE EXTENSION IF NOT EXISTS vectors');
-
     await queryRunner.query(`
         ALTER TABLE asset_faces 
         ALTER COLUMN embedding SET NOT NULL,

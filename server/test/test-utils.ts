@@ -1,6 +1,6 @@
 import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
-import { dataSource } from '@app/infra';
+import { dataSource, databaseChecks } from '@app/infra';
 import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -22,11 +22,7 @@ export interface ResetOptions {
 }
 export const db = {
   reset: async (options?: ResetOptions) => {
-    if (!dataSource.isInitialized) {
-      await dataSource.initialize();
-    }
-
-    await dataSource.query(`SET vectors.enable_prefilter = on`);
+    await databaseChecks();
     await dataSource.transaction(async (em) => {
       const entities = options?.entities || [];
       const tableNames =
