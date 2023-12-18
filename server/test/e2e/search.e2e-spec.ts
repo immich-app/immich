@@ -24,7 +24,8 @@ describe(`${SearchController.name}`, () => {
   let asset1: AssetResponseDto;
 
   beforeAll(async () => {
-    [server, app] = await testApp.create();
+    app = await testApp.create();
+    server = app.getHttpServer();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
     smartInfoRepository = app.get<ISmartInfoRepository>(ISmartInfoRepository);
   });
