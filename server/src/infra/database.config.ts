@@ -26,14 +26,16 @@ export const databaseConfig: PostgresConnectionOptions = {
 // this export is used by TypeORM commands in package.json#scripts
 export const dataSource = new DataSource(databaseConfig);
 
-export async function databaseChecks() {
+export async function databaseChecks(runMigrations: boolean) {
   if (!dataSource.isInitialized) {
     await dataSource.initialize();
   }
 
   await assertVectors(dataSource);
   await enablePrefilter(dataSource);
-  await dataSource.runMigrations();
+  if (runMigrations) {
+    await dataSource.runMigrations();
+  }
 }
 
 export async function enablePrefilter(runner: DataSource | QueryRunner) {

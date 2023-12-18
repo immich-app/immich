@@ -12,7 +12,7 @@ export async function bootstrap() {
 
   app.useLogger(app.get(ImmichLogger));
   app.useWebSocketAdapter(new WebSocketAdapter(app));
-  await databaseChecks();
+  await databaseChecks(false);
 
   await app.listen(port);
 
