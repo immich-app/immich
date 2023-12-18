@@ -31,7 +31,7 @@ export async function bootstrap() {
   app.useStaticAssets('www');
   app.use(app.get(AppService).ssr(excludePaths));
 
-  await databaseChecks(true);
+  await databaseChecks();
 
   const server = await app.listen(port);
   server.requestTimeout = 30 * 60 * 1000;
