@@ -173,7 +173,7 @@ export class PersonService {
     return this.repository.getStatistics(id);
   }
 
-  async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
+  async getThumbnail(auth: AuthDto, id: string, cacheControl = true): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.PERSON_READ, id);
     const person = await this.repository.getById(id);
     if (!person || !person.thumbnailPath) {
@@ -183,7 +183,7 @@ export class PersonService {
     return new ImmichFileResponse({
       path: person.thumbnailPath,
       contentType: mimeTypes.lookup(person.thumbnailPath),
-      cacheControl: true,
+      cacheControl,
     });
   }
 

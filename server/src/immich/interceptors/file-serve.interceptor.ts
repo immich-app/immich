@@ -39,7 +39,6 @@ export class FileServeInterceptor implements NestInterceptor {
           }
 
           await access(file.path, constants.R_OK);
-
           return sendFile(file.path, options);
         } catch (error: Error | any) {
           res.header('Cache-Control', 'none');
