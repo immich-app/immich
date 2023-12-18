@@ -189,7 +189,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.11
           cache: "poetry"
@@ -231,11 +231,11 @@ jobs:
           exit 1
 
   generated-typeorm-migrations-up-to-date:
-    name: TypeORM Migrations
+    name: TypeORM Checks
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres@sha256:71da05df8c4f1e1bac9b92ebfba2a0eeb183f6ac6a972fd5e55e8146e29efe9c
+        image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -258,7 +258,7 @@ jobs:
       - name: Install server dependencies
         run: npm ci
 
-      - name: Build the
+      - name: Build the app
         run: npm run build
 
       - name: Run existing migrations
@@ -274,11 +274,30 @@ jobs:
         with:
           files: |
             server/src/infra/migrations/
-      - name: Verify files have not changed
+      - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
-          echo "ERROR: Generated files not up to date!"
+          echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
+
+      - name: Run SQL generation
+        run: npm run sql:generate
+        env:
+          DB_URL: postgres://postgres:postgres@localhost:5432/immich
+
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@v13.1
+        id: verify-changed-sql-files
+        with:
+          files: |
+            server/src/infra/sql
+
+      - name: Verify SQL files have not changed
+        if: steps.verify-changed-sql-files.outputs.files_changed == 'true'
+        run: |
+          echo "ERROR: Generated SQL files not up to date!"
+          echo "Changed files: ${{ steps.verify-changed-sql-files.outputs.changed_files }}"
           exit 1
 
   # mobile-integration-tests:

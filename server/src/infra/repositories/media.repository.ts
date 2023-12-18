@@ -1,6 +1,6 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
 import { Colorspace } from '@app/infra/entities';
-import { Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
@@ -11,7 +11,7 @@ const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
 
 export class MediaRepository implements IMediaRepository {
-  private logger = new Logger(MediaRepository.name);
+  private logger = new ImmichLogger(MediaRepository.name);
 
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })

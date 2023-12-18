@@ -1,6 +1,16 @@
-import { IJobRepository, JobCounts, JobItem, JobName, JOBS_TO_QUEUE, QueueName, QueueStatus } from '@app/domain';
+import {
+  IJobRepository,
+  JobCounts,
+  JobItem,
+  JobName,
+  JOBS_TO_QUEUE,
+  QueueCleanType,
+  QueueName,
+  QueueStatus,
+} from '@app/domain';
+import { ImmichLogger } from '@app/infra/logger';
 import { getQueueToken } from '@nestjs/bullmq';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
@@ -10,7 +20,7 @@ import { bullConfig } from '../infra.config';
 @Injectable()
 export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
-  private logger = new Logger(JobRepository.name);
+  private logger = new ImmichLogger(JobRepository.name);
 
   constructor(
     private moduleRef: ModuleRef,
@@ -91,6 +101,10 @@ export class JobRepository implements IJobRepository {
     return this.getQueue(name).drain();
   }
 
+  clear(name: QueueName, type: QueueCleanType) {
+    return this.getQueue(name).clean(0, 1000, type);
+  }
+
   getJobCounts(name: QueueName): Promise<JobCounts> {
     return this.getQueue(name).getJobCounts(
       'active',
@@ -115,8 +129,6 @@ export class JobRepository implements IJobRepository {
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
         return { jobId: item.data.id };
       case JobName.GENERATE_PERSON_THUMBNAIL:
-        return { priority: 1 };
-      case JobName.SYSTEM_CONFIG_CHANGE:
         return { priority: 1 };
 
       default:

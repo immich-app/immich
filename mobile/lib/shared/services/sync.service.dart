@@ -401,6 +401,10 @@ class SyncService {
 
       final Album a = await Album.remote(dto);
       await _db.writeTxn(() => _db.albums.store(a));
+    } else {
+      _log.warning(
+          "Failed to add album from server: assetCount ${dto.assetCount} != "
+          "asset array length ${dto.assets.length} for album ${dto.albumName}");
     }
   }
 

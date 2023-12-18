@@ -12,7 +12,7 @@
 <section
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
-  class="fixed left-0 top-0 z-[990] flex h-screen w-screen place-content-center place-items-center bg-black/40"
+  class="fixed left-0 top-0 z-[9990] flex h-screen w-screen place-content-center place-items-center bg-black/40"
 >
   <div
     class="z-[9999]"

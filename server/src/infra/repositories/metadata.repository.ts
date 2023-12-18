@@ -5,11 +5,12 @@ import {
   ISystemMetadataRepository,
   ReverseGeocodeResult,
 } from '@app/domain';
+import { DatabaseLock, RequireLock } from '@app/infra';
 import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
-import { DatabaseLock } from '@app/infra/utils/database-locks';
-import { Inject, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, exiftool } from 'exiftool-vendored';
+import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
 import { createReadStream, existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import * as geotz from 'geo-tz';
@@ -31,18 +32,16 @@ export class MetadataRepository implements IMetadataRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  private logger = new Logger(MetadataRepository.name);
+  private logger = new ImmichLogger(MetadataRepository.name);
 
+  @RequireLock(DatabaseLock.GeodataImport)
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile('/usr/src/resources/geodata-date.txt', 'utf8');
 
-    await this.geodataPlacesRepository.query('SELECT pg_advisory_lock($1)', [DatabaseLock.GeodataImport]);
-
     const geocodingMetadata = await this.systemMetadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
 
     if (geocodingMetadata?.lastUpdate === geodataDate) {
-      await this.dataSource.query('SELECT pg_advisory_unlock($1)', [DatabaseLock.GeodataImport]);
       return;
     }
 
@@ -72,7 +71,6 @@ export class MetadataRepository implements IMetadataRepository {
       lastImportFileName: CITIES_FILE,
     });
 
-    await this.dataSource.query('SELECT pg_advisory_unlock($1)', [DatabaseLock.GeodataImport]);
     this.logger.log('Geodata import completed');
   }
 
@@ -181,7 +179,7 @@ export class MetadataRepository implements IMetadataRepository {
     return { country, state, city };
   }
 
-  getExifTags(path: string): Promise<ImmichTags | null> {
+  readTags(path: string): Promise<ImmichTags | null> {
     return exiftool
       .read(path, undefined, {
         ...DefaultReadTaskOptions,
@@ -197,5 +195,13 @@ export class MetadataRepository implements IMetadataRepository {
         this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
         return null;
       }) as Promise<ImmichTags | null>;
+  }
+
+  async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+    try {
+      await exiftool.write(path, tags, ['-overwrite_original']);
+    } catch (error) {
+      this.logger.warn(`Error writing exif data (${path}): ${error}`);
+    }
   }
 }

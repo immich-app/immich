@@ -2,6 +2,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  LogLevel,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -11,7 +12,8 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -21,7 +23,7 @@ import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';
 
-export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
+export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
 export const defaults = Object.freeze<SystemConfig>({
   ffmpeg: {
@@ -45,7 +47,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
-    [QueueName.CLIP_ENCODING]: { concurrency: 2 },
+    [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
     [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
@@ -57,11 +59,15 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
+  logging: {
+    enabled: true,
+    level: LogLevel.LOG,
+  },
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
     classification: {
-      enabled: true,
+      enabled: false,
       modelName: 'microsoft/resnet-50',
       minScore: 0.9,
     },
@@ -149,7 +155,7 @@ let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
-  private logger = new Logger(SystemConfigCore.name);
+  private logger = new ImmichLogger(SystemConfigCore.name);
   private validators: SystemConfigValidator[] = [];
   private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
 
@@ -210,7 +216,7 @@ export class SystemConfigCore {
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
       [FeatureFlag.SIDECAR]: true,
-      [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
+      [FeatureFlag.SEARCH]: true,
       [FeatureFlag.TRASH]: config.trash.enabled,
 
       // TODO: use these instead of `POST oauth/config`
@@ -253,14 +259,16 @@ export class SystemConfigCore {
     return config;
   }
 
-  public async updateConfig(config: SystemConfig): Promise<SystemConfig> {
+  public async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
     if (await this.hasFeature(FeatureFlag.CONFIG_FILE)) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
     }
 
+    const oldConfig = await this.getConfig();
+
     try {
       for (const validator of this.validators) {
-        await validator(config);
+        await validator(newConfig, oldConfig);
       }
     } catch (e) {
       this.logger.warn(`Unable to save system config due to a validation error: ${e}`);
@@ -272,9 +280,9 @@ export class SystemConfigCore {
 
     for (const key of Object.values(SystemConfigKey)) {
       // get via dot notation
-      const item = { key, value: _.get(config, key) as SystemConfigValue };
+      const item = { key, value: _.get(newConfig, key) as SystemConfigValue };
       const defaultValue = _.get(defaults, key);
-      const isMissing = !_.has(config, key);
+      const isMissing = !_.has(newConfig, key);
 
       if (
         isMissing ||
@@ -298,11 +306,11 @@ export class SystemConfigCore {
       await this.repository.deleteKeys(deletes.map((item) => item.key));
     }
 
-    const newConfig = await this.getConfig();
+    const config = await this.getConfig();
 
-    this.config$.next(newConfig);
+    this.config$.next(config);
 
-    return newConfig;
+    return config;
   }
 
   public async refreshConfig() {

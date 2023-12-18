@@ -1,3 +1,4 @@
+import { SearchExploreItem } from '@app/domain';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { FindOptionsRelations } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
@@ -105,8 +106,7 @@ export enum TimeBucketSize {
   MONTH = 'MONTH',
 }
 
-export interface TimeBucketOptions {
-  size: TimeBucketSize;
+export interface AssetBuilderOptions {
   isArchived?: boolean;
   isFavorite?: boolean;
   isTrashed?: boolean;
@@ -114,6 +114,12 @@ export interface TimeBucketOptions {
   personId?: string;
   userIds?: string[];
   withStacked?: boolean;
+  exifInfo?: boolean;
+  assetType?: AssetType;
+}
+
+export interface TimeBucketOptions extends AssetBuilderOptions {
+  size: TimeBucketSize;
 }
 
 export interface TimeBucketItem {
@@ -142,6 +148,21 @@ export interface MonthDay {
   month: number;
 }
 
+export interface AssetExploreFieldOptions {
+  maxFields: number;
+  minAssetsPerField: number;
+}
+
+export interface AssetExploreOptions extends AssetExploreFieldOptions {
+  relation: keyof AssetEntity;
+  relatedField: string;
+  unnest?: boolean;
+}
+
+export interface MetadataSearchOptions {
+  numResults: number;
+}
+
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
@@ -152,7 +173,7 @@ export interface IAssetRepository {
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
   getByUserId(pagination: PaginationOptions, userId: string, options?: AssetSearchOptions): Paginated<AssetEntity>;
-  getById(id: string): Promise<AssetEntity | null>;
+  getById(id: string, relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
   getWith(pagination: PaginationOptions, property: WithProperty, libraryId?: string): Paginated<AssetEntity>;
   getRandom(userId: string, count: number): Promise<AssetEntity[]>;
@@ -176,4 +197,7 @@ export interface IAssetRepository {
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(jobStatus: Partial<AssetJobStatusEntity>): Promise<void>;
   search(options: AssetSearchOptions): Promise<AssetEntity[]>;
+  getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
+  getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
+  searchMetadata(query: string, userId: string, options: MetadataSearchOptions): Promise<AssetEntity[]>;
 }

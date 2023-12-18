@@ -17,10 +17,10 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable          | Description           |  Default  | Services                                                       |
-| :---------------- | :-------------------- | :-------: | :------------------------------------------------------------- |
-| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning, web, proxy, typesense |
-| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                                          |
+| Variable          | Description           |  Default  | Services                                            |
+| :---------------- | :-------------------- | :-------: | :-------------------------------------------------- |
+| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning, web, proxy |
+| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                               |
 
 :::tip
 
@@ -30,14 +30,15 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                    | Description                                  |   Default    | Services                                     |
-| :-------------------------- | :------------------------------------------- | :----------: | :------------------------------------------- |
-| `TZ`                        | Timezone                                     |              | microservices                                |
-| `NODE_ENV`                  | Environment (production, development)        | `production` | server, microservices, machine learning, web |
-| `LOG_LEVEL`                 | Log Level (verbose, debug, log, warn, error) |    `log`     | server, microservices                        |
-| `IMMICH_MEDIA_LOCATION`     | Media Location                               |  `./upload`  | server, microservices                        |
-| `PUBLIC_LOGIN_PAGE_MESSAGE` | Public Login Page Message                    |              | web                                          |
-| `IMMICH_CONFIG_FILE`        | Path to config file                          |              | server                                       |
+| Variable                    | Description                                  |       Default       | Services                                     |
+| :-------------------------- | :------------------------------------------- | :-----------------: | :------------------------------------------- |
+| `TZ`                        | Timezone                                     |                     | microservices                                |
+| `NODE_ENV`                  | Environment (production, development)        |    `production`     | server, microservices, machine learning, web |
+| `LOG_LEVEL`                 | Log Level (verbose, debug, log, warn, error) |        `log`        | server, microservices                        |
+| `IMMICH_MEDIA_LOCATION`     | Media Location                               |     `./upload`      | server, microservices                        |
+| `PUBLIC_LOGIN_PAGE_MESSAGE` | Public Login Page Message                    |                     | web                                          |
+| `IMMICH_CONFIG_FILE`        | Path to config file                          |                     | server                                       |
+| `IMMICH_WEB_ROOT`           | Path of root index.html                      | `/usr/src/app/www'` | server                                       |
 
 :::tip
 
@@ -122,51 +123,6 @@ Redis (Sentinel) URL example JSON before encoding:
   ],
   "name": "redis-sentinel"
 }
-```
-
-## Typesense
-
-| Variable             | Description              |   Default   | Services                         |
-| :------------------- | :----------------------- | :---------: | :------------------------------- |
-| `TYPESENSE_ENABLED`  | Enable Typesense         |             | server, microservices            |
-| `TYPESENSE_URL`      | Typesense URL            |             | server, microservices            |
-| `TYPESENSE_HOST`     | Typesense Host           | `typesense` | server, microservices            |
-| `TYPESENSE_PORT`     | Typesense Port           |   `8108`    | server, microservices            |
-| `TYPESENSE_PROTOCOL` | Typesense Protocol       |   `http`    | server, microservices            |
-| `TYPESENSE_API_KEY`  | Typesense API Key        |             | server, microservices, typesense |
-| `TYPESENSE_DATA_DIR` | Typesense Data Directory |   `/data`   | typesense                        |
-
-:::info
-
-`TYPESENSE_URL` must start with `ha://` and then include a `base64` encoded JSON string for the configuration.
-
-`TYPESENSE_ENABLED`: Anything other than `false`, behaves as `true`.
-Even undefined is treated as `true`.
-
-- When `TYPESENSE_URL` is defined, the other typesense (`TYPESENSE_*`) variables are ignored.
-
-:::
-
-Typesense URL example JSON before encoding:
-
-```json
-[
-  {
-    "host": "typesense-1.example.net",
-    "port": "443",
-    "protocol": "https"
-  },
-  {
-    "host": "typesense-2.example.net",
-    "port": "443",
-    "protocol": "https"
-  },
-  {
-    "host": "typesense-3.example.net",
-    "port": "443",
-    "protocol": "https"
-  }
-]
 ```
 
 ## Machine Learning

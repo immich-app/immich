@@ -2,8 +2,8 @@ import { LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import path from 'path';
 import sanitize from 'sanitize-filename';
-import { AuthUserDto } from '../auth';
 import { ICryptoRepository, ILibraryRepository, IUserRepository } from '../repositories';
+import { UserResponseDto } from './response-dto';
 
 const SALT_ROUNDS = 10;
 
@@ -32,17 +32,18 @@ export class UserCore {
     instance = null;
   }
 
-  async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
-    if (!authUser.isAdmin && authUser.id !== id) {
+  // TODO: move auth related checks to the service layer
+  async updateUser(user: UserEntity | UserResponseDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
+    if (!user.isAdmin && user.id !== id) {
       throw new ForbiddenException('You are not allowed to update this user');
     }
 
-    if (!authUser.isAdmin) {
+    if (!user.isAdmin) {
       // Users can never update the isAdmin property.
       delete dto.isAdmin;
       delete dto.storageLabel;
       delete dto.externalPath;
-    } else if (dto.isAdmin && authUser.id !== id) {
+    } else if (dto.isAdmin && user.id !== id) {
       // Admin cannot create another admin.
       throw new BadRequestException('The server already has an admin');
     }

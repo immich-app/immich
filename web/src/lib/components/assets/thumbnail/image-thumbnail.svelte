@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { imageLoad } from '$lib/utils/image-load';
+  import { onMount, tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
   import { Buffer } from 'buffer';
@@ -18,12 +18,20 @@
   export let hidden = false;
   export let border = false;
   export let preload = true;
-  let complete = false;
-
   export let eyeColor: 'black' | 'white' = 'white';
+
+  let complete = false;
+  let img: HTMLImageElement;
+
+  onMount(async () => {
+    await img.decode();
+    await tick();
+    complete = true;
+  });
 </script>
 
 <img
+  bind:this={img}
   loading={preload ? 'eager' : 'lazy'}
   style:width={widthStyle}
   style:height={heightStyle}
@@ -40,13 +48,11 @@
   class:rounded-full={circle}
   class:opacity-0={!thumbhash && !complete}
   draggable="false"
-  use:imageLoad
-  on:image-load|once={() => (complete = true)}
 />
 
 {#if hidden}
   <div class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
-    <Icon path={mdiEyeOffOutline} size="2em" class="text-{eyeColor}" />
+    <Icon {title} path={mdiEyeOffOutline} size="2em" class="text-{eyeColor}" />
   </div>
 {/if}
 

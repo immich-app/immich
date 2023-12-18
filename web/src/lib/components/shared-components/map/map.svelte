@@ -20,7 +20,7 @@
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiCog } from '@mdi/js';
+  import { mdiCog, mdiMapMarker } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
 
   export let mapMarkers: MapMarkerResponseDto[];
@@ -28,6 +28,11 @@
   export let zoom: number | undefined = undefined;
   export let center: LngLatLike | undefined = undefined;
   export let simplified = false;
+  export let clickable = false;
+  export let useLocationPin = false;
+
+  let map: maplibregl.Map;
+  let marker: maplibregl.Marker | null = null;
 
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
@@ -36,7 +41,10 @@
     return data as StyleSpecification;
   })();
 
-  const dispatch = createEventDispatcher<{ selected: string[] }>();
+  const dispatch = createEventDispatcher<{
+    selected: string[];
+    clickedPoint: { lat: number; lng: number };
+  }>();
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
@@ -61,6 +69,19 @@
         dispatch('selected', ids);
       }
     });
+  }
+
+  function handleMapClick(event: maplibregl.MapMouseEvent) {
+    if (clickable) {
+      const { lng, lat } = event.lngLat;
+      dispatch('clickedPoint', { lng, lat });
+
+      if (marker) {
+        marker.remove();
+      }
+
+      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+    }
   }
 
   type FeaturePoint = Feature<Point, { id: string }>;
@@ -95,7 +116,9 @@
     attributionControl={false}
     diffStyleUpdates={true}
     let:map
-    on:load={(event) => event.detail.setMaxZoom(14)}
+    on:load={(event) => event.detail.setMaxZoom(18)}
+    on:load={(event) => event.detail.on('click', handleMapClick)}
+    bind:map
   >
     <NavigationControl position="top-left" showCompass={!simplified} />
     {#if !simplified}
@@ -119,7 +142,7 @@
         }),
       }}
       id="geojson"
-      cluster={{ radius: 500 }}
+      cluster={{ radius: 500, maxZoom: 24 }}
     >
       <MarkerLayer
         applyToClusters
@@ -143,11 +166,16 @@
           $$slots.popup || handleAssetClick(event.detail.feature.properties.id, map);
         }}
       >
-        <img
-          src={api.getAssetThumbnailUrl(feature.properties?.id)}
-          class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150"
-          alt={`Image with id ${feature.properties?.id}`}
-        />
+        {#if useLocationPin}
+          <Icon path={mdiMapMarker} size="60px" class="dark:text-immich-dark-primary text-immich-primary" />
+        {:else}
+          <img
+            src={api.getAssetThumbnailUrl(feature.properties?.id)}
+            class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
+            alt={`Image with id ${feature.properties?.id}`}
+          />
+        {/if}
+
         {#if $$slots.popup}
           <Popup openOn="click" closeOnClickOutside>
             <slot name="popup" marker={asMarker(feature)} />

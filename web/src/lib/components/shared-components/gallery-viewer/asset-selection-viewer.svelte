@@ -11,7 +11,9 @@
   let viewWidth: number;
   $: thumbnailSize = getThumbnailSize(assets.length, viewWidth);
 
-  let dispatch = createEventDispatcher();
+  let dispatch = createEventDispatcher<{
+    select: { asset: AssetResponseDto; selectedAssets: Set<AssetResponseDto> };
+  }>();
 
   const selectAssetHandler = (event: CustomEvent) => {
     const { asset }: { asset: AssetResponseDto } = event.detail;

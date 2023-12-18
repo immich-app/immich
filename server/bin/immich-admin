@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+/usr/src/app/start.sh immich-admin $1

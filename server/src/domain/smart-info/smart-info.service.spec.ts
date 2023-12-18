@@ -16,6 +16,7 @@ import {
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
+import { cleanModelName, getCLIPModelInfo } from './smart-info.constant';
 import { SmartInfoService } from './smart-info.service';
 
 const asset = {
@@ -47,6 +48,12 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('handleQueueObjectTagging', () => {
+    beforeEach(async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
+    });
+
     it('should do nothing if machine learning is disabled', async () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
 
@@ -57,6 +64,9 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should queue the assets without tags', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
       assetMock.getWithout.mockResolvedValue({
         items: [assetStub.image],
         hasNextPage: false,
@@ -69,6 +79,9 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should queue all the assets', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
       assetMock.getAll.mockResolvedValue({
         items: [assetStub.image],
         hasNextPage: false,
@@ -102,6 +115,9 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should save the returned tags', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
       machineMock.classifyImage.mockResolvedValue(['tag1', 'tag2', 'tag3']);
 
       await sut.handleClassifyImage({ id: asset.id });
@@ -120,6 +136,9 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should always overwrite old tags', async () => {
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
       machineMock.classifyImage.mockResolvedValue([]);
 
       await sut.handleClassifyImage({ id: asset.id });
@@ -195,10 +214,29 @@ describe(SmartInfoService.name, () => {
         { imagePath: 'path/to/resize.ext' },
         { enabled: true, modelName: 'ViT-B-32__openai' },
       );
-      expect(smartMock.upsert).toHaveBeenCalledWith({
-        assetId: 'asset-1',
-        clipEmbedding: [0.01, 0.02, 0.03],
-      });
+      expect(smartMock.upsert).toHaveBeenCalledWith(
+        {
+          assetId: 'asset-1',
+        },
+        [0.01, 0.02, 0.03],
+      );
+    });
+  });
+
+  describe('cleanModelName', () => {
+    it('should clean name', () => {
+      expect(cleanModelName('ViT-B-32::openai')).toEqual('ViT-B-32__openai');
+      expect(cleanModelName('M-CLIP/XLM-Roberta-Large-Vit-L-14')).toEqual('XLM-Roberta-Large-Vit-L-14');
+    });
+  });
+
+  describe('getCLIPModelInfo', () => {
+    it('should return the model info', () => {
+      expect(getCLIPModelInfo('ViT-B-32__openai')).toEqual({ dimSize: 512 });
+    });
+
+    it('should throw an error if the model is not present', () => {
+      expect(() => getCLIPModelInfo('test-model')).toThrow('Unknown CLIP model: test-model');
     });
   });
 });

@@ -20,6 +20,7 @@
   import ThemeButton from '../shared-components/theme-button.svelte';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
+  import UpdatePanel from '../shared-components/update-panel.svelte';
 
   export let sharedLink: SharedLinkResponseDto;
   export let user: UserResponseDto | undefined = undefined;
@@ -111,11 +112,7 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a
-          data-sveltekit-preload-data="hover"
-          class="ml-6 flex place-items-center gap-2 hover:cursor-pointer"
-          href="https://immich.app"
-        >
+        <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
           <ImmichLogo height={30} width={30} />
           <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
         </a>
@@ -143,7 +140,7 @@
 <main
   class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg sm:px-12 md:px-24 lg:px-40"
 >
-  <AssetGrid {album} {user} {assetStore} {assetInteractionStore}>
+  <AssetGrid {album} {assetStore} {assetInteractionStore}>
     <section class="pt-24">
       <!-- ALBUM TITLE -->
       <p
@@ -167,4 +164,5 @@
       </p>
     </section>
   </AssetGrid>
+  <UpdatePanel {assetStore} />
 </main>

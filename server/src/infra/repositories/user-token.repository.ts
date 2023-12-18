@@ -3,11 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserTokenEntity } from '../entities';
+import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
 export class UserTokenRepository implements IUserTokenRepository {
   constructor(@InjectRepository(UserTokenEntity) private repository: Repository<UserTokenEntity>) {}
 
+  @GenerateSql({ params: [DummyValue.STRING] })
   getByToken(token: string): Promise<UserTokenEntity | null> {
     return this.repository.findOne({ where: { token }, relations: { user: true } });
   }
@@ -35,6 +37,7 @@ export class UserTokenRepository implements IUserTokenRepository {
     return this.repository.save(userToken);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
     await this.repository.delete({ id });
   }

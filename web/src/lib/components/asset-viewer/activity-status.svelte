@@ -9,7 +9,10 @@
   export let isShowActivity: boolean | undefined;
   export let disabled: boolean;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    openActivityTab: void;
+    favorite: void;
+  }>();
 </script>
 
 <div

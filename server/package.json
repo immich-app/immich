@@ -1,14 +1,10 @@
 {
   "name": "immich",
-  "version": "1.88.2",
+  "version": "1.91.3",
   "description": "",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "bin": {
-    "immich": "./bin/cli.sh",
-    "immich-admin": "./bin/admin-cli.sh"
-  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --check .",
@@ -36,7 +32,8 @@
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
     "api:typescript": "bash ./bin/generate-open-api.sh web",
     "api:dart": "bash ./bin/generate-open-api.sh mobile",
-    "api:generate": "node ./bin/sync-spec-version.js && bash ./bin/generate-open-api.sh"
+    "api:generate": "node ./bin/sync-spec-version.js && bash ./bin/generate-open-api.sh",
+    "sql:generate": "node ./dist/infra/sql-generator/"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.11",
@@ -51,8 +48,9 @@
     "@nestjs/swagger": "^7.1.8",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.2",
-    "@socket.io/redis-adapter": "^8.2.1",
+    "@socket.io/postgres-adapter": "^0.3.1",
     "archiver": "^6.0.0",
+    "async-lock": "^1.4.0",
     "axios": "^1.5.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^4.8.0",
@@ -72,15 +70,15 @@
     "luxon": "^3.4.2",
     "mv": "^2.1.1",
     "nest-commander": "^3.11.1",
+    "node-addon-api": "^7.0.0",
     "openid-client": "^5.4.3",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
-    "sharp": "^0.32.6",
+    "sharp": "^0.33.0",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
-    "typesense": "^1.7.1",
     "ua-parser-js": "^1.0.35"
   },
   "devDependencies": {
@@ -90,9 +88,9 @@
     "@openapitools/openapi-generator-cli": "2.7.0",
     "@testcontainers/postgresql": "^10.2.1",
     "@types/archiver": "^6.0.0",
+    "@types/async-lock": "^1.4.2",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
-    "@types/cron": "^2.0.1",
     "@types/express": "^4.17.17",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/imagemin": "^8.0.1",
@@ -119,6 +117,7 @@
     "prettier-plugin-organize-imports": "^3.2.3",
     "rimraf": "^5.0.1",
     "source-map-support": "^0.5.21",
+    "sql-formatter": "^15.0.0",
     "supertest": "^6.3.3",
     "testcontainers": "^10.2.1",
     "ts-jest": "^29.1.1",
@@ -154,9 +153,6 @@
         "statements": 90
       }
     },
-    "setupFilesAfterEnv": [
-      "<rootDir>/test/setup.ts"
-    ],
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^@test(|/.*)$": "<rootDir>/test/$1",

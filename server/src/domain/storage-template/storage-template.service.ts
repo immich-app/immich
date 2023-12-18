@@ -1,5 +1,6 @@
 import { AssetEntity, AssetPathType, AssetType, SystemConfig } from '@app/infra/entities';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
@@ -42,7 +43,7 @@ interface RenderMetadata {
 
 @Injectable()
 export class StorageTemplateService {
-  private logger = new Logger(StorageTemplateService.name);
+  private logger = new ImmichLogger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
   private template: {

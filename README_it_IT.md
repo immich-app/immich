@@ -32,7 +32,7 @@
 
 ## Declino di responsabilità
 
-- ⚠️ Il progetto è in fase di sviluppo **molto avanzato**.
+- ⚠️ Il progetto è in una fase **molto intensa** di sviluppo.
 - ⚠️ Possibilità di bug e cambiamenti rilevanti.
 - ⚠️ **Non utilizzare l'app come unico salvataggio delle tue foto e dei tuoi video.**
 - ⚠️ Utilizza sempre una tecnica [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) di backup per le foto e i video a cui tieni!
@@ -73,8 +73,8 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Funzionalità                                   | Mobile | Web |
 | ---------------------------------------------- | ------ | --- |
 | Caricamento e visualizzazione di foto e video  |   Sì   | Sì  |
-| Backup automatico quando l'app è in esecuzione |   Sì   | N/A |
-| Selezione degli album per backup               |   Sì   | N/A |
+| Backup automatico quando l'app è in esecuzione |   Sì   | N/D |
+| Selezione degli album per backup               |   Sì   | N/D |
 | Download foto e video sul dispositivo          |   Sì   | Sì  |
 | Supporto multi utente                          |   Sì   | Sì  |
 | Album e album condivisi                        |   Sì   | Sì  |
@@ -83,10 +83,10 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Visualizzazione metadata (EXIF, map)           |   Sì   | Sì  |
 | Ricerca per metadata, oggetti, volti e CLIP    |   Sì   | Sì  |
 | Funzioni di amministrazione degli utenti       |   No   | Sì  |
-| Backup in background                           |   Sì   | N/A |
+| Backup in background                           |   Sì   | N/D |
 | Scroll virtuale                                |   Sì   | Sì  |
 | Supporto OAuth                                 |   Sì   | Sì  |
-| API Keys                                       |  N/A   | Sì  |
+| API Keys                                       |  N/D   | Sì  |
 | Backup e riproduzione di LivePhoto             |  iOS   | Sì  |
 | Archiviazione impostata dall'utente            |   Sì   | Sì  |
 | Condivisione pubblica                          |   No   | Sì  |
@@ -97,6 +97,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Ricordi (x anni fa)                            |   Sì   | Sì  |
 | Supporto offline                               |   Sì   | No  |
 | Galleria sola lettura                          |   Sì   | Sì  |
+| Foto raggruppate                               |   Sì   | Sì  |
 
 # Supporta il progetto
 

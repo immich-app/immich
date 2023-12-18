@@ -10,7 +10,9 @@
 
   export let asset: AssetResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+  }>();
   let imgElement: HTMLDivElement;
 
   onMount(() => {

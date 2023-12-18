@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { downloadArchive } from '$lib/utils/asset-utils';
-  import { api, AssetResponseDto, SharedLinkResponseDto, UserResponseDto } from '@api';
+  import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -14,10 +14,10 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
+  import { AppRoute } from '$lib/constants';
 
   export let sharedLink: SharedLinkResponseDto;
   export let isOwned: boolean;
-  export let user: UserResponseDto | undefined = undefined;
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
 
@@ -79,7 +79,7 @@
       {/if}
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar on:close-button-click={() => goto('/photos')} backIcon={mdiArrowLeft} showBackButton={false}>
+    <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
         <a
           data-sveltekit-preload-data="hover"
@@ -103,6 +103,6 @@
     </ControlAppBar>
   {/if}
   <section class="my-[160px] flex flex-col px-6 sm:px-12 md:px-24 lg:px-40">
-    <GalleryViewer {user} {assets} bind:selectedAssets />
+    <GalleryViewer {assets} bind:selectedAssets />
   </section>
 </section>

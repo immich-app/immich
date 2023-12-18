@@ -11,10 +11,13 @@
   export let forceDark = false;
   export let hideMobile = false;
   export let iconColor = 'currentColor';
+  export let buttonSize: string | undefined = undefined;
 </script>
 
 <button
   {title}
+  style:width={buttonSize ? buttonSize + 'px' : ''}
+  style:height={buttonSize ? buttonSize + 'px' : ''}
   style:background-color={backgroundColor}
   style:--immich-icon-button-hover-color={hoverColor}
   class:dark:text-immich-dark-fg={!forceDark}

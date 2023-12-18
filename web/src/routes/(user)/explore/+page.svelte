@@ -3,16 +3,8 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { SearchExploreResponseDto, api } from '@api';
   import type { PageData } from './$types';
-  import {
-    mdiHeartMultipleOutline,
-    mdiClockOutline,
-    mdiPlayCircleOutline,
-    mdiMotionPlayOutline,
-    mdiRotate360,
-  } from '@mdi/js';
 
   export let data: PageData;
 
@@ -44,7 +36,7 @@
 
 <svelte:window bind:innerWidth={screenSize} />
 
-<UserPageLayout user={data.user} title={data.meta.title}>
+<UserPageLayout title={data.meta.title}>
   {#if hasPeople}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
@@ -58,7 +50,7 @@
       <div class="flex flex-row {MAX_ITEMS < 5 ? 'justify-center' : ''} flex-wrap gap-4" bind:offsetWidth={innerWidth}>
         {#if MAX_ITEMS}
           {#each people as person (person.id)}
-            <a href="/people/{person.id}" class="w-20 md:w-24 text-center">
+            <a href="{AppRoute.PEOPLE}/{person.id}" class="w-20 md:w-24 text-center">
               <ImageThumbnail
                 circle
                 shadow
@@ -80,8 +72,8 @@
         <p class="mb-4 font-medium dark:text-immich-dark-fg">Places</p>
       </div>
       <div class="flex flex-row flex-wrap gap-4">
-        {#each places as item}
-          <a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
+        {#each places as item (item.data.id)}
+          <a class="relative" href="{AppRoute.SEARCH}?q={item.value}" draggable="false">
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
@@ -105,7 +97,7 @@
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each things as item}
-          <a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
+          <a class="relative" href="{AppRoute.SEARCH}?q={item.value}" draggable="false">
             <div
               class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
             >
@@ -123,58 +115,4 @@
   {/if}
 
   <hr class="mb-4 dark:border-immich-dark-gray" />
-
-  <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-    <div class="flex flex-col gap-6 dark:text-immich-dark-fg">
-      <p class="text-sm">YOUR ACTIVITY</p>
-      <div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
-        <a
-          href={AppRoute.FAVORITES}
-          class="flex w-full content-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-          draggable="false"
-        >
-          <Icon path={mdiHeartMultipleOutline} size={24} />
-          <span>Favorites</span>
-        </a>
-        <a
-          href="/search?recent=true"
-          class="flex w-full content-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-          draggable="false"
-        >
-          <Icon path={mdiClockOutline} size={24} />
-          <span>Recently added</span>
-        </a>
-      </div>
-    </div>
-    <div class="flex flex-col gap-6 dark:text-immich-dark-fg">
-      <p class="text-sm">CATEGORIES</p>
-      <div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
-        <a
-          href="/search?type={AssetTypeEnum.Video}"
-          class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-        >
-          <Icon path={mdiPlayCircleOutline} size={24} />
-          <span>Videos</span>
-        </a>
-        <div>
-          <a
-            href="/search?motion=true"
-            class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-          >
-            <Icon path={mdiMotionPlayOutline} size={24} />
-            <span>Motion photos</span>
-          </a>
-        </div>
-        <div>
-          <a
-            href="/search?exifInfo.projectionType=EQUIRECTANGULAR"
-            class="flex w-full items-center gap-2 text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary"
-          >
-            <Icon path={mdiRotate360} size={24} />
-            <span>Panorama photos</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
 </UserPageLayout>

@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/entities';
+import { SystemConfig, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
@@ -18,7 +18,7 @@ import {
   JobHandler,
   JobItem,
 } from '../repositories';
-import { SystemConfigCore } from '../system-config/system-config.core';
+import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommand, JobName, QueueName } from './job.constants';
 import { JobService } from './job.service';
 
@@ -97,7 +97,7 @@ describe(JobService.name, () => {
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
         [QueueName.BACKGROUND_TASK]: expectedJobStatus,
-        [QueueName.CLIP_ENCODING]: expectedJobStatus,
+        [QueueName.SMART_SEARCH]: expectedJobStatus,
         [QueueName.METADATA_EXTRACTION]: expectedJobStatus,
         [QueueName.OBJECT_TAGGING]: expectedJobStatus,
         [QueueName.SEARCH]: expectedJobStatus,
@@ -159,6 +159,9 @@ describe(JobService.name, () => {
 
     it('should handle a start object tagging command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
+      ]);
 
       await sut.handleCommand(QueueName.OBJECT_TAGGING, { command: JobCommand.START, force: false });
 
@@ -168,7 +171,7 @@ describe(JobService.name, () => {
     it('should handle a start clip encoding command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.handleCommand(QueueName.CLIP_ENCODING, { command: JobCommand.START, force: false });
+      await sut.handleCommand(QueueName.SMART_SEARCH, { command: JobCommand.START, force: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_ENCODE_CLIP, data: { force: false } });
     });
@@ -229,7 +232,7 @@ describe(JobService.name, () => {
       SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
-          [QueueName.CLIP_ENCODING]: { concurrency: 10 },
+          [QueueName.SMART_SEARCH]: { concurrency: 10 },
           [QueueName.METADATA_EXTRACTION]: { concurrency: 10 },
           [QueueName.OBJECT_TAGGING]: { concurrency: 10 },
           [QueueName.RECOGNIZE_FACES]: { concurrency: 10 },
@@ -244,7 +247,7 @@ describe(JobService.name, () => {
       } as SystemConfig);
 
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.BACKGROUND_TASK, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.CLIP_ENCODING, 10);
+      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SMART_SEARCH, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.OBJECT_TAGGING, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.RECOGNIZE_FACES, 10);
@@ -271,7 +274,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },
-        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, JobName.SEARCH_INDEX_ASSET],
+        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
@@ -279,6 +282,10 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1' } },
+        jobs: [],
+      },
+      {
+        item: { name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: 'asset-1' } },
         jobs: [],
       },
       {
@@ -315,15 +322,15 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
       {
         item: { name: JobName.ENCODE_CLIP, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
       {
         item: { name: JobName.RECOGNIZE_FACES, data: { id: 'asset-1' } },
-        jobs: [JobName.SEARCH_INDEX_ASSET],
+        jobs: [],
       },
     ];
 
@@ -355,6 +362,33 @@ describe(JobService.name, () => {
         await asyncTick(3);
 
         expect(jobMock.queue).not.toHaveBeenCalled();
+      });
+    }
+
+    const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
+      {
+        queue: QueueName.SMART_SEARCH,
+        feature: FeatureFlag.CLIP_ENCODE,
+        configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
+      },
+      {
+        queue: QueueName.OBJECT_TAGGING,
+        feature: FeatureFlag.TAG_IMAGE,
+        configKey: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED,
+      },
+      {
+        queue: QueueName.RECOGNIZE_FACES,
+        feature: FeatureFlag.FACIAL_RECOGNITION,
+        configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
+      },
+    ];
+
+    for (const { queue, feature, configKey } of featureTests) {
+      it(`should throw an error if attempting to queue ${queue} when ${feature} is disabled`, async () => {
+        configMock.load.mockResolvedValue([{ key: configKey, value: false }]);
+        jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+
+        await expect(sut.handleCommand(queue, { command: JobCommand.START, force: false })).rejects.toThrow();
       });
     }
   });

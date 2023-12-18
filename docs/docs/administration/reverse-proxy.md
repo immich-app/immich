@@ -28,3 +28,13 @@ server {
     }
 }
 ```
+
+### Caddy example config
+
+As an alternative to nginx, you can also use [Caddy](https://caddyserver.com/) as a reverse proxy (with automatic HTTPS configuration). Below is an example config.
+
+```
+immich.example.org {
+    reverse_proxy http://<snip>:2283
+}
+```

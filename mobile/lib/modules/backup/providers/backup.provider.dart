@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
@@ -61,7 +63,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               fileCreatedAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
+              iCloudAsset: false,
             ),
+            iCloudDownloadProgress: 0.0,
           ),
         );
 
@@ -251,7 +255,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         albumMap[album.id] = album;
       }
     }
-
     state = state.copyWith(availableAlbums: availableAlbums);
 
     final List<BackupAlbum> excludedBackupAlbums =
@@ -291,6 +294,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       excludedBackupAlbums: excludedAlbums,
     );
 
+    log.info(
+      "_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums",
+    );
     debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }
 
@@ -341,7 +347,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     if (allUniqueAssets.isEmpty) {
-      log.info("Not found albums or assets on the device to backup");
+      log.info("No assets are selected for back up");
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
@@ -375,6 +381,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await _getBackupAlbumsInfo();
       await updateServerInfo();
       await _updateBackupAssetCount();
+    } else {
+      log.warning("cannot get backup info - background backup is in progress!");
     }
   }
 
@@ -442,9 +450,18 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       // Perform Backup
       state = state.copyWith(cancelToken: CancellationToken());
+
+      final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
+
+      pmProgressHandler?.stream.listen((event) {
+        final double progress = event.progress;
+        state = state.copyWith(iCloudDownloadProgress: progress);
+      });
+
       await _backupService.backupAsset(
         assetsWillBeBackup,
         state.cancelToken,
+        pmProgressHandler,
         _onAssetUploaded,
         _onUploadProgress,
         _onSetCurrentBackupAsset,

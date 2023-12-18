@@ -4,7 +4,7 @@
   export let size: string | number = '1em';
   export let color = 'currentColor';
   export let path: string;
-  export let title = '';
+  export let title: string | null = null;
   export let desc = '';
   export let flipped = false;
   let className = '';

@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigLoggingDto logging
+    test('to test the property `logging`', () async {
+      // TODO
+    });
+
     // SystemConfigMachineLearningDto machineLearning
     test('to test the property `machineLearning`', () async {
       // TODO

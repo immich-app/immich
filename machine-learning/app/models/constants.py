@@ -26,6 +26,9 @@ _OPENCLIP_MODELS = {
     "ViT-L-14-336__openai",
     "ViT-H-14__laion2b-s32b-b79k",
     "ViT-g-14__laion2b-s12b-b42k",
+    "ViT-L-14-quickgelu__dfn2b",
+    "ViT-H-14-quickgelu__dfn5b",
+    "ViT-H-14-378-quickgelu__dfn5b",
 }
 
 
@@ -34,6 +37,9 @@ _MCLIP_MODELS = {
     "XLM-Roberta-Large-Vit-B-32",
     "XLM-Roberta-Large-Vit-B-16Plus",
     "XLM-Roberta-Large-Vit-L-14",
+    "XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k",
+    "nllb-clip-base-siglip__v1",
+    "nllb-clip-large-siglip__v1",
 }
 
 

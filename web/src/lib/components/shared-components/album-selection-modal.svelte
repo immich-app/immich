@@ -12,7 +12,11 @@
   let loading = true;
   let search = '';
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    newAlbum: string;
+    album: AlbumResponseDto;
+    close: void;
+  }>();
 
   export let shared: boolean;
 
@@ -36,15 +40,11 @@
   }
 
   const handleSelect = (album: AlbumResponseDto) => {
-    dispatch('album', { album });
+    dispatch('album', album);
   };
 
   const handleNew = () => {
-    if (shared) {
-      dispatch('newAlbum', { albumName: search.length > 0 ? search : 'Untitled' });
-    } else {
-      dispatch('newSharedAlbum', { albumName: search.length > 0 ? search : 'Untitled' });
-    }
+    dispatch('newAlbum', search.length > 0 ? search : '');
   };
 </script>
 

@@ -7,8 +7,9 @@
 
   export let color: Color = 'transparent-gray';
   export let disabled = false;
+  export let fullwidth = false;
 </script>
 
-<Button size="link" {color} shadow={false} rounded="lg" {disabled} on:click>
+<Button size="link" {color} shadow={false} rounded="lg" {disabled} on:click {fullwidth}>
   <slot />
 </Button>

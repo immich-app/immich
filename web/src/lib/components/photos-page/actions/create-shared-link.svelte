@@ -6,7 +6,9 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   let showModal = false;
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    escape: void;
+  }>();
   const { getAssets } = getAssetControlContext();
   const escape = () => {
     dispatch('escape');
