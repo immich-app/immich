@@ -2,6 +2,7 @@ import { PersonEntity } from '@app/infra/entities';
 import { PersonPathType } from '@app/infra/entities/move.entity';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Check } from 'typeorm';
 import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
@@ -40,8 +41,6 @@ import {
   mapFaces,
   mapPerson,
 } from './person.dto';
-import { Check } from 'typeorm';
-
 
 @Injectable()
 @Check(`"birthDate" <= CURRENT_DATE`)
@@ -204,7 +203,7 @@ export class PersonService {
 
     // Check if the birthDate is in the future
     if (birthDate && new Date(birthDate) > new Date()) {
-        throw new BadRequestException('Date of birth cannot be in the future');
+      throw new BadRequestException('Date of birth cannot be in the future');
     }
 
     if (name !== undefined || birthDate !== undefined || isHidden !== undefined) {

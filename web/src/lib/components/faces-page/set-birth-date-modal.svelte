@@ -58,7 +58,14 @@
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <input class="immich-form-input" id="birthDate" name="birthDate" type="date" bind:value={birthDate} max={todayFormatted} />
+        <input
+          class="immich-form-input"
+          id="birthDate"
+          name="birthDate"
+          type="date"
+          bind:value={birthDate}
+          max={todayFormatted}
+        />
       </div>
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>
