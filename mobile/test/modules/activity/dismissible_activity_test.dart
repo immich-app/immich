@@ -1,3 +1,5 @@
+@Tags(['widget'])
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
