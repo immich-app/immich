@@ -290,7 +290,6 @@
   "select_user_for_sharing_page_err_album": "アルバム作成に失敗",
   "select_user_for_sharing_page_share_suggestions": "ユーザ一覧",
   "server_info_box_app_version": "アプリVer.",
-  "server_info_box_latest_release": "Latest Version",
   "server_info_box_server_url": " サーバのURL",
   "server_info_box_server_version": "サーバーVer.",
   "setting_image_viewer_help": "写真をタップするとサムネイル・中画質(要設定)・オリジナル(要設定)の順に読み込みます",
