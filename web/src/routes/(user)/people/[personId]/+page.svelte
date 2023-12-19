@@ -185,7 +185,9 @@
     }
   };
 
-  const handleMerge = (person: PersonResponseDto) => {
+  const handleMerge = async (person: PersonResponseDto) => {
+    const { data: statistics } = await api.personApi.getPersonStatistics({ id: person.id });
+    numberOfAssets = statistics.assets;
     handleGoBack();
 
     data.person = person;
