@@ -6,6 +6,7 @@ import { APIKeyService } from './api-key';
 import { AssetService } from './asset';
 import { AuditService } from './audit';
 import { AuthService } from './auth';
+import { DatabaseService } from './database';
 import { JobService } from './job';
 import { LibraryService } from './library';
 import { MediaService } from './media';
@@ -29,6 +30,7 @@ const providers: Provider[] = [
   AssetService,
   AuditService,
   AuthService,
+  DatabaseService,
   JobService,
   MediaService,
   MetadataService,
