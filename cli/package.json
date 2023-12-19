@@ -18,6 +18,7 @@
     "commander": "^11.0.0",
     "form-data": "^4.0.0",
     "glob": "^10.3.1",
+    "graceful-fs": "^4.2.11",
     "yaml": "^2.3.1"
   },
   "devDependencies": {
