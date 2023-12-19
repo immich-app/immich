@@ -105,6 +105,11 @@ export class ExifEntity {
                          COALESCE(model, '') || ' ' ||
                          COALESCE(orientation, '') || ' ' ||
                          COALESCE("lensModel", '') || ' ' ||
+                         COALESCE("fNumber"::varchar, '') || ' ' ||
+                         COALESCE("focalLength"::varchar, '') || ' ' ||
+                         COALESCE("exposureTime"::varchar, '') || ' ' ||
+                         COALESCE("iso"::varchar, '') || ' ' ||
+                         COALESCE("description", '') || ' ' ||
                          COALESCE("city", '') || ' ' ||
                          COALESCE("state", '') || ' ' ||
                          COALESCE("country", ''))`,
