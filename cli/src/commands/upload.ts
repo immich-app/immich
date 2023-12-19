@@ -75,6 +75,9 @@ export default class Upload extends BaseCommand {
         });
 
         let skipUpload = false;
+        let skipAsset = false;
+        let existingAssetId: string | undefined = undefined;
+
         if (!options.skipHash) {
           const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
 
@@ -83,12 +86,20 @@ export default class Upload extends BaseCommand {
           });
 
           skipUpload = checkResponse.data.results[0].action === 'reject';
+          const isDuplicate = checkResponse.data.results[0].reason === 'duplicate';
+          if (isDuplicate) {
+            existingAssetId = checkResponse.data.results[0].assetId;
+          }
+          skipAsset = skipUpload && !isDuplicate;
         }
 
-        if (!skipUpload) {
+        if (!skipAsset) {
           if (!options.dryRun) {
-            const formData = asset.getUploadFormData();
-            const res = await this.uploadAsset(formData);
+            if (!skipUpload) {
+              const formData = asset.getUploadFormData();
+              const res = await this.uploadAsset(formData);
+              existingAssetId = res.data.id;
+            }
 
             if (options.album && asset.albumName) {
               let album = existingAlbums.find((album) => album.albumName === asset.albumName);
@@ -100,7 +111,12 @@ export default class Upload extends BaseCommand {
                 existingAlbums.push(album);
               }
 
-              await this.immichApi.albumApi.addAssetsToAlbum({ id: album.id, bulkIdsDto: { ids: [res.data.id] } });
+              if (existingAssetId) {
+                await this.immichApi.albumApi.addAssetsToAlbum({
+                  id: album.id,
+                  bulkIdsDto: { ids: [existingAssetId] },
+                });
+              }
             }
           }
 
