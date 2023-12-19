@@ -207,7 +207,12 @@ describe('ServerVersion', () => {
     { this: new Version(0, 0, 1), other: new Version(0, 0, 1), expected: 0 },
     { this: new Version(0, 1, 0), other: new Version(0, 1, 0), expected: 0 },
     { this: new Version(1, 0, 0), other: new Version(1, 0, 0), expected: 0 },
-  ]
+    { this: new Version(1, 0), other: new Version(1, 0, 0), expected: 0 },
+    { this: new Version(1, 0), other: new Version(1, 0, 1), expected: -1 },
+    { this: new Version(1, 1), other: new Version(1, 0, 1), expected: 1 },
+    { this: new Version(1), other: new Version(1, 0, 0), expected: 0 },
+    { this: new Version(1), other: new Version(1, 0, 1), expected: -1 },
+  ];
 
   describe('compare', () => {
     for (const { this: thisVersion, other: otherVersion, expected } of tests) {
@@ -253,6 +258,9 @@ describe('ServerVersion', () => {
       { scenario: 'large minor', value: '1.123.0', expected: new Version(1, 123, 0) },
       { scenario: 'large major', value: '123.0.0', expected: new Version(123, 0, 0) },
       { scenario: 'major bump', value: 'v2.0.0', expected: new Version(2, 0, 0) },
+      { scenario: 'has dash', value: '14.10-1', expected: new Version(14, 10, 1) },
+      { scenario: 'missing patch', value: '14.10', expected: new Version(14, 10, 0) },
+      { scenario: 'only major', value: '14', expected: new Version(14, 0, 0) },
     ];
 
     for (const { scenario, value, expected } of tests) {

@@ -1,8 +1,8 @@
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { DatabaseExtension, IDatabaseRepository } from '../repositories';
 import { QueryFailedError } from 'typeorm';
 import { Version } from '../domain.constant';
+import { DatabaseExtension, IDatabaseRepository } from '../repositories';
 
 @Injectable()
 export class DatabaseService {
@@ -34,7 +34,7 @@ export class DatabaseService {
           `Please run 'DROP EXTENSION IF EXISTS vectors' and switch to a release version, such as with the docker image '${image}'.`,
       );
     }
-    
+
     if (version.isNewerThan(this.maxVectorsVersion)) {
       throw new Error(
         `The pgvecto.rs extension version is ${version} instead of ${this.maxVectorsVersion}.` +
@@ -44,8 +44,8 @@ export class DatabaseService {
 
     if (version.isOlderThan(this.minVectorsVersion)) {
       throw new Error(
-        `The pgvecto.rs extension version is ${version}, which is older than the minimum supported version ${this.minVectorsVersion}.` + 
-        `Please upgrade to this version or later, such as with the docker image '${image}'.`,
+        `The pgvecto.rs extension version is ${version}, which is older than the minimum supported version ${this.minVectorsVersion}.` +
+          `Please upgrade to this version or later, such as with the docker image '${image}'.`,
       );
     }
   }
@@ -54,8 +54,12 @@ export class DatabaseService {
     await this.databaseRepository.createExtension(DatabaseExtension.VECTORS).catch(async (err: QueryFailedError) => {
       const image = await this.getVectorsImage();
       this.logger.fatal('Failed to create pgvecto.rs extension.');
-      this.logger.fatal(`If you have not updated your Postgres instance to a docker image that supports pgvecto.rs (such as '${image}'), please do so.`);
-      this.logger.fatal('See the v1.91.0 release notes for more info: https://github.com/immich-app/immich/releases/tag/v1.91.0');
+      this.logger.fatal(
+        `If you have not updated your Postgres instance to a docker image that supports pgvecto.rs (such as '${image}'), please do so.`,
+      );
+      this.logger.fatal(
+        'See the v1.91.0 release notes for more info: https://github.com/immich-app/immich/releases/tag/v1.91.0',
+      );
       throw err;
     });
   }

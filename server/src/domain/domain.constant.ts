@@ -15,8 +15,8 @@ export interface IVersion {
 export class Version implements IVersion {
   constructor(
     public readonly major: number,
-    public readonly minor: number,
-    public readonly patch: number,
+    public readonly minor: number = 0,
+    public readonly patch: number = 0,
   ) {}
 
   toString() {
@@ -29,11 +29,11 @@ export class Version implements IVersion {
   }
 
   static fromString(version: string): Version {
-    const regex = /(?:v)?(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/i;
+    const regex = /(?:v)?(?<major>\d+)(?:\.(?<minor>\d+))?(?:[\.-](?<patch>\d+))?/i;
     const matchResult = version.match(regex);
     if (matchResult) {
-      const [, major, minor, patch] = matchResult.map(Number);
-      return new Version(major, minor, patch);
+      const { major, minor = '0', patch = '0' } = matchResult.groups as { [K in keyof IVersion]: string };
+      return new Version(Number(major), Number(minor), Number(patch));
     } else {
       throw new Error(`Invalid version format: ${version}`);
     }
