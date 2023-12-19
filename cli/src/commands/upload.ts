@@ -83,7 +83,7 @@ export default class Upload extends BaseCommand {
         let skipAsset = false;
         let existingAssetId: string | undefined = undefined;
 
-        if (!options.skipHash && !options.album) {
+        if (!options.skipHash) {
           const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
 
           const checkResponse = await this.immichApi.assetApi.checkBulkUpload({
@@ -108,7 +108,7 @@ export default class Upload extends BaseCommand {
               existingAssetId = res.data.id;
             }
 
-            if (asset.albumName !== undefined) {
+            if ((options.album || options.albumName) && asset.albumName !== undefined) {
               let album = existingAlbums.find((album) => album.albumName === asset.albumName);
               if (!album) {
                 const res = await this.immichApi.albumApi.createAlbum({

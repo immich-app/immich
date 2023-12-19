@@ -35,6 +35,12 @@ describe(`upload (e2e)`, () => {
     expect(assets.length).toBeGreaterThan(4);
   });
 
+  it('should not create a new album', async () => {
+    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], { recursive: true });
+    const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
+    expect(albums.length).toEqual(0);
+  });
+
   it('should create album from folder name', async () => {
     await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
       recursive: true,
