@@ -1,4 +1,4 @@
-import 'package:cancellation_token_http/http.dart';
+import 'package:cancellation_token/cancellation_token.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 
 class ManualUploadState {

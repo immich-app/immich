@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/utils/http_client_factory.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
@@ -35,6 +36,7 @@ class ApiService {
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint);
+    _apiClient.client = getHttpClient();
     if (_authToken != null) {
       setAccessToken(_authToken!);
     }
@@ -85,7 +87,7 @@ class ApiService {
   }
 
   Future<bool> _isEndpointAvailable(String serverUrl) async {
-    final Client client = Client();
+    final Client client = getHttpClient();
 
     if (!serverUrl.endsWith('/api')) {
       serverUrl += '/api';
@@ -108,7 +110,7 @@ class ApiService {
   }
 
   Future<String> _getWellKnownEndpoint(String baseUrl) async {
-    final Client client = Client();
+    final Client client = getHttpClient();
 
     try {
       final res = await client.get(

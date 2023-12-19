@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
+import 'package:cancellation_token/cancellation_token.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';

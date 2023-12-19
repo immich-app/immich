@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cancellation_token/cancellation_token.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
@@ -15,12 +17,12 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/utils/http_client_factory.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:cancellation_token_http/http.dart' as http;
 import 'package:path/path.dart' as p;
 
 final backupServiceProvider = Provider(
@@ -32,7 +34,7 @@ final backupServiceProvider = Provider(
 );
 
 class BackupService {
-  final httpClient = http.Client();
+  final httpClient = getHttpClient();
   final ApiService _apiService;
   final Isar _db;
   final Logger _log = Logger("BackupService");
@@ -204,7 +206,7 @@ class BackupService {
 
   Future<bool> backupAsset(
     Iterable<AssetEntity> assetList,
-    http.CancellationToken cancelToken,
+    CancellationToken cancelToken,
     PMProgressHandler? pmProgressHandler,
     Function(String, String, bool) uploadSuccessCb,
     Function(int, int) uploadProgressCb,
@@ -353,8 +355,7 @@ class BackupService {
             ),
           );
 
-          var response =
-              await httpClient.send(req, cancellationToken: cancelToken);
+          var response = await httpClient.send(req).asCancellable(cancelToken);
 
           if (response.statusCode == 200) {
             // asset is a duplicate (already exists on the server)
@@ -384,7 +385,7 @@ class BackupService {
             continue;
           }
         }
-      } on http.CancelledException {
+      } on CancelledException {
         debugPrint("Backup was cancelled by the user");
         anyErrors = true;
         break;

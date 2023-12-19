@@ -170,21 +170,13 @@ packages:
     source: hosted
     version: "1.0.2"
   cancellation_token:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: cancellation_token
       sha256: ad95acf9d4b2f3563e25dc937f63587e46a70ce534e910b65d10e115490f1027
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
-  cancellation_token_http:
-    dependency: "direct main"
-    description:
-      name: cancellation_token_http
-      sha256: bb91655e2e47d6274b681261ee6a687b7aa9023f49cfc28f42d095b2f86febc3
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0"
   characters:
     dependency: transitive
     description:
@@ -273,6 +265,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
+  cronet_http:
+    dependency: "direct main"
+    description:
+      name: cronet_http
+      sha256: "0fd588fcd566c89de8cfd420f0b9e9babcfc5b263c9b5168a33e1722442d4c7c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.2"
   cross_file:
     dependency: transitive
     description:
@@ -297,6 +297,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  cupertino_http:
+    dependency: "direct main"
+    description:
+      name: cupertino_http
+      sha256: "93cdb8a3aa8bc71caf62fdaca66e613871a6aa1388c7cd7f39b6366b5d2f5af6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   cupertino_icons:
     dependency: transitive
     description:
@@ -876,6 +884,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0+1"
+  jni:
+    dependency: transitive
+    description:
+      name: jni
+      sha256: "0d88790bdf7e298aa65a9094c62b58ea231169a2deb84f23defc7d7955885b43"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.2"
   js:
     dependency: transitive
     description:
@@ -1810,5 +1826,5 @@ packages:
     source: hosted
     version: "3.1.2"
 sdks:
-  dart: ">=3.1.0-185.0.dev <4.0.0"
+  dart: ">=3.1.0 <4.0.0"
   flutter: ">=3.10.0"

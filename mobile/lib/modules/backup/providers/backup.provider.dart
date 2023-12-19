@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
+import 'package:cancellation_token/cancellation_token.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
