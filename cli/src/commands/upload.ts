@@ -61,6 +61,10 @@ export default class Upload extends BaseCommand {
       // Compute total size first
       await asset.process();
       totalSize += asset.fileSize;
+
+      if (options.albumName) {
+        asset.albumName = options.albumName;
+      }
     }
 
     const existingAlbums = (await this.immichApi.albumApi.getAllAlbums()).data;
@@ -90,7 +94,7 @@ export default class Upload extends BaseCommand {
             const formData = asset.getUploadFormData();
             const res = await this.uploadAsset(formData);
 
-            if (options.album && asset.albumName) {
+            if (asset.albumName !== undefined) {
               let album = existingAlbums.find((album) => album.albumName === asset.albumName);
               if (!album) {
                 const res = await this.immichApi.albumApi.createAlbum({

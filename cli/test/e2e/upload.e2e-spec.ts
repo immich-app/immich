@@ -52,6 +52,7 @@ describe(`upload (e2e)`, () => {
       recursive: true,
     });
 
+    // Upload again, but this time add to album
     await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
       recursive: true,
       album: true,
@@ -61,5 +62,17 @@ describe(`upload (e2e)`, () => {
     expect(albums.length).toEqual(1);
     const natureAlbum = albums[0];
     expect(natureAlbum.albumName).toEqual('nature');
+  });
+
+  it('should upload to the specified album name', async () => {
+    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
+      recursive: true,
+      albumName: 'testAlbum',
+    });
+
+    const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
+    expect(albums.length).toEqual(1);
+    const testAlbum = albums[0];
+    expect(testAlbum.albumName).toEqual('testAlbum');
   });
 });
