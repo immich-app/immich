@@ -2,53 +2,82 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { DatabaseExtension, IDatabaseRepository } from '../repositories';
 import { QueryFailedError } from 'typeorm';
+import { Version } from '../domain.constant';
 
 @Injectable()
 export class DatabaseService {
   private logger = new ImmichLogger(DatabaseService.name);
-  private readonly expectedVectorsVersions: string[] = ['0.1.1', '0.1.11'];
+  private _minVectorsVersion: Version = new Version(0, 1, 1);
+  private _maxVectorsVersion: Version = new Version(0, 1, 11);
 
   constructor(@Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository) {}
 
   async init() {
-    this.logger.log('Initializing database service');
     await this.assertVectors();
-    this.logger.log('Enabling pgvecto.rs prefilter');
     await this.databaseRepository.enablePrefilter();
-    this.logger.log('Running database migrations');
     await this.databaseRepository.runMigrations();
-    this.logger.log('Initialized database service');
   }
 
   async assertVectors() {
     await this.createVectors();
 
     const version = await this.databaseRepository.getExtensionVersion(DatabaseExtension.VECTORS);
+    if (version == null) {
+      throw new Error('Unexpected: The pgvecto.rs extension is not installed.');
+    }
+
     const image = await this.getVectorsImage();
-    if (version != null && !this.expectedVectorsVersions.includes(version)) {
+
+    if (version.isEqual(new Version(0, 0, 0))) {
       throw new Error(
-        `The pgvecto.rs extension version is ${version} instead of ${this.preferredVectorsVersion}.` +
-          `If you're using the 'latest' tag, please switch to '${image}'.`,
+        `The pgvecto.rs extension version is ${version}, which means it is a nightly release.` +
+          `Please run 'DROP EXTENSION IF EXISTS vectors' and switch to a release version, such as with the docker image '${image}'.`,
+      );
+    }
+    
+    if (version.isNewerThan(this.maxVectorsVersion)) {
+      throw new Error(
+        `The pgvecto.rs extension version is ${version} instead of ${this.maxVectorsVersion}.` +
+          `Please run 'DROP EXTENSION IF EXISTS vectors' and switch to ${this.maxVectorsVersion}, such as with the docker image '${image}'.`,
+      );
+    }
+
+    if (version.isOlderThan(this.minVectorsVersion)) {
+      throw new Error(
+        `The pgvecto.rs extension version is ${version}, which is older than the minimum supported version ${this.minVectorsVersion}.` + 
+        `Please upgrade to this version or later, such as with the docker image '${image}'.`,
       );
     }
   }
 
   async createVectors() {
-    const image = await this.getVectorsImage();
-    await this.databaseRepository.createExtension(DatabaseExtension.VECTORS).catch((err: QueryFailedError) => {
+    await this.databaseRepository.createExtension(DatabaseExtension.VECTORS).catch(async (err: QueryFailedError) => {
+      const image = await this.getVectorsImage();
       this.logger.fatal('Failed to create pgvecto.rs extension.');
-      this.logger.fatal(`If you have not updated your Postgres instance to an image that supports pgvecto.rs (such as '${image}'), please do so.`);
+      this.logger.fatal(`If you have not updated your Postgres instance to a docker image that supports pgvecto.rs (such as '${image}'), please do so.`);
       this.logger.fatal('See the v1.91.0 release notes for more info: https://github.com/immich-app/immich/releases/tag/v1.91.0');
       throw err;
     });
   }
 
   async getVectorsImage() {
-    const postgresVersion = await this.databaseRepository.getPostgresVersion();
-    return `tensorchord/pgvecto-rs:pg${postgresVersion}-v${this.preferredVectorsVersion}`;
+    const { major } = await this.databaseRepository.getPostgresVersion();
+    return `tensorchord/pgvecto-rs:pg${major}-v${this.maxVectorsVersion}`;
   }
 
-  private get preferredVectorsVersion() {
-    return this.expectedVectorsVersions[this.expectedVectorsVersions.length - 1];
+  get minVectorsVersion() {
+    return this._minVectorsVersion;
+  }
+
+  set minVectorsVersion(version: Version) {
+    this._minVectorsVersion = version;
+  }
+
+  get maxVectorsVersion() {
+    return this._maxVectorsVersion;
+  }
+
+  set maxVectorsVersion(version: Version) {
+    this._maxVectorsVersion = version;
   }
 }

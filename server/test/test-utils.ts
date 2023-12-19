@@ -24,6 +24,9 @@ export interface ResetOptions {
 }
 export const db = {
   reset: async (options?: ResetOptions) => {
+    if (!dataSource.isInitialized) {
+      await dataSource.initialize();
+    }
     await dataSource.transaction(async (em) => {
       const entities = options?.entities || [];
       const tableNames =

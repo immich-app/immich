@@ -1,3 +1,5 @@
+import { Version } from "../domain.constant";
+
 export enum DatabaseExtension {
   CUBE = 'cube',
   EARTH_DISTANCE = 'earthdistance',
@@ -8,8 +10,8 @@ export const IDatabaseRepository = 'IDatabaseRepository';
 
 export interface IDatabaseRepository {
   enablePrefilter(): Promise<void>;
-  getExtensionVersion(extName: string): Promise<string | null>;
-  getPostgresVersion(): Promise<string>;
+  getExtensionVersion(extName: string): Promise<Version | null>;
+  getPostgresVersion(): Promise<Version>;
   createExtension(extension: DatabaseExtension): Promise<void>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
 }

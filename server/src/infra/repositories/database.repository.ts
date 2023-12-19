@@ -1,4 +1,4 @@
-import { DatabaseExtension, IDatabaseRepository } from '@app/domain';
+import { DatabaseExtension, IDatabaseRepository, Version } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -11,14 +11,15 @@ export class DatabaseRepository implements IDatabaseRepository {
     await this.dataSource.query(`SET vectors.enable_prefilter = on`);
   }
 
-  async getExtensionVersion(extension: DatabaseExtension): Promise<string | null> {
+  async getExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
     const res = await this.dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extension]);
-    return res[0]?.['extversion'] ?? null;
+    const version = res[0]?.['extversion'];
+    return version == null ? null : Version.fromString(version);
   }
 
-  async getPostgresVersion(): Promise<string> {
+  async getPostgresVersion(): Promise<Version> {
     const res = await this.dataSource.query(`SHOW server_version`);
-    return res[0]['server_version'].split('.')[0];
+    return Version.fromString(res[0]['server_version']);
   }
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
