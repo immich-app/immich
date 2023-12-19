@@ -199,6 +199,11 @@ export class PersonService {
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
 
+    // Check if the birthDate is in the future
+    if (birthDate && new Date(birthDate) > new Date()) {
+      throw new BadRequestException('Date of birth cannot be in the future');
+    }
+
     if (name !== undefined || birthDate !== undefined || isHidden !== undefined) {
       person = await this.repository.update({ id, name, birthDate, isHidden });
     }

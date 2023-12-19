@@ -22,6 +22,7 @@ export default class Upload extends BaseCommand {
     crawlOptions.pathsToCrawl = paths;
     crawlOptions.recursive = options.recursive;
     crawlOptions.exclusionPatterns = options.exclusionPatterns;
+    crawlOptions.includeHidden = options.includeHidden;
 
     const files: string[] = [];
 
