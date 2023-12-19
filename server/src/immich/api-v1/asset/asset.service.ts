@@ -2,6 +2,7 @@ import {
   AccessCore,
   AssetResponseDto,
   AuthDto,
+  CacheControl,
   getLivePhotoMotionFilename,
   IAccessRepository,
   IJobRepository,
@@ -15,7 +16,8 @@ import {
   UploadFile,
 } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
@@ -38,7 +40,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 
 @Injectable()
 export class AssetService {
-  readonly logger = new Logger(AssetService.name);
+  readonly logger = new ImmichLogger(AssetService.name);
   private assetCore: AssetCore;
   private access: AccessCore;
 
@@ -146,7 +148,11 @@ export class AssetService {
 
     const filepath = this.getThumbnailPath(asset, dto.format);
 
-    return new ImmichFileResponse({ path: filepath, contentType: mimeTypes.lookup(filepath), cacheControl: true });
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
   public async serveFile(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
@@ -165,7 +171,11 @@ export class AssetService {
         ? this.getServePath(asset, dto, allowOriginalFile)
         : asset.encodedVideoPath || asset.originalPath;
 
-    return new ImmichFileResponse({ path: filepath, contentType: mimeTypes.lookup(filepath), cacheControl: true });
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
   async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {

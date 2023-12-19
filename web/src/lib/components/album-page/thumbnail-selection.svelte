@@ -10,7 +10,10 @@
   export let album: AlbumResponseDto;
 
   let selectedThumbnail: AssetResponseDto | undefined;
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    thumbnail: AssetResponseDto | undefined;
+  }>();
 
   $: isSelected = (id: string): boolean | undefined => {
     if (!selectedThumbnail && album.albumThumbnailAssetId == id) {
@@ -25,7 +28,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg py-[160px] dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close-button-click={() => dispatch('close')}>
+  <ControlAppBar on:close={() => dispatch('close')}>
     <svelte:fragment slot="leading">
       <p class="text-lg">Select album cover</p>
     </svelte:fragment>
@@ -35,7 +38,7 @@
         size="sm"
         rounded="lg"
         disabled={selectedThumbnail == undefined}
-        on:click={() => dispatch('thumbnail-selected', { asset: selectedThumbnail })}
+        on:click={() => dispatch('thumbnail', selectedThumbnail)}
       >
         Done
       </Button>

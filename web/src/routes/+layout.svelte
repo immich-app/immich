@@ -11,7 +11,6 @@
   import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
-  import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
   import { onMount } from 'svelte';
   import { loadConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -83,7 +82,6 @@
   <title>{$page.data.meta?.title || 'Web'} - Immich</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="currentColor" />
-  <FaviconHeader />
   <AppleHeader />
 
   {#if $page.data.meta}

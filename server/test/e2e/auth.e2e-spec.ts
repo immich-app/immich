@@ -39,8 +39,7 @@ describe(`${AuthController.name} (e2e)`, () => {
   let accessToken: string;
 
   beforeAll(async () => {
-    await testApp.reset();
-    [server] = await testApp.create();
+    server = (await testApp.create()).getHttpServer();
   });
 
   afterAll(async () => {

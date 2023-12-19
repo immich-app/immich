@@ -1,6 +1,6 @@
 import { AssetType } from '@app/infra/entities';
 import { Duration } from 'luxon';
-import { extname } from 'node:path';
+import { extname, join } from 'node:path';
 import pkg from 'src/../../package.json';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
@@ -57,6 +57,8 @@ export const isDev = process.env.NODE_ENV === 'development';
 export const serverVersion = ServerVersion.fromString(pkg.version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
+
+export const WEB_ROOT_PATH = join(process.env.IMMICH_WEB_ROOT || '/usr/src/app/www', 'index.html');
 
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],

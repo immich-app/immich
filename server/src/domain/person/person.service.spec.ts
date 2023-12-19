@@ -18,7 +18,7 @@ import {
   personStub,
 } from '@test';
 import { BulkIdErrorReason } from '../asset';
-import { ImmichFileResponse } from '../domain.util';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAssetRepository,
@@ -208,7 +208,7 @@ describe(PersonService.name, () => {
         new ImmichFileResponse({
           path: '/path/to/thumbnail.jpg',
           contentType: 'image/jpeg',
-          cacheControl: true,
+          cacheControl: CacheControl.PRIVATE_WITHOUT_CACHE,
         }),
       );
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
@@ -360,7 +360,7 @@ describe(PersonService.name, () => {
     it('should reassign a face', async () => {
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.withName.id]));
       personMock.getById.mockResolvedValue(personStub.noName);
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
+      accessMock.person.checkFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getRandomFace.mockResolvedValue(faceStub.primaryFace1);
@@ -415,7 +415,7 @@ describe(PersonService.name, () => {
   describe('reassignFacesById', () => {
     it('should create a new person', async () => {
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
+      accessMock.person.checkFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
@@ -437,7 +437,6 @@ describe(PersonService.name, () => {
 
     it('should fail if user has not the correct permissions on the asset', async () => {
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set());
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
@@ -456,7 +455,7 @@ describe(PersonService.name, () => {
     it('should create a new person', async () => {
       personMock.create.mockResolvedValue(personStub.primaryPerson);
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
+      accessMock.person.checkFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
 
       await expect(sut.createPerson(authStub.admin)).resolves.toBe(personStub.primaryPerson);
     });

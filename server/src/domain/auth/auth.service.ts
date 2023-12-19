@@ -1,10 +1,10 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import {
   BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import cookieParser from 'cookie';
@@ -68,7 +68,7 @@ interface OAuthProfile extends UserinfoResponse {
 export class AuthService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private logger = new Logger(AuthService.name);
+  private logger = new ImmichLogger(AuthService.name);
   private userCore: UserCore;
 
   constructor(

@@ -1,5 +1,6 @@
 import { AssetService, UploadFieldName, UploadFile } from '@app/domain';
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
@@ -52,7 +53,7 @@ const asRequest = (req: AuthRequest, file: Express.Multer.File) => {
 
 @Injectable()
 export class FileUploadInterceptor implements NestInterceptor {
-  private logger = new Logger(FileUploadInterceptor.name);
+  private logger = new ImmichLogger(FileUploadInterceptor.name);
 
   private handlers: {
     userProfile: RequestHandler;

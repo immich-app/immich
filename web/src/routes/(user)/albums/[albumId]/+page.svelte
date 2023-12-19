@@ -457,7 +457,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
-        <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(backUrl)}>
+        <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
             <CircleIconButton
               title="Add Photos"
@@ -513,7 +513,7 @@
       {/if}
 
       {#if viewMode === ViewMode.SELECT_ASSETS}
-        <ControlAppBar on:close-button-click={handleCloseSelectAssets}>
+        <ControlAppBar on:close={handleCloseSelectAssets}>
           <svelte:fragment slot="leading">
             <p class="text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
@@ -539,7 +539,7 @@
       {/if}
 
       {#if viewMode === ViewMode.SELECT_THUMBNAIL}
-        <ControlAppBar on:close-button-click={() => (viewMode = ViewMode.VIEW)}>
+        <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW)}>
           <svelte:fragment slot="leading">Select Album Cover</svelte:fragment>
         </ControlAppBar>
       {/if}

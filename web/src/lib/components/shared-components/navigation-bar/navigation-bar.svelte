@@ -16,16 +16,19 @@
   import UserAvatar from '../user-avatar.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiMagnify, mdiTrayArrowUp, mdiCog } from '@mdi/js';
-  import { user } from '$lib/stores/user.store';
+  import { resetSavedUser, user } from '$lib/stores/user.store';
 
   export let showUploadButton = true;
 
   let shouldShowAccountInfo = false;
   let shouldShowAccountInfoPanel = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    uploadClicked: void;
+  }>();
 
   const logOut = async () => {
+    resetSavedUser();
     const { data } = await api.authenticationApi.logout();
     goto(data.redirectUri || '/auth/login?autoLaunch=0');
   };

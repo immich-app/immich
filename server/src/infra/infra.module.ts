@@ -101,6 +101,7 @@ const imports = [
 const moduleExports = [...providers];
 
 if (process.env.IMMICH_TEST_ENV !== 'true') {
+  // Currently not running e2e tests, set up redis and bull queues
   imports.push(BullModule.forRoot(bullConfig));
   imports.push(BullModule.registerQueue(...bullQueues));
   moduleExports.push(BullModule);

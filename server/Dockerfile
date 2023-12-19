@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20231207@sha256:175d55f2fff48e0edeaf359c1aa0572b923db0c19304c22136a39061b8bc8179 as dev
+FROM ghcr.io/immich-app/base-server-dev:20231214@sha256:cd5be516b27c0c402bee3a6a93d8c83dfd5a827c18a2343cb97b55f3be98151b as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -10,6 +10,7 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
+ENV PATH="${PATH}:/usr/src/app/bin"
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
@@ -23,14 +24,14 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 FROM node:iron-alpine3.18 as web
 
 WORKDIR /usr/src/app
-COPY web/package.json web/package-lock.json ./
+COPY web/package*.json web/svelte.config.js .
 RUN npm ci
 COPY web .
 RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20231207@sha256:006c9170f8ddafabe49d447ea2b892563951e05e4f3e5434635cdb7ab7dd8911
+FROM ghcr.io/immich-app/base-server-prod:20231214@sha256:b214f86683fde081b09beed2d7bfc28bec55c829751ccf2e02ad7dd18293f5e0
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production

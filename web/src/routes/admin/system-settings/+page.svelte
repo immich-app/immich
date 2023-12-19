@@ -21,6 +21,7 @@
   import type { PageData } from './$types';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
   import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
+  import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
 
   export let data: PageData;
@@ -74,6 +75,10 @@
         <LibrarySettings disabled={$featureFlags.configFile} libraryConfig={configs.library} />
       </SettingAccordion>
 
+      <SettingAccordion title="Logging" subtitle="Manage log settings">
+        <LoggingSettings disabled={$featureFlags.configFile} loggingConfig={configs.logging} />
+      </SettingAccordion>
+
       <SettingAccordion title="Machine Learning Settings" subtitle="Manage machine learning features and settings">
         <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
       </SettingAccordion>
@@ -111,7 +116,7 @@
       </SettingAccordion>
 
       <SettingAccordion title="Version Check" subtitle="Enable/disable the new version notification">
-        <NewVersionCheckSettings newVersionCheckConfig={configs.newVersionCheck} />
+        <NewVersionCheckSettings disabled={$featureFlags.configFile} newVersionCheckConfig={configs.newVersionCheck} />
       </SettingAccordion>
 
       <SettingAccordion

@@ -1,5 +1,6 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
@@ -9,7 +10,7 @@ import { Subscription } from 'rxjs';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
-  CommunicationEvent,
+  ClientEvent,
   ExifDuration,
   IAlbumRepository,
   IAssetRepository,
@@ -91,7 +92,7 @@ const validate = <T>(value: T): NonNullable<T> | null => {
 
 @Injectable()
 export class MetadataService {
-  private logger = new Logger(MetadataService.name);
+  private logger = new ImmichLogger(MetadataService.name);
   private storageCore: StorageCore;
   private configCore: SystemConfigCore;
   private subscription: Subscription | null = null;
@@ -171,7 +172,7 @@ export class MetadataService {
     await this.albumRepository.removeAsset(motionAsset.id);
 
     // Notify clients to hide the linked live photo asset
-    this.communicationRepository.send(CommunicationEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
+    this.communicationRepository.send(ClientEvent.ASSET_HIDDEN, motionAsset.ownerId, motionAsset.id);
 
     return true;
   }
@@ -460,7 +461,7 @@ export class MetadataService {
     };
 
     if (exifData.latitude === 0 && exifData.longitude === 0) {
-      console.warn('Exif data has latitude and longitude of 0, setting to null');
+      this.logger.warn('Exif data has latitude and longitude of 0, setting to null');
       exifData.latitude = null;
       exifData.longitude = null;
     }

@@ -1,11 +1,12 @@
 import { PersonEntity } from '@app/infra/entities';
 import { PersonPathType } from '@app/infra/entities/move.entity';
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { ImmichFileResponse, usePagination } from '../domain.util';
+import { CacheControl, ImmichFileResponse, usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
@@ -45,7 +46,7 @@ export class PersonService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  readonly logger = new Logger(PersonService.name);
+  readonly logger = new ImmichLogger(PersonService.name);
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -182,7 +183,7 @@ export class PersonService {
     return new ImmichFileResponse({
       path: person.thumbnailPath,
       contentType: mimeTypes.lookup(person.thumbnailPath),
-      cacheControl: true,
+      cacheControl: CacheControl.PRIVATE_WITHOUT_CACHE,
     });
   }
 

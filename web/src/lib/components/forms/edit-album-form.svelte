@@ -8,7 +8,10 @@
 
   export let album: AlbumResponseDto;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    editSuccess: void;
+    cancel: void;
+  }>();
 
   const editUser = async () => {
     try {
@@ -21,7 +24,7 @@
       });
 
       if (status === 200) {
-        dispatch('edit-success');
+        dispatch('editSuccess');
       }
     } catch (error) {
       handleError(error, 'Unable to update user');

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
@@ -53,7 +52,7 @@
     }
   }
 
-  $: isOwner = $page?.data?.user?.id === asset.ownerId;
+  $: isOwner = $user.id === asset.ownerId;
 
   $: {
     // Get latest description from server
@@ -87,7 +86,13 @@
     unsubscribe();
   });
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    descriptionFocusIn: void;
+    descriptionFocusOut: void;
+    click: AlbumResponseDto;
+    closeViewer: void;
+  }>();
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -114,11 +119,11 @@
   };
 
   const handleFocusIn = () => {
-    dispatch('description-focus-in');
+    dispatch('descriptionFocusIn');
   };
 
   const handleFocusOut = async () => {
-    dispatch('description-focus-out');
+    dispatch('descriptionFocusOut');
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
@@ -241,7 +246,7 @@
                 href="{AppRoute.PEOPLE}/{person.id}?previousRoute={albumId
                   ? `${AppRoute.ALBUMS}/${albumId}`
                   : AppRoute.PHOTOS}"
-                on:click={() => dispatch('close-viewer')}
+                on:click={() => dispatch('closeViewer')}
               >
                 <div class="relative">
                   <ImageThumbnail
@@ -564,7 +569,13 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+    <Map
+      mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+      center={latlng}
+      zoom={15}
+      simplified
+      useLocationPin
+    >
       <svelte:fragment slot="popup" let:marker>
         {@const { lat, lon } = marker}
         <div class="flex flex-col items-center gap-1">

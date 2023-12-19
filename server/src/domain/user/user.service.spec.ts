@@ -17,7 +17,7 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { ImmichFileResponse } from '../domain.util';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAlbumRepository,
@@ -396,7 +396,7 @@ describe(UserService.name, () => {
         new ImmichFileResponse({
           path: '/path/to/profile.jpg',
           contentType: 'image/jpeg',
-          cacheControl: false,
+          cacheControl: CacheControl.NONE,
         }),
       );
 

@@ -1,5 +1,6 @@
 import { AssetEntity, LibraryType } from '@app/infra/entities';
-import { BadRequestException, Inject, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'path';
@@ -7,10 +8,10 @@ import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { HumanReadableSize, ImmichFileResponse, usePagination } from '../domain.util';
+import { CacheControl, HumanReadableSize, ImmichFileResponse, usePagination } from '../domain.util';
 import { IAssetDeletionJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import {
-  CommunicationEvent,
+  ClientEvent,
   IAccessRepository,
   IAssetRepository,
   ICommunicationRepository,
@@ -75,7 +76,7 @@ export interface UploadFile {
 }
 
 export class AssetService {
-  private logger = new Logger(AssetService.name);
+  private logger = new ImmichLogger(AssetService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
 
@@ -289,7 +290,7 @@ export class AssetService {
     return new ImmichFileResponse({
       path: asset.originalPath,
       contentType: mimeTypes.lookup(asset.originalPath),
-      cacheControl: false,
+      cacheControl: CacheControl.NONE,
     });
   }
 
@@ -434,7 +435,7 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(ids, options);
-    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, auth.user.id, ids);
+    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, ids);
   }
 
   async handleAssetDeletionCheck() {
@@ -478,7 +479,7 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
-    this.communicationRepository.send(CommunicationEvent.ASSET_DELETE, asset.ownerId, id);
+    this.communicationRepository.send(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
@@ -508,7 +509,7 @@ export class AssetService {
       }
     } else {
       await this.assetRepository.softDeleteAll(ids);
-      this.communicationRepository.send(CommunicationEvent.ASSET_TRASH, auth.user.id, ids);
+      this.communicationRepository.send(ClientEvent.ASSET_TRASH, auth.user.id, ids);
     }
   }
 
@@ -521,7 +522,7 @@ export class AssetService {
       for await (const assets of assetPagination) {
         const ids = assets.map((a) => a.id);
         await this.assetRepository.restoreAll(ids);
-        this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, auth.user.id, ids);
+        this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
       }
       return;
     }
@@ -540,7 +541,7 @@ export class AssetService {
     const { ids } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_RESTORE, ids);
     await this.assetRepository.restoreAll(ids);
-    this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, auth.user.id, ids);
+    this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
   }
 
   async updateStackParent(auth: AuthDto, dto: UpdateStackParentDto): Promise<void> {
@@ -556,7 +557,7 @@ export class AssetService {
       childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
     }
 
-    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId]);
+    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId]);
     await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
     // Remove ParentId of new parent if this was previously a child of some other asset
     return this.assetRepository.updateAll([newParentId], { stackParentId: null });
