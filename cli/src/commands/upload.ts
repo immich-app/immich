@@ -34,6 +34,16 @@ export default class Upload extends BaseCommand {
       }
     }
 
+    const files: string[] = [];
+
+    for (const pathArgument of paths) {
+      const fileStat = await fs.promises.lstat(pathArgument);
+
+      if (fileStat.isFile()) {
+        files.push(pathArgument);
+      }
+    }
+
     const crawledFiles: string[] = await crawlService.crawl(crawlOptions);
 
     crawledFiles.push(...files);

@@ -93,10 +93,9 @@ jobs:
       - name: Run npm install in cli
         run: npm ci
 
-      - uses: chill-viking/npm-ci@latest
-        name: Run npm install in server
-        with:
-          working_directory: "server"
+      - name: Run npm install in server
+        run: npm ci
+        working-directory: ./server
 
       - name: Run linter
         run: npm run lint

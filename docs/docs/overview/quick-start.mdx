@@ -1,0 +1,85 @@
+---
+sidebar_position: 2
+---
+
+# Quick Start
+
+Here is a quick, no-choices path to install Immich and take it for a test drive.
+Once you've tried it, perhaps you'll use one of the many other ways
+to install and use it.
+
+## Requirements
+
+Check the [requirements page](../install/requirements) to get started.
+
+## Install and launch via Docker Compose
+
+Follow the [Docker Compose (Recommended)](../install/docker-compose) instructions
+to install the server.
+
+- Where random passwords are required, `pwgen` is a handy utility.
+- `UPLOAD_LOCATION` should be set to some new directory on the server
+  with free space.
+- You may ignore "Step 4 - Upgrading".
+
+## Try the Web UI
+
+import RegisterAdminUser from '../partials/_register-admin.md';
+
+<RegisterAdminUser />
+
+Try uploading a picture from your browser.
+
+<img src={require('./img/upload-button.png').default} title="Upload button" />
+
+## Try the Mobile UI
+
+### Download the Mobile App
+
+import MobileAppDownload from '../partials/_mobile-app-download.md';
+
+<MobileAppDownload />
+
+### Login to the Mobile App
+
+import MobileAppLogin from '../partials/_mobile-app-login.md';
+
+<MobileAppLogin />
+
+In the mobile app, you should see the photo you uploaded from the web UI.
+
+### Transfer Photos from your Mobile Device
+
+import MobileAppBackup from '../partials/_mobile-app-backup.md';
+
+<MobileAppBackup />
+
+Depending on how many photos are on your mobile device, this backup may
+take quite a while.
+
+You can select the Jobs tab to see Immich processing your photos.
+
+<img src={require('../guides/img/jobs-tab.png').default} title="Jobs tab" />
+
+## Where to go from here?
+
+You may decide you'd like to install the server a different way;
+the Install category on the left menu provides many options.
+
+You may decide you'd like to add the _rest_ of your photos from Google Photos,
+even those not on your mobile device, via Google Takeout.
+You can use [immich-go](https://github.com/simulot/immich-go) for this.
+
+You may want to
+[upload photos from your own archive](../features/command-line-interface).
+
+You may want to incorporate an immutable archive of photos from an
+[External Library](../features/libraries#external-libraries);
+there's a [Guide](../guides/external-library) for that.
+
+You may want your mobile device to
+[back photos up to your server automatically](../features/automatic-backup).
+
+You may want to back up the content of your Immich instance
+along with other parts of your server; be sure to read about
+[database backup](../administration/backup-and-restore).
