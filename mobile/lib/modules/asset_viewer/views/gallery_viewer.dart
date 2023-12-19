@@ -179,18 +179,18 @@ class GalleryViewerPage extends HookConsumerWidget {
         barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
+        useSafeArea: true,
         context: context,
         builder: (context) {
-          if (ref
-              .watch(appSettingsServiceProvider)
-              .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)) {
-            return AdvancedBottomSheet(assetDetail: asset());
-          }
           return Padding(
             padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
+              bottom: MediaQuery.viewInsetsOf(context).bottom,
             ),
-            child: ExifBottomSheet(asset: asset()),
+            child: ref
+                    .watch(appSettingsServiceProvider)
+                    .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
+                ? AdvancedBottomSheet(assetDetail: asset())
+                : ExifBottomSheet(asset: asset()),
           );
         },
       );

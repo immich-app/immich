@@ -17,7 +17,8 @@ describe(`${PersonController.name}`, () => {
   let hiddenPerson: PersonEntity;
 
   beforeAll(async () => {
-    [server, app] = await testApp.create();
+    app = await testApp.create();
+    server = app.getHttpServer();
     personRepository = app.get<IPersonRepository>(IPersonRepository);
   });
 

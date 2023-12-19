@@ -26,7 +26,7 @@ Immich optionally uses machine learning for several features. However, it can be
 
 ### How can I lower Immich's CPU usage?
 
-The initial backup is the most intensive due to the number of jobs running. The most CPU-intensive ones are transcoding and machine learning jobs (Tag Images, Encode CLIP, Recognize Faces), and to a lesser extent thumbnail generation. Here are some ways to lower their CPU usage:
+The initial backup is the most intensive due to the number of jobs running. The most CPU-intensive ones are transcoding and machine learning jobs (Tag Images, Smart Search, Recognize Faces), and to a lesser extent thumbnail generation. Here are some ways to lower their CPU usage:
 
 - Lower the job concurrency for these jobs to 1.
 - Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.

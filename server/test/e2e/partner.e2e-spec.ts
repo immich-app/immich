@@ -12,7 +12,7 @@ describe(`${PartnerController.name} (e2e)`, () => {
   let user3: LoginResponseDto;
 
   beforeAll(async () => {
-    [server] = await testApp.create();
+    server = (await testApp.create()).getHttpServer();
 
     await testApp.reset();
     await api.authApi.adminSignUp(server);

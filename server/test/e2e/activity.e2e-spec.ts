@@ -15,7 +15,7 @@ describe(`${ActivityController.name} (e2e)`, () => {
   let nonOwner: LoginResponseDto;
 
   beforeAll(async () => {
-    [server] = await testApp.create();
+    server = (await testApp.create()).getHttpServer();
     await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);

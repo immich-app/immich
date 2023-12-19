@@ -41,12 +41,13 @@
   confirmColor="primary"
   cancelColor="secondary"
   title="Change Location"
+  width={800}
   on:confirm={handleConfirm}
   on:cancel={handleCancel}
 >
   <div slot="prompt" class="flex flex-col w-full h-full gap-2">
     <label for="datetime">Pick a location</label>
-    <div class="h-[350px] min-h-[300px] w-full">
+    <div class="h-[500px] min-h-[300px] w-full">
       <Map
         mapMarkers={lat && lng && asset ? [{ id: asset.id, lat, lon: lng }] : []}
         {zoom}

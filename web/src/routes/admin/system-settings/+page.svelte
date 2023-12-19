@@ -116,7 +116,7 @@
       </SettingAccordion>
 
       <SettingAccordion title="Version Check" subtitle="Enable/disable the new version notification">
-        <NewVersionCheckSettings newVersionCheckConfig={configs.newVersionCheck} />
+        <NewVersionCheckSettings disabled={$featureFlags.configFile} newVersionCheckConfig={configs.newVersionCheck} />
       </SettingAccordion>
 
       <SettingAccordion

@@ -37,7 +37,7 @@ export enum SystemConfigKey {
   JOB_VIDEO_CONVERSION_CONCURRENCY = 'job.videoConversion.concurrency',
   JOB_OBJECT_TAGGING_CONCURRENCY = 'job.objectTagging.concurrency',
   JOB_RECOGNIZE_FACES_CONCURRENCY = 'job.recognizeFaces.concurrency',
-  JOB_CLIP_ENCODING_CONCURRENCY = 'job.clipEncoding.concurrency',
+  JOB_CLIP_ENCODING_CONCURRENCY = 'job.smartSearch.concurrency',
   JOB_BACKGROUND_TASK_CONCURRENCY = 'job.backgroundTask.concurrency',
   JOB_STORAGE_TEMPLATE_MIGRATION_CONCURRENCY = 'job.storageTemplateMigration.concurrency',
   JOB_SEARCH_CONCURRENCY = 'job.search.concurrency',

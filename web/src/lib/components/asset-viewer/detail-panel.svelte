@@ -264,19 +264,22 @@
                 <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 {#if person.birthDate}
                   {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  <p
-                    class="font-light"
-                    title={personBirthDate.toLocaleString(
-                      {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      },
-                      { locale: $locale },
-                    )}
-                  >
-                    Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  </p>
+                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                  {#if age >= 0}
+                    <p
+                      class="font-light"
+                      title={personBirthDate.toLocaleString(
+                        {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        },
+                        { locale: $locale },
+                      )}
+                    >
+                      Age {age}
+                    </p>
+                  {/if}
                 {/if}
               </a>
             </div>
@@ -569,7 +572,13 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+    <Map
+      mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+      center={latlng}
+      zoom={15}
+      simplified
+      useLocationPin
+    >
       <svelte:fragment slot="popup" let:marker>
         {@const { lat, lon } = marker}
         <div class="flex flex-col items-center gap-1">

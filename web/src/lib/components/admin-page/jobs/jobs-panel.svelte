@@ -12,10 +12,10 @@
     mdiFileJpgBox,
     mdiFileXmlBox,
     mdiFolderMove,
+    mdiImageSearch,
     mdiLibraryShelves,
     mdiTable,
     mdiTagMultiple,
-    mdiVectorCircle,
     mdiVideo,
   } from '@mdi/js';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
@@ -56,12 +56,12 @@
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: api.getJobName(JobName.ThumbnailGeneration),
-      subtitle: 'Regenerate JPEG and WebP thumbnails',
+      subtitle: 'Generate large, small and blurred thumbnails for each asset, as well as thumbnails for each person',
     },
     [JobName.MetadataExtraction]: {
       icon: mdiTable,
       title: api.getJobName(JobName.MetadataExtraction),
-      subtitle: 'Extract metadata information i.e. GPS, resolution...etc',
+      subtitle: 'Extract metadata information from each asset, such as GPS and resolution',
     },
     [JobName.Library]: {
       icon: mdiLibraryShelves,
@@ -81,26 +81,27 @@
     [JobName.ObjectTagging]: {
       icon: mdiTagMultiple,
       title: api.getJobName(JobName.ObjectTagging),
-      subtitle: 'Run machine learning to tag objects\nNote that some assets may not have any objects detected',
+      subtitle:
+        'Run machine learning on assets to tag objects\nNote that some assets may not have any objects detected',
       disabled: !$featureFlags.tagImage,
     },
-    [JobName.ClipEncoding]: {
-      icon: mdiVectorCircle,
-      title: api.getJobName(JobName.ClipEncoding),
-      subtitle: 'Run machine learning to generate clip embeddings',
+    [JobName.SmartSearch]: {
+      icon: mdiImageSearch,
+      title: api.getJobName(JobName.SmartSearch),
+      subtitle: 'Run machine learning on assets to support smart search',
       disabled: !$featureFlags.clipEncode,
     },
     [JobName.RecognizeFaces]: {
       icon: mdiFaceRecognition,
       title: api.getJobName(JobName.RecognizeFaces),
-      subtitle: 'Run machine learning to recognize faces',
+      subtitle: 'Run machine learning on assets to recognize faces',
       handleCommand: handleFaceCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.VideoConversion]: {
       icon: mdiVideo,
       title: api.getJobName(JobName.VideoConversion),
-      subtitle: 'Transcode videos not in the desired format',
+      subtitle: 'Transcode videos for wider compatibility with browsers and devices',
     },
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,

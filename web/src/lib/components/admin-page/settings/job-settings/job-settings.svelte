@@ -23,7 +23,7 @@
     JobName.Library,
     JobName.Sidecar,
     JobName.ObjectTagging,
-    JobName.ClipEncoding,
+    JobName.SmartSearch,
     JobName.RecognizeFaces,
     JobName.VideoConversion,
     JobName.StorageTemplateMigration,

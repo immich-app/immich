@@ -7,6 +7,7 @@ import {
   SharedLinkService,
   StorageService,
   SystemConfigService,
+  WEB_ROOT_PATH,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
@@ -67,7 +68,7 @@ export class AppService {
   ssr(excludePaths: string[]) {
     let index = '';
     try {
-      index = readFileSync('/usr/src/app/www/index.html').toString();
+      index = readFileSync(WEB_ROOT_PATH).toString();
     } catch (error: Error | any) {
       this.logger.warn('Unable to open `www/index.html, skipping SSR.');
     }
