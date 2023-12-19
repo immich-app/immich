@@ -4,10 +4,12 @@ import { dataSource, databaseChecks } from '@app/infra';
 import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+
 import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
 import path from 'path';
+import { Server } from 'tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../src/microservices/app.service';
 
@@ -61,7 +63,7 @@ interface TestAppOptions {
 let app: INestApplication;
 
 export const testApp = {
-  create: async (options?: TestAppOptions): Promise<[any, INestApplication]> => {
+  create: async (options?: TestAppOptions): Promise<INestApplication> => {
     const { jobs } = options || { jobs: false };
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
@@ -84,20 +86,27 @@ export const testApp = {
       .compile();
 
     app = await moduleFixture.createNestApplication().init();
+    await app.listen(0);
 
     if (jobs) {
       await app.get(AppService).init();
     }
 
-    return [app.getHttpServer(), app];
+    const port = app.getHttpServer().address().port;
+    const protocol = app instanceof Server ? 'https' : 'http';
+    process.env.IMMICH_INSTANCE_URL = protocol + '://127.0.0.1:' + port;
+
+    return app;
   },
   reset: async (options?: ResetOptions) => {
     await db.reset(options);
   },
   teardown: async () => {
-    await app.get(AppService).teardown();
+    if (app) {
+      await app.get(AppService).teardown();
+      await app.close();
+    }
     await db.disconnect();
-    await app.close();
   },
 };
 

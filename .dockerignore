@@ -1,5 +1,5 @@
 .vscode/
-cli/
+
 design/
 docker/
 docs/
@@ -18,3 +18,8 @@ web/node_modules/
 web/coverage/
 web/.svelte-kit
 web/build/
+
+cli/node_modules
+cli/.reverse-geocoding-dump/
+cli/upload/
+cli/dist/

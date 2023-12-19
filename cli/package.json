@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Command Line Interface (CLI) for Immich",
   "main": "dist/index.js",
   "bin": {
@@ -21,6 +21,7 @@
     "yaml": "^2.3.1"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "^10.4.0",
     "@types/byte-size": "^8.1.0",
     "@types/chai": "^4.3.5",
     "@types/cli-progress": "^3.11.0",
@@ -37,6 +38,7 @@
     "eslint-plugin-jest": "^27.2.2",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-unicorn": "^49.0.0",
+    "immich": "file:../server",
     "jest": "^29.5.0",
     "jest-extended": "^4.0.0",
     "jest-message-util": "^29.5.0",
@@ -50,13 +52,15 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --max-warnings 0",
+    "lint:fix": "npm run lint -- --fix",
     "prepack": "npm run build",
     "test": "jest",
     "test:cov": "jest --coverage",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules' jest --config test/e2e/jest-e2e.json --runInBand"
   },
   "jest": {
     "clearMocks": true,
@@ -71,10 +75,15 @@
       "^.+\\.ts$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "<rootDir>/src/**/*.(t|j)s"
+      "<rootDir>/src/**/*.(t|j)s",
+      "!**/open-api/**"
     ],
     "moduleNameMapper": {
-      "^@api(|/.*)$": "<rootDir>/src/api/$1"
+      "^@api(|/.*)$": "<rootDir>/src/api/$1",
+      "^@test(|/.*)$": "<rootDir>../server/test/$1",
+      "^@app/immich(|/.*)$": "<rootDir>../server/src/immich/$1",
+      "^@app/infra(|/.*)$": "<rootDir>../server/src/infra/$1",
+      "^@app/domain(|/.*)$": "<rootDir>../server/src/domain/$1"
     },
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"

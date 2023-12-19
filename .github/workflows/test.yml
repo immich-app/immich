@@ -21,7 +21,7 @@ jobs:
           submodules: "recursive"
 
       - name: Run e2e tests
-        run: docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+        run: make test-server-e2e
 
   doc-tests:
     name: Docs
@@ -90,8 +90,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run npm install
+      - name: Run npm install in cli
         run: npm ci
+
+      - name: Run npm install in server
+        run: npm ci
+        working-directory: ./server
 
       - name: Run linter
         run: npm run lint
@@ -108,6 +112,29 @@ jobs:
       - name: Run unit tests & coverage
         run: npm run test:cov
         if: ${{ !cancelled() }}
+
+  cli-e2e-tests:
+    name: CLI (e2e)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cli
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Run npm install in cli
+        run: npm ci
+
+      - name: Run npm install in server
+        run: npm ci
+        working-directory: ./server
+
+      - name: Run e2e tests
+        run: npm run test:e2e
 
   web-unit-tests:
     name: Web

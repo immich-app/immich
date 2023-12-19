@@ -24,7 +24,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
   let user2Albums: AlbumResponseDto[];
 
   beforeAll(async () => {
-    [server] = await testApp.create();
+    server = (await testApp.create()).getHttpServer();
   });
 
   afterAll(async () => {
