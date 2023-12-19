@@ -33,8 +33,7 @@
 
   import Icon from '$lib/components/elements/icon.svelte';
 
-  import { pinch } from 'svelte-gestures';
-  import { pan } from 'svelte-gestures';
+  import { rotate, pinch, pan } from 'svelte-hammer';
 
   import SuggestionsButton from './suggestions-button.svelte';
   import AspectRatioButton from './aspect-ratio-button.svelte';
@@ -60,6 +59,7 @@
 
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import { transform } from 'lodash-es';
 
   const dispatch = createEventDispatcher();
 
@@ -86,6 +86,7 @@
   let isLoaded = false;
 
   let imageWrapper: HTMLDivElement;
+  let imageWrapperParent: HTMLDivElement;
   let cropElement: HTMLDivElement;
   let cropElementWrapper: HTMLDivElement;
   let assetDragHandle: HTMLDivElement;
@@ -169,10 +170,105 @@
     setImageWrapperTransform();
   };
 
-  const anglePanHandler = (event: CustomEvent) => {
-    const x = event.detail.x - 250;
+  const imagePanHandler = (event: CustomEvent) => {
+    console.log('imagePanHandler');
+    console.log(event.detail);
 
+    let deltaX: number = event.detail.deltaX;
+    let deltaY: number = event.detail.deltaY;
+
+    // if (currentAngleOffset === 90) {
+    //   const temp = pos1;
+    //   pos1 = -pos2;
+    //   pos2 = temp;
+    // } else if (currentAngleOffset === 180) {
+    //   pos1 = -pos1;
+    //   pos2 = -pos2;
+    // } else if (currentAngleOffset === 270) {
+    //   const temp = pos1;
+    //   pos1 = pos2;
+    //   pos2 = -temp;
+    // }
+
+    currentTranslate.x = deltaX;
+    currentTranslate.y = deltaY;
+
+    let maxY = 0;
+    let maxX = 0;
+
+    //Calc max y translation
+    let h1 = cropElement.offsetHeight;
+    let w1 = cropElement.offsetWidth;
+
+    if (currentAngleOffset === 90) {
+      const temp = h1;
+      const temp2 = currentTranslate.x;
+      h1 = w1;
+      w1 = temp;
+      currentTranslate.x = -currentTranslate.y;
+      currentTranslate.y = temp2;
+    }
+
+    if (currentAngleOffset === 270) {
+      const temp = h1;
+      const temp2 = currentTranslate.x;
+      h1 = w1;
+      w1 = temp;
+      currentTranslate.x = -currentTranslate.y;
+      currentTranslate.y = temp2;
+    }
+
+    if (currentAngleOffset === 180 || currentAngleOffset === 270) {
+      currentTranslate.x = -currentTranslate.x;
+      currentTranslate.y = -currentTranslate.y;
+    }
+
+    const h2 = w1 * Math.tan((Math.abs(currentAngle) * Math.PI) / 180);
+    const d = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * (h1 + h2);
+
+    maxY = (imageWrapper.offsetHeight * currentZoom - d) / 2;
+
+    maxY = maxY / currentZoom;
+
+    // Calc max x translation
+    const h3 = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * h1;
+    const h4 = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * w1;
+    maxX = (imageWrapper.offsetWidth * currentZoom - h3 - h4) / 2;
+    maxX = maxX / currentZoom;
+
+    if (currentTranslate.x > maxX) {
+      currentTranslate.x = maxX;
+    } else if (currentTranslate.x < -maxX) {
+      currentTranslate.x = -maxX;
+    }
+
+    if (currentTranslate.y > maxY) {
+      currentTranslate.y = maxY;
+    } else if (currentTranslate.y < -maxY) {
+      currentTranslate.y = -maxY;
+    }
+
+    setImageWrapperTransform();
+  };
+
+  const imagePinchHandler = (event: CustomEvent) => {
+    const scale = event.detail.scale;
+    if (scale > 1) {
+      if (currentZoom <= 5) {
+        currentZoom += zoomSpeed * scale;
+      }
+    } else {
+      if (currentZoom > 1) {
+        currentZoom -= zoomSpeed / scale;
+      }
+    }
+    setImageWrapperTransform();
+  };
+
+  const anglePanHandler = (event: CustomEvent) => {
+    const x: number = event.detail.deltaX;
     let a = angleSlider.offsetLeft - x;
+
     if (a < 0) {
       a = Math.max(a, (-125 / 49) * 45);
     } else {
@@ -180,15 +276,13 @@
     }
     let angle = Math.round((a / 125) * 49);
     //angle = angle * -1;
-
     angle = currentAngle + angle;
     if (angle > 45) {
       angle = 45;
     } else if (angle < -45) {
       angle = -45;
     }
-
-    rotate(angle, currentAngleOffset);
+    rotateImage(angle, currentAngleOffset);
   };
 
   const isFilter = (f: Preset) => {
@@ -323,7 +417,7 @@
     const cropWrapperParent = cropElementWrapper.parentElement;
 
     removeAngleSlider();
-    removeAssetDrag();
+    //removeAssetDrag();
     removeZoom();
 
     //TODO: better solution
@@ -331,7 +425,7 @@
       return;
     }
     if (activeButton == 'crop') {
-      initAssetDrag();
+      //initAssetDrag();
       initZoom();
       if (!cropWrapperParent.classList.contains('p-24')) {
         cropWrapperParent.classList.add('p-24');
@@ -342,6 +436,9 @@
   };
 
   const setAspectRatio = async (aspectRatio: string | aspectRatio, isRotate?: boolean) => {
+    if (!imageElement || !cropElementWrapper || !cropElement || !imageWrapper) {
+      return;
+    }
     const originalAspect = imageElement.naturalWidth / imageElement.naturalHeight;
 
     if (isRotate) {
@@ -692,7 +789,7 @@
     currentFlipX = false;
     currentFlipY = false;
     currentZoom = 1;
-    rotate(0, 0);
+    rotateImage(0, 0);
 
     // Reset the aspect ratio.
     await setAspectRatio('original');
@@ -700,14 +797,14 @@
 
   const flipVertical = async () => {
     currentFlipY = !currentFlipY;
-    rotate(currentAngle, currentAngleOffset);
+    rotateImage(currentAngle, currentAngleOffset);
   };
   const flipHorizontal = async () => {
     currentFlipX = !currentFlipX;
-    rotate(currentAngle, currentAngleOffset);
+    rotateImage(currentAngle, currentAngleOffset);
   };
 
-  const rotate = async (angle: number, angleOffset: number, isRotate?: boolean) => {
+  const rotateImage = async (angle: number, angleOffset: number, isRotate?: boolean) => {
     // If the angle offset is greater than 360 degrees, reset it back to 0
     if (angleOffset > 360) {
       angleOffset = angleOffset - 360;
@@ -722,6 +819,9 @@
 
     // Set slider handle position
     let a = -1 * angle * (125 / 49);
+    if (!angleSlider || !angleSliderHandle) {
+      return;
+    }
     angleSliderHandle.style.left = a + 'px';
     angleSlider.style.left = a + 'px';
   };
@@ -754,6 +854,7 @@
 
     if (imageWrapper && imageWrapper.style) {
       console.log('Transforming');
+
       imageWrapper.style.transform = transformString;
     }
   };
@@ -797,7 +898,13 @@
   </div>
   <div class="relative col-span-3 col-start-1 row-span-full row-start-1">
     <!-- TODO: fix only allow drag from crop Element or imageWrapper -->
-    <div class="flex h-full w-full justify-center" use:pinch on:pinch={pinchHandler} bind:this={assetDragHandle}>
+    <div
+      class="flex h-full w-full justify-center"
+      use:pinch={{ enable: true }}
+      use:pan
+      on:pan={imagePanHandler}
+      on:pinch={imagePinchHandler}
+    >
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
       <div class="-z-10 flex h-full w-full items-center justify-center">
         <div bind:this={cropElementWrapper} class="relative flex h-full w-full items-center justify-center">
@@ -853,7 +960,7 @@
         </div>
         <div class="z-10 flex h-full w-full items-center justify-center bg-black">
           <button
-            on:click={() => rotate(currentAngle, currentAngleOffset + 90, true)}
+            on:click={() => rotateImage(currentAngle, currentAngleOffset + 90, true)}
             class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
           >
             <Icon path={mdiFormatRotate90} />
