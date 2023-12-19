@@ -46,4 +46,15 @@ describe(`upload (e2e)`, () => {
     const natureAlbum = albums[0];
     expect(natureAlbum.albumName).toEqual('nature');
   });
+
+  it('should upload to the specified album name', async () => {
+    await new Upload(CLI_BASE_OPTIONS).run([`${IMMICH_TEST_ASSET_PATH}/albums/nature/`], {
+      recursive: true,
+      albumName: 'testAlbum',
+    });
+    const albums = await api.albumApi.getAllAlbums(server, admin.accessToken);
+    expect(albums.length).toEqual(1);
+    const natureAlbum = albums[0];
+    expect(natureAlbum.albumName).toEqual('testAlbum');
+  });
 });
