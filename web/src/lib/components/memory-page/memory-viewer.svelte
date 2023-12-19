@@ -182,14 +182,14 @@
           <div class="h-full w-full rounded-2xl bg-black">
             <!-- CONTROL BUTTONS -->
             <div class="absolute flex h-full w-full justify-between">
-              <div class="ml-4 flex h-full flex-col place-content-center place-items-center">
+              <div class="relative z-[1] ml-4 flex h-full flex-col place-content-center place-items-center">
                 <div class="inline-block">
                   {#if canGoBack}
                     <CircleIconButton icon={mdiChevronLeft} backgroundColor="#202123" on:click={toPrevious} />
                   {/if}
                 </div>
               </div>
-              <div class="mr-4 flex h-full flex-col place-content-center place-items-center">
+              <div class="relative z-[1] mr-4 flex h-full flex-col place-content-center place-items-center">
                 <div class="inline-block">
                   {#if canGoForward}
                     <CircleIconButton icon={mdiChevronRight} backgroundColor="#202123" on:click={toNext} />
@@ -201,7 +201,7 @@
             {#key currentAsset.id}
               <img
                 transition:fade
-                class="h-full w-full rounded-2xl object-contain transition-all"
+                class="relative h-full w-full rounded-2xl object-contain transition-all"
                 src={api.getAssetThumbnailUrl(currentAsset.id, 'JPEG')}
                 alt=""
                 draggable="false"
