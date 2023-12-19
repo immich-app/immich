@@ -1,18 +1,17 @@
-version: "3.8"
+version: '3.8'
 
-name: "immich-test-e2e"
+name: 'immich-test-e2e'
 
 services:
   immich-server:
     image: immich-server-dev:latest
     build:
-      context: ../
+      context: ../../
       dockerfile: server/Dockerfile
       target: dev
-    entrypoint: [ "/usr/local/bin/npm", "run" ]
+    entrypoint: ['/usr/local/bin/npm', 'run']
     command: test:e2e
     volumes:
-      - ../server:/usr/src/app
       - /usr/src/app/node_modules
     environment:
       - DB_HOSTNAME=database

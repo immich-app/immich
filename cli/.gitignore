@@ -11,3 +11,5 @@ oclif.manifest.json
 .vscode
 .idea
 /coverage/
+.reverse-geocoding-dump/
+upload/

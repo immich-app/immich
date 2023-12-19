@@ -5,33 +5,39 @@ import { ImmichApi } from '../api/client';
 import { LoginError } from '../cores/errors/login-error';
 
 export class SessionService {
-  readonly configDir: string;
+  readonly configDir!: string;
   readonly authPath!: string;
   private api!: ImmichApi;
 
   constructor(configDir: string) {
     this.configDir = configDir;
-    this.authPath = path.join(this.configDir, 'auth.yml');
+    this.authPath = path.join(configDir, '/auth.yml');
   }
 
   public async connect(): Promise<ImmichApi> {
-    await fs.promises.access(this.authPath, fs.constants.F_OK).catch((error) => {
-      if (error.code === 'ENOENT') {
-        throw new LoginError('No auth file exist. Please login first');
+    let instanceUrl = process.env.IMMICH_INSTANCE_URL;
+    let apiKey = process.env.IMMICH_API_KEY;
+
+    if (!instanceUrl || !apiKey) {
+      await fs.promises.access(this.authPath, fs.constants.F_OK).catch((error) => {
+        if (error.code === 'ENOENT') {
+          throw new LoginError('No auth file exist. Please login first');
+        }
+      });
+
+      const data: string = await fs.promises.readFile(this.authPath, 'utf8');
+      const parsedConfig = yaml.parse(data);
+
+      instanceUrl = parsedConfig.instanceUrl;
+      apiKey = parsedConfig.apiKey;
+
+      if (!instanceUrl) {
+        throw new LoginError(`Instance URL missing in auth config file ${this.authPath}`);
       }
-    });
 
-    const data: string = await fs.promises.readFile(this.authPath, 'utf8');
-    const parsedConfig = yaml.parse(data);
-    const instanceUrl: string = parsedConfig.instanceUrl;
-    const apiKey: string = parsedConfig.apiKey;
-
-    if (!instanceUrl) {
-      throw new LoginError('Instance URL missing in auth config file ' + this.authPath);
-    }
-
-    if (!apiKey) {
-      throw new LoginError('API key missing in auth config file ' + this.authPath);
+      if (!apiKey) {
+        throw new LoginError(`API key missing in auth config file ${this.authPath}`);
+      }
     }
 
     this.api = new ImmichApi(instanceUrl, apiKey);
@@ -59,10 +65,6 @@ export class SessionService {
       }
     }
 
-    if (!fs.existsSync(this.configDir)) {
-      console.error('waah');
-    }
-
     fs.writeFileSync(this.authPath, yaml.stringify({ instanceUrl, apiKey }));
 
     console.log('Wrote auth info to ' + this.authPath);
@@ -82,7 +84,7 @@ export class SessionService {
     });
 
     if (pingResponse.res !== 'pong') {
-      throw new Error('Unexpected ping reply');
+      throw new Error(`Could not parse response. Is Immich listening on ${this.api.apiConfiguration.instanceUrl}?`);
     }
   }
 }
