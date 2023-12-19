@@ -19,12 +19,31 @@ const tests: Test[] = [
     files: {},
   },
   {
-    test: 'should crawl a single path',
+    test: 'should crawl a single folder',
     options: {
       pathsToCrawl: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
+    },
+  },
+  {
+    test: 'should crawl a single file',
+    options: {
+      pathsToCrawl: ['/photos/image.jpg'],
+    },
+    files: {
+      '/photos/image.jpg': true,
+    },
+  },
+  {
+    test: 'should crawl a single file and a folder',
+    options: {
+      pathsToCrawl: ['/photos/image.jpg', '/images/'],
+    },
+    files: {
+      '/photos/image.jpg': true,
+      '/images/image2.jpg': true,
     },
   },
   {
@@ -54,6 +73,7 @@ const tests: Test[] = [
     options: {
       pathsToCrawl: ['/photos/'],
       exclusionPatterns: ['**/raw/**'],
+      recursive: true,
     },
     files: {
       '/photos/image.jpg': true,
@@ -98,6 +118,7 @@ const tests: Test[] = [
     test: 'should crawl a single path',
     options: {
       pathsToCrawl: ['/photos/'],
+      recursive: true,
     },
     files: {
       '/photos/image.jpg': true,
