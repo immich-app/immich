@@ -62,7 +62,9 @@
     <p>Manage shared links</p>
   </div>
   {#if sharedLinks.length === 0}
-    <div class="m-auto flex w-[50%] place-content-center place-items-center rounded-lg bg-gray-100 p-12">
+    <div
+      class="m-auto flex w-[50%] place-content-center place-items-center rounded-lg bg-gray-100 dark:bg-immich-dark-gray dark:text-immich-gray p-12"
+    >
       <p>You don't have any shared links</p>
     </div>
   {:else}
