@@ -20,4 +20,9 @@ export const albumApi = {
     expect(res.status).toEqual(200);
     return res.body as AlbumResponseDto;
   },
+  getAllAlbums: async (server: any, accessToken: string) => {
+    const res = await request(server).get(`/album/`).set('Authorization', `Bearer ${accessToken}`).send();
+    expect(res.status).toEqual(200);
+    return res.body as AlbumResponseDto[];
+  },
 };

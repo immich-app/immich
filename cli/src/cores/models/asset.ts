@@ -17,9 +17,8 @@ export class Asset {
   fileSize!: number;
   albumName?: string;
 
-  constructor(path: string, deviceId: string) {
+  constructor(path: string) {
     this.path = path;
-    this.deviceId = deviceId;
   }
 
   async process() {
@@ -45,12 +44,11 @@ export class Asset {
     if (!this.deviceAssetId) throw new Error('Device asset id not set');
     if (!this.fileCreatedAt) throw new Error('File created at not set');
     if (!this.fileModifiedAt) throw new Error('File modified at not set');
-    if (!this.deviceId) throw new Error('Device id not set');
 
     const data: any = {
       assetData: this.assetData as any,
       deviceAssetId: this.deviceAssetId,
-      deviceId: this.deviceId,
+      deviceId: 'CLI',
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
       isFavorite: String(false),

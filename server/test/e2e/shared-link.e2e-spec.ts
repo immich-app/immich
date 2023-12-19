@@ -33,7 +33,8 @@ describe(`${SharedLinkController.name} (e2e)`, () => {
   let app: INestApplication<any>;
 
   beforeAll(async () => {
-    [server, app] = await testApp.create();
+    app = await testApp.create();
+    server = app.getHttpServer();
     const assetRepository = app.get<IAssetRepository>(IAssetRepository);
 
     await testApp.reset();

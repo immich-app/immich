@@ -8,17 +8,24 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "target": "es2022",
+    "target": "es2021",
     "moduleResolution": "node16",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "rootDirs": ["src", "../server/src"],
     "baseUrl": "./",
     "paths": {
-      "@test": ["test"],
-      "@test/*": ["test/*"]
+      "@test": ["../server/test"],
+      "@test/*": ["../server/test/*"],
+      "@app/immich": ["../server/src/immich"],
+      "@app/immich/*": ["../server/src/immich/*"],
+      "@app/infra": ["../server/src/infra"],
+      "@app/infra/*": ["../server/src/infra/*"],
+      "@app/domain": ["../server/src/domain"],
+      "@app/domain/*": ["../server/src/domain/*"]
     }
   },
   "exclude": ["dist", "node_modules", "upload"]

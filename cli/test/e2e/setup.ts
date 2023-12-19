@@ -1,22 +1,12 @@
+import path from 'path';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { access } from 'fs/promises';
-import path from 'path';
 
 export default async () => {
-  const allTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
-
-  if (!allTests) {
-    console.warn(
-      `\n\n
-      *** Not running all server e2e tests. Run 'make test-e2e' to run all tests inside Docker (recommended)\n
-      *** or set 'IMMICH_RUN_ALL_TESTS=true' to run all tests (requires dependencies to be installed)\n`,
-    );
-  }
-
   let IMMICH_TEST_ASSET_PATH: string = '';
 
   if (process.env.IMMICH_TEST_ASSET_PATH === undefined) {
-    IMMICH_TEST_ASSET_PATH = path.normalize(`${__dirname}/../assets/`);
+    IMMICH_TEST_ASSET_PATH = path.normalize(`${__dirname}/../../../server/test/assets/`);
     process.env.IMMICH_TEST_ASSET_PATH = IMMICH_TEST_ASSET_PATH;
   } else {
     IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
@@ -48,6 +38,6 @@ export default async () => {
 
   process.env.NODE_ENV = 'development';
   process.env.IMMICH_TEST_ENV = 'true';
-  process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/immich-e2e-config.json`);
+  process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/../../../server/test/e2e/immich-e2e-config.json`);
   process.env.TZ = 'Z';
 };

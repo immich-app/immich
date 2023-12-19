@@ -5,6 +5,7 @@ import { RedisOptions } from 'ioredis';
 
 function parseRedisConfig(): RedisOptions {
   if (process.env.IMMICH_TEST_ENV == 'true') {
+    // Currently running e2e tests, do not use redis
     return {};
   }
 

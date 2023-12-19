@@ -11,7 +11,7 @@ describe(`${SystemConfigController.name} (e2e)`, () => {
   let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
-    [server] = await testApp.create();
+    server = (await testApp.create()).getHttpServer();
 
     await testApp.reset();
     await api.authApi.adminSignUp(server);

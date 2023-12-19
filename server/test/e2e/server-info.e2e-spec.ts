@@ -11,7 +11,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
   let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
-    [server] = await testApp.create();
+    server = (await testApp.create()).getHttpServer();
 
     await testApp.reset();
     await api.authApi.adminSignUp(server);
@@ -74,10 +74,10 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         clipEncode: false,
-        configFile: false,
+        configFile: true,
         facialRecognition: false,
         map: true,
-        reverseGeocoding: true,
+        reverseGeocoding: false,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,
