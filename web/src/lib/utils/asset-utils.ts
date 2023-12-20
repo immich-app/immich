@@ -262,7 +262,7 @@ const generateUniqueDownloadId = (assetIds: string[] | undefined) => {
   const count = assetIds?.length || 0;
   const middleIndex = Math.floor(count / 2);
   const firstId = assetIds?.[0] || 'none';
-  const middleId = assetIds?.[0] || 'none';
+  const middleId = assetIds?.[middleIndex] || 'none';
   const lastId = assetIds?.[count - 1] || 'none';
 
   return `count-${count}-start-${firstId}-middle-${middleId}-end-${lastId}`;
