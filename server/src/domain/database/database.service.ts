@@ -25,26 +25,25 @@ export class DatabaseService {
     }
 
     const image = await this.getVectorsImage();
+    const suggestion = image ? `, such as with the docker image '${image}'` : '';
 
     if (version.isEqual(new Version(0, 0, 0))) {
       throw new Error(
         `The pgvecto.rs extension version is ${version}, which means it is a nightly release.` +
-          `Please run 'DROP EXTENSION IF EXISTS vectors' and switch to a release version, such as with the docker image '${image}'.`,
+          `Please run 'DROP EXTENSION IF EXISTS vectors' and switch to a release version${suggestion}.`,
       );
     }
 
     if (version.isNewerThan(this.maxVectorsVersion)) {
       throw new Error(`
         The pgvecto.rs extension version is ${version} instead of ${this.maxVectorsVersion}.
-        Please run 'DROP EXTENSION IF EXISTS vectors' and switch to ${this.maxVectorsVersion}, such as with the docker image '${image}'.`,
-      );
+        Please run 'DROP EXTENSION IF EXISTS vectors' and switch to ${this.maxVectorsVersion}${suggestion}.`);
     }
 
     if (version.isOlderThan(this.minVectorsVersion)) {
       throw new Error(`
         The pgvecto.rs extension version is ${version}, which is older than the minimum supported version ${this.minVectorsVersion}.
-        Please upgrade to this version or later, such as with the docker image '${image}'.`,
-      );
+        Please upgrade to this version or later${suggestion}.`);
     }
   }
 
@@ -62,6 +61,9 @@ export class DatabaseService {
 
   private async getVectorsImage() {
     const { major } = await this.databaseRepository.getPostgresVersion();
+    if (![14, 15, 16].includes(major)) {
+      return null;
+    }
     return `tensorchord/pgvecto-rs:pg${major}-v${this.maxVectorsVersion}`;
   }
 
