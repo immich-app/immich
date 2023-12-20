@@ -44,7 +44,7 @@ export const downloadBlob = (data: Blob, filename: string) => {
 
 const downloadingArchives = new Set();
 export const downloadArchive = async (fileName: string, options: DownloadInfoDto) => {
-  const uniqueDownloadId = options.albumId ? `${options.albumId}` : `${options.assetIds?.join(',')}`;
+  const uniqueDownloadId = options.albumId ? `${options.albumId}` : `${options.assetIds?.sort().join(',')}`;
 
   if (downloadingArchives.has(uniqueDownloadId)) {
     notificationController.show({
