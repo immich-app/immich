@@ -33,6 +33,11 @@ program
       .default(false),
   )
   .addOption(
+    new Option('-A, --album-name <name>', 'Add all assets to specified album')
+      .env('IMMICH_ALBUM_NAME')
+      .conflicts('album'),
+  )
+  .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")
       .env('IMMICH_DRY_RUN')
       .default(false),
