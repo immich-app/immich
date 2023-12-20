@@ -42,7 +42,17 @@ export const downloadBlob = (data: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+let isDownloadingArchive = false;
 export const downloadArchive = async (fileName: string, options: DownloadInfoDto) => {
+  if (isDownloadingArchive) {
+    notificationController.show({
+      type: NotificationType.Warning,
+      message: `Please wait, '${fileName}' is currently being downloaded. You can start another download once this is complete.`,
+    });
+    return;
+  }
+
+  isDownloadingArchive = true;
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
@@ -50,6 +60,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadInfo = data;
   } catch (error) {
     handleError(error, 'Unable to download files');
+    isDownloadingArchive = false;
     return;
   }
 
@@ -82,15 +93,28 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
       downloadBlob(data, archiveName);
     } catch (e) {
       handleError(e, 'Unable to download files');
+      isDownloadingArchive = false;
       downloadManager.clear(downloadKey);
       return;
     } finally {
+      isDownloadingArchive = false;
       setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
 };
 
+let isDownloadingFile = false;
 export const downloadFile = async (asset: AssetResponseDto) => {
+  if (isDownloadingFile) {
+    notificationController.show({
+      type: NotificationType.Warning,
+      message: `Please wait, '${asset.originalFileName}' is currently being downloaded. You can start another download once this is complete.`,
+    });
+    return;
+  }
+
+  isDownloadingFile = true;
+
   if (asset.isOffline) {
     notificationController.show({
       type: NotificationType.Info,
@@ -141,8 +165,10 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       downloadBlob(data, filename);
     } catch (e) {
       handleError(e, `Error downloading ${filename}`);
+      isDownloadingFile = false;
       downloadManager.clear(downloadKey);
     } finally {
+      isDownloadingFile = false;
       setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
