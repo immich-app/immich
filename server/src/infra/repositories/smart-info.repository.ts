@@ -52,6 +52,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     let results: AssetEntity[] = [];
     await this.assetRepository.manager.transaction(async (manager) => {
       await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
+      await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
       results = await manager
         .createQueryBuilder(AssetEntity, 'a')
         .innerJoin('a.smartSearch', 's')

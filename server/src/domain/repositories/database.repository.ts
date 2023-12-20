@@ -9,7 +9,6 @@ export enum DatabaseExtension {
 export const IDatabaseRepository = 'IDatabaseRepository';
 
 export interface IDatabaseRepository {
-  enablePrefilter(): Promise<void>;
   getExtensionVersion(extName: string): Promise<Version | null>;
   getPostgresVersion(): Promise<Version>;
   createExtension(extension: DatabaseExtension): Promise<void>;

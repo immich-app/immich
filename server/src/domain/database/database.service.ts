@@ -14,7 +14,6 @@ export class DatabaseService {
 
   async init() {
     await this.assertVectors();
-    await this.databaseRepository.enablePrefilter();
     await this.databaseRepository.runMigrations();
   }
 

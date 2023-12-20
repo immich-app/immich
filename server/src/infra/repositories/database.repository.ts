@@ -7,10 +7,6 @@ import { DataSource } from 'typeorm';
 export class DatabaseRepository implements IDatabaseRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async enablePrefilter(): Promise<void> {
-    await this.dataSource.query(`SET vectors.enable_prefilter = on`);
-  }
-
   async getExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
     const res = await this.dataSource.query(`SELECT extversion FROM pg_extension WHERE extname = $1`, [extension]);
     const version = res[0]?.['extversion'];

@@ -20,22 +20,35 @@ describe(DatabaseService.name, () => {
   });
 
   describe('init', () => {
+    let assertVectorsSpy: jest.SpyInstance;
+
     beforeEach(() => {
-      sut.assertVectors = jest.fn();
+      assertVectorsSpy = jest.spyOn(sut, 'assertVectors');
+    });
+
+    afterEach(() => {
+      assertVectorsSpy.mockRestore();
     });
 
     it('should initialize the database', async () => {
+      databaseMock.getExtensionVersion.mockResolvedValueOnce(new Version(0, 1, 1));
+
       await sut.init();
 
-      expect(sut.assertVectors).toHaveBeenCalledTimes(1);
-      expect(databaseMock.enablePrefilter).toHaveBeenCalledTimes(1);
+      expect(assertVectorsSpy).toHaveBeenCalledTimes(1);
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('assertVectors', () => {
+    let createVectorsSpy: jest.SpyInstance;
+
     beforeEach(() => {
-      sut.createVectors = jest.fn();
+      createVectorsSpy = jest.spyOn(sut, 'createVectors');
+    });
+
+    afterEach(() => {
+      createVectorsSpy.mockRestore();
     });
 
     it('should return if minimum supported vectors version is installed', async () => {
@@ -43,7 +56,7 @@ describe(DatabaseService.name, () => {
 
       await sut.assertVectors();
 
-      expect(sut.createVectors).toHaveBeenCalledTimes(1);
+      expect(createVectorsSpy).toHaveBeenCalledTimes(1);
       expect(databaseMock.getExtensionVersion).toHaveBeenCalledTimes(1);
     });
 
@@ -52,7 +65,7 @@ describe(DatabaseService.name, () => {
 
       await sut.assertVectors();
 
-      expect(sut.createVectors).toHaveBeenCalledTimes(1);
+      expect(createVectorsSpy).toHaveBeenCalledTimes(1);
       expect(databaseMock.getExtensionVersion).toHaveBeenCalledTimes(1);
     });
 
@@ -61,7 +74,7 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.assertVectors()).rejects.toThrow('Unexpected: The pgvecto.rs extension is not installed.');
 
-      expect(sut.createVectors).toHaveBeenCalledTimes(1);
+      expect(createVectorsSpy).toHaveBeenCalledTimes(1);
       expect(databaseMock.getExtensionVersion).toHaveBeenCalledTimes(1);
     });
 
@@ -70,7 +83,7 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.assertVectors()).rejects.toThrow();
 
-      expect(sut.createVectors).toHaveBeenCalledTimes(1);
+      expect(createVectorsSpy).toHaveBeenCalledTimes(1);
       expect(databaseMock.getExtensionVersion).toHaveBeenCalledTimes(1);
     });
 
@@ -79,7 +92,7 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.assertVectors()).rejects.toThrow();
 
-      expect(sut.createVectors).toHaveBeenCalledTimes(1);
+      expect(createVectorsSpy).toHaveBeenCalledTimes(1);
       expect(databaseMock.getExtensionVersion).toHaveBeenCalledTimes(1);
     });
 
@@ -88,7 +101,7 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.assertVectors()).rejects.toThrow();
 
-      expect(sut.createVectors).toHaveBeenCalledTimes(1);
+      expect(createVectorsSpy).toHaveBeenCalledTimes(1);
       expect(databaseMock.getExtensionVersion).toHaveBeenCalledTimes(1);
     });
   });
@@ -109,11 +122,6 @@ describe(DatabaseService.name, () => {
   });
 
   describe('getVectorsImage', () => {
-    beforeEach(() => {
-      sut.createVectors = jest.fn().mockResolvedValue(undefined);
-      databaseMock.getPostgresVersion.mockResolvedValue(new Version(14, 0, 0));
-    });
-
     it('should return pgvecto.rs image', async () => {
       expect(await sut.getVectorsImage()).toEqual('tensorchord/pgvecto-rs:pg14-v0.1.11');
     });
