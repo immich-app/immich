@@ -4,6 +4,8 @@
 START TRANSACTION
 SET
   LOCAL vectors.k = '100'
+SET
+  LOCAL vectors.enable_prefilter = on
 SELECT
   "a"."id" AS "a_id",
   "a"."deviceAssetId" AS "a_deviceAssetId",
