@@ -13,13 +13,12 @@ export class DatabaseService {
   constructor(@Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository) {}
 
   async init() {
+    await this.createVectors();
     await this.assertVectors();
     await this.databaseRepository.runMigrations();
   }
 
-  async assertVectors() {
-    await this.createVectors();
-
+  private async assertVectors() {
     const version = await this.databaseRepository.getExtensionVersion(DatabaseExtension.VECTORS);
     if (version == null) {
       throw new Error('Unexpected: The pgvecto.rs extension is not installed.');
@@ -35,35 +34,33 @@ export class DatabaseService {
     }
 
     if (version.isNewerThan(this.maxVectorsVersion)) {
-      throw new Error(
-        `The pgvecto.rs extension version is ${version} instead of ${this.maxVectorsVersion}.` +
-          `Please run 'DROP EXTENSION IF EXISTS vectors' and switch to ${this.maxVectorsVersion}, such as with the docker image '${image}'.`,
+      throw new Error(`
+        The pgvecto.rs extension version is ${version} instead of ${this.maxVectorsVersion}.
+        Please run 'DROP EXTENSION IF EXISTS vectors' and switch to ${this.maxVectorsVersion}, such as with the docker image '${image}'.`,
       );
     }
 
     if (version.isOlderThan(this.minVectorsVersion)) {
-      throw new Error(
-        `The pgvecto.rs extension version is ${version}, which is older than the minimum supported version ${this.minVectorsVersion}.` +
-          `Please upgrade to this version or later, such as with the docker image '${image}'.`,
+      throw new Error(`
+        The pgvecto.rs extension version is ${version}, which is older than the minimum supported version ${this.minVectorsVersion}.
+        Please upgrade to this version or later, such as with the docker image '${image}'.`,
       );
     }
   }
 
-  async createVectors() {
+  private async createVectors() {
     await this.databaseRepository.createExtension(DatabaseExtension.VECTORS).catch(async (err: QueryFailedError) => {
       const image = await this.getVectorsImage();
-      this.logger.fatal('Failed to create pgvecto.rs extension.');
-      this.logger.fatal(
-        `If you have not updated your Postgres instance to a docker image that supports pgvecto.rs (such as '${image}'), please do so.`,
-      );
-      this.logger.fatal(
-        'See the v1.91.0 release notes for more info: https://github.com/immich-app/immich/releases/tag/v1.91.0',
-      );
+      this.logger.fatal(`
+        Failed to create pgvecto.rs extension.
+        If you have not updated your Postgres instance to a docker image that supports pgvecto.rs (such as '${image}'), please do so.
+        See the v1.91.0 release notes for more info: https://github.com/immich-app/immich/releases/tag/v1.91.0'
+      `);
       throw err;
     });
   }
 
-  async getVectorsImage() {
+  private async getVectorsImage() {
     const { major } = await this.databaseRepository.getPostgresVersion();
     return `tensorchord/pgvecto-rs:pg${major}-v${this.maxVectorsVersion}`;
   }
