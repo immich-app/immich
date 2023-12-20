@@ -38,9 +38,6 @@ The default configuration looks like this:
     "metadataExtraction": {
       "concurrency": 5
     },
-    "objectTagging": {
-      "concurrency": 2
-    },
     "recognizeFaces": {
       "concurrency": 2
     },
@@ -73,11 +70,6 @@ The default configuration looks like this:
   "machineLearning": {
     "enabled": true,
     "url": "http://immich-machine-learning:3003",
-    "classification": {
-      "enabled": false,
-      "modelName": "microsoft/resnet-50",
-      "minScore": 0.9
-    },
     "clip": {
       "enabled": true,
       "modelName": "ViT-B-32__openai"

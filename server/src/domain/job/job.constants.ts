@@ -2,7 +2,6 @@ export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
   VIDEO_CONVERSION = 'videoConversion',
-  OBJECT_TAGGING = 'objectTagging',
   RECOGNIZE_FACES = 'recognizeFaces',
   SMART_SEARCH = 'smartSearch',
   BACKGROUND_TASK = 'backgroundTask',
@@ -54,10 +53,6 @@ export enum JobName {
   QUEUE_MIGRATION = 'queue-migration',
   MIGRATE_ASSET = 'migrate-asset',
   MIGRATE_PERSON = 'migrate-person',
-
-  // object tagging
-  QUEUE_OBJECT_TAGGING = 'queue-object-tagging',
-  CLASSIFY_IMAGE = 'classify-image',
 
   // facial recognition
   PERSON_CLEANUP = 'person-cleanup',
@@ -125,10 +120,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_MIGRATION]: QueueName.MIGRATION,
   [JobName.MIGRATE_ASSET]: QueueName.MIGRATION,
   [JobName.MIGRATE_PERSON]: QueueName.MIGRATION,
-
-  // object tagging
-  [JobName.QUEUE_OBJECT_TAGGING]: QueueName.OBJECT_TAGGING,
-  [JobName.CLASSIFY_IMAGE]: QueueName.OBJECT_TAGGING,
 
   // facial recognition
   [JobName.QUEUE_RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,

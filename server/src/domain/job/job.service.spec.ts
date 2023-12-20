@@ -99,7 +99,6 @@ describe(JobService.name, () => {
         [QueueName.BACKGROUND_TASK]: expectedJobStatus,
         [QueueName.SMART_SEARCH]: expectedJobStatus,
         [QueueName.METADATA_EXTRACTION]: expectedJobStatus,
-        [QueueName.OBJECT_TAGGING]: expectedJobStatus,
         [QueueName.SEARCH]: expectedJobStatus,
         [QueueName.STORAGE_TEMPLATE_MIGRATION]: expectedJobStatus,
         [QueueName.MIGRATION]: expectedJobStatus,
@@ -155,17 +154,6 @@ describe(JobService.name, () => {
       await sut.handleCommand(QueueName.STORAGE_TEMPLATE_MIGRATION, { command: JobCommand.START, force: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
-    });
-
-    it('should handle a start object tagging command', async () => {
-      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
-      configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED, value: true },
-      ]);
-
-      await sut.handleCommand(QueueName.OBJECT_TAGGING, { command: JobCommand.START, force: false });
-
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force: false } });
     });
 
     it('should handle a start clip encoding command', async () => {
@@ -234,7 +222,6 @@ describe(JobService.name, () => {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
           [QueueName.SMART_SEARCH]: { concurrency: 10 },
           [QueueName.METADATA_EXTRACTION]: { concurrency: 10 },
-          [QueueName.OBJECT_TAGGING]: { concurrency: 10 },
           [QueueName.RECOGNIZE_FACES]: { concurrency: 10 },
           [QueueName.SEARCH]: { concurrency: 10 },
           [QueueName.SIDECAR]: { concurrency: 10 },
@@ -249,7 +236,6 @@ describe(JobService.name, () => {
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.BACKGROUND_TASK, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SMART_SEARCH, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.OBJECT_TAGGING, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.RECOGNIZE_FACES, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SIDECAR, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.LIBRARY, 10);
@@ -292,7 +278,6 @@ describe(JobService.name, () => {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.CLASSIFY_IMAGE,
           JobName.ENCODE_CLIP,
           JobName.RECOGNIZE_FACES,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
@@ -302,7 +287,6 @@ describe(JobService.name, () => {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.CLASSIFY_IMAGE,
           JobName.ENCODE_CLIP,
           JobName.RECOGNIZE_FACES,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
@@ -312,17 +296,12 @@ describe(JobService.name, () => {
       {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
-          JobName.CLASSIFY_IMAGE,
           JobName.GENERATE_WEBP_THUMBNAIL,
           JobName.RECOGNIZE_FACES,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.ENCODE_CLIP,
           JobName.VIDEO_CONVERSION,
         ],
-      },
-      {
-        item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },
-        jobs: [],
       },
       {
         item: { name: JobName.ENCODE_CLIP, data: { id: 'asset-1' } },
@@ -370,11 +349,6 @@ describe(JobService.name, () => {
         queue: QueueName.SMART_SEARCH,
         feature: FeatureFlag.CLIP_ENCODE,
         configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
-      },
-      {
-        queue: QueueName.OBJECT_TAGGING,
-        feature: FeatureFlag.TAG_IMAGE,
-        configKey: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED,
       },
       {
         queue: QueueName.RECOGNIZE_FACES,

@@ -29,7 +29,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
     [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
@@ -65,11 +64,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: true,
     url: 'http://immich-machine-learning:3003',
-    classification: {
-      enabled: false,
-      modelName: 'microsoft/resnet-50',
-      minScore: 0.9,
-    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',

@@ -135,7 +135,6 @@ class ImmichApi {
       [JobName.ThumbnailGeneration]: 'Generate Thumbnails',
       [JobName.MetadataExtraction]: 'Extract Metadata',
       [JobName.Sidecar]: 'Sidecar Metadata',
-      [JobName.ObjectTagging]: 'Tag Objects',
       [JobName.SmartSearch]: 'Smart Search',
       [JobName.RecognizeFaces]: 'Recognize Faces',
       [JobName.VideoConversion]: 'Transcode Videos',
