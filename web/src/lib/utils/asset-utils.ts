@@ -45,7 +45,7 @@ export const downloadBlob = (data: Blob, filename: string) => {
 
 const downloadingArchives = new Set();
 export const downloadArchive = async (fileName: string, options: DownloadInfoDto) => {
-  const uniqueDownloadId = options.albumId ? `${options.albumId}` : `${options.assetIds?.sort().join(',')}`;
+  const uniqueDownloadId = options.albumId ? `${options.albumId}` : generateUniqueDownloadId(options.assetIds?.sort());
 
   if (downloadingArchives.has(uniqueDownloadId)) {
     notificationController.show({
@@ -256,4 +256,12 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
     });
   }
   return ids;
+};
+
+const generateUniqueDownloadId = (assetIds: string[] | undefined) => {
+  const count = assetIds?.length || 0;
+  const firstId = assetIds?.[0] || 'none';
+  const lastId = assetIds?.[count - 1] || 'none';
+
+  return `count-${count}-start-${firstId}-end-${lastId}`;
 };
