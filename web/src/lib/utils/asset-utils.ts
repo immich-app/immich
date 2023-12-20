@@ -50,7 +50,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   if (downloadingArchives.has(uniqueDownloadId)) {
     notificationController.show({
       type: NotificationType.Warning,
-      message: `Please wait, the selected assests currently being downloaded. You can start another download once this is complete.`,
+      message: `Please wait, the selected assets are currently being downloaded. You can start another download once this is complete.`,
     });
     return;
   }
