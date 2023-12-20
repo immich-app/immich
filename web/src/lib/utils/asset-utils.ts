@@ -42,17 +42,19 @@ export const downloadBlob = (data: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-let isDownloadingArchive = false;
+const downloadingArchives = new Set();
 export const downloadArchive = async (fileName: string, options: DownloadInfoDto) => {
-  if (isDownloadingArchive) {
+  const uniqueDownloadId = `${options.assetIds?.join(',')}`;
+
+  if (downloadingArchives.has(uniqueDownloadId)) {
     notificationController.show({
       type: NotificationType.Warning,
-      message: `Please wait, '${fileName}' is currently being downloaded. You can start another download once this is complete.`,
+      message: `Please wait, the selected assests currently being downloaded. You can start another download once this is complete.`,
     });
     return;
   }
 
-  isDownloadingArchive = true;
+  downloadingArchives.add(uniqueDownloadId);
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
@@ -60,7 +62,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadInfo = data;
   } catch (error) {
     handleError(error, 'Unable to download files');
-    isDownloadingArchive = false;
+    downloadingArchives.delete(uniqueDownloadId);
     return;
   }
 
@@ -93,19 +95,21 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
       downloadBlob(data, archiveName);
     } catch (e) {
       handleError(e, 'Unable to download files');
-      isDownloadingArchive = false;
+      downloadingArchives.delete(uniqueDownloadId);
       downloadManager.clear(downloadKey);
       return;
     } finally {
-      isDownloadingArchive = false;
+      downloadingArchives.delete(uniqueDownloadId);
       setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
 };
 
-let isDownloadingFile = false;
+const downloadingFiles = new Set();
 export const downloadFile = async (asset: AssetResponseDto) => {
-  if (isDownloadingFile) {
+  const fileChecksum = `${asset.checksum}`;
+
+  if (downloadingFiles.has(fileChecksum)) {
     notificationController.show({
       type: NotificationType.Warning,
       message: `Please wait, '${asset.originalFileName}' is currently being downloaded. You can start another download once this is complete.`,
@@ -113,7 +117,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     return;
   }
 
-  isDownloadingFile = true;
+  downloadingFiles.add(fileChecksum);
 
   if (asset.isOffline) {
     notificationController.show({
@@ -165,10 +169,10 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       downloadBlob(data, filename);
     } catch (e) {
       handleError(e, `Error downloading ${filename}`);
-      isDownloadingFile = false;
+      downloadingFiles.delete(fileChecksum);
       downloadManager.clear(downloadKey);
     } finally {
-      isDownloadingFile = false;
+      downloadingFiles.delete(fileChecksum);
       setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
