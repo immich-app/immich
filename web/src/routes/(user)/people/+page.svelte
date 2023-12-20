@@ -163,17 +163,10 @@
         id: personMerge2.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
-      if (data.person.birthDate != personMerge2.birthDate) {
-        for (const person of people) {
-          if (person.id === data.person.id) {
-            person.birthDate = data.person.birthDate;
-            break;
-          }
-        }
-      }
 
       countVisiblePeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
+      people = people.map((person: PersonResponseDto) => (person.id === personMerge2.id ? data.person : person));
 
       notificationController.show({
         message: 'Merge people succesfully',
