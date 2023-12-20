@@ -20,9 +20,10 @@
     return `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
   };
 
+  export let filename = `immich-${formatDate()}.zip`;
+
   const handleDownloadFiles = async () => {
     const assets = Array.from(getAssets());
-    const filename = `immich-${formatDate()}.zip`;
     if (assets.length === 1) {
       clearSelect();
       await downloadFile(assets[0]);
