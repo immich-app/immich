@@ -7,12 +7,7 @@ readme = "README.md"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
-python = "~3.11"
-torch = [
-    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=2.1.0", source = "pypi"},
-    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.1.0", source = "pytorch-cpu"}
-]
-transformers = "^4.29.2"
+python = "=3.11.*"
 onnxruntime = "^1.15.0"
 insightface = "^0.7.3"
 opencv-python-headless = "^4.7.0.72"
@@ -21,14 +16,14 @@ fastapi = "^0.95.2"
 uvicorn = {extras = ["standard"], version = "^0.22.0"}
 pydantic = "^1.10.8"
 aiocache = "^0.12.1"
-optimum = "^1.9.1"
 rich = "^13.4.2"
 ftfy = "^6.1.1"
 setuptools = "^68.0.0"
 python-multipart = "^0.0.6"
 orjson = "^3.9.5"
-safetensors = "0.3.2"
 gunicorn = "^21.1.0"
+huggingface-hub = "^0.20.1"
+tokenizers = "^0.15.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.3.0"
@@ -40,11 +35,6 @@ pytest-asyncio = "^0.21.0"
 pytest-cov = "^4.1.0"
 ruff = "^0.0.272"
 pytest-mock = "^3.11.1"
-
-[[tool.poetry.source]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]
