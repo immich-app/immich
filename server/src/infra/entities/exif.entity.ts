@@ -54,6 +54,10 @@ export class ExifEntity {
   @Column({ type: 'varchar', nullable: true })
   livePhotoCID!: string | null;
 
+  @Index('IDX_auto_stack_id')
+  @Column({ type: 'varchar', nullable: true })
+  autoStackId!: string | null;
+
   @Column({ type: 'varchar', nullable: true })
   state!: string | null;
 
