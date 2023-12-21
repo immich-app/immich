@@ -28,7 +28,7 @@
     "typeorm:migrations:generate": "typeorm migration:generate -d ./dist/infra/database.config.js",
     "typeorm:migrations:run": "typeorm migration:run -d ./dist/infra/database.config.js",
     "typeorm:migrations:revert": "typeorm migration:revert -d ./dist/infra/database.config.js",
-    "typeorm:schema:drop": "typeorm schema:drop -d ./dist/infra/database.config.js",
+    "typeorm:schema:drop": "typeorm query -d ./dist/infra/database.config.js 'DROP schema public cascade; CREATE schema public;'",
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
     "api:typescript": "bash ./bin/generate-open-api.sh web",
     "api:dart": "bash ./bin/generate-open-api.sh mobile",
