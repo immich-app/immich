@@ -12,6 +12,7 @@ x-server-build: &server-common
     context: ../
     dockerfile: server/Dockerfile
     target: dev
+  restart: always
   volumes:
     - ../server:/usr/src/app
     - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload

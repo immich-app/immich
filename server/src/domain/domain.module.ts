@@ -49,8 +49,9 @@ const providers: Provider[] = [
   ImmichLogger,
   {
     provide: INITIAL_SYSTEM_CONFIG,
-    inject: [SystemConfigService],
-    useFactory: async (configService: SystemConfigService) => {
+    inject: [SystemConfigService, DatabaseService],
+    useFactory: async (configService: SystemConfigService, databaseService: DatabaseService) => {
+      await databaseService.init();
       return configService.getConfig();
     },
   },
