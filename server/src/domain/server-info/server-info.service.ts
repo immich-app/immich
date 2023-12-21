@@ -1,7 +1,7 @@
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { ServerVersion, isDev, mimeTypes, serverVersion } from '../domain.constant';
+import { Version, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import {
   ClientEvent,
@@ -138,7 +138,7 @@ export class ServerInfoService {
       }
 
       const githubRelease = await this.repository.getGitHubRelease();
-      const githubVersion = ServerVersion.fromString(githubRelease.tag_name);
+      const githubVersion = Version.fromString(githubRelease.tag_name);
       const publishedAt = new Date(githubRelease.published_at);
       this.releaseVersion = githubVersion;
       this.releaseVersionCheckedAt = DateTime.now();

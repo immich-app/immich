@@ -1,4 +1,4 @@
-import { FeatureFlags, IServerVersion } from '@app/domain';
+import { FeatureFlags, IVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
@@ -25,7 +25,7 @@ export class ServerInfoResponseDto {
   diskUsagePercentage!: number;
 }
 
-export class ServerVersionResponseDto implements IServerVersion {
+export class ServerVersionResponseDto implements IVersion {
   @ApiProperty({ type: 'integer' })
   major!: number;
   @ApiProperty({ type: 'integer' })
