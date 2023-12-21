@@ -105,14 +105,14 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
 
-    it('should set the image to the correct postgres version', async () => {
-      databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));
-      [14, 15, 16].forEach((major) => databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(major, 0, 0)));
+    for (const major of [14, 15, 16]) {
+      it(`should suggest image with postgres ${major} if database is ${major}`, async () => {
+        databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));
+        databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(major, 0, 0));
 
-      await expect(sut.init()).rejects.toThrow(/('tensorchord\/pgvecto-rs:pg14-v0\.1\.11')/s);
-      await expect(sut.init()).rejects.toThrow(/('tensorchord\/pgvecto-rs:pg15-v0\.1\.11')/s);
-      await expect(sut.init()).rejects.toThrow(/('tensorchord\/pgvecto-rs:pg16-v0\.1\.11')/s);
-    });
+        await expect(sut.init()).rejects.toThrow(new RegExp(`tensorchord\/pgvecto-rs:pg${major}-v0\.1\.11`, 's'));
+      });
+    }
 
     it('should not suggest image if postgres version is not in 14, 15 or 16', async () => {
       databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));

@@ -7,8 +7,8 @@ import { DatabaseExtension, IDatabaseRepository } from '../repositories';
 @Injectable()
 export class DatabaseService {
   private logger = new ImmichLogger(DatabaseService.name);
-  private _minVectorsVersion: Version = new Version(0, 1, 1);
-  private _maxVectorsVersion: Version = new Version(0, 1, 11);
+  minVectorsVersion = new Version(0, 1, 1);
+  maxVectorsVersion = new Version(0, 1, 11);
 
   constructor(@Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository) {}
 
@@ -65,21 +65,5 @@ export class DatabaseService {
       return null;
     }
     return `tensorchord/pgvecto-rs:pg${major}-v${this.maxVectorsVersion}`;
-  }
-
-  get minVectorsVersion() {
-    return this._minVectorsVersion;
-  }
-
-  set minVectorsVersion(version: Version) {
-    this._minVectorsVersion = version;
-  }
-
-  get maxVectorsVersion() {
-    return this._maxVectorsVersion;
-  }
-
-  set maxVectorsVersion(version: Version) {
-    this._maxVectorsVersion = version;
   }
 }
