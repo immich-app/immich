@@ -44,6 +44,13 @@ COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpytho
 
 FROM prod-cpu as prod-armnn
 
+ENV LD_LIBRARY_PATH=/opt/armnn
+
+RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir --parents /etc/OpenCL/vendors && \
+    echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd
+
 COPY --from=builder-armnn \
       /opt/armnn/libarmnn.so.?? \
       /opt/armnn/libarmnnOnnxParser.so.?? \
@@ -53,11 +60,6 @@ COPY --from=builder-armnn \
       /opt/ann/libann.s[o] \
       /opt/ann/build.sh \
       /opt/armnn/
-
-RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd && \
-    rm -rf /var/lib/apt/lists/* && \
-    mkdir --parents /etc/OpenCL/vendors && \
-    echo "/usr/lib/libmali.so" > /etc/OpenCL/vendors/mali.icd
 
 FROM prod-${DEVICE} as prod
 
