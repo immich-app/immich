@@ -48,6 +48,12 @@ jobs:
             file: machine-learning/Dockerfile
             platform: linux/amd64
             device: openvino
+          
+          - image: immich-machine-learning
+            context: machine-learning
+            file: machine-learning/Dockerfile
+            platform: linux/arm64
+            device: armnn
 
           - image: immich-server
             context: .
