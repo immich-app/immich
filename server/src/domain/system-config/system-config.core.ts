@@ -235,10 +235,7 @@ export class SystemConfigCore {
       _.set(config, key, value);
     }
 
-    const errors = await validate(plainToInstance(SystemConfigDto, config), {
-      forbidNonWhitelisted: true,
-      forbidUnknownValues: true,
-    });
+    const errors = await validate(plainToInstance(SystemConfigDto, config));
     if (errors.length > 0) {
       this.logger.error('Validation error', errors);
       if (configFilePath) {
@@ -324,13 +321,13 @@ export class SystemConfigCore {
         }
 
         if (!_.isEmpty(file)) {
-          throw new Error(`Unknown keys found: ${JSON.stringify(file)}`);
+          this.logger.warn(`Unknown keys found: ${JSON.stringify(file, null, 2)}`);
         }
 
         this.configCache = overrides;
       } catch (error: Error | any) {
-        this.logger.error(`Unable to load configuration file: ${filepath} due to ${error}`, error?.stack);
-        throw new Error('Invalid configuration file');
+        this.logger.error(`Unable to load configuration file: ${filepath}`);
+        throw error;
       }
     }
 
