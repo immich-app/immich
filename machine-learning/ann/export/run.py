@@ -1,8 +1,8 @@
-from abc import abstractmethod
 import logging
 import os
 import platform
 import subprocess
+from abc import abstractmethod
 
 import onnx
 import open_clip
@@ -89,7 +89,8 @@ class ClipVision(ExportBase):
 
     def forward(self, input_tensor: torch.Tensor) -> torch.FloatTensor:
         embedding: torch.Tensor = self.model.encode_image(
-            input_tensor.half() if self.device.type == "cuda" else input_tensor
+            input_tensor.half() if self.device.type == "cuda" else input_tensor,
+            normalize=True,
         ).float()
         return embedding
 
