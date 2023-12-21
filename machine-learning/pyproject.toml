@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
-python = "=3.11.*"
+python = ">=3.10,<3.12"
 onnxruntime = "^1.15.0"
 insightface = "^0.7.3"
 opencv-python-headless = "^4.7.0.72"
