@@ -110,7 +110,7 @@ describe(DatabaseService.name, () => {
         databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));
         databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(major, 0, 0));
 
-        await expect(sut.init()).rejects.toThrow(new RegExp(`tensorchord\/pgvecto-rs:pg${major}-v0\.1\.11`, 's'));
+        await expect(sut.init()).rejects.toThrow(new RegExp(`tensorchord\/pgvecto-rs:pg${major}-v0\\.1\\.11`, 's'));
       });
     }
 
