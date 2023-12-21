@@ -53,6 +53,12 @@ optional = true
 [tool.poetry.group.openvino.dependencies]
 onnxruntime-openvino = "^1.15.0"
 
+[tool.poetry.group.armnn]
+optional = true
+
+[tool.poetry.group.armnn.dependencies]
+onnxruntime = "^1.15.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
