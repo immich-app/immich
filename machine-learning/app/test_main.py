@@ -30,11 +30,13 @@ class TestCLIP:
         mocker: MockerFixture,
         clip_model_cfg: dict[str, Any],
         clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
     ) -> None:
         mocker.patch.object(OpenCLIPEncoder, "download")
         mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
-        mocker.patch("app.models.clip.AutoTokenizer.from_pretrained", autospec=True)
+        mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
         mocked.return_value.run.return_value = [[self.embedding]]
 
@@ -52,11 +54,13 @@ class TestCLIP:
         mocker: MockerFixture,
         clip_model_cfg: dict[str, Any],
         clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
     ) -> None:
         mocker.patch.object(OpenCLIPEncoder, "download")
         mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
-        mocker.patch("app.models.clip.AutoTokenizer.from_pretrained", autospec=True)
+        mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
         mocked.return_value.run.return_value = [[self.embedding]]
 
