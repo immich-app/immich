@@ -65,7 +65,7 @@ interface TestAppOptions {
 let app: INestApplication;
 
 export const testApp = {
-  create: async (options?: TestAppOptions): Promise<[any, INestApplication]> => {
+  create: async (options?: TestAppOptions): Promise<INestApplication> => {
     const { jobs } = options || { jobs: false };
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
