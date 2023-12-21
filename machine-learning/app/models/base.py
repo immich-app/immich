@@ -11,7 +11,6 @@ from huggingface_hub import snapshot_download
 from typing_extensions import Buffer
 
 import ann.ann
-
 from app.models.constants import SUPPORTED_PROVIDERS
 
 from ..config import get_cache_dir, get_hf_model_name, log, settings
