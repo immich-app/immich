@@ -74,7 +74,7 @@ class Ann(metaclass=_Singleton):
             self.ann = libann.init(
                 self.log_level,
                 self.tuning_level,
-                self.tuning_file,
+                self.tuning_file.encode() if self.tuning_file is not None else None,
             )
             self.ref_count = 0
 
@@ -109,11 +109,11 @@ class Ann(metaclass=_Singleton):
             raise ValueError("save_cached_network is True, cached_network_path must be specified!")
         net_id: int = libann.load(
             self.ann,
-            model_path,
+            model_path.encode(),
             fast_math,
             fp16,
             save_cached_network,
-            cached_network_path,
+            cached_network_path.encode() if cached_network_path is not None else None,
         )
 
         self.input_shapes[net_id] = tuple(
