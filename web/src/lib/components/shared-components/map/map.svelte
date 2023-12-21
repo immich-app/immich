@@ -167,7 +167,11 @@
         }}
       >
         {#if useLocationPin}
-          <Icon path={mdiMapMarker} size="60px" class="dark:text-immich-dark-primary text-immich-primary" />
+          <Icon
+            path={mdiMapMarker}
+            size="50px"
+            class="location-pin dark:text-immich-dark-primary text-immich-primary"
+          />
         {:else}
           <img
             src={api.getAssetThumbnailUrl(feature.properties?.id)}
@@ -175,13 +179,18 @@
             alt={`Image with id ${feature.properties?.id}`}
           />
         {/if}
-
         {#if $$slots.popup}
-          <Popup openOn="click" closeOnClickOutside>
+          <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
             <slot name="popup" marker={asMarker(feature)} />
           </Popup>
         {/if}
       </MarkerLayer>
     </GeoJSON>
   </MapLibre>
+  <style>
+    .location-pin {
+      transform: translate(0, -50%);
+      filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.3));
+    }
+  </style>
 {/await}
