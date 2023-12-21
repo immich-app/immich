@@ -19,8 +19,6 @@ x-server-build: &server-common
     - /etc/localtime:/etc/localtime:ro
   env_file:
     - .env
-  environment:
-    - NODE_ENV=development
   ulimits:
     nofile:
       soft: 1048576
@@ -87,8 +85,6 @@ services:
       - model-cache:/cache
     env_file:
       - .env
-    environment:
-      - NODE_ENV=development
     depends_on:
       - database
     restart: unless-stopped
