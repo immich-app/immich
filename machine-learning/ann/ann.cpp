@@ -1,4 +1,5 @@
 #include <fstream>
+#include <mutex>
 
 #include "armnn/IRuntime.hpp"
 #include "armnn/INetwork.hpp"
@@ -51,7 +52,9 @@ public:
         i = 0;
         for (const BindingPointInfo &info : infos->outputInfos)
             outputTensors.emplace_back(info.first, Tensor(info.second, outputData[i++]));
+        mutex.lock();
         runtime->EnqueueWorkload(netId, inputTensors, outputTensors);
+        mutex.unlock();
     }
 
     void unload(NetworkId netId)
@@ -190,6 +193,7 @@ private:
 
     IRuntime *runtime;
     std::map<NetworkId, IOInfos> ioInfos;
+    std::mutex mutex;
 };
 
 extern "C" void *init(int logLevel, int tuningLevel, const char *tuningFile)
