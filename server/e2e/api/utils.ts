@@ -30,6 +30,9 @@ export const db = {
               .map((entity) => entity.tableName)
               .filter((tableName) => !tableName.startsWith('geodata'));
 
+      if (tableNames.includes('asset_stack')) {
+        await em.query(`DELETE FROM "asset_stack" CASCADE;`);
+      }
       let deleteUsers = false;
       for (const tableName of tableNames) {
         if (tableName === 'users') {

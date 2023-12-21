@@ -279,7 +279,9 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
-        stack: true,
+        stack: {
+          assets: true,
+        },
       };
     }
 
@@ -797,8 +799,14 @@ export class AssetRepository implements IAssetRepository {
       builder = builder.andWhere('asset.type = :assetType', { assetType });
     }
 
+    let stackJoined = false;
+
     if (exifInfo !== false) {
-      builder = builder.leftJoinAndSelect('asset.exifInfo', 'exifInfo').leftJoinAndSelect('asset.stack', 'stack');
+      stackJoined = true;
+      builder = builder
+        .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+        .leftJoinAndSelect('asset.stack', 'stack')
+        .leftJoinAndSelect('stack.assets', 'stackedAssets');
     }
 
     if (albumId) {
@@ -829,7 +837,12 @@ export class AssetRepository implements IAssetRepository {
     }
 
     if (withStacked) {
-      builder = builder.andWhere('asset.stackParentId IS NULL');
+      if (!stackJoined) {
+        builder = builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
+      }
+      builder = builder.andWhere(
+        new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')),
+      );
     }
 
     return builder;

@@ -2,6 +2,7 @@ export * from './access.repository';
 export * from './activity.repository';
 export * from './album.repository';
 export * from './api-key.repository';
+export * from './asset-stack.repository';
 export * from './asset.repository';
 export * from './audit.repository';
 export * from './communication.repository';
