@@ -83,7 +83,6 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         passwordLogin: true,
         search: true,
         sidecar: true,
-        tagImage: false,
         trash: true,
       });
     });

@@ -56,10 +56,6 @@ Template changes will only apply to new assets. To retroactively apply the templ
 
 This is fixed by running the storage migration job.
 
-### Why is object detection not very good?
-
-The default image tagging model is relatively small. You can change this for a larger model like `google/vit-base-patch16-224` by setting the model name under Settings > Machine Learning Settings > Image Tagging. You can then re-run the Image Tagging job to get improved tags.
-
 ### Why are there so many thumbnail generation jobs?
 
 Immich generates three thumbnails for each asset (blurred, small, and large), as well as a thumbnail for each recognized face.

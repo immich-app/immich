@@ -35,7 +35,6 @@ export enum SystemConfigKey {
   JOB_THUMBNAIL_GENERATION_CONCURRENCY = 'job.thumbnailGeneration.concurrency',
   JOB_METADATA_EXTRACTION_CONCURRENCY = 'job.metadataExtraction.concurrency',
   JOB_VIDEO_CONVERSION_CONCURRENCY = 'job.videoConversion.concurrency',
-  JOB_OBJECT_TAGGING_CONCURRENCY = 'job.objectTagging.concurrency',
   JOB_RECOGNIZE_FACES_CONCURRENCY = 'job.recognizeFaces.concurrency',
   JOB_CLIP_ENCODING_CONCURRENCY = 'job.smartSearch.concurrency',
   JOB_BACKGROUND_TASK_CONCURRENCY = 'job.backgroundTask.concurrency',
@@ -53,10 +52,6 @@ export enum SystemConfigKey {
 
   MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
   MACHINE_LEARNING_URL = 'machineLearning.url',
-
-  MACHINE_LEARNING_CLASSIFICATION_ENABLED = 'machineLearning.classification.enabled',
-  MACHINE_LEARNING_CLASSIFICATION_MODEL_NAME = 'machineLearning.classification.modelName',
-  MACHINE_LEARNING_CLASSIFICATION_MIN_SCORE = 'machineLearning.classification.minScore',
 
   MACHINE_LEARNING_CLIP_ENABLED = 'machineLearning.clip.enabled',
   MACHINE_LEARNING_CLIP_MODEL_NAME = 'machineLearning.clip.modelName',
@@ -184,11 +179,6 @@ export interface SystemConfig {
   machineLearning: {
     enabled: boolean;
     url: string;
-    classification: {
-      enabled: boolean;
-      modelName: string;
-      minScore: number;
-    };
     clip: {
       enabled: boolean;
       modelName: string;

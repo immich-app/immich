@@ -8,11 +8,11 @@ from typing import Any, Literal
 import numpy as np
 import onnxruntime as ort
 from PIL import Image
-from transformers import AutoTokenizer
+from tokenizers import Encoding, Tokenizer
 
 from app.config import clean_name, log
 from app.models.transforms import crop, get_pil_resampling, normalize, resize, to_numpy
-from app.schemas import ModelType, ndarray_f32, ndarray_i32, ndarray_i64
+from app.schemas import ModelType, ndarray_f32, ndarray_i32
 
 from .base import InferenceModel
 
@@ -40,6 +40,7 @@ class BaseCLIPEncoder(InferenceModel):
                 providers=self.providers,
                 provider_options=self.provider_options,
             )
+            log.debug(f"Loaded clip text model '{self.model_name}'")
 
         if self.mode == "vision" or self.mode is None:
             log.debug(f"Loading clip vision model '{self.model_name}'")
@@ -50,6 +51,7 @@ class BaseCLIPEncoder(InferenceModel):
                 providers=self.providers,
                 provider_options=self.provider_options,
             )
+            log.debug(f"Loaded clip vision model '{self.model_name}'")
 
     def _predict(self, image_or_text: Image.Image | str) -> ndarray_f32:
         if isinstance(image_or_text, bytes):
@@ -100,12 +102,48 @@ class BaseCLIPEncoder(InferenceModel):
         return self.visual_dir / "model.onnx"
 
     @property
+    def tokenizer_file_path(self) -> Path:
+        return self.textual_dir / "tokenizer.json"
+
+    @property
+    def tokenizer_cfg_path(self) -> Path:
+        return self.textual_dir / "tokenizer_config.json"
+
+    @property
     def preprocess_cfg_path(self) -> Path:
         return self.visual_dir / "preprocess_cfg.json"
 
     @property
     def cached(self) -> bool:
         return self.textual_path.is_file() and self.visual_path.is_file()
+
+    @cached_property
+    def model_cfg(self) -> dict[str, Any]:
+        log.debug(f"Loading model config for CLIP model '{self.model_name}'")
+        model_cfg: dict[str, Any] = json.load(self.model_cfg_path.open())
+        log.debug(f"Loaded model config for CLIP model '{self.model_name}'")
+        return model_cfg
+
+    @cached_property
+    def tokenizer_file(self) -> dict[str, Any]:
+        log.debug(f"Loading tokenizer file for CLIP model '{self.model_name}'")
+        tokenizer_file: dict[str, Any] = json.load(self.tokenizer_file_path.open())
+        log.debug(f"Loaded tokenizer file for CLIP model '{self.model_name}'")
+        return tokenizer_file
+
+    @cached_property
+    def tokenizer_cfg(self) -> dict[str, Any]:
+        log.debug(f"Loading tokenizer config for CLIP model '{self.model_name}'")
+        tokenizer_cfg: dict[str, Any] = json.load(self.tokenizer_cfg_path.open())
+        log.debug(f"Loaded tokenizer config for CLIP model '{self.model_name}'")
+        return tokenizer_cfg
+
+    @cached_property
+    def preprocess_cfg(self) -> dict[str, Any]:
+        log.debug(f"Loading visual preprocessing config for CLIP model '{self.model_name}'")
+        preprocess_cfg: dict[str, Any] = json.load(self.preprocess_cfg_path.open())
+        log.debug(f"Loaded visual preprocessing config for CLIP model '{self.model_name}'")
+        return preprocess_cfg
 
 
 class OpenCLIPEncoder(BaseCLIPEncoder):
@@ -121,8 +159,8 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
     def _load(self) -> None:
         super()._load()
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.textual_dir)
-        self.sequence_length = self.model_cfg["text_cfg"]["context_length"]
+        context_length = self.model_cfg["text_cfg"]["context_length"]
+        pad_token = self.tokenizer_cfg["pad_token"]
 
         self.size = (
             self.preprocess_cfg["size"][0] if type(self.preprocess_cfg["size"]) == list else self.preprocess_cfg["size"]
@@ -131,16 +169,16 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         self.mean = np.array(self.preprocess_cfg["mean"], dtype=np.float32)
         self.std = np.array(self.preprocess_cfg["std"], dtype=np.float32)
 
+        log.debug(f"Loading tokenizer for CLIP model '{self.model_name}'")
+        self.tokenizer: Tokenizer = Tokenizer.from_file(self.tokenizer_file_path.as_posix())
+        pad_id = self.tokenizer.token_to_id(pad_token)
+        self.tokenizer.enable_padding(length=context_length, pad_token=pad_token, pad_id=pad_id)
+        self.tokenizer.enable_truncation(max_length=context_length)
+        log.debug(f"Loaded tokenizer for CLIP model '{self.model_name}'")
+
     def tokenize(self, text: str) -> dict[str, ndarray_i32]:
-        input_ids: ndarray_i64 = self.tokenizer(
-            text,
-            max_length=self.sequence_length,
-            return_tensors="np",
-            return_attention_mask=False,
-            padding="max_length",
-            truncation=True,
-        ).input_ids
-        return {"text": input_ids.astype(np.int32)}
+        tokens: Encoding = self.tokenizer.encode(text)
+        return {"text": np.array([tokens.ids], dtype=np.int32)}
 
     def transform(self, image: Image.Image) -> dict[str, ndarray_f32]:
         image = resize(image, self.size)
@@ -149,18 +187,11 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         image_np = normalize(image_np, self.mean, self.std)
         return {"image": np.expand_dims(image_np.transpose(2, 0, 1), 0)}
 
-    @cached_property
-    def model_cfg(self) -> dict[str, Any]:
-        model_cfg: dict[str, Any] = json.load(self.model_cfg_path.open())
-        return model_cfg
-
-    @cached_property
-    def preprocess_cfg(self) -> dict[str, Any]:
-        preprocess_cfg: dict[str, Any] = json.load(self.preprocess_cfg_path.open())
-        return preprocess_cfg
-
 
 class MCLIPEncoder(OpenCLIPEncoder):
     def tokenize(self, text: str) -> dict[str, ndarray_i32]:
-        tokens: dict[str, ndarray_i64] = self.tokenizer(text, return_tensors="np")
-        return {k: v.astype(np.int32) for k, v in tokens.items()}
+        tokens: Encoding = self.tokenizer.encode(text)
+        return {
+            "input_ids": np.array([tokens.ids], dtype=np.int32),
+            "attention_mask": np.array([tokens.attention_mask], dtype=np.int32),
+        }

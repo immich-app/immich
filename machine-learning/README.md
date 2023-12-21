@@ -1,6 +1,5 @@
 # Immich Machine Learning
 
-- Image classification
 - CLIP embeddings
 - Facial recognition
 

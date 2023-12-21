@@ -33,12 +33,6 @@ export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.OBJECT_TAGGING]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
   [QueueName.SMART_SEARCH]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
