@@ -30,8 +30,8 @@ services:
     command: [ "./start-microservices.sh" ]
     <<: *server-common
     # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl]
     depends_on:
       - redis
       - database
@@ -41,8 +41,8 @@ services:
     container_name: immich_machine_learning
     image: immich-machine-learning:latest
     # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
+    #   file: hwaccel.ml.yml
+    #   service: cpu # set to one of [armnn, cuda, openvino]
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
