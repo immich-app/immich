@@ -8,6 +8,7 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 - NVENC (NVIDIA)
 - Quick Sync (Intel)
+- RKMPP (Rockchip)
 - VAAPI (AMD / NVIDIA / Intel)
 
 ## Limitations
