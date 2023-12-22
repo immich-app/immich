@@ -42,12 +42,20 @@ As this is a new feature, it is still experimental and may not work on all syste
   - Additionally, if the server specifically has an 11th gen CPU and is running kernel 5.15 (shipped with Ubuntu 22.04 LTS), then you will need to upgrade this kernel (from [Jellyfin docs][jellyfin-kernel-bug])
 
 ## Setup
-
+#### Initial Setup
 1. If you do not already have it, download the latest [`hwaccel.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. Uncomment the lines that apply to your system and desired usage.
 3. In the `docker-compose.yml` under `immich-microservices`, uncomment the lines relating to the `hwaccel.yml` file.
 4. Redeploy the `immich-microservices` container with these updated settings.
 5. In the Admin page under `FFmpeg settings`, change the hardware acceleration setting to the appropriate option and save.
+
+#### Imagegenius/Immich docker Community Appstore Setup
+##### NVENC - NVIDIA GPUs
+1. Assuming you already have the Nvidia Driver Plugin installed on your Unraid Server. Please confirm that your Nvida GPU is showing up with its GPU ID in the Nvidia Driver Plugin. The ID will be `GPU-LONG_STRING_OF_CHARACTERS`. Copy the GPU ID.
+2. In the Imagegenius/Immich Docker Container app, add two new variables: Key=`NVIDIA_VISIBLE_DEVICES` Value=`GPU-LONG_STRING_OF_CHARACTERS` and Key=`NVIDIA_DRIVER_CAPABILITIES` Value=`all`
+3. While you are in the docker container app, change the Container from Basic Mode to Advanced Mode and add the following parameters to the Extra Parameters field: `--runtime=nvidia`
+4. Restart the Imagegenius/Immich Docker Container app.
+5. In the Admin page under FFmpeg settings, change the hardware acceleration setting to the appropriate option and save.
 
 ## Tips
 
