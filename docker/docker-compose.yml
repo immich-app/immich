@@ -31,8 +31,8 @@ services:
     container_name: immich_microservices
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
+    #   file: hwaccel.transcoding.yml # see https://immich.app/docs/features/hardware-transcoding for usage
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for hardware acceleration
     command: [ "start.sh", "microservices" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -46,12 +46,12 @@ services:
 
   immich-machine-learning:
     container_name: immich_machine_learning
+    # add one of -[cuda, openvino, armnn] to the image tag and set the extended service to this as well
+    # example tag: ${IMMICH_VERSION:-release}-cuda
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
-    # image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-cuda # nvidia gpu
-    # image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}-openvino # intel gpu
     # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
+    #   file: hwaccel.ml.yml # see https://immich.app/docs/features/ml-hardware-acceleration for usage
+    #   service: cpu # set to one of [cuda, openvino, armnn] for hardware acceleration
     volumes:
       - model-cache:/cache
     env_file:
