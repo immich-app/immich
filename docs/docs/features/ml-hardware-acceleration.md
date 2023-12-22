@@ -18,6 +18,17 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 ## Prerequisites
 
+#### ARM NN
+
+- Make sure you have the appropriate linux kernel driver installed
+  - This is usually pre-installed on the device vendor's Linux images
+- `/dev/mali0` must be available in the host server
+  - You may confirm this by running `ls /dev` to check that it exists
+- You must have the closed-source `libmali.so` firmware (possibly with an additional firmware file)
+  - Where and how you can get this file depends on device and vendor, but typically, the device vendor also supplies these
+  - The `hwaccel.ml.yml` file assumes the path to it is `/usr/lib/libmali.so`, so update accordingly if it is elsewhere
+  - The `hwaccel.ml.yml` file assumes an additional file `/lib/firmware/mali_csffw.bin`, so update accordingly if your device's driver does not require this file
+
 #### CUDA
 
 - You must have the official NVIDIA driver installed on the server.
