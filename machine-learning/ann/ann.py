@@ -137,6 +137,8 @@ class Ann(metaclass=_Singleton):
         for net_input_shape, input_tensor in zip(net_input_shapes, input_tensors):
             if net_input_shape != input_tensor.shape:
                 raise ValueError(f"input_tensor shape {input_tensor.shape} != network input shape {net_input_shape}")
+            if not input_tensor.flags.c_contiguous:
+                raise ValueError("input_tensors must be c_contiguous numpy ndarrays")
         output_tensors: list[NDArray[np.float32]] = [
             np.ndarray(s, dtype=np.float32) for s in self.output_shapes[network_id]
         ]

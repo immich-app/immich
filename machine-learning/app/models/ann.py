@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, NamedTuple
 
+from numpy import ascontiguousarray
+
 from ann.ann import Ann
 from app.schemas import ndarray_f32, ndarray_i32
 
@@ -57,7 +59,7 @@ class AnnSession:
         input_feed: dict[str, ndarray_f32] | dict[str, ndarray_i32],
         run_options: Any = None,
     ) -> list[ndarray_f32]:
-        inputs = [*input_feed.values()]
+        inputs = [ascontiguousarray(v) for v in input_feed.values()]
         return self.ann.execute(self.model, inputs)
 
 
