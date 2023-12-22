@@ -123,12 +123,23 @@ export class StorageTemplateService {
       return;
     }
 
-    const { id, sidecarPath, originalPath } = asset;
+    const { id, sidecarPath, originalPath, exifInfo } = asset;
     const oldPath = originalPath;
     const newPath = await this.getTemplatePath(asset, metadata);
 
+    if (!exifInfo || !exifInfo.fileSizeInByte) {
+      this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);
+      return;
+    }
+
     try {
-      await this.storageCore.moveFile({ entityId: id, pathType: AssetPathType.ORIGINAL, oldPath, newPath });
+      await this.storageCore.moveFile({
+        entityId: id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath,
+        newPath,
+        assetInfo: { sizeInBytes: exifInfo.fileSizeInByte },
+      });
       if (sidecarPath) {
         await this.storageCore.moveFile({
           entityId: id,
