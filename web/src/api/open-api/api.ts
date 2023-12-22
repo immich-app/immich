@@ -4028,6 +4028,12 @@ export interface SystemConfigReverseGeocodingDto {
 export interface SystemConfigStorageTemplateDto {
     /**
      * 
+     * @type {boolean}
+     * @memberof SystemConfigStorageTemplateDto
+     */
+    'enabled': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof SystemConfigStorageTemplateDto
      */

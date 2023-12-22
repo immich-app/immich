@@ -9365,11 +9365,15 @@
       },
       "SystemConfigStorageTemplateDto": {
         "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
           "template": {
             "type": "string"
           }
         },
         "required": [
+          "enabled",
           "template"
         ],
         "type": "object"

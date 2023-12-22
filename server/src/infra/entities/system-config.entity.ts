@@ -84,6 +84,7 @@ export enum SystemConfigKey {
 
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
 
+  STORAGE_TEMPLATE_ENABLED = 'storageTemplate.enabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
 
   THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
@@ -216,6 +217,7 @@ export interface SystemConfig {
     enabled: boolean;
   };
   storageTemplate: {
+    enabled: boolean;
     template: string;
   };
   thumbnail: {

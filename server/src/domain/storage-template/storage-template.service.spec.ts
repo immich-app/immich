@@ -1,4 +1,4 @@
-import { AssetPathType, ExifEntity } from '@app/infra/entities';
+import { AssetPathType, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAlbumRepositoryMock,
@@ -39,9 +39,9 @@ describe(StorageTemplateService.name, () => {
   });
 
   beforeEach(async () => {
+    configMock = newSystemConfigRepositoryMock();
     assetMock = newAssetRepositoryMock();
     albumMock = newAlbumRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
@@ -57,9 +57,24 @@ describe(StorageTemplateService.name, () => {
       storageMock,
       userMock,
     );
+
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: true }]);
   });
 
   describe('handleMigrationSingle', () => {
+    it('should skip when storage template is disabled', async () => {
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: false }]);
+      await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(true);
+      expect(assetMock.getByIds).not.toHaveBeenCalled();
+      expect(storageMock.checkFileExists).not.toHaveBeenCalled();
+      expect(storageMock.rename).not.toHaveBeenCalled();
+      expect(storageMock.copyFile).not.toHaveBeenCalled();
+      expect(assetMock.save).not.toHaveBeenCalled();
+      expect(moveMock.create).not.toHaveBeenCalled();
+      expect(moveMock.update).not.toHaveBeenCalled();
+      expect(storageMock.stat).not.toHaveBeenCalled();
+    });
+
     it('should migrate single moving picture', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
       const newMotionPicturePath = `upload/library/${userStub.user1.id}/2022/2022-06-19/${assetStub.livePhotoStillAsset.id}.mp4`;

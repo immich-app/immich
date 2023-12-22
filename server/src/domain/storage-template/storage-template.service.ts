@@ -74,6 +74,11 @@ export class StorageTemplateService {
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
+    const storageTemplateEnabled = (await this.configCore.getConfig()).storageTemplate.enabled;
+    if (!storageTemplateEnabled) {
+      return true;
+    }
+
     const [asset] = await this.assetRepository.getByIds([id]);
 
     const user = await this.userRepository.get(asset.ownerId, {});
@@ -93,6 +98,11 @@ export class StorageTemplateService {
 
   async handleMigration() {
     this.logger.log('Starting storage template migration');
+    const storageTemplateEnabled = (await this.configCore.getConfig()).storageTemplate.enabled;
+    if (!storageTemplateEnabled) {
+      this.logger.log('Storage template migration disabled, skipping');
+      return true;
+    }
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination),
     );
