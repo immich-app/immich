@@ -59,7 +59,7 @@ class AnnSession:
         input_feed: dict[str, ndarray_f32] | dict[str, ndarray_i32],
         run_options: Any = None,
     ) -> list[ndarray_f32]:
-        inputs = [ascontiguousarray(v) for v in input_feed.values()]
+        inputs: list[ndarray_f32] = [ascontiguousarray(v) for v in input_feed.values()]
         return self.ann.execute(self.model, inputs)
 
 

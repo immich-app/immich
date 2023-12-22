@@ -7,5 +7,5 @@ services:
     devices:
       - /dev/mali0:/dev/mali0
     volumes:
-      - /lib/firmware/mali_csffw.bin:/lib/firmware/mali_csffw.bin:ro # Mali firmware for your chipset
-      - /usr/lib/libmali-valhall-g610-g6p0-gbm.so:/usr/lib/libmali.so:ro # Mali driver for your chipset
+      - /lib/firmware/mali_csffw.bin:/lib/firmware/mali_csffw.bin:ro # Mali firmware for your chipset (not always required depending on the driver)
+      - /usr/lib/libmali.so:/usr/lib/libmali.so:ro # Mali driver for your chipset (always required)
