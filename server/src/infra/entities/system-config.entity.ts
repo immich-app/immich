@@ -172,7 +172,7 @@ export interface SystemConfig {
     accel: TranscodeHWAccel;
     tonemap: ToneMapping;
   };
-  job: Record<QueueName, { concurrency: number }>;
+  job: Record<Exclude<QueueName, QueueName.STORAGE_TEMPLATE_MIGRATION>, { concurrency: number }>;
   logging: {
     enabled: boolean;
     level: LogLevel;

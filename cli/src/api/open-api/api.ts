@@ -3785,12 +3785,6 @@ export interface SystemConfigJobDto {
      * @type {JobSettingsDto}
      * @memberof SystemConfigJobDto
      */
-    'storageTemplateMigration': JobSettingsDto;
-    /**
-     * 
-     * @type {JobSettingsDto}
-     * @memberof SystemConfigJobDto
-     */
     'thumbnailGeneration': JobSettingsDto;
     /**
      * 
