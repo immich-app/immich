@@ -49,6 +49,7 @@
       "matchFileNames": ["machine-learning/**"],
       "groupName": "machine-learning",
       "matchUpdateTypes": ["minor", "patch"],
+      "rangeStrategy": "update-lockfile",
       "schedule": "on tuesday"
     },
     {
