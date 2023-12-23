@@ -3,12 +3,14 @@ import {
   DatabaseService,
   JobService,
   LibraryService,
+  MetricsService,
   ONE_HOUR,
   OpenGraphTags,
   ServerInfoService,
   SharedLinkService,
   StorageService,
   SystemConfigService,
+  TWENTY_FOUR_HOURS,
   WEB_ROOT_PATH,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
@@ -46,6 +48,7 @@ export class AppService {
     private configService: SystemConfigService,
     private jobService: JobService,
     private libraryService: LibraryService,
+    private metricsService: MetricsService,
     private serverService: ServerInfoService,
     private sharedLinkService: SharedLinkService,
     private storageService: StorageService,
@@ -55,6 +58,11 @@ export class AppService {
   @Interval(ONE_HOUR.as('milliseconds'))
   async onVersionCheck() {
     await this.serverService.handleVersionCheck();
+  }
+
+  @Interval(TWENTY_FOUR_HOURS.as('milliseconds'))
+  async onMetricsSend() {
+    await this.metricsService.handleQueueMetrics();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

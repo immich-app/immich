@@ -8,6 +8,7 @@ import {
   LibraryService,
   MediaService,
   MetadataService,
+  MetricsService,
   PersonService,
   SmartInfoService,
   StorageService,
@@ -15,7 +16,6 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
-import { MetricsService } from '@app/domain/metrics';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -62,7 +62,7 @@ export class AppService {
       [JobName.VIDEO_CONVERSION]: (data) => this.mediaService.handleVideoConversion(data),
       [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataService.handleQueueMetadataExtraction(data),
       [JobName.METADATA_EXTRACTION]: (data) => this.metadataService.handleMetadataExtraction(data),
-      [JobName.METRICS]: (data) => this.metricsService.shareMetrics(data),
+      [JobName.METRICS]: (data) => this.metricsService.handleMetrics(data),
       [JobName.LINK_LIVE_PHOTOS]: (data) => this.metadataService.handleLivePhotoLinking(data),
       [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.personService.handleQueueRecognizeFaces(data),
       [JobName.RECOGNIZE_FACES]: (data) => this.personService.handleRecognizeFaces(data),
