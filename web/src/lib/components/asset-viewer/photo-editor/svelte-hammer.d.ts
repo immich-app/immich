@@ -1,5 +1,5 @@
 declare namespace svelteHTML {
-  interface HTMLAttributes<T> {
+  interface HTMLAttributes {
     'on:pan'?: (event: CustomEvent) => void;
     'on:pinch'?: (event: Customevent) => void;
   }
