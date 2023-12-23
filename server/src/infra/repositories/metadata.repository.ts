@@ -48,7 +48,7 @@ export class MetadataRepository implements IMetadataRepository {
 
     this.logger.log('Importing geodata to database from file');
 
-    this.databaseRepository.withLock(DatabaseLock.GeodataImport, this.importGeodata);
+    await this.databaseRepository.withLock(DatabaseLock.GeodataImport, this.importGeodata);
 
     await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
       lastUpdate: geodataDate,
