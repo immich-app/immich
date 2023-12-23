@@ -16,11 +16,17 @@
     rangeValue = value * 100;
   }
 
+  $: value, renderProgress();
+
   onMount(() => {
     renderProgress();
   });
 
   const renderProgress = () => {
+    if (!progressBar) {
+      return;
+    }
+
     const progress = rangeValue;
     if (type) {
       value = (progress * 2) / 100;
@@ -60,13 +66,14 @@
         rangeValue = 0;
       }
       renderProgress();
+      dispatch('updateHistory');
     }}
   >
     <slot />
   </button>
   <div class="relative grid w-full">
     <span>{title}</span>
-    <input bind:value={rangeValue} type="range" name="" id="" on:input={renderProgress} />
+    <input bind:value={rangeValue} type="range" on:input={renderProgress} on:change={() => dispatch('updateHistory')} />
     <div
       bind:this={progressBar}
       class="bg-immich-gray/10 progress-bar pointer-events-none absolute bottom-[22px] h-[3px] w-full rounded-full"

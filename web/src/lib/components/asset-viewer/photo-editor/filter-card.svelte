@@ -3,7 +3,7 @@
 
   export let title = 'Without';
 
-  export let currentFilter: string;
+  export let currentFilterName: string;
   export let thumbData: string;
 
   let dispatch = createEventDispatcher();
@@ -48,17 +48,18 @@
 </script>
 
 <button
-  class=" text-immich-gray/70 w-fit text-center text-sm {title.toLowerCase() === currentFilter ? 'isActive' : ''}"
+  class=" text-immich-gray/70 w-fit text-center text-sm {title.toLowerCase() === currentFilterName ? 'isActive' : ''}"
   on:click={() => {
     if (title === 'Custom') {
       return;
     }
+    dispatch('updateHistory');
     dispatch('setPreset', title.toLowerCase());
   }}
 >
   <div
     class="bg-immich-primary flex h-[92px] w-[92px] items-center justify-center text-3xl {title.toLowerCase() ===
-    currentFilter
+    currentFilterName
       ? ''
       : 'hidden'}"
   >
@@ -66,7 +67,7 @@
   </div>
   <img
     bind:this={imgElement}
-    class="bg-immich-gray/10 h-[92px] w-[92px] {title.toLowerCase() === currentFilter ? 'hidden' : ''}"
+    class="bg-immich-gray/10 h-[92px] w-[92px] {title.toLowerCase() === currentFilterName ? 'hidden' : ''}"
     src=""
     alt="asset preview"
   />

@@ -134,9 +134,20 @@
     const scaledWidth = width * scale;
     const scaledHeight = height * scale;
 
-    console.log('scaledWidth', scaledWidth);
-    console.log('scaledHeight', scaledHeight);
     return { scaledWidth, scaledHeight };
+  };
+
+  const currentEdit = () => {
+    return {
+      angle,
+      crop,
+      scale,
+      translate,
+      ratio,
+      filter,
+      flipX,
+      flipY,
+    };
   };
 
   const downloadImage = async (canvas: HTMLCanvasElement) => {
@@ -179,6 +190,8 @@
       link.href = dataURL;
       link.download = assetName;
       link.click();
+
+      console.log('currentEdit', currentEdit());
 
       isRendering = false;
     }, 0);

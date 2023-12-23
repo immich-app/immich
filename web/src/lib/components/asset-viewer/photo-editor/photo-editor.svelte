@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { mdiContrastCircle } from '@mdi/js'; // Contrast
+  import { mdiContrastCircle, mdiRedo, mdiUndo } from '@mdi/js'; // Contrast, undo, redo
   import { mdiBrightness6 } from '@mdi/js'; // Brightness
   import { mdiInvertColors } from '@mdi/js'; // Invert
   import { mdiBlur } from '@mdi/js'; // Blur
@@ -45,6 +45,43 @@
 
   const presets = presetsObject as { [key: string]: Preset };
 
+  const editHistory = [
+    {
+      angle: 0,
+      angleOffset: 0,
+      aspectRatio: 'original',
+      crop: {
+        width: 0,
+        height: 0,
+      },
+      flipX: false,
+      flipY: false,
+      filter: {
+        blur: 0,
+        brightness: 1,
+        contrast: 1,
+        grayscale: 0,
+        hueRotate: 1,
+        invert: 0,
+        opacity: 1,
+        saturation: 1,
+        sepia: 0,
+      },
+      filterName: 'without',
+      translate: {
+        x: 0,
+        y: 0,
+      },
+      zoom: 1,
+    },
+  ];
+  let editHistoryIndex = 0;
+
+  const rotate90 = () => {
+    rotateImage(currentAngle, currentAngleOffset + 90, true);
+    updateEditHistory();
+  };
+
   type Preset = {
     blur: number;
     brightness: number;
@@ -59,11 +96,16 @@
 
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+  import { getContextMenuPosition } from '$lib/utils/context-menu';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
   const dispatch = createEventDispatcher();
 
   // Image adjustment
-  let filter: Preset = {
+  let currentFilter: Preset = {
     blur: 0,
     brightness: 1,
     contrast: 1,
@@ -95,7 +137,7 @@
   let currentFlipY = false;
   let currentFlipX = false;
 
-  let currentFilter = 'without';
+  let currentFilterName = 'without';
 
   let currentRatio = 0;
 
@@ -136,6 +178,13 @@
   let thumbData: string;
   let publicSharedKey = '';
 
+  let contextMenuPosition = { x: 0, y: 0 };
+  let isShowEditOptions = false;
+  const showOptionsMenu = (event: MouseEvent) => {
+    contextMenuPosition = getContextMenuPosition(event, 'top-right');
+    isShowEditOptions = !isShowEditOptions;
+  };
+
   $: currentCrop = cropElement
     ? {
         width: cropElement.offsetWidth,
@@ -144,28 +193,6 @@
     : { width: 0, height: 0 };
 
   $: currentRatio = originalImage ? originalImage.naturalWidth / imageWrapper.offsetWidth : 0;
-
-  // const pinchHandler = (event: CustomEvent) => {
-  //   let scale = event.detail.scale;
-
-  //   if (scale > 1) {
-  //     if (currentZoom <= 5) {
-  //       currentZoom += zoomSpeed * scale;
-  //     }
-  //   } else {
-  //     if (currentZoom > 1) {
-  //       currentZoom -= zoomSpeed * scale * 3;
-  //     }
-  //   }
-
-  //   if (currentZoom < 1) {
-  //     currentZoom = 1;
-  //   }
-  //   if (currentZoom > 5) {
-  //     currentZoom = 5;
-  //   }
-  //   setImageWrapperTransform();
-  // };
 
   const imagePanHandler = (event: CustomEvent) => {
     console.log('imagePanHandler');
@@ -285,34 +312,31 @@
   const isFilter = (f: Preset) => {
     return (
       f &&
-      f.blur === filter.blur &&
-      f.brightness === filter.brightness &&
-      f.contrast === filter.contrast &&
-      f.grayscale === filter.grayscale &&
-      f.hueRotate === filter.hueRotate &&
-      f.invert === filter.invert &&
-      f.opacity === filter.opacity &&
-      f.saturation === filter.saturation &&
-      f.sepia === filter.sepia
+      f.blur === currentFilter.blur &&
+      f.brightness === currentFilter.brightness &&
+      f.contrast === currentFilter.contrast &&
+      f.grayscale === currentFilter.grayscale &&
+      f.hueRotate === currentFilter.hueRotate &&
+      f.invert === currentFilter.invert &&
+      f.opacity === currentFilter.opacity &&
+      f.saturation === currentFilter.saturation &&
+      f.sepia === currentFilter.sepia
     );
   };
 
   const applyFilter = () => {
-    if (!isFilter(presets[currentFilter] as Preset)) {
-      // console.log(currentFilter);
-      // console.log(presets[currentFilter]);
-      // console.log(filter);
-      currentFilter = 'custom';
+    if (!isFilter(presets[currentFilterName] as Preset)) {
+      currentFilterName = 'custom';
     }
 
     // console.log('apply filter');
     // console.log(filter);
-    imageElement.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
-      filter.contrast
-    }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
-      filter.opacity
-    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
-    //console.log('applied filter');
+    imageElement.style.filter = `blur(${currentFilter.blur * 10}px) brightness(${currentFilter.brightness}) contrast(${
+      currentFilter.contrast
+    }) grayscale(${currentFilter.grayscale}) hue-rotate(${(currentFilter.hueRotate - 1) * 180}deg) invert(${
+      currentFilter.invert
+    }) opacity(${currentFilter.opacity}) saturate(${currentFilter.saturation}) sepia(${currentFilter.sepia})`;
+    console.log('applied currentFilter');
   };
 
   onMount(async () => {
@@ -331,35 +355,20 @@
     };
   });
 
-  const initZoom = () => {
-    document.onwheel = (e: WheelEvent) => {
-      if (e.deltaY > 0) {
-        if (currentZoom <= 5) {
-          currentZoom += zoomSpeed * 5;
-        }
-      } else {
-        if (currentZoom > 1) {
-          currentZoom -= zoomSpeed * 5;
-        }
-      }
-      setImageWrapperTransform();
-    };
-  };
-
   // Sets the filter to the preset passed in by the event
   const setPreset = (event: CustomEvent<string>) => {
     const preset = event.detail;
-    filter.blur = presets[preset].blur;
-    filter.brightness = presets[preset].brightness;
-    filter.contrast = presets[preset].contrast;
-    filter.grayscale = presets[preset].grayscale;
-    filter.hueRotate = presets[preset].hueRotate;
-    filter.invert = presets[preset].invert;
-    filter.opacity = presets[preset].opacity;
-    filter.saturation = presets[preset].saturation;
-    filter.sepia = presets[preset].sepia;
+    currentFilter.blur = presets[preset].blur;
+    currentFilter.brightness = presets[preset].brightness;
+    currentFilter.contrast = presets[preset].contrast;
+    currentFilter.grayscale = presets[preset].grayscale;
+    currentFilter.hueRotate = presets[preset].hueRotate;
+    currentFilter.invert = presets[preset].invert;
+    currentFilter.opacity = presets[preset].opacity;
+    currentFilter.saturation = presets[preset].saturation;
+    currentFilter.sepia = presets[preset].sepia;
     applyFilter();
-    currentFilter = preset;
+    currentFilterName = preset;
   };
 
   const loadAssetData = async () => {
@@ -423,7 +432,7 @@
     }
     if (activeButton == 'crop') {
       //initAssetDrag();
-      initZoom();
+      //initZoom();
       if (!cropWrapperParent.classList.contains('p-24')) {
         cropWrapperParent.classList.add('p-24');
         cropWrapperParent.classList.add('pb-52');
@@ -788,6 +797,8 @@
     currentZoom = 1;
     rotateImage(0, 0);
 
+    updateEditHistory();
+
     // Reset the aspect ratio.
     await setAspectRatio('original');
   };
@@ -795,10 +806,12 @@
   const flipVertical = async () => {
     currentFlipY = !currentFlipY;
     rotateImage(currentAngle, currentAngleOffset);
+    updateEditHistory();
   };
   const flipHorizontal = async () => {
     currentFlipX = !currentFlipX;
     rotateImage(currentAngle, currentAngleOffset);
+    updateEditHistory();
   };
 
   const rotateImage = async (angle: number, angleOffset: number, isRotate?: boolean) => {
@@ -855,6 +868,94 @@
       imageWrapper.style.transform = transformString;
     }
   };
+
+  //TODO: Fix type
+  const updateEditHistory = () => {
+    console.log('updateEditHistory');
+    editHistory.push({
+      angle: currentAngle,
+      angleOffset: currentAngleOffset,
+      aspectRatio: currentAspectRatio,
+      crop: currentCrop,
+      flipX: currentFlipX,
+      flipY: currentFlipY,
+      filter: structuredClone(currentFilter),
+      filterName: currentFilterName,
+      translate: structuredClone(currentTranslate),
+      zoom: currentZoom,
+    });
+    editHistoryIndex = editHistory.length - 1;
+    console.log(editHistory);
+  };
+
+  const clearHistory = () => {
+    editHistory.splice(1, editHistory.length - 1);
+    console.log(editHistory.length);
+    editHistoryIndex = 0;
+  };
+
+  const goBackInHistory = () => {
+    if (editHistoryIndex > 0) {
+      editHistoryIndex--;
+      const edit = editHistory[editHistoryIndex];
+      currentAngle = edit.angle;
+      currentAngleOffset = edit.angleOffset;
+      currentAspectRatio = edit.aspectRatio;
+      currentCrop = structuredClone(edit.crop);
+      currentFlipX = edit.flipX;
+      currentFlipY = edit.flipY;
+      currentFilter = edit.filter;
+      currentFilterName = edit.filterName;
+      currentZoom = edit.zoom;
+
+      applyFilter();
+      rotateImage(currentAngle, currentAngleOffset);
+      setAspectRatio(currentAspectRatio);
+      setImageWrapperTransform();
+    }
+  };
+
+  const goForwardInHistory = () => {
+    if (editHistoryIndex < editHistory.length - 1) {
+      editHistoryIndex++;
+      const edit = editHistory[editHistoryIndex];
+      currentAngle = edit.angle;
+      currentAngleOffset = edit.angleOffset;
+      currentAspectRatio = edit.aspectRatio;
+      currentCrop = edit.crop;
+      currentFlipX = edit.flipX;
+      currentFlipY = edit.flipY;
+      currentFilter = edit.filter;
+      currentFilterName = edit.filterName;
+      currentZoom = edit.zoom;
+
+      applyFilter();
+      rotateImage(currentAngle, currentAngleOffset);
+      setAspectRatio(currentAspectRatio);
+      setImageWrapperTransform();
+    }
+  };
+
+  let isZooming = false;
+  const imageZoomHandler = (event: WheelEvent) => {
+    if (event.deltaY > 0) {
+      if (currentZoom <= 5) {
+        currentZoom += zoomSpeed * 5;
+      }
+    } else {
+      if (currentZoom > 1) {
+        currentZoom -= zoomSpeed * 5;
+      }
+    }
+    setImageWrapperTransform();
+    if (!isZooming) {
+      setTimeout(() => {
+        updateEditHistory();
+        isZooming = false;
+      }, 1000);
+    }
+    isZooming = true;
+  };
 </script>
 
 <div
@@ -867,12 +968,31 @@
     >
       <Icon path={mdiClose} />
     </button>
+
+    <!-- goBackInHistory Button -->
+    <button
+      on:click={() => goBackInHistory()}
+      disabled={!(editHistory.length > 0 && editHistoryIndex > 0)}
+      class="hover:bg-immich-gray/10 ml-4 rounded-full p-3 text-2xl text-white ml-auto disabled:text-gray-500 disabled:bg-transparent disabled:cursor-not-allowed"
+    >
+      <Icon path={mdiUndo} />
+    </button>
+
+    <!-- goForwardInHistory -->
+    <button
+      on:click={() => goForwardInHistory()}
+      disabled={!(editHistory.length > 0 && editHistoryIndex < editHistory.length - 1)}
+      class="hover:bg-immich-gray/10 ml-4 rounded-full p-3 text-2xl text-white disabled:text-gray-500 disabled:bg-transparent disabled:cursor-not-allowed"
+    >
+      <Icon path={mdiRedo} />
+    </button>
+
     <button
       on:click={() => save()}
       disabled={isRendering}
       class=" {isRendering
         ? 'bg-immich-dark-primary/50 hover:cursor-wait'
-        : 'bg-immich-dark-primary hover:bg-immich-dark-primary/80 '}  ml-auto mr-5 inline-flex items-center rounded-md p-[6px] px-4 text-black"
+        : 'bg-immich-dark-primary hover:bg-immich-dark-primary/80 '}  ml-4 mr-5 inline-flex items-center rounded-md p-[6px] px-4 text-black"
     >
       <svg
         class="-ml-1 mr-3 h-5 w-5 animate-spin text-black {isRendering ? '' : 'hidden'}"
@@ -889,9 +1009,14 @@
       </svg>
       Save
     </button>
-    <button class="hover:bg-immich-gray/10 mr-4 rounded-full p-3 text-2xl text-white">
-      <Icon path={mdiDotsVertical} />
-    </button>
+    <div use:clickOutside on:outclick={() => (isShowEditOptions = false)}>
+      <CircleIconButton isOpacity={true} icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
+      {#if isShowEditOptions}
+        <ContextMenu {...contextMenuPosition} direction="left">
+          <MenuOption on:click={clearHistory} text="Clear History" />
+        </ContextMenu>
+      {/if}
+    </div>
   </div>
   <div class="relative col-span-3 col-start-1 row-span-full row-start-1">
     <!-- TODO: fix only allow drag from crop Element or imageWrapper -->
@@ -900,7 +1025,10 @@
       use:pinch={{ enable: true }}
       use:pan
       on:pan={imagePanHandler}
+      on:panend={updateEditHistory}
       on:pinch={imagePinchHandler}
+      on:pinchend={updateEditHistory}
+      on:wheel={imageZoomHandler}
     >
       <div class="flex hidden h-full w-full items-center justify-center" bind:this={editorElement} />
       <div class="-z-10 flex h-full w-full items-center justify-center">
@@ -956,15 +1084,12 @@
           </button>
         </div>
         <div class="z-10 flex h-full w-full items-center justify-center bg-black">
-          <button
-            on:click={() => rotateImage(currentAngle, currentAngleOffset + 90, true)}
-            class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white"
-          >
+          <button on:click={() => rotate90()} class="hover:bg-immich-gray/10 rounded-full p-3 text-2xl text-white">
             <Icon path={mdiFormatRotate90} />
           </button>
         </div>
 
-        <div class="relative z-3000 h-[50px] w-[500px]" use:pan on:pan={anglePanHandler}>
+        <div class="relative z-3000 h-[50px] w-[500px]" use:pan on:pan={anglePanHandler} on:panend={updateEditHistory}>
           <!-- Angle selector slider -->
           <div
             bind:this={angleSlider}
@@ -1189,28 +1314,76 @@
       <div class="grid gap-y-2 px-6 pt-2">
         <!-- Adjust -->
         <div class="grid gap-y-8">
-          <AdjustElement title="Brightness" type={true} bind:value={filter.brightness} on:applyFilter={applyFilter}>
+          <AdjustElement
+            title="Brightness"
+            type={true}
+            bind:value={currentFilter.brightness}
+            on:applyFilter={applyFilter}
+            on:updateHistory={updateEditHistory}
+          >
             <Icon path={mdiBrightness6} size="1.5em" />
           </AdjustElement>
-          <AdjustElement title="Contrast" type={true} bind:value={filter.contrast} on:applyFilter={applyFilter}>
+          <AdjustElement
+            title="Contrast"
+            type={true}
+            bind:value={currentFilter.contrast}
+            on:applyFilter={applyFilter}
+            on:updateHistory={updateEditHistory}
+          >
             <Icon path={mdiContrastCircle} size="1.5em" />
           </AdjustElement>
-          <AdjustElement title="Saturation" type={true} bind:value={filter.saturation} on:applyFilter={applyFilter}>
+          <AdjustElement
+            title="Saturation"
+            type={true}
+            bind:value={currentFilter.saturation}
+            on:applyFilter={applyFilter}
+            on:updateHistory={updateEditHistory}
+          >
             <Icon path={mdiInvertColors} size="1.5em" />
           </AdjustElement>
-          <AdjustElement title="Blur" type={false} bind:value={filter.blur} on:applyFilter={applyFilter}>
+          <AdjustElement
+            title="Blur"
+            type={false}
+            bind:value={currentFilter.blur}
+            on:applyFilter={applyFilter}
+            on:updateHistory={updateEditHistory}
+          >
             <Icon path={mdiBlur} size="1.5em" />
           </AdjustElement>
-          <AdjustElement title="Grayscale" type={false} bind:value={filter.grayscale} on:applyFilter={applyFilter}>
+          <AdjustElement
+            title="Grayscale"
+            type={false}
+            bind:value={currentFilter.grayscale}
+            on:applyFilter={applyFilter}
+            on:updateHistory={updateEditHistory}
+          >
             <Icon path={mdiCircleHalfFull} size="1.5em" />
           </AdjustElement>
-          <AdjustElement title="Hue Rotate" type={true} bind:value={filter.hueRotate} on:applyFilter={applyFilter}>
+          <AdjustElement
+            title="Hue Rotate"
+            type={true}
+            bind:value={currentFilter.hueRotate}
+            on:applyFilter={applyFilter}
+            on:updateHistory={updateEditHistory}
+          >
             <Icon path={mdiDotsCircle} size="1.5em" />
           </AdjustElement>
-          <AdjustElement title="Invert" type={false} bind:value={filter.invert} on:applyFilter={applyFilter}>
+          <AdjustElement
+            title="Invert"
+            type={false}
+            bind:value={currentFilter.invert}
+            on:applyFilter={applyFilter}
+            on:updateHistory={updateEditHistory}
+          >
             <Icon path={mdiSelectInverse} size="1.5em" />
           </AdjustElement>
-          <AdjustElement title="Sepia" type={false} bind:value={filter.sepia} on:applyFilter={applyFilter}>
+          <AdjustElement
+            title="Sepia"
+            type={false}
+            bind:value={currentFilter.sepia}
+            on:applyFilter={applyFilter}
+            on:updateHistory={updateEditHistory}
+          >
             <Icon path={mdiPillar} size="1.5em" />
           </AdjustElement>
         </div>
@@ -1219,36 +1392,162 @@
       <div class="grid justify-center px-6 pt-2">
         <!-- Filter -->
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Custom" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Without" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Vivid" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard
+            title="Custom"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Without"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Vivid"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Playa" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Honey" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Isla" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Desert" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Clay" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Palma" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Blush" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Alpaca" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Modena" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard
+            title="Playa"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Honey"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Isla"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Desert"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Clay"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Palma"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Blush"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Alpaca"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Modena"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="West" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Metro" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Reel" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Bazaar" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Ollie" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard
+            title="West"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Metro"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Reel"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Bazaar"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Ollie"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
         </div>
         <hr class="border-1 border-immich-gray/10 mx-4 my-7" />
         <div class="grid grid-cols-3 gap-x-3">
-          <FilterCard title="Onyx" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Eiffel" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Vogue" {currentFilter} on:setPreset={setPreset} {thumbData} />
-          <FilterCard title="Vista" {currentFilter} on:setPreset={setPreset} {thumbData} />
+          <FilterCard
+            title="Onyx"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Eiffel"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Vogue"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
+          <FilterCard
+            title="Vista"
+            {currentFilterName}
+            on:setPreset={setPreset}
+            {thumbData}
+            on:updateHistory={updateEditHistory}
+          />
         </div>
       </div>
     {/if}
@@ -1260,7 +1559,7 @@
     translate={currentTranslate}
     crop={currentCrop}
     ratio={currentRatio}
-    {filter}
+    filter={currentFilter}
     {assetBlob}
     assetName={asset.originalFileName}
     flipX={currentFlipX}
