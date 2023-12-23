@@ -18,7 +18,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
-    @Inject(IDatabaseRepository) private readonly databaseRepository: IDatabaseRepository,
   ) {
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -37,7 +36,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
     if (dimSize != curDimSize) {
       this.logger.log(`Dimension size of model ${modelName} is ${dimSize}, but database expects ${curDimSize}.`);
-      await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, () => this.updateDimSize(dimSize));
+      await this.updateDimSize(dimSize);
     }
   }
 
@@ -121,11 +120,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   private async upsertEmbedding(assetId: string, embedding: number[]): Promise<void> {
-    if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
-      this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
-      await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
-    }
-
     await this.smartSearchRepository.upsert(
       { assetId, embedding: () => asVector(embedding, true) },
       { conflictPaths: ['assetId'] },

@@ -30,7 +30,6 @@ export class MetadataRepository implements IMetadataRepository {
     @InjectRepository(GeodataAdmin1Entity) private readonly geodataAdmin1Repository: Repository<GeodataAdmin1Entity>,
     @InjectRepository(GeodataAdmin2Entity) private readonly geodataAdmin2Repository: Repository<GeodataAdmin2Entity>,
     @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IDatabaseRepository) private readonly databaseRepository: IDatabaseRepository,
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
@@ -47,8 +46,7 @@ export class MetadataRepository implements IMetadataRepository {
     }
 
     this.logger.log('Importing geodata to database from file');
-
-    await this.databaseRepository.withLock(DatabaseLock.GeodataImport, this.importGeodata);
+    await this.importGeodata();
 
     await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
       lastUpdate: geodataDate,
