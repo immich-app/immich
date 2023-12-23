@@ -6,7 +6,7 @@ part of 'activity.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$albumActivityHash() => r'c6ea3cf0af25215a426e7816c4723bc098d31b97';
+String _$albumActivityHash() => r'3b0d7acee4d41c84b3f220784c3b904c83f836e6';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -21,12 +21,12 @@ final activity = Activity(
 );
 
 void main() {
-  late MockCurrentAsset assetProvider;
+  late MockCurrentAssetProvider assetProvider;
 
   setUpAll(() => TestUtils.init());
 
   setUp(() {
-    assetProvider = MockCurrentAsset();
+    assetProvider = MockCurrentAssetProvider();
   });
 
   testWidgets('Returns a Dismissible', (tester) async {

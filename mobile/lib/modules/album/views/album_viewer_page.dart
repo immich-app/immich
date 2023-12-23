@@ -36,9 +36,12 @@ class AlbumViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
     final album = ref.watch(albumWatcher(albumId));
+    // Listen provider to prevent autoDispose when navigating to other routes from within the viewer page
+    ref.listen(currentAlbumProvider, (_, __) {});
     album.whenData(
-      (value) =>
-          Future((() => ref.read(currentAlbumProvider.notifier).state = value)),
+      (value) => Future.microtask(
+        () => ref.read(currentAlbumProvider.notifier).set(value),
+      ),
     );
     final userId = ref.watch(authenticationProvider).userId;
     final isProcessing = useProcessingOverlay();

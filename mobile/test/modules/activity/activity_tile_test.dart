@@ -16,7 +16,7 @@ import '../../widget_tester_extensions.dart';
 import '../asset_viewer/asset_viewer_mocks.dart';
 
 void main() {
-  late MockCurrentAsset assetProvider;
+  late MockCurrentAssetProvider assetProvider;
   late Isar db;
 
   setUpAll(() async {
@@ -29,7 +29,7 @@ void main() {
   });
 
   setUp(() {
-    assetProvider = MockCurrentAsset();
+    assetProvider = MockCurrentAssetProvider();
   });
 
   testWidgets('Returns a ListTile', (tester) async {

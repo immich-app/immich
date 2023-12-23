@@ -8,7 +8,7 @@ class CurrentAsset extends _$CurrentAsset {
   @override
   Asset? build() => null;
 
-  void updateCurrentAsset(Asset a) => state = a;
+  void set(Asset? a) => state = a;
 }
 
 /// Mock class for testing

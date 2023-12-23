@@ -107,14 +107,17 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     bool isParent = stackIndex.value == -1 || stackIndex.value == 0;
 
-    useValueChanged(
-      asset(),
-      (_, __) =>
-          // Delay state update to after the execution of build method
-          Future(
-        () =>
-            ref.read(currentAssetProvider.notifier).updateCurrentAsset(asset()),
-      ),
+    // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
+    ref.listen(currentAssetProvider, (_, __) {});
+    useEffect(
+      () {
+        // Delay state update to after the execution of build method
+        Future.microtask(
+          () => ref.read(currentAssetProvider.notifier).set(asset()),
+        );
+        return null;
+      },
+      [asset()],
     );
 
     useEffect(
