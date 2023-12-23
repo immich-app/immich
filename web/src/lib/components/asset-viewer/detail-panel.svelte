@@ -52,7 +52,7 @@
     }
   }
 
-  $: isOwner = $user.id === asset.ownerId;
+  $: isOwner = $user?.id === asset.ownerId;
 
   $: {
     // Get latest description from server
@@ -356,7 +356,7 @@
           </button>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -519,7 +519,7 @@
           </div>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
