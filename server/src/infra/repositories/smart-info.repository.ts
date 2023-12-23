@@ -1,8 +1,8 @@
-import { DatabaseLock, Embedding, EmbeddingSearch, IDatabaseRepository, ISmartInfoRepository } from '@app/domain';
+import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DummyValue, GenerateSql } from '../infra.util';

@@ -1,7 +1,5 @@
 import {
-  DatabaseLock,
   GeoPoint,
-  IDatabaseRepository,
   IMetadataRepository,
   ImmichTags,
   ISystemMetadataRepository,
