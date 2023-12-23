@@ -7,6 +7,7 @@ import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
 import 'package:immich_mobile/modules/activities/widgets/dismissible_activity.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../fixtures/user.stub.dart';
 import '../../test_utils.dart';
@@ -22,17 +23,19 @@ final activity = Activity(
 
 void main() {
   late MockCurrentAssetProvider assetProvider;
+  late List<Override> overrides;
 
   setUpAll(() => TestUtils.init());
 
   setUp(() {
     assetProvider = MockCurrentAssetProvider();
+    overrides = [currentAssetProvider.overrideWith(() => assetProvider)];
   });
 
   testWidgets('Returns a Dismissible', (tester) async {
     await tester.pumpConsumerWidget(
       DismissibleActivity('1', ActivityTile(activity)),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     expect(find.byType(Dismissible), findsOneWidget);
@@ -41,7 +44,7 @@ void main() {
   testWidgets('Dialog displayed when onDismiss is set', (tester) async {
     await tester.pumpConsumerWidget(
       DismissibleActivity('1', ActivityTile(activity), onDismiss: (_) {}),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     final dismissible = find.byType(Dismissible);
@@ -61,7 +64,7 @@ void main() {
         ActivityTile(activity),
         onDismiss: (id) => receivedActivityId = id,
       ),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     final dismissible = find.byType(Dismissible);
@@ -78,7 +81,7 @@ void main() {
   testWidgets('Delete icon for background if onDismiss is set', (tester) async {
     await tester.pumpConsumerWidget(
       DismissibleActivity('1', ActivityTile(activity), onDismiss: (_) {}),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     final dismissible = find.byType(Dismissible);
@@ -91,7 +94,7 @@ void main() {
   testWidgets('No delete dialog if onDismiss is not set', (tester) async {
     await tester.pumpConsumerWidget(
       DismissibleActivity('1', ActivityTile(activity)),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     final dismissible = find.byType(Dismissible);
@@ -104,7 +107,7 @@ void main() {
   testWidgets('No icon for background if onDismiss is not set', (tester) async {
     await tester.pumpConsumerWidget(
       DismissibleActivity('1', ActivityTile(activity)),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     final dismissible = find.byType(Dismissible);

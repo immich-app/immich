@@ -10,6 +10,7 @@ import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../fixtures/album.stub.dart';
 import '../../fixtures/user.stub.dart';
@@ -23,6 +24,7 @@ void main() {
   late Isar db;
   late MockCurrentAlbumProvider mockCurrentAlbumProvider;
   late MockAlbumActivity activityMock;
+  late List<Override> overrides;
 
   setUpAll(() async {
     TestUtils.init();
@@ -35,6 +37,11 @@ void main() {
   setUp(() {
     mockCurrentAlbumProvider = MockCurrentAlbumProvider(AlbumStub.twoAsset);
     activityMock = MockAlbumActivity();
+    overrides = [
+      currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+      albumActivityProvider(AlbumStub.twoAsset.remoteId!)
+          .overrideWith(() => activityMock),
+    ];
   });
 
   testWidgets('Returns an Input text field', (tester) async {
@@ -42,9 +49,7 @@ void main() {
       ActivityTextField(
         onSubmit: (_) {},
       ),
-      overrides: [
-        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-      ],
+      overrides: overrides,
     );
 
     expect(find.byType(TextField), findsOneWidget);
@@ -59,7 +64,7 @@ void main() {
       ),
       overrides: [
         currentUserProvider.overrideWith((ref) => userProvider),
-        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+        ...overrides,
       ],
     );
 
@@ -71,9 +76,7 @@ void main() {
       ActivityTextField(
         onSubmit: (_) {},
       ),
-      overrides: [
-        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-      ],
+      overrides: overrides,
     );
 
     expect(find.byType(UserCircleAvatar), findsOneWidget);
@@ -87,9 +90,7 @@ void main() {
           onSubmit: (_) {},
           likeId: '1',
         ),
-        overrides: [
-          currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-        ],
+        overrides: overrides,
       );
 
       expect(
@@ -108,9 +109,7 @@ void main() {
       ActivityTextField(
         onSubmit: (_) {},
       ),
-      overrides: [
-        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-      ],
+      overrides: overrides,
     );
 
     expect(
@@ -128,11 +127,7 @@ void main() {
       ActivityTextField(
         onSubmit: (_) {},
       ),
-      overrides: [
-        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-        albumActivityProvider(AlbumStub.twoAsset.remoteId!)
-            .overrideWith(() => activityMock),
-      ],
+      overrides: overrides,
     );
 
     when(() => activityMock.addLike()).thenAnswer((_) => Future.value());
@@ -149,11 +144,7 @@ void main() {
         onSubmit: (_) {},
         likeId: 'test-suffix',
       ),
-      overrides: [
-        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-        albumActivityProvider(AlbumStub.twoAsset.remoteId!)
-            .overrideWith(() => activityMock),
-      ],
+      overrides: overrides,
     );
 
     when(() => activityMock.removeActivity(any()))
@@ -173,9 +164,7 @@ void main() {
         onSubmit: (text) => receivedText = text,
         likeId: 'test-suffix',
       ),
-      overrides: [
-        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-      ],
+      overrides: overrides,
     );
 
     final textField = find.byType(TextField);
@@ -193,9 +182,7 @@ void main() {
         isEnabled: false,
         likeId: 'test-suffix',
       ),
-      overrides: [
-        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-      ],
+      overrides: overrides,
     );
 
     final suffixIcon = find.byType(IconButton);
@@ -207,5 +194,6 @@ void main() {
 
     expect(receviedText, isNull);
     verifyNever(() => activityMock.addLike());
+    verifyNever(() => activityMock.removeActivity(any()));
   });
 }

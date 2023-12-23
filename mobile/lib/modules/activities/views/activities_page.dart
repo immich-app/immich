@@ -24,6 +24,7 @@ class ActivitiesPage extends HookConsumerWidget {
     final album = ref.watch(currentAlbumProvider)!;
     final asset = ref.watch(currentAssetProvider);
     final user = ref.watch(currentUserProvider);
+
     final activityNotifier = ref
         .read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
     final activities =
@@ -42,7 +43,7 @@ class ActivitiesPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(asset != null ? "" : album.name)),
+      appBar: AppBar(title: asset == null ? Text(album.name) : null),
       body: activities.widgetWhen(
         onData: (data) {
           final liked = data.firstWhereOrNull(

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/activities/models/activity.model.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
@@ -17,11 +18,13 @@ import '../asset_viewer/asset_viewer_mocks.dart';
 
 void main() {
   late MockCurrentAssetProvider assetProvider;
+  late List<Override> overrides;
   late Isar db;
 
   setUpAll(() async {
     TestUtils.init();
     db = await TestUtils.initIsar();
+    // For UserCircleAvatar
     Store.init(db);
     Store.put(StoreKey.currentUser, UserStub.admin);
     Store.put(StoreKey.serverEndpoint, '');
@@ -30,6 +33,7 @@ void main() {
 
   setUp(() {
     assetProvider = MockCurrentAssetProvider();
+    overrides = [currentAssetProvider.overrideWith(() => assetProvider)];
   });
 
   testWidgets('Returns a ListTile', (tester) async {
@@ -42,7 +46,7 @@ void main() {
           user: UserStub.admin,
         ),
       ),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     expect(find.byType(ListTile), findsOneWidget);
@@ -59,7 +63,7 @@ void main() {
           user: UserStub.admin,
         ),
       ),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     final listTile = tester.widget<ListTile>(find.byType(ListTile));
@@ -79,7 +83,7 @@ void main() {
           assetId: '1',
         ),
       ),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     final listTile = tester.widget<ListTile>(find.byType(ListTile));
@@ -98,7 +102,7 @@ void main() {
           assetId: '1',
         ),
       ),
-      overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+      overrides: overrides,
     );
 
     assetProvider.state = AssetStub.image1;
@@ -119,7 +123,7 @@ void main() {
     testWidgets('Like contains filled heart as leading', (tester) async {
       await tester.pumpConsumerWidget(
         ActivityTile(activity),
-        overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+        overrides: overrides,
       );
 
       // Leading widget should not be null
@@ -138,7 +142,7 @@ void main() {
     testWidgets('Like title is center aligned', (tester) async {
       await tester.pumpConsumerWidget(
         ActivityTile(activity),
-        overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+        overrides: overrides,
       );
 
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
@@ -149,7 +153,7 @@ void main() {
     testWidgets('No subtitle for likes', (tester) async {
       await tester.pumpConsumerWidget(
         ActivityTile(activity),
-        overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+        overrides: overrides,
       );
 
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
@@ -171,7 +175,7 @@ void main() {
         (tester) async {
       await tester.pumpConsumerWidget(
         ActivityTile(activity),
-        overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+        overrides: overrides,
       );
 
       final userAvatarFinder = find.byType(UserCircleAvatar);
@@ -189,7 +193,7 @@ void main() {
     testWidgets('Comment title is top aligned', (tester) async {
       await tester.pumpConsumerWidget(
         ActivityTile(activity),
-        overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+        overrides: overrides,
       );
 
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
@@ -200,7 +204,7 @@ void main() {
     testWidgets('Contains comment text as subtitle', (tester) async {
       await tester.pumpConsumerWidget(
         ActivityTile(activity),
-        overrides: [currentAssetProvider.overrideWith(() => assetProvider)],
+        overrides: overrides,
       );
 
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
