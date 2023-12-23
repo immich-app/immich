@@ -10,7 +10,10 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
-ENV PATH="${PATH}:/usr/src/app/bin"
+ENV PATH="${PATH}:/usr/src/app/bin" \
+    NODE_ENV=development \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
@@ -34,7 +37,9 @@ RUN npm run build
 FROM ghcr.io/immich-app/base-server-prod:20231214@sha256:b214f86683fde081b09beed2d7bfc28bec55c829751ccf2e02ad7dd18293f5e0
 
 WORKDIR /usr/src/app
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin

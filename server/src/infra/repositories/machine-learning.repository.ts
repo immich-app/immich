@@ -1,5 +1,4 @@
 import {
-  ClassificationConfig,
   CLIPConfig,
   CLIPMode,
   DetectFaceResult,
@@ -25,10 +24,6 @@ export class MachineLearningRepository implements IMachineLearningRepository {
       );
     }
     return res.json();
-  }
-
-  classifyImage(url: string, input: VisionModelInput, config: ClassificationConfig): Promise<string[]> {
-    return this.post<string[]>(url, input, { ...config, modelType: ModelType.IMAGE_CLASSIFICATION });
   }
 
   detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]> {

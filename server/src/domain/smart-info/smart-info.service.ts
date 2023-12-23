@@ -46,48 +46,6 @@ export class SmartInfoService {
     await this.jobRepository.resume(QueueName.SMART_SEARCH);
   }
 
-  async handleQueueObjectTagging({ force }: IBaseJob) {
-    const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.classification.enabled) {
-      return true;
-    }
-
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.OBJECT_TAGS);
-    });
-
-    for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { id: asset.id } });
-      }
-    }
-
-    return true;
-  }
-
-  async handleClassifyImage({ id }: IEntityJob) {
-    const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.classification.enabled) {
-      return true;
-    }
-
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset.resizePath) {
-      return false;
-    }
-
-    const tags = await this.machineLearning.classifyImage(
-      machineLearning.url,
-      { imagePath: asset.resizePath },
-      machineLearning.classification,
-    );
-    await this.repository.upsert({ assetId: asset.id, tags });
-
-    return true;
-  }
-
   async handleQueueEncodeClip({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.clip.enabled) {

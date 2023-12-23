@@ -49,7 +49,6 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
     [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
@@ -66,11 +65,6 @@ export const defaults = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
-    classification: {
-      enabled: false,
-      modelName: 'microsoft/resnet-50',
-      minScore: 0.9,
-    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -137,7 +131,6 @@ export const defaults = Object.freeze<SystemConfig>({
 export enum FeatureFlag {
   CLIP_ENCODE = 'clipEncode',
   FACIAL_RECOGNITION = 'facialRecognition',
-  TAG_IMAGE = 'tagImage',
   MAP = 'map',
   REVERSE_GEOCODING = 'reverseGeocoding',
   SIDECAR = 'sidecar',
@@ -182,8 +175,6 @@ export class SystemConfigCore {
           throw new BadRequestException('Clip encoding is not enabled');
         case FeatureFlag.FACIAL_RECOGNITION:
           throw new BadRequestException('Facial recognition is not enabled');
-        case FeatureFlag.TAG_IMAGE:
-          throw new BadRequestException('Image tagging is not enabled');
         case FeatureFlag.SIDECAR:
           throw new BadRequestException('Sidecar is not enabled');
         case FeatureFlag.SEARCH:
@@ -212,7 +203,6 @@ export class SystemConfigCore {
     return {
       [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clip.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
-      [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.classification.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
       [FeatureFlag.SIDECAR]: true,
@@ -245,10 +235,7 @@ export class SystemConfigCore {
       _.set(config, key, value);
     }
 
-    const errors = await validate(plainToInstance(SystemConfigDto, config), {
-      forbidNonWhitelisted: true,
-      forbidUnknownValues: true,
-    });
+    const errors = await validate(plainToInstance(SystemConfigDto, config));
     if (errors.length > 0) {
       this.logger.error('Validation error', errors);
       if (configFilePath) {
@@ -334,13 +321,13 @@ export class SystemConfigCore {
         }
 
         if (!_.isEmpty(file)) {
-          throw new Error(`Unknown keys found: ${JSON.stringify(file)}`);
+          this.logger.warn(`Unknown keys found: ${JSON.stringify(file, null, 2)}`);
         }
 
         this.configCache = overrides;
       } catch (error: Error | any) {
-        this.logger.error(`Unable to load configuration file: ${filepath} due to ${error}`, error?.stack);
-        throw new Error('Invalid configuration file');
+        this.logger.error(`Unable to load configuration file: ${filepath}`);
+        throw error;
       }
     }
 

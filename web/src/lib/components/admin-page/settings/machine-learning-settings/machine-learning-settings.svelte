@@ -89,46 +89,6 @@
           />
         </div>
 
-        <SettingAccordion title="Image Tagging" subtitle="Tag and classify images with object labels">
-          <div class="ml-4 mt-4 flex flex-col gap-4">
-            <SettingSwitch
-              title="ENABLED"
-              subtitle="If disabled, images will not be tagged. This affects the Things section in the Explore page as well as 'm:' searches."
-              bind:checked={machineLearningConfig.classification.enabled}
-              disabled={disabled || !machineLearningConfig.enabled}
-            />
-
-            <hr />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              label="IMAGE CLASSIFICATION MODEL"
-              bind:value={machineLearningConfig.classification.modelName}
-              required={true}
-              disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.classification.enabled}
-              isEdited={machineLearningConfig.classification.modelName !== savedConfig.classification.modelName}
-            >
-              <p slot="desc" class="immich-form-label pb-2 text-sm">
-                The name of an image classification model listed <a
-                  href="https://huggingface.co/models?pipeline_tag=image-classification&sort=trending"><u>here</u></a
-                >. It must be tagged with the 'Image Classification' task and must support ONNX conversion.
-              </p>
-            </SettingInputField>
-
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
-              label="IMAGE CLASSIFICATION THRESHOLD"
-              desc="Minimum confidence score to add a particular object tag. Lower values will add more tags to images, but may result in more false positives. Will not have any effect until the Tag Objects job is re-run."
-              bind:value={machineLearningConfig.classification.minScore}
-              step="0.1"
-              min="0"
-              max="1"
-              disabled={disabled || !machineLearningConfig.enabled || !machineLearningConfig.classification.enabled}
-              isEdited={machineLearningConfig.classification.minScore !== savedConfig.classification.minScore}
-            />
-          </div>
-        </SettingAccordion>
-
         <SettingAccordion title="Smart Search" subtitle="Search for images semantically using CLIP embeddings">
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch

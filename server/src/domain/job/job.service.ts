@@ -94,10 +94,6 @@ export class JobService {
       case QueueName.MIGRATION:
         return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
 
-      case QueueName.OBJECT_TAGGING:
-        await this.configCore.requireFeature(FeatureFlag.TAG_IMAGE);
-        return this.jobRepository.queue({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force } });
-
       case QueueName.SMART_SEARCH:
         await this.configCore.requireFeature(FeatureFlag.CLIP_ENCODE);
         return this.jobRepository.queue({ name: JobName.QUEUE_ENCODE_CLIP, data: { force } });
@@ -209,7 +205,6 @@ export class JobService {
       case JobName.GENERATE_JPEG_THUMBNAIL: {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data });
-        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
         await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
 

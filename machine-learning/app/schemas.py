@@ -25,7 +25,6 @@ class BoundingBox(TypedDict):
 
 
 class ModelType(StrEnum):
-    IMAGE_CLASSIFICATION = "image-classification"
     CLIP = "clip"
     FACIAL_RECOGNITION = "facial-recognition"
 

@@ -26,10 +26,16 @@ program
   .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
   .addOption(new Option('-i, --ignore [paths...]', 'Paths to ignore').env('IMMICH_IGNORE_PATHS'))
   .addOption(new Option('-h, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
+  .addOption(new Option('-i, --include-hidden', 'Include hidden folders').env('IMMICH_INCLUDE_HIDDEN').default(false))
   .addOption(
     new Option('-a, --album', 'Automatically create albums based on folder name')
       .env('IMMICH_AUTO_CREATE_ALBUM')
       .default(false),
+  )
+  .addOption(
+    new Option('-A, --album-name <name>', 'Add all assets to specified album')
+      .env('IMMICH_ALBUM_NAME')
+      .conflicts('album'),
   )
   .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")

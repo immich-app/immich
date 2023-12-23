@@ -157,7 +157,7 @@
         isOpacity={true}
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
-        title="Favorite"
+        title={asset.isFavorite ? 'Unfavorite' : 'Favorite'}
       />
     {/if}
 

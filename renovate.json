@@ -2,6 +2,10 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base", "docker:pinDigests"],
   "minimumReleaseAge": "5 days",
+  "constraints": {
+    "python": "< 3.12"
+  },
+  "constraintsFiltering": "strict",
   "packageRules": [
     {
       "matchFileNames": ["cli/**"],
