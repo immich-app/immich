@@ -49,11 +49,14 @@ As this is a new feature, it is still experimental and may not work on all syste
 4. Redeploy the `immich-microservices` container with these updated settings.
 5. In the Admin page under `FFmpeg settings`, change the hardware acceleration setting to the appropriate option and save.
 
-#### Imagegenius/Immich docker Community Appstore Setup
+#### All-In-One - Unraid Setup
 ##### NVENC - NVIDIA GPUs
+- If you are using other backends. You will still need to implement [`hwaccel.yml`][hw-file] file into the `immich-microservices` service directly, please see the "Initial Setup" section above on how to do that.
+- Steps 1 and 2 have been now implemented in the .env or environment variables of your docker-compose. If you are missing them from your config, please add them. Otherwise, skip to step 3.    
+
 1. Assuming you already have the Nvidia Driver Plugin installed on your Unraid Server. Please confirm that your Nvida GPU is showing up with its GPU ID in the Nvidia Driver Plugin. The ID will be `GPU-LONG_STRING_OF_CHARACTERS`. Copy the GPU ID.
 2. In the Imagegenius/Immich Docker Container app, add two new variables: Key=`NVIDIA_VISIBLE_DEVICES` Value=`GPU-LONG_STRING_OF_CHARACTERS` and Key=`NVIDIA_DRIVER_CAPABILITIES` Value=`all`
-3. While you are in the docker container app, change the Container from Basic Mode to Advanced Mode and add the following parameters to the Extra Parameters field: `--runtime=nvidia`
+3. While you are in the docker container app, change the Container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`
 4. Restart the Imagegenius/Immich Docker Container app.
 5. In the Admin page under FFmpeg settings, change the hardware acceleration setting to the appropriate option and save.
 
