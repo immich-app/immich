@@ -52,7 +52,7 @@
     }
   }
 
-  $: isOwner = $user.id === asset.ownerId;
+  $: isOwner = $user?.id === asset.ownerId;
 
   $: {
     // Get latest description from server
