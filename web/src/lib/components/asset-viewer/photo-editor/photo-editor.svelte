@@ -33,7 +33,7 @@
 
   import Icon from '$lib/components/elements/icon.svelte';
 
-  import { rotate, pinch, pan } from 'svelte-hammer';
+  import { pinch, pan } from 'svelte-hammer';
 
   import SuggestionsButton from './suggestions-button.svelte';
   import AspectRatioButton from './aspect-ratio-button.svelte';
@@ -59,7 +59,6 @@
 
   import { createEventDispatcher } from 'svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { transform } from 'lodash-es';
 
   const dispatch = createEventDispatcher();
 
@@ -86,10 +85,8 @@
   let isLoaded = false;
 
   let imageWrapper: HTMLDivElement;
-  let imageWrapperParent: HTMLDivElement;
   let cropElement: HTMLDivElement;
   let cropElementWrapper: HTMLDivElement;
-  let assetDragHandle: HTMLDivElement;
 
   let currentAngle = 0;
   let currentAngleOffset = 0;
@@ -148,27 +145,27 @@
 
   $: currentRatio = originalImage ? originalImage.naturalWidth / imageWrapper.offsetWidth : 0;
 
-  const pinchHandler = (event: CustomEvent) => {
-    let scale = event.detail.scale;
+  // const pinchHandler = (event: CustomEvent) => {
+  //   let scale = event.detail.scale;
 
-    if (scale > 1) {
-      if (currentZoom <= 5) {
-        currentZoom += zoomSpeed * scale;
-      }
-    } else {
-      if (currentZoom > 1) {
-        currentZoom -= zoomSpeed * scale * 3;
-      }
-    }
+  //   if (scale > 1) {
+  //     if (currentZoom <= 5) {
+  //       currentZoom += zoomSpeed * scale;
+  //     }
+  //   } else {
+  //     if (currentZoom > 1) {
+  //       currentZoom -= zoomSpeed * scale * 3;
+  //     }
+  //   }
 
-    if (currentZoom < 1) {
-      currentZoom = 1;
-    }
-    if (currentZoom > 5) {
-      currentZoom = 5;
-    }
-    setImageWrapperTransform();
-  };
+  //   if (currentZoom < 1) {
+  //     currentZoom = 1;
+  //   }
+  //   if (currentZoom > 5) {
+  //     currentZoom = 5;
+  //   }
+  //   setImageWrapperTransform();
+  // };
 
   const imagePanHandler = (event: CustomEvent) => {
     console.log('imagePanHandler');
@@ -416,9 +413,9 @@
     activeButton = button;
     const cropWrapperParent = cropElementWrapper.parentElement;
 
-    removeAngleSlider();
+    //removeAngleSlider();
     //removeAssetDrag();
-    removeZoom();
+    //removeZoom();
 
     //TODO: better solution
     if (!cropWrapperParent) {
@@ -543,156 +540,156 @@
     setImageWrapperTransform();
   };
 
-  const initAssetDrag = async () => {
-    console.log('initAssetDrag');
-    let pos1 = 0,
-      pos2 = 0,
-      pos3 = 0,
-      pos4 = 0;
-    const closeDragElement = () => {
-      // stop moving when mouse button is released:
-      document.onmouseup = null;
-      document.onmousemove = null;
-    };
+  // const initAssetDrag = async () => {
+  //   console.log('initAssetDrag');
+  //   let pos1 = 0,
+  //     pos2 = 0,
+  //     pos3 = 0,
+  //     pos4 = 0;
+  //   const closeDragElement = () => {
+  //     // stop moving when mouse button is released:
+  //     document.onmouseup = null;
+  //     document.onmousemove = null;
+  //   };
 
-    const elementDrag = async (e: MouseEvent) => {
-      if (activeButton !== 'crop') {
-        return;
-      }
-      e.preventDefault();
-      // calculate the new cursor position:
-      pos1 = pos3 - e.clientX;
-      pos2 = pos4 - e.clientY;
-      pos3 = e.clientX;
-      pos4 = e.clientY;
+  //   const elementDrag = async (e: MouseEvent) => {
+  //     if (activeButton !== 'crop') {
+  //       return;
+  //     }
+  //     e.preventDefault();
+  //     // calculate the new cursor position:
+  //     pos1 = pos3 - e.clientX;
+  //     pos2 = pos4 - e.clientY;
+  //     pos3 = e.clientX;
+  //     pos4 = e.clientY;
 
-      if (currentAngleOffset === 90) {
-        const temp = pos1;
-        pos1 = -pos2;
-        pos2 = temp;
-      } else if (currentAngleOffset === 180) {
-        pos1 = -pos1;
-        pos2 = -pos2;
-      } else if (currentAngleOffset === 270) {
-        const temp = pos1;
-        pos1 = pos2;
-        pos2 = -temp;
-      }
+  //     if (currentAngleOffset === 90) {
+  //       const temp = pos1;
+  //       pos1 = -pos2;
+  //       pos2 = temp;
+  //     } else if (currentAngleOffset === 180) {
+  //       pos1 = -pos1;
+  //       pos2 = -pos2;
+  //     } else if (currentAngleOffset === 270) {
+  //       const temp = pos1;
+  //       pos1 = pos2;
+  //       pos2 = -temp;
+  //     }
 
-      let x = 0;
-      let y = 0;
+  //     let x = 0;
+  //     let y = 0;
 
-      //Calc max y translation
-      let h1 = cropElement.offsetHeight;
-      let w1 = cropElement.offsetWidth;
+  //     //Calc max y translation
+  //     let h1 = cropElement.offsetHeight;
+  //     let w1 = cropElement.offsetWidth;
 
-      if (currentAngleOffset === 90 || currentAngleOffset === 270) {
-        const temp = h1;
-        h1 = w1;
-        w1 = temp;
-      }
+  //     if (currentAngleOffset === 90 || currentAngleOffset === 270) {
+  //       const temp = h1;
+  //       h1 = w1;
+  //       w1 = temp;
+  //     }
 
-      // const h2 = w1 * Math.tan((Math.abs(currentAngle) * Math.PI) / 180);
-      // const d = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * (h1 + h2);
+  //     // const h2 = w1 * Math.tan((Math.abs(currentAngle) * Math.PI) / 180);
+  //     // const d = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * (h1 + h2);
 
-      const a = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * w1;
-      const b = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * h1;
-      const d = a + b;
+  //     const a = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * w1;
+  //     const b = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * h1;
+  //     const d = a + b;
 
-      let maxY = (imageWrapper.offsetHeight * currentZoom - d) / 2;
+  //     let maxY = (imageWrapper.offsetHeight * currentZoom - d) / 2;
 
-      maxY = maxY / currentZoom;
+  //     maxY = maxY / currentZoom;
 
-      // console.log('currentZoom', currentZoom);
-      // console.log('offsetHeight', imageWrapper.offsetHeight);
-      // console.log('realHight', imageWrapper.offsetHeight * currentZoom);
-      // console.log('maxY', maxY);
+  //     // console.log('currentZoom', currentZoom);
+  //     // console.log('offsetHeight', imageWrapper.offsetHeight);
+  //     // console.log('realHight', imageWrapper.offsetHeight * currentZoom);
+  //     // console.log('maxY', maxY);
 
-      // Calc max x translation
-      const h3 = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * h1;
-      const h4 = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * w1;
-      let maxX = (imageWrapper.offsetWidth * currentZoom - h3 - h4) / 2;
-      maxX = maxX / currentZoom;
-      //console.log('maxX', maxX);
+  //     // Calc max x translation
+  //     const h3 = Math.sin((Math.abs(currentAngle) * Math.PI) / 180) * h1;
+  //     const h4 = Math.cos((Math.abs(currentAngle) * Math.PI) / 180) * w1;
+  //     let maxX = (imageWrapper.offsetWidth * currentZoom - h3 - h4) / 2;
+  //     maxX = maxX / currentZoom;
+  //     //console.log('maxX', maxX);
 
-      if (currentTranslate.x - pos1 > maxX) {
-        x = maxX;
-      } else if (currentTranslate.x - pos1 < -maxX) {
-        x = -maxX;
-      } else {
-        x = currentTranslate.x - pos1;
-      }
+  //     if (currentTranslate.x - pos1 > maxX) {
+  //       x = maxX;
+  //     } else if (currentTranslate.x - pos1 < -maxX) {
+  //       x = -maxX;
+  //     } else {
+  //       x = currentTranslate.x - pos1;
+  //     }
 
-      if (currentTranslate.y - pos2 > maxY) {
-        y = maxY;
-      } else if (currentTranslate.y - pos2 < -maxY) {
-        y = -maxY;
-      } else {
-        y = currentTranslate.y - pos2;
-      }
+  //     if (currentTranslate.y - pos2 > maxY) {
+  //       y = maxY;
+  //     } else if (currentTranslate.y - pos2 < -maxY) {
+  //       y = -maxY;
+  //     } else {
+  //       y = currentTranslate.y - pos2;
+  //     }
 
-      // console.log('y:', Math.round(y));
-      // console.log('x:', Math.round(x));
+  //     // console.log('y:', Math.round(y));
+  //     // console.log('x:', Math.round(x));
 
-      // Decide which direction to translate
-      // if (currentTranslateDirection === 'y') {
-      //   currentTranslate = {
-      //     x: 0,
-      //     y: y,
-      //   };
-      // } else if (currentTranslateDirection === 'x') {
-      //   currentTranslate = {
-      //     x: x,
-      //     y: 0,
-      //   };
-      // } else {
-      //   currentTranslate = {
-      //     x: 0,
-      //     y: 0,
-      //   };
-      // }
-      currentTranslate = {
-        x: x,
-        y: y,
-      };
-      // console.log('currentTranslateBefore', currentTranslate);
+  //     // Decide which direction to translate
+  //     // if (currentTranslateDirection === 'y') {
+  //     //   currentTranslate = {
+  //     //     x: 0,
+  //     //     y: y,
+  //     //   };
+  //     // } else if (currentTranslateDirection === 'x') {
+  //     //   currentTranslate = {
+  //     //     x: x,
+  //     //     y: 0,
+  //     //   };
+  //     // } else {
+  //     //   currentTranslate = {
+  //     //     x: 0,
+  //     //     y: 0,
+  //     //   };
+  //     // }
+  //     currentTranslate = {
+  //       x: x,
+  //       y: y,
+  //     };
+  //     // console.log('currentTranslateBefore', currentTranslate);
 
-      // console.log('currentTranslate', currentTranslate);
-      setImageWrapperTransform();
-    };
+  //     // console.log('currentTranslate', currentTranslate);
+  //     setImageWrapperTransform();
+  //   };
 
-    const dragMouseDown = (e: MouseEvent) => {
-      //console.log('dragMouseDown');
+  //   const dragMouseDown = (e: MouseEvent) => {
+  //     //console.log('dragMouseDown');
 
-      e.preventDefault();
-      // get the mouse cursor position at startup:
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      document.onmouseup = closeDragElement;
-      // call a function whenever the cursor moves:
-      document.onmousemove = elementDrag;
-    };
-    assetDragHandle.onmousedown = dragMouseDown;
-  };
+  //     e.preventDefault();
+  //     // get the mouse cursor position at startup:
+  //     pos3 = e.clientX;
+  //     pos4 = e.clientY;
+  //     document.onmouseup = closeDragElement;
+  //     // call a function whenever the cursor moves:
+  //     document.onmousemove = elementDrag;
+  //   };
+  //   assetDragHandle.onmousedown = dragMouseDown;
+  // };
 
-  const removeAssetDrag = () => {
-    assetDragHandle.onmousedown = null;
-    document.onmouseup = null;
-    document.onmousemove = null;
-  };
+  // const removeAssetDrag = () => {
+  //   assetDragHandle.onmousedown = null;
+  //   document.onmouseup = null;
+  //   document.onmousemove = null;
+  // };
 
-  const removeAngleSlider = () => {
-    angleSliderHandle.onmousedown = null;
-    document.onmouseup = null;
-    document.onmousemove = null;
-    document.ontouchmove = null;
-    document.ontouchend = null;
-    angleSliderHandle.ontouchstart = null;
-  };
+  // const removeAngleSlider = () => {
+  //   angleSliderHandle.onmousedown = null;
+  //   document.onmouseup = null;
+  //   document.onmousemove = null;
+  //   document.ontouchmove = null;
+  //   document.ontouchend = null;
+  //   angleSliderHandle.ontouchstart = null;
+  // };
 
-  const removeZoom = () => {
-    document.onwheel = null;
-  };
+  // const removeZoom = () => {
+  //   document.onwheel = null;
+  // };
 
   const calcImageElement = (angle: number) => {
     // Get image wrapper width and height

@@ -1,6 +1,7 @@
 <script lang="ts">
   import 'context-filter-polyfill'; // polyfill for canvas filters
   //import copyExifWithoutOrientation from './copyExifWithoutOrientation';
+
   import copyExif from './copyExif';
 
   export let isRendering = false;

@@ -1,4 +1,4 @@
-export default async function copyExif(originalAsset, newBlob) {
+const copyExif = async (originalAsset: Blob, newBlob: Blob): Promise<Blob> => {
   // Retrieve the EXIF data from the original asset
   const exif = await retrieveExif(originalAsset);
 
@@ -8,14 +8,14 @@ export default async function copyExif(originalAsset, newBlob) {
   });
 
   return blobWithExif;
-}
+};
 
-export const retrieveExif = (imageBlob) => {
+const retrieveExif = (imageBlob: Blob): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
     reader.addEventListener('load', (event) => {
-      const buffer = event.target.result;
+      const buffer = event.target?.result as ArrayBuffer;
       const dataView = new DataView(buffer);
       let offset = 0;
 
@@ -26,8 +26,10 @@ export const retrieveExif = (imageBlob) => {
 
       offset += 2;
 
+      let found = false;
+
       //TODO: Use some kind of validation to make sure we don't get stuck in an infinite loop
-      while (true) {
+      while (!found) {
         const marker = dataView.getUint16(offset);
 
         // Break if we've reached the start of the image data
@@ -39,7 +41,8 @@ export const retrieveExif = (imageBlob) => {
 
         // If we've found the EXIF data, return it
         if (marker === 0xffe1 && dataView.getUint32(offset + 4) === 0x45786966) {
-          return resolve(imageBlob.slice(offset, offset + 2 + size));
+          found = true;
+          return resolve(new Blob([imageBlob.slice(offset, offset + 2 + size)]));
         }
 
         offset += 2 + size;
@@ -52,3 +55,5 @@ export const retrieveExif = (imageBlob) => {
     reader.readAsArrayBuffer(imageBlob);
   });
 };
+
+export default copyExif;
