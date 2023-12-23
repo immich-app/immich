@@ -5,6 +5,11 @@ import 'package:mocktail/mocktail.dart';
 class MockCurrentAssetProvider extends CurrentAssetInternal
     with Mock
     implements CurrentAsset {
+  Asset? initAsset;
+  MockCurrentAssetProvider([this.initAsset]);
+
   @override
-  set state(Asset? asset) => super.state = asset;
+  Asset? build() {
+    return initAsset;
+  }
 }

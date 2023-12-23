@@ -62,3 +62,6 @@ class AlbumActivity extends _$AlbumActivity {
     }
   }
 }
+
+/// Mock class for testing
+abstract class AlbumActivityInternal extends _$AlbumActivity {}

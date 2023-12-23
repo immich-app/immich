@@ -41,15 +41,6 @@ class ActivitiesPage extends HookConsumerWidget {
       );
     }
 
-    /// If no likeId received, consider it as a request to add a like, else remove the activity for the likeId
-    Future<void> onLikeToggled(String? likeId) async {
-      if (likeId != null) {
-        await activityNotifier.removeActivity(likeId);
-      } else {
-        await activityNotifier.addLike();
-      }
-    }
-
     return Scaffold(
       appBar: AppBar(title: Text(asset != null ? "" : album.name)),
       body: activities.widgetWhen(
@@ -101,7 +92,6 @@ class ActivitiesPage extends HookConsumerWidget {
                       isEnabled: album.activityEnabled,
                       likeId: liked?.id,
                       onSubmit: onAddComment,
-                      onSuffixTapped: onLikeToggled,
                     ),
                   ),
                 ),

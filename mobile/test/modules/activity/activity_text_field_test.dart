@@ -2,19 +2,27 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_text_field.dart';
+import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:isar/isar.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../fixtures/album.stub.dart';
 import '../../fixtures/user.stub.dart';
 import '../../test_utils.dart';
 import '../../widget_tester_extensions.dart';
+import '../album/album_mocks.dart';
 import '../shared/shared_mocks.dart';
+import 'activity_mocks.dart';
 
 void main() {
   late Isar db;
+  late MockCurrentAlbumProvider mockCurrentAlbumProvider;
+  late MockAlbumActivity activityMock;
 
   setUpAll(() async {
     TestUtils.init();
@@ -24,12 +32,19 @@ void main() {
     Store.put(StoreKey.serverEndpoint, '');
   });
 
+  setUp(() {
+    mockCurrentAlbumProvider = MockCurrentAlbumProvider(AlbumStub.twoAsset);
+    activityMock = MockAlbumActivity();
+  });
+
   testWidgets('Returns an Input text field', (tester) async {
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (_) {},
-        onSuffixTapped: (_) {},
       ),
+      overrides: [
+        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+      ],
     );
 
     expect(find.byType(TextField), findsOneWidget);
@@ -41,9 +56,11 @@ void main() {
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (_) {},
-        onSuffixTapped: (_) {},
       ),
-      overrides: [currentUserProvider.overrideWith((ref) => userProvider)],
+      overrides: [
+        currentUserProvider.overrideWith((ref) => userProvider),
+        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+      ],
     );
 
     expect(find.byType(UserCircleAvatar), findsNothing);
@@ -53,8 +70,10 @@ void main() {
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (_) {},
-        onSuffixTapped: (_) {},
       ),
+      overrides: [
+        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+      ],
     );
 
     expect(find.byType(UserCircleAvatar), findsOneWidget);
@@ -66,9 +85,11 @@ void main() {
       await tester.pumpConsumerWidget(
         ActivityTextField(
           onSubmit: (_) {},
-          onSuffixTapped: (_) {},
           likeId: '1',
         ),
+        overrides: [
+          currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+        ],
       );
 
       expect(
@@ -86,8 +107,10 @@ void main() {
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (_) {},
-        onSuffixTapped: (_) {},
       ),
+      overrides: [
+        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+      ],
     );
 
     expect(
@@ -100,21 +123,46 @@ void main() {
     );
   });
 
-  testWidgets('Passes likeId to onSuffixTapped on tapping Suffix icon',
-      (tester) async {
-    String? receivedLikeId;
-
+  testWidgets('Adds new like', (tester) async {
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (_) {},
-        onSuffixTapped: (likeId) => receivedLikeId = likeId,
-        likeId: 'test-suffix',
       ),
+      overrides: [
+        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+        albumActivityProvider(AlbumStub.twoAsset.remoteId!)
+            .overrideWith(() => activityMock),
+      ],
     );
+
+    when(() => activityMock.addLike()).thenAnswer((_) => Future.value());
 
     final suffixIcon = find.byType(IconButton);
     await tester.tap(suffixIcon);
-    expect(receivedLikeId, 'test-suffix');
+
+    verify(() => activityMock.addLike());
+  });
+
+  testWidgets('Removes like if already liked', (tester) async {
+    await tester.pumpConsumerWidget(
+      ActivityTextField(
+        onSubmit: (_) {},
+        likeId: 'test-suffix',
+      ),
+      overrides: [
+        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+        albumActivityProvider(AlbumStub.twoAsset.remoteId!)
+            .overrideWith(() => activityMock),
+      ],
+    );
+
+    when(() => activityMock.removeActivity(any()))
+        .thenAnswer((_) => Future.value());
+
+    final suffixIcon = find.byType(IconButton);
+    await tester.tap(suffixIcon);
+
+    verify(() => activityMock.removeActivity('test-suffix'));
   });
 
   testWidgets('Passes text entered to onSubmit on submit', (tester) async {
@@ -123,9 +171,11 @@ void main() {
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (text) => receivedText = text,
-        onSuffixTapped: (_) {},
         likeId: 'test-suffix',
       ),
+      overrides: [
+        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+      ],
     );
 
     final textField = find.byType(TextField);
@@ -136,15 +186,16 @@ void main() {
 
   testWidgets('Input disabled when isEnabled false', (tester) async {
     String? receviedText;
-    String? receivedLikeId;
 
     await tester.pumpConsumerWidget(
       ActivityTextField(
         onSubmit: (text) => receviedText = text,
-        onSuffixTapped: (likeId) => receivedLikeId = likeId,
         isEnabled: false,
         likeId: 'test-suffix',
       ),
+      overrides: [
+        currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
+      ],
     );
 
     final suffixIcon = find.byType(IconButton);
@@ -154,7 +205,7 @@ void main() {
     await tester.enterText(textField, 'This is a test comment');
     await tester.testTextInput.receiveAction(TextInputAction.done);
 
-    expect(receivedLikeId, isNull);
     expect(receviedText, isNull);
+    verifyNever(() => activityMock.addLike());
   });
 }
