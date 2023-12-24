@@ -265,6 +265,9 @@
                 {#if person.birthDate}
                   {@const personBirthDate = DateTime.fromISO(person.birthDate)}
                   {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                  {@const ageInMonths = Math.floor(
+                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  )}
                   {#if age >= 0}
                     <p
                       class="font-light"
@@ -277,7 +280,11 @@
                         { locale: $locale },
                       )}
                     >
-                      Age {age}
+                      {#if age == 0 && ageInMonths >= 0 && ageInMonths <= 11}
+                        Age {ageInMonths}mo
+                      {:else}
+                        Age {age}
+                      {/if}
                     </p>
                   {/if}
                 {/if}
