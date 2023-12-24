@@ -1,5 +1,5 @@
 ---
-sidebar_position: 55
+sidebar_position: 2
 ---
 
 # Mobile App

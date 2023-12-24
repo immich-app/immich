@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
-import TOCInline from '@theme/TOCInline';
 
 function HomepageHeader() {
   return (
