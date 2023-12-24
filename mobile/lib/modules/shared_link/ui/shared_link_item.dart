@@ -42,15 +42,17 @@ class SharedLinkItem extends ConsumerWidget {
         if (difference.inHours % 24 > 12) {
           dayDifference += 1;
         }
-        expiresText = "shared_link_expires_days".plural(dayDifference);
+        expiresText =
+            "shared_link_expires_days".tr(args: [dayDifference.toString()]);
       } else if (difference.inHours > 0) {
-        expiresText = "shared_link_expires_hours".plural(difference.inHours);
+        expiresText = "shared_link_expires_hours"
+            .tr(args: [difference.inHours.toString()]);
       } else if (difference.inMinutes > 0) {
-        expiresText =
-            "shared_link_expires_minutes".plural(difference.inMinutes);
+        expiresText = "shared_link_expires_minutes"
+            .tr(args: [difference.inMinutes.toString()]);
       } else if (difference.inSeconds > 0) {
-        expiresText =
-            "shared_link_expires_seconds".plural(difference.inSeconds);
+        expiresText = "shared_link_expires_seconds"
+            .tr(args: [difference.inSeconds.toString()]);
       }
     }
     return Text(
