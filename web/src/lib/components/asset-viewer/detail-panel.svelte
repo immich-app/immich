@@ -280,8 +280,8 @@
                         { locale: $locale },
                       )}
                     >
-                      {#if age == 0 && ageInMonths >= 0 && ageInMonths <= 11}
-                        Age {ageInMonths}mo
+                      {#if ageInMonths <= 11}
+                        Age {ageInMonths} months
                       {:else}
                         Age {age}
                       {/if}
