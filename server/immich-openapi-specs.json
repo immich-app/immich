@@ -9364,12 +9364,16 @@
           "enabled": {
             "type": "boolean"
           },
+          "hashVerificationEnabled": {
+            "type": "boolean"
+          },
           "template": {
             "type": "string"
           }
         },
         "required": [
           "enabled",
+          "hashVerificationEnabled",
           "template"
         ],
         "type": "object"

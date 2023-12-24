@@ -14,6 +14,7 @@ import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } 
 import {
   AudioStreamInfo,
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMediaRepository,
   IMoveRepository,
@@ -52,9 +53,17 @@ export class MediaService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      personRepository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob) {

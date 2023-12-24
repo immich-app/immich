@@ -4028,6 +4028,12 @@ export interface SystemConfigStorageTemplateDto {
     'enabled': boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof SystemConfigStorageTemplateDto
+     */
+    'hashVerificationEnabled': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof SystemConfigStorageTemplateDto
      */

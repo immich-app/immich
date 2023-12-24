@@ -10,6 +10,7 @@ import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import {
   IAlbumRepository,
   IAssetRepository,
+  ICryptoRepository,
   IMoveRepository,
   IPersonRepository,
   IStorageRepository,
@@ -61,6 +62,7 @@ export class StorageTemplateService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.template = this.compile(config.storageTemplate.template);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -70,7 +72,14 @@ export class StorageTemplateService {
       this.logger.debug(`Received config, compiling storage template: ${template}`);
       this.template = this.compile(template);
     });
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      personRepository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
@@ -148,7 +157,7 @@ export class StorageTemplateService {
         pathType: AssetPathType.ORIGINAL,
         oldPath,
         newPath,
-        assetInfo: { sizeInBytes: exifInfo.fileSizeInByte },
+        assetInfo: { sizeInBytes: exifInfo.fileSizeInByte, checksum: asset.checksum },
       });
       if (sidecarPath) {
         await this.storageCore.moveFile({

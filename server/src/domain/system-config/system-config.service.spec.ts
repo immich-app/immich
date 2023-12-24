@@ -102,6 +102,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   storageTemplate: {
     enabled: false,
+    hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   thumbnail: {

@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool hashVerificationEnabled
+    test('to test the property `hashVerificationEnabled`', () async {
+      // TODO
+    });
+
     // String template
     test('to test the property `template`', () async {
       // TODO

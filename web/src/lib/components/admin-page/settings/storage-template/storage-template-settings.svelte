@@ -154,6 +154,13 @@
         bind:checked={storageConfig.enabled}
       />
 
+      <SettingSwitch
+        title="HASH VERIFICATION ENABLED"
+        {disabled}
+        subtitle="Enables hash verification, don't disable this unless you're certain of the implications"
+        bind:checked={storageConfig.hashVerificationEnabled}
+      />
+
       <hr />
 
       <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>

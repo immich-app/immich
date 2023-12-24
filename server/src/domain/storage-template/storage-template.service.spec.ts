@@ -1,8 +1,21 @@
+import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICryptoRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  IUserRepository,
+  StorageTemplateService,
+  defaults,
+} from '@app/domain';
 import { AssetPathType, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
+  newCryptoRepositoryMock,
   newMoveRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
@@ -12,17 +25,6 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Stats } from 'node:fs';
-import {
-  IAlbumRepository,
-  IAssetRepository,
-  IMoveRepository,
-  IPersonRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  IUserRepository,
-} from '../repositories';
-import { defaults } from '../system-config/system-config.core';
-import { StorageTemplateService } from './storage-template.service';
 
 describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
@@ -33,6 +35,7 @@ describe(StorageTemplateService.name, () => {
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -46,6 +49,7 @@ describe(StorageTemplateService.name, () => {
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
 
     sut = new StorageTemplateService(
       albumMock,
@@ -56,6 +60,7 @@ describe(StorageTemplateService.name, () => {
       personMock,
       storageMock,
       userMock,
+      cryptoMock,
     );
 
     configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: true }]);
@@ -201,6 +206,7 @@ describe(StorageTemplateService.name, () => {
       when(storageMock.stat)
         .calledWith(previousFailedNewPath)
         .mockResolvedValue({ size: 5000 } as Stats);
+      when(cryptoMock.hashFile).calledWith(previousFailedNewPath).mockResolvedValue(assetStub.image.checksum);
 
       when(moveMock.getByEntity).calledWith(assetStub.image.id, AssetPathType.ORIGINAL).mockResolvedValue({
         id: '123',
@@ -247,24 +253,16 @@ describe(StorageTemplateService.name, () => {
         originalPath: newPath,
       });
     });
-    it('should fail to migrate previously failed move from previous new path when old path no longer exists if validation fails', async () => {
+
+    it('should fail move if copying and hash of asset and the new file do not match', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
-      const previousFailedNewPath = `upload/library/${userStub.user1.id}/2023/Feb/${assetStub.image.id}.jpg`;
       const newPath = `upload/library/${userStub.user1.id}/2023/2023-02-23/${assetStub.image.id}.jpg`;
 
-      when(storageMock.checkFileExists).calledWith(assetStub.image.originalPath).mockResolvedValue(false);
-      when(storageMock.checkFileExists).calledWith(previousFailedNewPath).mockResolvedValue(true);
+      when(storageMock.rename).calledWith(assetStub.image.originalPath, newPath).mockRejectedValue({ code: 'EXDEV' });
       when(storageMock.stat)
-        .calledWith(previousFailedNewPath)
-        .mockResolvedValue({ size: 500 } as Stats);
-
-      when(moveMock.getByEntity).calledWith(assetStub.image.id, AssetPathType.ORIGINAL).mockResolvedValue({
-        id: '123',
-        entityId: assetStub.image.id,
-        pathType: AssetPathType.ORIGINAL,
-        oldPath: assetStub.image.originalPath,
-        newPath: previousFailedNewPath,
-      });
+        .calledWith(newPath)
+        .mockResolvedValue({ size: 5000 } as Stats);
+      when(cryptoMock.hashFile).calledWith(newPath).mockResolvedValue(Buffer.from('different-hash', 'utf-8'));
 
       when(assetMock.save)
         .calledWith({ id: assetStub.image.id, originalPath: newPath })
@@ -272,30 +270,96 @@ describe(StorageTemplateService.name, () => {
 
       when(assetMock.getByIds).calledWith([assetStub.image.id]).mockResolvedValue([assetStub.image]);
 
-      when(moveMock.update)
+      when(moveMock.create)
         .calledWith({
-          id: '123',
-          oldPath: previousFailedNewPath,
-          newPath,
+          entityId: assetStub.image.id,
+          pathType: AssetPathType.ORIGINAL,
+          oldPath: assetStub.image.originalPath,
+          newPath: newPath,
         })
         .mockResolvedValue({
           id: '123',
           entityId: assetStub.image.id,
           pathType: AssetPathType.ORIGINAL,
-          oldPath: previousFailedNewPath,
+          oldPath: assetStub.image.originalPath,
           newPath,
         });
 
       await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(true);
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
-      expect(storageMock.checkFileExists).toHaveBeenCalledTimes(3);
-      expect(storageMock.stat).toHaveBeenCalledWith(previousFailedNewPath);
-      expect(storageMock.rename).not.toHaveBeenCalled();
-      expect(storageMock.copyFile).not.toHaveBeenCalled();
-      expect(moveMock.update).not.toHaveBeenCalled();
+      expect(storageMock.checkFileExists).toHaveBeenCalledTimes(1);
+      expect(storageMock.stat).toHaveBeenCalledWith(newPath);
+      expect(moveMock.create).toHaveBeenCalledWith({
+        entityId: assetStub.image.id,
+        pathType: AssetPathType.ORIGINAL,
+        oldPath: assetStub.image.originalPath,
+        newPath: newPath,
+      });
+      expect(storageMock.rename).toHaveBeenCalledWith(assetStub.image.originalPath, newPath);
+      expect(storageMock.copyFile).toHaveBeenCalledWith(assetStub.image.originalPath, newPath);
+      expect(storageMock.unlink).toHaveBeenCalledWith(newPath);
+      expect(storageMock.unlink).toHaveBeenCalledTimes(1);
       expect(assetMock.save).not.toHaveBeenCalled();
     });
+
+    it.each`
+      failedPathChecksum                      | failedPathSize                              | reason
+      ${assetStub.image.checksum}             | ${500}                                      | ${'file size'}
+      ${Buffer.from('bad checksum', 'utf-8')} | ${assetStub.image.exifInfo?.fileSizeInByte} | ${'checksum'}
+    `(
+      'should fail to migrate previously failed move from previous new path when old path no longer exists if $reason validation fails',
+      async ({ failedPathChecksum, failedPathSize }) => {
+        userMock.get.mockResolvedValue(userStub.user1);
+        const previousFailedNewPath = `upload/library/${userStub.user1.id}/2023/Feb/${assetStub.image.id}.jpg`;
+        const newPath = `upload/library/${userStub.user1.id}/2023/2023-02-23/${assetStub.image.id}.jpg`;
+
+        when(storageMock.checkFileExists).calledWith(assetStub.image.originalPath).mockResolvedValue(false);
+        when(storageMock.checkFileExists).calledWith(previousFailedNewPath).mockResolvedValue(true);
+        when(storageMock.stat)
+          .calledWith(previousFailedNewPath)
+          .mockResolvedValue({ size: failedPathSize } as Stats);
+        when(cryptoMock.hashFile).calledWith(previousFailedNewPath).mockResolvedValue(failedPathChecksum);
+
+        when(moveMock.getByEntity).calledWith(assetStub.image.id, AssetPathType.ORIGINAL).mockResolvedValue({
+          id: '123',
+          entityId: assetStub.image.id,
+          pathType: AssetPathType.ORIGINAL,
+          oldPath: assetStub.image.originalPath,
+          newPath: previousFailedNewPath,
+        });
+
+        when(assetMock.save)
+          .calledWith({ id: assetStub.image.id, originalPath: newPath })
+          .mockResolvedValue(assetStub.image);
+
+        when(assetMock.getByIds).calledWith([assetStub.image.id]).mockResolvedValue([assetStub.image]);
+
+        when(moveMock.update)
+          .calledWith({
+            id: '123',
+            oldPath: previousFailedNewPath,
+            newPath,
+          })
+          .mockResolvedValue({
+            id: '123',
+            entityId: assetStub.image.id,
+            pathType: AssetPathType.ORIGINAL,
+            oldPath: previousFailedNewPath,
+            newPath,
+          });
+
+        await expect(sut.handleMigrationSingle({ id: assetStub.image.id })).resolves.toBe(true);
+
+        expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
+        expect(storageMock.checkFileExists).toHaveBeenCalledTimes(3);
+        expect(storageMock.stat).toHaveBeenCalledWith(previousFailedNewPath);
+        expect(storageMock.rename).not.toHaveBeenCalled();
+        expect(storageMock.copyFile).not.toHaveBeenCalled();
+        expect(moveMock.update).not.toHaveBeenCalled();
+        expect(assetMock.save).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('handle template migration', () => {
@@ -444,6 +508,7 @@ describe(StorageTemplateService.name, () => {
     });
 
     it('should copy the file if rename fails due to EXDEV (rename across filesystems)', async () => {
+      const newPath = 'upload/library/user-id/2023/2023-02-23/asset-id.jpg';
       assetMock.getAll.mockResolvedValue({
         items: [assetStub.image],
         hasNextPage: false,
@@ -455,31 +520,26 @@ describe(StorageTemplateService.name, () => {
         entityId: assetStub.image.id,
         pathType: AssetPathType.ORIGINAL,
         oldPath: assetStub.image.originalPath,
-        newPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
+        newPath,
       });
       when(storageMock.stat)
-        .calledWith('upload/library/user-id/2023/2023-02-23/asset-id.jpg')
+        .calledWith(newPath)
         .mockResolvedValue({
           size: 5000,
         } as Stats);
+      when(cryptoMock.hashFile).calledWith(newPath).mockResolvedValue(assetStub.image.checksum);
 
       await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
-      expect(storageMock.rename).toHaveBeenCalledWith(
-        '/original/path.jpg',
-        'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
-      );
-      expect(storageMock.copyFile).toHaveBeenCalledWith(
-        '/original/path.jpg',
-        'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
-      );
-      expect(storageMock.stat).toHaveBeenCalledWith('upload/library/user-id/2023/2023-02-23/asset-id.jpg');
+      expect(storageMock.rename).toHaveBeenCalledWith('/original/path.jpg', newPath);
+      expect(storageMock.copyFile).toHaveBeenCalledWith('/original/path.jpg', newPath);
+      expect(storageMock.stat).toHaveBeenCalledWith(newPath);
       expect(storageMock.unlink).toHaveBeenCalledWith(assetStub.image.originalPath);
       expect(storageMock.unlink).toHaveBeenCalledTimes(1);
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetStub.image.id,
-        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.jpg',
+        originalPath: newPath,
       });
     });
 
