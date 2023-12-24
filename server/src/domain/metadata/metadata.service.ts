@@ -131,7 +131,7 @@ export class MetadataService {
 
     try {
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.databaseRepository.withLock(DatabaseLock.GeodataImport, this.repository.init);
+      await this.databaseRepository.withLock(DatabaseLock.GeodataImport, () => this.repository.init());
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log(`Initialized local reverse geocoder`);
