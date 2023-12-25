@@ -119,22 +119,12 @@ class HashService {
   /// Hashes the given files and returns a list of the same length
   /// files that could not be hashed have a `null` value
   Future<List<Uint8List?>> _hashFiles(List<String> paths) async {
-    if (Platform.isAndroid) {
-      final List<Uint8List?>? hashes =
-          await _backgroundService.digestFiles(paths);
-      if (hashes == null) {
-        throw Exception("Hashing ${paths.length} files failed");
-      }
-      return hashes;
-    } else if (Platform.isIOS) {
-      final List<Uint8List?> result = List.filled(paths.length, null);
-      for (int i = 0; i < paths.length; i++) {
-        result[i] = await _hashAssetDart(File(paths[i]));
-      }
-      return result;
-    } else {
-      throw Exception("_hashFiles implementation missing");
+    final List<Uint8List?>? hashes =
+        await _backgroundService.digestFiles(paths);
+    if (hashes == null) {
+      throw Exception("Hashing ${paths.length} files failed");
     }
+    return hashes;
   }
 
   /// Hashes a single file using Dart's crypto package
