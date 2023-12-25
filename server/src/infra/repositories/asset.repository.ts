@@ -804,7 +804,7 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
-  @GenerateSql({ params: [DummyValue.STRING, DummyValue.UUID, { numResults: 250 }] })
+  @GenerateSql({ params: [DummyValue.STRING, [DummyValue.UUID], { numResults: 250 }] })
   async searchMetadata(
     query: string,
     userIds: string[],

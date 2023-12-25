@@ -42,7 +42,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   @GenerateSql({
-    params: [{ ownerId: DummyValue.UUID, embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
+    params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
   })
   async searchCLIP({ userIds, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
@@ -73,7 +73,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   @GenerateSql({
     params: [
       {
-        ownerId: DummyValue.UUID,
+        userIds: [DummyValue.UUID],
         embedding: Array.from({ length: 512 }, Math.random),
         numResults: 100,
         maxDistance: 0.6,
