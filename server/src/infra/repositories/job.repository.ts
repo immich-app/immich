@@ -116,12 +116,31 @@ export class JobRepository implements IJobRepository {
     ) as unknown as Promise<JobCounts>;
   }
 
-  async queue(item: JobItem): Promise<void> {
-    const jobName = item.name;
-    const jobData = (item as { data?: any })?.data || {};
-    const jobOptions = this.getJobOptions(item) || undefined;
+  async queueAll(items: JobItem[]): Promise<void> {
+    if (!items.length) {
+      return;
+    }
 
-    await this.getQueue(JOBS_TO_QUEUE[jobName]).add(jobName, jobData, jobOptions);
+    const itemsByQueue = items.reduce<Record<string, JobItem[]>>((acc, item) => {
+      const queueName = JOBS_TO_QUEUE[item.name];
+      acc[queueName] = acc[queueName] || [];
+      acc[queueName].push(item);
+      return acc;
+    }, {});
+
+    for (const [queueName, items] of Object.entries(itemsByQueue)) {
+      const queue = this.getQueue(queueName as QueueName);
+      const jobs = items.map((item) => ({
+        name: item.name,
+        data: (item as { data?: any })?.data || {},
+        options: this.getJobOptions(item) || undefined,
+      }));
+      await queue.addBulk(jobs);
+    }
+  }
+
+  async queue(item: JobItem): Promise<void> {
+    await this.queueAll([item]);
   }
 
   private getJobOptions(item: JobItem): JobsOptions | null {

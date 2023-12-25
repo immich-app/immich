@@ -59,9 +59,7 @@ export class SmartInfoService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(assets.map((asset) => ({ name: JobName.ENCODE_CLIP, data: { id: asset.id } })));
     }
 
     return true;

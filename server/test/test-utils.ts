@@ -77,6 +77,7 @@ export const testApp = {
         deleteCronJob: jest.fn(),
         validateCronExpression: jest.fn(),
         queue: (item: JobItem) => jobs && _handler(item),
+        queueAll: (items: JobItem[]) => jobs && Promise.all(items.map(_handler)).then(() => Promise.resolve()),
         resume: jest.fn(),
         empty: jest.fn(),
         setConcurrency: jest.fn(),

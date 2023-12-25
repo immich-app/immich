@@ -281,6 +281,7 @@ describe(PersonService.name, () => {
       expect(personMock.getById).toHaveBeenCalledWith('person-1');
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
@@ -398,6 +399,7 @@ describe(PersonService.name, () => {
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(jobMock.queue).not.toHaveBeenCalledWith();
+      expect(jobMock.queueAll).not.toHaveBeenCalledWith();
     });
     it('should reassign a face', async () => {
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.withName.id]));
@@ -412,10 +414,12 @@ describe(PersonService.name, () => {
         }),
       ).resolves.toEqual([personStub.noName]);
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_PERSON_THUMBNAIL,
-        data: { id: personStub.newThumbnail.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: { id: personStub.newThumbnail.id },
+        },
+      ]);
     });
   });
 
@@ -447,10 +451,12 @@ describe(PersonService.name, () => {
     it('should change person feature photo', async () => {
       personMock.getRandomFace.mockResolvedValue(faceStub.primaryFace1);
       await sut.createNewFeaturePhoto([personStub.newThumbnail.id]);
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_PERSON_THUMBNAIL,
-        data: { id: personStub.newThumbnail.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: { id: personStub.newThumbnail.id },
+        },
+      ]);
     });
   });
 
@@ -475,6 +481,7 @@ describe(PersonService.name, () => {
       });
 
       expect(jobMock.queue).not.toHaveBeenCalledWith();
+      expect(jobMock.queueAll).not.toHaveBeenCalledWith();
     });
 
     it('should fail if user has not the correct permissions on the asset', async () => {
@@ -490,6 +497,7 @@ describe(PersonService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(jobMock.queue).not.toHaveBeenCalledWith();
+      expect(jobMock.queueAll).not.toHaveBeenCalledWith();
     });
   });
 
@@ -537,7 +545,9 @@ describe(PersonService.name, () => {
 
       await sut.handlePersonCleanup();
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.PERSON_DELETE, data: { id: personStub.noName.id } });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.PERSON_DELETE, data: { id: personStub.noName.id } },
+      ]);
     });
   });
 
@@ -547,6 +557,7 @@ describe(PersonService.name, () => {
 
       await expect(sut.handleQueueRecognizeFaces({})).resolves.toBe(true);
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(configMock.load).toHaveBeenCalled();
     });
 
@@ -558,10 +569,12 @@ describe(PersonService.name, () => {
       await sut.handleQueueRecognizeFaces({});
 
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.FACES);
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.RECOGNIZE_FACES,
-        data: { id: assetStub.image.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.RECOGNIZE_FACES,
+          data: { id: assetStub.image.id },
+        },
+      ]);
     });
 
     it('should queue all assets', async () => {
@@ -575,14 +588,18 @@ describe(PersonService.name, () => {
       await sut.handleQueueRecognizeFaces({ force: true });
 
       expect(assetMock.getAll).toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.RECOGNIZE_FACES,
-        data: { id: assetStub.image.id },
-      });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.PERSON_DELETE,
-        data: { id: personStub.withName.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.RECOGNIZE_FACES,
+          data: { id: assetStub.image.id },
+        },
+      ]);
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.PERSON_DELETE,
+          data: { id: personStub.withName.id },
+        },
+      ]);
     });
   });
 
@@ -639,6 +656,7 @@ describe(PersonService.name, () => {
       );
       expect(personMock.createFace).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
 
       expect(assetMock.upsertJobStatus).toHaveBeenCalledWith({
         assetId: assetStub.image.id,

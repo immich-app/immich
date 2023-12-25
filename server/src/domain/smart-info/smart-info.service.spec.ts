@@ -65,7 +65,7 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({ force: false });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } }]);
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.CLIP_ENCODING);
     });
 
@@ -77,7 +77,7 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({ force: true });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } }]);
       expect(assetMock.getAll).toHaveBeenCalled();
     });
   });
