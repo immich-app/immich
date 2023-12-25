@@ -199,5 +199,5 @@ export interface IAssetRepository {
   search(options: AssetSearchOptions): Promise<AssetEntity[]>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  searchMetadata(query: string, userId: string, options: MetadataSearchOptions): Promise<AssetEntity[]>;
+  searchMetadata(query: string, userIds: string[], options: MetadataSearchOptions): Promise<AssetEntity[]>;
 }
