@@ -30,8 +30,9 @@ extension LogOnError<T> on AsyncValue<T> {
     }
 
     if (hasError && !hasValue) {
-      _asyncErrorLogger.severe("Error occured", error, stackTrace);
-      return onError?.call(error, stackTrace) ?? const ScaffoldErrorBody();
+      _asyncErrorLogger.severe("$error", error, stackTrace);
+      return onError?.call(error, stackTrace) ??
+          ScaffoldErrorBody(errorMsg: error?.toString());
     }
 
     return onData(requireValue);

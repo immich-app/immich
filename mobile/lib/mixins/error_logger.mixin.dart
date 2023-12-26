@@ -7,7 +7,7 @@ mixin ErrorLoggerMixin {
   abstract final Logger logger;
 
   /// Returns an AsyncValue<T> if the future is successfully executed
-  /// Else, logs the error to the overrided logger and returns and AsyncError<>
+  /// Else, logs the error to the overrided logger and returns an AsyncError<>
   AsyncFuture<T> guardError<T>(
     Future<T> Function() fn, {
     Level logLevel = Level.SEVERE,
@@ -16,7 +16,7 @@ mixin ErrorLoggerMixin {
       final result = await fn();
       return AsyncData(result);
     } catch (error, stackTrace) {
-      logger.log(logLevel, "Error occured", error, stackTrace);
+      logger.log(logLevel, "$error", error, stackTrace);
       return AsyncError(error, stackTrace);
     }
   }
@@ -31,7 +31,7 @@ mixin ErrorLoggerMixin {
     try {
       return await fn();
     } catch (error, stackTrace) {
-      logger.log(logLevel, "Error occured", error, stackTrace);
+      logger.log(logLevel, "$error", error, stackTrace);
     }
     return defaultValue;
   }
