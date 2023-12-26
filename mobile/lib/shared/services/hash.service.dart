@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
@@ -125,21 +123,6 @@ class HashService {
       throw Exception("Hashing ${paths.length} files failed");
     }
     return hashes;
-  }
-
-  /// Hashes a single file using Dart's crypto package
-  Future<Uint8List?> _hashAssetDart(File f) async {
-    late Digest output;
-    final sink = sha1.startChunkedConversion(
-      ChunkedConversionSink<Digest>.withCallback((accumulated) {
-        output = accumulated.first;
-      }),
-    );
-    await for (final chunk in f.openRead()) {
-      sink.add(chunk);
-    }
-    sink.close();
-    return Uint8List.fromList(output.bytes);
   }
 
   /// Converts [AssetEntity]s that were successfully hashed to [Asset]s
