@@ -1,0 +1,749 @@
+import type { ratio, filter, edit } from "./types";
+import { ratios } from "./types";
+
+import { presets } from "./presets";
+import { Render } from './render'; 
+
+import { api, AssetResponseDto } from '@api';
+
+type presetName = keyof typeof presets;
+
+export class Editor {
+
+  private thumbData: Blob | null = null;
+  private assetData: Blob | null = null;
+
+  private asset!: AssetResponseDto;
+
+  private imageWrapper!: HTMLElement;
+  private image!: HTMLImageElement;
+  private cropElement!: HTMLElement;
+  private options!: {
+    zoomSpeed: 0.02,
+    maxZoom: 5,
+    minZoom: 0.5,
+  }
+
+  private edit: edit = {
+    angle: 0,
+    angleOffset: 0,
+    aspectRatio: 'original',
+    crop: {
+      width: 0,
+      height: 0,
+    },
+    flipX: false,
+    flipY: false,
+    filter: {
+      blur: 0,
+      brightness: 1,
+      contrast: 1,
+      grayscale: 0,
+      hueRotate: 1,
+      invert: 0,
+      opacity: 1,
+      saturation: 1,
+      sepia: 0,
+    },
+    filterName: 'without',
+    translate: {
+      x: 0,
+      y: 0,
+    },
+    zoom: 1,
+  }
+
+
+
+  private history = [
+    {
+      angle: 0,
+      angleOffset: 0,
+      aspectRatio: 'original',
+      crop: {
+        width: 0,
+        height: 0,
+      },
+      flipX: false,
+      flipY: false,
+      filter: {
+        blur: 0,
+        brightness: 1,
+        contrast: 1,
+        grayscale: 0,
+        hueRotate: 1,
+        invert: 0,
+        opacity: 1,
+        saturation: 1,
+        sepia: 0,
+      },
+      filterName: 'without',
+      translate: {
+        x: 0,
+        y: 0,
+      },
+      zoom: 1,
+    },
+  ];
+  private historyIndex = 0;
+
+
+
+
+  constructor(asset:AssetResponseDto, imageWrapper: HTMLElement, cropElement: HTMLElement,options: any) {
+    if (!imageWrapper || !cropElement || !asset) {
+      console.log('Editor init error: no image wrapper or image');
+      return;
+    }
+    this.asset = asset;
+    this.imageWrapper = imageWrapper;
+    this.cropElement = cropElement;
+
+    if (options) {
+      this.options = options;
+    }
+    console.log('Editor init');
+  }
+
+  /**
+   * Calculates the dimensions of the image based on the provided parameters and applies the calculated dimensions to the image wrapper element.
+   * 
+   * @param image - The HTMLImageElement representing the image.
+   * @param imageWrapper - The HTMLElement representing the image wrapper.
+   * @param crop - The HTMLElement representing the crop element.
+   * @param edit - The edit object containing angleOffset and angle properties.
+   */
+  private calcImage = (image: HTMLImageElement, imageWrapper: HTMLElement, crop: HTMLElement, edit:edit ) => {
+    let newHeight;
+    let newWidth;
+
+    let originalAspect = image.naturalWidth / image.naturalHeight;
+
+    const angleOffset = edit.angleOffset;
+    const angle = edit.angle;
+
+    // Get crop element width and height
+    const cropWidth = crop.offsetWidth;
+    const cropHeight = crop.offsetHeight;
+
+    const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropWidth;
+    const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropHeight;
+
+    const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropHeight;
+    const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropWidth;
+
+
+    if (angleOffset === 90 || angleOffset === 270) {
+      originalAspect = 1 / originalAspect;
+    }
+
+    if ((x1 + x2) / (y1 + y2) > originalAspect) {
+      newWidth = `${x1 + x2}px`;
+      newHeight = `${(x1 + x2) / originalAspect}px`;
+    } else if ((x1 + x2) / (y1 + y2) < originalAspect) {
+      newHeight = `${y1 + y2}px`;
+      newWidth = `${(y1 + y2) / (1 / originalAspect)}px`;
+    } else {
+      newHeight = `${y1 + y2}px`;
+      newWidth = `${(y1 + y2) / (1 / originalAspect)}px`;
+    }
+
+    if (angleOffset === 90 || angleOffset === 270) {
+      imageWrapper.style.height = newWidth;
+      imageWrapper.style.width = newHeight;
+    } else {
+      imageWrapper.style.height = newHeight;
+      imageWrapper.style.width = newWidth;
+    }
+  }
+
+  /**
+   * Sets the crop ratio for the given crop element.
+   * @param cropElement - The HTML element representing the crop area.
+   * @param ratio - The desired aspect ratio for the crop area.
+   * @param wrapperRatio - The aspect ratio of the wrapper element.
+   */
+  private setCropRatio = (cropElement:HTMLElement ,ratio: number, wrapperRatio: number) => {
+    cropElement.style.aspectRatio = '' + ratio;
+
+    if (ratio >= 1 && wrapperRatio >= 1 && ratio < wrapperRatio) {
+      cropElement.style.width = 'auto';
+      cropElement.style.height = '100%';
+    } else if (
+      ratio >= 1 &&
+      wrapperRatio >= 1 &&
+      ratio > wrapperRatio
+    ) {
+      cropElement.style.width = 'auto';
+      cropElement.style.height = '100%';
+    } else if (
+      ratio < 1 &&
+      wrapperRatio < 1 &&
+      ratio < wrapperRatio
+    ) {
+      cropElement.style.width = 'auto';
+      cropElement.style.height = '100%';
+    } else if (ratio < 1 && wrapperRatio >= 1) {
+      cropElement.style.width = 'auto';
+      cropElement.style.height = '100%';
+    } else if (ratio >= 1 && wrapperRatio < 1) {
+      cropElement.style.width = '100%';
+      cropElement.style.height = 'auto';
+    } else {
+      cropElement.style.width = '100%';
+      cropElement.style.height = 'auto';
+    }
+  }
+
+  /**
+   * Applies a transformation to the image wrapper based on the provided edit parameters.
+   * @param imageWrapper - The HTML element representing the image wrapper.
+   * @param edit - The edit parameters containing the angle, angle offset, flipY, translate, and zoom values.
+   */
+  private transformImage = (imageWrapper: HTMLElement, edit: edit) => {
+    const angle = edit.angle;
+    const angleOffset = edit.angleOffset;
+    const flipY = edit.flipY;
+    const translate = edit.translate;
+    const zoom = edit.zoom;
+
+    let transformString = '';
+
+    // Add rotation to the transform string.
+    transformString += `rotate(${angle - angleOffset}deg)`;
+
+    // If translation is non-zero, add it to the transform string.
+    if (translate.x || translate.y) {
+      transformString += ` translate(${translate.x * zoom}px, ${translate.y * zoom}px)`;
+    }
+
+    // Add scale to the transform string.
+    transformString += ` scaleX(${(flipY ? -1 : 1) * zoom}) scaleY(${
+      (flipY ? -1 : 1) * zoom
+    })`;
+    // Set the transform of the image wrapper.
+
+    if (imageWrapper && imageWrapper.style) {
+      console.log('Transforming');
+
+      imageWrapper.style.transform = transformString;
+    }
+  }
+
+  /**
+   * Updates the photo editor.
+   * This method performs various calculations and transformations to update the editor's state.
+   * @throws {Error} If there is no crop wrapper element.
+   */
+  private async update() {
+    console.log('update');
+
+    const crop = this.cropElement;
+    const cropWrapper = crop.parentElement;
+    const image = this.image;
+    const imageWrapper = this.imageWrapper;
+    const edit = this.edit;
+
+    const ratio = this.getRatio(edit.aspectRatio, image.naturalWidth / image.naturalHeight);
+
+    if (!cropWrapper) {
+      throw new Error('No crop wrapper');
+    }
+
+    const wrapperRatio = cropWrapper.offsetWidth / cropWrapper.offsetHeight;
+
+    this.setCropRatio(crop, ratio, wrapperRatio);
+
+    this.calcImage(image, imageWrapper, crop, edit);
+
+    this.transformImage(image, edit);
+  };
+  /**
+   * Loads the data for the photo editor.
+   * This method loads the thumbnail and asset data, creates an image element, and appends it to the image wrapper.
+   * @throws {Error} If failed to load data.
+   */
+  public async loadData() {
+    console.log('loadData');
+    try {
+      await this.loadThumb();
+      await this.loadAsset();
+      this.image = new Image();
+      if (this.thumbData) {
+        this.image.src = URL.createObjectURL(this.thumbData);
+        await this.image.decode();
+      }
+      else if (this.assetData) {
+        this.image.src = URL.createObjectURL(this.assetData);
+        await this.image.decode();
+      }
+      else {
+        throw new Error('Failed to load data');
+      }
+      this.imageWrapper.innerHTML = '';
+      this.imageWrapper.appendChild(this.image);
+    } catch (error) {
+      throw new Error('Failed to load data');
+    }
+  }
+
+  /**
+   * Calculates the aspect ratio based on the given ratio and original aspect.
+   * @param ratio - The desired ratio as string.
+   * @param originalAspect - The original aspect ratio.
+   * @returns The calculated aspect ratio.
+   */
+  private getRatio = (ratio: ratio, originalAspect:number) => {
+    switch (ratio) {
+      case 'free':
+        // free ratio selection
+        return 0;
+      case 'square':
+        return 1;
+      case 'original':
+        if (this.edit.angleOffset % 180 !== 0) {
+          return 1 / originalAspect;
+        }
+        else {
+          return originalAspect;
+        }
+      case '16_9':
+        return 16/9;
+      case '9_16':
+        return 9/16;
+      case '5_4':
+        return 5/4;
+      case '4_5':
+        return 4/5;
+      case '4_3':
+        return 4/3;
+      case '3_4':
+        return 3/4;
+      case '3_2':
+        return 3/2;
+      case '2_3':
+        return 2/3;
+      default:
+        return originalAspect;
+    }
+  }
+
+  /**
+   * Loads the thumbnail data for the asset.
+   * @throws {Error} If failed to load thumb data.
+   */
+  private async loadThumb() {
+    console.log('loadThumb');
+
+    try {
+      const { data } = await api.assetApi.serveFile(
+        { id: this.asset.id, isThumb: true, isWeb: true },
+        {
+          responseType: 'blob',
+        },
+      );
+
+      if (!(data instanceof Blob)) {
+        throw new Error('Failed to load thumb data');
+      }
+
+      this.thumbData = data;
+    } catch {
+      throw new Error('Failed to load thumb data');
+    }
+  }
+
+  /**
+   * Downloads the asset data from the server and assigns it to the `assetData` property.
+   * @throws {Error} If failed to load asset data.
+   */
+  private async loadAsset() {
+    console.log('loadAsset');
+    try {
+      const { data } = await api.assetApi.serveFile(
+        { id: this.asset.id },
+        {
+          responseType: 'blob',
+        },
+      );
+
+      if (!(data instanceof Blob)) {
+        throw new Error('Failed to load asset data');
+      }
+      this.assetData = data;
+    } catch {
+      throw new Error('Failed to load asset data');
+    }
+  }
+
+
+
+  /**
+   * Saves the current edit state and adds it to the history.
+   */
+  public save() {
+    console.log('save');
+
+    const edit = structuredClone(this.edit);
+    this.history.push(edit);
+    this.historyIndex++;
+  }
+
+  public async render(name: string, asset: Blob) {
+    console.log('render');
+    const render = new Render(name,asset, this.edit);
+    return render.start();
+  }
+
+
+  /**
+   * Undo the previous edit action.
+   * Throws an error if there is no more history to undo.
+   * 
+   * @throws {Error} No more history to undo
+   */
+  public undo() {
+    console.log('undo');
+
+    if (this.historyIndex < 1) {
+      throw new Error('No more history');
+    }
+    this.historyIndex--;
+    this.edit = structuredClone(this.history[this.historyIndex]);
+
+    this.update();
+  }
+
+  /**
+   * Redo the previous edit action.
+   * Throws an error if there is no more history to redo.
+   * 
+   * @throws {Error} No more history to redo
+   */
+  public redo() {
+    console.log('redo');
+
+    if (this.historyIndex >= this.history.length - 1) {
+      throw new Error('No more history');
+    }
+    this.historyIndex++;
+    this.edit = structuredClone(this.history[this.historyIndex]);
+
+    this.update();
+  }
+
+
+  /**
+   * Clear the edit history.
+   * Only the current edit will remain.
+   * 
+   * @throws {Error} History is empty
+   */
+  public clear() {
+    console.log('clear');
+
+    if (this.history.length < 1) {
+      throw new Error('No history'); //History must not be empty
+    }
+
+    if (this.history.length < 2) {
+      return;
+    }
+    this.history.splice(1, this.history.length - 1, structuredClone(this.edit));
+    this.historyIndex = 1;
+  }
+
+
+  //TODO: decide if we want to clear the history or not
+  /**
+   * Reset the edit to the initial state.
+   * This will also clear the edit history.
+   * 
+   * @throws {Error} History is empty
+   */
+  public reset() {
+    console.log('reset');
+
+    if (this.history.length < 1) {
+      throw new Error('No history'); //History must not be empty
+    }
+    this.edit = structuredClone(this.history[0]);
+    this.historyIndex = 0;
+    this.history.splice(1, this.history.length - 1);
+
+    this.update();
+  }
+
+  /**
+   * Rotates the photo by the specified angle.
+   * If the angle is 0, the photo will be rotated by 90 degrees.
+   * 
+   * @param angle - The angle to rotate the photo by. Must be between 0 and 45.
+   * @throws {Error} If the angle is invalid (not between 0 and 45).
+   */
+  public rotate(angle = 0) {
+    console.log('rotate');
+
+    if (!(angle >= 0 && angle <= 45)) {
+      throw new Error('Invalid angle'); //Angle must be between 0 and 45
+    }
+
+    if (angle === 0) {
+      this.edit.angleOffset += 90;
+      this.edit.angleOffset %= 360;
+    }
+    else {
+      this.edit.angle = angle;
+    }
+
+    this.update();
+  }
+
+
+
+  /**
+   * Flips the photo horizontally and/or vertically.
+   * 
+   * @param x - A boolean indicating whether to flip the photo horizontally.
+   * @param y - A boolean indicating whether to flip the photo vertically.
+   * 
+   * @throws {Error} If both x and y are false.
+   */
+  public flip(x: boolean, y: boolean) {
+    if (!x && !y) {
+      throw new Error('Invalid flip'); //At least one of x and y must be true
+    }
+
+    if (x) {
+      console.log('flipX');
+
+      this.edit.flipX = !this.edit.flipX;
+    }
+    if (y) {
+      console.log('flipY');
+
+      this.edit.flipY = !this.edit.flipY;
+    }
+
+    this.update();
+  }
+
+  /**
+   * Zooms the photo editor by the specified scale.
+   * 
+   * @param scale - The scale factor to zoom by. Must be 1 or -1 when wheel is true.
+   * @param wheel - Indicates whether the zoom is triggered by a wheel event. Default is false.
+   * @throws {Error} if the scale is invalid when wheel is true.
+   */
+  public zoom(scale: number, wheel = false) {
+    console.log('zoom');
+
+    if (!(wheel && scale == -1 || scale == 1)) {
+      throw new Error('Invalid zoom'); //Scale must be 1 or -1 when wheel is true
+    }
+
+
+    if (wheel) {
+      this.edit.zoom += this.options.zoomSpeed * 5 * scale;
+    }
+    else {
+      if (scale > 1) {
+        this.edit.zoom += this.options.zoomSpeed * scale;
+      }
+      else {
+        this.edit.zoom -= this.options.zoomSpeed / scale;
+      }
+    }
+
+    if (this.edit.zoom > this.options.maxZoom) {
+      this.edit.zoom = this.options.maxZoom;
+    }
+    else if (this.edit.zoom < this.options.minZoom) {
+      this.edit.zoom = this.options.minZoom;
+    }
+
+    this.update();
+  }
+
+
+
+  /**
+   * Calculates the maximum X and Y coordinates based on the current editor settings.
+   * 
+   * @returns An array containing the maximum X and Y coordinates.
+   */
+  private maxXY() {
+    console.log('maxY');
+
+    const angleOffset = this.edit.angleOffset;
+    const angle = this.edit.angle;
+    const zoom = this.edit.zoom;
+    const ih = this.imageWrapper.offsetHeight;
+    const iw = this.imageWrapper.offsetWidth;
+
+    let ch = this.cropElement.offsetHeight;
+    let cw = this.cropElement.offsetWidth;
+
+
+    if (angleOffset === 90 || angleOffset === 270) {
+      const t = ch;
+      ch = cw;
+      cw = t;
+    }
+
+    const h2 = cw * Math.tan((Math.abs(angle) * Math.PI) / 180);
+    const d = Math.cos((Math.abs(angle) * Math.PI) / 180) * (ch + h2);
+
+    let maxY = (ih * zoom - d) / 2;
+    maxY = maxY / zoom;
+
+    const h3 = Math.sin((Math.abs(angle) * Math.PI) / 180) * ch;
+    const h4 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cw;
+    let maxX = (iw * zoom - h3 - h4) / 2;
+    maxX = maxX / zoom;
+    return [maxX, maxY];
+  }
+
+  /**
+   * Translates the photo editor view by the specified delta values.
+   * 
+   * @param x - The amount to translate along the x-axis.
+   * @param y - The amount to translate along the y-axis.
+   */
+  public pan(x: number, y: number) {
+    console.log('pan');
+
+    const angleOffset = this.edit.angleOffset;
+    const [maxX, maxY] = this.maxXY();
+
+    if (angleOffset === 90) {
+      const tmp = x;
+      x = -y;
+      y = tmp;
+    }
+
+    if (angleOffset === 270) {
+      const tmp = x;
+      x = -y;
+      y = tmp;
+    }
+
+    if (angleOffset === 180 || angleOffset === 270) {
+      x = -x;
+      y = -y;
+    }
+
+
+    if (x > maxX) {
+      x = maxX;
+    } else if (x < -maxX) {
+      x = -maxX;
+    }
+
+    if (y > maxY) {
+      y = maxY;
+    } else if (y < -maxY) {
+      y = -maxY;
+    }
+
+    this.edit.translate.x = x;
+    this.edit.translate.y = y;
+
+    this.update();
+  }
+
+  /**
+   * Sets the aspect ratio for the photo editor.
+   * 
+   * @param ratio - The aspect ratio to set.
+   * @throws Error if there is no image or if the ratio is invalid.
+   */
+  public aspectRatio(ratio: ratio) {
+    console.log('aspectRatio');
+
+    if (!this.image) {
+      throw new Error('No image');
+    }
+
+    const originalRatio = this.image.naturalWidth / this.image.naturalHeight;
+
+    if (this.edit.angleOffset === 90 || this.edit.angleOffset === 270) {
+      let t = ratio.split('_').reverse().join('_');
+      if (ratios.indexOf(t) < 0) {
+        throw new Error('Invalid ratio');
+      }
+      ratio = t;
+    }
+
+    this.edit.aspectRatio = ratio;
+
+    this.update();
+  }
+
+  /**
+   * Applies the specified filter to the photo editor.
+   * 
+   * @param filter - The filter object containing the filter properties.
+   * @throws Error if the filter object is invalid / is empty.
+   */
+  public filter(filter: filter) {
+    console.log('filter');
+
+    if (Object.keys(filter).length === 0) {
+      throw new Error('Invalid filter');
+    }
+
+    const blur = filter.blur;
+    const brightness = filter.brightness;
+    const contrast = filter.contrast;
+    const grayscale = filter.grayscale;
+    const hueRotate = filter.hueRotate;
+    const invert = filter.invert;
+    const opacity = filter.opacity;
+    const saturation = filter.saturation;
+    const sepia = filter.sepia;
+
+
+    if (blur >= 0 && blur <= 1) {
+      this.edit.filter.blur = blur;
+    }
+    if (brightness >= 0 && brightness <= 2) {
+      this.edit.filter.brightness = brightness;
+    }
+    if (contrast >= 0 && contrast <= 2) {
+      this.edit.filter.contrast = contrast;
+    }
+    if (grayscale >= 0 && grayscale <= 1) {
+      this.edit.filter.grayscale = grayscale;
+    }
+    if (hueRotate >= 0 && hueRotate <= 2) {
+      this.edit.filter.hueRotate = hueRotate;
+    }
+    if (invert >= 0 && invert <= 1) {
+      this.edit.filter.invert = invert;
+    }
+    if (opacity >= 0 && opacity <= 1) {
+      this.edit.filter.opacity = opacity;
+    }
+    if (saturation >= 0 && saturation <= 2) {
+      this.edit.filter.saturation = saturation;
+    }
+    if (sepia >= 0 && sepia <= 1) {
+      this.edit.filter.sepia = sepia;
+    }
+    this.update();
+  }
+
+  /**
+   * Applies a preset filter to the photo editor.
+   * 
+   * @param name - The name of the preset filter to apply.
+   */
+  public preset(name: presetName) {
+    console.log('preset');
+
+    const preset = presets[name];
+    this.edit.filterName = name;
+    this.filter(preset);
+  }
+}
