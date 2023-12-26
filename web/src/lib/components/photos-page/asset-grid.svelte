@@ -2,13 +2,14 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, AssetResponseDto } from '@api';
+  import { api, AlbumResponseDto, AssetResponseDto } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -85,8 +86,43 @@
           event.preventDefault();
           goto(AppRoute.EXPLORE);
           return;
+        case 's':
+          if ($isMultiSelectState) {
+            handleStackAssets();
+          }
+          return;
       }
     }
+  };
+
+  const handleStackAssets = async () => {
+    const assets = Array.from($selectedAssets);
+    const parent = assets.at(0);
+    if (parent == undefined) {
+      return;
+    }
+    const children = assets.slice(1);
+    const ids = children.map(({ id }) => id);
+    if (children.length > 0) {
+      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
+    }
+    let childrenCount = parent.stackCount ?? 0;
+    for (const asset of children) {
+      asset.stackParentId = parent?.id;
+      // Add grand-children's count to new parent
+      childrenCount += asset.stackCount == null ? 1 : asset.stackCount + 1;
+      // Reset children stack info
+      asset.stackCount = null;
+      asset.stack = [];
+    }
+    parent.stackCount = childrenCount;
+    assetStore.removeAssets(ids);
+    notificationController.show({
+      message: `Stacked ${ids.length + 1} assets`,
+      type: NotificationType.Info,
+      timeout: 1500,
+    });
+    dispatch('escape');
   };
 
   const handleSelectAsset = (asset: AssetResponseDto) => {
