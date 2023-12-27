@@ -1,6 +1,6 @@
 import { IAccessRepository } from '@app/domain';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Brackets, DataSource, In, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import {
   ActivityEntity,
   AlbumEntity,
@@ -24,7 +24,6 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SharedLinkEntity) private sharedLinkRepository: Repository<SharedLinkEntity>,
     @InjectRepository(UserTokenEntity) private tokenRepository: Repository<UserTokenEntity>,
-    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   activity = {
@@ -137,29 +136,18 @@ export class AccessRepository implements IAccessRepository {
         return new Set();
       }
 
-      const cte = this.dataSource
-        .createQueryBuilder()
-        .select('unnest(array[:...assetIds])::uuid', 'id')
-        .setParameter('assetIds', [...assetIds])
-        .fromDummy();
-
       return this.albumRepository
         .createQueryBuilder('album')
-        .addCommonTableExpression(cte, 'assetIds')
         .innerJoin('album.assets', 'asset')
         .leftJoin('album.sharedUsers', 'sharedUsers')
         .select('asset.id', 'assetId')
         .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
-        .where(
-          new Brackets((qb) => {
-            qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
-          }),
-        )
+        .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
+          assetIds: [...assetIds],
+        })
         .andWhere(
           new Brackets((qb) => {
-            qb.where('asset.id IN (SELECT id FROM "assetIds")')
-              // still part of a live photo is in an album
-              .orWhere('asset.livePhotoVideoId IN (SELECT id FROM "assetIds")');
+            qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
           }),
         )
         .getRawMany()
@@ -215,15 +203,8 @@ export class AccessRepository implements IAccessRepository {
         return new Set();
       }
 
-      const cte = this.dataSource
-        .createQueryBuilder()
-        .select('unnest(array[:...assetIds])::uuid', 'id')
-        .setParameter('assetIds', [...assetIds])
-        .fromDummy();
-
       return this.sharedLinkRepository
         .createQueryBuilder('sharedLink')
-        .addCommonTableExpression(cte, 'assetIds')
         .leftJoin('sharedLink.album', 'album')
         .leftJoin('sharedLink.assets', 'assets')
         .leftJoin('album.assets', 'albumAssets')
@@ -233,13 +214,10 @@ export class AccessRepository implements IAccessRepository {
         .addSelect('albumAssets.livePhotoVideoId', 'albumAssetLivePhotoVideoId')
         .where('sharedLink.id = :sharedLinkId', { sharedLinkId })
         .andWhere(
-          new Brackets((qb) => {
-            qb.where('assets.id IN (SELECT id FROM "assetIds")')
-              .orWhere('albumAssets.id IN (SELECT id FROM "assetIds")')
-              // still part of a live photo is in a shared link
-              .orWhere('assets.livePhotoVideoId IN (SELECT id FROM "assetIds")')
-              .orWhere('albumAssets.livePhotoVideoId IN (SELECT id FROM "assetIds")');
-          }),
+          'array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"] && array[:...assetIds]::uuid[]',
+          {
+            assetIds: [...assetIds],
+          },
         )
         .getRawMany()
         .then((rows) => {
