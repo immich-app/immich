@@ -36,11 +36,6 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto objectTagging
-    test('to test the property `objectTagging`', () async {
-      // TODO
-    });
-
     // JobSettingsDto recognizeFaces
     test('to test the property `recognizeFaces`', () async {
       // TODO

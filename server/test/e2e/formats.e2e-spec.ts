@@ -90,10 +90,7 @@ describe(`Supported file formats (e2e)`, () => {
         iso: 20,
         focalLength: 3.99,
         fNumber: 1.8,
-        state: 'Douglas County, Nebraska',
         timeZone: 'America/Chicago',
-        city: 'Ralston',
-        country: 'United States of America',
       },
     },
     {
@@ -168,7 +165,7 @@ describe(`Supported file formats (e2e)`, () => {
   const testsToRun = formatTests.filter((formatTest) => formatTest.runTest);
 
   beforeAll(async () => {
-    [server] = await testApp.create({ jobs: true });
+    server = (await testApp.create({ jobs: true })).getHttpServer();
   });
 
   afterAll(async () => {

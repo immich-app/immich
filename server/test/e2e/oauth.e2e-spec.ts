@@ -8,7 +8,7 @@ describe(`${OAuthController.name} (e2e)`, () => {
   let server: any;
 
   beforeAll(async () => {
-    [server] = await testApp.create();
+    server = (await testApp.create()).getHttpServer();
   });
 
   afterAll(async () => {

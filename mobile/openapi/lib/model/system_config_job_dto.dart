@@ -17,7 +17,6 @@ class SystemConfigJobDto {
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
-    required this.objectTagging,
     required this.recognizeFaces,
     required this.search,
     required this.sidecar,
@@ -34,8 +33,6 @@ class SystemConfigJobDto {
   JobSettingsDto metadataExtraction;
 
   JobSettingsDto migration;
-
-  JobSettingsDto objectTagging;
 
   JobSettingsDto recognizeFaces;
 
@@ -57,7 +54,6 @@ class SystemConfigJobDto {
      other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
      other.migration == migration &&
-     other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
      other.search == search &&
      other.sidecar == sidecar &&
@@ -73,7 +69,6 @@ class SystemConfigJobDto {
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
-    (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
@@ -83,7 +78,7 @@ class SystemConfigJobDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,7 +86,6 @@ class SystemConfigJobDto {
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
-      json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
@@ -114,7 +108,6 @@ class SystemConfigJobDto {
         library_: JobSettingsDto.fromJson(json[r'library'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobSettingsDto.fromJson(json[r'migration'])!,
-        objectTagging: JobSettingsDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobSettingsDto.fromJson(json[r'recognizeFaces'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
         sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
@@ -173,7 +166,6 @@ class SystemConfigJobDto {
     'library',
     'metadataExtraction',
     'migration',
-    'objectTagging',
     'recognizeFaces',
     'search',
     'sidecar',

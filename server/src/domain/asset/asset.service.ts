@@ -8,7 +8,7 @@ import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { HumanReadableSize, ImmichFileResponse, usePagination } from '../domain.util';
+import { CacheControl, HumanReadableSize, ImmichFileResponse, usePagination } from '../domain.util';
 import { IAssetDeletionJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import {
   ClientEvent,
@@ -290,7 +290,7 @@ export class AssetService {
     return new ImmichFileResponse({
       path: asset.originalPath,
       contentType: mimeTypes.lookup(asset.originalPath),
-      cacheControl: false,
+      cacheControl: CacheControl.NONE,
     });
   }
 

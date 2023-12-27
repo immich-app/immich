@@ -179,25 +179,7 @@
         <div
           class="main-view relative flex h-full w-[70vw] place-content-center place-items-center rounded-2xl bg-black"
         >
-          <div class="h-full w-full rounded-2xl bg-black">
-            <!-- CONTROL BUTTONS -->
-            <div class="absolute flex h-full w-full justify-between">
-              <div class="ml-4 flex h-full flex-col place-content-center place-items-center">
-                <div class="inline-block">
-                  {#if canGoBack}
-                    <CircleIconButton icon={mdiChevronLeft} backgroundColor="#202123" on:click={toPrevious} />
-                  {/if}
-                </div>
-              </div>
-              <div class="mr-4 flex h-full flex-col place-content-center place-items-center">
-                <div class="inline-block">
-                  {#if canGoForward}
-                    <CircleIconButton icon={mdiChevronRight} backgroundColor="#202123" on:click={toNext} />
-                  {/if}
-                </div>
-              </div>
-            </div>
-
+          <div class="relative h-full w-full rounded-2xl bg-black">
             {#key currentAsset.id}
               <img
                 transition:fade
@@ -207,6 +189,18 @@
                 draggable="false"
               />
             {/key}
+            <!-- CONTROL BUTTONS -->
+            {#if canGoBack}
+              <div class="absolute top-1/2 left-0 ml-4">
+                <CircleIconButton icon={mdiChevronLeft} backgroundColor="#202123" on:click={toPrevious} />
+              </div>
+            {/if}
+
+            {#if canGoForward}
+              <div class="absolute top-1/2 right-0 mr-4">
+                <CircleIconButton icon={mdiChevronRight} backgroundColor="#202123" on:click={toNext} />
+              </div>
+            {/if}
 
             <div class="absolute left-8 top-4 text-sm font-medium text-white">
               <p>

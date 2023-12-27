@@ -12,7 +12,6 @@ byte_image = BytesIO()
 
 @events.init_command_line_parser.add_listener
 def _(parser: ArgumentParser) -> None:
-    parser.add_argument("--tag-model", type=str, default="microsoft/resnet-50")
     parser.add_argument("--clip-model", type=str, default="ViT-B-32::openai")
     parser.add_argument("--face-model", type=str, default="buffalo_l")
     parser.add_argument(
@@ -52,18 +51,6 @@ class InferenceLoadTest(HttpUser):
     def on_start(self) -> None:
         global byte_image
         self.data = byte_image.getvalue()
-
-
-class ClassificationFormDataLoadTest(InferenceLoadTest):
-    @task
-    def classify(self) -> None:
-        data = [
-            ("modelName", self.environment.parsed_options.clip_model),
-            ("modelType", "clip"),
-            ("options", json.dumps({"minScore": self.environment.parsed_options.tag_min_score})),
-        ]
-        files = {"image": self.data}
-        self.client.post("/predict", data=data, files=files)
 
 
 class CLIPTextFormDataLoadTest(InferenceLoadTest):

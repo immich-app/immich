@@ -6,6 +6,7 @@ import {
   IAuditRepository,
   ICommunicationRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IJobRepository,
   IKeyRepository,
   ILibraryRepository,
@@ -43,6 +44,7 @@ import {
   AuditRepository,
   CommunicationRepository,
   CryptoRepository,
+  DatabaseRepository,
   FilesystemProvider,
   JobRepository,
   LibraryRepository,
@@ -70,6 +72,7 @@ const providers: Provider[] = [
   { provide: IAuditRepository, useClass: AuditRepository },
   { provide: ICommunicationRepository, useClass: CommunicationRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
+  { provide: IDatabaseRepository, useClass: DatabaseRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: ApiKeyRepository },
@@ -101,6 +104,7 @@ const imports = [
 const moduleExports = [...providers];
 
 if (process.env.IMMICH_TEST_ENV !== 'true') {
+  // Currently not running e2e tests, set up redis and bull queues
   imports.push(BullModule.forRoot(bullConfig));
   imports.push(BullModule.registerQueue(...bullQueues));
   moduleExports.push(BullModule);

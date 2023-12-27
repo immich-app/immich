@@ -1,6 +1,7 @@
 import {
   AssetService,
   AuditService,
+  DatabaseService,
   IDeleteFilesJob,
   JobName,
   JobService,
@@ -31,9 +32,11 @@ export class AppService {
     private storageTemplateService: StorageTemplateService,
     private storageService: StorageService,
     private userService: UserService,
+    private databaseService: DatabaseService,
   ) {}
 
   async init() {
+    await this.databaseService.init();
     await this.configService.init();
     await this.jobService.registerHandlers({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
@@ -42,8 +45,6 @@ export class AppService {
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
       [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
-      [JobName.QUEUE_OBJECT_TAGGING]: (data) => this.smartInfoService.handleQueueObjectTagging(data),
-      [JobName.CLASSIFY_IMAGE]: (data) => this.smartInfoService.handleClassifyImage(data),
       [JobName.QUEUE_ENCODE_CLIP]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
       [JobName.ENCODE_CLIP]: (data) => this.smartInfoService.handleEncodeClip(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),

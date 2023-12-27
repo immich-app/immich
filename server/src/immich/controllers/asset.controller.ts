@@ -12,7 +12,6 @@ import {
   BulkIdsDto,
   DownloadInfoDto,
   DownloadResponseDto,
-  ImmichFileResponse,
   MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
@@ -32,16 +31,19 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Next,
   Param,
   Post,
   Put,
   Query,
+  Res,
   StreamableFile,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
 import { DeviceIdDto } from '../api-v1/asset/dto/device-id.dto';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
-import { UseValidation, asStreamableFile } from '../app.utils';
+import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
 import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -98,8 +100,13 @@ export class AssetController {
   @Post('download/:id')
   @HttpCode(HttpStatus.OK)
   @FileResponse()
-  downloadFile(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<ImmichFileResponse> {
-    return this.service.downloadFile(auth, id);
+  async downloadFile(
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ) {
+    await sendFile(res, next, () => this.service.downloadFile(auth, id));
   }
 
   /**

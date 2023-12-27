@@ -13,14 +13,11 @@ part of openapi.api;
 class SystemConfigMachineLearningDto {
   /// Returns a new [SystemConfigMachineLearningDto] instance.
   SystemConfigMachineLearningDto({
-    required this.classification,
     required this.clip,
     required this.enabled,
     required this.facialRecognition,
     required this.url,
   });
-
-  ClassificationConfig classification;
 
   CLIPConfig clip;
 
@@ -32,7 +29,6 @@ class SystemConfigMachineLearningDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMachineLearningDto &&
-     other.classification == classification &&
      other.clip == clip &&
      other.enabled == enabled &&
      other.facialRecognition == facialRecognition &&
@@ -41,18 +37,16 @@ class SystemConfigMachineLearningDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (classification.hashCode) +
     (clip.hashCode) +
     (enabled.hashCode) +
     (facialRecognition.hashCode) +
     (url.hashCode);
 
   @override
-  String toString() => 'SystemConfigMachineLearningDto[classification=$classification, clip=$clip, enabled=$enabled, facialRecognition=$facialRecognition, url=$url]';
+  String toString() => 'SystemConfigMachineLearningDto[clip=$clip, enabled=$enabled, facialRecognition=$facialRecognition, url=$url]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'classification'] = this.classification;
       json[r'clip'] = this.clip;
       json[r'enabled'] = this.enabled;
       json[r'facialRecognition'] = this.facialRecognition;
@@ -68,7 +62,6 @@ class SystemConfigMachineLearningDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigMachineLearningDto(
-        classification: ClassificationConfig.fromJson(json[r'classification'])!,
         clip: CLIPConfig.fromJson(json[r'clip'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         facialRecognition: RecognitionConfig.fromJson(json[r'facialRecognition'])!,
@@ -120,7 +113,6 @@ class SystemConfigMachineLearningDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'classification',
     'clip',
     'enabled',
     'facialRecognition',
