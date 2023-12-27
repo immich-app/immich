@@ -5,6 +5,7 @@ import { albumFactory } from '@test-data';
 import '@testing-library/jest-dom';
 import { fireEvent, render, RenderResult, waitFor } from '@testing-library/svelte';
 import AlbumCard from '../album-card.svelte';
+import type { InternalAxiosRequestConfig } from 'axios';
 
 jest.mock('@api');
 
@@ -59,7 +60,7 @@ describe('AlbumCard component', () => {
     const thumbnailUrl = 'blob:thumbnailUrlOne';
     apiMock.assetApi.getAssetThumbnail.mockResolvedValue({
       data: thumbnailFile,
-      config: {},
+      config: {} as InternalAxiosRequestConfig,
       headers: {},
       status: 200,
       statusText: '',

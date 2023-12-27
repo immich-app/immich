@@ -10,6 +10,7 @@ import {
   UserResponseDto,
 } from '@api';
 import { handleError } from './handle-error';
+import type { AxiosProgressEvent } from 'axios';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
   api.albumApi
@@ -124,9 +125,10 @@ export const downloadFile = async (asset: AssetResponseDto) => {
         { id, key: api.getKey() },
         {
           responseType: 'blob',
-          onDownloadProgress: (event: ProgressEvent) => {
-            if (event.lengthComputable) {
-              downloadManager.update(downloadKey, event.loaded, event.total);
+          onDownloadProgress: (event: AxiosProgressEvent) => {
+            const progressEvent: ProgressEvent | undefined = event.event;
+            if (progressEvent?.lengthComputable) {
+              downloadManager.update(downloadKey, progressEvent.loaded, progressEvent.total);
             }
           },
           signal: abort.signal,

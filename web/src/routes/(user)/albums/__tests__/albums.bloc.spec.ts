@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import { albumFactory } from '@test-data';
 import { get } from 'svelte/store';
 import { useAlbums } from '../albums.bloc';
+import type { InternalAxiosRequestConfig } from 'axios';
 
 jest.mock('@api');
 
@@ -35,7 +36,7 @@ describe('Albums BLoC', () => {
 
     apiMock.albumApi.getAllAlbums.mockResolvedValueOnce({
       data: loadedAlbums,
-      config: {},
+      config: {} as InternalAxiosRequestConfig,
       headers: {},
       status: 200,
       statusText: '',
@@ -71,7 +72,7 @@ describe('Albums BLoC', () => {
 
     apiMock.albumApi.createAlbum.mockResolvedValueOnce({
       data: returnedAlbum,
-      config: {},
+      config: {} as InternalAxiosRequestConfig,
       headers: {},
       status: 200,
       statusText: '',
@@ -99,7 +100,7 @@ describe('Albums BLoC', () => {
   it('selects an album and deletes it', async () => {
     apiMock.albumApi.deleteAlbum.mockResolvedValueOnce({
       data: undefined,
-      config: {},
+      config: {} as InternalAxiosRequestConfig,
       headers: {},
       status: 200,
       statusText: '',

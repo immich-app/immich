@@ -4,6 +4,7 @@ import { api, AssetFileUploadResponseDto } from '@api';
 import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
 import { UploadState } from '$lib/models/upload-asset';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
+import type { AxiosProgressEvent } from 'axios';
 
 let _extensions: string[];
 
@@ -83,8 +84,11 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
           key: api.getKey(),
         },
         {
-          onUploadProgress: ({ loaded, total }) => {
-            uploadAssetsStore.updateProgress(deviceAssetId, loaded, total);
+          onUploadProgress: (event: AxiosProgressEvent) => {
+            const progressEvent: ProgressEvent | undefined = event.event;
+            if (progressEvent?.lengthComputable) {
+              uploadAssetsStore.updateProgress(deviceAssetId, progressEvent.loaded, progressEvent.total);
+            }
           },
         },
       ),
