@@ -245,7 +245,13 @@ export class MediaService {
 
     const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
     if (!required) {
-      return false;
+      if (asset.encodedVideoPath) {
+        this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
+        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [asset.encodedVideoPath] } });
+        await this.assetRepository.save({ id: asset.id, encodedVideoPath: null });
+      }
+
+      return true;
     }
 
     let transcodeOptions;
