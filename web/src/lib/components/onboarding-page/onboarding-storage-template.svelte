@@ -5,17 +5,18 @@
   import StorageTemplateSettings from '../admin-page/settings/storage-template/storage-template-settings.svelte';
   import { SystemConfigDto, api } from '@api';
   import { user } from '$lib/stores/user.store';
+  import AdminSettings from '../admin-page/settings/admin-settings.svelte';
 
   const dispatch = createEventDispatcher<{
     done: void;
     previous: void;
   }>();
 
-  let configs: SystemConfigDto | null = null;
+  let config: SystemConfigDto | null = null;
 
   onMount(async () => {
     const { data } = await api.systemConfigApi.getConfig();
-    configs = data;
+    config = data;
   });
 </script>
 
@@ -27,13 +28,24 @@
     variables to customize the template to your liking.
   </p>
 
-  {#if configs && $user}
-    <StorageTemplateSettings
-      minified
-      disabled={$featureFlags.configFile}
-      storageConfig={configs.storageTemplate}
+  {#if config && $user}
+    <AdminSettings
+      {config}
+      let:defaultConfig
+      let:savedConfig
+      let:handleSave
+      let:handleReset
       on:save={() => dispatch('done')}
-      on:previous={() => dispatch('previous')}
-    />
+    >
+      <StorageTemplateSettings
+        minified
+        disabled={$featureFlags.configFile}
+        {config}
+        {defaultConfig}
+        {savedConfig}
+        on:save={({ detail }) => handleSave(detail)}
+        on:reset={({ detail }) => handleReset(detail)}
+      />
+    </AdminSettings>
   {/if}
 </OnboardingCard>
