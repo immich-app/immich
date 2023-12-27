@@ -31,32 +31,20 @@ To remove the **Metadata** you can stop Immich and delete the volume.
 docker compose down -v
 ```
 
-After removing the containers and volumes, the **Files** can be cleaned up (if necessary) from the `UPLOAD_LOCATION` by simply deleting an unwanted files or folders.
+After removing the containers and volumes, the **Files** can be cleaned up (if necessary) from the `UPLOAD_LOCATION` by simply deleting any unwanted files or folders.
 
 ## Docker errors
 
-### I am getting `Could not find image processor` ERROR class in ML containers what can i do?
+### Why does the machine learning service report workers crashing?
+
 :::note
-This problem is irrelevant if Immich runs on a higher version from V1.91.5 and above
+If the error says the worker is exiting, then this is normal. This is a feature intended to reduce RAM consumption when the service isn't being used.
 :::
 
-if you getting this logs:
+There are a few reasons why this can happen.
 
-<details>
-  <summary>Could not find image processor class in the image processor config or the model config.</summary>
+If the error mentions SIGKILL or error code 137, it most likely means the service is running out of memory. Consider either increasing the server's RAM or moving the service to a server with more RAM.
 
-```
-2023-12-14 12:44:17 Could not find image processor class in the image processor config or the model config. Loading based on pattern matching with the model's feature extractor configuration.
-ERROR [JobService] Unable to run job handler (objectTagging/classify-image): TypeError: fetch failed
-ERROR [JobService] TypeError: fetch failed
-at Object.fetch (node:internal/deps/undici/undici:11730:11)
-at async MachineLearningRepository.post (/usr/src/app/dist/infra/repositories/machine-learning.repository.js:16:21)
-at async SmartInfoService.handleClassifyImage (/usr/src/app/dist/domain/smart-info/smart-info.service.js:55:22)
-at async /usr/src/app/dist/domain/job/job.service.js:112:37
-at async Worker.processJob (/usr/src/app/node_modules/bullmq/dist/cjs/classes/worker.js:387:28)
-at async Worker.retryIfFailed (/usr/src/app/node_modules/bullmq/dist/cjs/classes/worker.js:574:24)
-```
+If it mentions SIGILL (note the lack of a K) or error code 132, it most likely means your server's CPU is incompatible. This is unlikely to occur on version 1.92.0 or later. Consider upgrading if your version of Immich is below that.
 
-</details>
-
-It means the model could not be exported to ONNX. I think this error happens is specific to ARM devices. You can disable Image Tagging in the admin settings to avoid this issue[[1]](https://discord.com/channels/979116623879368755/1184823648364798092/1184823806708166696)
+If your version of Immich is below 1.92.0 and the crash occurs after logs about tracing or exporting a model, consider either upgrading or disabling the Tag Objects job.

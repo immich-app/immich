@@ -1,8 +1,17 @@
 ---
 sidebar_position: 2
 ---
-
 # Setup
+
+:::note
+if there is something you're planning to work on just give us a heads up in [Discord](https://discord.com/channels/979116623879368755/1071165397228855327) of what it is so we can
+
+1. Let you know if it's something we would accept into Immich
+2. Provide any guidance on how something like that would ideally be implemented
+3. Ensure nobody is already working on that issue/feature so we don't duplicate effort
+
+Thanks for being interested in contributing 😊
+:::
 
 ## Environment
 

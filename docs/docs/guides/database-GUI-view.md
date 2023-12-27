@@ -5,7 +5,7 @@ in order to connect to the database the immich_postgres container **must be on**
 :::
 
 :::info
-The password and name data comes from the `.env` file. If you have changed the values of the name and password, **they must be changed accordingly in the Connection screen** as explained below
+Password and username match the ones specified in the `.env` file. If you have changed these values, **they must be changed accordingly in the Connection screen** as explained below
 :::
 
 - The software must be installed [pgAdmin](https://www.pgadmin.org/download)

@@ -23,8 +23,8 @@ By default, a container has no resource constraints and can use as much of a giv
 You can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit) to learn how to do this.
 
 ### Can I boost machine learning speed?
-Yes, you can do it by increasing the amount of job concurrency, as the amount increases, the computer will work on several assets at the same time.
-You can do it by
+Yes, you can by increasing the job concurrency. With higher concurrency, the host will work on more assets in parallel.
+You can do it by:
 1. Admin user login
 2. Administration
 3. jobs
@@ -33,16 +33,12 @@ You can do it by
 
 :::danger
 On a normal machine, 2 or 3 concurrent jobs can probably max the CPU, so if you're not hitting those maximums with, say, 30 jobs,
-Also, it is important to know that the Storage should have INPUT & OUTPUT at high speed in order to handle all of this
+Note that storage speed and latency may quickly become the limiting factor; particularly when using HDDs.
 
-For reference I never went above 32/job while testing with an RTX 4090 GPU
-Or for example if machine learning is enabled by a CPU such as I7 8700 a bit higher than default here would be like 16/job.
-
-Do not exaggerate with the amount of jobs because you're probably thoroughly overloading the database.
+Do not exaggerate with the amount of jobs because you're probably thoroughly overloading the server.
 
 more info [here](https://discord.com/channels/979116623879368755/994044917355663450/1174711719994605708)
 :::
 
-
-### When you run machine learning my processor is 100% usge is it noraml?
+### Why is Immich using so much of my CPU?
 When a large amount of assets are uploaded to Immich it makes sense that the CPU and RAM will be heavily used due to machine learning work and creating image thumbnails after that, the percentage of CPU usage will drop to around 3-5% usage
