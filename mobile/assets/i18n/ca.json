@@ -180,6 +180,7 @@
   "experimental_settings_title": "Experimental",
   "favorites_page_no_favorites": "No s'han trobat preferits",
   "favorites_page_title": "Favorites",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Added {added} assets to album {album}. {failed} assets are already in the album.",
   "home_page_add_to_album_err_local": "Can not add local assets to albums yet, skipping",
   "home_page_add_to_album_success": "Added {added} assets to album {album}.",

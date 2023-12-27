@@ -180,6 +180,7 @@
   "experimental_settings_title": "Kokeellinen",
   "favorites_page_no_favorites": "Suosikkikohteita ei löytynyt",
   "favorites_page_title": "Suosikit",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Lisätty {added} kohdetta albumiin {album}. {failed} kohdetta on jo albumissa.",
   "home_page_add_to_album_err_local": "Paikallisten kohteiden lisääminen albumeihin ei ole mahdollista, ohitetaan",
   "home_page_add_to_album_success": "Lisätty {added} kohdetta albumiin {album}.",

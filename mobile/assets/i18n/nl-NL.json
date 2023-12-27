@@ -180,6 +180,7 @@
   "experimental_settings_title": "Experimenteel",
   "favorites_page_no_favorites": "Geen favoriete assets gevonden",
   "favorites_page_title": "Favorieten",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "{added} assets toegevoegd aan album {album}. {failed} assets staan al in het album.",
   "home_page_add_to_album_err_local": "Lokale assets kunnen nog niet aan albums worden toegevoegd, overslaan",
   "home_page_add_to_album_success": "{added} assets toegevoegd aan album {album}.",

@@ -428,8 +428,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
       ),
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          shrinkWrap: true,
+          physics: const ClampingScrollPhysics(),
           children: [
             Padding(
               padding: const EdgeInsets.all(padding),

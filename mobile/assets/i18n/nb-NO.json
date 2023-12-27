@@ -180,6 +180,7 @@
   "experimental_settings_title": "Eksperimentelt",
   "favorites_page_no_favorites": "Ingen favorittobjekter funnet",
   "favorites_page_title": "Favoritter",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Lagt til {added} objekter til album {album}. {failed} objekter er allerede i albumet.",
   "home_page_add_to_album_err_local": "Kan ikke legge til lokale objekter til album enda, hopper over",
   "home_page_add_to_album_success": "Lagt til {added} objekter til album {album}.",

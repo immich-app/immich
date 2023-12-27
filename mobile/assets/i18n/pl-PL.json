@@ -180,6 +180,7 @@
   "experimental_settings_title": "Eksperymentalny",
   "favorites_page_no_favorites": "Nie znaleziono ulubionych zasobów",
   "favorites_page_title": "Ulubione",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Dodano {added} zasoby do albumu {album}. {failed} zasobów jest już w albumie.",
   "home_page_add_to_album_err_local": "Nie można dodawać zasobów lokalnych do albumów, pomijam",
   "home_page_add_to_album_success": "Dodano {added} zasoby do albumu {album}.",

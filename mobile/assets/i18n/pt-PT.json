@@ -180,6 +180,7 @@
   "experimental_settings_title": "Experimental",
   "favorites_page_no_favorites": "No favorite assets found",
   "favorites_page_title": "Favorites",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Ativos {added} adicionados ao álbum {album}. {failed} ativos já estão no álbum.",
   "home_page_add_to_album_err_local": "Can not add local assets to albums yet, skipping",
   "home_page_add_to_album_success": "Ativos {added} adicionados ao álbum {album}.",

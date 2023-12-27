@@ -180,6 +180,7 @@
   "experimental_settings_title": "ทดลอง",
   "favorites_page_no_favorites": "ไม่พบทรัพยากรในรายการโปรด",
   "favorites_page_title": "รายการโปรด",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "เพิ่ม {added} ทรัพยากรเข้าอัลบั้ม {album}. {failed} ทรัพยากรอยู่ในอัลบั้มอยู่แล้ว",
   "home_page_add_to_album_err_local": " ไม่สามารถเพิ่มทรัพยากรบนเครื่องเข้าอัลบั้ม กำลังข้าม",
   "home_page_add_to_album_success": "Added {added} assets to album {album}.",

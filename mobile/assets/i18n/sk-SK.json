@@ -180,6 +180,7 @@
   "experimental_settings_title": "Experimentálne",
   "favorites_page_no_favorites": "Žiadne obľúbené médiá",
   "favorites_page_title": "Obľúbené",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Pridané {added} položiek do albumu {album}. {failed} položiek už je v albume.",
   "home_page_add_to_album_err_local": "Zatiaľ nie je možné pridať lokálne média do albumov, preskakuje sa",
   "home_page_add_to_album_success": "Pridané {added} položky do albumu {album}.",

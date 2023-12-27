@@ -180,6 +180,7 @@
   "experimental_settings_title": "Expérimental",
   "favorites_page_no_favorites": "Aucun élément favori n'a été trouvé",
   "favorites_page_title": "Favoris",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "{added} éléments ajoutés à l'album {album}. Les éléments {failed} sont déjà dans l'album.",
   "home_page_add_to_album_err_local": "Impossible d'ajouter des éléments locaux aux albums pour le moment, étape ignorée",
   "home_page_add_to_album_success": "{added} éléments ajoutés à l'album {album}.",

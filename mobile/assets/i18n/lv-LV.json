@@ -180,6 +180,7 @@
   "experimental_settings_title": "Eksperimentāls",
   "favorites_page_no_favorites": "Nav atrasti iecienītākie aktīvi",
   "favorites_page_title": "Izlase",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Pievienoja {added} aktīvus albumam {album}. {failed} aktīvi jau ir albumā.",
   "home_page_add_to_album_err_local": "Albumiem vēl nevar pievienot lokālos aktīvus, notiek izlaišana",
   "home_page_add_to_album_success": "Pievienoja {added} aktīvus albumam {album}.",

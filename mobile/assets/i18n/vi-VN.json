@@ -180,6 +180,7 @@
   "experimental_settings_title": "Chưa hoàn thiện",
   "favorites_page_no_favorites": "Không tìm thấy ảnh yêu thích",
   "favorites_page_title": "Ảnh yêu thích",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Đã thêm {added} mục vào album {album}. {failed}\nmục đã có sẵn trong album. ",
   "home_page_add_to_album_err_local": "Không thể thêm ảnh cục bộ vào album, bỏ qua",
   "home_page_add_to_album_success": "Đã thêm {added} mục vào album {album}",

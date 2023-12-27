@@ -180,6 +180,7 @@
   "experimental_settings_title": "实验性功能",
   "favorites_page_no_favorites": "未找到收藏项目",
   "favorites_page_title": "收藏",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "已向相册 {album} 中添加 {added} 项。\n其中 {failed} 项在相册中已存在。",
   "home_page_add_to_album_err_local": "暂不能将本地项目添加到相册中，跳过",
   "home_page_add_to_album_success": "已向相册 {album}  中添加 {added} 项。",

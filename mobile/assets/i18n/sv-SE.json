@@ -180,6 +180,7 @@
   "experimental_settings_title": "Experimentellt",
   "favorites_page_no_favorites": "No favorite assets found",
   "favorites_page_title": "Favoriter",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "Lade till {added} foton och videor i albumet {album}. {failed} foton och videor finns redan i albumet.",
   "home_page_add_to_album_err_local": "Can not add local assets to albums yet, skipping",
   "home_page_add_to_album_success": "Lade till {added} foton och videor i albumet {album}.",

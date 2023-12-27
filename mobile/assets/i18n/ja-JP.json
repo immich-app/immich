@@ -180,6 +180,7 @@
   "experimental_settings_title": "試験的機能",
   "favorites_page_no_favorites": "お気に入り登録された写真またはビデオがありません",
   "favorites_page_title": "お気に入り",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "{album}に{added}枚写真を追加しました。追加済みの{failed}枚はスキップしました。",
   "home_page_add_to_album_err_local": "まだアップロードされてない項目はアルバムに登録できません",
   "home_page_add_to_album_success": "{album}に{added}枚写真を追加しました",

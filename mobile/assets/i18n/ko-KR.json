@@ -180,6 +180,7 @@
   "experimental_settings_title": "실험적기능",
   "favorites_page_no_favorites": "즐겨찾기된 미디어를 찾을 수 없습니다",
   "favorites_page_title": "즐겨찾기",
+  "home_page_no_assets": "No assets to show",
   "home_page_add_to_album_conflicts": "{album} 앨범에 {added} 미디어를 추가했습니다. {failed} 이미 앨범에 있는 항목입니다.",
   "home_page_add_to_album_err_local": "아직 앨범에 로컬 미디어를 추가할 수 없으므로 건너뜁니다",
   "home_page_add_to_album_success": "{album} 앨범에 {added} 미디어를 추가했습니다. ",
