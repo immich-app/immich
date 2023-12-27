@@ -11,11 +11,13 @@ import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
   ClientEvent,
+  DatabaseLock,
   ExifDuration,
   IAlbumRepository,
   IAssetRepository,
   ICommunicationRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IJobRepository,
   IMediaRepository,
   IMetadataRepository,
@@ -100,15 +102,16 @@ export class MetadataService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IMetadataRepository) private repository: IMetadataRepository,
+    @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
     this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
@@ -128,7 +131,7 @@ export class MetadataService {
 
     try {
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
-      await this.repository.init();
+      await this.databaseRepository.withLock(DatabaseLock.GeodataImport, () => this.repository.init());
       await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
 
       this.logger.log(`Initialized local reverse geocoder`);

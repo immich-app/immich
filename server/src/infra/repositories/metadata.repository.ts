@@ -5,7 +5,6 @@ import {
   ISystemMetadataRepository,
   ReverseGeocodeResult,
 } from '@app/domain';
-import { DatabaseLock, RequireLock } from '@app/infra';
 import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
@@ -34,7 +33,6 @@ export class MetadataRepository implements IMetadataRepository {
 
   private logger = new ImmichLogger(MetadataRepository.name);
 
-  @RequireLock(DatabaseLock.GeodataImport)
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile('/usr/src/resources/geodata-date.txt', 'utf8');
@@ -46,7 +44,17 @@ export class MetadataRepository implements IMetadataRepository {
     }
 
     this.logger.log('Importing geodata to database from file');
+    await this.importGeodata();
 
+    await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
+      lastUpdate: geodataDate,
+      lastImportFileName: CITIES_FILE,
+    });
+
+    this.logger.log('Geodata import completed');
+  }
+
+  private async importGeodata() {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
@@ -65,13 +73,6 @@ export class MetadataRepository implements IMetadataRepository {
     } finally {
       await queryRunner.release();
     }
-
-    await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
-      lastUpdate: geodataDate,
-      lastImportFileName: CITIES_FILE,
-    });
-
-    this.logger.log('Geodata import completed');
   }
 
   private async loadGeodataToTableFromFile<T extends GeoEntity>(

@@ -4,7 +4,9 @@ import { setTimeout } from 'timers/promises';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {
+  DatabaseLock,
   IAssetRepository,
+  IDatabaseRepository,
   IJobRepository,
   IMachineLearningRepository,
   ISmartInfoRepository,
@@ -20,10 +22,11 @@ export class SmartInfoService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISmartInfoRepository) private repository: ISmartInfoRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
+    @Inject(ISmartInfoRepository) private repository: ISmartInfoRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -41,7 +44,9 @@ export class SmartInfoService {
 
     const { machineLearning } = await this.configCore.getConfig();
 
-    await this.repository.init(machineLearning.clip.modelName);
+    await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, () =>
+      this.repository.init(machineLearning.clip.modelName),
+    );
 
     await this.jobRepository.resume(QueueName.SMART_SEARCH);
   }
@@ -83,6 +88,11 @@ export class SmartInfoService {
       { imagePath: asset.resizePath },
       machineLearning.clip,
     );
+
+    if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
+      this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
+      await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
+    }
 
     await this.repository.upsert({ assetId: asset.id }, clipEmbedding);
 
