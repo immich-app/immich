@@ -127,10 +127,11 @@ function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) 
   try {
     const res = JSON.parse(respBody);
     const extraMsg = res ? ' ' + res?.message : '';
+    const messageSuffix = extraMessage !== undefined ? ` ${extraMessage}` : '';
 
     notificationController.show({
       type: NotificationType.Error,
-      message: `Cannot upload file ${asset.name} ${extraMsg}${extraMessage}`,
+      message: `Cannot upload file ${asset.name} ${extraMsg}${messageSuffix}`,
       timeout: 5000,
     });
   } catch (e) {

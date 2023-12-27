@@ -237,27 +237,28 @@ class SharedLinkEditPage extends HookConsumerWidget {
           ),
           DropdownMenuEntry(
             value: 30,
-            label: "shared_link_edit_expire_after_option_minutes".plural(30),
+            label:
+                "shared_link_edit_expire_after_option_minutes".tr(args: ["30"]),
           ),
           DropdownMenuEntry(
             value: 60,
-            label: "shared_link_edit_expire_after_option_hours".plural(1),
+            label: "shared_link_edit_expire_after_option_hour".tr(),
           ),
           DropdownMenuEntry(
             value: 60 * 6,
-            label: "shared_link_edit_expire_after_option_hours".plural(6),
+            label: "shared_link_edit_expire_after_option_hours".tr(args: ["6"]),
           ),
           DropdownMenuEntry(
             value: 60 * 24,
-            label: "shared_link_edit_expire_after_option_days".plural(1),
+            label: "shared_link_edit_expire_after_option_day".tr(),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 7,
-            label: "shared_link_edit_expire_after_option_days".plural(7),
+            label: "shared_link_edit_expire_after_option_days".tr(args: ["7"]),
           ),
           DropdownMenuEntry(
             value: 60 * 24 * 30,
-            label: "shared_link_edit_expire_after_option_days".plural(30),
+            label: "shared_link_edit_expire_after_option_days".tr(args: ["30"]),
           ),
         ],
       );

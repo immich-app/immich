@@ -6271,7 +6271,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.91.0",
+    "version": "1.91.4",
     "contact": {}
   },
   "tags": [],
@@ -6553,9 +6553,6 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "clipEncoding": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
           "library": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6565,9 +6562,6 @@
           "migration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "objectTagging": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
           "recognizeFaces": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6575,6 +6569,9 @@
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "sidecar": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "smartSearch": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "storageTemplateMigration": {
@@ -6591,8 +6588,7 @@
           "thumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
-          "objectTagging",
-          "clipEncoding",
+          "smartSearch",
           "storageTemplateMigration",
           "migration",
           "backgroundTask",
@@ -7286,28 +7282,6 @@
         ],
         "type": "object"
       },
-      "ClassificationConfig": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "minScore": {
-            "type": "integer"
-          },
-          "modelName": {
-            "type": "string"
-          },
-          "modelType": {
-            "$ref": "#/components/schemas/ModelType"
-          }
-        },
-        "required": [
-          "minScore",
-          "enabled",
-          "modelName"
-        ],
-        "type": "object"
-      },
       "Colorspace": {
         "enum": [
           "srgb",
@@ -7904,9 +7878,8 @@
           "thumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
-          "objectTagging",
           "recognizeFaces",
-          "clipEncoding",
+          "smartSearch",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",
@@ -8175,7 +8148,6 @@
       },
       "ModelType": {
         "enum": [
-          "image-classification",
           "facial-recognition",
           "clip"
         ],
@@ -8777,9 +8749,6 @@
           "sidecar": {
             "type": "boolean"
           },
-          "tagImage": {
-            "type": "boolean"
-          },
           "trash": {
             "type": "boolean"
           }
@@ -8795,8 +8764,7 @@
           "oauthAutoLaunch",
           "passwordLogin",
           "sidecar",
-          "search",
-          "tagImage"
+          "search"
         ],
         "type": "object"
       },
@@ -9285,9 +9253,6 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "clipEncoding": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9297,9 +9262,6 @@
           "migration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "objectTagging": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "recognizeFaces": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9307,6 +9269,9 @@
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "sidecar": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "smartSearch": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "storageTemplateMigration": {
@@ -9323,8 +9288,7 @@
           "thumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
-          "objectTagging",
-          "clipEncoding",
+          "smartSearch",
           "storageTemplateMigration",
           "migration",
           "backgroundTask",
@@ -9378,9 +9342,6 @@
       },
       "SystemConfigMachineLearningDto": {
         "properties": {
-          "classification": {
-            "$ref": "#/components/schemas/ClassificationConfig"
-          },
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
@@ -9397,7 +9358,6 @@
         "required": [
           "enabled",
           "url",
-          "classification",
           "clip",
           "facialRecognition"
         ],

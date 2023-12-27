@@ -16,9 +16,6 @@ Edit `docker-compose.yml` to add two new mount points under `volumes:`
 
 Be sure to add exactly the same line to both `immich-server:` and `immich-microservices:`.
 
-[Question for the devs: Is editing docker-compose.yml really the desirable way to solve this problem?
-I assumed user changes were supposed to be kept to .env?]
-
 Edit `.env` to define `EXTERNAL_PATH`, substituting in the correct path for your computer:
 
 ```
@@ -87,7 +84,7 @@ In the Immich web UI:
 - Save the new path
   <img src={require('./img/path-save.png').default} width="50%" title="Path Save button" />
 
-- Click the three-dots menu and select **Scan New Library Files** [I'm not sure whether this is necessary]
+- Click the three-dots menu and select **Scan New Library Files**
   <img src={require('./img/scan-new-library-files.png').default} width="50%" title="Scan New Library Files menu option" />
 
 # Confirm stuff is happening

@@ -1,11 +1,15 @@
 import {
+  CacheControl,
   IMMICH_ACCESS_COOKIE,
   IMMICH_API_KEY_HEADER,
   IMMICH_API_KEY_NAME,
+  ImmichFileResponse,
   ImmichReadStream,
+  isConnectionAborted,
   serverVersion,
 } from '@app/domain';
-import { INestApplication, StreamableFile } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { HttpException, INestApplication, StreamableFile } from '@nestjs/common';
 import {
   DocumentBuilder,
   OpenAPIObject,
@@ -13,8 +17,11 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
 import { writeFileSync } from 'fs';
-import path from 'path';
+import { access, constants } from 'fs/promises';
+import path, { isAbsolute } from 'path';
+import { promisify } from 'util';
 
 import { applyDecorators, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Metadata } from './app.guard';
@@ -29,6 +36,57 @@ export function UseValidation() {
     ),
   );
 }
+
+type SendFile = Parameters<Response['sendFile']>;
+type SendFileOptions = SendFile[1];
+
+const logger = new ImmichLogger('SendFile');
+
+export const sendFile = async (
+  res: Response,
+  next: NextFunction,
+  handler: () => Promise<ImmichFileResponse>,
+): Promise<void> => {
+  const _sendFile = (path: string, options: SendFileOptions) =>
+    promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);
+
+  try {
+    const file = await handler();
+    switch (file.cacheControl) {
+      case CacheControl.PRIVATE_WITH_CACHE:
+        res.set('Cache-Control', 'private, max-age=86400, no-transform');
+        break;
+
+      case CacheControl.PRIVATE_WITHOUT_CACHE:
+        res.set('Cache-Control', 'private, no-cache, no-transform');
+        break;
+    }
+
+    res.header('Content-Type', file.contentType);
+
+    const options: SendFileOptions = { dotfiles: 'allow' };
+    if (!isAbsolute(file.path)) {
+      options.root = process.cwd();
+    }
+
+    await access(file.path, constants.R_OK);
+
+    return _sendFile(file.path, options);
+  } catch (error: Error | any) {
+    // ignore client-closed connection
+    if (isConnectionAborted(error)) {
+      return;
+    }
+
+    // log non-http errors
+    if (error instanceof HttpException === false) {
+      logger.error(`Unable to send file: ${error.name}`, error.stack);
+    }
+
+    res.header('Cache-Control', 'none');
+    next(error);
+  }
+};
 
 export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => {
   return new StreamableFile(stream, { type, length });

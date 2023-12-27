@@ -29,13 +29,13 @@ export class SmartInfoService {
   }
 
   async init() {
-    await this.jobRepository.pause(QueueName.CLIP_ENCODING);
+    await this.jobRepository.pause(QueueName.SMART_SEARCH);
 
-    let { isActive } = await this.jobRepository.getQueueStatus(QueueName.CLIP_ENCODING);
+    let { isActive } = await this.jobRepository.getQueueStatus(QueueName.SMART_SEARCH);
     while (isActive) {
       this.logger.verbose('Waiting for CLIP encoding queue to stop...');
       await setTimeout(1000).then(async () => {
-        ({ isActive } = await this.jobRepository.getQueueStatus(QueueName.CLIP_ENCODING));
+        ({ isActive } = await this.jobRepository.getQueueStatus(QueueName.SMART_SEARCH));
       });
     }
 
@@ -43,49 +43,7 @@ export class SmartInfoService {
 
     await this.repository.init(machineLearning.clip.modelName);
 
-    await this.jobRepository.resume(QueueName.CLIP_ENCODING);
-  }
-
-  async handleQueueObjectTagging({ force }: IBaseJob) {
-    const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.classification.enabled) {
-      return true;
-    }
-
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.OBJECT_TAGS);
-    });
-
-    for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { id: asset.id } });
-      }
-    }
-
-    return true;
-  }
-
-  async handleClassifyImage({ id }: IEntityJob) {
-    const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.classification.enabled) {
-      return true;
-    }
-
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset.resizePath) {
-      return false;
-    }
-
-    const tags = await this.machineLearning.classifyImage(
-      machineLearning.url,
-      { imagePath: asset.resizePath },
-      machineLearning.classification,
-    );
-    await this.repository.upsert({ assetId: asset.id, tags });
-
-    return true;
+    await this.jobRepository.resume(QueueName.SMART_SEARCH);
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob) {

@@ -1,12 +1,15 @@
 import {
   AuthService,
+  DatabaseService,
   JobService,
+  LibraryService,
   ONE_HOUR,
   OpenGraphTags,
   ServerInfoService,
   SharedLinkService,
   StorageService,
   SystemConfigService,
+  WEB_ROOT_PATH,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
@@ -42,9 +45,11 @@ export class AppService {
     private authService: AuthService,
     private configService: SystemConfigService,
     private jobService: JobService,
+    private libraryService: LibraryService,
     private serverService: ServerInfoService,
     private sharedLinkService: SharedLinkService,
     private storageService: StorageService,
+    private databaseService: DatabaseService,
   ) {}
 
   @Interval(ONE_HOUR.as('milliseconds'))
@@ -58,8 +63,10 @@ export class AppService {
   }
 
   async init() {
+    await this.databaseService.init();
     await this.configService.init();
     this.storageService.init();
+    await this.libraryService.init();
     await this.serverService.handleVersionCheck();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
   }
@@ -67,7 +74,7 @@ export class AppService {
   ssr(excludePaths: string[]) {
     let index = '';
     try {
-      index = readFileSync('/usr/src/app/www/index.html').toString();
+      index = readFileSync(WEB_ROOT_PATH).toString();
     } catch (error: Error | any) {
       this.logger.warn('Unable to open `www/index.html, skipping SSR.');
     }

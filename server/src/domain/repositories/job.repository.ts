@@ -62,10 +62,6 @@ export type JobItem =
   | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
   | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
 
-  // Object Tagging
-  | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
-  | { name: JobName.CLASSIFY_IMAGE; data: IEntityJob }
-
   // Recognize Faces
   | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
   | { name: JobName.RECOGNIZE_FACES; data: IEntityJob }

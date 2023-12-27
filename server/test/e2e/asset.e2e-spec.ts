@@ -63,7 +63,8 @@ describe(`${AssetController.name} (e2e)`, () => {
   };
 
   beforeAll(async () => {
-    [server, app] = await testApp.create();
+    app = await testApp.create();
+    server = app.getHttpServer();
     assetRepository = app.get<IAssetRepository>(IAssetRepository);
 
     await testApp.reset();

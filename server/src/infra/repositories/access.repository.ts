@@ -27,41 +27,64 @@ export class AccessRepository implements IAccessRepository {
   ) {}
 
   activity = {
-    hasOwnerAccess: (userId: string, activityId: string): Promise<boolean> => {
-      return this.activityRepository.exist({
-        where: {
-          id: activityId,
-          userId,
-        },
-      });
-    },
-    hasAlbumOwnerAccess: (userId: string, activityId: string): Promise<boolean> => {
-      return this.activityRepository.exist({
-        where: {
-          id: activityId,
-          album: {
-            ownerId: userId,
+    checkOwnerAccess: async (userId: string, activityIds: Set<string>): Promise<Set<string>> => {
+      if (activityIds.size === 0) {
+        return new Set();
+      }
+
+      return this.activityRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...activityIds]),
+            userId,
           },
-        },
-      });
+        })
+        .then((activities) => new Set(activities.map((activity) => activity.id)));
     },
-    hasCreateAccess: (userId: string, albumId: string): Promise<boolean> => {
-      return this.albumRepository.exist({
-        where: [
-          {
-            id: albumId,
-            isActivityEnabled: true,
-            sharedUsers: {
-              id: userId,
+
+    checkAlbumOwnerAccess: async (userId: string, activityIds: Set<string>): Promise<Set<string>> => {
+      if (activityIds.size === 0) {
+        return new Set();
+      }
+
+      return this.activityRepository
+        .find({
+          select: { id: true },
+          where: {
+            id: In([...activityIds]),
+            album: {
+              ownerId: userId,
             },
           },
-          {
-            id: albumId,
-            isActivityEnabled: true,
-            ownerId: userId,
-          },
-        ],
-      });
+        })
+        .then((activities) => new Set(activities.map((activity) => activity.id)));
+    },
+
+    checkCreateAccess: async (userId: string, albumIds: Set<string>): Promise<Set<string>> => {
+      if (albumIds.size === 0) {
+        return new Set();
+      }
+
+      return this.albumRepository
+        .find({
+          select: { id: true },
+          where: [
+            {
+              id: In([...albumIds]),
+              isActivityEnabled: true,
+              sharedUsers: {
+                id: userId,
+              },
+            },
+            {
+              id: In([...albumIds]),
+              isActivityEnabled: true,
+              ownerId: userId,
+            },
+          ],
+        })
+        .then((albums) => new Set(albums.map((album) => album.id)));
     },
   };
 
@@ -320,7 +343,8 @@ export class AccessRepository implements IAccessRepository {
         })
         .then((persons) => new Set(persons.map((person) => person.id)));
     },
-    hasFaceOwnerAccess: async (userId: string, assetFaceIds: Set<string>): Promise<Set<string>> => {
+
+    checkFaceOwnerAccess: async (userId: string, assetFaceIds: Set<string>): Promise<Set<string>> => {
       if (assetFaceIds.size === 0) {
         return new Set();
       }

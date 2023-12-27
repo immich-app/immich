@@ -32,14 +32,11 @@ The default configuration looks like this:
     "backgroundTask": {
       "concurrency": 5
     },
-    "clipEncoding": {
+    "smartSearch": {
       "concurrency": 2
     },
     "metadataExtraction": {
       "concurrency": 5
-    },
-    "objectTagging": {
-      "concurrency": 2
     },
     "recognizeFaces": {
       "concurrency": 2
@@ -66,14 +63,13 @@ The default configuration looks like this:
       "concurrency": 1
     }
   },
+  "logging": {
+    "enabled": true,
+    "level": "log"
+  },
   "machineLearning": {
     "enabled": true,
     "url": "http://immich-machine-learning:3003",
-    "classification": {
-      "enabled": true,
-      "modelName": "microsoft/resnet-50",
-      "minScore": 0.9
-    },
     "clip": {
       "enabled": true,
       "modelName": "ViT-B-32__openai"
@@ -88,7 +84,8 @@ The default configuration looks like this:
   },
   "map": {
     "enabled": true,
-    "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+    "lightStyle": "",
+    "darkStyle": ""
   },
   "reverseGeocoding": {
     "enabled": true
@@ -133,9 +130,6 @@ The default configuration looks like this:
       "enabled": true,
       "cronExpression": "0 0 * * *"
     }
-  },
-  "stylesheets": {
-    "css": ""
   }
 }
 ```

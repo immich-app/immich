@@ -1,22 +1,22 @@
 import { AssetType } from '@app/infra/entities';
 import { Duration } from 'luxon';
-import { extname } from 'node:path';
+import { extname, join } from 'node:path';
 import pkg from 'src/../../package.json';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
-export interface IServerVersion {
+export interface IVersion {
   major: number;
   minor: number;
   patch: number;
 }
 
-export class ServerVersion implements IServerVersion {
+export class Version implements IVersion {
   constructor(
     public readonly major: number,
-    public readonly minor: number,
-    public readonly patch: number,
+    public readonly minor: number = 0,
+    public readonly patch: number = 0,
   ) {}
 
   toString() {
@@ -28,35 +28,49 @@ export class ServerVersion implements IServerVersion {
     return { major, minor, patch };
   }
 
-  static fromString(version: string): ServerVersion {
-    const regex = /(?:v)?(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)/i;
+  static fromString(version: string): Version {
+    const regex = /(?:v)?(?<major>\d+)(?:\.(?<minor>\d+))?(?:[\.-](?<patch>\d+))?/i;
     const matchResult = version.match(regex);
     if (matchResult) {
-      const [, major, minor, patch] = matchResult.map(Number);
-      return new ServerVersion(major, minor, patch);
+      const { major, minor = '0', patch = '0' } = matchResult.groups as { [K in keyof IVersion]: string };
+      return new Version(Number(major), Number(minor), Number(patch));
     } else {
       throw new Error(`Invalid version format: ${version}`);
     }
   }
 
-  isNewerThan(version: ServerVersion): boolean {
-    const equalMajor = this.major === version.major;
-    const equalMinor = this.minor === version.minor;
+  compare(version: Version): number {
+    for (const key of ['major', 'minor', 'patch'] as const) {
+      const diff = this[key] - version[key];
+      if (diff !== 0) {
+        return diff > 0 ? 1 : -1;
+      }
+    }
 
-    return (
-      this.major > version.major ||
-      (equalMajor && this.minor > version.minor) ||
-      (equalMajor && equalMinor && this.patch > version.patch)
-    );
+    return 0;
+  }
+
+  isOlderThan(version: Version): boolean {
+    return this.compare(version) < 0;
+  }
+
+  isEqual(version: Version): boolean {
+    return this.compare(version) === 0;
+  }
+
+  isNewerThan(version: Version): boolean {
+    return this.compare(version) > 0;
   }
 }
 
 export const envName = (process.env.NODE_ENV || 'development').toUpperCase();
 export const isDev = process.env.NODE_ENV === 'development';
 
-export const serverVersion = ServerVersion.fromString(pkg.version);
+export const serverVersion = Version.fromString(pkg.version);
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
+
+export const WEB_ROOT_PATH = join(process.env.IMMICH_WEB_ROOT || '/usr/src/app/www', 'index.html');
 
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],

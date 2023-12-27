@@ -4,6 +4,8 @@
 START TRANSACTION
 SET
   LOCAL vectors.k = '100'
+SET
+  LOCAL vectors.enable_prefilter = on
 SELECT
   "a"."id" AS "a_id",
   "a"."deviceAssetId" AS "a_deviceAssetId",
@@ -66,7 +68,12 @@ FROM
   INNER JOIN "smart_search" "s" ON "s"."assetId" = "a"."id"
   LEFT JOIN "exif" "e" ON "e"."assetId" = "a"."id"
 WHERE
-  ("a"."ownerId" = $1)
+  (
+    "a"."ownerId" = $1
+    AND "a"."isVisible" = true
+    AND "a"."isArchived" = false
+    AND "a"."fileCreatedAt" < NOW()
+  )
   AND ("a"."deletedAt" IS NULL)
 ORDER BY
   "s"."embedding" <= > $2 ASC

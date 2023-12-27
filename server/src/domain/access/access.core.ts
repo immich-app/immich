@@ -140,6 +140,20 @@ export class AccessCore {
 
   private async checkAccessOther(auth: AuthDto, permission: Permission, ids: Set<string>) {
     switch (permission) {
+      // uses album id
+      case Permission.ACTIVITY_CREATE:
+        return await this.repository.activity.checkCreateAccess(auth.user.id, ids);
+
+      // uses activity id
+      case Permission.ACTIVITY_DELETE: {
+        const isOwner = await this.repository.activity.checkOwnerAccess(auth.user.id, ids);
+        const isAlbumOwner = await this.repository.activity.checkAlbumOwnerAccess(
+          auth.user.id,
+          setDifference(ids, isOwner),
+        );
+        return setUnion(isOwner, isAlbumOwner);
+      }
+
       case Permission.ASSET_READ: {
         const isOwner = await this.repository.asset.checkOwnerAccess(auth.user.id, ids);
         const isAlbum = await this.repository.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
@@ -249,41 +263,16 @@ export class AccessCore {
         return await this.repository.person.checkOwnerAccess(auth.user.id, ids);
 
       case Permission.PERSON_CREATE:
-        return this.repository.person.hasFaceOwnerAccess(auth.user.id, ids);
+        return this.repository.person.checkFaceOwnerAccess(auth.user.id, ids);
 
       case Permission.PERSON_REASSIGN:
-        return this.repository.person.hasFaceOwnerAccess(auth.user.id, ids);
+        return this.repository.person.checkFaceOwnerAccess(auth.user.id, ids);
 
       case Permission.PARTNER_UPDATE:
         return await this.repository.partner.checkUpdateAccess(auth.user.id, ids);
-    }
-
-    const allowedIds = new Set();
-    for (const id of ids) {
-      const hasAccess = await this.hasOtherAccess(auth, permission, id);
-      if (hasAccess) {
-        allowedIds.add(id);
-      }
-    }
-    return allowedIds;
-  }
-
-  // TODO: Migrate logic to checkAccessOther to evaluate permissions in bulk.
-  private async hasOtherAccess(auth: AuthDto, permission: Permission, id: string) {
-    switch (permission) {
-      // uses album id
-      case Permission.ACTIVITY_CREATE:
-        return await this.repository.activity.hasCreateAccess(auth.user.id, id);
-
-      // uses activity id
-      case Permission.ACTIVITY_DELETE:
-        return (
-          (await this.repository.activity.hasOwnerAccess(auth.user.id, id)) ||
-          (await this.repository.activity.hasAlbumOwnerAccess(auth.user.id, id))
-        );
 
       default:
-        return false;
+        return new Set();
     }
   }
 }

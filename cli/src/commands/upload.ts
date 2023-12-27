@@ -2,7 +2,7 @@ import { Asset } from '../cores/models/asset';
 import { CrawlService } from '../services';
 import { UploadOptionsDto } from '../cores/dto/upload-options-dto';
 import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
-
+import fs from 'node:fs';
 import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
@@ -15,8 +15,6 @@ export default class Upload extends BaseCommand {
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
     await this.connect();
 
-    const deviceId = 'CLI';
-
     const formatResponse = await this.immichApi.serverInfoApi.getSupportedMediaTypes();
     const crawlService = new CrawlService(formatResponse.data.image, formatResponse.data.video);
 
@@ -24,15 +22,28 @@ export default class Upload extends BaseCommand {
     crawlOptions.pathsToCrawl = paths;
     crawlOptions.recursive = options.recursive;
     crawlOptions.exclusionPatterns = options.exclusionPatterns;
+    crawlOptions.includeHidden = options.includeHidden;
+
+    const files: string[] = [];
+
+    for (const pathArgument of paths) {
+      const fileStat = await fs.promises.lstat(pathArgument);
+
+      if (fileStat.isFile()) {
+        files.push(pathArgument);
+      }
+    }
 
     const crawledFiles: string[] = await crawlService.crawl(crawlOptions);
+
+    crawledFiles.push(...files);
 
     if (crawledFiles.length === 0) {
       console.log('No assets found, exiting');
       return;
     }
 
-    const assetsToUpload = crawledFiles.map((path) => new Asset(path, deviceId));
+    const assetsToUpload = crawledFiles.map((path) => new Asset(path));
 
     const uploadProgress = new cliProgress.SingleBar(
       {
@@ -51,6 +62,10 @@ export default class Upload extends BaseCommand {
       // Compute total size first
       await asset.process();
       totalSize += asset.fileSize;
+
+      if (options.albumName) {
+        asset.albumName = options.albumName;
+      }
     }
 
     const existingAlbums = (await this.immichApi.albumApi.getAllAlbums()).data;
@@ -65,6 +80,10 @@ export default class Upload extends BaseCommand {
         });
 
         let skipUpload = false;
+
+        let skipAsset = false;
+        let existingAssetId: string | undefined = undefined;
+
         if (!options.skipHash) {
           const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
 
@@ -73,14 +92,24 @@ export default class Upload extends BaseCommand {
           });
 
           skipUpload = checkResponse.data.results[0].action === 'reject';
+
+          const isDuplicate = checkResponse.data.results[0].reason === 'duplicate';
+          if (isDuplicate) {
+            existingAssetId = checkResponse.data.results[0].assetId;
+          }
+
+          skipAsset = skipUpload && !isDuplicate;
         }
 
-        if (!skipUpload) {
+        if (!skipAsset) {
           if (!options.dryRun) {
-            const formData = asset.getUploadFormData();
-            const res = await this.uploadAsset(formData);
+            if (!skipUpload) {
+              const formData = asset.getUploadFormData();
+              const res = await this.uploadAsset(formData);
+              existingAssetId = res.data.id;
+            }
 
-            if (options.album && asset.albumName) {
+            if ((options.album || options.albumName) && asset.albumName !== undefined) {
               let album = existingAlbums.find((album) => album.albumName === asset.albumName);
               if (!album) {
                 const res = await this.immichApi.albumApi.createAlbum({
@@ -90,7 +119,12 @@ export default class Upload extends BaseCommand {
                 existingAlbums.push(album);
               }
 
-              await this.immichApi.albumApi.addAssetsToAlbum({ id: album.id, bulkIdsDto: { ids: [res.data.id] } });
+              if (existingAssetId) {
+                await this.immichApi.albumApi.addAssetsToAlbum({
+                  id: album.id,
+                  bulkIdsDto: { ids: [existingAssetId] },
+                });
+              }
             }
           }
 

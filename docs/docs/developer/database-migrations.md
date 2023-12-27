@@ -1,6 +1,6 @@
 # Database Migrations
 
-After making any changes in the `server/src/infra/database/entities`, a database migration need to run in order to register the changes in the database. Follow the steps below to create a new migration.
+After making any changes in the `server/src/infra/entities`, a database migration need to run in order to register the changes in the database. Follow the steps below to create a new migration.
 
 1. Run the command
 
