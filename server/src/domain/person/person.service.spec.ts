@@ -507,7 +507,7 @@ describe(PersonService.name, () => {
     it('should unassign a face', async () => {
       personMock.getFaceById.mockResolvedValueOnce(faceStub.face1);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
+      accessMock.person.checkFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getRandomFace.mockResolvedValue(null);
       personMock.getFaceById.mockResolvedValueOnce(faceStub.unassignedFace);
@@ -522,7 +522,7 @@ describe(PersonService.name, () => {
     it('should unassign a face', async () => {
       personMock.getFacesByIds.mockResolvedValueOnce([faceStub.face1]);
       accessMock.person.checkOwnerAccess.mockResolvedValue(new Set([personStub.noName.id]));
-      accessMock.person.hasFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
+      accessMock.person.checkFaceOwnerAccess.mockResolvedValue(new Set([faceStub.face1.id]));
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getRandomFace.mockResolvedValue(null);
       personMock.getFaceById.mockResolvedValueOnce(faceStub.unassignedFace);
