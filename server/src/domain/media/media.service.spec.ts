@@ -658,6 +658,21 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
 
+    it('should delete existing transcode if current policy does not require transcoding', async () => {
+      const asset = assetStub.hasEncodedVideo;
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.DISABLED }]);
+      assetMock.getByIds.mockResolvedValue([asset]);
+
+      await sut.handleVideoConversion({ id: asset.id });
+
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILES,
+        data: { files: [asset.encodedVideoPath] },
+      });
+    });
+
     it('should set max bitrate if above 0', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '4500k' }]);
