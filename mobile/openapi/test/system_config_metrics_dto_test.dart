@@ -16,18 +16,8 @@ void main() {
   // final instance = SystemConfigMetricsDto();
 
   group('test SystemConfigMetricsDto', () {
-    // MetricsAssetCountConfig assetCount
-    test('to test the property `assetCount`', () async {
-      // TODO
-    });
-
     // bool enabled
     test('to test the property `enabled`', () async {
-      // TODO
-    });
-
-    // MetricServerInfoConfig serverInfo
-    test('to test the property `serverInfo`', () async {
       // TODO
     });
 

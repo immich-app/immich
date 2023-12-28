@@ -13,38 +13,26 @@ part of openapi.api;
 class SystemConfigMetricsDto {
   /// Returns a new [SystemConfigMetricsDto] instance.
   SystemConfigMetricsDto({
-    required this.assetCount,
     required this.enabled,
-    required this.serverInfo,
   });
-
-  MetricsAssetCountConfig assetCount;
 
   bool enabled;
 
-  MetricServerInfoConfig serverInfo;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMetricsDto &&
-     other.assetCount == assetCount &&
-     other.enabled == enabled &&
-     other.serverInfo == serverInfo;
+     other.enabled == enabled;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetCount.hashCode) +
-    (enabled.hashCode) +
-    (serverInfo.hashCode);
+    (enabled.hashCode);
 
   @override
-  String toString() => 'SystemConfigMetricsDto[assetCount=$assetCount, enabled=$enabled, serverInfo=$serverInfo]';
+  String toString() => 'SystemConfigMetricsDto[enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetCount'] = this.assetCount;
       json[r'enabled'] = this.enabled;
-      json[r'serverInfo'] = this.serverInfo;
     return json;
   }
 
@@ -56,9 +44,7 @@ class SystemConfigMetricsDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigMetricsDto(
-        assetCount: MetricsAssetCountConfig.fromJson(json[r'assetCount'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        serverInfo: MetricServerInfoConfig.fromJson(json[r'serverInfo'])!,
       );
     }
     return null;
@@ -106,9 +92,7 @@ class SystemConfigMetricsDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'assetCount',
     'enabled',
-    'serverInfo',
   };
 }
 

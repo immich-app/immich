@@ -335,10 +335,6 @@ class ApiClient {
           return MemoryLaneResponseDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
-        case 'MetricServerInfoConfig':
-          return MetricServerInfoConfig.fromJson(value);
-        case 'MetricsAssetCountConfig':
-          return MetricsAssetCountConfig.fromJson(value);
         case 'ModelType':
           return ModelTypeTypeTransformer().decode(value);
         case 'OAuthAuthorizeResponseDto':

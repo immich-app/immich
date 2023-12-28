@@ -17,7 +17,7 @@ void main() {
   // final instance = MetricsApi();
 
   group('tests for MetricsApi', () {
-    //Future<Object> getMetrics(SystemConfigMetricsDto systemConfigMetricsDto) async
+    //Future<Object> getMetrics() async
     test('test getMetrics', () async {
       // TODO
     });

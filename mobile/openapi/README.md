@@ -145,7 +145,7 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**removeOfflineFiles**](doc//LibraryApi.md#removeofflinefiles) | **POST** /library/{id}/removeOffline | 
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *LibraryApi* | [**updateLibrary**](doc//LibraryApi.md#updatelibrary) | **PUT** /library/{id} | 
-*MetricsApi* | [**getMetrics**](doc//MetricsApi.md#getmetrics) | **PUT** /metrics | 
+*MetricsApi* | [**getMetrics**](doc//MetricsApi.md#getmetrics) | **GET** /metrics | 
 *OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateOAuthConfig**](doc//OAuthApi.md#generateoauthconfig) | **POST** /oauth/config | 
 *OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
@@ -289,8 +289,6 @@ Class | Method | HTTP request | Description
  - [MapTheme](doc//MapTheme.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
- - [MetricServerInfoConfig](doc//MetricServerInfoConfig.md)
- - [MetricsAssetCountConfig](doc//MetricsAssetCountConfig.md)
  - [ModelType](doc//ModelType.md)
  - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)

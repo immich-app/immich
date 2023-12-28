@@ -16,27 +16,24 @@ class MetricsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /metrics' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [SystemConfigMetricsDto] systemConfigMetricsDto (required):
-  Future<Response> getMetricsWithHttpInfo(SystemConfigMetricsDto systemConfigMetricsDto,) async {
+  /// Performs an HTTP 'GET /metrics' operation and returns the [Response].
+  Future<Response> getMetricsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/metrics';
 
     // ignore: prefer_final_locals
-    Object? postBody = systemConfigMetricsDto;
+    Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
+    const contentTypes = <String>[];
 
 
     return apiClient.invokeAPI(
       path,
-      'PUT',
+      'GET',
       queryParams,
       postBody,
       headerParams,
@@ -45,11 +42,8 @@ class MetricsApi {
     );
   }
 
-  /// Parameters:
-  ///
-  /// * [SystemConfigMetricsDto] systemConfigMetricsDto (required):
-  Future<Object?> getMetrics(SystemConfigMetricsDto systemConfigMetricsDto,) async {
-    final response = await getMetricsWithHttpInfo(systemConfigMetricsDto,);
+  Future<Object?> getMetrics() async {
+    final response = await getMetricsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -9,11 +9,11 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getMetrics**](MetricsApi.md#getmetrics) | **PUT** /metrics | 
+[**getMetrics**](MetricsApi.md#getmetrics) | **GET** /metrics | 
 
 
 # **getMetrics**
-> Object getMetrics(systemConfigMetricsDto)
+> Object getMetrics()
 
 
 
@@ -36,10 +36,9 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = MetricsApi();
-final systemConfigMetricsDto = SystemConfigMetricsDto(); // SystemConfigMetricsDto | 
 
 try {
-    final result = api_instance.getMetrics(systemConfigMetricsDto);
+    final result = api_instance.getMetrics();
     print(result);
 } catch (e) {
     print('Exception when calling MetricsApi->getMetrics: $e\n');
@@ -47,10 +46,7 @@ try {
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **systemConfigMetricsDto** | [**SystemConfigMetricsDto**](SystemConfigMetricsDto.md)|  | 
+This endpoint does not need any parameter.
 
 ### Return type
 
@@ -62,7 +58,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
