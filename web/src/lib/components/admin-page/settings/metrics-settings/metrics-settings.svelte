@@ -7,7 +7,6 @@
   import { api, SystemConfigMetricsDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
-  import SettingAccordion from '../setting-accordion.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
   import type { ResetOptions } from '$lib/utils/dipatch';
@@ -18,8 +17,6 @@
 
   let savedConfig: SystemConfigMetricsDto;
   let defaultConfig: SystemConfigMetricsDto;
-
-  $: sharedMetrics = getSharedMetrics(config);
 
   const handleReset = (detail: ResetOptions) => {
     if (detail.default) {
@@ -44,8 +41,6 @@
           ...current,
           metrics: {
             enabled: config.enabled,
-            serverInfo: config.serverInfo,
-            assetCount: config.assetCount,
           },
         },
       });
@@ -83,8 +78,8 @@
     });
   }
 
-  function getSharedMetrics(systemConfigMetricsDto: SystemConfigMetricsDto) {
-    return api.metricsApi.getMetrics({ systemConfigMetricsDto }).then((response) => response.data);
+  function getSharedMetrics() {
+    return api.metricsApi.getMetrics().then((response) => response.data);
   }
 </script>
 
@@ -92,61 +87,16 @@
   {#await refreshConfig() then}
     <div in:fade={{ duration: 500 }}>
       <form autocomplete="off" on:submit|preventDefault>
-        <div class="flex flex-col gap-4">
-          <SettingSwitch title="ENABLED" {disabled} subtitle="Enable sharing metrics" bind:checked={config.enabled} />
-
-          <SettingAccordion title="Server Info Metrics" subtitle="Manage which server infos the instance should share">
-            <div class="ml-4 mt-4 flex flex-col gap-4">
-              <SettingSwitch
-                title="CPU Count"
-                disabled={disabled || !config.enabled}
-                bind:checked={config.serverInfo.cpuCount}
-              />
-
-              <SettingSwitch
-                title="CPU Model"
-                disabled={disabled || !config.enabled}
-                bind:checked={config.serverInfo.cpuModel}
-              />
-
-              <SettingSwitch
-                title="Memory"
-                disabled={disabled || !config.enabled}
-                bind:checked={config.serverInfo.memory}
-              />
-
-              <SettingSwitch
-                title="Version"
-                disabled={disabled || !config.enabled}
-                bind:checked={config.serverInfo.version}
-              />
-            </div></SettingAccordion
-          >
-
-          <SettingAccordion title="Asset Count Metrics" subtitle="Manage which asset counts the instance should share">
-            <div class="ml-4 mt-4 flex flex-col gap-4">
-              <SettingSwitch
-                title="Image Count"
-                disabled={disabled || !config.enabled}
-                bind:checked={config.assetCount.image}
-              />
-
-              <SettingSwitch
-                title="Video Count"
-                disabled={disabled || !config.enabled}
-                bind:checked={config.assetCount.video}
-              />
-
-              <SettingSwitch
-                title="Total Assets Count"
-                disabled={disabled || !config.enabled}
-                bind:checked={config.assetCount.total}
-              />
-            </div></SettingAccordion
-          >
+        <div class="ml-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            title="ENABLED"
+            {disabled}
+            subtitle="Enable sharing of anonymous usage data"
+            bind:checked={config.enabled}
+          />
 
           {#if config.enabled}
-            {#await sharedMetrics}
+            {#await getSharedMetrics()}
               <LoadingSpinner />
             {:then metrics}
               <div class="mt-2 rounded-lg bg-gray-200 p-4 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">

@@ -1,5 +1,5 @@
-import { Metrics, MetricsService, SystemConfigMetricsDto } from '@app/domain';
-import { Body, Controller, Put } from '@nestjs/common';
+import { Metrics, MetricsService } from '@app/domain';
+import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -11,8 +11,8 @@ import { UseValidation } from '../app.utils';
 export class MetricsController {
   constructor(private service: MetricsService) {}
 
-  @Put()
-  getMetrics(@Body() dto: SystemConfigMetricsDto): Promise<Partial<Metrics>> {
-    return this.service.getMetrics(dto);
+  @Get()
+  getMetrics(): Promise<Partial<Metrics>> {
+    return this.service.getMetrics();
   }
 }

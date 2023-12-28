@@ -10,7 +10,7 @@ import { AssetEntity, AssetType } from '../entities';
 @Injectable()
 export class MetricsRepository implements IMetricsRepository {
   constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
-  async sendMetrics(payload: Partial<MetricsDto>): Promise<void> {
+  async sendMetrics(payload: MetricsDto): Promise<void> {
     await axios.post('IMMICH-DATA-DOMAIN', payload);
   }
 

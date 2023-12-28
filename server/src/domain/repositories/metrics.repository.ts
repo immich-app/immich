@@ -9,5 +9,5 @@ export interface IMetricsRepository {
   getMemory(): number;
   getImageCount(): Promise<number>;
   getVideoCount(): Promise<number>;
-  sendMetrics(payload: Partial<MetricsDto>): Promise<void>;
+  sendMetrics(payload: MetricsDto): Promise<void>;
 }

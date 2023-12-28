@@ -3717,19 +3717,9 @@
       }
     },
     "/metrics": {
-      "put": {
+      "get": {
         "operationId": "getMetrics",
         "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SystemConfigMetricsDto"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -8103,48 +8093,6 @@
         ],
         "type": "object"
       },
-      "MetricServerInfoConfig": {
-        "properties": {
-          "cpuCount": {
-            "type": "boolean"
-          },
-          "cpuModel": {
-            "type": "boolean"
-          },
-          "memory": {
-            "type": "boolean"
-          },
-          "version": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "cpuCount",
-          "cpuModel",
-          "memory",
-          "version"
-        ],
-        "type": "object"
-      },
-      "MetricsAssetCountConfig": {
-        "properties": {
-          "image": {
-            "type": "boolean"
-          },
-          "total": {
-            "type": "boolean"
-          },
-          "video": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "image",
-          "video",
-          "total"
-        ],
-        "type": "object"
-      },
       "ModelType": {
         "enum": [
           "facial-recognition",
@@ -9373,20 +9321,12 @@
       },
       "SystemConfigMetricsDto": {
         "properties": {
-          "assetCount": {
-            "$ref": "#/components/schemas/MetricsAssetCountConfig"
-          },
           "enabled": {
             "type": "boolean"
-          },
-          "serverInfo": {
-            "$ref": "#/components/schemas/MetricServerInfoConfig"
           }
         },
         "required": [
-          "enabled",
-          "serverInfo",
-          "assetCount"
+          "enabled"
         ],
         "type": "object"
       },

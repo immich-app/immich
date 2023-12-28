@@ -65,6 +65,13 @@
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       <SettingAccordion
+        title="Anonymous Usage Data Settings"
+        subtitle="Manage if you want to share anonymous usage data with Immich"
+      >
+        <MetricsSettings disabled={$featureFlags.configFile} config={configs.metrics} />
+      </SettingAccordion>
+
+      <SettingAccordion
         title="Job Settings"
         subtitle="Manage job concurrency"
         isOpen={$page.url.searchParams.get('open') === 'job-settings'}
@@ -86,13 +93,6 @@
 
       <SettingAccordion title="Map & GPS Settings" subtitle="Manage map related features and setting">
         <MapSettings disabled={$featureFlags.configFile} config={configs} />
-      </SettingAccordion>
-
-      <SettingAccordion
-        title="Metrics Settings"
-        subtitle="Manage which - if any - metrics you want to share with Immich"
-      >
-        <MetricsSettings disabled={$featureFlags.configFile} config={configs.metrics} />
       </SettingAccordion>
 
       <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">

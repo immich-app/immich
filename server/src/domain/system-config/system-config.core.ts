@@ -84,17 +84,6 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   metrics: {
     enabled: false,
-    serverInfo: {
-      cpuCount: true,
-      cpuModel: true,
-      memory: true,
-      version: true,
-    },
-    assetCount: {
-      image: true,
-      video: true,
-      total: true,
-    },
   },
   reverseGeocoding: {
     enabled: true,
