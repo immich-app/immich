@@ -17,6 +17,7 @@ class ServerFeaturesDto {
     required this.configFile,
     required this.facialRecognition,
     required this.map,
+    required this.metrics,
     required this.oauth,
     required this.oauthAutoLaunch,
     required this.passwordLogin,
@@ -33,6 +34,8 @@ class ServerFeaturesDto {
   bool facialRecognition;
 
   bool map;
+
+  bool metrics;
 
   bool oauth;
 
@@ -54,6 +57,7 @@ class ServerFeaturesDto {
      other.configFile == configFile &&
      other.facialRecognition == facialRecognition &&
      other.map == map &&
+     other.metrics == metrics &&
      other.oauth == oauth &&
      other.oauthAutoLaunch == oauthAutoLaunch &&
      other.passwordLogin == passwordLogin &&
@@ -69,6 +73,7 @@ class ServerFeaturesDto {
     (configFile.hashCode) +
     (facialRecognition.hashCode) +
     (map.hashCode) +
+    (metrics.hashCode) +
     (oauth.hashCode) +
     (oauthAutoLaunch.hashCode) +
     (passwordLogin.hashCode) +
@@ -78,7 +83,7 @@ class ServerFeaturesDto {
     (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, trash=$trash]';
+  String toString() => 'ServerFeaturesDto[clipEncode=$clipEncode, configFile=$configFile, facialRecognition=$facialRecognition, map=$map, metrics=$metrics, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -86,6 +91,7 @@ class ServerFeaturesDto {
       json[r'configFile'] = this.configFile;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'map'] = this.map;
+      json[r'metrics'] = this.metrics;
       json[r'oauth'] = this.oauth;
       json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
       json[r'passwordLogin'] = this.passwordLogin;
@@ -108,6 +114,7 @@ class ServerFeaturesDto {
         configFile: mapValueOfType<bool>(json, r'configFile')!,
         facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
         map: mapValueOfType<bool>(json, r'map')!,
+        metrics: mapValueOfType<bool>(json, r'metrics')!,
         oauth: mapValueOfType<bool>(json, r'oauth')!,
         oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
         passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
@@ -166,6 +173,7 @@ class ServerFeaturesDto {
     'configFile',
     'facialRecognition',
     'map',
+    'metrics',
     'oauth',
     'oauthAutoLaunch',
     'passwordLogin',

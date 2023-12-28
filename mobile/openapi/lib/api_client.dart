@@ -335,6 +335,10 @@ class ApiClient {
           return MemoryLaneResponseDto.fromJson(value);
         case 'MergePersonDto':
           return MergePersonDto.fromJson(value);
+        case 'MetricServerInfoConfig':
+          return MetricServerInfoConfig.fromJson(value);
+        case 'MetricsAssetCountConfig':
+          return MetricsAssetCountConfig.fromJson(value);
         case 'ModelType':
           return ModelTypeTypeTransformer().decode(value);
         case 'OAuthAuthorizeResponseDto':
@@ -433,6 +437,8 @@ class ApiClient {
           return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigMapDto':
           return SystemConfigMapDto.fromJson(value);
+        case 'SystemConfigMetricsDto':
+          return SystemConfigMetricsDto.fromJson(value);
         case 'SystemConfigNewVersionCheckDto':
           return SystemConfigNewVersionCheckDto.fromJson(value);
         case 'SystemConfigOAuthDto':

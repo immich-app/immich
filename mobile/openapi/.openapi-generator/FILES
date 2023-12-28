@@ -89,6 +89,9 @@ doc/MapMarkerResponseDto.md
 doc/MapTheme.md
 doc/MemoryLaneResponseDto.md
 doc/MergePersonDto.md
+doc/MetricServerInfoConfig.md
+doc/MetricsApi.md
+doc/MetricsAssetCountConfig.md
 doc/ModelType.md
 doc/OAuthApi.md
 doc/OAuthAuthorizeResponseDto.md
@@ -145,6 +148,7 @@ doc/SystemConfigLibraryScanDto.md
 doc/SystemConfigLoggingDto.md
 doc/SystemConfigMachineLearningDto.md
 doc/SystemConfigMapDto.md
+doc/SystemConfigMetricsDto.md
 doc/SystemConfigNewVersionCheckDto.md
 doc/SystemConfigOAuthDto.md
 doc/SystemConfigPasswordLoginDto.md
@@ -188,6 +192,7 @@ lib/api/authentication_api.dart
 lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
+lib/api/metrics_api.dart
 lib/api/o_auth_api.dart
 lib/api/partner_api.dart
 lib/api/person_api.dart
@@ -282,6 +287,8 @@ lib/model/map_marker_response_dto.dart
 lib/model/map_theme.dart
 lib/model/memory_lane_response_dto.dart
 lib/model/merge_person_dto.dart
+lib/model/metric_server_info_config.dart
+lib/model/metrics_asset_count_config.dart
 lib/model/model_type.dart
 lib/model/o_auth_authorize_response_dto.dart
 lib/model/o_auth_callback_dto.dart
@@ -331,6 +338,7 @@ lib/model/system_config_library_scan_dto.dart
 lib/model/system_config_logging_dto.dart
 lib/model/system_config_machine_learning_dto.dart
 lib/model/system_config_map_dto.dart
+lib/model/system_config_metrics_dto.dart
 lib/model/system_config_new_version_check_dto.dart
 lib/model/system_config_o_auth_dto.dart
 lib/model/system_config_password_login_dto.dart
@@ -448,6 +456,9 @@ test/map_marker_response_dto_test.dart
 test/map_theme_test.dart
 test/memory_lane_response_dto_test.dart
 test/merge_person_dto_test.dart
+test/metric_server_info_config_test.dart
+test/metrics_api_test.dart
+test/metrics_asset_count_config_test.dart
 test/model_type_test.dart
 test/o_auth_api_test.dart
 test/o_auth_authorize_response_dto_test.dart
@@ -504,6 +515,7 @@ test/system_config_library_scan_dto_test.dart
 test/system_config_logging_dto_test.dart
 test/system_config_machine_learning_dto_test.dart
 test/system_config_map_dto_test.dart
+test/system_config_metrics_dto_test.dart
 test/system_config_new_version_check_dto_test.dart
 test/system_config_o_auth_dto_test.dart
 test/system_config_password_login_dto_test.dart

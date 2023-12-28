@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // bool metrics
+    test('to test the property `metrics`', () async {
+      // TODO
+    });
+
     // bool oauth
     test('to test the property `oauth`', () async {
       // TODO

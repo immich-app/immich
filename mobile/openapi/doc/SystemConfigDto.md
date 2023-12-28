@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **logging** | [**SystemConfigLoggingDto**](SystemConfigLoggingDto.md) |  | 
 **machineLearning** | [**SystemConfigMachineLearningDto**](SystemConfigMachineLearningDto.md) |  | 
 **map** | [**SystemConfigMapDto**](SystemConfigMapDto.md) |  | 
+**metrics** | [**SystemConfigMetricsDto**](SystemConfigMetricsDto.md) |  | 
 **newVersionCheck** | [**SystemConfigNewVersionCheckDto**](SystemConfigNewVersionCheckDto.md) |  | 
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 

@@ -22,6 +22,7 @@ import {
   AuditApi,
   ActivityApi,
   FaceApi,
+  MetricsApi,
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
@@ -37,6 +38,7 @@ class ImmichApi {
   public faceApi: FaceApi;
   public jobApi: JobApi;
   public keyApi: APIKeyApi;
+  public metricsApi: MetricsApi;
   public oauthApi: OAuthApi;
   public partnerApi: PartnerApi;
   public searchApi: SearchApi;
@@ -65,6 +67,7 @@ class ImmichApi {
     this.faceApi = new FaceApi(this.config);
     this.jobApi = new JobApi(this.config);
     this.keyApi = new APIKeyApi(this.config);
+    this.metricsApi = new MetricsApi(this.config);
     this.oauthApi = new OAuthApi(this.config);
     this.partnerApi = new PartnerApi(this.config);
     this.searchApi = new SearchApi(this.config);

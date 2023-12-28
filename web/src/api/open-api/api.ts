@@ -2314,6 +2314,62 @@ export interface MergePersonDto {
 /**
  * 
  * @export
+ * @interface MetricServerInfoConfig
+ */
+export interface MetricServerInfoConfig {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MetricServerInfoConfig
+     */
+    'cpuCount': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MetricServerInfoConfig
+     */
+    'cpuModel': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MetricServerInfoConfig
+     */
+    'memory': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MetricServerInfoConfig
+     */
+    'version': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface MetricsAssetCountConfig
+ */
+export interface MetricsAssetCountConfig {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MetricsAssetCountConfig
+     */
+    'image': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MetricsAssetCountConfig
+     */
+    'total': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MetricsAssetCountConfig
+     */
+    'video': boolean;
+}
+/**
+ * 
+ * @export
  * @enum {string}
  */
 
@@ -3067,6 +3123,12 @@ export interface ServerFeaturesDto {
      * @type {boolean}
      * @memberof ServerFeaturesDto
      */
+    'metrics': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ServerFeaturesDto
+     */
     'oauth': boolean;
     /**
      * 
@@ -3568,6 +3630,12 @@ export interface SystemConfigDto {
     'map': SystemConfigMapDto;
     /**
      * 
+     * @type {SystemConfigMetricsDto}
+     * @memberof SystemConfigDto
+     */
+    'metrics': SystemConfigMetricsDto;
+    /**
+     * 
      * @type {SystemConfigNewVersionCheckDto}
      * @memberof SystemConfigDto
      */
@@ -3907,6 +3975,31 @@ export interface SystemConfigMapDto {
      * @memberof SystemConfigMapDto
      */
     'lightStyle': string;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigMetricsDto
+ */
+export interface SystemConfigMetricsDto {
+    /**
+     * 
+     * @type {MetricsAssetCountConfig}
+     * @memberof SystemConfigMetricsDto
+     */
+    'assetCount': MetricsAssetCountConfig;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigMetricsDto
+     */
+    'enabled': boolean;
+    /**
+     * 
+     * @type {MetricServerInfoConfig}
+     * @memberof SystemConfigMetricsDto
+     */
+    'serverInfo': MetricServerInfoConfig;
 }
 /**
  * 
@@ -12688,6 +12781,132 @@ export class LibraryApi extends BaseAPI {
      */
     public updateLibrary(requestParameters: LibraryApiUpdateLibraryRequest, options?: AxiosRequestConfig) {
         return LibraryApiFp(this.configuration).updateLibrary(requestParameters.id, requestParameters.updateLibraryDto, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * MetricsApi - axios parameter creator
+ * @export
+ */
+export const MetricsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {SystemConfigMetricsDto} systemConfigMetricsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMetrics: async (systemConfigMetricsDto: SystemConfigMetricsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'systemConfigMetricsDto' is not null or undefined
+            assertParamExists('getMetrics', 'systemConfigMetricsDto', systemConfigMetricsDto)
+            const localVarPath = `/metrics`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(systemConfigMetricsDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * MetricsApi - functional programming interface
+ * @export
+ */
+export const MetricsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = MetricsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {SystemConfigMetricsDto} systemConfigMetricsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getMetrics(systemConfigMetricsDto: SystemConfigMetricsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMetrics(systemConfigMetricsDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * MetricsApi - factory interface
+ * @export
+ */
+export const MetricsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = MetricsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {MetricsApiGetMetricsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMetrics(requestParameters: MetricsApiGetMetricsRequest, options?: AxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.getMetrics(requestParameters.systemConfigMetricsDto, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * Request parameters for getMetrics operation in MetricsApi.
+ * @export
+ * @interface MetricsApiGetMetricsRequest
+ */
+export interface MetricsApiGetMetricsRequest {
+    /**
+     * 
+     * @type {SystemConfigMetricsDto}
+     * @memberof MetricsApiGetMetrics
+     */
+    readonly systemConfigMetricsDto: SystemConfigMetricsDto
+}
+
+/**
+ * MetricsApi - object-oriented interface
+ * @export
+ * @class MetricsApi
+ * @extends {BaseAPI}
+ */
+export class MetricsApi extends BaseAPI {
+    /**
+     * 
+     * @param {MetricsApiGetMetricsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MetricsApi
+     */
+    public getMetrics(requestParameters: MetricsApiGetMetricsRequest, options?: AxiosRequestConfig) {
+        return MetricsApiFp(this.configuration).getMetrics(requestParameters.systemConfigMetricsDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

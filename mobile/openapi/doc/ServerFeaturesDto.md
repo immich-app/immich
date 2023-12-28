@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **configFile** | **bool** |  | 
 **facialRecognition** | **bool** |  | 
 **map** | **bool** |  | 
+**metrics** | **bool** |  | 
 **oauth** | **bool** |  | 
 **oauthAutoLaunch** | **bool** |  | 
 **passwordLogin** | **bool** |  | 

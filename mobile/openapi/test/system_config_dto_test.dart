@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigMetricsDto metrics
+    test('to test the property `metrics`', () async {
+      // TODO
+    });
+
     // SystemConfigNewVersionCheckDto newVersionCheck
     test('to test the property `newVersionCheck`', () async {
       // TODO
