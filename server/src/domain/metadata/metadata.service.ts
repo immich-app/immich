@@ -67,7 +67,7 @@ export enum Orientation {
 type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
   ExifEntity,
   'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'
-> & { dateTimeOriginal: Date };
+> & { dateTimeOriginal: Date | null };
 
 const exifDate = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.toDate() : null);
 const tzOffset = (dt: ExifDateTime | string | undefined) => (dt instanceof ExifDateTime ? dt?.tzoffsetMinutes : null);
@@ -438,7 +438,7 @@ export class MetadataService {
       assetId: asset.id,
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
-      dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
+      dateTimeOriginal: this.getDateTimeOriginal(tags) ?? null,
       exifImageHeight: validate(tags.ImageHeight),
       exifImageWidth: validate(tags.ImageWidth),
       exposureTime: tags.ExposureTime ?? null,

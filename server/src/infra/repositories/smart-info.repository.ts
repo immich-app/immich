@@ -111,6 +111,54 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     return this.assetFaceRepository.create(results);
   }
 
+  @GenerateSql({
+    params: [
+      {
+        ownerId: DummyValue.UUID,
+        personId : DummyValue.UUID,
+        embedding: Array.from({ length: 512 }, Math.random),
+        numResults: 5,
+        maxDistance: 0.6,
+      },
+    ],
+  })
+  async searchPersonFaces({ ownerId, personId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
+    if (!isValidInteger(numResults, { min: 1 })) {
+      throw new Error(`Invalid value for 'numResults': ${numResults}`);
+    }
+
+    let results: AssetFaceEntity[] = [];
+    await this.assetRepository.manager.transaction(async (manager) => {
+      await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
+      const cte = manager
+        .createQueryBuilder(AssetFaceEntity, 'faces')
+        .select('1 + (faces.embedding <=> :embedding)', 'distance')
+        .innerJoin('faces.asset', 'asset')
+        .where('faces.personId = :personId')
+        .andWhere('asset.ownerId = :ownerId')
+        .innerJoin('asset.exifInfo', 'exifInfo')
+        .where('exifInfo.dateTimeOriginal IS NOT NULL')
+        .orderBy('1 + (faces.embedding <=> :embedding)')
+        .setParameters({ ownerId,personId , embedding: asVector(embedding) })
+        .limit(numResults);
+
+      this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
+      cte.addSelect(`exifInfo.dateTimeOriginal`, 'dateTimeOriginal')
+
+
+      results = await manager
+      .createQueryBuilder()
+      .select('res.*')
+      .addCommonTableExpression(cte, 'cte')
+      .from('cte', 'res')
+      .where('res.distance <= :maxDistance', { maxDistance })
+      .getRawMany();
+    });
+
+    return results;
+  }
+
+
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
     await this.repository.upsert(smartInfo, { conflictPaths: ['assetId'] });
     if (!smartInfo.assetId || !embedding) {

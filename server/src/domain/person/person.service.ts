@@ -337,6 +337,34 @@ export class PersonService {
         newPerson = await this.repository.create({ ownerId: asset.ownerId });
         personId = newPerson.id;
       }
+      if (!asset?.exifInfo?.dateTimeOriginal) {
+        const personFaces = await this.smartInfoRepository.searchPersonFaces({
+          ownerId: asset.ownerId,
+          personId,
+          embedding,
+          numResults: 5,
+          maxDistance: 0.5,
+        });
+        if (personFaces.length) {
+          // await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
+          await this.assetRepository.upsertExif({
+            assetId: asset.id, modifyDate: personFaces[0].dateTimeOriginal, dateTimeOriginal:
+              personFaces[0].dateTimeOriginal
+          })
+          await this.assetRepository.updateAll([asset.id],
+            {
+              updatedAt: personFaces[0].dateTimeOriginal,
+              fileCreatedAt: personFaces[0].dateTimeOriginal
+              , fileModifiedAt: personFaces[0].dateTimeOriginal,
+              localDateTime: personFaces[0].dateTimeOriginal
+            })
+        }
+      }
+
+
+
+      // await this.repository.update()
+
 
       const face = await this.repository.createFace({
         assetId: asset.id,
