@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/activities/widgets/activity_tile.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 
 /// Wraps an [ActivityTile] and makes it dismissible
-class DismissibleActivity extends ConsumerWidget {
+class DismissibleActivity extends StatelessWidget {
   final String activityId;
   final ActivityTile body;
   final Function(String)? onDismiss;
@@ -17,7 +16,7 @@ class DismissibleActivity extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Dismissible(
       key: Key(activityId),
       dismissThresholds: const {
