@@ -116,8 +116,8 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         ownerId: DummyValue.UUID,
         personId: DummyValue.UUID,
         embedding: Array.from({ length: 512 }, Math.random),
-        numResults: 5,
-        maxDistance: 0.6,
+        numResults: 1,
+        maxDistance: 0.5,
       },
     ],
   })
@@ -162,7 +162,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       {
         ownerId: DummyValue.UUID,
         clipEmbedding: Array.from({ length: 512 }, Math.random),
-        numResults: 5,
+        numResults: 1,
       },
     ],
   })

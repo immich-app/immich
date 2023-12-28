@@ -393,7 +393,7 @@ export class PersonService {
       const clips = await this.smartInfoRepository.searchEmbeddingCLIP({
         ownerId: asset.ownerId,
         clipEmbedding: clipEmbedding,
-        numResults: 5,
+        numResults: 1,
       });
 
 
