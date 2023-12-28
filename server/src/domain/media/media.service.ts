@@ -241,11 +241,22 @@ export class MediaService {
       return false;
     }
 
+    if (!mainVideoStream.height || !mainVideoStream.width) {
+      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
+      return false;
+    }
+
     const { ffmpeg: config } = await this.configCore.getConfig();
 
     const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
     if (!required) {
-      return false;
+      if (asset.encodedVideoPath) {
+        this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
+        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [asset.encodedVideoPath] } });
+        await this.assetRepository.save({ id: asset.id, encodedVideoPath: null });
+      }
+
+      return true;
     }
 
     let transcodeOptions;
@@ -289,11 +300,6 @@ export class MediaService {
     containerExtension: string,
     ffmpegConfig: SystemConfigFFmpegDto,
   ): boolean {
-    if (!videoStream.height || !videoStream.width) {
-      this.logger.error('Skipping transcode, height or width undefined for video stream');
-      return false;
-    }
-
     const isTargetVideoCodec = videoStream.codecName === ffmpegConfig.targetVideoCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
