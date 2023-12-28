@@ -18,3 +18,9 @@ export const DummyValue = {
   BUFFER: Buffer.from('abcdefghi'),
   DATE: new Date(),
 };
+
+// PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
+// maximum number of parameters is 65535. Any query that tries to bind more than that (e.g. searching
+// by a list of IDs) requires splitting the query into multiple chunks.
+// We are rounding down this limit, as queries commonly include other filters and parameters.
+export const DATABASE_PARAMETER_CHUNK_SIZE = 65500;

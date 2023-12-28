@@ -7,9 +7,10 @@ import {
   UpdateFacesData,
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
+import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
 import { asVector } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
@@ -33,7 +34,9 @@ export class PersonRepository implements IPersonRepository {
 
     const assetIds = results.map(({ assetId }) => assetId);
 
-    await this.assetFaceRepository.delete({ personId: oldPersonId, assetId: In(assetIds) });
+    for (const idChunk of _.chunk(assetIds, DATABASE_PARAMETER_CHUNK_SIZE)) {
+      await this.assetFaceRepository.delete({ personId: oldPersonId, assetId: In(idChunk) });
+    }
 
     return assetIds;
   }
@@ -234,7 +237,15 @@ export class PersonRepository implements IPersonRepository {
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
   async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
-    return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
+    return Promise.all(
+      _.chunk(ids, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        this.assetFaceRepository.find({
+          where: idChunk,
+          relations: { asset: true },
+          withDeleted: true,
+        }),
+      ),
+    ).then((results) => _.flatten(results));
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

@@ -26,7 +26,7 @@ import _ from 'lodash';
 import { DateTime } from 'luxon';
 import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
+import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
 import { OptionalBetween, paginate } from '../infra.utils';
 
 const DEFAULT_SEARCH_SIZE = 250;
@@ -248,7 +248,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
+  async getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
     if (!relations) {
       relations = {
         exifInfo: true,
@@ -260,11 +260,15 @@ export class AssetRepository implements IAssetRepository {
         stack: true,
       };
     }
-    return this.repository.find({
-      where: { id: In(ids) },
-      relations,
-      withDeleted: true,
-    });
+    return Promise.all(
+      _.chunk(ids, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        this.repository.find({
+          where: { id: In(idChunk) },
+          relations,
+          withDeleted: true,
+        }),
+      ),
+    ).then((results) => _.flatten(results));
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -301,10 +305,14 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { library: { id: In(libraryIds) } },
-    });
+  async getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
+    return Promise.all(
+      _.chunk(libraryIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        this.repository.find({
+          where: { library: { id: In(idChunk) } },
+        }),
+      ),
+    ).then((results) => _.flatten(results));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
@@ -381,15 +389,21 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
-    await this.repository.update({ id: In(ids) }, options);
+    for (const idChunk of _.chunk(ids, DATABASE_PARAMETER_CHUNK_SIZE)) {
+      await this.repository.update({ id: In(idChunk) }, options);
+    }
   }
 
   async softDeleteAll(ids: string[]): Promise<void> {
-    await this.repository.softDelete({ id: In(ids), isExternal: false });
+    for (const idChunk of _.chunk(ids, DATABASE_PARAMETER_CHUNK_SIZE)) {
+      await this.repository.softDelete({ id: In(idChunk), isExternal: false });
+    }
   }
 
   async restoreAll(ids: string[]): Promise<void> {
-    await this.repository.restore({ id: In(ids) });
+    for (const idChunk of _.chunk(ids, DATABASE_PARAMETER_CHUNK_SIZE)) {
+      await this.repository.restore({ id: In(idChunk) });
+    }
   }
 
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
