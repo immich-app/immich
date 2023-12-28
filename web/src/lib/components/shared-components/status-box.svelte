@@ -7,8 +7,9 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { asByteUnitString } from '../../utils/byte-units';
   import LoadingSpinner from './loading-spinner.svelte';
-  import { mdiCloud, mdiDns } from '@mdi/js';
+  import { mdiCloud, mdiDns, mdiEyeOutline } from '@mdi/js';
   import { serverInfoStore } from '$lib/stores/server-info.store';
+  import { featureFlags } from '$lib/stores/server-config.store';
 
   const { serverVersion, connected } = websocketStore;
 
@@ -70,7 +71,12 @@
       <Icon path={mdiDns} size={'24'} />
     </div>
     <div class="hidden text-xs group-hover:sm:block md:block">
-      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
+      <div class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary flex justify-between">
+        <p>Server</p>
+        {#if $featureFlags.metrics}
+          <Icon path={mdiEyeOutline} title="This instance is currently sharing metrics with Immich." />
+        {/if}
+      </div>
 
       <div class="mt-2 flex justify-between justify-items-center">
         <p>Status</p>
