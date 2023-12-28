@@ -9,7 +9,6 @@ import {
   ILibraryRefreshJob,
   ISidecarWriteJob,
 } from '../job/job.interface';
-import { SharedMetrics } from './metrics.repository';
 
 export interface JobCounts {
   active: number;
@@ -93,7 +92,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Metrics
-  | { name: JobName.METRICS; data: SharedMetrics };
+  | { name: JobName.METRICS; data?: IBaseJob };
 
 export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
 export type JobItemHandler = (item: JobItem) => Promise<void>;

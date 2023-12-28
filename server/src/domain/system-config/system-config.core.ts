@@ -82,6 +82,20 @@ export const defaults = Object.freeze<SystemConfig>({
     lightStyle: '',
     darkStyle: '',
   },
+  metrics: {
+    enabled: false,
+    serverInfo: {
+      cpuCount: true,
+      cpuModel: true,
+      memory: true,
+      version: true,
+    },
+    assetCount: {
+      image: true,
+      video: true,
+      total: true,
+    },
+  },
   reverseGeocoding: {
     enabled: true,
   },
@@ -132,6 +146,7 @@ export enum FeatureFlag {
   CLIP_ENCODE = 'clipEncode',
   FACIAL_RECOGNITION = 'facialRecognition',
   MAP = 'map',
+  METRICS = 'metrics',
   REVERSE_GEOCODING = 'reverseGeocoding',
   SIDECAR = 'sidecar',
   SEARCH = 'search',
@@ -204,6 +219,7 @@ export class SystemConfigCore {
       [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clip.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
+      [FeatureFlag.METRICS]: config.metrics.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
       [FeatureFlag.SIDECAR]: true,
       [FeatureFlag.SEARCH]: true,

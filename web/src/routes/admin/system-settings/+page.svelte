@@ -4,6 +4,7 @@
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
   import MachineLearningSettings from '$lib/components/admin-page/settings/machine-learning-settings/machine-learning-settings.svelte';
   import MapSettings from '$lib/components/admin-page/settings/map-settings/map-settings.svelte';
+  import MetricsSettings from '$lib/components/admin-page/settings/metrics-settings/metrics-settings.svelte';
   import OAuthSettings from '$lib/components/admin-page/settings/oauth/oauth-settings.svelte';
   import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
   import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
@@ -85,6 +86,13 @@
 
       <SettingAccordion title="Map & GPS Settings" subtitle="Manage map related features and setting">
         <MapSettings disabled={$featureFlags.configFile} config={configs} />
+      </SettingAccordion>
+
+      <SettingAccordion
+        title="Metrics Settings"
+        subtitle="Manage which - if any - metrics you want to share with Immich"
+      >
+        <MetricsSettings disabled={$featureFlags.configFile} config={configs.metrics} />
       </SettingAccordion>
 
       <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">

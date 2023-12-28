@@ -8,6 +8,7 @@ export * from './auth.controller';
 export * from './face.controller';
 export * from './job.controller';
 export * from './library.controller';
+export * from './metrics.controller';
 export * from './oauth.controller';
 export * from './partner.controller';
 export * from './person.controller';

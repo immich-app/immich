@@ -3716,6 +3716,48 @@
         ]
       }
     },
+    "/metrics": {
+      "put": {
+        "operationId": "getMetrics",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfigMetricsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Metrics"
+        ]
+      }
+    },
     "/oauth/authorize": {
       "post": {
         "operationId": "startOAuth",
@@ -8061,6 +8103,48 @@
         ],
         "type": "object"
       },
+      "MetricServerInfoConfig": {
+        "properties": {
+          "cpuCount": {
+            "type": "boolean"
+          },
+          "cpuModel": {
+            "type": "boolean"
+          },
+          "memory": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cpuCount",
+          "cpuModel",
+          "memory",
+          "version"
+        ],
+        "type": "object"
+      },
+      "MetricsAssetCountConfig": {
+        "properties": {
+          "image": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "boolean"
+          },
+          "video": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "image",
+          "video",
+          "total"
+        ],
+        "type": "object"
+      },
       "ModelType": {
         "enum": [
           "facial-recognition",
@@ -8628,6 +8712,9 @@
           "map": {
             "type": "boolean"
           },
+          "metrics": {
+            "type": "boolean"
+          },
           "oauth": {
             "type": "boolean"
           },
@@ -8655,6 +8742,7 @@
           "configFile",
           "facialRecognition",
           "map",
+          "metrics",
           "trash",
           "reverseGeocoding",
           "oauth",
@@ -9027,6 +9115,9 @@
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
+          "metrics": {
+            "$ref": "#/components/schemas/SystemConfigMetricsDto"
+          },
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
@@ -9057,6 +9148,7 @@
           "logging",
           "machineLearning",
           "map",
+          "metrics",
           "newVersionCheck",
           "oauth",
           "passwordLogin",
@@ -9276,6 +9368,25 @@
           "enabled",
           "lightStyle",
           "darkStyle"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMetricsDto": {
+        "properties": {
+          "assetCount": {
+            "$ref": "#/components/schemas/MetricsAssetCountConfig"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "serverInfo": {
+            "$ref": "#/components/schemas/MetricServerInfoConfig"
+          }
+        },
+        "required": [
+          "enabled",
+          "serverInfo",
+          "assetCount"
         ],
         "type": "object"
       },

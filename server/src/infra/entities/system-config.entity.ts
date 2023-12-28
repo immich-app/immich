@@ -66,6 +66,15 @@ export enum SystemConfigKey {
   MAP_LIGHT_STYLE = 'map.lightStyle',
   MAP_DARK_STYLE = 'map.darkStyle',
 
+  METRICS_ENABLED = 'metrics.enabled',
+  METRICS_SERVER_INFO_CPU_COUNT = 'metrics.serverInfo.cpuCount',
+  METRICS_SERVER_INFO_CPU_MODEL = 'metrics.serverInfo.cpuModel',
+  METRICS_SERVER_INFO_MEMORY = 'metrics.serverInfo.memory',
+  METRICS_SERVER_INFO_VERSION = 'metrics.serverInfo.version',
+  METRICS_ASSET_COUNT_IMAGE = 'metrics.assetCount.image',
+  METRICS_ASSET_COUNT_VIDEO = 'metrics.assetCount.video',
+  METRICS_ASSET_COUNT_TOTAL = 'metrics.assetCount.total',
+
   REVERSE_GEOCODING_ENABLED = 'reverseGeocoding.enabled',
 
   NEW_VERSION_CHECK_ENABLED = 'newVersionCheck.enabled',
@@ -195,6 +204,20 @@ export interface SystemConfig {
     enabled: boolean;
     lightStyle: string;
     darkStyle: string;
+  };
+  metrics: {
+    enabled: boolean;
+    serverInfo: {
+      cpuCount: boolean;
+      cpuModel: boolean;
+      memory: boolean;
+      version: boolean;
+    };
+    assetCount: {
+      image: boolean;
+      video: boolean;
+      total: boolean;
+    };
   };
   reverseGeocoding: {
     enabled: boolean;

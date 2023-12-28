@@ -1,6 +1,7 @@
 import { SystemConfig } from '@app/infra/entities';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
+import { SystemConfigMetricsDto } from '.';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
 import { SystemConfigLibraryDto } from './system-config-library.dto';
@@ -36,6 +37,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   map!: SystemConfigMapDto;
+
+  @Type(() => SystemConfigMetricsDto)
+  @ValidateNested()
+  @IsObject()
+  metrics!: SystemConfigMetricsDto;
 
   @Type(() => SystemConfigNewVersionCheckDto)
   @ValidateNested()
