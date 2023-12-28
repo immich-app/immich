@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
+import 'package:immich_mobile/modules/search/providers/search_focus_notifier.provider.dart';
 
 class ImmichSearchBar extends HookConsumerWidget
     implements PreferredSizeWidget {
@@ -20,6 +21,28 @@ class ImmichSearchBar extends HookConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final searchTermController = useTextEditingController(text: "");
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
+
+    focusSearch() {
+      searchTermController.clear();
+      ref.watch(searchPageStateProvider.notifier).getSuggestedSearchTerms();
+      ref.watch(searchPageStateProvider.notifier).enableSearch();
+      ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
+
+      searchFocusNode.requestFocus();
+    }
+    onSearchFocusRequest() {
+      focusSearch();
+    }
+
+    useEffect(
+      () {
+        searchFocusNotifierProvider.addListener(onSearchFocusRequest);
+        return () {
+          searchFocusNotifierProvider.removeListener(onSearchFocusRequest);
+        };
+      },
+      [],
+    );
 
     return AppBar(
       automaticallyImplyLeading: false,
@@ -41,12 +64,7 @@ class ImmichSearchBar extends HookConsumerWidget
         focusNode: searchFocusNode,
         autofocus: false,
         onTap: () {
-          searchTermController.clear();
-          ref.watch(searchPageStateProvider.notifier).getSuggestedSearchTerms();
-          ref.watch(searchPageStateProvider.notifier).enableSearch();
-          ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
-
-          searchFocusNode.requestFocus();
+          focusSearch();
         },
         onSubmitted: (searchTerm) {
           onSubmitted(searchTerm);

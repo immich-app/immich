@@ -60,7 +60,7 @@ android {
 
    signingConfigs {
        release {
-            def keyAliasVal = System.getenv("ALIAS")
+            def keyAliasVal = System.getenv("ANDROID_KEY_ALIAS")
             def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
             def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
 
