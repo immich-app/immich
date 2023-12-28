@@ -321,7 +321,7 @@ export class PersonService {
 
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
-
+    let flag = false, distance = 1
     for (const { embedding, ...rest } of faces) {
       const matches = await this.smartInfoRepository.searchFaces({
         ownerId: asset.ownerId,
@@ -342,11 +342,13 @@ export class PersonService {
           ownerId: asset.ownerId,
           personId,
           embedding,
-          numResults: 5,
+          numResults: 1,
           maxDistance: 0.5,
         });
-        if (personFaces.length) {
-          // await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
+        if (personFaces.length && personFaces[0].distance < distance) {
+
+          distance = personFaces[0].distance
+
           await this.assetRepository.upsertExif({
             assetId: asset.id, modifyDate: personFaces[0].dateTimeOriginal, dateTimeOriginal:
               personFaces[0].dateTimeOriginal
@@ -358,6 +360,10 @@ export class PersonService {
               , fileModifiedAt: personFaces[0].dateTimeOriginal,
               localDateTime: personFaces[0].dateTimeOriginal
             })
+
+        }
+        else {
+          flag = true
         }
       }
 
@@ -383,7 +389,36 @@ export class PersonService {
         await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
       }
     }
+    if ((flag || !faces.length) && asset.resizePath) {
+      const clipEmbedding = await this.machineLearningRepository.encodeImage(
+        machineLearning.url,
+        { imagePath: asset.resizePath },
+        machineLearning.clip,
+      );
+      const clips = await this.smartInfoRepository.searchEmbeddingCLIP({
+        ownerId: asset.ownerId,
+        clipEmbedding: clipEmbedding,
+        numResults: 5,
+      });
 
+
+      if (clips.length) {
+        const dateTimeOriginal = clips[0].exifInfo.dateTimeOriginal
+        // await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
+        await this.assetRepository.upsertExif({
+          assetId: asset.id, modifyDate: dateTimeOriginal, dateTimeOriginal:
+            dateTimeOriginal
+        })
+        await this.assetRepository.updateAll([asset.id],
+          {
+            updatedAt: dateTimeOriginal,
+            fileCreatedAt: dateTimeOriginal
+            , fileModifiedAt: dateTimeOriginal,
+            localDateTime: dateTimeOriginal
+          })
+      }
+
+    }
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
       facesRecognizedAt: new Date(),

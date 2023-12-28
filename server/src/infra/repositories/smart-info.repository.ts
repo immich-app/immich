@@ -1,4 +1,4 @@
-import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
+import { ClipEmbeddingSearch, Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
@@ -114,7 +114,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     params: [
       {
         ownerId: DummyValue.UUID,
-        personId : DummyValue.UUID,
+        personId: DummyValue.UUID,
         embedding: Array.from({ length: 512 }, Math.random),
         numResults: 5,
         maxDistance: 0.6,
@@ -138,7 +138,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .innerJoin('asset.exifInfo', 'exifInfo')
         .where('exifInfo.dateTimeOriginal IS NOT NULL')
         .orderBy('1 + (faces.embedding <=> :embedding)')
-        .setParameters({ ownerId,personId , embedding: asVector(embedding) })
+        .setParameters({ ownerId, personId, embedding: asVector(embedding) })
         .limit(numResults);
 
       this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
@@ -146,17 +146,55 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
 
       results = await manager
-      .createQueryBuilder()
-      .select('res.*')
-      .addCommonTableExpression(cte, 'cte')
-      .from('cte', 'res')
-      .where('res.distance <= :maxDistance', { maxDistance })
-      .getRawMany();
+        .createQueryBuilder()
+        .select('res.*')
+        .addCommonTableExpression(cte, 'cte')
+        .from('cte', 'res')
+        .where('res.distance <= :maxDistance', { maxDistance })
+        .getRawMany();
     });
 
     return results;
   }
 
+  @GenerateSql({
+    params: [
+      {
+        ownerId: DummyValue.UUID,
+        clipEmbedding: Array.from({ length: 512 }, Math.random),
+        numResults: 5,
+      },
+    ],
+  })
+  async searchEmbeddingCLIP({ ownerId, clipEmbedding, numResults }: ClipEmbeddingSearch): Promise<AssetEntity[]> {
+    if (!isValidInteger(numResults, { min: 1 })) {
+      throw new Error(`Invalid value for 'numResults': ${numResults}`);
+    }
+
+    let results: AssetEntity[] = [];
+
+    await this.assetRepository.manager.transaction(async (manager) => {
+      await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
+      await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
+
+
+      results = await manager
+        .createQueryBuilder(AssetEntity, 'a')
+        .innerJoin('a.smartSearch', 's')
+        .where('a.ownerId = :ownerId')
+        .andWhere('a.isVisible = true')
+        .andWhere('a.isArchived = false')
+        .andWhere('a.fileCreatedAt < NOW()')
+        .leftJoinAndSelect('a.exifInfo', 'e')
+        .where('e.dateTimeOriginal IS NOT NULL')
+        .orderBy('s.embedding <=> :embedding')
+        .setParameters({ ownerId, embedding: asVector(clipEmbedding) })
+        .limit(numResults)
+        .getMany();
+    });
+
+    return results;
+  }
 
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
     await this.repository.upsert(smartInfo, { conflictPaths: ['assetId'] });

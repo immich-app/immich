@@ -311,10 +311,10 @@
       <p class="text-sm">DETAILS</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
+    {#if !asset.isReadOnly}
+      {@const assetDateTimeOriginal = DateTime.fromISO(asset?.exifInfo?.dateTimeOriginal || asset.fileCreatedAt, {
+        zone: asset?.exifInfo?.timeZone ?? undefined,
+      })}  
       <div
         class="flex justify-between place-items-start gap-4 py-4"
         tabindex="0"

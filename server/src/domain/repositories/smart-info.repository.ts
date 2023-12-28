@@ -11,11 +11,17 @@ export interface EmbeddingSearch {
   numResults: number;
   maxDistance?: number;
 }
+export interface ClipEmbeddingSearch {
+  ownerId: string;
+  numResults: number;
+  clipEmbedding: Embedding;
+}
 
 export interface ISmartInfoRepository {
   init(modelName: string): Promise<void>;
   searchCLIP(search: EmbeddingSearch): Promise<AssetEntity[]>;
   searchFaces(search: EmbeddingSearch): Promise<AssetFaceEntity[]>;
   searchPersonFaces(search: EmbeddingSearch): Promise<any>;
+  searchEmbeddingCLIP(search: ClipEmbeddingSearch): Promise<any>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }
