@@ -367,11 +367,6 @@ export class PersonService {
         }
       }
 
-
-
-      // await this.repository.update()
-
-
       const face = await this.repository.createFace({
         assetId: asset.id,
         personId,
@@ -404,7 +399,6 @@ export class PersonService {
 
       if (clips.length) {
         const dateTimeOriginal = clips[0].exifInfo.dateTimeOriginal
-        // await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
         await this.assetRepository.upsertExif({
           assetId: asset.id, modifyDate: dateTimeOriginal, dateTimeOriginal:
             dateTimeOriginal
