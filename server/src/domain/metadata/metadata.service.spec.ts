@@ -239,15 +239,6 @@ describe(MetadataService.name, () => {
       expect(assetMock.save).not.toHaveBeenCalled();
     });
 
-    it('should handle an asset with isVisible set to false', async () => {
-      assetMock.getByIds.mockResolvedValue([{ ...assetStub.image, isVisible: false }]);
-
-      await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(false);
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
-      expect(assetMock.upsertExif).not.toHaveBeenCalled();
-      expect(assetMock.save).not.toHaveBeenCalled();
-    });
-
     it('should handle a date in a sidecar file', async () => {
       const originalDate = new Date('2023-11-21T16:13:17.517Z');
       const sidecarDate = new Date('2022-01-01T00:00:00.000Z');

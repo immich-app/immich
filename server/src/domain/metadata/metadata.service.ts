@@ -206,7 +206,7 @@ export class MetadataService {
 
   async handleMetadataExtraction({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.isVisible) {
+    if (!asset) {
       return false;
     }
 
