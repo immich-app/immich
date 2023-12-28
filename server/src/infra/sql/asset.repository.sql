@@ -693,5 +693,7 @@ WHERE
     ) @@ PLAINTO_TSQUERY('english', $3)
   )
   AND ("asset"."deletedAt" IS NULL)
+ORDER BY
+  "asset"."fileCreatedAt" DESC
 LIMIT
   250
