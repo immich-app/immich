@@ -98,6 +98,7 @@
         id: people[index].id,
         personUpdateDto: { isHidden: !people[index].isHidden },
       });
+      showingHiddenPeople = true;
       people[index].isHidden = !people[index].isHidden;
       notificationController.show({ message: 'SPerson visibility changed', type: NotificationType.Info });
     } catch (error) {
