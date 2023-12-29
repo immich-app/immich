@@ -31,6 +31,9 @@
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
   import { user } from '$lib/stores/user.store';
+  import { clickOutside } from '$lib/utils/click-outside';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -41,6 +44,7 @@
   let description: string;
   let showEditFaces = false;
   let previousId: string;
+  let isShowLoadingUpdatePerson = false;
 
   $: {
     if (!previousId) {
@@ -75,12 +79,35 @@
 
   $: people = asset.people || [];
   $: showingHiddenPeople = false;
+  $: showActionPerson = Array(people.length).fill(false);
 
   const unsubscribe = websocketStore.onAssetUpdate.subscribe((assetUpdate) => {
     if (assetUpdate && assetUpdate.id === asset.id) {
       asset = assetUpdate;
     }
   });
+
+  const handleRightClickPeople = (index: number) => {
+    showActionPerson[index] = !showActionPerson[index];
+  };
+
+  const handleHidePerson = async (index: number) => {
+    const timeout = setTimeout(() => (isShowLoadingUpdatePerson = true), 100);
+    try {
+      await api.personApi.updatePerson({
+        id: people[index].id,
+        personUpdateDto: { isHidden: !people[index].isHidden },
+      });
+      people[index].isHidden = !people[index].isHidden;
+      notificationController.show({ message: 'SPerson visibility changed', type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, "Can't update person");
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    isShowLoadingUpdatePerson = false;
+  };
 
   onDestroy(() => {
     unsubscribe();
@@ -211,6 +238,9 @@
       <div class="flex h-10 w-full items-center justify-between">
         <h2>PEOPLE</h2>
         <div class="flex gap-2 items-center">
+          {#if isShowLoadingUpdatePerson}
+            <LoadingSpinner />
+          {/if}
           {#if people.some((person) => person.isHidden)}
             <CircleIconButton
               title="Show hidden people"
@@ -235,7 +265,7 @@
         {#each people as person, index (person.id)}
           {#if showingHiddenPeople || !person.isHidden}
             <div
-              class="w-[90px]"
+              class="w-[90px] h-[90px]"
               role="button"
               tabindex={index}
               on:focus={() => ($boundingBoxesArray = people[index].faces)}
@@ -247,19 +277,36 @@
                   ? `${AppRoute.ALBUMS}/${albumId}`
                   : AppRoute.PHOTOS}"
                 on:click={() => dispatch('closeViewer')}
+                on:contextmenu|preventDefault={() => handleRightClickPeople(index)}
               >
                 <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={api.getPeopleThumbnailUrl(person.id)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    thumbhash={null}
-                    hidden={person.isHidden}
-                  />
+                  <div class="absolute">
+                    <ImageThumbnail
+                      curve
+                      shadow
+                      url={api.getPeopleThumbnailUrl(person.id)}
+                      altText={person.name}
+                      title={person.name}
+                      widthStyle="90px"
+                      heightStyle="90px"
+                      thumbhash={null}
+                      hidden={person.isHidden}
+                    />
+                  </div>
+                  {#if showActionPerson[index]}
+                    <button
+                      class="absolute rounded-xl items-center bg-gray-300 dark:bg-slate-100 py-3 px-6 text-left text-sm font-medium text-immich-fg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset dark:text-immich-dark-bg dark:hover :bg-gray-200 transition-colors"
+                      use:clickOutside
+                      on:outclick={() => (showActionPerson[index] = false)}
+                      on:click|preventDefault|stopPropagation={() => handleHidePerson(index)}
+                    >
+                      {#if person.isHidden}
+                        Unhide
+                      {:else}
+                        Hide
+                      {/if}
+                    </button>
+                  {/if}
                 </div>
                 <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 {#if person.birthDate}
