@@ -100,7 +100,7 @@
       });
       showingHiddenPeople = true;
       people[index].isHidden = !people[index].isHidden;
-      notificationController.show({ message: 'SPerson visibility changed', type: NotificationType.Info });
+      notificationController.show({ message: 'Person visibility changed', type: NotificationType.Info });
     } catch (error) {
       handleError(error, "Can't update person");
     } finally {
