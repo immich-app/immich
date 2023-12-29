@@ -17,7 +17,8 @@ export interface AssetFaceId {
 }
 
 export interface UpdateFacesData {
-  oldPersonId: string;
+  oldPersonId?: string;
+  faceIds?: string[];
   newPersonId: string;
 }
 

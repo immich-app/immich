@@ -115,7 +115,7 @@ export class JobService {
       case QueueName.FACIAL_RECOGNITION:
         await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
         return this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force } });
-      
+
       case QueueName.LIBRARY:
         return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
 

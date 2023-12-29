@@ -43,12 +43,12 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
-  async reassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<number> {
+  async reassignFaces({ oldPersonId, faceIds, newPersonId }: UpdateFacesData): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()
       .set({ personId: newPersonId })
-      .where({ personId: oldPersonId })
+      .where({ personId: oldPersonId, id: faceIds ? In(faceIds) : undefined })
       .execute();
 
     return result.affected ?? 0;

@@ -5,6 +5,7 @@ import {
   IBaseJob,
   IDeleteFilesJob,
   IEntityJob,
+  IFacialRecognitionJob,
   ILibraryFileJob,
   ILibraryRefreshJob,
   ISidecarWriteJob,
@@ -67,7 +68,7 @@ export type JobItem =
   | { name: JobName.QUEUE_FACE_DETECTION; data: IBaseJob }
   | { name: JobName.FACE_DETECTION; data: IEntityJob }
   | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
-  | { name: JobName.FACIAL_RECOGNITION; data: IEntityJob }
+  | { name: JobName.FACIAL_RECOGNITION; data: IFacialRecognitionJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
   | { name: JobName.PERSON_DELETE; data: IEntityJob }
 

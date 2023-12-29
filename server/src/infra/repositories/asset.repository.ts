@@ -540,19 +540,19 @@ export class AssetRepository implements IAssetRepository {
         };
         break;
 
-        case WithoutProperty.PERSON:
-          relations = {
-            faces: true,
-          };
-          where = {
-            resizePath: Not(IsNull()),
-            isVisible: true,
-            faces: {
-              assetId: Not(IsNull()),
-              personId: IsNull(),
-            },
-          };
-          break;
+      case WithoutProperty.PERSON:
+        relations = {
+          faces: true,
+        };
+        where = {
+          resizePath: Not(IsNull()),
+          isVisible: true,
+          faces: {
+            assetId: Not(IsNull()),
+            personId: IsNull(),
+          },
+        };
+        break;
 
       case WithoutProperty.SIDECAR:
         where = [

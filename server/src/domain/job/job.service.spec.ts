@@ -379,7 +379,7 @@ describe(JobService.name, () => {
         queue: QueueName.FACIAL_RECOGNITION,
         feature: FeatureFlag.FACIAL_RECOGNITION,
         configKey: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_ENABLED,
-      }
+      },
     ];
 
     for (const { queue, feature, configKey } of featureTests) {

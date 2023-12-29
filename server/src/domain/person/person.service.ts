@@ -6,7 +6,7 @@ import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { CacheControl, ImmichFileResponse, usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import { IBaseJob, IEntityJob, IFacialRecognitionJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
   CropOptions,
@@ -384,16 +384,18 @@ export class PersonService {
         : this.assetRepository.getWithout(pagination, WithoutProperty.PERSON);
     });
 
-    for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id: asset.id } });
+    for (let maxDistance = 0.1; maxDistance <= machineLearning.facialRecognition.maxDistance; maxDistance += 0.1) {
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id: asset.id, maxDistance } });
+        }
       }
     }
 
     return true;
   }
 
-  async handleRecognizeFaces({ id }: IEntityJob) {
+  async handleRecognizeFaces({ id, maxDistance }: IFacialRecognitionJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
@@ -420,21 +422,23 @@ export class PersonService {
         ownerId: asset.ownerId,
         embedding,
         numResults: 100,
-        maxDistance: machineLearning.facialRecognition.maxDistance,
-        hasPerson: true,
+        maxDistance,
+        noPerson: true,
       });
 
-      this.logger.log(JSON.stringify(matches, null, 2));
-
-      let personId = matches[0]?.personId || null;
-      if (!personId) {
-        this.logger.log('No matches, creating a new person.');
-        const newPerson = await this.repository.create({ ownerId: asset.ownerId, faceAssetId: face.id });
-        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
-        personId = newPerson.id;
+      // a face with no matches is an outlier, so no need to create a person for it
+      if (matches.length === 0) {
+        continue;
       }
 
-      await this.repository.reassignFace(face.id, personId);
+      const newPerson = await this.repository.create({ ownerId: asset.ownerId, faceAssetId: face.id });
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+
+      const faceIds = matches.map((match) => match.id);
+      faceIds.push(face.id);
+
+      // all unassigned faces within radius are assigned to the new person
+      await this.repository.reassignFaces({ faceIds, newPersonId: newPerson.id });
     }
 
     return true;

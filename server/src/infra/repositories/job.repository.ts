@@ -15,8 +15,8 @@ import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
-import { bullConfig } from '../infra.config';
 import { setTimeout } from 'timers/promises';
+import { bullConfig } from '../infra.config';
 
 @Injectable()
 export class JobRepository implements IJobRepository {

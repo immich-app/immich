@@ -170,7 +170,11 @@ export const IAssetRepository = 'IAssetRepository';
 export interface IAssetRepository {
   create(asset: AssetCreate): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
-  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>, select?: FindOptionsSelect<AssetEntity>): Promise<AssetEntity[]>;
+  getByIds(
+    ids: string[],
+    relations?: FindOptionsRelations<AssetEntity>,
+    select?: FindOptionsSelect<AssetEntity>,
+  ): Promise<AssetEntity[]>;
   getByDayOfYear(ownerId: string, monthDay: MonthDay): Promise<AssetEntity[]>;
   getByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity | null>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;
