@@ -1,8 +1,16 @@
+import { SystemConfigCore } from '@app/domain/system-config';
 import { AssetEntity, AssetPathType, PathType, PersonEntity, PersonPathType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { dirname, join, resolve } from 'node:path';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
-import { IAssetRepository, IMoveRepository, IPersonRepository, IStorageRepository } from '../repositories';
+import {
+  IAssetRepository,
+  ICryptoRepository,
+  IMoveRepository,
+  IPersonRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+} from '../repositories';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',
@@ -17,6 +25,10 @@ export interface MoveRequest {
   pathType: PathType;
   oldPath: string | null;
   newPath: string;
+  assetInfo?: {
+    sizeInBytes: number;
+    checksum: Buffer;
+  };
 }
 
 type GeneratedAssetPath = AssetPathType.JPEG_THUMBNAIL | AssetPathType.WEBP_THUMBNAIL | AssetPathType.ENCODED_VIDEO;
@@ -25,22 +37,35 @@ let instance: StorageCore | null;
 
 export class StorageCore {
   private logger = new ImmichLogger(StorageCore.name);
-
+  private configCore;
   private constructor(
     private assetRepository: IAssetRepository,
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
+    private cryptoRepository: ICryptoRepository,
+    private systemConfigRepository: ISystemConfigRepository,
     private repository: IStorageRepository,
-  ) {}
+  ) {
+    this.configCore = SystemConfigCore.create(systemConfigRepository);
+  }
 
   static create(
     assetRepository: IAssetRepository,
     moveRepository: IMoveRepository,
     personRepository: IPersonRepository,
+    cryptoRepository: ICryptoRepository,
+    configRepository: ISystemConfigRepository,
     repository: IStorageRepository,
   ) {
     if (!instance) {
-      instance = new StorageCore(assetRepository, moveRepository, personRepository, repository);
+      instance = new StorageCore(
+        assetRepository,
+        moveRepository,
+        personRepository,
+        cryptoRepository,
+        configRepository,
+        repository,
+      );
     }
 
     return instance;
@@ -131,7 +156,7 @@ export class StorageCore {
   }
 
   async moveFile(request: MoveRequest) {
-    const { entityId, pathType, oldPath, newPath } = request;
+    const { entityId, pathType, oldPath, newPath, assetInfo } = request;
     if (!oldPath || oldPath === newPath) {
       return;
     }
@@ -143,24 +168,92 @@ export class StorageCore {
       this.logger.log(`Attempting to finish incomplete move: ${move.oldPath} => ${move.newPath}`);
       const oldPathExists = await this.repository.checkFileExists(move.oldPath);
       const newPathExists = await this.repository.checkFileExists(move.newPath);
-      const actualPath = newPathExists ? move.newPath : oldPathExists ? move.oldPath : null;
+      const actualPath = oldPathExists ? move.oldPath : newPathExists ? move.newPath : null;
       if (!actualPath) {
         this.logger.warn('Unable to complete move. File does not exist at either location.');
         return;
       }
 
-      this.logger.log(`Found file at ${actualPath === move.oldPath ? 'old' : 'new'} location`);
+      const fileAtNewLocation = actualPath === move.newPath;
+      this.logger.log(`Found file at ${fileAtNewLocation ? 'new' : 'old'} location`);
+
+      if (fileAtNewLocation) {
+        if (!(await this.verifyNewPathContentsMatchesExpected(move.oldPath, move.newPath, assetInfo))) {
+          this.logger.fatal(
+            `Skipping move as file verification failed, old file is missing and new file is different to what was expected`,
+          );
+          return;
+        }
+      }
 
       move = await this.moveRepository.update({ id: move.id, oldPath: actualPath, newPath });
     } else {
       move = await this.moveRepository.create({ entityId, pathType, oldPath, newPath });
     }
 
-    if (move.oldPath !== newPath) {
-      await this.repository.moveFile(move.oldPath, newPath);
+    if (pathType === AssetPathType.ORIGINAL && !assetInfo) {
+      this.logger.warn(`Unable to complete move. Missing asset info for ${entityId}`);
+      return;
     }
+
+    if (move.oldPath !== newPath) {
+      try {
+        this.logger.debug(`Attempting to rename file: ${move.oldPath} => ${newPath}`);
+        await this.repository.rename(move.oldPath, newPath);
+      } catch (err: any) {
+        if (err.code !== 'EXDEV') {
+          this.logger.warn(
+            `Unable to complete move. Error renaming file with code ${err.code} and message: ${err.message}`,
+          );
+          return;
+        }
+        this.logger.debug(`Unable to rename file. Falling back to copy, verify and delete`);
+        await this.repository.copyFile(move.oldPath, newPath);
+
+        if (!(await this.verifyNewPathContentsMatchesExpected(move.oldPath, newPath, assetInfo))) {
+          this.logger.warn(`Skipping move due to file size mismatch`);
+          await this.repository.unlink(newPath);
+          return;
+        }
+
+        try {
+          await this.repository.unlink(move.oldPath);
+        } catch (err: any) {
+          this.logger.warn(`Unable to delete old file, it will now no longer be tracked by Immich: ${err.message}`);
+        }
+      }
+    }
+
     await this.savePath(pathType, entityId, newPath);
     await this.moveRepository.delete(move);
+  }
+
+  private async verifyNewPathContentsMatchesExpected(
+    oldPath: string,
+    newPath: string,
+    assetInfo?: { sizeInBytes: number; checksum: Buffer },
+  ) {
+    const oldPathSize = assetInfo ? assetInfo.sizeInBytes : (await this.repository.stat(oldPath)).size;
+    const newPathSize = (await this.repository.stat(newPath)).size;
+    this.logger.debug(`File size check: ${newPathSize} === ${oldPathSize}`);
+    if (newPathSize !== oldPathSize) {
+      this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
+      return false;
+    }
+    if (assetInfo && (await this.configCore.getConfig()).storageTemplate.hashVerificationEnabled) {
+      const { checksum } = assetInfo;
+      const newChecksum = await this.cryptoRepository.hashFile(newPath);
+      if (!newChecksum.equals(checksum)) {
+        this.logger.warn(
+          `Unable to complete move. File checksum mismatch: ${newChecksum.toString('base64')} !== ${checksum.toString(
+            'base64',
+          )}`,
+        );
+        return false;
+      }
+      this.logger.debug(`File checksum check: ${newChecksum.toString('base64')} === ${checksum.toString('base64')}`);
+    }
+    return true;
   }
 
   ensureFolders(input: string) {

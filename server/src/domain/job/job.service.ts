@@ -123,7 +123,11 @@ export class JobService {
   async registerHandlers(jobHandlers: Record<JobName, JobHandler>) {
     const config = await this.configCore.getConfig();
     for (const queueName of Object.values(QueueName)) {
-      const concurrency = config.job[queueName].concurrency;
+      let concurrency = 1;
+      if (queueName !== QueueName.STORAGE_TEMPLATE_MIGRATION) {
+        concurrency = config.job[queueName].concurrency;
+      }
+
       this.logger.debug(`Registering ${queueName} with a concurrency of ${concurrency}`);
       this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
         const { name, data } = item;
@@ -143,7 +147,10 @@ export class JobService {
     this.configCore.config$.subscribe((config) => {
       this.logger.log(`Updating queue concurrency settings`);
       for (const queueName of Object.values(QueueName)) {
-        const concurrency = config.job[queueName].concurrency;
+        let concurrency = 1;
+        if (queueName !== QueueName.STORAGE_TEMPLATE_MIGRATION) {
+          concurrency = config.job[queueName].concurrency;
+        }
         this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
         this.jobRepository.setConcurrency(queueName, concurrency);
       }

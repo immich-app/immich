@@ -12,6 +12,7 @@ import {
   assetStub,
   faceStub,
   newAssetRepositoryMock,
+  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
   newMoveRepositoryMock,
@@ -24,6 +25,7 @@ import {
 import { JobName } from '../job';
 import {
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMediaRepository,
   IMoveRepository,
@@ -43,6 +45,7 @@ describe(MediaService.name, () => {
   let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
@@ -52,8 +55,9 @@ describe(MediaService.name, () => {
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
 
-    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock);
+    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock, cryptoMock);
   });
 
   it('should be defined', () => {

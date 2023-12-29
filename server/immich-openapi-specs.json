@@ -9171,9 +9171,6 @@
           "smartSearch": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "storageTemplateMigration": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "thumbnailGeneration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9186,7 +9183,6 @@
           "metadataExtraction",
           "videoConversion",
           "smartSearch",
-          "storageTemplateMigration",
           "migration",
           "backgroundTask",
           "search",
@@ -9365,11 +9361,19 @@
       },
       "SystemConfigStorageTemplateDto": {
         "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "hashVerificationEnabled": {
+            "type": "boolean"
+          },
           "template": {
             "type": "string"
           }
         },
         "required": [
+          "enabled",
+          "hashVerificationEnabled",
           "template"
         ],
         "type": "object"
