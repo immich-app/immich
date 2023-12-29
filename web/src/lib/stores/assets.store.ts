@@ -439,4 +439,4 @@ export class AssetStore {
   }
 }
 
-export const selectionCancelationStore = writable(false);
+export const isSelectAllCancelled = writable(false);
