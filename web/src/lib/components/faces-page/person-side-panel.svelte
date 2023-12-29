@@ -137,6 +137,17 @@
     showUnassignedFaces = true;
   };
 
+  const closeAssigningFaceModal = () => {
+    $boundingBoxesArray = [];
+    showSeletecFaces = false;
+  };
+
+  const handleMouseLeaveFaceThumbnail = () => {
+    if (!showSeletecFaces) {
+      $boundingBoxesArray = [];
+    }
+  };
+
   const handleSelectFaces = () => {
     isSelectingFaces = !isSelectingFaces;
   };
@@ -258,6 +269,7 @@
   };
 
   const handleCreatePerson = (newFeaturePhoto: string | null) => {
+    $boundingBoxesArray = [];
     const personToUpdate = peopleWithFaces.find((person) => person.id === peopleWithFaces[editedPersonIndex].id);
     if (newFeaturePhoto && personToUpdate) {
       selectedPersonToCreate[peopleWithFaces.indexOf(personToUpdate)] = newFeaturePhoto;
@@ -266,6 +278,7 @@
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
+    $boundingBoxesArray = [];
     if (person) {
       selectedPersonToReassign[editedPersonIndex] = person;
     }
@@ -280,6 +293,7 @@
 
   const handlePersonPicker = async (index: number) => {
     editedPersonIndex = index;
+    $boundingBoxesArray = [peopleWithFaces[index]];
     showSeletecFaces = true;
   };
 </script>
@@ -381,7 +395,7 @@
                 class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
                 on:focus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
                 on:mouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
-                on:mouseleave={() => ($boundingBoxesArray = [])}
+                on:mouseleave={handleMouseLeaveFaceThumbnail}
                 on:click={() => handleSelectFace(index)}
                 on:keydown={() => handleSelectFace(index)}
               >
@@ -403,7 +417,6 @@
                         : getPersonNameWithHiddenValue(face.person?.name, face.person?.isHidden)}
                     widthStyle="90px"
                     heightStyle="90px"
-                    thumbhash={null}
                     hidden={!isSelectingFaces
                       ? selectedPersonToReassign[index]
                         ? selectedPersonToReassign[index]?.isHidden
@@ -551,7 +564,7 @@
   <AssignFaceSidePanel
     personWithFace={peopleWithFaces[editedPersonIndex]}
     {allPeople}
-    on:close={() => (showSeletecFaces = false)}
+    on:close={closeAssigningFaceModal}
     on:createPerson={(event) => handleCreatePerson(event.detail)}
     on:reassign={(event) => handleReassignFace(event.detail)}
   />
