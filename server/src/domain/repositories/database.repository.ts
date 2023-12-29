@@ -8,6 +8,7 @@ export enum DatabaseExtension {
 
 export enum DatabaseLock {
   GeodataImport = 100,
+  StorageTemplateMigration = 420,
   CLIPDimSize = 512,
 }
 
