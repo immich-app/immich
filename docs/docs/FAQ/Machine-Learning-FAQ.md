@@ -5,7 +5,7 @@ sidebar_position: 6
 
 ### How does smart search work?
 
-Immich uses CLIP models, for more information about CLIP and its capabilities can be [read here](https://openai.com/research/clip).
+Immich uses CLIP models, for more information about CLIP and its capabilities. Read about it [here](https://openai.com/research/clip).
 
 ### How does facial recognition work?
 
@@ -48,7 +48,7 @@ No, this is not supported. Only models listed in the [Huggingface](https://huggi
 You can change to a multilingual model listed [here](https://huggingface.co/collections/immich-app/multilingual-clip-654eb08c2382f591eeb8c2a7) by going to Administration > Machine Learning Settings > Smart Search and replacing the name of the model. Be sure to re-run Smart Search on all assets after this change. You can then search in over 100 languages.
 
 :::note
-feel free to make a feature request if there's a model you want to use that isn't in Immich Huggingface list.
+Feel free to make a feature request if there's a model you want to use that isn't in [Immich Huggingface list](https://huggingface.co/immich-app).
 :::
 
 ### Does Immich support Facial Recognition for videos ?

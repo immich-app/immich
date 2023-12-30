@@ -32,7 +32,7 @@ You can do it by:
 5. Change the settings as needed
 
 :::danger
-On a normal machine, 2 or 3 concurrent jobs can probably max the CPU, so if you're not hitting those maximums with, say, 30 jobs,
+On a normal machine, 2 or 3 concurrent jobs can probably max the CPU, so if you're not hitting those maximums with, say, 30 jobs.
 Note that storage speed and latency may quickly become the limiting factor; particularly when using HDDs.
 
 Do not exaggerate with the amount of jobs because you're probably thoroughly overloading the server.

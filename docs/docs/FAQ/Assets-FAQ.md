@@ -30,7 +30,7 @@ For now, it doesn't.
 
 ### Does Immich support filtering of NSFW images?
 
-It seems that, this option is not implemented, but it seems that there is an [open discussion about it
+This option is not implemented, but there is an [open discussion about it
 On Github](https://github.com/immich-app/immich/discussions/2451). You can submit a pull request or vote for the discussion.
 
 ### Why are there so many thumbnail generation jobs?
@@ -47,12 +47,12 @@ All machine learning jobs and thumbnail images are recreated.
 No. There was a discussion about this in the past but it was [rejected](https://github.com/immich-app/immich/pull/1242), there is an [unofficial way to achieve this](https://gist.github.com/JamesCullum/6604e504318dd326a507108f59ca7dcd).
 
 :::danger
-If you do choose to use unofficial way, it's important to be aware of the following security risks:
+If you do choose to use the unofficial way, it's important to be aware of the following security risks:
 
 - The golang:1.19.4-alpine3.17 base image was released a year ago and has [18 vulnerabilities for OpenSSL](https://hub.docker.com/layers/library/golang/1.19.4-alpine3.17/images/sha256-8b532e4f43b6ccab31b2542d132720aa6e22f6164e0ed9d4885ef2d7c8b87aa5?context=explore)
-- The image `ghcr.io/jamescullum/multipart-upload-proxy:main` was last released long time ago and has vulnerable versions of OpenSSL and libwebp.
+- The image `ghcr.io/jamescullum/multipart-upload-proxy:main` was last updated a long time ago and has vulnerable versions of OpenSSL and libwebp.
 - The vips-dev package relies on libwebp, which had a major CVE a few months ago.
-there may be other vulnerabilities as well.
+There may be other vulnerabilities as well.
 :::
 
 ### How can I move all data (photos, persons, albums) from one user to another?
