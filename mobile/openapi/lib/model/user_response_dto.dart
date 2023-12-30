@@ -25,6 +25,7 @@ class UserResponseDto {
     required this.oauthId,
     required this.profileImagePath,
     required this.shouldChangePassword,
+    required this.showOnboarding,
     required this.storageLabel,
     required this.updatedAt,
   });
@@ -59,6 +60,8 @@ class UserResponseDto {
 
   bool shouldChangePassword;
 
+  bool showOnboarding;
+
   String? storageLabel;
 
   DateTime updatedAt;
@@ -77,6 +80,7 @@ class UserResponseDto {
      other.oauthId == oauthId &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
+     other.showOnboarding == showOnboarding &&
      other.storageLabel == storageLabel &&
      other.updatedAt == updatedAt;
 
@@ -95,11 +99,12 @@ class UserResponseDto {
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
+    (showOnboarding.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, showOnboarding=$showOnboarding, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -127,6 +132,7 @@ class UserResponseDto {
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
+      json[r'showOnboarding'] = this.showOnboarding;
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
@@ -156,6 +162,7 @@ class UserResponseDto {
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
+        showOnboarding: mapValueOfType<bool>(json, r'showOnboarding')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
@@ -216,6 +223,7 @@ class UserResponseDto {
     'oauthId',
     'profileImagePath',
     'shouldChangePassword',
+    'showOnboarding',
     'storageLabel',
     'updatedAt',
   };

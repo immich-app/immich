@@ -81,6 +81,11 @@ void main() {
       // TODO
     });
 
+    // bool showOnboarding
+    test('to test the property `showOnboarding`', () async {
+      // TODO
+    });
+
     // String storageLabel
     test('to test the property `storageLabel`', () async {
       // TODO

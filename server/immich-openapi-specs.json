@@ -8170,6 +8170,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "showOnboarding": {
+            "type": "boolean"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8192,7 +8195,8 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId"
+          "oauthId",
+          "showOnboarding"
         ],
         "type": "object"
       },
@@ -9708,6 +9712,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "showOnboarding": {
+            "type": "boolean"
+          },
           "storageLabel": {
             "type": "string"
           }
@@ -9829,6 +9836,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "showOnboarding": {
+            "type": "boolean"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -9851,7 +9861,8 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId"
+          "oauthId",
+          "showOnboarding"
         ],
         "type": "object"
       },

@@ -37,6 +37,9 @@ export class UserEntity {
   @Column({ default: false })
   isAdmin!: boolean;
 
+  @Column({ default: true })
+  showOnboarding!: boolean;
+
   @Column({ unique: true })
   email!: string;
 

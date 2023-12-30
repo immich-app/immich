@@ -33,6 +33,7 @@ export class UserResponseDto extends UserDto {
   updatedAt!: Date;
   oauthId!: string;
   memoriesEnabled?: boolean;
+  showOnboarding!: boolean;
 }
 
 export const mapSimpleUser = (entity: UserEntity): UserDto => {
@@ -57,5 +58,6 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
     memoriesEnabled: entity.memoriesEnabled,
+    showOnboarding: entity.showOnboarding,
   };
 }

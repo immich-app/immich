@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **name** | **String** |  | [optional] 
 **password** | **String** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
+**showOnboarding** | **bool** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

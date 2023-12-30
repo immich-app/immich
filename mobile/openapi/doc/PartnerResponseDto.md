@@ -21,6 +21,7 @@ Name | Type | Description | Notes
 **oauthId** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 
+**showOnboarding** | **bool** |  | 
 **storageLabel** | **String** |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 
