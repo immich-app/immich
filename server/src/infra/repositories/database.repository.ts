@@ -2,7 +2,7 @@ import { DatabaseExtension, DatabaseLock, IDatabaseRepository, Version } from '@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
@@ -32,11 +32,16 @@ export class DatabaseRepository implements IDatabaseRepository {
   async withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R> {
     let res;
     await this.asyncLock.acquire(DatabaseLock[lock], async () => {
+      const queryRunner = this.dataSource.createQueryRunner();
       try {
-        await this.acquireLock(lock);
+        await this.acquireLock(lock, queryRunner);
         res = await callback();
       } finally {
-        await this.releaseLock(lock);
+        try {
+          await this.releaseLock(lock, queryRunner);
+        } finally {
+          await queryRunner.release();
+        }
       }
     });
 
@@ -51,11 +56,11 @@ export class DatabaseRepository implements IDatabaseRepository {
     await this.asyncLock.acquire(DatabaseLock[lock], () => {});
   }
 
-  private async acquireLock(lock: DatabaseLock): Promise<void> {
-    return this.dataSource.query('SELECT pg_advisory_lock($1)', [lock]);
+  private async acquireLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
+    return queryRunner.query('SELECT pg_advisory_lock($1)', [lock]);
   }
 
-  private async releaseLock(lock: DatabaseLock): Promise<void> {
-    return this.dataSource.query('SELECT pg_advisory_unlock($1)', [lock]);
+  private async releaseLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
+    return queryRunner.query('SELECT pg_advisory_unlock($1)', [lock]);
   }
 }

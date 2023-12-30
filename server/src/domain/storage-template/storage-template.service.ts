@@ -8,9 +8,11 @@ import sanitize from 'sanitize-filename';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import {
+  DatabaseLock,
   IAlbumRepository,
   IAssetRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IMoveRepository,
   IPersonRepository,
   IStorageRepository,
@@ -63,6 +65,7 @@ export class StorageTemplateService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
   ) {
     this.template = this.compile(config.storageTemplate.template);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -101,7 +104,6 @@ export class StorageTemplateService {
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
       await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
     }
-
     return true;
   }
 
@@ -142,34 +144,36 @@ export class StorageTemplateService {
       return;
     }
 
-    const { id, sidecarPath, originalPath, exifInfo } = asset;
-    const oldPath = originalPath;
-    const newPath = await this.getTemplatePath(asset, metadata);
+    return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
+      const { id, sidecarPath, originalPath, exifInfo } = asset;
+      const oldPath = originalPath;
+      const newPath = await this.getTemplatePath(asset, metadata);
 
-    if (!exifInfo || !exifInfo.fileSizeInByte) {
-      this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);
-      return;
-    }
+      if (!exifInfo || !exifInfo.fileSizeInByte) {
+        this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);
+        return;
+      }
 
-    try {
-      await this.storageCore.moveFile({
-        entityId: id,
-        pathType: AssetPathType.ORIGINAL,
-        oldPath,
-        newPath,
-        assetInfo: { sizeInBytes: exifInfo.fileSizeInByte, checksum: asset.checksum },
-      });
-      if (sidecarPath) {
+      try {
         await this.storageCore.moveFile({
           entityId: id,
-          pathType: AssetPathType.SIDECAR,
-          oldPath: sidecarPath,
-          newPath: `${newPath}.xmp`,
+          pathType: AssetPathType.ORIGINAL,
+          oldPath,
+          newPath,
+          assetInfo: { sizeInBytes: exifInfo.fileSizeInByte, checksum: asset.checksum },
         });
+        if (sidecarPath) {
+          await this.storageCore.moveFile({
+            entityId: id,
+            pathType: AssetPathType.SIDECAR,
+            oldPath: sidecarPath,
+            newPath: `${newPath}.xmp`,
+          });
+        }
+      } catch (error: any) {
+        this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, oldPath, newPath });
       }
-    } catch (error: any) {
-      this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, oldPath, newPath });
-    }
+    });
   }
 
   private async getTemplatePath(asset: AssetEntity, metadata: MoveAssetMetadata): Promise<string> {

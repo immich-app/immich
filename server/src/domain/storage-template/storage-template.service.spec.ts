@@ -2,6 +2,7 @@ import {
   IAlbumRepository,
   IAssetRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IMoveRepository,
   IPersonRepository,
   IStorageRepository,
@@ -16,6 +17,7 @@ import {
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
+  newDatabaseRepositoryMock,
   newMoveRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
@@ -36,6 +38,7 @@ describe(StorageTemplateService.name, () => {
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let databaseRepository: jest.Mocked<IDatabaseRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -50,6 +53,7 @@ describe(StorageTemplateService.name, () => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
+    databaseRepository = newDatabaseRepositoryMock();
 
     sut = new StorageTemplateService(
       albumMock,
@@ -61,6 +65,7 @@ describe(StorageTemplateService.name, () => {
       storageMock,
       userMock,
       cryptoMock,
+      databaseRepository,
     );
 
     configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: true }]);
