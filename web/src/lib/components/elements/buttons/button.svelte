@@ -26,6 +26,8 @@
   export let fullwidth = false;
   export let border = false;
   export let title: string | undefined = '';
+  let className = '';
+  export { className as class };
 
   const colorClasses: Record<Color, string> = {
     primary:
@@ -60,7 +62,7 @@
   {disabled}
   {title}
   on:click
-  class="inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 {colorClasses[
+  class="{className} inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 {colorClasses[
     color
   ]} {sizeClasses[size]}"
   class:rounded-lg={rounded === 'lg'}
