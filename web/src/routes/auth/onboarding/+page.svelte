@@ -11,8 +11,6 @@
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboading-storage-template.svelte';
 
-  export let data: PageData;
-
   let index = 0;
 
   let onboardingSteps = [OnboardingHello, OnboardingTheme, OnboadingStorageTemplate];
