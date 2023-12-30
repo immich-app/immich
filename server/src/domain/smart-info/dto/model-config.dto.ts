@@ -30,14 +30,14 @@ export class RecognitionConfig extends ModelConfig {
   @Min(0)
   @Max(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'float' })
   minScore!: number;
 
   @IsNumber()
   @Min(0)
   @Max(2)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'float' })
   maxDistance!: number;
 
   @IsNumber()
@@ -45,4 +45,70 @@ export class RecognitionConfig extends ModelConfig {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   minFaces!: number;
+}
+
+export class ClusterConfig {
+  embeddings!: number[][];
+
+  @IsNumber()
+  @Min(2)
+  @Type(() => Number)
+  @Optional()
+  @ApiProperty({ type: 'integer' })
+  min_cluster_size?: number;
+
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  @Optional()
+  @ApiProperty({ type: 'integer' })
+  min_samples?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(2)
+  @Type(() => Number)
+  @Optional()
+  @ApiProperty({ type: 'float' })
+  cluster_selection_epsilon?: number;
+  
+  @IsNumber()
+  @Min(2)
+  @Type(() => Number)
+  @Optional()
+  @ApiProperty({ type: 'integer' })
+  max_cluster_size?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  metric?: string;
+
+  @IsNumber()
+  @Min(2)
+  @Type(() => Number)
+  @Optional()
+  @ApiProperty({ type: 'float' })
+  alpha?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  algorithm?: string;
+
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  @Optional()
+  @ApiProperty({ type: 'integer' })
+  leaf_size?: number;
+
+  @IsBoolean()
+  @Optional()
+  approx_min_span_tree?: boolean;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  cluster_selection_method?: string;
 }

@@ -1,6 +1,7 @@
 import {
   CLIPConfig,
   CLIPMode,
+  ClusterConfig,
   DetectFaceResult,
   IMachineLearningRepository,
   ModelConfig,
@@ -16,7 +17,7 @@ const errorPrefix = 'Machine learning request';
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  private async post<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
+  private async predict<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
     const formData = await this.getFormData(input, config);
 
     const res = await fetch(`${url}/predict`, { method: 'POST', body: formData }).catch((error: Error | any) => {
@@ -30,12 +31,18 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return res.json();
   }
 
+  async cluster(url: string, config: ClusterConfig): Promise<number[]> {
+    const body = JSON.stringify(config);
+    const res = await fetch(`${url}/cluster`, { method: 'POST', body, headers: { 'Content-Type': 'application/json' } });
+    return res.json();
+  }
+
   detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]> {
-    return this.post<DetectFaceResult[]>(url, input, { ...config, modelType: ModelType.FACIAL_RECOGNITION });
+    return this.predict<DetectFaceResult[]>(url, input, { ...config, modelType: ModelType.FACIAL_RECOGNITION });
   }
 
   encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]> {
-    return this.post<number[]>(url, input, {
+    return this.predict<number[]>(url, input, {
       ...config,
       modelType: ModelType.CLIP,
       mode: CLIPMode.VISION,
@@ -43,7 +50,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]> {
-    return this.post<number[]>(url, input, { ...config, modelType: ModelType.CLIP, mode: CLIPMode.TEXT } as CLIPConfig);
+    return this.predict<number[]>(url, input, { ...config, modelType: ModelType.CLIP, mode: CLIPMode.TEXT } as CLIPConfig);
   }
 
   async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {

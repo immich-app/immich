@@ -349,9 +349,8 @@ export class AssetRepository implements IAssetRepository {
         exifInfo: options.withExif !== false,
         smartInfo: options.withSmartInfo !== false,
         tags: options.withSmartInfo !== false,
-        faces: {
-          person: options.withPeople !== false,
-        },
+        faces: options.withFaces !== false,
+        smartSearch: options.withSmartInfo === true,
       },
       withDeleted: options.withDeleted ?? !!options.trashedBefore,
       order: {

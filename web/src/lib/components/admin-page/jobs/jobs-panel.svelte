@@ -15,6 +15,7 @@
     mdiImageSearch,
     mdiLibraryShelves,
     mdiTable,
+    mdiVectorCircle,
     mdiVideo,
   } from '@mdi/js';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
@@ -85,7 +86,7 @@
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
-      title: api.getJobName(JobName.RecognizeFaces),
+      title: api.getJobName(JobName.FaceDetection),
       subtitle: 'Detects the faces in your assets',
       handleCommand: handleFaceCommand,
       disabled: !$featureFlags.facialRecognition,

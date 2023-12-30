@@ -1,4 +1,4 @@
-import { Embedding, EmbeddingSearch, FaceEmbeddingSearch, ISmartInfoRepository } from '@app/domain';
+import { Embedding, EmbeddingSearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
@@ -91,26 +91,29 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     numResults,
     maxDistance,
     noPerson,
-  }: FaceEmbeddingSearch): Promise<AssetFaceEntity[]> {
+  }: FaceEmbeddingSearch): Promise<FaceSearchResult[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
 
-    let results: AssetFaceEntity[] = [];
+    let results: any[] = [];
     await this.assetRepository.manager.transaction(async (manager) => {
       await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
-      const cte = manager
+      let cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
         .select('1 + (faces.embedding <=> :embedding)', 'distance')
         .innerJoin('faces.asset', 'asset')
         .where('asset.ownerId IN (:...userIds )')
         .orderBy('1 + (faces.embedding <=> :embedding)')
-        .setParameters({ userIds, embedding: asVector(embedding) })
-        .limit(numResults);
+        .setParameters({ userIds, embedding: asVector(embedding) });
+
+      if (numResults) {
+        cte = cte.limit(numResults);
+      }
 
       if (noPerson) {
-        cte.andWhere('faces."personId" IS NULL');
+        cte = cte.andWhere('faces."personId" IS NULL');
       }
 
       this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
@@ -130,7 +133,10 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       results = await query.getRawMany();
     });
 
-    return this.assetFaceRepository.create(results);
+    return results.map((row) => ({
+      face: this.assetFaceRepository.create(row) as any as AssetFaceEntity,
+      distance: row.distance,
+    }));
   }
 
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {

@@ -356,7 +356,101 @@ export class PersonService {
     return true;
   }
 
-  async handleQueueRecognizeFaces({ force }: IBaseJob) {
+  // async handleQueueRecognizeFaces({ force }: IBaseJob) {
+  //   const { machineLearning } = await this.configCore.getConfig();
+  //   if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+  //     return true;
+  //   }
+
+  //   await this.jobRepository.waitForQueueCompletion(QueueName.FACE_DETECTION);
+
+  //   if (force) {
+  //     const people = await this.repository.getAll();
+  //     for (const person of people) {
+  //       await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
+  //     }
+  //     this.logger.debug(`Deleted ${people.length} people`);
+  //   }
+
+  //   for (let maxDistance = 0.5; maxDistance <= machineLearning.facialRecognition.maxDistance; maxDistance += 0.1) {
+  //     let assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+  //       return force
+  //         ? this.assetRepository.getAll(pagination, {
+  //             order: 'DESC',
+  //             withExif: false,
+  //             withPeople: false,
+  //             withSmartInfo: false,
+  //             withStacked: false,
+  //           })
+  //         : this.assetRepository.getWithout(pagination, WithoutProperty.PERSON);
+  //     });
+
+  //     for await (const assets of assetPagination) {
+  //       for (const asset of assets) {
+  //         await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id: asset.id, maxDistance } });
+  //       }
+  //     }
+
+  //     let { active } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
+  //     while (active > 1) {
+  //       await setTimeout(1000);
+  //       ({ active } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION));
+  //     }
+  //   }
+
+  //   return true;
+  // }
+
+  // async handleRecognizeFaces({ id, maxDistance }: IFacialRecognitionJob) {
+  //   const { machineLearning } = await this.configCore.getConfig();
+  //   if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+  //     return true;
+  //   }
+
+  //   const [asset] = await this.assetRepository.getByIds(
+  //     [id],
+  //     { faces: true },
+  //     { faces: { id: true, embedding: true, personId: true } },
+  //   );
+
+  //   if (!asset.faces || asset.faces.length === 0) {
+  //     return false;
+  //   }
+
+  //   for (const face of asset.faces) {
+  //     if (face.personId != null) {
+  //       continue;
+  //     }
+
+  //     // typeorm leaves the embedding as a string
+  //     const embedding = typeof face.embedding === 'string' ? JSON.parse(face.embedding) : face.embedding;
+  //     const matches = await this.smartInfoRepository.searchFaces({
+  //       ownerId: asset.ownerId,
+  //       embedding,
+  //       numResults: 1000,
+  //       maxDistance,
+  //       noPerson: true,
+  //     });
+
+  //     // a face with no matches is an outlier, so no need to create a person for it
+  //     if (matches.length <= 1) {
+  //       continue;
+  //     }
+
+  //     const newPerson = await this.repository.create({ ownerId: asset.ownerId, faceAssetId: face.id });
+  //     await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+
+  //     const faceIds = matches.map((match) => match.id);
+  //     faceIds.push(face.id);
+
+  //     // all unassigned faces within radius are assigned to the new person
+  //     await this.repository.reassignFaces({ faceIds, newPersonId: newPerson.id });
+  //   }
+
+  //   return true;
+  // }
+
+  async handleRecognizeFaces({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
@@ -373,72 +467,77 @@ export class PersonService {
     }
 
     let assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination, {
-            order: 'DESC',
-            withExif: false,
-            withPeople: false,
-            withSmartInfo: false,
-            withStacked: false,
-          })
-        : this.assetRepository.getWithout(pagination, WithoutProperty.PERSON);
+      return this.assetRepository.getAll(pagination, {
+        order: 'DESC',
+        withFaces: true,
+        withPeople: true,
+        withSmartSearch: false,
+        withExif: false,
+        withSmartInfo: false,
+        withStacked: false,
+      });
     });
 
-    for (let maxDistance = 0.1; maxDistance <= machineLearning.facialRecognition.maxDistance; maxDistance += 0.1) {
-      for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id: asset.id, maxDistance } });
+    const embeddings = [] as number[][];
+    const assetIds = [] as string[];
+    const ownerIds = [] as string[];
+    const faceIds = [] as string[];
+    const hasPerson = [] as boolean[];
+
+    this.logger.log(`Fetching assets for facial recognition`);
+    for await (const page of assetPagination) {
+      for (const row of page) {
+        for (const face of row.faces || []) {
+          if (face?.embedding) {
+            embeddings.push(JSON.parse(face.embedding as any as string));
+            assetIds.push(row.id);
+            ownerIds.push(row.ownerId);
+            faceIds.push(face.id);
+            hasPerson.push(face.personId != null);
+          }
         }
       }
     }
 
-    return true;
-  }
+    this.logger.log(`Recognizing ${embeddings.length} faces`);
 
-  async handleRecognizeFaces({ id, maxDistance }: IFacialRecognitionJob) {
-    const { machineLearning } = await this.configCore.getConfig();
-    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
-      return true;
-    }
+    const labels = await this.machineLearningRepository.cluster(machineLearning.url, {
+      embeddings,
+      min_cluster_size: 3,
+      min_samples: 3,
+      // cluster_selection_epsilon: 0.3,
+    });
+    const personIdx = {} as Record<number, string>;
 
-    const [asset] = await this.assetRepository.getByIds(
-      [id],
-      { faces: true },
-      { faces: { id: true, embedding: true, personId: true } },
-    );
-
-    if (!asset.faces || asset.faces.length === 0) {
-      return false;
-    }
-
-    for (const face of asset.faces) {
-      if (face.personId != null) {
+    for (let i = 0; i < labels.length; i++) {
+      const label = labels[i];
+      const ownerId = ownerIds[i];
+      const faceId = faceIds[i];
+      if (label === -1) {
         continue;
       }
 
-      // typeorm leaves the embedding as a string
-      const embedding = typeof face.embedding === 'string' ? JSON.parse(face.embedding) : face.embedding;
-      const matches = await this.smartInfoRepository.searchFaces({
-        ownerId: asset.ownerId,
-        embedding,
-        numResults: 100,
-        maxDistance,
-        noPerson: true,
-      });
-
-      // a face with no matches is an outlier, so no need to create a person for it
-      if (matches.length === 0) {
+      if (!force && hasPerson[i]) {
         continue;
       }
 
-      const newPerson = await this.repository.create({ ownerId: asset.ownerId, faceAssetId: face.id });
-      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+      const isNewPerson = !personIdx[label];
 
-      const faceIds = matches.map((match) => match.id);
-      faceIds.push(face.id);
+      if (isNewPerson) {
+        this.logger.log(`Generating new person for label ${label}`);
+        const newPerson = await this.repository.create({ ownerId });
+        personIdx[label] = newPerson.id;
+      }
 
-      // all unassigned faces within radius are assigned to the new person
-      await this.repository.reassignFaces({ faceIds, newPersonId: newPerson.id });
+      this.logger.log(`Face ${faceId} in asset ${assetIds[i]} is being assigned to person ${personIdx[label]}`);
+      await this.repository.reassignFaces({ faceIds: [faceId], newPersonId: personIdx[label] });
+
+      // need to do this separately to not violate the foreign key constraint
+      if (isNewPerson) {
+        this.logger.log(`Assigning face ${faceId} as the feature photo for person ${personIdx[label]}`);
+        await this.repository.update({ id: personIdx[label], faceAssetId: faceId });
+        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personIdx[label] } });
+      }
     }
 
     return true;

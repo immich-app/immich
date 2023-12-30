@@ -34,6 +34,8 @@ export interface AssetSearchOptions {
   withExif?: boolean;
   withPeople?: boolean;
   withSmartInfo?: boolean;
+  withSmartSearch?: boolean;
+  withFaces?: boolean;
 
   createdBefore?: Date;
   createdAfter?: Date;

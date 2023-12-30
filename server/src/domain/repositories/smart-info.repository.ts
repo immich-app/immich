@@ -16,9 +16,14 @@ export interface FaceEmbeddingSearch extends EmbeddingSearch {
   noPerson?: boolean;
 }
 
+export interface FaceSearchResult {
+  face: AssetFaceEntity;
+  distance: number;
+}
+
 export interface ISmartInfoRepository {
   init(modelName: string): Promise<void>;
   searchCLIP(search: EmbeddingSearch): Promise<AssetEntity[]>;
-  searchFaces(search: FaceEmbeddingSearch): Promise<AssetFaceEntity[]>;
+  searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }

@@ -1,4 +1,5 @@
-import { CLIPConfig, RecognitionConfig } from '../smart-info/dto';
+import { Embedding } from '.';
+import { CLIPConfig, ClusterConfig, RecognitionConfig } from '../smart-info/dto';
 
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 
@@ -39,4 +40,5 @@ export interface IMachineLearningRepository {
   encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]>;
   encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]>;
   detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]>;
+  cluster(url: string, config: ClusterConfig): Promise<number[]>;
 }
