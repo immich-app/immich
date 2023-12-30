@@ -7967,6 +7967,9 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
+          "showOnboarding": {
+            "type": "boolean"
+          },
           "userEmail": {
             "type": "string"
           },
@@ -7981,7 +7984,8 @@
           "name",
           "profileImagePath",
           "isAdmin",
-          "shouldChangePassword"
+          "shouldChangePassword",
+          "showOnboarding"
         ],
         "type": "object"
       },

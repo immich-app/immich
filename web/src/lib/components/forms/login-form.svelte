@@ -19,6 +19,7 @@
   const dispatch = createEventDispatcher<{
     success: void;
     firstLogin: void;
+    onboarding: void;
   }>();
 
   onMount(async () => {
@@ -63,6 +64,11 @@
           password,
         },
       });
+
+      if (data.isAdmin && data.showOnboarding) {
+        dispatch('onboarding');
+        return;
+      }
 
       if (!data.isAdmin && data.shouldChangePassword) {
         dispatch('firstLogin');

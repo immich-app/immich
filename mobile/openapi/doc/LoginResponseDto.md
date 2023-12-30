@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **name** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 
+**showOnboarding** | **bool** |  | 
 **userEmail** | **String** |  | 
 **userId** | **String** |  | 
 

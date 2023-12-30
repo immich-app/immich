@@ -32,6 +32,7 @@ export class LoginResponseDto {
   profileImagePath!: string;
   isAdmin!: boolean;
   shouldChangePassword!: boolean;
+  showOnboarding!: boolean;
 }
 
 export function mapLoginResponse(entity: UserEntity, accessToken: string): LoginResponseDto {
@@ -43,6 +44,7 @@ export function mapLoginResponse(entity: UserEntity, accessToken: string): Login
     isAdmin: entity.isAdmin,
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
+    showOnboarding: entity.showOnboarding,
   };
 }
 

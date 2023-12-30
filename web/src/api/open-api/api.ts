@@ -2210,6 +2210,12 @@ export interface LoginResponseDto {
     'shouldChangePassword': boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof LoginResponseDto
+     */
+    'showOnboarding': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof LoginResponseDto
      */
