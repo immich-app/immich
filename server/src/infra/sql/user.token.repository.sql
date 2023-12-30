@@ -16,6 +16,7 @@ FROM
       "UserTokenEntity__UserTokenEntity_user"."name" AS "UserTokenEntity__UserTokenEntity_user_name",
       "UserTokenEntity__UserTokenEntity_user"."avatarColor" AS "UserTokenEntity__UserTokenEntity_user_avatarColor",
       "UserTokenEntity__UserTokenEntity_user"."isAdmin" AS "UserTokenEntity__UserTokenEntity_user_isAdmin",
+      "UserTokenEntity__UserTokenEntity_user"."showOnboarding" AS "UserTokenEntity__UserTokenEntity_user_showOnboarding",
       "UserTokenEntity__UserTokenEntity_user"."email" AS "UserTokenEntity__UserTokenEntity_user_email",
       "UserTokenEntity__UserTokenEntity_user"."storageLabel" AS "UserTokenEntity__UserTokenEntity_user_storageLabel",
       "UserTokenEntity__UserTokenEntity_user"."externalPath" AS "UserTokenEntity__UserTokenEntity_user_externalPath",
