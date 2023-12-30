@@ -19,7 +19,6 @@ class AllJobStatusResponseDto {
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
-    this.recognizeFaces,
     required this.search,
     required this.sidecar,
     required this.smartSearch,
@@ -39,14 +38,6 @@ class AllJobStatusResponseDto {
   JobStatusDto metadataExtraction;
 
   JobStatusDto migration;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  JobStatusDto? recognizeFaces;
 
   JobStatusDto search;
 
@@ -68,7 +59,6 @@ class AllJobStatusResponseDto {
      other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
      other.migration == migration &&
-     other.recognizeFaces == recognizeFaces &&
      other.search == search &&
      other.sidecar == sidecar &&
      other.smartSearch == smartSearch &&
@@ -85,7 +75,6 @@ class AllJobStatusResponseDto {
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
-    (recognizeFaces == null ? 0 : recognizeFaces!.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
@@ -94,7 +83,7 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -104,11 +93,6 @@ class AllJobStatusResponseDto {
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
-    if (this.recognizeFaces != null) {
-      json[r'recognizeFaces'] = this.recognizeFaces;
-    } else {
-    //  json[r'recognizeFaces'] = null;
-    }
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
@@ -132,7 +116,6 @@ class AllJobStatusResponseDto {
         library_: JobStatusDto.fromJson(json[r'library'])!,
         metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobStatusDto.fromJson(json[r'migration'])!,
-        recognizeFaces: JobStatusDto.fromJson(json[r'recognizeFaces']),
         search: JobStatusDto.fromJson(json[r'search'])!,
         sidecar: JobStatusDto.fromJson(json[r'sidecar'])!,
         smartSearch: JobStatusDto.fromJson(json[r'smartSearch'])!,

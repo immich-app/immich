@@ -6518,9 +6518,6 @@
           "migration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "recognizeFaces": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
           "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -8474,13 +8471,13 @@
             "type": "boolean"
           },
           "maxDistance": {
-            "type": "integer"
+            "type": "float"
           },
           "minFaces": {
             "type": "integer"
           },
           "minScore": {
-            "type": "integer"
+            "type": "float"
           },
           "modelName": {
             "type": "string"

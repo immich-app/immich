@@ -390,12 +390,6 @@ export interface AllJobStatusResponseDto {
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'recognizeFaces'?: JobStatusDto;
-    /**
-     * 
-     * @type {JobStatusDto}
-     * @memberof AllJobStatusResponseDto
-     */
     'search': JobStatusDto;
     /**
      * 

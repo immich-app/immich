@@ -46,11 +46,6 @@ void main() {
       // TODO
     });
 
-    // JobStatusDto recognizeFaces
-    test('to test the property `recognizeFaces`', () async {
-      // TODO
-    });
-
     // JobStatusDto search
     test('to test the property `search`', () async {
       // TODO
