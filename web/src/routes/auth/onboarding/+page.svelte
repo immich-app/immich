@@ -16,8 +16,16 @@
   let index = 0;
 
   let onboardingSteps = [OnboardingHello, OnboardingTheme, OnboadingStorageTemplate];
+
+  const handleDoneClicked = () => {
+    index++;
+
+    if (index >= onboardingSteps.length) {
+      console.log('Onboarding done');
+    }
+  };
 </script>
 
 <section id="onboarding-page" class="min-w-screen flex min-h-screen place-content-center place-items-center p-4">
-  <svelte:component this={onboardingSteps[index]} />
+  <svelte:component this={onboardingSteps[index]} on:done={handleDoneClicked} />
 </section>
