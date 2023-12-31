@@ -59,3 +59,24 @@ borg create $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg::{now} $UPLOAD_LOCATION
 borg prune --keep-weekly=4 --keep-monthly=3 $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg
 borg compact $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg
 ```
+
+### Restoring
+
+To restore from a backup, use the `borg mount` command.
+
+```bash title='Restore from local backup'
+BACKUP_PATH="/path/to/local/backup/directory"
+mkdir /tmp/immich-mountpoint
+borg mount $BACKUP_PATH/immich-borg /tmp/immich-mountpoint
+cd /tmp/immich-mountpoint
+```
+
+```bash title='Restore from remote backup'
+REMOTE_HOST="remote_host@IP"
+REMOTE_BACKUP_PATH="/path/to/remote/backup/directory"
+mkdir /tmp/immich-mountpoint
+borg mount $REMOTE_HOST:$REMOTE_BACKUP_PATH/immich-borg /tmp/immich-mountpoint
+cd /tmp/immich-mountpoint
+```
+
+You can find available snapshots in seperate sub-directories at `/tmp/immich-mountpoint`. Restore the files you need, and unmount the Borg repository using `borg umount /tmp/immich-mountpoint`
