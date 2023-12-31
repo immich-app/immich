@@ -23,7 +23,13 @@
 </script>
 
 <OnboardingCard>
-  <p>Storage Template</p>
+  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">STORAGE TEMPLATE</p>
+
+  <p>
+    The storage template is used to determine the folder structure and file name of your media files. You can use
+    variables to customize the template to your liking.
+  </p>
+
   {#if configs && $user}
     <StorageTemplateSettings simple disabled={$featureFlags.configFile} storageConfig={configs.storageTemplate} />
   {/if}

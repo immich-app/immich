@@ -13,8 +13,8 @@
 </script>
 
 <OnboardingCard>
-  <p class="font-medium text-6xl pb-6 flex gap-2 text-immich-primary dark:text-immich-dark-primary">
-    <span><ImmichLogo class="w-12 h-12" /></span>
+  <ImmichLogo class="w-12 h-12" />
+  <p class="font-medium text-6xl my-6 text-immich-primary dark:text-immich-dark-primary">
     Welcome, {$user.name}
   </p>
   <p class="text-3xl pb-6 font-light">Let's get your instance setup with some common settings</p>

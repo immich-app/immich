@@ -264,7 +264,7 @@
           <SettingButtonsRow
             on:reset={({ detail }) => handleReset(detail)}
             on:save={saveSetting}
-            showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+            showResetToDefault={!isEqual(savedConfig, defaultConfig) && !simple}
             {disabled}
           />
         </form>
