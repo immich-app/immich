@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { serverVersion } from '../domain.constant';
+import { isDev, serverVersion } from '../domain.constant';
 import { JobName } from '../job';
 import { ISystemConfigRepository } from '../repositories';
 import { IJobRepository } from '../repositories/job.repository';
@@ -20,9 +20,16 @@ export class MetricsService {
   }
 
   async handleQueueMetrics() {
-    if (await this.configCore.hasFeature(FeatureFlag.METRICS)) {
-      await this.jobRepository.queue({ name: JobName.METRICS });
+    if (!(await this.configCore.hasFeature(FeatureFlag.METRICS))) {
+      return;
     }
+
+    // TODO
+    // if (isDev) {
+    //   return;
+    // }
+
+    await this.jobRepository.queue({ name: JobName.METRICS });
   }
 
   async handleSendMetrics() {
