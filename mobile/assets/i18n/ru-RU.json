@@ -4,7 +4,7 @@
   "add_to_album_bottom_sheet_added": "Добавлено в {album}",
   "add_to_album_bottom_sheet_already_exists": "Уже в {album}",
   "advanced_settings_log_level_title": "Log level: {}",
-  "advanced_settings_prefer_remote_subtitle": "Некоторые устройства очень медленно загружают предпросмотр объектов, находящихся на устройстве. Активируйте эту настройку, чтобы вместо них загружались изображени с сервера.",
+  "advanced_settings_prefer_remote_subtitle": "Некоторые устройства очень медленно загружают предпросмотр объектов, находящихся на устройстве. Активируйте эту настройку, чтобы вместо них загружались изображения с сервера.",
   "advanced_settings_prefer_remote_title": "Предпочитать фото на сервере",
   "advanced_settings_self_signed_ssl_subtitle": "Пропускает проверку SSL-сертификата сервера. Требуется для самоподписанных сертификатов.",
   "advanced_settings_self_signed_ssl_title": "Разрешить самоподписанные SSL-сертификаты",
