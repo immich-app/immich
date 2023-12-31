@@ -2,6 +2,7 @@ import { AssetEntity, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
+  newDatabaseRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
   newSmartInfoRepositoryMock,
@@ -10,6 +11,7 @@ import {
 import { JobName } from '../job';
 import {
   IAssetRepository,
+  IDatabaseRepository,
   IJobRepository,
   IMachineLearningRepository,
   ISmartInfoRepository,
@@ -31,6 +33,7 @@ describe(SmartInfoService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let smartMock: jest.Mocked<ISmartInfoRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
+  let databaseMock: jest.Mocked<IDatabaseRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
@@ -38,7 +41,8 @@ describe(SmartInfoService.name, () => {
     smartMock = newSmartInfoRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    sut = new SmartInfoService(assetMock, configMock, jobMock, smartMock, machineMock);
+    databaseMock = newDatabaseRepositoryMock();
+    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, smartMock, configMock);
 
     assetMock.getByIds.mockResolvedValue([asset]);
   });

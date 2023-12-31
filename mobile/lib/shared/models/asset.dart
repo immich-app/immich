@@ -472,6 +472,8 @@ extension AssetsHelper on IsarCollection<Asset> {
       ids.isEmpty ? Future.value([]) : remote(ids).findAll();
   Future<List<Asset>> getAllByLocalId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value([]) : local(ids).findAll();
+  Future<Asset?> getByRemoteId(String id) =>
+      where().remoteIdEqualTo(id).findFirst();
 
   QueryBuilder<Asset, Asset, QAfterWhereClause> remote(Iterable<String> ids) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));

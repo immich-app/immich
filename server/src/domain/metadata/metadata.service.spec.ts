@@ -5,6 +5,7 @@ import {
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
   newCryptoRepositoryMock,
+  newDatabaseRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
   newMetadataRepositoryMock,
@@ -25,6 +26,7 @@ import {
   IAssetRepository,
   ICommunicationRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IJobRepository,
   IMediaRepository,
   IMetadataRepository,
@@ -50,6 +52,7 @@ describe(MetadataService.name, () => {
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
+  let databaseMock: jest.Mocked<IDatabaseRepository>;
   let sut: MetadataService;
 
   beforeEach(async () => {
@@ -64,19 +67,21 @@ describe(MetadataService.name, () => {
     communicationMock = newCommunicationRepositoryMock();
     storageMock = newStorageRepositoryMock();
     mediaMock = newMediaRepositoryMock();
+    databaseMock = newDatabaseRepositoryMock();
 
     sut = new MetadataService(
       albumMock,
       assetMock,
+      communicationMock,
       cryptoRepository,
+      databaseMock,
       jobMock,
+      mediaMock,
       metadataMock,
+      moveMock,
+      personMock,
       storageMock,
       configMock,
-      mediaMock,
-      moveMock,
-      communicationMock,
-      personMock,
     );
   });
 
@@ -229,15 +234,6 @@ describe(MetadataService.name, () => {
     it('should handle an asset that could not be found', async () => {
       await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(false);
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
-      expect(assetMock.upsertExif).not.toHaveBeenCalled();
-      expect(assetMock.save).not.toHaveBeenCalled();
-    });
-
-    it('should handle an asset with isVisible set to false', async () => {
-      assetMock.getByIds.mockResolvedValue([{ ...assetStub.image, isVisible: false }]);
-
-      await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(false);
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id]);
       expect(assetMock.upsertExif).not.toHaveBeenCalled();
       expect(assetMock.save).not.toHaveBeenCalled();

@@ -14,6 +14,7 @@ import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } 
 import {
   AudioStreamInfo,
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMediaRepository,
   IMoveRepository,
@@ -52,9 +53,17 @@ export class MediaService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      personRepository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob) {
@@ -241,11 +250,22 @@ export class MediaService {
       return false;
     }
 
+    if (!mainVideoStream.height || !mainVideoStream.width) {
+      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
+      return false;
+    }
+
     const { ffmpeg: config } = await this.configCore.getConfig();
 
     const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
     if (!required) {
-      return false;
+      if (asset.encodedVideoPath) {
+        this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
+        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [asset.encodedVideoPath] } });
+        await this.assetRepository.save({ id: asset.id, encodedVideoPath: null });
+      }
+
+      return true;
     }
 
     let transcodeOptions;
@@ -289,11 +309,6 @@ export class MediaService {
     containerExtension: string,
     ffmpegConfig: SystemConfigFFmpegDto,
   ): boolean {
-    if (!videoStream.height || !videoStream.width) {
-      this.logger.error('Skipping transcode, height or width undefined for video stream');
-      return false;
-    }
-
     const isTargetVideoCodec = videoStream.codecName === ffmpegConfig.targetVideoCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;

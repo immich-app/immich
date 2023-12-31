@@ -1,6 +1,5 @@
 import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
-import { DatabaseLock, RequireLock, asyncLock } from '@app/infra';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
@@ -121,18 +120,12 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   private async upsertEmbedding(assetId: string, embedding: number[]): Promise<void> {
-    if (asyncLock.isBusy(DatabaseLock[DatabaseLock.CLIPDimSize])) {
-      this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
-      await asyncLock.acquire(DatabaseLock[DatabaseLock.CLIPDimSize], () => {});
-    }
-
     await this.smartSearchRepository.upsert(
       { assetId, embedding: () => asVector(embedding, true) },
       { conflictPaths: ['assetId'] },
     );
   }
 
-  @RequireLock(DatabaseLock.CLIPDimSize)
   private async updateDimSize(dimSize: number): Promise<void> {
     if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);

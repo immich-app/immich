@@ -67,23 +67,17 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return this.albumRepository
-        .find({
-          select: { id: true },
-          where: [
-            {
-              id: In([...albumIds]),
-              isActivityEnabled: true,
-              sharedUsers: {
-                id: userId,
-              },
-            },
-            {
-              id: In([...albumIds]),
-              isActivityEnabled: true,
-              ownerId: userId,
-            },
-          ],
-        })
+        .createQueryBuilder('album')
+        .select('album.id')
+        .leftJoin('album.sharedUsers', 'sharedUsers')
+        .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
+        .andWhere('album.isActivityEnabled = true')
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
+          }),
+        )
+        .getMany()
         .then((albums) => new Set(albums.map((album) => album.id)));
     },
   };
@@ -148,16 +142,12 @@ export class AccessRepository implements IAccessRepository {
         .leftJoin('album.sharedUsers', 'sharedUsers')
         .select('asset.id', 'assetId')
         .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
-        .where(
-          new Brackets((qb) => {
-            qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
-          }),
-        )
+        .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
+          assetIds: [...assetIds],
+        })
         .andWhere(
           new Brackets((qb) => {
-            qb.where('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
-              // still part of a live photo is in an album
-              .orWhere('asset.livePhotoVideoId IN (:...assetIds)', { assetIds: [...assetIds] });
+            qb.where('album.ownerId = :userId', { userId }).orWhere('sharedUsers.id = :userId', { userId });
           }),
         )
         .getRawMany()
@@ -224,13 +214,10 @@ export class AccessRepository implements IAccessRepository {
         .addSelect('albumAssets.livePhotoVideoId', 'albumAssetLivePhotoVideoId')
         .where('sharedLink.id = :sharedLinkId', { sharedLinkId })
         .andWhere(
-          new Brackets((qb) => {
-            qb.where('assets.id IN (:...assetIds)', { assetIds: [...assetIds] })
-              .orWhere('albumAssets.id IN (:...assetIds)', { assetIds: [...assetIds] })
-              // still part of a live photo is in a shared link
-              .orWhere('assets.livePhotoVideoId IN (:...assetIds)', { assetIds: [...assetIds] })
-              .orWhere('albumAssets.livePhotoVideoId IN (:...assetIds)', { assetIds: [...assetIds] });
-          }),
+          'array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"] && array[:...assetIds]::uuid[]',
+          {
+            assetIds: [...assetIds],
+          },
         )
         .getRawMany()
         .then((rows) => {

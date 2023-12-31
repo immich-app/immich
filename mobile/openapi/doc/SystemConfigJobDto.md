@@ -16,7 +16,6 @@ Name | Type | Description | Notes
 **search** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **sidecar** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **smartSearch** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
-**storageTemplateMigration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **thumbnailGeneration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **videoConversion** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 
