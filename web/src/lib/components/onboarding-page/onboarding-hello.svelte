@@ -12,13 +12,8 @@
 </script>
 
 <OnboardingCard>
-  <div class="flex place-items-center place-content-center">
-    <img src={settingUrl} alt="settings-outline" width="300" />
-  </div>
-  <p class="dark:text-gray-100 font-semibold text-2xl pb-6">Hello Admin</p>
-  <p class="dark:text-gray-100 text-xl pb-6">
-    Welcome to Immich! Let's get your instance setup with some common settings
-  </p>
+  <p class="font-medium text-6xl pb-6">Welcome to Immich!</p>
+  <p class="text-3xl pb-6 font-light">Let's get your instance setup with some common settings</p>
 
   <div class="w-full flex place-content-end">
     <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>

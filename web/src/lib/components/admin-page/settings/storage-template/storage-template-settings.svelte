@@ -41,8 +41,6 @@
       api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data),
     ]);
 
-    console.log('savedConfig', savedConfig);
-    console.log('defaultConfig', defaultConfig);
     selectedPreset = savedConfig.template;
   }
 
