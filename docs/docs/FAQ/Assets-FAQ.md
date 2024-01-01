@@ -14,11 +14,15 @@ Template changes will only apply to new assets. To retroactively apply the templ
 
 ### Why are only photos and not videos being uploaded to Immich?
 
-This often happens when using a reverse proxy or cloudflare tunnel in front of Immich. Make sure to set your reverse proxy to allow large POST requests. In `nginx`, set `client_max_body_size 50000M;` or similar. Also check the disk space of your reverse proxy, in some cases proxies cache requests to disk before passing them on, and if disk space runs out the request fails.
+This often happens when using a reverse proxy (such as nginx or Cloudflare tunnel) in front of Immich. Make sure to set your reverse proxy to allow large POST requests. In `nginx`, set `client_max_body_size 50000M;` or similar. Also check the disk space of your reverse proxy, in some cases proxies cache requests to disk before passing them on, and if disk space runs out the request fails.
 
 ### In the uploads folder, why are photos stored in the wrong date?
 
 This is fixed by running the storage migration job.
+
+### How can I hide photos from the timeline?
+
+You can archive them.
 
 ### How can I backup data from Immich?
 

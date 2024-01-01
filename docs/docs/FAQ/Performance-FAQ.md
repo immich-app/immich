@@ -6,7 +6,7 @@ sidebar_position: 7
 
 ### Why is Immich slow on low-memory systems like the Raspberry Pi?
 
-Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ/Performance-FAQ#how-can-i-lower-immichs-cpu-usage) this or [disable](/docs/FAQ/Machine-Learning-FAQ#how-can-i-disable-machine-learning) machine learning entirely.
+Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ/Performance-FAQ#how-can-i-lower-immichs-cpu-usage) this or transfer to host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning) ,or [disable](/docs/FAQ/Machine-Learning-FAQ#how-can-i-disable-machine-learning) machine learning entirely.
 
 ### How can I lower Immich's CPU and RAM usage?
 

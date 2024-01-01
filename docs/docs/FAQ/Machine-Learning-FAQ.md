@@ -5,7 +5,7 @@ sidebar_position: 6
 
 ### How does smart search work?
 
-Immich uses CLIP models, for more information about CLIP and its capabilities. Read about it [here](https://openai.com/research/clip).
+Immich uses CLIP models, for more information about CLIP and its capabilities read about it [here](https://openai.com/research/clip).
 
 ### How does facial recognition work?
 
@@ -58,4 +58,16 @@ This is not currently implemented, but may be in the future.
 On the other hand, Immich uses a thumbnail image created from the video in order to scan it for a face, if there is a face in the thumbnail image of the video, Immich will try to recognize a face in thumbnail.
 
 ### Does Immich have animal recognition?
+
 No.
+
+### The immich_model-cache volume takes up a lot of space, what could be the problem?
+
+If you installed several models and chose not to use some of them, it might be worth deleting the old models that are in immich_model-cache.
+
+To be able to do this you can run:
+
+- `docker run -it --rm -v immich_model-cache:/mnt ubuntu bash`
+- `cd mnt`
+- `ls`
+- and delete unused models with `rm -r <model_name>`.
