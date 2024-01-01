@@ -21,6 +21,7 @@ import {
   ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  JobItem,
   UpdateFacesData,
   WithoutProperty,
 } from '../repositories';
@@ -145,7 +146,7 @@ export class PersonService {
       `Changing feature photos for ${changeFeaturePhoto.length} ${changeFeaturePhoto.length > 1 ? 'people' : 'person'}`,
     );
 
-    const idsToGenerateThumbnail = new Set<string>();
+    const jobs: JobItem[] = [];
     for (const personId of changeFeaturePhoto) {
       const assetFace = await this.repository.getRandomFace(personId);
 
@@ -154,16 +155,11 @@ export class PersonService {
           id: personId,
           faceAssetId: assetFace.id,
         });
-        idsToGenerateThumbnail.add(personId);
+        jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personId } });
       }
     }
 
-    await this.jobRepository.queueAll(
-      Array.from(idsToGenerateThumbnail).map((personId) => ({
-        name: JobName.GENERATE_PERSON_THUMBNAIL,
-        data: { id: personId },
-      })),
-    );
+    await this.jobRepository.queueAll(jobs);
   }
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {

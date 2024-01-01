@@ -86,7 +86,7 @@ export class MediaService {
 
     const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
 
-    const idsToGenerateThumbnail = new Set<string>();
+    const jobs: JobItem[] = [];
     for (const person of people) {
       if (!person.faceAssetId) {
         const face = await this.personRepository.getRandomFace(person.id);
@@ -97,12 +97,10 @@ export class MediaService {
         await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
       }
 
-      idsToGenerateThumbnail.add(person.id);
+      jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
     }
 
-    await this.jobRepository.queueAll(
-      Array.from(idsToGenerateThumbnail).map((id) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } })),
-    );
+    await this.jobRepository.queueAll(jobs);
 
     return true;
   }
