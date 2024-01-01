@@ -41,9 +41,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   @GenerateSql({
-    params: [{ ownerId: DummyValue.UUID, embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
+    params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
   })
-  async searchCLIP({ ownerId, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
+  async searchCLIP({ userIds, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -55,13 +55,13 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       results = await manager
         .createQueryBuilder(AssetEntity, 'a')
         .innerJoin('a.smartSearch', 's')
-        .where('a.ownerId = :ownerId')
+        .where('a.ownerId IN (:...userIds )')
         .andWhere('a.isVisible = true')
         .andWhere('a.isArchived = false')
         .andWhere('a.fileCreatedAt < NOW()')
         .leftJoinAndSelect('a.exifInfo', 'e')
         .orderBy('s.embedding <=> :embedding')
-        .setParameters({ ownerId, embedding: asVector(embedding) })
+        .setParameters({ userIds, embedding: asVector(embedding) })
         .limit(numResults)
         .getMany();
     });
@@ -72,14 +72,14 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   @GenerateSql({
     params: [
       {
-        ownerId: DummyValue.UUID,
+        userIds: [DummyValue.UUID],
         embedding: Array.from({ length: 512 }, Math.random),
         numResults: 100,
         maxDistance: 0.6,
       },
     ],
   })
-  async searchFaces({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
+  async searchFaces({ userIds, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -91,9 +91,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .createQueryBuilder(AssetFaceEntity, 'faces')
         .select('1 + (faces.embedding <=> :embedding)', 'distance')
         .innerJoin('faces.asset', 'asset')
-        .where('asset.ownerId = :ownerId')
+        .where('asset.ownerId IN (:...userIds )')
         .orderBy('1 + (faces.embedding <=> :embedding)')
-        .setParameters({ ownerId, embedding: asVector(embedding) })
+        .setParameters({ userIds, embedding: asVector(embedding) })
         .limit(numResults);
 
       this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));

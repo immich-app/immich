@@ -334,7 +334,7 @@ export class PersonService {
 
     for (const { embedding, ...rest } of faces) {
       const matches = await this.smartInfoRepository.searchFaces({
-        ownerId: asset.ownerId,
+        userIds: [asset.ownerId],
         embedding,
         numResults: 1,
         maxDistance: machineLearning.facialRecognition.maxDistance,
