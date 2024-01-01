@@ -8,8 +8,11 @@ import sanitize from 'sanitize-filename';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import {
+  DatabaseLock,
   IAlbumRepository,
   IAssetRepository,
+  ICryptoRepository,
+  IDatabaseRepository,
   IMoveRepository,
   IPersonRepository,
   IStorageRepository,
@@ -61,6 +64,8 @@ export class StorageTemplateService {
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
   ) {
     this.template = this.compile(config.storageTemplate.template);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -70,10 +75,22 @@ export class StorageTemplateService {
       this.logger.debug(`Received config, compiling storage template: ${template}`);
       this.template = this.compile(template);
     });
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      personRepository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async handleMigrationSingle({ id }: IEntityJob) {
+    const storageTemplateEnabled = (await this.configCore.getConfig()).storageTemplate.enabled;
+    if (!storageTemplateEnabled) {
+      return true;
+    }
+
     const [asset] = await this.assetRepository.getByIds([id]);
 
     const user = await this.userRepository.get(asset.ownerId, {});
@@ -87,12 +104,16 @@ export class StorageTemplateService {
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
       await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
     }
-
     return true;
   }
 
   async handleMigration() {
     this.logger.log('Starting storage template migration');
+    const storageTemplateEnabled = (await this.configCore.getConfig()).storageTemplate.enabled;
+    if (!storageTemplateEnabled) {
+      this.logger.log('Storage template migration disabled, skipping');
+      return true;
+    }
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination),
     );
@@ -123,23 +144,36 @@ export class StorageTemplateService {
       return;
     }
 
-    const { id, sidecarPath, originalPath } = asset;
-    const oldPath = originalPath;
-    const newPath = await this.getTemplatePath(asset, metadata);
+    return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
+      const { id, sidecarPath, originalPath, exifInfo } = asset;
+      const oldPath = originalPath;
+      const newPath = await this.getTemplatePath(asset, metadata);
 
-    try {
-      await this.storageCore.moveFile({ entityId: id, pathType: AssetPathType.ORIGINAL, oldPath, newPath });
-      if (sidecarPath) {
+      if (!exifInfo || !exifInfo.fileSizeInByte) {
+        this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);
+        return;
+      }
+
+      try {
         await this.storageCore.moveFile({
           entityId: id,
-          pathType: AssetPathType.SIDECAR,
-          oldPath: sidecarPath,
-          newPath: `${newPath}.xmp`,
+          pathType: AssetPathType.ORIGINAL,
+          oldPath,
+          newPath,
+          assetInfo: { sizeInBytes: exifInfo.fileSizeInByte, checksum: asset.checksum },
         });
+        if (sidecarPath) {
+          await this.storageCore.moveFile({
+            entityId: id,
+            pathType: AssetPathType.SIDECAR,
+            oldPath: sidecarPath,
+            newPath: `${newPath}.xmp`,
+          });
+        }
+      } catch (error: any) {
+        this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, oldPath, newPath });
       }
-    } catch (error: any) {
-      this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, oldPath, newPath });
-    }
+    });
   }
 
   private async getTemplatePath(asset: AssetEntity, metadata: MoveAssetMetadata): Promise<string> {

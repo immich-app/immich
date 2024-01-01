@@ -12,6 +12,7 @@ import {
   assetStub,
   faceStub,
   newAssetRepositoryMock,
+  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
   newMoveRepositoryMock,
@@ -24,6 +25,7 @@ import {
 import { JobName } from '../job';
 import {
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMediaRepository,
   IMoveRepository,
@@ -43,6 +45,7 @@ describe(MediaService.name, () => {
   let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
@@ -52,8 +55,9 @@ describe(MediaService.name, () => {
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
 
-    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock);
+    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock, cryptoMock);
   });
 
   it('should be defined', () => {
@@ -656,6 +660,21 @@ describe(MediaService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should delete existing transcode if current policy does not require transcoding', async () => {
+      const asset = assetStub.hasEncodedVideo;
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.DISABLED }]);
+      assetMock.getByIds.mockResolvedValue([asset]);
+
+      await sut.handleVideoConversion({ id: asset.id });
+
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILES,
+        data: { files: [asset.encodedVideoPath] },
+      });
     });
 
     it('should set max bitrate if above 0', async () => {

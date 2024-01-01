@@ -15,6 +15,7 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import { user } from '$lib/stores/user.store';
   import type { ResetOptions } from '$lib/utils/dipatch';
+  import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
 
   export let storageConfig: SystemConfigStorageTemplateDto;
   export let disabled = false;
@@ -145,7 +146,23 @@
 
 <section class="dark:text-immich-dark-fg">
   {#await getConfigs() then}
-    <div id="directory-path-builder" class="m-4">
+    <div id="directory-path-builder" class="flex flex-col gap-4 m-4">
+      <SettingSwitch
+        title="ENABLED"
+        {disabled}
+        subtitle="Enable storage template engine"
+        bind:checked={storageConfig.enabled}
+      />
+
+      <SettingSwitch
+        title="HASH VERIFICATION ENABLED"
+        {disabled}
+        subtitle="Enables hash verification, don't disable this unless you're certain of the implications"
+        bind:checked={storageConfig.hashVerificationEnabled}
+      />
+
+      <hr />
+
       <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>
 
       <section class="support-date">
@@ -191,8 +208,8 @@
           <div class="flex flex-col my-2">
             <label class="text-sm" for="preset-select">PRESET</label>
             <select
-              class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
-              {disabled}
+              class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
+              disabled={disabled || !storageConfig.enabled}
               name="presets"
               id="preset-select"
               bind:value={selectedPreset}
@@ -206,7 +223,7 @@
           <div class="flex gap-2 align-bottom">
             <SettingInputField
               label="TEMPLATE"
-              {disabled}
+              disabled={disabled || !storageConfig.enabled}
               required
               inputType={SettingInputFieldType.TEXT}
               bind:value={storageConfig.template}
@@ -239,7 +256,6 @@
               </p>
             </section>
           </div>
-
           <SettingButtonsRow
             on:reset={({ detail }) => handleReset(detail)}
             on:save={saveSetting}

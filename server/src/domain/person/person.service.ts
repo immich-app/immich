@@ -13,6 +13,7 @@ import {
   CropOptions,
   IAccessRepository,
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMachineLearningRepository,
   IMediaRepository,
@@ -59,10 +60,18 @@ export class PersonService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, repository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      repository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {

@@ -42,4 +42,4 @@ class Face(TypedDict):
 
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
-    return hasattr(obj, "profiling") and type(obj.profiling) == dict
+    return hasattr(obj, "profiling") and isinstance(obj.profiling, dict)

@@ -7,6 +7,7 @@ import {
   faceStub,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
+  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
   newMediaRepositoryMock,
@@ -22,6 +23,7 @@ import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMachineLearningRepository,
   IMediaRepository,
@@ -73,6 +75,7 @@ describe(PersonService.name, () => {
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let sut: PersonService;
 
   beforeEach(async () => {
@@ -86,6 +89,7 @@ describe(PersonService.name, () => {
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
     smartInfoMock = newSmartInfoRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
     sut = new PersonService(
       accessMock,
       assetMock,
@@ -97,6 +101,7 @@ describe(PersonService.name, () => {
       storageMock,
       jobMock,
       smartInfoMock,
+      cryptoMock,
     );
 
     mediaMock.crop.mockResolvedValue(croppedFace);
