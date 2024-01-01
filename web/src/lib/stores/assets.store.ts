@@ -438,3 +438,5 @@ export class AssetStore {
     this.store$.update(() => this);
   }
 }
+
+export const isSelectAllCancelled = writable(false);
