@@ -2,12 +2,10 @@ import copyExif from './copyExif';
 import type { edit, ratio } from './types';
 
 export class Render {
-
   private assetName: string;
   private assetBlob: Blob;
   private edit: edit;
   private imageWrapper: HTMLElement;
-
 
   constructor(assetName: string, assetBlob: Blob, edit: edit, imageWrapper: HTMLElement) {
     this.assetName = assetName;
@@ -38,7 +36,6 @@ export class Render {
 
     console.log('ratio', ratio);
     console.log('crop', crop);
-
 
     const translateX = x * ratio;
     const translateY = y * ratio;
@@ -99,7 +96,7 @@ export class Render {
 
   /**
    * Draws an image on the canvas with optional transformations.
-   * 
+   *
    * @param ctx - The canvas rendering context.
    * @param img - The HTMLImageElement to be drawn.
    * @param x - The x-coordinate of the top-left corner of the image.
@@ -121,7 +118,6 @@ export class Render {
   ) => {
     const { angle, filter, zoom } = this.edit;
 
-
     ctx.save();
     ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
 
@@ -132,9 +128,11 @@ export class Render {
     if (flipY) {
       ctx.scale(1, -1);
     }
-    ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${filter.grayscale
-      }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${filter.saturation
-      }) sepia(${filter.sepia})`;
+    ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${
+      filter.grayscale
+    }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${
+      filter.saturation
+    }) sepia(${filter.sepia})`;
 
     const { scaledWidth, scaledHeight } = this.scaleImage(originalWidth, originalHeight, zoom);
     ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
@@ -158,7 +156,7 @@ export class Render {
   /**
    * Downloads the image from the canvas and returns the blob with EXIF data.
    * In case of a JPEG image, the EXIF data is copied from the original image.
-   * 
+   *
    * @param canvas The HTMLCanvasElement containing the image.
    * @returns A Promise that resolves to the blob with EXIF data.
    * @throws An error if the blob or exif blob could not be created.
@@ -203,14 +201,13 @@ export class Render {
     if (!exifBlob) {
       throw new Error('Could not create exif blob');
     }
-    console.log('exifBlob', exifBlob)
+    console.log('exifBlob', exifBlob);
     return exifBlob;
   };
 
-
   /**
    * Creates a canvas element with the specified width and height.
-   * 
+   *
    * @param width - The width of the canvas.
    * @param height - The height of the canvas.
    * @returns The created HTMLCanvasElement.
@@ -222,8 +219,6 @@ export class Render {
     console.log('canvas', canvas);
     return canvas;
   };
-
-
 
   /**
    * Calculates the aspect ratio based on the given ratio and original aspect.
@@ -241,8 +236,7 @@ export class Render {
       case 'original':
         if (this.edit.angleOffset % 180 !== 0) {
           return 1 / originalAspect;
-        }
-        else {
+        } else {
           return originalAspect;
         }
       case '16_9':
@@ -264,7 +258,7 @@ export class Render {
       default:
         return originalAspect;
     }
-  }
+  };
 
   public getCanvas = async () => {
     const img = new Image();
@@ -328,5 +322,5 @@ export class Render {
     );
 
     return cropCtx.canvas;
-  }
+  };
 }

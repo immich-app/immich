@@ -1,7 +1,7 @@
-import type { ratio, filter, edit } from "./types";
-import { ratios, mode } from "./types";
+import type { ratio, filter, edit } from './types';
+import { ratios, mode } from './types';
 
-import { presets } from "./presets";
+import { presets } from './presets';
 import { Render } from './render';
 
 import { api, AssetResponseDto } from '@api';
@@ -10,34 +10,40 @@ type presetName = keyof typeof presets;
 type partialFilter = Partial<filter>;
 
 export class Editor {
-
   private thumbData: Blob | null = null;
   private assetData: Blob | null = null;
 
-  private mode: mode;
+  private mode!: mode;
 
   private asset!: AssetResponseDto;
 
-  private updateHtml!: (() => void);
+  private updateHtml!: () => void;
 
   private imageWrapper!: HTMLElement;
   private image!: HTMLImageElement;
   private cropElement!: HTMLElement;
   private options!: {
-    zoomSpeed: number,
-    maxZoom: number,
-    minZoom: number,
-  }
+    zoomSpeed: number;
+    maxZoom: number;
+    minZoom: number;
+  };
 
   private edit!: edit;
 
   private history = new Array<edit>();
   private historyIndex = 0;
 
-
-
-
-  constructor(asset: AssetResponseDto, imageWrapper: HTMLElement, cropElement: HTMLElement, options: any, updateHtml: () => void) {
+  constructor(
+    asset: AssetResponseDto,
+    imageWrapper: HTMLElement,
+    cropElement: HTMLElement,
+    options: {
+      zoomSpeed: number;
+      maxZoom: number;
+      minZoom: number;
+    } | null,
+    updateHtml: () => void,
+  ) {
     if (!imageWrapper || !cropElement || !asset) {
       console.log('Editor init error: no image wrapper or image');
       return;
@@ -73,37 +79,43 @@ export class Editor {
         y: 0,
       },
       zoom: 1,
-    }
+    };
 
     this.history.push(structuredClone(this.edit));
 
-
-
     if (options) {
       this.options = options;
-    }
-    else {
+    } else {
       this.options = {
         zoomSpeed: 0.02,
         maxZoom: 5,
         minZoom: 1,
-      }
+      };
     }
     this.mode = 'crop';
   }
 
+  /**
+   * Sets the mode of the photo editor.
+   *
+   * @param mode - The mode to set.
+   */
   public setMode(mode: mode) {
     this.mode = mode;
     this.updateHtml();
   }
 
+  /**
+   * Gets the current mode of the photo editor.
+   * @returns The current mode.
+   */
   public getMode() {
     return this.mode;
   }
 
   /**
    * Calculates the dimensions of the image based on the provided parameters and applies the calculated dimensions to the image wrapper element.
-   * 
+   *
    * @param image - The HTMLImageElement representing the image.
    * @param imageWrapper - The HTMLElement representing the image wrapper.
    * @param crop - The HTMLElement representing the crop element.
@@ -128,7 +140,6 @@ export class Editor {
     const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropHeight;
     const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropWidth;
 
-
     if (angleOffset === 90 || angleOffset === 270) {
       originalAspect = 1 / originalAspect;
     }
@@ -151,7 +162,7 @@ export class Editor {
       imageWrapper.style.height = newHeight;
       imageWrapper.style.width = newWidth;
     }
-  }
+  };
 
   /**
    * Sets the crop ratio for the given crop element.
@@ -169,7 +180,7 @@ export class Editor {
       cropElement.style.width = 'auto';
       cropElement.style.height = '100%';
     }
-  }
+  };
 
   /**
    * Applies a transformation to the image wrapper based on the provided edit parameters.
@@ -185,18 +196,13 @@ export class Editor {
 
     let transformString = '';
 
-
     // Add rotation to the transform string.
     transformString += `rotate(${angle - angleOffset}deg)`;
-
-
 
     transformString += ` translate(${translate.x * zoom}px, ${translate.y * zoom}px)`;
 
     // Add scale to the transform string.
-    transformString += ` scaleX(${(flipY ? -1 : 1) * zoom}) scaleY(${(flipY ? -1 : 1) * zoom
-      })`;
-
+    transformString += ` scaleX(${(flipY ? -1 : 1) * zoom}) scaleY(${(flipY ? -1 : 1) * zoom})`;
 
     // Set the transform of the image wrapper.
 
@@ -205,7 +211,7 @@ export class Editor {
 
       imageWrapper.style.transform = transformString;
     }
-  }
+  };
 
   /**
    * Updates the photo editor.
@@ -262,12 +268,14 @@ export class Editor {
 
     this.transformImage(imageWrapper, edit);
     this.imageWrapper.innerHTML = '';
-    image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast
-      }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert
-      }) opacity(${filter.opacity}) saturate(${filter.saturation}) sepia(${filter.sepia})`;
+    image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
+      filter.contrast
+    }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
+      filter.opacity
+    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
     this.imageWrapper.appendChild(image);
     this.updateHtml();
-  };
+  }
   /**
    * Loads the data for the photo editor.
    * This method loads the thumbnail and asset data, creates an image element, and appends it to the image wrapper.
@@ -282,20 +290,16 @@ export class Editor {
       if (this.thumbData) {
         this.image.src = URL.createObjectURL(this.thumbData);
         await this.image.decode();
-      }
-      else if (this.assetData) {
+      } else if (this.assetData) {
         this.image.src = URL.createObjectURL(this.assetData);
         await this.image.decode();
-      }
-      else {
+      } else {
         throw new Error('Failed to load data');
       }
       this.update();
     } catch (error) {
       throw new Error('Failed to load data');
     }
-
-
   }
 
   /**
@@ -314,8 +318,7 @@ export class Editor {
       case 'original':
         if (this.edit.angleOffset % 180 !== 0) {
           return 1 / originalAspect;
-        }
-        else {
+        } else {
           return originalAspect;
         }
       case '16_9':
@@ -337,7 +340,7 @@ export class Editor {
       default:
         return originalAspect;
     }
-  }
+  };
 
   /**
    * Loads the thumbnail data for the asset.
@@ -387,8 +390,6 @@ export class Editor {
     }
   }
 
-
-
   /**
    * Saves the current edit state and adds it to the history.
    */
@@ -407,7 +408,6 @@ export class Editor {
     this.updateHtml();
   }
 
-
   /**
    * Renders the photo editor.
    * @returns A promise that resolves when the rendering is complete.
@@ -421,7 +421,7 @@ export class Editor {
     this.edit.crop = {
       width: this.cropElement.offsetWidth,
       height: this.cropElement.offsetHeight,
-    }
+    };
     if (!asset) {
       throw new Error('No asset data');
     }
@@ -430,11 +430,10 @@ export class Editor {
     return await render.start();
   }
 
-
   /**
    * Undo the previous edit action.
    * Throws an error if there is no more history to undo.
-   * 
+   *
    * @throws {Error} No more history to undo
    */
   public undo() {
@@ -452,7 +451,7 @@ export class Editor {
   /**
    * Redo the previous edit action.
    * Throws an error if there is no more history to redo.
-   * 
+   *
    * @throws {Error} No more history to redo
    */
   public redo() {
@@ -467,11 +466,10 @@ export class Editor {
     this.update();
   }
 
-
   /**
    * Clear the edit history.
    * Only the current edit will remain.
-   * 
+   *
    * @throws {Error} History is empty
    */
   public clear() {
@@ -489,12 +487,11 @@ export class Editor {
     this.updateHtml();
   }
 
-
   //TODO: decide if we want to clear the history or not
   /**
    * Reset the edit to the initial state.
    * This will also clear the edit history.
-   * 
+   *
    * @throws {Error} History is empty
    */
   public reset() {
@@ -529,7 +526,7 @@ export class Editor {
   /**
    * Rotates the photo by the specified angle.
    * If the angle is 0, the photo will be rotated by 90 degrees.
-   * 
+   *
    * @param angle - The angle to rotate the photo by. Must be between 0 and 45.
    * @throws {Error} If the angle is invalid (not between -45 and 45).
    */
@@ -544,16 +541,12 @@ export class Editor {
     this.update();
   }
 
-
-
-
-
   /**
    * Flips the photo horizontally and/or vertically.
-   * 
+   *
    * @param x - A boolean indicating whether to flip the photo horizontally.
    * @param y - A boolean indicating whether to flip the photo vertically.
-   * 
+   *
    * @throws {Error} If both x and y are false.
    */
   public flip(x: boolean, y: boolean) {
@@ -577,7 +570,7 @@ export class Editor {
 
   /**
    * Downloads a blob as a file with the specified name.
-   * 
+   *
    * @param blob - The blob to download.
    * @param name - The name of the downloaded file.
    */
@@ -588,13 +581,12 @@ export class Editor {
       link.download = name;
       link.href = URL.createObjectURL(blob);
       link.click();
-    }, 0
-    );
+    }, 0);
   }
 
   /**
    * Zooms the photo editor by the specified scale.
-   * 
+   *
    * @param scale - The scale factor to zoom by. Must be 1 or -1 when wheel is true.
    * @param wheel - Indicates whether the zoom is triggered by a wheel event. Default is false.
    * @throws {Error} if the scale is invalid when wheel is true.
@@ -605,27 +597,23 @@ export class Editor {
     console.log(this.options);
     console.log(this);
 
-    if ((wheel && !(scale == -1 || scale == 1))) {
+    if (wheel && !(scale == -1 || scale == 1)) {
       throw new Error('Invalid zoom'); //Scale must be 1 or -1 when wheel is true
     }
 
-
     if (wheel) {
       this.edit.zoom += this.options.zoomSpeed * 5 * scale;
-    }
-    else {
+    } else {
       if (scale > 1) {
         this.edit.zoom += this.options.zoomSpeed * scale;
-      }
-      else {
+      } else {
         this.edit.zoom -= this.options.zoomSpeed / scale;
       }
     }
 
     if (this.edit.zoom > this.options.maxZoom) {
       this.edit.zoom = this.options.maxZoom;
-    }
-    else if (this.edit.zoom < this.options.minZoom) {
+    } else if (this.edit.zoom < this.options.minZoom) {
       this.edit.zoom = this.options.minZoom;
     }
 
@@ -634,11 +622,9 @@ export class Editor {
     this.update();
   }
 
-
-
   /**
    * Calculates the maximum X and Y coordinates based on the current editor settings.
-   * 
+   *
    * @returns An array containing the maximum X and Y coordinates.
    */
   private maxXY() {
@@ -652,7 +638,6 @@ export class Editor {
 
     let ch = this.cropElement.offsetHeight;
     let cw = this.cropElement.offsetWidth;
-
 
     if (angleOffset === 90 || angleOffset === 270) {
       const t = ch;
@@ -675,7 +660,7 @@ export class Editor {
 
   /**
    * Translates the photo editor view by the specified delta values.
-   * 
+   *
    * @param x - The amount to translate along the x-axis.
    * @param y - The amount to translate along the y-axis.
    */
@@ -721,7 +706,7 @@ export class Editor {
       y: y,
     };
 
-    console.log(this.edit.translate)
+    console.log(this.edit.translate);
 
     this.update();
   }
@@ -744,7 +729,7 @@ export class Editor {
 
   /**
    * Sets the aspect ratio for the photo editor.
-   * 
+   *
    * @param ratio - The aspect ratio to set.
    * @throws Error if there is no image or if the ratio is invalid.
    */
@@ -755,10 +740,8 @@ export class Editor {
       throw new Error('No image');
     }
 
-    const originalRatio = this.image.naturalWidth / this.image.naturalHeight;
-
     if (this.edit.angleOffset === 90 || this.edit.angleOffset === 270) {
-      let t = ratio.split('_').reverse().join('_');
+      const t = ratio.split('_').reverse().join('_');
       if (ratios.indexOf(t) < 0) {
         throw new Error('Invalid ratio');
       }
@@ -772,7 +755,7 @@ export class Editor {
 
   /**
    * Applies the specified filter to the photo editor.
-   * 
+   *
    * @param filter - The filter object containing the filter properties.
    * @throws Error if the filter object is invalid / is empty.
    */
@@ -792,7 +775,6 @@ export class Editor {
     const opacity = filter.opacity;
     const saturation = filter.saturation;
     const sepia = filter.sepia;
-
 
     if (blur !== undefined && blur >= 0 && blur <= 1) {
       this.edit.filter.blur = blur;
@@ -830,7 +812,7 @@ export class Editor {
   }
 
   private isFilter(filter: filter) {
-    Object.entries(presets).forEach(([key, value]) => {
+    Object.entries(presets).forEach(([, value]) => {
       if (value === filter) {
         return true;
       }
@@ -838,10 +820,9 @@ export class Editor {
     return false;
   }
 
-
   /**
    * Applies a preset filter to the photo editor.
-   * 
+   *
    * @param name - The name of the preset filter to apply.
    */
   public preset(name: presetName) {

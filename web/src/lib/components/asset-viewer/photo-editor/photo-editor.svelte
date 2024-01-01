@@ -48,7 +48,7 @@
   import { Editor } from './editor';
   import { presets } from './presets';
   import type { AssetResponseDto } from '@api';
-  import type { mode } from './types';
+  import type { mode as modeType } from './types';
 
   const dispatch = createEventDispatcher();
 
@@ -69,7 +69,7 @@
 
   let isRendering = false;
 
-  let mode: mode;
+  let mode: modeType;
   let angle = 0;
   let presetName = 'without';
   let canUndo = false;
@@ -253,6 +253,13 @@
               ? 'shadow-[0_0_5000px_5000px_rgba(0,0,0,0.8)]'
               : 'shadow-[0_0_5000px_5000px_#000000]'}"
           >
+            {#if !isLoaded}
+              <span class="flex justify-between items-center gap-2 text-white text-l">
+                Loading
+                <LoadingSpinner />
+              </span>
+            {/if}
+
             <div bind:this={imageWrapper} class="absolute min-w-full min-h-full"></div>
             <div
               class="h-full w-full absolute {mode === 'crop'
@@ -637,7 +644,7 @@
               thumbData={editor.getThumbData()}
               on:save={() => editor.save()}
             />
-            {#each Object.keys(presets) as preset, i}
+            {#each Object.keys(presets) as preset}
               <FilterCard
                 title={preset}
                 name={presetName}
