@@ -100,7 +100,7 @@
     "@types/multer": "^1.4.7",
     "@types/node": "^20.5.7",
     "@types/sharp": "^0.31.1",
-    "@types/supertest": "^2.0.12",
+    "@types/supertest": "^6.0.0",
     "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
