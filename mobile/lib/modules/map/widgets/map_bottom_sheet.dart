@@ -11,6 +11,7 @@ class MapBottomSheet extends HookConsumerWidget {
   final Stream<MapEvent> mapEventStream;
   final Function(String)? onGridAssetChanged;
   final Function(String)? onZoomToAsset;
+  final Function()? onZoomToLocation;
   final Function(bool, Set<Asset>)? onAssetsSelected;
   final ValueNotifier<Set<Asset>> selectedAssets;
 
@@ -19,6 +20,7 @@ class MapBottomSheet extends HookConsumerWidget {
     this.onGridAssetChanged,
     this.onZoomToAsset,
     this.onAssetsSelected,
+    this.onZoomToLocation,
     required this.selectedAssets,
     super.key,
   });
@@ -51,7 +53,6 @@ class MapBottomSheet extends HookConsumerWidget {
     }
 
     return Stack(
-      clipBehavior: Clip.none,
       children: [
         NotificationListener<DraggableScrollableNotification>(
           onNotification: onScrollNotification,
@@ -61,7 +62,6 @@ class MapBottomSheet extends HookConsumerWidget {
             maxChildSize: 0.5,
             initialChildSize: sheetMinExtent,
             snap: true,
-            expand: false,
             shouldCloseOnMinExtent: false,
             builder: (ctx, scrollController) => MapAssetGrid(
               controller: scrollController,
@@ -84,7 +84,7 @@ class MapBottomSheet extends HookConsumerWidget {
             child: child!,
           ),
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: onZoomToLocation,
             style: ElevatedButton.styleFrom(
               shape: const CircleBorder(),
             ),

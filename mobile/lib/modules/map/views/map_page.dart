@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'package:collection/collection.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -11,12 +14,14 @@ import 'package:immich_mobile/modules/map/models/map_event.model.dart';
 import 'package:immich_mobile/modules/map/models/map_marker.dart';
 import 'package:immich_mobile/modules/map/providers/map_marker.provider.dart';
 import 'package:immich_mobile/modules/map/providers/map_state.provider.dart';
+import 'package:immich_mobile/modules/map/utils/map_utils.dart';
 import 'package:immich_mobile/modules/map/widgets/map_app_bar.dart';
 import 'package:immich_mobile/modules/map/widgets/map_asset_grid.dart';
 import 'package:immich_mobile/modules/map/widgets/map_bottom_sheet.dart';
 import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
 import 'package:immich_mobile/modules/map/widgets/positioned_asset_marker_icon.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -37,6 +42,7 @@ class MapPage extends HookConsumerWidget {
     final markerDebouncer =
         useDebouncer(interval: const Duration(milliseconds: 800));
     final selectedAssets = useValueNotifier<Set<Asset>>({});
+    const mapZoomToAssetLevel = 12.0;
 
     // updates the markersInBounds value with the map markers that are visible in the current
     // map camera bounds
@@ -179,7 +185,33 @@ class MapPage extends HookConsumerWidget {
           assetMarker.latLng.longitude,
         );
         mapController.value!.animateCamera(
-          CameraUpdate.newLatLngZoom(latlng, 12),
+          CameraUpdate.newLatLngZoom(latlng, mapZoomToAssetLevel),
+          duration: const Duration(milliseconds: 800),
+        );
+      }
+    }
+
+    void onZoomToLocation() async {
+      final location = await MapUtils.checkOrGetLocationPermission(context);
+      if (location.$2 != null) {
+        if (location.$2 == LocationPermission.unableToDetermine &&
+            context.mounted) {
+          ImmichToast.show(
+            context: context,
+            gravity: ToastGravity.BOTTOM,
+            toastType: ToastType.error,
+            msg: "map_cannot_get_user_location".tr(),
+          );
+        }
+        return;
+      }
+
+      if (mapController.value != null && location.$1 != null) {
+        mapController.value!.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(location.$1!.latitude, location.$1!.longitude),
+            mapZoomToAssetLevel,
+          ),
           duration: const Duration(milliseconds: 800),
         );
       }
@@ -195,20 +227,27 @@ class MapPage extends HookConsumerWidget {
           ? Scaffold(
               extendBodyBehindAppBar: true,
               appBar: MapAppBar(selectedAssets: selectedAssets),
-              body: _MapWithMarker(
-                style: style,
-                selectedMarker: selectedMarker,
-                onMapCreated: onMapCreated,
-                onMapMoved: onMapMoved,
-                onMarkerClicked: onMarkerClicked,
-                onStyleLoaded: reloadLayers,
-              ),
-              bottomSheet: MapBottomSheet(
-                mapEventStream: bottomSheetStreamController.stream,
-                onGridAssetChanged: onBottomSheetScrolled,
-                onZoomToAsset: onZoomToAsset,
-                onAssetsSelected: onAssetsSelected,
-                selectedAssets: selectedAssets,
+              body: Stack(
+                children: [
+                  _MapWithMarker(
+                    style: style,
+                    selectedMarker: selectedMarker,
+                    onMapCreated: onMapCreated,
+                    onMapMoved: onMapMoved,
+                    onMarkerClicked: onMarkerClicked,
+                    onStyleLoaded: reloadLayers,
+                  ),
+                  // Should be a part of the body and not scaffold::bottomsheet for the
+                  // location button to be hit testable
+                  MapBottomSheet(
+                    mapEventStream: bottomSheetStreamController.stream,
+                    onGridAssetChanged: onBottomSheetScrolled,
+                    onZoomToAsset: onZoomToAsset,
+                    onAssetsSelected: onAssetsSelected,
+                    onZoomToLocation: onZoomToLocation,
+                    selectedAssets: selectedAssets,
+                  ),
+                ],
               ),
             )
           // Two-pane
@@ -218,13 +257,28 @@ class MapPage extends HookConsumerWidget {
                   child: Scaffold(
                     extendBodyBehindAppBar: true,
                     appBar: MapAppBar(selectedAssets: selectedAssets),
-                    body: _MapWithMarker(
-                      style: style,
-                      selectedMarker: selectedMarker,
-                      onMapCreated: onMapCreated,
-                      onMapMoved: onMapMoved,
-                      onMarkerClicked: onMarkerClicked,
-                      onStyleLoaded: reloadLayers,
+                    body: Stack(
+                      children: [
+                        _MapWithMarker(
+                          style: style,
+                          selectedMarker: selectedMarker,
+                          onMapCreated: onMapCreated,
+                          onMapMoved: onMapMoved,
+                          onMarkerClicked: onMarkerClicked,
+                          onStyleLoaded: reloadLayers,
+                        ),
+                        Positioned(
+                          right: 0,
+                          bottom: 30,
+                          child: ElevatedButton(
+                            onPressed: onZoomToLocation,
+                            style: ElevatedButton.styleFrom(
+                              shape: const CircleBorder(),
+                            ),
+                            child: const Icon(Icons.my_location),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
