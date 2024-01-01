@@ -24,7 +24,7 @@
     "@faker-js/faker": "^8.0.0",
     "@floating-ui/dom": "^1.5.1",
     "@sveltejs/adapter-static": "^2.0.3",
-    "@sveltejs/kit": "^1.20.4",
+    "@sveltejs/kit": "^2.0.0",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/svelte": "^4.0.3",
     "@types/dom-to-image": "^2.6.4",
