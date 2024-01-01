@@ -56,7 +56,8 @@ As this is a new feature, it is still experimental and may not work on all syste
 ##### NVENC - NVIDIA GPUs
 
 - If you are using other backends. You will still need to implement [`hwaccel.yml`][hw-file] file into the `immich-microservices` service directly, please see the "Initial Setup" section above on how to do that.
-- As of v1.92.0, steps 1 and 2 are no longer necessary. If your version of Immich is below that or missing the environment variables, please follow these steps. Otherwise, skip to step 3
+- As of v1.92.0, steps 1 and 2 are no longer necessary. If your version of Immich is below that or missing the environment variables, please follow these steps. Otherwise, skip to step 3.
+- Please note that`NVIDIA_DRIVER_CAPABILITIES` is no longer required to enter as a variable. 
 
 1. Assuming you already have the Nvidia Driver Plugin installed on your Unraid Server. Please confirm that your Nvida GPU is showing up with its GPU ID in the Nvidia Driver Plugin. The ID will be `GPU-LONG_STRING_OF_CHARACTERS`. Copy the GPU ID.
 2. In the Imagegenius/Immich Docker Container app, add two new variables: Key=`NVIDIA_VISIBLE_DEVICES` Value=`GPU-LONG_STRING_OF_CHARACTERS` and Key=`NVIDIA_DRIVER_CAPABILITIES` Value=`all`
