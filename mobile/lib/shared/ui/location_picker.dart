@@ -3,12 +3,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_map/plugin_api.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
-import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
+import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 
 Future<LatLng?> showLocationPicker({
   required BuildContext context,
@@ -92,11 +92,10 @@ class _LocationPicker extends HookWidget {
           height: 12,
         ),
         MapThumbnail(
-          coords: latlng,
+          centre: maplibre.LatLng(latlng.latitude, latlng.longitude),
           height: 200,
           width: 200,
           zoom: 6,
-          showAttribution: false,
           onTap: (p0, p1) async {
             final newLatLng = await context.pushRoute<LatLng?>(
               MapLocationPickerRoute(initialLatLng: latlng),
@@ -106,18 +105,9 @@ class _LocationPicker extends HookWidget {
               longitude.value = newLatLng.longitude;
             }
           },
-          markers: [
-            Marker(
-              anchorPos: AnchorPos.align(AnchorAlign.top),
-              point: LatLng(
-                latitude.value,
-                longitude.value,
-              ),
-              builder: (ctx) => const Image(
-                image: AssetImage('assets/location-pin.png'),
-              ),
-            ),
-          ],
+          // markerBuilder: (p0) => const Image(
+          //   image: AssetImage('assets/location-pin.png'),
+          // ),
         ),
       ];
     }

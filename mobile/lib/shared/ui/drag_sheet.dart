@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class CustomDraggingHandle extends StatelessWidget {
   const CustomDraggingHandle({super.key});
@@ -6,11 +7,11 @@ class CustomDraggingHandle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 5,
+      height: 4,
       width: 30,
       decoration: BoxDecoration(
-        color: Colors.grey[500],
-        borderRadius: BorderRadius.circular(16),
+        color: context.themeData.dividerColor,
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
       ),
     );
   }

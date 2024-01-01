@@ -28,8 +28,8 @@ dependencies:
   socket_io_client: ^2.0.0-beta.4-nullsafety.0
   maplibre_gl:
       git:
-        url: https://github.com/maplibre/flutter-maplibre-gl.git
-        ref: 0.18.0
+        url: https://github.com/shenlong-tanwen/flutter-maplibre-gl.git
+        ref: feat/heatmap-layer
   flutter_map: ^4.0.0
   flutter_map_heatmap: ^0.0.4
   geolocator: ^10.0.0 # used to move to current location in map view
@@ -45,7 +45,7 @@ dependencies:
   easy_localization: ^3.0.1
   share_plus: ^7.1.0
   flutter_displaymode: ^0.4.0
-  scrollable_positioned_list: ^0.3.4
+  scrollable_positioned_list: ^0.3.8
   path: ^1.8.1
   path_provider: ^2.0.11
   latlong2: ^0.8.1

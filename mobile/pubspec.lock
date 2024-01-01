@@ -936,27 +936,27 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "0.18.0"
-      resolved-ref: "9397fae65c533e8ff0828bf62511ca34082763ff"
-      url: "https://github.com/maplibre/flutter-maplibre-gl.git"
+      ref: "feat/heatmap-layer"
+      resolved-ref: "18981b968d891a298ef5f819d1d12d7c1d6c297f"
+      url: "https://github.com/shenlong-tanwen/flutter-maplibre-gl.git"
     source: git
     version: "0.18.0"
   maplibre_gl_platform_interface:
     dependency: transitive
     description:
       path: maplibre_gl_platform_interface
-      ref: "git-release-0.18.0"
-      resolved-ref: "9397fae65c533e8ff0828bf62511ca34082763ff"
-      url: "https://github.com/maplibre/flutter-maplibre-gl.git"
+      ref: "feat/heatmap-layer"
+      resolved-ref: "18981b968d891a298ef5f819d1d12d7c1d6c297f"
+      url: "https://github.com/shenlong-tanwen/flutter-maplibre-gl.git"
     source: git
     version: "0.18.0"
   maplibre_gl_web:
     dependency: transitive
     description:
       path: maplibre_gl_web
-      ref: "git-release-0.18.0"
-      resolved-ref: "9397fae65c533e8ff0828bf62511ca34082763ff"
-      url: "https://github.com/maplibre/flutter-maplibre-gl.git"
+      ref: "feat/heatmap-layer"
+      resolved-ref: "18981b968d891a298ef5f819d1d12d7c1d6c297f"
+      url: "https://github.com/shenlong-tanwen/flutter-maplibre-gl.git"
     source: git
     version: "0.18.0"
   matcher:
