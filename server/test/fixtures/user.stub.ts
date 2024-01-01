@@ -36,6 +36,7 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    showOnboarding: true,
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -53,6 +54,7 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    showOnboarding: true,
   }),
   user2: Object.freeze<UserEntity>({
     ...authStub.user2.user,
@@ -70,6 +72,7 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    showOnboarding: true,
   }),
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -87,6 +90,7 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    showOnboarding: true,
   }),
   externalPath1: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -104,6 +108,7 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    showOnboarding: true,
   }),
   externalPath2: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -121,6 +126,7 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    showOnboarding: true,
   }),
   profilePath: Object.freeze<UserEntity>({
     ...authStub.user1.user,
@@ -138,5 +144,6 @@ export const userStub = {
     assets: [],
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    showOnboarding: true,
   }),
 };
