@@ -203,7 +203,7 @@ jobs:
           poetry install --with dev
       - name: Lint with ruff
         run: |
-          poetry run ruff check --format=github app export
+          poetry run ruff check --output-format=github app export
       - name: Check black formatting
         run: |
           poetry run black --check app export
