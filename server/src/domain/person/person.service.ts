@@ -22,6 +22,7 @@ import {
   ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  JobItem,
   UpdateFacesData,
   WithoutProperty,
 } from '../repositories';
@@ -153,6 +154,8 @@ export class PersonService {
     this.logger.debug(
       `Changing feature photos for ${changeFeaturePhoto.length} ${changeFeaturePhoto.length > 1 ? 'people' : 'person'}`,
     );
+
+    const jobs: JobItem[] = [];
     for (const personId of changeFeaturePhoto) {
       const assetFace = await this.repository.getRandomFace(personId);
 
@@ -161,15 +164,11 @@ export class PersonService {
           id: personId,
           faceAssetId: assetFace.id,
         });
-
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_PERSON_THUMBNAIL,
-          data: {
-            id: personId,
-          },
-        });
+        jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personId } });
       }
     }
+
+    await this.jobRepository.queueAll(jobs);
   }
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
@@ -270,8 +269,10 @@ export class PersonService {
     const people = await this.repository.getAllWithoutFaces();
     for (const person of people) {
       this.logger.debug(`Person ${person.name || person.id} no longer has any faces, deleting.`);
-      await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
     }
+    await this.jobRepository.queueAll(
+      people.map((person) => ({ name: JobName.PERSON_DELETE, data: { id: person.id } })),
+    );
 
     return true;
   }
@@ -290,16 +291,16 @@ export class PersonService {
 
     if (force) {
       const people = await this.repository.getAll();
-      for (const person of people) {
-        await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
-      }
+      await this.jobRepository.queueAll(
+        people.map((person) => ({ name: JobName.PERSON_DELETE, data: { id: person.id } })),
+      );
       this.logger.debug(`Deleted ${people.length} people`);
     }
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.RECOGNIZE_FACES, data: { id: asset.id } })),
+      );
     }
 
     return true;

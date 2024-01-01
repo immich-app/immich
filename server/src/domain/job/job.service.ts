@@ -158,11 +158,13 @@ export class JobService {
   }
 
   async handleNightlyJobs() {
-    await this.jobRepository.queue({ name: JobName.ASSET_DELETION_CHECK });
-    await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
-    await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
-    await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
-    await this.jobRepository.queue({ name: JobName.CLEAN_OLD_AUDIT_LOGS });
+    await this.jobRepository.queueAll([
+      { name: JobName.ASSET_DELETION_CHECK },
+      { name: JobName.USER_DELETE_CHECK },
+      { name: JobName.PERSON_CLEANUP },
+      { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
+      { name: JobName.CLEAN_OLD_AUDIT_LOGS },
+    ]);
   }
 
   /**
@@ -210,19 +212,23 @@ export class JobService {
         break;
 
       case JobName.GENERATE_JPEG_THUMBNAIL: {
-        await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
-        await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data });
-        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
-        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
+        const jobs: JobItem[] = [
+          { name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data },
+          { name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data },
+          { name: JobName.ENCODE_CLIP, data: item.data },
+          { name: JobName.RECOGNIZE_FACES, data: item.data },
+        ];
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
         if (asset) {
           if (asset.type === AssetType.VIDEO) {
-            await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: item.data });
+            jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
           } else if (asset.livePhotoVideoId) {
-            await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
+            jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
           }
         }
+
+        await this.jobRepository.queueAll(jobs);
         break;
       }
 
