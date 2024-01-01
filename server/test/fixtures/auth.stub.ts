@@ -130,6 +130,7 @@ export const loginResponseStub = {
       shouldChangePassword: true,
       userEmail: 'admin@immich.app',
       userId: expect.any(String),
+      showOnboarding: true,
     },
   },
   user1oauth: {
@@ -141,6 +142,7 @@ export const loginResponseStub = {
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,
+      showOnboarding: true,
     },
     cookie: [
       'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
@@ -156,6 +158,7 @@ export const loginResponseStub = {
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,
+      showOnboarding: true,
     },
     cookie: [
       'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
@@ -171,6 +174,7 @@ export const loginResponseStub = {
       profileImagePath: '',
       isAdmin: false,
       shouldChangePassword: false,
+      showOnboarding: true,
     },
     cookie: [
       'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;',
