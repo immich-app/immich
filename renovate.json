@@ -34,6 +34,12 @@
       "schedule": "on tuesday"
     },
     {
+      "groupName": "svelte",
+      "matchUpdateTypes": ["major"],
+      "matchPackagePrefixes": ["@sveltejs"],
+      "schedule": "on tuesday"
+    },
+    {
       "matchFileNames": ["web/**"],
       "groupName": "web",
       "matchUpdateTypes": ["minor", "patch"],
@@ -62,9 +68,7 @@
       "versioning": "node"
     }
   ],
-  "ignorePaths": [
-    "mobile/openapi/pubspec.yaml"
-  ],
+  "ignorePaths": ["mobile/openapi/pubspec.yaml"],
   "ignoreDeps": [
     "http",
     "latlong2",
