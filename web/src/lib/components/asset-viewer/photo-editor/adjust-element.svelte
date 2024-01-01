@@ -48,7 +48,7 @@
     }
     progressBar.style.background = '#373737';
     progressBar.style.background = progressColor;
-    dispatch('applyFilter');
+    dispatch('update', value);
   };
 </script>
 
@@ -66,14 +66,14 @@
         rangeValue = 0;
       }
       renderProgress();
-      dispatch('updateHistory');
+      dispatch('save');
     }}
   >
     <slot />
   </button>
   <div class="relative grid w-full">
     <span>{title}</span>
-    <input bind:value={rangeValue} type="range" on:input={renderProgress} on:change={() => dispatch('updateHistory')} />
+    <input bind:value={rangeValue} type="range" on:input={renderProgress} on:change={() => dispatch('save')} />
     <div
       bind:this={progressBar}
       class="bg-immich-gray/10 progress-bar pointer-events-none absolute bottom-[22px] h-[3px] w-full rounded-full"

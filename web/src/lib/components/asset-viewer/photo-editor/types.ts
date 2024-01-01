@@ -29,3 +29,5 @@ export type edit = {
   },
   zoom: number,
 }
+
+export type mode = 'autofix' | 'crop' | 'adjust' | 'filter';

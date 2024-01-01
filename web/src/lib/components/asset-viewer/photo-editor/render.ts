@@ -6,25 +6,26 @@ export class Render {
   private assetName: string;
   private assetBlob: Blob;
   private edit: edit;
+  private imageWrapper: HTMLElement;
 
 
-  constructor(assetName: string, assetBlob: Blob, edit: edit) {
+  constructor(assetName: string, assetBlob: Blob, edit: edit, imageWrapper: HTMLElement) {
     this.assetName = assetName;
     this.assetBlob = assetBlob;
     this.edit = edit;
+    this.imageWrapper = imageWrapper;
   }
 
   public start = async () => {
     const img = new Image();
     img.src = URL.createObjectURL(this.assetBlob);
-    await new Promise((resolve) => {
-      img.onload = (event) => {
-        resolve(event);
-      };
-    });
+    await img.decode();
 
     const imgWidth = img.width;
     const imgHeight = img.height;
+
+    console.log('imgWidth', imgWidth);
+    console.log('imgHeight', imgHeight);
 
     const d = Math.sqrt(imgWidth * imgWidth + imgHeight * imgHeight);
     const dx = -imgWidth / 2;
@@ -33,7 +34,11 @@ export class Render {
     const x = this.edit.translate.x;
     const y = this.edit.translate.y;
     const crop = this.edit.crop;
-    const ratio = this.getRatio(this.edit.aspectRatio, imgWidth / imgHeight);
+    const ratio = img.naturalWidth / this.imageWrapper.offsetWidth;
+
+    console.log('ratio', ratio);
+    console.log('crop', crop);
+
 
     const translateX = x * ratio;
     const translateY = y * ratio;
@@ -58,6 +63,7 @@ export class Render {
     );
 
     const canvas2 = this.createCanvas(crop.width * ratio, crop.height * ratio);
+    console.log('canvas2', canvas2);
     const cropCtx = this.getCanvasContext(canvas2);
     if (!cropCtx) {
       throw new Error('Could not create canvas context');
@@ -75,7 +81,7 @@ export class Render {
       canvas2.height,
     );
 
-    return this.downloadImage(canvas2);
+    return await this.downloadImage(canvas2);
   };
 
   /**
@@ -113,7 +119,7 @@ export class Render {
     flipX: boolean,
     flipY: boolean,
   ) => {
-    const { angle, filter,zoom } = this.edit;
+    const { angle, filter, zoom } = this.edit;
 
 
     ctx.save();
@@ -126,17 +132,15 @@ export class Render {
     if (flipY) {
       ctx.scale(1, -1);
     }
-    ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${
-      filter.grayscale
-    }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${
-      filter.saturation
-    }) sepia(${filter.sepia})`;
+    ctx.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast}) grayscale(${filter.grayscale
+      }) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity}) saturate(${filter.saturation
+      }) sepia(${filter.sepia})`;
 
     const { scaledWidth, scaledHeight } = this.scaleImage(originalWidth, originalHeight, zoom);
     ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
     ctx.restore();
   };
-  
+
   /**
    * Scales an image based on the provided width, height, and scale factor.
    * @param width - The original width of the image.
@@ -160,43 +164,47 @@ export class Render {
    * @throws An error if the blob or exif blob could not be created.
    */
   private downloadImage = async (canvas: HTMLCanvasElement) => {
-    window.setTimeout(async () => {
-      let exifBlob: Blob | null = null;
+    console.log('downloadImage');
+    let exifBlob: Blob | null = null;
 
-      const blob: Blob | null = await new Promise((resolve) => {
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob);
-            }
-          },
-          this.assetBlob.type,
-          1,
-        );
-      });
+    console.log(canvas);
 
-      if (!blob) {
-        throw new Error('Could not create blob');
-      }
+    const blob: Blob | null = await new Promise((resolve) => {
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          }
+        },
+        this.assetBlob.type,
+        1,
+      );
+    });
 
-      // Copy exif data for supported image types
-      // TODO: Support more image types
+    console.log('blob', blob);
 
-      switch (this.assetBlob.type) {
-        case 'image/jpeg':
-          //exifBlob = await copyExifWithoutOrientation(assetBlob, blob);
-          exifBlob = await copyExif(this.assetBlob, blob);
-          break;
-        default:
-          exifBlob = blob;
-          break;
-      }
+    if (!blob) {
+      throw new Error('Could not create blob');
+    }
 
-      if (!exifBlob) {
-        throw new Error('Could not create exif blob');
-      }
-      return exifBlob;
-    }, 0);
+    // Copy exif data for supported image types
+    // TODO: Support more image types
+
+    switch (this.assetBlob.type) {
+      case 'image/jpeg':
+        //exifBlob = await copyExifWithoutOrientation(assetBlob, blob);
+        exifBlob = await copyExif(this.assetBlob, blob);
+        break;
+      default:
+        exifBlob = blob;
+        break;
+    }
+
+    if (!exifBlob) {
+      throw new Error('Could not create exif blob');
+    }
+    console.log('exifBlob', exifBlob)
+    return exifBlob;
   };
 
 
@@ -211,6 +219,7 @@ export class Render {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
+    console.log('canvas', canvas);
     return canvas;
   };
 
@@ -222,7 +231,7 @@ export class Render {
    * @param originalAspect - The original aspect ratio.
    * @returns The calculated aspect ratio.
    */
-  private getRatio = (ratio: ratio, originalAspect:number) => {
+  private getRatio = (ratio: ratio, originalAspect: number) => {
     switch (ratio) {
       case 'free':
         // free ratio selection
@@ -237,21 +246,21 @@ export class Render {
           return originalAspect;
         }
       case '16_9':
-        return 16/9;
+        return 16 / 9;
       case '9_16':
-        return 9/16;
+        return 9 / 16;
       case '5_4':
-        return 5/4;
+        return 5 / 4;
       case '4_5':
-        return 4/5;
+        return 4 / 5;
       case '4_3':
-        return 4/3;
+        return 4 / 3;
       case '3_4':
-        return 3/4;
+        return 3 / 4;
       case '3_2':
-        return 3/2;
+        return 3 / 2;
       case '2_3':
-        return 2/3;
+        return 2 / 3;
       default:
         return originalAspect;
     }

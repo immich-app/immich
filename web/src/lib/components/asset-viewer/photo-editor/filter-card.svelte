@@ -3,8 +3,8 @@
 
   export let title = 'Without';
 
-  export let currentFilterName: string;
-  export let thumbData: string;
+  export let name: string;
+  export let thumbData: Blob;
 
   let dispatch = createEventDispatcher();
 
@@ -33,7 +33,8 @@
       return;
     }
     const img = new Image();
-    img.src = thumbData;
+    const thumbUrl = URL.createObjectURL(new Blob([thumbData]));
+    img.src = thumbUrl;
     img.onload = () => {
       imgElement.src = img.src;
     };
@@ -48,18 +49,17 @@
 </script>
 
 <button
-  class=" text-immich-gray/70 w-fit text-center text-sm {title.toLowerCase() === currentFilterName ? 'isActive' : ''}"
+  class=" text-immich-gray/70 w-fit text-center text-sm {title.toLowerCase() === name ? 'isActive' : ''}"
   on:click={() => {
     if (title === 'Custom') {
       return;
     }
-    dispatch('updateHistory');
-    dispatch('setPreset', title.toLowerCase());
+    dispatch('save');
+    dispatch('update', title.toLowerCase());
   }}
 >
   <div
-    class="bg-immich-primary flex h-[92px] w-[92px] items-center justify-center text-3xl {title.toLowerCase() ===
-    currentFilterName
+    class="bg-immich-primary flex h-[92px] w-[92px] items-center justify-center text-3xl {title.toLowerCase() === name
       ? ''
       : 'hidden'}"
   >
@@ -67,7 +67,7 @@
   </div>
   <img
     bind:this={imgElement}
-    class="bg-immich-gray/10 h-[92px] w-[92px] {title.toLowerCase() === currentFilterName ? 'hidden' : ''}"
+    class="bg-immich-gray/10 h-[92px] w-[92px] {title.toLowerCase() === name ? 'hidden' : ''}"
     src=""
     alt="asset preview"
   />
