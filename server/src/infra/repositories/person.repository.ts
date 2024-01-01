@@ -7,11 +7,10 @@ import {
   UpdateFacesData,
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
-import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
-import { asVector } from '../infra.utils';
+import { DummyValue, GenerateSql } from '../infra.util';
+import { Chunked, asVector } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -33,12 +32,14 @@ export class PersonRepository implements IPersonRepository {
       .getRawMany();
 
     const assetIds = results.map(({ assetId }) => assetId);
-
-    for (const idChunk of _.chunk(assetIds, DATABASE_PARAMETER_CHUNK_SIZE)) {
-      await this.assetFaceRepository.delete({ personId: oldPersonId, assetId: In(idChunk) });
-    }
+    await this.deletePersonFromAssets(oldPersonId, assetIds);
 
     return assetIds;
+  }
+
+  @Chunked({ paramIndex: 1 })
+  async deletePersonFromAssets(personId: string, assetIds: string[]): Promise<void> {
+    await this.assetFaceRepository.delete({ personId: personId, assetId: In(assetIds) });
   }
 
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
@@ -236,16 +237,9 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
+  @Chunked({ flatten: true })
   async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
-    return Promise.all(
-      _.chunk(ids, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.assetFaceRepository.find({
-          where: idChunk,
-          relations: { asset: true },
-          withDeleted: true,
-        }),
-      ),
-    ).then((results) => _.flatten(results));
+    return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

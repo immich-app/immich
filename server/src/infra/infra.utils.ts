@@ -1,5 +1,7 @@
 import { Paginated, PaginationOptions } from '@app/domain';
+import _ from 'lodash';
 import { Between, FindOneOptions, LessThanOrEqual, MoreThanOrEqual, ObjectLiteral, Repository } from 'typeorm';
+import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -40,3 +42,24 @@ export const isValidInteger = (value: number, options: { min?: number; max?: num
   const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
   return Number.isInteger(value) && value >= min && value <= max;
 };
+
+/**
+ * Wraps a method that takes an array of parameters and sequentially calls it with chunks of the array.
+ * to overcome the maximum number of parameters allowed by the database driver.
+ *
+ * @param options.paramIndex The index of the function parameter to chunk. Defaults to 0.
+ * @param options.flatten Whether to flatten the results. Defaults to false.
+ */
+export function Chunked(options: { paramIndex?: number; flatten?: boolean } = {}): MethodDecorator {
+  return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+    const originalMethod = descriptor.value;
+    const paramIndex = options.paramIndex ?? 0;
+    descriptor.value = async function (...args: any[]) {
+      return Promise.all(
+        _.chunk(args[paramIndex], DATABASE_PARAMETER_CHUNK_SIZE).map(async (chunk) => {
+          await originalMethod.apply(this, [...args.slice(0, paramIndex), chunk, ...args.slice(paramIndex + 1)]);
+        }),
+      ).then((results) => (options.flatten ? _.flatten(results) : results));
+    };
+  };
+}

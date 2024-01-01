@@ -2,10 +2,10 @@ import { ISystemConfigRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { readFile } from 'fs/promises';
-import _ from 'lodash';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
-import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
+import { DummyValue, GenerateSql } from '../infra.util';
+import { Chunked } from '../infra.utils';
 
 export class SystemConfigRepository implements ISystemConfigRepository {
   constructor(
@@ -30,9 +30,8 @@ export class SystemConfigRepository implements ISystemConfigRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
+  @Chunked()
   async deleteKeys(keys: string[]): Promise<void> {
-    for (const keyChunk of _.chunk(keys, DATABASE_PARAMETER_CHUNK_SIZE)) {
-      await this.repository.delete({ key: In(keyChunk) });
-    }
+    await this.repository.delete({ key: In(keys) });
   }
 }

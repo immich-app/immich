@@ -7,6 +7,7 @@ import { setUnion } from '../../domain/domain.util';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
 import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
+import { Chunked } from '../infra.utils';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
@@ -41,20 +42,17 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  async getByIds(ids: string[]): Promise<AlbumEntity[]> {
-    return Promise.all(
-      _.chunk(ids, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        this.repository.find({
-          where: {
-            id: In(idChunk),
-          },
-          relations: {
-            owner: true,
-            sharedUsers: true,
-          },
-        }),
-      ),
-    ).then((results) => _.flatten(results));
+  @Chunked({ flatten: true })
+  getByIds(ids: string[]): Promise<AlbumEntity[]> {
+    return this.repository.find({
+      where: {
+        id: In(ids),
+      },
+      relations: {
+        owner: true,
+        sharedUsers: true,
+      },
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
@@ -70,36 +68,32 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
+  @Chunked({ flatten: true })
   async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (!ids.length) {
       return [];
     }
 
-    return Promise.all(
-      _.chunk(ids, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
-        // Only possible with query builder because of GROUP BY.
-        this.repository
-          .createQueryBuilder('album')
-          .select('album.id')
-          .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
-          .addSelect('MAX(assets.fileCreatedAt)', 'end_date')
-          .addSelect('COUNT(assets.id)', 'asset_count')
-          .leftJoin('albums_assets_assets', 'album_assets', 'album_assets.albumsId = album.id')
-          .leftJoin('assets', 'assets', 'assets.id = album_assets.assetsId')
-          .where('album.id IN (:...ids)', { ids: idChunk })
-          .groupBy('album.id')
-          .getRawMany()
-          .then((metadatas) =>
-            metadatas.map((metadata) => ({
-              albumId: metadata['album_id'],
-              assetCount: Number(metadata['asset_count']),
-              startDate: metadata['end_date'] ? new Date(metadata['start_date']) : undefined,
-              endDate: metadata['end_date'] ? new Date(metadata['end_date']) : undefined,
-            })),
-          ),
-      ),
-    ).then((results) => _.flatten(results));
+    // Only possible with query builder because of GROUP BY.
+    const albumMetadatas = await this.repository
+      .createQueryBuilder('album')
+      .select('album.id')
+      .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
+      .addSelect('MAX(assets.fileCreatedAt)', 'end_date')
+      .addSelect('COUNT(assets.id)', 'asset_count')
+      .leftJoin('albums_assets_assets', 'album_assets', 'album_assets.albumsId = album.id')
+      .leftJoin('assets', 'assets', 'assets.id = album_assets.assetsId')
+      .where('album.id IN (:...ids)', { ids })
+      .groupBy('album.id')
+      .getRawMany();
+
+    return albumMetadatas.map<AlbumAssetCount>((metadatas) => ({
+      albumId: metadatas['album_id'],
+      assetCount: Number(metadatas['asset_count']),
+      startDate: metadatas['end_date'] ? new Date(metadatas['start_date']) : undefined,
+      endDate: metadatas['end_date'] ? new Date(metadatas['end_date']) : undefined,
+    }));
   }
 
   /**
