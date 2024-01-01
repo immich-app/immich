@@ -22,6 +22,7 @@ const responseDto = {
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
     inTimeline: true,
+    showOnboarding: true,
   },
   user1: <PartnerResponseDto>{
     email: 'immich@test.com',
@@ -39,6 +40,7 @@ const responseDto = {
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
     inTimeline: true,
+    showOnboarding: true,
   },
 };
 
