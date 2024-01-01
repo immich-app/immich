@@ -15,6 +15,7 @@ External libraries tracks assets stored outside of immich, i.e. in the file syst
 # Step by Step Guide
 
 In order to create an external library, the administrator must:
+
 - Click on 'Administration' (top right).
 - Click on 'Edit' next to the user.
 - Set the external path - this would be the path that is exposed to the immich microservices service.
