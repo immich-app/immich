@@ -38,7 +38,10 @@
   </div>
 
   <div class="flex gap-4 mb-6">
-    <button class="w-1/2 aspect-square bg-immich-bg rounded-3xl border border-immich-fg" on:click={toggleLightTheme}>
+    <button
+      class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl"
+      on:click={toggleLightTheme}
+    >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
       >

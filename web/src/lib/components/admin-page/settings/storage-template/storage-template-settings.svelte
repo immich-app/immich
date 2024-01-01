@@ -113,8 +113,14 @@
         },
       });
 
-      storageConfig = result.data.storageTemplate;
-      savedConfig = result.data.storageTemplate;
+      storageConfig.template = result.data.storageTemplate.template;
+      savedConfig.template = result.data.storageTemplate.template;
+
+      storageConfig.enabled = result.data.storageTemplate.enabled;
+      savedConfig.enabled = result.data.storageTemplate.enabled;
+
+      storageConfig.hashVerificationEnabled = result.data.storageTemplate.hashVerificationEnabled;
+      savedConfig.hashVerificationEnabled = result.data.storageTemplate.hashVerificationEnabled;
 
       notificationController.show({
         message: 'Storage template saved',

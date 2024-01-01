@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { mdiArrowRight } from '@mdi/js';
+  import { mdiCheck } from '@mdi/js';
   import Button from '../elements/buttons/button.svelte';
   import Icon from '../elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
@@ -17,7 +17,6 @@
 
   onMount(async () => {
     const { data } = await api.systemConfigApi.getConfig();
-    console.log(data);
     configs = data;
   });
 </script>
@@ -34,9 +33,9 @@
     <StorageTemplateSettings simple disabled={$featureFlags.configFile} storageConfig={configs.storageTemplate} />
   {/if}
   <div class="w-full flex place-content-end">
-    <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
+    <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')} color="green">
       <p>Done</p>
-      <Icon path={mdiArrowRight} size="18" />
+      <Icon path={mdiCheck} size="18" />
     </Button>
   </div>
 </OnboardingCard>
