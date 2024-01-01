@@ -7,8 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 Future<LatLng?> showLocationPicker({
   required BuildContext context,
@@ -92,7 +91,7 @@ class _LocationPicker extends HookWidget {
           height: 12,
         ),
         MapThumbnail(
-          centre: maplibre.LatLng(latlng.latitude, latlng.longitude),
+          centre: LatLng(latlng.latitude, latlng.longitude),
           height: 200,
           width: 200,
           zoom: 6,

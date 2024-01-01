@@ -59,8 +59,8 @@ import 'package:immich_mobile/shared/views/app_log_page.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
 import 'package:isar/isar.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:photo_manager/photo_manager.dart' hide LatLng;
-import 'package:latlong2/latlong.dart';
 
 part 'router.gr.dart';
 

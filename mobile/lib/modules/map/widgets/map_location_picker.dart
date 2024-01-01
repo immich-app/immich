@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 class MapLocationPickerPage extends HookConsumerWidget {
   final LatLng? initialLatLng;
@@ -12,7 +12,8 @@ class MapLocationPickerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedLatLng = useState<LatLng>(initialLatLng ?? LatLng(0, 0));
+    final selectedLatLng =
+        useState<LatLng>(initialLatLng ?? const LatLng(0, 0));
 
     return Theme(
       data: context.themeData,
