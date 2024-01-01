@@ -27,6 +27,7 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Stats } from 'node:fs';
+import { SystemConfigCore } from '../system-config';
 
 describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
@@ -38,7 +39,7 @@ describe(StorageTemplateService.name, () => {
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let databaseRepository: jest.Mocked<IDatabaseRepository>;
+  let databaseMock: jest.Mocked<IDatabaseRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -53,22 +54,23 @@ describe(StorageTemplateService.name, () => {
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
-    databaseRepository = newDatabaseRepositoryMock();
+    databaseMock = newDatabaseRepositoryMock();
+
+    configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: true }]);
 
     sut = new StorageTemplateService(
       albumMock,
       assetMock,
       configMock,
-      defaults,
       moveMock,
       personMock,
       storageMock,
       userMock,
       cryptoMock,
-      databaseRepository,
+      databaseMock,
     );
 
-    configMock.load.mockResolvedValue([{ key: SystemConfigKey.STORAGE_TEMPLATE_ENABLED, value: true }]);
+    SystemConfigCore.create(configMock).config$.next(defaults);
   });
 
   describe('handleMigrationSingle', () => {

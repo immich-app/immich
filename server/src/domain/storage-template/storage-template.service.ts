@@ -21,7 +21,6 @@ import {
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
 import {
-  INITIAL_SYSTEM_CONFIG,
   supportedDayTokens,
   supportedHourTokens,
   supportedMinuteTokens,
@@ -49,32 +48,33 @@ export class StorageTemplateService {
   private logger = new ImmichLogger(StorageTemplateService.name);
   private configCore: SystemConfigCore;
   private storageCore: StorageCore;
-  private template: {
+  private _template: {
     compiled: HandlebarsTemplateDelegate<any>;
     raw: string;
     needsAlbum: boolean;
-  };
+  } | null = null;
+
+  private get template() {
+    if (!this._template) {
+      throw new Error('Template not initialized');
+    }
+    return this._template;
+  }
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
     @Inject(IPersonRepository) personRepository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
   ) {
-    this.template = this.compile(config.storageTemplate.template);
     this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => this.validate(config));
-    this.configCore.config$.subscribe((config) => {
-      const template = config.storageTemplate.template;
-      this.logger.debug(`Received config, compiling storage template: ${template}`);
-      this.template = this.compile(template);
-    });
+    this.configCore.config$.subscribe((config) => this.onConfig(config));
     this.storageCore = StorageCore.create(
       assetRepository,
       moveRepository,
@@ -267,6 +267,14 @@ export class StorageTemplateService {
     } catch (e) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(e)}`);
       throw new Error(`Invalid storage template: ${e}`);
+    }
+  }
+
+  private onConfig(config: SystemConfig) {
+    const template = config.storageTemplate.template;
+    if (!this._template || template !== this.template.raw) {
+      this.logger.debug(`Compiling new storage template: ${template}`);
+      this._template = this.compile(template);
     }
   }
 
