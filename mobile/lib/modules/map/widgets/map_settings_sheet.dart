@@ -14,7 +14,7 @@ class MapSettingsSheet extends HookConsumerWidget {
 
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 1,
+      initialChildSize: 0.6,
       builder: (ctx, scrollController) => SingleChildScrollView(
         controller: scrollController,
         child: Card(
@@ -54,6 +54,7 @@ class MapSettingsSheet extends HookConsumerWidget {
                     .read(mapStateNotifierProvider.notifier)
                     .setRelativeTime(time),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

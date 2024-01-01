@@ -40,6 +40,7 @@ class _NonSelectionRow extends StatelessWidget {
       showModalBottomSheet(
         elevation: 0.0,
         showDragHandle: true,
+        isScrollControlled: true,
         context: context,
         builder: (_) => const MapSettingsSheet(),
       );
