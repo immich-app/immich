@@ -7,7 +7,6 @@
   import { handleError } from '$lib/utils/handle-error';
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
-  import Pulse from 'svelte-loading-spinners/Pulse.svelte';
   import { slide } from 'svelte/transition';
   import LibraryImportPathsForm from '../forms/library-import-paths-form.svelte';
   import LibraryScanSettingsForm from '../forms/library-scan-settings-form.svelte';
@@ -18,6 +17,7 @@
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -323,7 +323,7 @@
               <td class="w-1/3 text-ellipsis px-4 text-sm">{library.name}</td>
               {#if totalCount[index] == undefined}
                 <td colspan="2" class="flex w-1/3 items-center justify-center text-ellipsis px-4 text-sm">
-                  <Pulse color="gray" size="40" unit="px" />
+                  <LoadingSpinner size="40" />
                 </td>
               {:else}
                 <td class="w-1/6 text-ellipsis px-4 text-sm">
