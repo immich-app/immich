@@ -97,10 +97,8 @@ export class ServerInfoService {
     };
   }
 
-  async setAdminOnboarding(): Promise<boolean> {
-    await this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
-    const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.ADMIN_ONBOARDING);
-    return !!onboarding?.isOnboarded;
+  setAdminOnboarding(): Promise<void> {
+    return this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
   }
 
   async getStatistics(): Promise<ServerStatsResponseDto> {

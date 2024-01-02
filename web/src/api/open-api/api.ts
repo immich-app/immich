@@ -15275,7 +15275,7 @@ export const ServerInfoApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async setAdminOnboarding(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>> {
+        async setAdminOnboarding(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.setAdminOnboarding(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -15358,7 +15358,7 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        setAdminOnboarding(options?: AxiosRequestConfig): AxiosPromise<boolean> {
+        setAdminOnboarding(options?: AxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.setAdminOnboarding(options).then((request) => request(axios, basePath));
         },
     };

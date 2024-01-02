@@ -70,7 +70,7 @@ export class ServerInfoController {
 
   @AdminRoute()
   @Post('admin-onboarding')
-  setAdminOnboarding(): Promise<boolean> {
+  setAdminOnboarding(): Promise<void> {
     return this.service.setAdminOnboarding();
   }
 }

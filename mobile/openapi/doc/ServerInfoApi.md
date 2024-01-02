@@ -345,7 +345,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **setAdminOnboarding**
-> bool setAdminOnboarding()
+> setAdminOnboarding()
 
 
 
@@ -370,8 +370,7 @@ import 'package:openapi/api.dart';
 final api_instance = ServerInfoApi();
 
 try {
-    final result = api_instance.setAdminOnboarding();
-    print(result);
+    api_instance.setAdminOnboarding();
 } catch (e) {
     print('Exception when calling ServerInfoApi->setAdminOnboarding: $e\n');
 }
@@ -382,7 +381,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-**bool**
+void (empty response body)
 
 ### Authorization
 
@@ -391,7 +390,7 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

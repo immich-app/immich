@@ -4731,13 +4731,6 @@
         "parameters": [],
         "responses": {
           "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            },
             "description": ""
           }
         },
