@@ -3027,6 +3027,12 @@ export interface ServerConfigDto {
     'isInitialized': boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof ServerConfigDto
+     */
+    'isOnboarded': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ServerConfigDto
      */
@@ -15144,6 +15150,44 @@ export const ServerInfoApiAxiosParamCreator = function (configuration?: Configur
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setAdminOnboarding: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/server-info/admin-onboarding`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -15226,6 +15270,15 @@ export const ServerInfoApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.pingServer(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async setAdminOnboarding(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.setAdminOnboarding(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -15299,6 +15352,14 @@ export const ServerInfoApiFactory = function (configuration?: Configuration, bas
          */
         pingServer(options?: AxiosRequestConfig): AxiosPromise<ServerPingResponse> {
             return localVarFp.pingServer(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setAdminOnboarding(options?: AxiosRequestConfig): AxiosPromise<boolean> {
+            return localVarFp.setAdminOnboarding(options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -15388,6 +15449,16 @@ export class ServerInfoApi extends BaseAPI {
      */
     public pingServer(options?: AxiosRequestConfig) {
         return ServerInfoApiFp(this.configuration).pingServer(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServerInfoApi
+     */
+    public setAdminOnboarding(options?: AxiosRequestConfig) {
+        return ServerInfoApiFp(this.configuration).setAdminOnboarding(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

@@ -4725,6 +4725,38 @@
         ]
       }
     },
+    "/server-info/admin-onboarding": {
+      "post": {
+        "operationId": "setAdminOnboarding",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -8604,6 +8636,9 @@
           "isInitialized": {
             "type": "boolean"
           },
+          "isOnboarded": {
+            "type": "boolean"
+          },
           "loginPageMessage": {
             "type": "string"
           },
@@ -8618,7 +8653,8 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "isInitialized"
+          "isInitialized",
+          "isOnboarded"
         ],
         "type": "object"
       },

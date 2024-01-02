@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **isInitialized** | **bool** |  | 
+**isOnboarded** | **bool** |  | 
 **loginPageMessage** | **String** |  | 
 **oauthButtonText** | **String** |  | 
 **trashDays** | **int** |  | 

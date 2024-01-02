@@ -1,3 +1,4 @@
+import { SystemMetadataKey } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
@@ -9,6 +10,7 @@ import {
   IServerInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  ISystemMetadataRepository,
   IUserRepository,
   UserStatsQueryResponse,
 } from '../repositories';
@@ -37,6 +39,7 @@ export class ServerInfoService {
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IServerInfoRepository) private repository: IServerInfoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ISystemMetadataRepository) private readonly systemMetadataRepository: ISystemMetadataRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
     this.communicationRepository.on('connect', (userId) => this.handleConnect(userId));
@@ -83,13 +86,21 @@ export class ServerInfoService {
     const loginPageMessage = process.env.PUBLIC_LOGIN_PAGE_MESSAGE || '';
 
     const isInitialized = await this.userRepository.hasAdmin();
+    const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.ADMIN_ONBOARDING);
 
     return {
       loginPageMessage,
       trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
       isInitialized,
+      isOnboarded: onboarding?.isOnboarded || false,
     };
+  }
+
+  async setAdminOnboarding(): Promise<boolean> {
+    await this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
+    const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.ADMIN_ONBOARDING);
+    return !!onboarding?.isOnboarded;
   }
 
   async getStatistics(): Promise<ServerStatsResponseDto> {

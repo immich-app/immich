@@ -1,7 +1,7 @@
 <script lang="ts">
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
-  import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboading-storage-template.svelte';
+  import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import { api } from '@api';
   import { user } from '$lib/stores/user.store';
   import { goto } from '$app/navigation';
@@ -15,16 +15,9 @@
     index++;
 
     if (index >= onboardingSteps.length) {
-      const { data } = await api.userApi.updateUser({
-        updateUserDto: {
-          showOnboarding: false,
-          id: $user.id,
-        },
-      });
-
-      $user = data;
-
-      goto(AppRoute.PHOTOS);
+      const { data } = await api.serverInfoApi.setAdminOnboarding();
+      console.log('onboarding ', data);
+      // goto(AppRoute.PHOTOS);
     }
   };
 </script>

@@ -86,6 +86,7 @@ export class ServerConfigDto {
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
   isInitialized!: boolean;
+  isOnboarded!: boolean;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {

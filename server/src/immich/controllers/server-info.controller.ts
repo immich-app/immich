@@ -9,7 +9,7 @@ import {
   ServerThemeDto,
   ServerVersionResponseDto,
 } from '@app/domain';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminRoute, Authenticated, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -66,5 +66,11 @@ export class ServerInfoController {
   @Get('media-types')
   getSupportedMediaTypes(): ServerMediaTypesResponseDto {
     return this.service.getSupportedMediaTypes();
+  }
+
+  @AdminRoute()
+  @Post('admin-onboarding')
+  setAdminOnboarding(): Promise<boolean> {
+    return this.service.setAdminOnboarding();
   }
 }
