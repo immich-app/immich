@@ -31,7 +31,6 @@ import {
   AssetFaceUpdateDto,
   FaceDto,
   MergePersonDto,
-  MergePersonResponseDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonResponseDto,

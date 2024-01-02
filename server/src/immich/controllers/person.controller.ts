@@ -4,7 +4,6 @@ import {
   AuthDto,
   BulkIdResponseDto,
   MergePersonDto,
-  MergePersonResponseDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonResponseDto,

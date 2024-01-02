@@ -2,7 +2,6 @@ import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { BulkIdResponseDto } from '../asset/response-dto';
 import { AuthDto } from '../auth';
 import { Optional, ValidateUUID, toBoolean } from '../domain.util';
 
@@ -58,11 +57,6 @@ export class PeopleUpdateItem extends PersonUpdateDto {
 export class MergePersonDto {
   @ValidateUUID({ each: true })
   ids!: string[];
-}
-
-export class MergePersonResponseDto {
-  person!: PersonResponseDto;
-  results!: BulkIdResponseDto[];
 }
 
 export class PersonSearchDto {
