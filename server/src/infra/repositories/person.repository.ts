@@ -82,6 +82,7 @@ export class PersonRepository implements IPersonRepository {
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
+      .andWhere('asset.isArchived = false')
       .orderBy('person.isHidden', 'ASC')
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')

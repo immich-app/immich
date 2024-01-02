@@ -196,9 +196,9 @@ export class MetadataService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } })),
+      );
     }
 
     return true;
@@ -264,10 +264,12 @@ export class MetadataService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
-        await this.jobRepository.queue({ name, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY,
+          data: { id: asset.id },
+        })),
+      );
     }
 
     return true;

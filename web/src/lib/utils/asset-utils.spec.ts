@@ -1,5 +1,4 @@
 import type { AssetResponseDto } from '@api';
-import { describe, expect, it } from '@jest/globals';
 import { getAssetFilename, getFilenameExtension } from './asset-utils';
 
 describe('get file extension from filename', () => {

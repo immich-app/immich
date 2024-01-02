@@ -16,6 +16,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
+    "types": ["vitest/globals"],
     "preserveValueImports": false,
     "paths": {
       "$lib": [
