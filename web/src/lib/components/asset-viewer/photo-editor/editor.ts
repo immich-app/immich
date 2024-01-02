@@ -268,9 +268,11 @@ export class Editor {
 
     this.transformImage(imageWrapper, edit);
     this.imageWrapper.innerHTML = '';
-    image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast
-      }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity
-      }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
+    image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
+      filter.contrast
+    }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
+      filter.opacity
+    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
     this.imageWrapper.appendChild(image);
     this.updateHtml();
   }
@@ -431,7 +433,7 @@ export class Editor {
   /**
    * Uploads a blob to the server.
    * Then links the uploaded file to the asset.
-   * 
+   *
    * @param blob - The blob to be uploaded.
    * @throws Error if the file upload fails.
    */
@@ -443,7 +445,6 @@ export class Editor {
     const assetData = new File([blob], this.asset.originalFileName + '.' + fileType, {
       lastModified: new Date().getTime(),
     });
-
 
     const { data } = await api.assetApi.uploadFile({
       assetData: assetData,
@@ -462,7 +463,7 @@ export class Editor {
       assetBulkUpdateDto: {
         ids: [id],
         stackParentId: this.asset.id,
-      }
+      },
     });
 
     if (!stackData) {
