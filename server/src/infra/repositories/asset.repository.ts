@@ -760,7 +760,7 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository
       .createQueryBuilder('asset')
       .where('asset.isVisible = true')
-      .andWhere('asset.fileCreatedAt < NOW()');
+      .andWhere("asset.fileCreatedAt BETWEEN '4713-01-01 BC' AND '294276-12-31 AD'");
     if (assetType !== undefined) {
       builder = builder.andWhere('asset.type = :assetType', { assetType });
     }
