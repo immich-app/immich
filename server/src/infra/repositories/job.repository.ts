@@ -34,7 +34,7 @@ export class JobRepository implements IJobRepository {
   }
 
   addCronJob(name: string, expression: string, onTick: () => void, start = true): void {
-    const job = new CronJob(
+    const job = new CronJob<null, null>(
       expression,
       onTick,
       // function to run onComplete
