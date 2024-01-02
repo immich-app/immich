@@ -456,16 +456,17 @@ export class PersonService {
     const allowedIds = await this.access.checkAccess(auth, Permission.PERSON_MERGE, mergeIds);
 
     for (let i = 0; i < mergeIds.length; i++) {
-      const hasAccess = allowedIds.has(mergeIds[i]);
+      const mergeId = mergeIds[i];
+      const hasAccess = allowedIds.has(mergeId);
       if (!hasAccess) {
-        results.push({ id: mergeIds[i], success: false, error: BulkIdErrorReason.NO_PERMISSION });
+        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
         continue;
       }
 
       try {
-        const mergePerson = await this.repository.getById(mergeIds[i]);
+        const mergePerson = await this.repository.getById(mergeId);
         if (!mergePerson) {
-          results.push({ id: mergeIds[i], success: false, error: BulkIdErrorReason.NOT_FOUND });
+          results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
           continue;
         }
         if (mergeIds.length === 1 && i === 0) {
@@ -478,17 +479,17 @@ export class PersonService {
           }
         }
         const mergeName = mergePerson.name || mergePerson.id;
-        const mergeData: UpdateFacesData = { oldPersonId: mergeIds[i], newPersonId: id };
+        const mergeData: UpdateFacesData = { oldPersonId: mergeId, newPersonId: id };
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
 
         await this.repository.reassignFaces(mergeData);
         await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: mergePerson.id } });
 
         this.logger.log(`Merged ${mergeName} into ${primaryName}`);
-        results.push({ id: mergeIds[i], success: true });
+        results.push({ id: mergeId, success: true });
       } catch (error: Error | any) {
-        this.logger.error(`Unable to merge ${mergeIds[i]} into ${id}: ${error}`, error?.stack);
-        results.push({ id: mergeIds[i], success: false, error: BulkIdErrorReason.UNKNOWN });
+        this.logger.error(`Unable to merge ${mergeId} into ${id}: ${error}`, error?.stack);
+        results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
     return results;
