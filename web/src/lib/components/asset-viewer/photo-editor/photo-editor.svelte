@@ -68,6 +68,7 @@
   let activeEdit: activeEdit;
 
   let isRendering = false;
+  let isUploading = false;
 
   let mode: modeType;
   let angle = 0;
@@ -200,16 +201,23 @@
         on:click={async () => {
           isRendering = true;
           const blob = await editor.render();
-          editor.download(blob, asset.originalFileName);
           isRendering = false;
+          isUploading = true;
+          try {
+            await editor.upload(blob);
+            isUploading = false;
+          } catch (error) {
+            console.log(error);
+            isUploading = false;
+          }
         }}
-        disabled={isRendering}
-        class=" {isRendering
+        disabled={isRendering || isUploading}
+        class=" {isRendering || isUploading
           ? 'bg-immich-dark-primary/50 hover:cursor-wait'
           : 'bg-immich-dark-primary hover:bg-immich-dark-primary/80 '}  ml-4 mr-5 inline-flex items-center rounded-md p-[6px] px-4 text-black"
       >
         <svg
-          class="-ml-1 mr-3 h-5 w-5 animate-spin text-black {isRendering ? '' : 'hidden'}"
+          class="-ml-1 mr-3 h-5 w-5 animate-spin text-black {isRendering || isUploading ? '' : 'hidden'}"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -221,7 +229,7 @@
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           />
         </svg>
-        Save
+        {isRendering && !isUploading ? 'Rendering' : isUploading ? 'Uploading' : 'Save'}
       </button>
       <div use:clickOutside on:outclick={() => (isShowEditOptions = false)}>
         <CircleIconButton isOpacity={true} icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />

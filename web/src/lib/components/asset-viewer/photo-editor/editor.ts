@@ -268,11 +268,9 @@ export class Editor {
 
     this.transformImage(imageWrapper, edit);
     this.imageWrapper.innerHTML = '';
-    image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
-      filter.contrast
-    }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
-      filter.opacity
-    }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
+    image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${filter.contrast
+      }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${filter.opacity
+      }) saturate(${filter.saturation}) sepia(${filter.sepia})`;
     this.imageWrapper.appendChild(image);
     this.updateHtml();
   }
@@ -428,6 +426,48 @@ export class Editor {
 
     const render = new Render(name, asset, this.edit, this.imageWrapper);
     return await render.start();
+  }
+
+  /**
+   * Uploads a blob to the server.
+   * Then links the uploaded file to the asset.
+   * 
+   * @param blob - The blob to be uploaded.
+   * @throws Error if the file upload fails.
+   */
+  public async upload(blob: Blob) {
+    console.log('upload');
+
+    const fileType = blob.type.split('/')[1];
+
+    const assetData = new File([blob], this.asset.originalFileName + '.' + fileType, {
+      lastModified: new Date().getTime(),
+    });
+
+
+    const { data } = await api.assetApi.uploadFile({
+      assetData: assetData,
+      deviceAssetId: this.asset.deviceAssetId,
+      deviceId: this.asset.deviceId,
+      fileCreatedAt: this.asset.fileCreatedAt,
+      fileModifiedAt: new Date().toUTCString(),
+    });
+
+    if (!data) {
+      throw new Error('Failed to upload file');
+    }
+
+    const id = data.id;
+    const stackData = await api.assetApi.updateAssets({
+      assetBulkUpdateDto: {
+        ids: [id],
+        stackParentId: this.asset.id,
+      }
+    });
+
+    if (!stackData) {
+      throw new Error('Failed to link file');
+    }
   }
 
   /**
