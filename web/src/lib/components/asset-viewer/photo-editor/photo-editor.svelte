@@ -652,7 +652,7 @@
               thumbData={editor.getThumbData()}
               on:save={() => editor.save()}
             />
-            {#each Object.keys(presets) as preset}
+            {#each Object.keys(presets) as preset (preset)}
               <FilterCard
                 title={preset}
                 name={presetName}

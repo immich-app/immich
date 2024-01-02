@@ -845,20 +845,25 @@ export class Editor {
       this.edit.filter.sepia = sepia;
     }
 
-    if (!this.isFilter(this.edit.filter)) {
-      this.edit.filterName = 'custom';
+    if (this.isWithout(this.edit.filter)) {
+      this.edit.filterName = 'without';
     }
 
     this.update();
   }
 
-  private isFilter(filter: filter) {
-    Object.entries(presets).forEach(([, value]) => {
-      if (value === filter) {
-        return true;
-      }
-    });
-    return false;
+  private isWithout(filter: filter) {
+    return (
+      filter.blur === 0 &&
+      filter.brightness === 1 &&
+      filter.contrast === 1 &&
+      filter.grayscale === 0 &&
+      filter.hueRotate === 1 &&
+      filter.invert === 0 &&
+      filter.opacity === 1 &&
+      filter.saturation === 1 &&
+      filter.sepia === 0
+    );
   }
 
   /**
