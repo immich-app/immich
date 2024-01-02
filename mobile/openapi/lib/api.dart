@@ -125,7 +125,6 @@ part 'model/map_marker_response_dto.dart';
 part 'model/map_theme.dart';
 part 'model/memory_lane_response_dto.dart';
 part 'model/merge_person_dto.dart';
-part 'model/merge_person_response_dto.dart';
 part 'model/model_type.dart';
 part 'model/o_auth_authorize_response_dto.dart';
 part 'model/o_auth_callback_dto.dart';

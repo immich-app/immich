@@ -443,7 +443,7 @@ export class PersonService {
     return true;
   }
 
-  async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<MergePersonResponseDto> {
+  async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
     const mergeIds = dto.ids;
     if (!(mergeIds instanceof Array)) {
       throw new BadRequestException('ids is not an array');
@@ -492,10 +492,7 @@ export class PersonService {
         results.push({ id: mergeIds[i], success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
-    return {
-      results,
-      person: primaryPerson,
-    };
+    return results;
   }
 
   private async findOrFail(id: string) {

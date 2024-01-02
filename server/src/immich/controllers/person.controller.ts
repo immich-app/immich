@@ -85,7 +85,7 @@ export class PersonController {
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: MergePersonDto,
-  ): Promise<MergePersonResponseDto> {
+  ): Promise<BulkIdResponseDto[]> {
     return this.service.mergePerson(auth, id, dto);
   }
 }

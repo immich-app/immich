@@ -289,7 +289,6 @@ Class | Method | HTTP request | Description
  - [MapTheme](doc//MapTheme.md)
  - [MemoryLaneResponseDto](doc//MemoryLaneResponseDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
- - [MergePersonResponseDto](doc//MergePersonResponseDto.md)
  - [ModelType](doc//ModelType.md)
  - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)

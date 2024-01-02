@@ -2354,25 +2354,6 @@ export interface MergePersonDto {
 /**
  * 
  * @export
- * @interface MergePersonResponseDto
- */
-export interface MergePersonResponseDto {
-    /**
-     * 
-     * @type {PersonResponseDto}
-     * @memberof MergePersonResponseDto
-     */
-    'person': PersonResponseDto;
-    /**
-     * 
-     * @type {Array<BulkIdResponseDto>}
-     * @memberof MergePersonResponseDto
-     */
-    'results': Array<BulkIdResponseDto>;
-}
-/**
- * 
- * @export
  * @enum {string}
  */
 
@@ -14176,7 +14157,7 @@ export const PersonApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async mergePerson(id: string, mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MergePersonResponseDto>> {
+        async mergePerson(id: string, mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<BulkIdResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.mergePerson(id, mergePersonDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -14281,7 +14262,7 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig): AxiosPromise<MergePersonResponseDto> {
+        mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig): AxiosPromise<Array<BulkIdResponseDto>> {
             return localVarFp.mergePerson(requestParameters.id, requestParameters.mergePersonDto, options).then((request) => request(axios, basePath));
         },
         /**

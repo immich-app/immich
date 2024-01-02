@@ -159,14 +159,16 @@
       return;
     }
     try {
-      const { data } = await api.personApi.mergePerson({
+      await api.personApi.mergePerson({
         id: personMerge2.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
 
+      const { data: mergedPerson } = await api.personApi.getPerson({ id: personToMerge.id });
+
       countVisiblePeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
-      people = people.map((person: PersonResponseDto) => (person.id === personMerge2.id ? data.person : person));
+      people = people.map((person: PersonResponseDto) => (person.id === personMerge2.id ? mergedPerson : person));
 
       notificationController.show({
         message: 'Merge people succesfully',
