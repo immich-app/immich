@@ -8593,6 +8593,9 @@
       },
       "ServerConfigDto": {
         "properties": {
+          "externalDomain": {
+            "type": "string"
+          },
           "isInitialized": {
             "type": "boolean"
           },
@@ -8610,7 +8613,8 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "isInitialized"
+          "isInitialized",
+          "externalDomain"
         ],
         "type": "object"
       },
@@ -9039,6 +9043,9 @@
           "reverseGeocoding": {
             "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
           },
+          "server": {
+            "$ref": "#/components/schemas/SystemConfigServerDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -9066,7 +9073,8 @@
           "thumbnail",
           "trash",
           "theme",
-          "library"
+          "library",
+          "server"
         ],
         "type": "object"
       },
@@ -9356,6 +9364,17 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigServerDto": {
+        "properties": {
+          "externalDomain": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "externalDomain"
         ],
         "type": "object"
       },

@@ -97,6 +97,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
         isInitialized: true,
+        externalDomain: '',
       });
     });
   });

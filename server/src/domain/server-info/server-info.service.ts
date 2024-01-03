@@ -89,6 +89,7 @@ export class ServerInfoService {
       trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
       isInitialized,
+      externalDomain: config.server.externalDomain,
     };
   }
 

@@ -184,6 +184,7 @@ describe(ServerInfoService.name, () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
+        externalDomain: '',
       });
       expect(configMock.load).toHaveBeenCalled();
     });
