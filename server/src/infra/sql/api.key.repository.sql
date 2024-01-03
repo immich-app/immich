@@ -13,7 +13,6 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."name" AS "APIKeyEntity__APIKeyEntity_user_name",
       "APIKeyEntity__APIKeyEntity_user"."avatarColor" AS "APIKeyEntity__APIKeyEntity_user_avatarColor",
       "APIKeyEntity__APIKeyEntity_user"."isAdmin" AS "APIKeyEntity__APIKeyEntity_user_isAdmin",
-      "APIKeyEntity__APIKeyEntity_user"."showOnboarding" AS "APIKeyEntity__APIKeyEntity_user_showOnboarding",
       "APIKeyEntity__APIKeyEntity_user"."email" AS "APIKeyEntity__APIKeyEntity_user_email",
       "APIKeyEntity__APIKeyEntity_user"."storageLabel" AS "APIKeyEntity__APIKeyEntity_user_storageLabel",
       "APIKeyEntity__APIKeyEntity_user"."externalPath" AS "APIKeyEntity__APIKeyEntity_user_externalPath",
