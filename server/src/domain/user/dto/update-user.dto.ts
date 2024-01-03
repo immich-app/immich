@@ -50,8 +50,4 @@ export class UpdateUserDto {
   @IsEnum(UserAvatarColor)
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   avatarColor?: UserAvatarColor;
-
-  @Optional()
-  @IsBoolean()
-  showOnboarding?: boolean;
 }

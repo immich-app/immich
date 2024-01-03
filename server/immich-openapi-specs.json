@@ -7992,9 +7992,6 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
-          "showOnboarding": {
-            "type": "boolean"
-          },
           "userEmail": {
             "type": "string"
           },
@@ -8009,8 +8006,7 @@
           "name",
           "profileImagePath",
           "isAdmin",
-          "shouldChangePassword",
-          "showOnboarding"
+          "shouldChangePassword"
         ],
         "type": "object"
       },
@@ -8199,9 +8195,6 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
-          "showOnboarding": {
-            "type": "boolean"
-          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8224,8 +8217,7 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId",
-          "showOnboarding"
+          "oauthId"
         ],
         "type": "object"
       },
@@ -9745,9 +9737,6 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
-          "showOnboarding": {
-            "type": "boolean"
-          },
           "storageLabel": {
             "type": "string"
           }
@@ -9869,9 +9858,6 @@
           "shouldChangePassword": {
             "type": "boolean"
           },
-          "showOnboarding": {
-            "type": "boolean"
-          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -9894,8 +9880,7 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId",
-          "showOnboarding"
+          "oauthId"
         ],
         "type": "object"
       },

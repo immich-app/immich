@@ -2210,12 +2210,6 @@ export interface LoginResponseDto {
     'shouldChangePassword': boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof LoginResponseDto
-     */
-    'showOnboarding': boolean;
-    /**
-     * 
      * @type {string}
      * @memberof LoginResponseDto
      */
@@ -2491,12 +2485,6 @@ export interface PartnerResponseDto {
      * @memberof PartnerResponseDto
      */
     'shouldChangePassword': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof PartnerResponseDto
-     */
-    'showOnboarding': boolean;
     /**
      * 
      * @type {string}
@@ -4533,12 +4521,6 @@ export interface UpdateUserDto {
     'shouldChangePassword'?: boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof UpdateUserDto
-     */
-    'showOnboarding'?: boolean;
-    /**
-     * 
      * @type {string}
      * @memberof UpdateUserDto
      */
@@ -4722,12 +4704,6 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'shouldChangePassword': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UserResponseDto
-     */
-    'showOnboarding': boolean;
     /**
      * 
      * @type {string}

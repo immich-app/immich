@@ -22,7 +22,6 @@ class UpdateUserDto {
     this.name,
     this.password,
     this.shouldChangePassword,
-    this.showOnboarding,
     this.storageLabel,
   });
 
@@ -98,14 +97,6 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? showOnboarding;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? storageLabel;
 
   @override
@@ -119,7 +110,6 @@ class UpdateUserDto {
      other.name == name &&
      other.password == password &&
      other.shouldChangePassword == shouldChangePassword &&
-     other.showOnboarding == showOnboarding &&
      other.storageLabel == storageLabel;
 
   @override
@@ -134,11 +124,10 @@ class UpdateUserDto {
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
-    (showOnboarding == null ? 0 : showOnboarding!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, shouldChangePassword=$shouldChangePassword, showOnboarding=$showOnboarding, storageLabel=$storageLabel]';
+  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -183,11 +172,6 @@ class UpdateUserDto {
     } else {
     //  json[r'shouldChangePassword'] = null;
     }
-    if (this.showOnboarding != null) {
-      json[r'showOnboarding'] = this.showOnboarding;
-    } else {
-    //  json[r'showOnboarding'] = null;
-    }
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
@@ -213,7 +197,6 @@ class UpdateUserDto {
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
-        showOnboarding: mapValueOfType<bool>(json, r'showOnboarding'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
       );
     }

@@ -18,7 +18,6 @@ class LoginResponseDto {
     required this.name,
     required this.profileImagePath,
     required this.shouldChangePassword,
-    required this.showOnboarding,
     required this.userEmail,
     required this.userId,
   });
@@ -33,8 +32,6 @@ class LoginResponseDto {
 
   bool shouldChangePassword;
 
-  bool showOnboarding;
-
   String userEmail;
 
   String userId;
@@ -46,7 +43,6 @@ class LoginResponseDto {
      other.name == name &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
-     other.showOnboarding == showOnboarding &&
      other.userEmail == userEmail &&
      other.userId == userId;
 
@@ -58,12 +54,11 @@ class LoginResponseDto {
     (name.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
-    (showOnboarding.hashCode) +
     (userEmail.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'LoginResponseDto[accessToken=$accessToken, isAdmin=$isAdmin, name=$name, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, showOnboarding=$showOnboarding, userEmail=$userEmail, userId=$userId]';
+  String toString() => 'LoginResponseDto[accessToken=$accessToken, isAdmin=$isAdmin, name=$name, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -72,7 +67,6 @@ class LoginResponseDto {
       json[r'name'] = this.name;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
-      json[r'showOnboarding'] = this.showOnboarding;
       json[r'userEmail'] = this.userEmail;
       json[r'userId'] = this.userId;
     return json;
@@ -91,7 +85,6 @@ class LoginResponseDto {
         name: mapValueOfType<String>(json, r'name')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
-        showOnboarding: mapValueOfType<bool>(json, r'showOnboarding')!,
         userEmail: mapValueOfType<String>(json, r'userEmail')!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
@@ -146,7 +139,6 @@ class LoginResponseDto {
     'name',
     'profileImagePath',
     'shouldChangePassword',
-    'showOnboarding',
     'userEmail',
     'userId',
   };

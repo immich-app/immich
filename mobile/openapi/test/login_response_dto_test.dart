@@ -41,11 +41,6 @@ void main() {
       // TODO
     });
 
-    // bool showOnboarding
-    test('to test the property `showOnboarding`', () async {
-      // TODO
-    });
-
     // String userEmail
     test('to test the property `userEmail`', () async {
       // TODO
