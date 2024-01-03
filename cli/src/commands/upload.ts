@@ -60,7 +60,7 @@ export default class Upload extends BaseCommand {
 
     for (const asset of assetsToUpload) {
       // Compute total size first
-      await asset.process();
+      await asset.prepare();
       totalSize += asset.fileSize;
 
       if (options.albumName) {

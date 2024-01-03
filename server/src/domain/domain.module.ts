@@ -19,7 +19,7 @@ import { SharedLinkService } from './shared-link';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
-import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
+import { SystemConfigService } from './system-config';
 import { TagService } from './tag';
 import { UserService } from './user';
 
@@ -47,14 +47,6 @@ const providers: Provider[] = [
   TagService,
   UserService,
   ImmichLogger,
-  {
-    provide: INITIAL_SYSTEM_CONFIG,
-    inject: [SystemConfigService, DatabaseService],
-    useFactory: async (configService: SystemConfigService, databaseService: DatabaseService) => {
-      await databaseService.init();
-      return configService.getConfig();
-    },
-  },
 ];
 
 @Global()

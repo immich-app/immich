@@ -41,7 +41,7 @@ If you are unable to open a port on your router for Wireguard or OpenVPN to your
 
 A reverse proxy is a service that sits between web servers and clients. A reverse proxy can either be hosted on the server itself or remotely. Clients can connect to the reverse proxy via https, and the proxy relays data to Immich. This setup makes most sense if you have your own domain and want to access your Immich instance just like any other website, from outside your LAN. You can also use a DDNS provider like DuckDNS or no-ip if you don't have a domain. This configuration allows the Immich Android and iphone apps to connect to your server without a VPN or tailscale app on the client side.
 
-If you're hosting your own reverse proxy, [Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) is a great option. An example configuration for Nginx is provided [here](https://immich.app/docs/administration/reverse-proxy).
+If you're hosting your own reverse proxy, [Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) is a great option. An example configuration for Nginx is provided [here](/docs/administration/reverse-proxy.md).
 
 You'll also need your own certificate to authenticate https connections. If you're making Immich publicly accesible, [Let's Encrypt](https://letsencrypt.org/) can provide a free certificate for your domain and is the recommended option. Alternatively, a [self-signed certificate](https://en.wikipedia.org/wiki/Self-signed_certificate) allows you to encrypt your connection to Immich, but it raises a security warning on the client's browser.
 

@@ -5,7 +5,7 @@ export const ISmartInfoRepository = 'ISmartInfoRepository';
 export type Embedding = number[];
 
 export interface EmbeddingSearch {
-  ownerId: string;
+  userIds: string[];
   embedding: Embedding;
   numResults: number;
   maxDistance?: number;
