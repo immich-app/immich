@@ -19,10 +19,12 @@ The initial backup is the most intensive due to the number of jobs running. The 
 - If these changes are not enough, see [below](/docs/FAQ/Machine-Learning-FAQ#how-can-i-disable-machine-learning) for how you can disable machine learning.
 
 ### How can I change the amount of CPU and RAM that Immich uses?
+
 By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows.
 You can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit) to learn how to do this.
 
 ### Can I boost machine learning speed?
+
 Yes, you can by increasing the job concurrency. With higher concurrency, the host will work on more assets in parallel.
 You can do it by:
 1. Admin user login
@@ -41,4 +43,5 @@ more info [here](https://discord.com/channels/979116623879368755/994044917355663
 :::
 
 ### Why is Immich using so much of my CPU?
+
 When a large amount of assets are uploaded to Immich it makes sense that the CPU and RAM will be heavily used due to machine learning work and creating image thumbnails after that, the percentage of CPU usage will drop to around 3-5% usage

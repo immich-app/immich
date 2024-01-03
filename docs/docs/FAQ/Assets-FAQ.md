@@ -45,6 +45,13 @@ Immich generates three thumbnails for each asset (blurred, small, and large), as
 
 All machine learning jobs and thumbnail images are recreated.
 
+### What happens if I changed or disabled video transcoding ?
+
+If user choose to transcode policy that makes it unnecessary and then run a transcoding job, it will delete unnecessary transcodes.
+This can be done on a per-asset basis by starting a transcoding job for an asset, or for all assets by running transcoding jobs for all assets.
+
+If user choose to changed transcode policy and rerun transcoding job for an asset, the newly encoded videos will overwrite the old ones.
+
 
 ### Is it possible to use item compression like in App-Which-Must-Not-Be-Named?
 

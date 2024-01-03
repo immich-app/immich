@@ -71,6 +71,7 @@ Sometimes, an external library will not scan correctly. This can happen if the i
 - Are the volumes identical between the `server` and `microservices` container?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
 - Are the permissions set correctly?
+- Are the slash in the path appears correctly as `/`
 
 If all else fails, you can always start a shell inside the container and check if the path is accessible. For example, `docker exec -it immich_microservices /bin/bash` will start a bash shell. If your import path, for instance, is `/data/import/photos`, you can check if the files are accessible by running `ls /data/import/photos`. Also check the `immich_server` container in the same way.
 
@@ -122,6 +123,7 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
++     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 
 
   immich-microservices:
@@ -130,6 +132,7 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
++     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 ```
 
 :::tip
@@ -145,6 +148,14 @@ Only an admin can do this.
 - Navigate to `Administration > Users` page on the web.
 - Click on the user edit button.
 - Set `/mnt/media` to be the external path. This folder will only contain the three folders that we want to import, so nothing else can be accessed.
+  :::note
+  spaces in the path aren't supported.
+
+  You must import it as:
+  `..:/mnt/media/my-media:ro`
+  instead of
+  `..:/mnt/media/my media:ro`
+  :::
 
 ### Create External Libraries
 
