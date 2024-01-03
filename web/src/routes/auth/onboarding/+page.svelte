@@ -3,7 +3,6 @@
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import { api } from '@api';
-  import { user } from '$lib/stores/user.store';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
 
