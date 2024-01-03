@@ -58,19 +58,21 @@
       errorMessage = '';
       loading = true;
 
-      const { data } = await api.authenticationApi.login({
+      const { data: user } = await api.authenticationApi.login({
         loginCredentialDto: {
           email,
           password,
         },
       });
 
-      if (data.isAdmin && data.showOnboarding) {
+      const { data: serverConfig } = await api.serverInfoApi.getServerConfig();
+
+      if (user.isAdmin && !serverConfig.isOnboarded) {
         dispatch('onboarding');
         return;
       }
 
-      if (!data.isAdmin && data.shouldChangePassword) {
+      if (!user.isAdmin && user.shouldChangePassword) {
         dispatch('firstLogin');
         return;
       }

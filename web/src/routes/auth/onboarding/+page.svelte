@@ -15,9 +15,8 @@
     index++;
 
     if (index >= onboardingSteps.length) {
-      const { data } = await api.serverInfoApi.setAdminOnboarding();
-      console.log('onboarding ', data);
-      // goto(AppRoute.PHOTOS);
+      await api.serverInfoApi.setAdminOnboarding();
+      goto(AppRoute.PHOTOS);
     }
   };
 </script>
