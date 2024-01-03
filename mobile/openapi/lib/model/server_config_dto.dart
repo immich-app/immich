@@ -13,11 +13,14 @@ part of openapi.api;
 class ServerConfigDto {
   /// Returns a new [ServerConfigDto] instance.
   ServerConfigDto({
+    required this.externalDomain,
     required this.isInitialized,
     required this.loginPageMessage,
     required this.oauthButtonText,
     required this.trashDays,
   });
+
+  String externalDomain;
 
   bool isInitialized;
 
@@ -29,6 +32,7 @@ class ServerConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
+     other.externalDomain == externalDomain &&
      other.isInitialized == isInitialized &&
      other.loginPageMessage == loginPageMessage &&
      other.oauthButtonText == oauthButtonText &&
@@ -37,16 +41,18 @@ class ServerConfigDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (externalDomain.hashCode) +
     (isInitialized.hashCode) +
     (loginPageMessage.hashCode) +
     (oauthButtonText.hashCode) +
     (trashDays.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[isInitialized=$isInitialized, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
+  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'externalDomain'] = this.externalDomain;
       json[r'isInitialized'] = this.isInitialized;
       json[r'loginPageMessage'] = this.loginPageMessage;
       json[r'oauthButtonText'] = this.oauthButtonText;
@@ -62,6 +68,7 @@ class ServerConfigDto {
       final json = value.cast<String, dynamic>();
 
       return ServerConfigDto(
+        externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
         isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
@@ -113,6 +120,7 @@ class ServerConfigDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'externalDomain',
     'isInitialized',
     'loginPageMessage',
     'oauthButtonText',

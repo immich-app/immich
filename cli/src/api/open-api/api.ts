@@ -3009,6 +3009,12 @@ export interface SearchResponseDto {
 export interface ServerConfigDto {
     /**
      * 
+     * @type {string}
+     * @memberof ServerConfigDto
+     */
+    'externalDomain': string;
+    /**
+     * 
      * @type {boolean}
      * @memberof ServerConfigDto
      */
@@ -3592,6 +3598,12 @@ export interface SystemConfigDto {
     'reverseGeocoding': SystemConfigReverseGeocodingDto;
     /**
      * 
+     * @type {SystemConfigServerDto}
+     * @memberof SystemConfigDto
+     */
+    'server': SystemConfigServerDto;
+    /**
+     * 
      * @type {SystemConfigStorageTemplateDto}
      * @memberof SystemConfigDto
      */
@@ -4013,6 +4025,19 @@ export interface SystemConfigReverseGeocodingDto {
      * @memberof SystemConfigReverseGeocodingDto
      */
     'enabled': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigServerDto
+ */
+export interface SystemConfigServerDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigServerDto
+     */
+    'externalDomain': string;
 }
 /**
  * 
