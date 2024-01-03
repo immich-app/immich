@@ -24,11 +24,8 @@
   "devDependencies": {
     "@testcontainers/postgresql": "^10.4.0",
     "@types/byte-size": "^8.1.0",
-    "@types/chai": "^4.3.5",
     "@types/cli-progress": "^3.11.0",
     "@types/jest": "^29.5.2",
-    "@types/js-yaml": "^4.0.5",
-    "@types/mime-types": "^2.1.1",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
