@@ -804,10 +804,14 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
-  @GenerateSql({ params: [DummyValue.STRING, DummyValue.UUID, { numResults: 250 }] })
-  async searchMetadata(query: string, ownerId: string, { numResults }: MetadataSearchOptions): Promise<AssetEntity[]> {
+  @GenerateSql({ params: [DummyValue.STRING, [DummyValue.UUID], { numResults: 250 }] })
+  async searchMetadata(
+    query: string,
+    userIds: string[],
+    { numResults }: MetadataSearchOptions,
+  ): Promise<AssetEntity[]> {
     const rows = await this.getBuilder({
-      userIds: [ownerId],
+      userIds: userIds,
       exifInfo: false,
       isArchived: false,
     })

@@ -1,7 +1,13 @@
+<script lang="ts">
+  export let size: string = '24';
+</script>
+
 <div>
   <svg
     role="status"
-    class={`h-[24px] w-[24px] animate-spin fill-immich-primary text-gray-400 dark:text-gray-600`}
+    style:height="{size}px"
+    style:width="{size}px"
+    class="animate-spin fill-immich-primary text-gray-400 dark:text-gray-600"
     viewBox="0 0 100 101"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"

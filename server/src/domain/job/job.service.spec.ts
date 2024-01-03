@@ -55,12 +55,12 @@ describe(JobService.name, () => {
     it('should run the scheduled jobs', async () => {
       await sut.handleNightlyJobs();
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_DELETION_CHECK }],
-        [{ name: JobName.USER_DELETE_CHECK }],
-        [{ name: JobName.PERSON_CLEANUP }],
-        [{ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } }],
-        [{ name: JobName.CLEAN_OLD_AUDIT_LOGS }],
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.ASSET_DELETION_CHECK },
+        { name: JobName.USER_DELETE_CHECK },
+        { name: JobName.PERSON_CLEANUP },
+        { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
+        { name: JobName.CLEAN_OLD_AUDIT_LOGS },
       ]);
     });
   });
@@ -138,6 +138,7 @@ describe(JobService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
     it('should handle a start video conversion command', async () => {
@@ -204,6 +205,7 @@ describe(JobService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
   });
 
@@ -276,18 +278,18 @@ describe(JobService.name, () => {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
+          JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.ENCODE_CLIP,
           JobName.RECOGNIZE_FACES,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
         ],
       },
       {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
+          JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.ENCODE_CLIP,
           JobName.RECOGNIZE_FACES,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.VIDEO_CONVERSION,
         ],
       },
@@ -295,9 +297,9 @@ describe(JobService.name, () => {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.RECOGNIZE_FACES,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.ENCODE_CLIP,
+          JobName.RECOGNIZE_FACES,
           JobName.VIDEO_CONVERSION,
         ],
       },
@@ -327,9 +329,15 @@ describe(JobService.name, () => {
         await jobMock.addHandler.mock.calls[0][2](item);
         await asyncTick(3);
 
-        expect(jobMock.queue).toHaveBeenCalledTimes(jobs.length);
-        for (const jobName of jobs) {
-          expect(jobMock.queue).toHaveBeenCalledWith({ name: jobName, data: expect.anything() });
+        if (jobs.length > 1) {
+          expect(jobMock.queueAll).toHaveBeenCalledWith(
+            jobs.map((jobName) => ({ name: jobName, data: expect.anything() })),
+          );
+        } else {
+          expect(jobMock.queue).toHaveBeenCalledTimes(jobs.length);
+          for (const jobName of jobs) {
+            expect(jobMock.queue).toHaveBeenCalledWith({ name: jobName, data: expect.anything() });
+          }
         }
       });
 
@@ -338,7 +346,7 @@ describe(JobService.name, () => {
         await jobMock.addHandler.mock.calls[0][2](item);
         await asyncTick(3);
 
-        expect(jobMock.queue).not.toHaveBeenCalled();
+        expect(jobMock.queueAll).not.toHaveBeenCalled();
       });
     }
 
