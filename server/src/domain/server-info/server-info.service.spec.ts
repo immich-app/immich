@@ -3,6 +3,7 @@ import {
   newServerInfoRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  newSystemMetadataRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
 import { serverVersion } from '../domain.constant';
@@ -11,6 +12,7 @@ import {
   IServerInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  ISystemMetadataRepository,
   IUserRepository,
 } from '../repositories';
 import { ServerInfoService } from './server-info.service';
@@ -22,6 +24,7 @@ describe(ServerInfoService.name, () => {
   let serverInfoMock: jest.Mocked<IServerInfoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
+  let systemMetadataMock: jest.Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
@@ -29,8 +32,16 @@ describe(ServerInfoService.name, () => {
     serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
+    systemMetadataMock = newSystemMetadataRepositoryMock();
 
-    sut = new ServerInfoService(communicationMock, configMock, userMock, serverInfoMock, storageMock);
+    sut = new ServerInfoService(
+      communicationMock,
+      configMock,
+      userMock,
+      serverInfoMock,
+      storageMock,
+      systemMetadataMock,
+    );
   });
 
   it('should work', () => {
