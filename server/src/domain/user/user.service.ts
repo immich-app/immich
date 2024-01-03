@@ -1,7 +1,9 @@
 import { UserEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
-import { AuthUserDto } from '../auth';
+import { AuthDto } from '../auth';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IEntityJob, JobName } from '../job';
 import {
   IAlbumRepository,
@@ -11,7 +13,6 @@ import {
   ILibraryRepository,
   IStorageRepository,
   IUserRepository,
-  ImmichReadStream,
   UserFindOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
@@ -21,7 +22,7 @@ import { UserCore } from './user.core';
 
 @Injectable()
 export class UserService {
-  private logger = new Logger(UserService.name);
+  private logger = new ImmichLogger(UserService.name);
   private userCore: UserCore;
 
   constructor(
@@ -36,7 +37,7 @@ export class UserService {
     this.userCore = UserCore.create(cryptoRepository, libraryRepository, userRepository);
   }
 
-  async getAll(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
+  async getAll(auth: AuthDto, isAll: boolean): Promise<UserResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: !isAll });
     return users.map(mapUser);
   }
@@ -50,24 +51,20 @@ export class UserService {
     return mapUser(user);
   }
 
-  getMe(authUser: AuthUserDto): Promise<UserResponseDto> {
-    return this.findOrFail(authUser.id, {}).then(mapUser);
+  getMe(auth: AuthDto): Promise<UserResponseDto> {
+    return this.findOrFail(auth.user.id, {}).then(mapUser);
   }
 
   create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.userCore.createUser(createUserDto).then(mapUser);
   }
 
-  async update(authUser: AuthUserDto, dto: UpdateUserDto): Promise<UserResponseDto> {
+  async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
     await this.findOrFail(dto.id, {});
-    return this.userCore.updateUser(authUser, dto.id, dto).then(mapUser);
+    return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
-  async delete(authUser: AuthUserDto, id: string): Promise<UserResponseDto> {
-    if (!authUser.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-
+  async delete(auth: AuthDto, id: string): Promise<UserResponseDto> {
     const user = await this.findOrFail(id, {});
     if (user.isAdmin) {
       throw new ForbiddenException('Cannot delete admin user');
@@ -78,44 +75,42 @@ export class UserService {
     return this.userRepository.delete(user).then(mapUser);
   }
 
-  async restore(authUser: AuthUserDto, id: string): Promise<UserResponseDto> {
-    if (!authUser.isAdmin) {
-      throw new ForbiddenException('Unauthorized');
-    }
-
+  async restore(auth: AuthDto, id: string): Promise<UserResponseDto> {
     let user = await this.findOrFail(id, { withDeleted: true });
     user = await this.userRepository.restore(user);
     await this.albumRepository.restoreAll(id);
     return mapUser(user);
   }
 
-  async createProfileImage(
-    authUser: AuthUserDto,
-    fileInfo: Express.Multer.File,
-  ): Promise<CreateProfileImageResponseDto> {
-    const { profileImagePath: oldpath } = await this.findOrFail(authUser.id, { withDeleted: false });
-    const updatedUser = await this.userRepository.update(authUser.id, { profileImagePath: fileInfo.path });
+  async createProfileImage(auth: AuthDto, fileInfo: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
+    const { profileImagePath: oldpath } = await this.findOrFail(auth.user.id, { withDeleted: false });
+    const updatedUser = await this.userRepository.update(auth.user.id, { profileImagePath: fileInfo.path });
     if (oldpath !== '') {
       await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldpath] } });
     }
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
   }
 
-  async deleteProfileImage(authUser: AuthUserDto): Promise<void> {
-    const user = await this.findOrFail(authUser.id, { withDeleted: false });
+  async deleteProfileImage(auth: AuthDto): Promise<void> {
+    const user = await this.findOrFail(auth.user.id, { withDeleted: false });
     if (user.profileImagePath === '') {
       throw new BadRequestException("Can't delete a missing profile Image");
     }
-    await this.userRepository.update(authUser.id, { profileImagePath: '' });
+    await this.userRepository.update(auth.user.id, { profileImagePath: '' });
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 
-  async getProfileImage(id: string): Promise<ImmichReadStream> {
+  async getProfileImage(id: string): Promise<ImmichFileResponse> {
     const user = await this.findOrFail(id, {});
     if (!user.profileImagePath) {
       throw new NotFoundException('User does not have a profile image');
     }
-    return this.storageRepository.createReadStream(user.profileImagePath, 'image/jpeg');
+
+    return new ImmichFileResponse({
+      path: user.profileImagePath,
+      contentType: 'image/jpeg',
+      cacheControl: CacheControl.NONE,
+    });
   }
 
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
@@ -134,12 +129,11 @@ export class UserService {
 
   async handleUserDeleteCheck() {
     const users = await this.userRepository.getDeletedUsers();
-    for (const user of users) {
-      if (this.isReadyForDeletion(user)) {
-        await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id } });
-      }
-    }
-
+    await this.jobRepository.queueAll(
+      users.flatMap((user) =>
+        this.isReadyForDeletion(user) ? [{ name: JobName.USER_DELETION, data: { id: user.id } }] : [],
+      ),
+    );
     return true;
   }
 

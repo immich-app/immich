@@ -102,7 +102,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 Ik ben trouw aan dit project en ik zal niet stoppen. Ik zal de documenten blijven bijwerken, nieuwe functies toevoegen en bugs oplossen. Maar ik kan het niet alleen. Ik heb dus jouw hulp nodig om mij extra motivatie te geven om door te gaan.
 
-Als onze gastheren in de [selfhosted.show - In de aflevering 'The-organization-must-Neet-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) zeiden, dit is een eNeerme onderneming van wat het team en ik doen. En ik zou dit graag fulltime willen doen, ik vraag jouw hulp om dat mogelijk te maken.
+Als onze gastheren in de [selfhosted.show - In de aflevering 'The-organization-must-Neet-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) zeiden, dit is een enorme onderneming van wat het team en ik doen. En ik zou dit graag fulltime willen doen, ik vraag jouw hulp om dat mogelijk te maken.
 
 Als je denkt dat dit het juiste doel is en de app iets is dat je jezelf al heel lang ziet gebruiken, overweeg dan om het project te steunen met de onderstaande optie.
 

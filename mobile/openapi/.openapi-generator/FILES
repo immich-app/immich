@@ -24,6 +24,10 @@ doc/AssetBulkUploadCheckDto.md
 doc/AssetBulkUploadCheckItem.md
 doc/AssetBulkUploadCheckResponseDto.md
 doc/AssetBulkUploadCheckResult.md
+doc/AssetFaceResponseDto.md
+doc/AssetFaceUpdateDto.md
+doc/AssetFaceUpdateItem.md
+doc/AssetFaceWithoutPersonResponseDto.md
 doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
@@ -46,7 +50,6 @@ doc/CQMode.md
 doc/ChangePasswordDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
-doc/ClassificationConfig.md
 doc/Colorspace.md
 doc/CreateAlbumDto.md
 doc/CreateLibraryDto.md
@@ -60,6 +63,8 @@ doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
 doc/EntityType.md
 doc/ExifResponseDto.md
+doc/FaceApi.md
+doc/FaceDto.md
 doc/FileChecksumDto.md
 doc/FileChecksumResponseDto.md
 doc/FileReportDto.md
@@ -76,6 +81,7 @@ doc/LibraryApi.md
 doc/LibraryResponseDto.md
 doc/LibraryStatsResponseDto.md
 doc/LibraryType.md
+doc/LogLevel.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -100,6 +106,7 @@ doc/PersonApi.md
 doc/PersonResponseDto.md
 doc/PersonStatisticsResponseDto.md
 doc/PersonUpdateDto.md
+doc/PersonWithFacesResponseDto.md
 doc/QueueStatusDto.md
 doc/ReactionLevel.md
 doc/ReactionType.md
@@ -135,6 +142,7 @@ doc/SystemConfigFFmpegDto.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigLibraryDto.md
 doc/SystemConfigLibraryScanDto.md
+doc/SystemConfigLoggingDto.md
 doc/SystemConfigMachineLearningDto.md
 doc/SystemConfigMapDto.md
 doc/SystemConfigNewVersionCheckDto.md
@@ -177,6 +185,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/audit_api.dart
 lib/api/authentication_api.dart
+lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
 lib/api/o_auth_api.dart
@@ -213,6 +222,10 @@ lib/model/asset_bulk_upload_check_dto.dart
 lib/model/asset_bulk_upload_check_item.dart
 lib/model/asset_bulk_upload_check_response_dto.dart
 lib/model/asset_bulk_upload_check_result.dart
+lib/model/asset_face_response_dto.dart
+lib/model/asset_face_update_dto.dart
+lib/model/asset_face_update_item.dart
+lib/model/asset_face_without_person_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
@@ -230,7 +243,6 @@ lib/model/bulk_ids_dto.dart
 lib/model/change_password_dto.dart
 lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
-lib/model/classification_config.dart
 lib/model/clip_config.dart
 lib/model/clip_mode.dart
 lib/model/colorspace.dart
@@ -247,6 +259,7 @@ lib/model/download_info_dto.dart
 lib/model/download_response_dto.dart
 lib/model/entity_type.dart
 lib/model/exif_response_dto.dart
+lib/model/face_dto.dart
 lib/model/file_checksum_dto.dart
 lib/model/file_checksum_response_dto.dart
 lib/model/file_report_dto.dart
@@ -261,6 +274,7 @@ lib/model/job_status_dto.dart
 lib/model/library_response_dto.dart
 lib/model/library_stats_response_dto.dart
 lib/model/library_type.dart
+lib/model/log_level.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -282,6 +296,7 @@ lib/model/people_update_item.dart
 lib/model/person_response_dto.dart
 lib/model/person_statistics_response_dto.dart
 lib/model/person_update_dto.dart
+lib/model/person_with_faces_response_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/reaction_level.dart
 lib/model/reaction_type.dart
@@ -313,6 +328,7 @@ lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_library_dto.dart
 lib/model/system_config_library_scan_dto.dart
+lib/model/system_config_logging_dto.dart
 lib/model/system_config_machine_learning_dto.dart
 lib/model/system_config_map_dto.dart
 lib/model/system_config_new_version_check_dto.dart
@@ -367,6 +383,10 @@ test/asset_bulk_upload_check_dto_test.dart
 test/asset_bulk_upload_check_item_test.dart
 test/asset_bulk_upload_check_response_dto_test.dart
 test/asset_bulk_upload_check_result_test.dart
+test/asset_face_response_dto_test.dart
+test/asset_face_update_dto_test.dart
+test/asset_face_update_item_test.dart
+test/asset_face_without_person_response_dto_test.dart
 test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
@@ -386,7 +406,6 @@ test/bulk_ids_dto_test.dart
 test/change_password_dto_test.dart
 test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
-test/classification_config_test.dart
 test/clip_config_test.dart
 test/clip_mode_test.dart
 test/colorspace_test.dart
@@ -403,6 +422,8 @@ test/download_info_dto_test.dart
 test/download_response_dto_test.dart
 test/entity_type_test.dart
 test/exif_response_dto_test.dart
+test/face_api_test.dart
+test/face_dto_test.dart
 test/file_checksum_dto_test.dart
 test/file_checksum_response_dto_test.dart
 test/file_report_dto_test.dart
@@ -419,6 +440,7 @@ test/library_api_test.dart
 test/library_response_dto_test.dart
 test/library_stats_response_dto_test.dart
 test/library_type_test.dart
+test/log_level_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
@@ -443,6 +465,7 @@ test/person_api_test.dart
 test/person_response_dto_test.dart
 test/person_statistics_response_dto_test.dart
 test/person_update_dto_test.dart
+test/person_with_faces_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/reaction_level_test.dart
 test/reaction_type_test.dart
@@ -478,6 +501,7 @@ test/system_config_f_fmpeg_dto_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_library_dto_test.dart
 test/system_config_library_scan_dto_test.dart
+test/system_config_logging_dto_test.dart
 test/system_config_machine_learning_dto_test.dart
 test/system_config_map_dto_test.dart
 test/system_config_new_version_check_dto_test.dart

@@ -1,15 +1,16 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
 import { basename, parse } from 'path';
 import { AccessCore, Permission } from '../access';
-import { AuthUserDto } from '../auth';
+import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
+import { ImmichLogger } from '@app/infra/logger';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -33,7 +34,7 @@ import {
 
 @Injectable()
 export class LibraryService {
-  readonly logger = new Logger(LibraryService.name);
+  readonly logger = new ImmichLogger(LibraryService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
 
@@ -70,22 +71,22 @@ export class LibraryService {
     });
   }
 
-  async getStatistics(authUser: AuthUserDto, id: string): Promise<LibraryStatsResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, id);
+  async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
     return this.repository.getStatistics(id);
   }
 
-  async getCount(authUser: AuthUserDto): Promise<number> {
-    return this.repository.getCountForUser(authUser.id);
+  async getCount(auth: AuthDto): Promise<number> {
+    return this.repository.getCountForUser(auth.user.id);
   }
 
-  async getAllForUser(authUser: AuthUserDto): Promise<LibraryResponseDto[]> {
-    const libraries = await this.repository.getAllByUserId(authUser.id);
+  async getAllForUser(auth: AuthDto): Promise<LibraryResponseDto[]> {
+    const libraries = await this.repository.getAllByUserId(auth.user.id);
     return libraries.map((library) => mapLibrary(library));
   }
 
-  async get(authUser: AuthUserDto, id: string): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, id);
+  async get(auth: AuthDto, id: string): Promise<LibraryResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_READ, id);
     const library = await this.findOrFail(id);
     return mapLibrary(library);
   }
@@ -93,13 +94,13 @@ export class LibraryService {
   async handleQueueCleanup(): Promise<boolean> {
     this.logger.debug('Cleaning up any pending library deletions');
     const pendingDeletion = await this.repository.getAllDeleted();
-    for (const libraryToDelete of pendingDeletion) {
-      await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } });
-    }
+    await this.jobRepository.queueAll(
+      pendingDeletion.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
+    );
     return true;
   }
 
-  async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+  async create(auth: AuthDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
     switch (dto.type) {
       case LibraryType.EXTERNAL:
         if (!dto.name) {
@@ -120,7 +121,7 @@ export class LibraryService {
     }
 
     const library = await this.repository.create({
-      ownerId: authUser.id,
+      ownerId: auth.user.id,
       name: dto.name,
       type: dto.type,
       importPaths: dto.importPaths ?? [],
@@ -131,17 +132,17 @@ export class LibraryService {
     return mapLibrary(library);
   }
 
-  async update(authUser: AuthUserDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+  async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update({ id, ...dto });
     return mapLibrary(library);
   }
 
-  async delete(authUser: AuthUserDto, id: string) {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_DELETE, id);
+  async delete(auth: AuthDto, id: string) {
+    await this.access.requirePermission(auth, Permission.LIBRARY_DELETE, id);
 
     const library = await this.findOrFail(id);
-    const uploadCount = await this.repository.getUploadLibraryCount(authUser.id);
+    const uploadCount = await this.repository.getUploadLibraryCount(auth.user.id);
     if (library.type === LibraryType.UPLOAD && uploadCount <= 1) {
       throw new BadRequestException('Cannot delete the last upload library');
     }
@@ -159,9 +160,9 @@ export class LibraryService {
     // TODO use pagination
     const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
-    for (const assetId of assetIds) {
-      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } });
-    }
+    await this.jobRepository.queueAll(
+      assetIds.map((assetId) => ({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } })),
+    );
 
     if (assetIds.length === 0) {
       this.logger.log(`Deleting library ${job.id}`);
@@ -294,8 +295,8 @@ export class LibraryService {
     return true;
   }
 
-  async queueScan(authUser: AuthUserDto, id: string, dto: ScanLibraryDto) {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+  async queueScan(auth: AuthDto, id: string, dto: ScanLibraryDto) {
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
 
     const library = await this.repository.get(id);
     if (!library || library.type !== LibraryType.EXTERNAL) {
@@ -312,9 +313,9 @@ export class LibraryService {
     });
   }
 
-  async queueRemoveOffline(authUser: AuthUserDto, id: string) {
+  async queueRemoveOffline(auth: AuthDto, id: string) {
     this.logger.verbose(`Removing offline files from library: ${id}`);
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, id);
+    await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
 
     await this.jobRepository.queue({
       name: JobName.LIBRARY_REMOVE_OFFLINE,
@@ -332,16 +333,16 @@ export class LibraryService {
 
     // Queue all library refresh
     const libraries = await this.repository.getAll(true, LibraryType.EXTERNAL);
-    for (const library of libraries) {
-      await this.jobRepository.queue({
+    await this.jobRepository.queueAll(
+      libraries.map((library) => ({
         name: JobName.LIBRARY_SCAN,
         data: {
           id: library.id,
           refreshModifiedFiles: !job.force,
           refreshAllFiles: job.force ?? false,
         },
-      });
-    }
+      })),
+    );
     return true;
   }
 
@@ -352,9 +353,9 @@ export class LibraryService {
 
     for await (const assets of assetPagination) {
       this.logger.debug(`Removing ${assets.length} offline assets`);
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } })),
+      );
     }
 
     return true;
@@ -410,16 +411,17 @@ export class LibraryService {
         this.logger.debug(`Will import ${filteredPaths.length} new asset(s)`);
       }
 
-      for (const assetPath of filteredPaths) {
-        const libraryJobData: ILibraryFileJob = {
-          id: job.id,
-          assetPath: path.normalize(assetPath),
-          ownerId: library.ownerId,
-          force: job.refreshAllFiles ?? false,
-        };
-
-        await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_ASSET, data: libraryJobData });
-      }
+      await this.jobRepository.queueAll(
+        filteredPaths.map((assetPath) => ({
+          name: JobName.LIBRARY_SCAN_ASSET,
+          data: {
+            id: job.id,
+            assetPath: path.normalize(assetPath),
+            ownerId: library.ownerId,
+            force: job.refreshAllFiles ?? false,
+          },
+        })),
+      );
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });

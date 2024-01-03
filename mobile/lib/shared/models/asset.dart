@@ -256,6 +256,8 @@ class Asset {
         isFavorite != a.isFavorite ||
         isArchived != a.isArchived ||
         isTrashed != a.isTrashed ||
+        a.exifInfo?.latitude != exifInfo?.latitude ||
+        a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
         ((stackCount == null && a.stackCount != null) ||
             (stackCount != null &&
@@ -470,6 +472,8 @@ extension AssetsHelper on IsarCollection<Asset> {
       ids.isEmpty ? Future.value([]) : remote(ids).findAll();
   Future<List<Asset>> getAllByLocalId(Iterable<String> ids) =>
       ids.isEmpty ? Future.value([]) : local(ids).findAll();
+  Future<Asset?> getByRemoteId(String id) =>
+      where().remoteIdEqualTo(id).findFirst();
 
   QueryBuilder<Asset, Asset, QAfterWhereClause> remote(Iterable<String> ids) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));

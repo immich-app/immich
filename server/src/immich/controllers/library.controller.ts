@@ -1,5 +1,5 @@
 import {
-  AuthUserDto,
+  AuthDto,
   CreateLibraryDto as CreateDto,
   LibraryService,
   LibraryStatsResponseDto,
@@ -9,7 +9,7 @@ import {
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthUser, Authenticated } from '../app.guard';
+import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -21,49 +21,42 @@ export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  getLibraries(@AuthUser() authUser: AuthUserDto): Promise<ResponseDto[]> {
-    return this.service.getAllForUser(authUser);
+  getLibraries(@Auth() auth: AuthDto): Promise<ResponseDto[]> {
+    return this.service.getAllForUser(auth);
   }
 
   @Post()
-  createLibrary(@AuthUser() authUser: AuthUserDto, @Body() dto: CreateDto): Promise<ResponseDto> {
-    return this.service.create(authUser, dto);
+  createLibrary(@Auth() auth: AuthDto, @Body() dto: CreateDto): Promise<ResponseDto> {
+    return this.service.create(auth, dto);
   }
 
   @Put(':id')
-  updateLibrary(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: UpdateDto,
-  ): Promise<ResponseDto> {
-    return this.service.update(authUser, id, dto);
+  updateLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<ResponseDto> {
+    return this.service.update(auth, id, dto);
   }
 
   @Get(':id')
-  getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
-    return this.service.get(authUser, id);
+  getLibraryInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
+    return this.service.get(auth, id);
   }
 
   @Delete(':id')
-  deleteLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.delete(authUser, id);
+  deleteLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.delete(auth, id);
   }
 
   @Get(':id/statistics')
-  getLibraryStatistics(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-  ): Promise<LibraryStatsResponseDto> {
-    return this.service.getStatistics(authUser, id);
+  getLibraryStatistics(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<LibraryStatsResponseDto> {
+    return this.service.getStatistics(auth, id);
   }
 
   @Post(':id/scan')
-  scanLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
-    return this.service.queueScan(authUser, id, dto);
+  scanLibrary(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
+    return this.service.queueScan(auth, id, dto);
   }
 
   @Post(':id/removeOffline')
-  removeOfflineFiles(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.queueRemoveOffline(authUser, id);
+  removeOfflineFiles(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
+    return this.service.queueRemoveOffline(auth, id);
   }
 }

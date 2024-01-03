@@ -1,6 +1,16 @@
-import { IJobRepository, JobCounts, JobItem, JobName, JOBS_TO_QUEUE, QueueName, QueueStatus } from '@app/domain';
+import {
+  IJobRepository,
+  JobCounts,
+  JobItem,
+  JobName,
+  JOBS_TO_QUEUE,
+  QueueCleanType,
+  QueueName,
+  QueueStatus,
+} from '@app/domain';
+import { ImmichLogger } from '@app/infra/logger';
 import { getQueueToken } from '@nestjs/bullmq';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
@@ -10,7 +20,7 @@ import { bullConfig } from '../infra.config';
 @Injectable()
 export class JobRepository implements IJobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
-  private logger = new Logger(JobRepository.name);
+  private logger = new ImmichLogger(JobRepository.name);
 
   constructor(
     private moduleRef: ModuleRef,
@@ -24,7 +34,7 @@ export class JobRepository implements IJobRepository {
   }
 
   addCronJob(name: string, expression: string, onTick: () => void, start = true): void {
-    const job = new CronJob(
+    const job = new CronJob<null, null>(
       expression,
       onTick,
       // function to run onComplete
@@ -91,6 +101,10 @@ export class JobRepository implements IJobRepository {
     return this.getQueue(name).drain();
   }
 
+  clear(name: QueueName, type: QueueCleanType) {
+    return this.getQueue(name).clean(0, 1000, type);
+  }
+
   getJobCounts(name: QueueName): Promise<JobCounts> {
     return this.getQueue(name).getJobCounts(
       'active',
@@ -102,12 +116,31 @@ export class JobRepository implements IJobRepository {
     ) as unknown as Promise<JobCounts>;
   }
 
-  async queue(item: JobItem): Promise<void> {
-    const jobName = item.name;
-    const jobData = (item as { data?: any })?.data || {};
-    const jobOptions = this.getJobOptions(item) || undefined;
+  async queueAll(items: JobItem[]): Promise<void> {
+    if (!items.length) {
+      return;
+    }
 
-    await this.getQueue(JOBS_TO_QUEUE[jobName]).add(jobName, jobData, jobOptions);
+    const itemsByQueue = items.reduce<Record<string, JobItem[]>>((acc, item) => {
+      const queueName = JOBS_TO_QUEUE[item.name];
+      acc[queueName] = acc[queueName] || [];
+      acc[queueName].push(item);
+      return acc;
+    }, {});
+
+    for (const [queueName, items] of Object.entries(itemsByQueue)) {
+      const queue = this.getQueue(queueName as QueueName);
+      const jobs = items.map((item) => ({
+        name: item.name,
+        data: (item as { data?: any })?.data || {},
+        options: this.getJobOptions(item) || undefined,
+      }));
+      await queue.addBulk(jobs);
+    }
+  }
+
+  async queue(item: JobItem): Promise<void> {
+    await this.queueAll([item]);
   }
 
   private getJobOptions(item: JobItem): JobsOptions | null {
@@ -115,8 +148,6 @@ export class JobRepository implements IJobRepository {
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
         return { jobId: item.data.id };
       case JobName.GENERATE_PERSON_THUMBNAIL:
-        return { priority: 1 };
-      case JobName.SYSTEM_CONFIG_CHANGE:
         return { priority: 1 };
 
       default:

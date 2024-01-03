@@ -17,40 +17,7 @@ from .models.base import PicklableSessionOptions
 from .models.cache import ModelCache
 from .models.clip import OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
-from .models.image_classification import ImageClassifier
 from .schemas import ModelType
-
-
-class TestImageClassifier:
-    classifier_preds = [
-        {"label": "that's an image alright", "score": 0.8},
-        {"label": "well it ends with .jpg", "score": 0.1},
-        {"label": "idk, im just seeing bytes", "score": 0.05},
-        {"label": "not sure", "score": 0.04},
-        {"label": "probably a virus", "score": 0.01},
-    ]
-
-    def test_min_score(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
-        mocker.patch.object(ImageClassifier, "load")
-        classifier = ImageClassifier("test_model_name", min_score=0.0)
-        assert classifier.min_score == 0.0
-
-        classifier.model = mock.Mock()
-        classifier.model.return_value = self.classifier_preds
-
-        all_labels = classifier.predict(pil_image)
-        classifier.min_score = 0.5
-        filtered_labels = classifier.predict(pil_image)
-
-        assert all_labels == [
-            "that's an image alright",
-            "well it ends with .jpg",
-            "idk",
-            "im just seeing bytes",
-            "not sure",
-            "probably a virus",
-        ]
-        assert filtered_labels == ["that's an image alright"]
 
 
 class TestCLIP:
@@ -63,11 +30,13 @@ class TestCLIP:
         mocker: MockerFixture,
         clip_model_cfg: dict[str, Any],
         clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
     ) -> None:
         mocker.patch.object(OpenCLIPEncoder, "download")
         mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
-        mocker.patch("app.models.clip.AutoTokenizer.from_pretrained", autospec=True)
+        mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
         mocked.return_value.run.return_value = [[self.embedding]]
 
@@ -85,11 +54,13 @@ class TestCLIP:
         mocker: MockerFixture,
         clip_model_cfg: dict[str, Any],
         clip_preprocess_cfg: Callable[[Path], dict[str, Any]],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
     ) -> None:
         mocker.patch.object(OpenCLIPEncoder, "download")
         mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
-        mocker.patch("app.models.clip.AutoTokenizer.from_pretrained", autospec=True)
+        mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
         mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
         mocked.return_value.run.return_value = [[self.embedding]]
 
@@ -145,17 +116,15 @@ class TestFaceRecognition:
 class TestCache:
     async def test_caches(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         assert len(model_cache.cache._cache) == 1
         mock_get_model.assert_called_once()
 
     async def test_kwargs_used(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION, cache_dir="test_cache")
-        mock_get_model.assert_called_once_with(
-            ModelType.IMAGE_CLASSIFICATION, "test_model_name", cache_dir="test_cache"
-        )
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION, cache_dir="test_cache")
+        mock_get_model.assert_called_once_with(ModelType.FACIAL_RECOGNITION, "test_model_name", cache_dir="test_cache")
 
     async def test_different_clip(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
@@ -172,14 +141,14 @@ class TestCache:
     @mock.patch("app.models.cache.OptimisticLock", autospec=True)
     async def test_model_ttl(self, mock_lock_cls: mock.Mock, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache(ttl=100)
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
 
     @mock.patch("app.models.cache.SimpleMemoryCache.expire")
     async def test_revalidate(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache(ttl=100, revalidate=True)
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
-        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
+        await model_cache.get("test_model_name", ModelType.FACIAL_RECOGNITION)
         mock_cache_expire.assert_called_once_with(mock.ANY, 100)
 
 
@@ -188,23 +157,6 @@ class TestCache:
     reason="More time-consuming since it deploys the app and loads models.",
 )
 class TestEndpoints:
-    def test_tagging_endpoint(
-        self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
-    ) -> None:
-        byte_image = BytesIO()
-        pil_image.save(byte_image, format="jpeg")
-        response = deployed_app.post(
-            "http://localhost:3003/predict",
-            data={
-                "modelName": "microsoft/resnet-50",
-                "modelType": "image-classification",
-                "options": json.dumps({"minScore": 0.0}),
-            },
-            files={"image": byte_image.getvalue()},
-        )
-        assert response.status_code == 200
-        assert response.json() == responses["image-classification"]
-
     def test_clip_image_endpoint(
         self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
     ) -> None:

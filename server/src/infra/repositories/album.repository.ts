@@ -76,7 +76,7 @@ export class AlbumRepository implements IAlbumRepository {
       .select('album.id')
       .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
       .addSelect('MAX(assets.fileCreatedAt)', 'end_date')
-      .addSelect('COUNT(album_assets.assetsId)', 'asset_count')
+      .addSelect('COUNT(assets.id)', 'asset_count')
       .leftJoin('albums_assets_assets', 'album_assets', 'album_assets.albumsId = album.id')
       .leftJoin('assets', 'assets', 'assets.id = album_assets.assetsId')
       .where('album.id IN (:...ids)', { ids })

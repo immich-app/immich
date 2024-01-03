@@ -71,7 +71,7 @@
 {/if}
 
 {#if $featureFlags.loaded && $featureFlags.trash}
-  <UserPageLayout user={data.user} hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
+  <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
     <div class="flex place-items-center gap-2" slot="buttons">
       <LinkButton on:click={handleRestoreTrash}>
         <div class="flex place-items-center gap-2 text-sm">

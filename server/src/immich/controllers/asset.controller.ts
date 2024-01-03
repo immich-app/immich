@@ -8,7 +8,7 @@ import {
   AssetService,
   AssetStatsDto,
   AssetStatsResponseDto,
-  AuthUserDto,
+  AuthDto,
   BulkIdsDto,
   DownloadInfoDto,
   DownloadResponseDto,
@@ -31,16 +31,19 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Next,
   Param,
   Post,
   Put,
   Query,
+  Res,
   StreamableFile,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
 import { DeviceIdDto } from '../api-v1/asset/dto/device-id.dto';
-import { AuthUser, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UseValidation, asStreamableFile } from '../app.utils';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
+import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
 import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -52,8 +55,8 @@ export class AssetsController {
   constructor(private service: AssetService) {}
 
   @Get()
-  searchAssets(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    return this.service.search(authUser, dto);
+  searchAssets(@Auth() auth: AuthDto, @Query() dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    return this.service.search(auth, dto);
   }
 }
 
@@ -65,115 +68,116 @@ export class AssetController {
   constructor(private service: AssetService) {}
 
   @Get('map-marker')
-  getMapMarkers(@AuthUser() authUser: AuthUserDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    return this.service.getMapMarkers(authUser, options);
+  getMapMarkers(@Auth() auth: AuthDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
+    return this.service.getMapMarkers(auth, options);
   }
 
   @Get('memory-lane')
-  getMemoryLane(@AuthUser() authUser: AuthUserDto, @Query() dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    return this.service.getMemoryLane(authUser, dto);
+  getMemoryLane(@Auth() auth: AuthDto, @Query() dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
+    return this.service.getMemoryLane(auth, dto);
   }
 
   @Get('random')
-  getRandom(@AuthUser() authUser: AuthUserDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
-    return this.service.getRandom(authUser, dto.count ?? 1);
+  getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
+    return this.service.getRandom(auth, dto.count ?? 1);
   }
 
   @SharedLinkRoute()
   @Post('download/info')
-  getDownloadInfo(@AuthUser() authUser: AuthUserDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
-    return this.service.getDownloadInfo(authUser, dto);
+  getDownloadInfo(@Auth() auth: AuthDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
+    return this.service.getDownloadInfo(auth, dto);
   }
 
   @SharedLinkRoute()
   @Post('download/archive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  downloadArchive(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
-    return this.service.downloadArchive(authUser, dto).then(asStreamableFile);
+  @FileResponse()
+  downloadArchive(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
+    return this.service.downloadArchive(auth, dto).then(asStreamableFile);
   }
 
   @SharedLinkRoute()
   @Post('download/:id')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  downloadFile(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.downloadFile(authUser, id).then(asStreamableFile);
+  @FileResponse()
+  async downloadFile(
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ) {
+    await sendFile(res, next, () => this.service.downloadFile(auth, id));
   }
 
   /**
    * Get all asset of a device that are in the database, ID only.
    */
   @Get('/device/:deviceId')
-  getAllUserAssetsByDeviceId(@AuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
-    return this.service.getUserAssetsByDeviceId(authUser, deviceId);
+  getAllUserAssetsByDeviceId(@Auth() auth: AuthDto, @Param() { deviceId }: DeviceIdDto) {
+    return this.service.getUserAssetsByDeviceId(auth, deviceId);
   }
 
   @Get('statistics')
-  getAssetStatistics(@AuthUser() authUser: AuthUserDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
-    return this.service.getStatistics(authUser, dto);
+  getAssetStatistics(@Auth() auth: AuthDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
+    return this.service.getStatistics(auth, dto);
   }
 
   @Authenticated({ isShared: true })
   @Get('time-buckets')
-  getTimeBuckets(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
-    return this.service.getTimeBuckets(authUser, dto);
+  getTimeBuckets(@Auth() auth: AuthDto, @Query() dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
+    return this.service.getTimeBuckets(auth, dto);
   }
 
   @Authenticated({ isShared: true })
   @Get('time-bucket')
-  getTimeBucket(@AuthUser() authUser: AuthUserDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
-    return this.service.getTimeBucket(authUser, dto) as Promise<AssetResponseDto[]>;
+  getTimeBucket(@Auth() auth: AuthDto, @Query() dto: TimeBucketAssetDto): Promise<AssetResponseDto[]> {
+    return this.service.getTimeBucket(auth, dto) as Promise<AssetResponseDto[]>;
   }
 
   @Post('jobs')
   @HttpCode(HttpStatus.NO_CONTENT)
-  runAssetJobs(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetJobsDto): Promise<void> {
-    return this.service.run(authUser, dto);
+  runAssetJobs(@Auth() auth: AuthDto, @Body() dto: AssetJobsDto): Promise<void> {
+    return this.service.run(auth, dto);
   }
 
   @Put()
   @HttpCode(HttpStatus.NO_CONTENT)
-  updateAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
-    return this.service.updateAll(authUser, dto);
+  updateAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
+    return this.service.updateAll(auth, dto);
   }
 
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
-    return this.service.deleteAll(authUser, dto);
+  deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
+    return this.service.deleteAll(auth, dto);
   }
 
   @Post('restore')
   @HttpCode(HttpStatus.NO_CONTENT)
-  restoreAssets(@AuthUser() authUser: AuthUserDto, @Body() dto: BulkIdsDto): Promise<void> {
-    return this.service.restoreAll(authUser, dto);
+  restoreAssets(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
+    return this.service.restoreAll(auth, dto);
   }
 
   @Post('trash/empty')
   @HttpCode(HttpStatus.NO_CONTENT)
-  emptyTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
-    return this.service.handleTrashAction(authUser, TrashAction.EMPTY_ALL);
+  emptyTrash(@Auth() auth: AuthDto): Promise<void> {
+    return this.service.handleTrashAction(auth, TrashAction.EMPTY_ALL);
   }
 
   @Post('trash/restore')
   @HttpCode(HttpStatus.NO_CONTENT)
-  restoreTrash(@AuthUser() authUser: AuthUserDto): Promise<void> {
-    return this.service.handleTrashAction(authUser, TrashAction.RESTORE_ALL);
+  restoreTrash(@Auth() auth: AuthDto): Promise<void> {
+    return this.service.handleTrashAction(auth, TrashAction.RESTORE_ALL);
   }
 
   @Put('stack/parent')
   @HttpCode(HttpStatus.OK)
-  updateStackParent(@AuthUser() authUser: AuthUserDto, @Body() dto: UpdateStackParentDto): Promise<void> {
-    return this.service.updateStackParent(authUser, dto);
+  updateStackParent(@Auth() auth: AuthDto, @Body() dto: UpdateStackParentDto): Promise<void> {
+    return this.service.updateStackParent(auth, dto);
   }
 
   @Put(':id')
-  updateAsset(
-    @AuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: UpdateDto,
-  ): Promise<AssetResponseDto> {
-    return this.service.update(authUser, id, dto);
+  updateAsset(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<AssetResponseDto> {
+    return this.service.update(auth, id, dto);
   }
 }

@@ -10,12 +10,16 @@
   import { notificationController, NotificationType } from '../notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import AvatarSelector from './avatar-selector.svelte';
+  import { setUser } from '$lib/stores/user.store';
 
   export let user: UserResponseDto;
 
   let isShowSelectAvatar = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    logout: void;
+    close: void;
+  }>();
 
   const handleSaveProfile = async (color: UserAvatarColor) => {
     try {
@@ -33,6 +37,7 @@
       });
 
       user = data;
+      setUser(user);
       isShowSelectAvatar = false;
 
       notificationController.show({

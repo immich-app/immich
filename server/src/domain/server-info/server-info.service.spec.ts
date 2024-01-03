@@ -171,7 +171,6 @@ describe(ServerInfoService.name, () => {
         passwordLogin: true,
         search: true,
         sidecar: true,
-        tagImage: true,
         configFile: false,
         trash: true,
       });

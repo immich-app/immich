@@ -19,7 +19,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
-  import { ProjectionType } from '$lib/constants';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -64,14 +64,10 @@
   } = slideshowStore;
 
   const dispatch = createEventDispatcher<{
-    archived: AssetResponseDto;
-    unarchived: AssetResponseDto;
-    favorite: AssetResponseDto;
-    unfavorite: AssetResponseDto;
+    action: { type: AssetAction; asset: AssetResponseDto };
     close: void;
     next: void;
     previous: void;
-    unstack: void;
   }>();
 
   let appearsInAlbums: AlbumResponseDto[] = [];
@@ -374,9 +370,7 @@
     try {
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
 
-      await navigateAssetForward();
-
-      assetStore?.removeAsset(asset.id);
+      dispatch('action', { type: AssetAction.TRASH, asset });
 
       notificationController.show({
         message: 'Moved to trash',
@@ -391,9 +385,7 @@
     try {
       await api.assetApi.deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
 
-      await navigateAssetForward();
-
-      assetStore?.removeAsset(asset.id);
+      dispatch('action', { type: AssetAction.DELETE, asset });
 
       notificationController.show({
         message: 'Permanently deleted asset',
@@ -416,8 +408,7 @@
       });
 
       asset.isFavorite = data.isFavorite;
-      assetStore?.updateAsset(data);
-      dispatch(data.isFavorite ? 'favorite' : 'unfavorite', data);
+      dispatch('action', { type: data.isFavorite ? AssetAction.FAVORITE : AssetAction.UNFAVORITE, asset: data });
 
       notificationController.show({
         type: NotificationType.Info,
@@ -433,19 +424,17 @@
     addToSharedAlbum = shared;
   };
 
-  const handleAddToNewAlbum = (event: CustomEvent) => {
+  const handleAddToNewAlbum = (albumName: string) => {
     isShowAlbumPicker = false;
 
-    const { albumName }: { albumName: string } = event.detail;
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
       const album = response.data;
-      goto('/albums/' + album.id);
+      goto(`${AppRoute.ALBUMS}/${album.id}`);
     });
   };
 
-  const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
+  const handleAddToAlbum = async (album: AlbumResponseDto) => {
     isShowAlbumPicker = false;
-    const album = event.detail.album;
 
     await addAssetsToAlbum(album.id, [asset.id]);
     await getAllAlbums();
@@ -473,8 +462,7 @@
       });
 
       asset.isArchived = data.isArchived;
-      assetStore?.updateAsset(data);
-      dispatch(data.isArchived ? 'archived' : 'unarchived', data);
+      dispatch('action', { type: data.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: data });
 
       notificationController.show({
         type: NotificationType.Info,
@@ -557,10 +545,10 @@
         child.stackParentId = null;
         child.stackCount = 0;
         child.stack = [];
-        assetStore?.addAsset(child);
+        dispatch('action', { type: AssetAction.ADD, asset: child });
       }
 
-      dispatch('unstack');
+      dispatch('close');
       notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
     } catch (error) {
       await handleError(error, `Unable to unstack`);
@@ -570,7 +558,7 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-y-hidden bg-black"
+  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
 >
   <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None}
@@ -585,7 +573,7 @@
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         hasStackChildren={$stackAssetsStore.length > 0}
-        on:goBack={closeViewer}
+        on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
         on:delete={trashOrDelete}
@@ -686,7 +674,7 @@
         id="stack-slideshow"
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
       >
-        <div class="relative whitespace-nowrap transition-all">
+        <div class="relative w-full whitespace-nowrap transition-all">
           {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
             <div
               class="{stackedAsset.id == asset.id
@@ -735,9 +723,9 @@
         albumId={album?.id}
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
-        on:close-viewer={handleCloseViewer}
-        on:description-focus-in={disableKeyDownEvent}
-        on:description-focus-out={enableKeyDownEvent}
+        on:closeViewer={handleCloseViewer}
+        on:descriptionFocusIn={disableKeyDownEvent}
+        on:descriptionFocusOut={enableKeyDownEvent}
       />
     </div>
   {/if}
@@ -769,9 +757,8 @@
   {#if isShowAlbumPicker}
     <AlbumSelectionModal
       shared={addToSharedAlbum}
-      on:newAlbum={handleAddToNewAlbum}
-      on:newSharedAlbum={handleAddToNewAlbum}
-      on:album={handleAddToAlbum}
+      on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
+      on:album={({ detail }) => handleAddToAlbum(detail)}
       on:close={() => (isShowAlbumPicker = false)}
     />
   {/if}
@@ -794,11 +781,7 @@
   {/if}
 
   {#if isShowProfileImageCrop}
-    <ProfileImageCropper
-      {asset}
-      on:close={() => (isShowProfileImageCrop = false)}
-      on:close-viewer={handleCloseViewer}
-    />
+    <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
   {/if}
 </section>
 

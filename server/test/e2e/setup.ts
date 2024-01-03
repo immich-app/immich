@@ -8,8 +8,8 @@ export default async () => {
   if (!allTests) {
     console.warn(
       `\n\n
-      *** Not running all e2e tests. Run 'make test-e2e' to run all tests inside Docker (recommended)\n
-      *** or set 'IMMICH_RUN_ALL_TESTS=true' to run all tests(requires dependencies to be installed)\n`,
+      *** Not running all server e2e tests. Run 'make test-e2e' to run all tests inside Docker (recommended)\n
+      *** or set 'IMMICH_RUN_ALL_TESTS=true' to run all tests (requires dependencies to be installed)\n`,
     );
   }
 
@@ -35,7 +35,7 @@ export default async () => {
 
   if (process.env.DB_HOSTNAME === undefined) {
     // DB hostname not set which likely means we're not running e2e through docker compose. Start a local postgres container.
-    const pg = await new PostgreSqlContainer('postgres')
+    const pg = await new PostgreSqlContainer('tensorchord/pgvecto-rs:pg14-v0.1.11')
       .withExposedPorts(5432)
       .withDatabase('immich')
       .withUsername('postgres')
@@ -47,8 +47,7 @@ export default async () => {
   }
 
   process.env.NODE_ENV = 'development';
-  process.env.TYPESENSE_ENABLED = 'false';
-  process.env.IMMICH_MACHINE_LEARNING_ENABLED = 'false';
   process.env.IMMICH_TEST_ENV = 'true';
+  process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/immich-e2e-config.json`);
   process.env.TZ = 'Z';
 };

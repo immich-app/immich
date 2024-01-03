@@ -2,6 +2,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  LogLevel,
   SystemConfig,
   SystemConfigEntity,
   SystemConfigKey,
@@ -11,7 +12,8 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -21,7 +23,7 @@ import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';
 
-export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
+export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
 export const defaults = Object.freeze<SystemConfig>({
   ffmpeg: {
@@ -45,26 +47,23 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
-    [QueueName.CLIP_ENCODING]: { concurrency: 2 },
+    [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
     [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 5 },
-    [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
+  logging: {
+    enabled: true,
+    level: LogLevel.LOG,
+  },
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     url: process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003',
-    classification: {
-      enabled: true,
-      modelName: 'microsoft/resnet-50',
-      minScore: 0.9,
-    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -102,6 +101,8 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: true,
   },
   storageTemplate: {
+    enabled: false,
+    hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   thumbnail: {
@@ -131,7 +132,6 @@ export const defaults = Object.freeze<SystemConfig>({
 export enum FeatureFlag {
   CLIP_ENCODE = 'clipEncode',
   FACIAL_RECOGNITION = 'facialRecognition',
-  TAG_IMAGE = 'tagImage',
   MAP = 'map',
   REVERSE_GEOCODING = 'reverseGeocoding',
   SIDECAR = 'sidecar',
@@ -149,7 +149,7 @@ let instance: SystemConfigCore | null;
 
 @Injectable()
 export class SystemConfigCore {
-  private logger = new Logger(SystemConfigCore.name);
+  private logger = new ImmichLogger(SystemConfigCore.name);
   private validators: SystemConfigValidator[] = [];
   private configCache: SystemConfigEntity<SystemConfigValue>[] | null = null;
 
@@ -176,8 +176,6 @@ export class SystemConfigCore {
           throw new BadRequestException('Clip encoding is not enabled');
         case FeatureFlag.FACIAL_RECOGNITION:
           throw new BadRequestException('Facial recognition is not enabled');
-        case FeatureFlag.TAG_IMAGE:
-          throw new BadRequestException('Image tagging is not enabled');
         case FeatureFlag.SIDECAR:
           throw new BadRequestException('Sidecar is not enabled');
         case FeatureFlag.SEARCH:
@@ -206,11 +204,10 @@ export class SystemConfigCore {
     return {
       [FeatureFlag.CLIP_ENCODE]: mlEnabled && config.machineLearning.clip.enabled,
       [FeatureFlag.FACIAL_RECOGNITION]: mlEnabled && config.machineLearning.facialRecognition.enabled,
-      [FeatureFlag.TAG_IMAGE]: mlEnabled && config.machineLearning.classification.enabled,
       [FeatureFlag.MAP]: config.map.enabled,
       [FeatureFlag.REVERSE_GEOCODING]: config.reverseGeocoding.enabled,
       [FeatureFlag.SIDECAR]: true,
-      [FeatureFlag.SEARCH]: process.env.TYPESENSE_ENABLED !== 'false',
+      [FeatureFlag.SEARCH]: true,
       [FeatureFlag.TRASH]: config.trash.enabled,
 
       // TODO: use these instead of `POST oauth/config`
@@ -239,10 +236,7 @@ export class SystemConfigCore {
       _.set(config, key, value);
     }
 
-    const errors = await validate(plainToInstance(SystemConfigDto, config), {
-      forbidNonWhitelisted: true,
-      forbidUnknownValues: true,
-    });
+    const errors = await validate(plainToInstance(SystemConfigDto, config));
     if (errors.length > 0) {
       this.logger.error('Validation error', errors);
       if (configFilePath) {
@@ -253,14 +247,16 @@ export class SystemConfigCore {
     return config;
   }
 
-  public async updateConfig(config: SystemConfig): Promise<SystemConfig> {
+  public async updateConfig(newConfig: SystemConfig): Promise<SystemConfig> {
     if (await this.hasFeature(FeatureFlag.CONFIG_FILE)) {
       throw new BadRequestException('Cannot update configuration while IMMICH_CONFIG_FILE is in use');
     }
 
+    const oldConfig = await this.getConfig();
+
     try {
       for (const validator of this.validators) {
-        await validator(config);
+        await validator(newConfig, oldConfig);
       }
     } catch (e) {
       this.logger.warn(`Unable to save system config due to a validation error: ${e}`);
@@ -272,9 +268,9 @@ export class SystemConfigCore {
 
     for (const key of Object.values(SystemConfigKey)) {
       // get via dot notation
-      const item = { key, value: _.get(config, key) as SystemConfigValue };
+      const item = { key, value: _.get(newConfig, key) as SystemConfigValue };
       const defaultValue = _.get(defaults, key);
-      const isMissing = !_.has(config, key);
+      const isMissing = !_.has(newConfig, key);
 
       if (
         isMissing ||
@@ -298,11 +294,11 @@ export class SystemConfigCore {
       await this.repository.deleteKeys(deletes.map((item) => item.key));
     }
 
-    const newConfig = await this.getConfig();
+    const config = await this.getConfig();
 
-    this.config$.next(newConfig);
+    this.config$.next(config);
 
-    return newConfig;
+    return config;
   }
 
   public async refreshConfig() {
@@ -326,13 +322,13 @@ export class SystemConfigCore {
         }
 
         if (!_.isEmpty(file)) {
-          throw new Error(`Unknown keys found: ${JSON.stringify(file)}`);
+          this.logger.warn(`Unknown keys found: ${JSON.stringify(file, null, 2)}`);
         }
 
         this.configCache = overrides;
       } catch (error: Error | any) {
-        this.logger.error(`Unable to load configuration file: ${filepath} due to ${error}`, error?.stack);
-        throw new Error('Invalid configuration file');
+        this.logger.error(`Unable to load configuration file: ${filepath}`);
+        throw error;
       }
     }
 

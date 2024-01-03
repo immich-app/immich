@@ -11,12 +11,21 @@
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let oauthConfig: SystemConfigOAuthDto;
   export let disabled = false;
 
   let savedConfig: SystemConfigOAuthDto;
   let defaultConfig: SystemConfigOAuthDto;
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   const handleToggleOverride = () => {
     // click runs before bind
@@ -209,9 +218,8 @@
         {/if}
 
         <SettingButtonsRow
-          on:reset={reset}
+          on:reset={({ detail }) => handleReset(detail)}
           on:save={saveSetting}
-          on:reset-to-default={resetToDefault}
           showResetToDefault={!isEqual(savedConfig, defaultConfig)}
           {disabled}
         />

@@ -2,6 +2,7 @@ import { AssetEntity, SystemConfigKey } from '@app/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
+  newDatabaseRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
   newSmartInfoRepositoryMock,
@@ -10,12 +11,14 @@ import {
 import { JobName } from '../job';
 import {
   IAssetRepository,
+  IDatabaseRepository,
   IJobRepository,
   IMachineLearningRepository,
   ISmartInfoRepository,
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
+import { cleanModelName, getCLIPModelInfo } from './smart-info.constant';
 import { SmartInfoService } from './smart-info.service';
 
 const asset = {
@@ -30,6 +33,7 @@ describe(SmartInfoService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let smartMock: jest.Mocked<ISmartInfoRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
+  let databaseMock: jest.Mocked<IDatabaseRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
@@ -37,96 +41,14 @@ describe(SmartInfoService.name, () => {
     smartMock = newSmartInfoRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    sut = new SmartInfoService(assetMock, configMock, jobMock, smartMock, machineMock);
+    databaseMock = newDatabaseRepositoryMock();
+    sut = new SmartInfoService(assetMock, databaseMock, jobMock, machineMock, smartMock, configMock);
 
     assetMock.getByIds.mockResolvedValue([asset]);
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
-  });
-
-  describe('handleQueueObjectTagging', () => {
-    it('should do nothing if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
-
-      await sut.handleQueueObjectTagging({});
-
-      expect(assetMock.getAll).not.toHaveBeenCalled();
-      expect(assetMock.getWithout).not.toHaveBeenCalled();
-    });
-
-    it('should queue the assets without tags', async () => {
-      assetMock.getWithout.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
-
-      await sut.handleQueueObjectTagging({ force: false });
-
-      expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.CLASSIFY_IMAGE, data: { id: assetStub.image.id } }]]);
-      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.OBJECT_TAGS);
-    });
-
-    it('should queue all the assets', async () => {
-      assetMock.getAll.mockResolvedValue({
-        items: [assetStub.image],
-        hasNextPage: false,
-      });
-
-      await sut.handleQueueObjectTagging({ force: true });
-
-      expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.CLASSIFY_IMAGE, data: { id: assetStub.image.id } }]]);
-      expect(assetMock.getAll).toHaveBeenCalled();
-    });
-  });
-
-  describe('handleClassifyImage', () => {
-    it('should do nothing if machine learning is disabled', async () => {
-      configMock.load.mockResolvedValue([{ key: SystemConfigKey.MACHINE_LEARNING_ENABLED, value: false }]);
-
-      await sut.handleClassifyImage({ id: '123' });
-
-      expect(machineMock.classifyImage).not.toHaveBeenCalled();
-      expect(assetMock.getByIds).not.toHaveBeenCalled();
-    });
-
-    it('should skip assets without a resize path', async () => {
-      const asset = { resizePath: '' } as AssetEntity;
-      assetMock.getByIds.mockResolvedValue([asset]);
-
-      await sut.handleClassifyImage({ id: asset.id });
-
-      expect(smartMock.upsert).not.toHaveBeenCalled();
-      expect(machineMock.classifyImage).not.toHaveBeenCalled();
-    });
-
-    it('should save the returned tags', async () => {
-      machineMock.classifyImage.mockResolvedValue(['tag1', 'tag2', 'tag3']);
-
-      await sut.handleClassifyImage({ id: asset.id });
-
-      expect(machineMock.classifyImage).toHaveBeenCalledWith(
-        'http://immich-machine-learning:3003',
-        {
-          imagePath: 'path/to/resize.ext',
-        },
-        { enabled: true, minScore: 0.9, modelName: 'microsoft/resnet-50' },
-      );
-      expect(smartMock.upsert).toHaveBeenCalledWith({
-        assetId: 'asset-1',
-        tags: ['tag1', 'tag2', 'tag3'],
-      });
-    });
-
-    it('should always overwrite old tags', async () => {
-      machineMock.classifyImage.mockResolvedValue([]);
-
-      await sut.handleClassifyImage({ id: asset.id });
-
-      expect(machineMock.classifyImage).toHaveBeenCalled();
-      expect(smartMock.upsert).toHaveBeenCalled();
-    });
   });
 
   describe('handleQueueEncodeClip', () => {
@@ -147,7 +69,7 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({ force: false });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } }]);
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.CLIP_ENCODING);
     });
 
@@ -159,7 +81,7 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({ force: true });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.ENCODE_CLIP, data: { id: assetStub.image.id } }]);
       expect(assetMock.getAll).toHaveBeenCalled();
     });
   });
@@ -195,10 +117,29 @@ describe(SmartInfoService.name, () => {
         { imagePath: 'path/to/resize.ext' },
         { enabled: true, modelName: 'ViT-B-32__openai' },
       );
-      expect(smartMock.upsert).toHaveBeenCalledWith({
-        assetId: 'asset-1',
-        clipEmbedding: [0.01, 0.02, 0.03],
-      });
+      expect(smartMock.upsert).toHaveBeenCalledWith(
+        {
+          assetId: 'asset-1',
+        },
+        [0.01, 0.02, 0.03],
+      );
+    });
+  });
+
+  describe('cleanModelName', () => {
+    it('should clean name', () => {
+      expect(cleanModelName('ViT-B-32::openai')).toEqual('ViT-B-32__openai');
+      expect(cleanModelName('M-CLIP/XLM-Roberta-Large-Vit-L-14')).toEqual('XLM-Roberta-Large-Vit-L-14');
+    });
+  });
+
+  describe('getCLIPModelInfo', () => {
+    it('should return the model info', () => {
+      expect(getCLIPModelInfo('ViT-B-32__openai')).toEqual({ dimSize: 512 });
+    });
+
+    it('should throw an error if the model is not present', () => {
+      expect(() => getCLIPModelInfo('test-model')).toThrow('Unknown CLIP model: test-model');
     });
   });
 });

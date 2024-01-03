@@ -6,8 +6,8 @@ import {
   ReverseGeocodeResult,
 } from '@app/domain';
 import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
-import { DatabaseLock } from '@app/infra/utils/database-locks';
-import { Inject, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
 import { createReadStream, existsSync } from 'fs';
@@ -31,23 +31,30 @@ export class MetadataRepository implements IMetadataRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  private logger = new Logger(MetadataRepository.name);
+  private logger = new ImmichLogger(MetadataRepository.name);
 
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
     const geodataDate = await readFile('/usr/src/resources/geodata-date.txt', 'utf8');
 
-    await this.geodataPlacesRepository.query('SELECT pg_advisory_lock($1)', [DatabaseLock.GeodataImport]);
-
     const geocodingMetadata = await this.systemMetadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
 
     if (geocodingMetadata?.lastUpdate === geodataDate) {
-      await this.dataSource.query('SELECT pg_advisory_unlock($1)', [DatabaseLock.GeodataImport]);
       return;
     }
 
     this.logger.log('Importing geodata to database from file');
+    await this.importGeodata();
 
+    await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
+      lastUpdate: geodataDate,
+      lastImportFileName: CITIES_FILE,
+    });
+
+    this.logger.log('Geodata import completed');
+  }
+
+  private async importGeodata() {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
@@ -66,14 +73,6 @@ export class MetadataRepository implements IMetadataRepository {
     } finally {
       await queryRunner.release();
     }
-
-    await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
-      lastUpdate: geodataDate,
-      lastImportFileName: CITIES_FILE,
-    });
-
-    await this.dataSource.query('SELECT pg_advisory_unlock($1)', [DatabaseLock.GeodataImport]);
-    this.logger.log('Geodata import completed');
   }
 
   private async loadGeodataToTableFromFile<T extends GeoEntity>(

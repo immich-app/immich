@@ -30,3 +30,7 @@ export const searchNameLocal = (
         })
         .slice(0, slice);
 };
+
+export const getPersonNameWithHiddenValue = (name: string, isHidden: boolean) => {
+  return `${name ? name + (isHidden ? ' ' : '') : ''}${isHidden ? '(hidden)' : ''}`;
+};

@@ -1,4 +1,4 @@
-FROM python:3.11-bookworm@sha256:ba7a7ac30c38e119c4304f98ef0e188f90f4f67a958bb6899da9defb99bfb471 as builder
+FROM python:3.11-bookworm@sha256:291405e32318285d8913b7b03293777c255fb1e89305c82aa495ac747b0049fe as builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
@@ -13,7 +13,7 @@ ENV VIRTUAL_ENV="/opt/venv" PATH="/opt/venv/bin:${PATH}"
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --only main
 
-FROM python:3.11-slim-bookworm@sha256:8f82989e563d0dbad057a874a96438a360978c148e34f36c1db8d2d61b5fd6f0
+FROM python:3.11-slim-bookworm@sha256:8f64a67710f3d981cf3008d6f9f1dbe61accd7927f165f4e37ea3f8b883ccc3f
 
 RUN apt-get update && apt-get install -y --no-install-recommends tini libmimalloc2.0 && rm -rf /var/lib/apt/lists/*
 
@@ -24,6 +24,11 @@ ENV NODE_ENV=production \
   PYTHONUNBUFFERED=1 \
   PATH="/opt/venv/bin:$PATH" \
   PYTHONPATH=/usr/src
+
+# prevent core dumps
+RUN echo "hard core 0" >> /etc/security/limits.conf && \
+    echo "fs.suid_dumpable 0" >> /etc/sysctl.conf && \
+    echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 
 COPY --from=builder /opt/venv /opt/venv
 COPY start.sh log_conf.json ./

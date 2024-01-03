@@ -26,11 +26,10 @@ Immich optionally uses machine learning for several features. However, it can be
 
 ### How can I lower Immich's CPU usage?
 
-The initial backup is the most intensive due to the number of jobs running. The most CPU-intensive ones are transcoding and machine learning jobs (Tag Images, Encode CLIP, Recognize Faces), and to a lesser extent thumbnail generation. Here are some ways to lower their CPU usage:
+The initial backup is the most intensive due to the number of jobs running. The most CPU-intensive ones are transcoding and machine learning jobs (Tag Images, Smart Search, Recognize Faces), and to a lesser extent thumbnail generation. Here are some ways to lower their CPU usage:
 
 - Lower the job concurrency for these jobs to 1.
 - Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
-- Set the `TYPESENSE_THREAD_POOL_SIZE` environmental variable and restart the Typesense container. For instance, `TYPESENSE_THREAD_POOL_SIZE=8` will limit it to 8 threads.
 - Under Settings > Machine Learning Settings > Facial Recognition > Model Name, you can change the facial recognition model to `buffalo_s` instead of `buffalo_l`. The former is a smaller and faster model, albeit not as good.
   - You _must_ re-run the Recognize Faces job for all images after this for facial recognition on new images to work properly.
 - If these changes are not enough, see [below](/docs/FAQ.md#how-can-i-disable-machine-learning) for how you can disable machine learning.
@@ -45,14 +44,6 @@ Machine learning can be disabled under Settings > Machine Learning Settings, eit
 
 However, disabling all jobs will not disable the machine learning service itself. To prevent it from starting up at all in this case, you can comment out the `immich-machine-learning` section of the docker-compose.yml.
 
-### How can I disable TypeSense?
-
-:::info
-Disabling Typesense will result in a poor search experience since searching is reliant on it.
-:::
-
-You can disable Typesense by commenting out the `immich-typesense` section of the docker-compose.yml and setting `TYPESENSE_ENABLED=false` in your .env file.
-
 ### I'm getting errors about models being corrupt or failing to download. What do I do?
 
 You can delete the model cache volume, which is where models are downloaded. This will give the service a clean environment to download the model again.
@@ -65,9 +56,9 @@ Template changes will only apply to new assets. To retroactively apply the templ
 
 This is fixed by running the storage migration job.
 
-### Why is object detection not very good?
+### Why are there so many thumbnail generation jobs?
 
-The default image tagging model is relatively small. You can change this for a larger model like `google/vit-base-patch16-224` by setting the model name under Settings > Machine Learning Settings > Image Tagging. You can then re-run the Image Tagging job to get improved tags.
+Immich generates three thumbnails for each asset (blurred, small, and large), as well as a thumbnail for each recognized face.
 
 ### How can I see Immich logs?
 

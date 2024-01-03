@@ -1,10 +1,13 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
@@ -14,13 +17,33 @@ import 'package:socket_io_client/socket_io_client.dart';
 
 enum PendingAction {
   assetDelete,
+  assetUploaded,
+  assetHidden,
 }
 
 class PendingChange {
+  final String id;
   final PendingAction action;
   final dynamic value;
 
-  const PendingChange(this.action, this.value);
+  const PendingChange(
+    this.id,
+    this.action,
+    this.value,
+  );
+
+  @override
+  String toString() => 'PendingChange(id: $id, action: $action, value: $value)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is PendingChange && other.id == id && other.action == action;
+  }
+
+  @override
+  int get hashCode => id.hashCode ^ action.hashCode;
 }
 
 class WebsocketState {
@@ -131,6 +154,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_asset_trash', _handleServerUpdates);
         socket.on('on_asset_restore', _handleServerUpdates);
         socket.on('on_asset_update', _handleServerUpdates);
+        socket.on('on_asset_hidden', _handleOnAssetHidden);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
@@ -163,33 +187,76 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void addPendingChange(PendingAction action, dynamic value) {
+    final now = DateTime.now();
     state = state.copyWith(
-      pendingChanges: [...state.pendingChanges, PendingChange(action, value)],
+      pendingChanges: [
+        ...state.pendingChanges,
+        PendingChange(now.millisecondsSinceEpoch.toString(), action, value),
+      ],
     );
+    _debounce(handlePendingChanges);
   }
 
-  void handlePendingChanges() {
+  Future<void> _handlePendingDeletes() async {
     final deleteChanges = state.pendingChanges
         .where((c) => c.action == PendingAction.assetDelete)
         .toList();
     if (deleteChanges.isNotEmpty) {
       List<String> remoteIds =
           deleteChanges.map((a) => a.value.toString()).toList();
-      _ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
+      await _ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
       state = state.copyWith(
         pendingChanges: state.pendingChanges
-            .where((c) => c.action != PendingAction.assetDelete)
+            .whereNot((c) => deleteChanges.contains(c))
             .toList(),
       );
     }
   }
 
-  void _handleOnUploadSuccess(dynamic data) {
-    final dto = AssetResponseDto.fromJson(data);
-    if (dto != null) {
-      final newAsset = Asset.remote(dto);
-      _ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+  Future<void> _handlePendingUploaded() async {
+    final uploadedChanges = state.pendingChanges
+        .where((c) => c.action == PendingAction.assetUploaded)
+        .toList();
+    if (uploadedChanges.isNotEmpty) {
+      List<AssetResponseDto?> remoteAssets = uploadedChanges
+          .map((a) => AssetResponseDto.fromJson(a.value))
+          .toList();
+      for (final dto in remoteAssets) {
+        if (dto != null) {
+          final newAsset = Asset.remote(dto);
+          await _ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+        }
+      }
+      state = state.copyWith(
+        pendingChanges: state.pendingChanges
+            .whereNot((c) => uploadedChanges.contains(c))
+            .toList(),
+      );
     }
+  }
+
+  Future<void> _handlingPendingHidden() async {
+    final hiddenChanges = state.pendingChanges
+        .where((c) => c.action == PendingAction.assetHidden)
+        .toList();
+    if (hiddenChanges.isNotEmpty) {
+      List<String> remoteIds =
+          hiddenChanges.map((a) => a.value.toString()).toList();
+      final db = _ref.watch(dbProvider);
+      await db.writeTxn(() => db.assets.deleteAllByRemoteId(remoteIds));
+
+      state = state.copyWith(
+        pendingChanges: state.pendingChanges
+            .whereNot((c) => hiddenChanges.contains(c))
+            .toList(),
+      );
+    }
+  }
+
+  void handlePendingChanges() async {
+    await _handlePendingUploaded();
+    await _handlePendingDeletes();
+    await _handlingPendingHidden();
   }
 
   void _handleOnConfigUpdate(dynamic _) {
@@ -202,10 +269,14 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     _ref.read(assetProvider.notifier).getAllAsset();
   }
 
-  void _handleOnAssetDelete(dynamic data) {
-    addPendingChange(PendingAction.assetDelete, data);
-    _debounce(handlePendingChanges);
-  }
+  void _handleOnUploadSuccess(dynamic data) =>
+      addPendingChange(PendingAction.assetUploaded, data);
+
+  void _handleOnAssetDelete(dynamic data) =>
+      addPendingChange(PendingAction.assetDelete, data);
+
+  void _handleOnAssetHidden(dynamic data) =>
+      addPendingChange(PendingAction.assetHidden, data);
 
   _handleReleaseUpdates(dynamic data) {
     // Json guard

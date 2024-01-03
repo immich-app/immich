@@ -6,6 +6,7 @@ import {
   IAuditRepository,
   ICommunicationRepository,
   ICryptoRepository,
+  IDatabaseRepository,
   IJobRepository,
   IKeyRepository,
   ILibraryRepository,
@@ -15,7 +16,6 @@ import {
   IMoveRepository,
   IPartnerRepository,
   IPersonRepository,
-  ISearchRepository,
   IServerInfoRepository,
   ISharedLinkRepository,
   ISmartInfoRepository,
@@ -44,6 +44,7 @@ import {
   AuditRepository,
   CommunicationRepository,
   CryptoRepository,
+  DatabaseRepository,
   FilesystemProvider,
   JobRepository,
   LibraryRepository,
@@ -59,7 +60,6 @@ import {
   SystemConfigRepository,
   SystemMetadataRepository,
   TagRepository,
-  TypesenseRepository,
   UserRepository,
   UserTokenRepository,
 } from './repositories';
@@ -72,6 +72,7 @@ const providers: Provider[] = [
   { provide: IAuditRepository, useClass: AuditRepository },
   { provide: ICommunicationRepository, useClass: CommunicationRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
+  { provide: IDatabaseRepository, useClass: DatabaseRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IKeyRepository, useClass: ApiKeyRepository },
@@ -80,7 +81,6 @@ const providers: Provider[] = [
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
-  { provide: ISearchRepository, useClass: TypesenseRepository },
   { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISmartInfoRepository, useClass: SmartInfoRepository },
@@ -104,6 +104,7 @@ const imports = [
 const moduleExports = [...providers];
 
 if (process.env.IMMICH_TEST_ENV !== 'true') {
+  // Currently not running e2e tests, set up redis and bull queues
   imports.push(BullModule.forRoot(bullConfig));
   imports.push(BullModule.registerQueue(...bullQueues));
   moduleExports.push(BullModule);

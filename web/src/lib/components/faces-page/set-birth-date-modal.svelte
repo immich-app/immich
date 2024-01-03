@@ -12,8 +12,12 @@
     updated: string;
   }>();
 
+  const todayFormatted = new Date().toISOString().split('T')[0];
+
   const handleCancel = () => dispatch('close');
-  const handleSubmit = () => dispatch('updated', birthDate);
+  const handleSubmit = () => {
+    dispatch('updated', birthDate);
+  };
 </script>
 
 <FullScreenModal on:clickOutside={() => handleCancel()}>
@@ -33,7 +37,14 @@
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <input class="immich-form-input" id="birthDate" name="birthDate" type="date" bind:value={birthDate} />
+        <input
+          class="immich-form-input"
+          id="birthDate"
+          name="birthDate"
+          type="date"
+          bind:value={birthDate}
+          max={todayFormatted}
+        />
       </div>
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>Cancel</Button>

@@ -12,15 +12,15 @@ x-server-build: &server-common
     context: ../
     dockerfile: server/Dockerfile
     target: dev
+  restart: always
   volumes:
     - ../server:/usr/src/app
     - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+    - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
     - /usr/src/app/node_modules
     - /etc/localtime:/etc/localtime:ro
   env_file:
     - .env
-  environment:
-    - NODE_ENV=development
   ulimits:
     nofile:
       soft: 1048576
@@ -29,7 +29,7 @@ x-server-build: &server-common
 services:
   immich-server:
     container_name: immich_server
-    command: npm run start:debug immich
+    command: [ "/usr/src/app/bin/immich-dev", "immich" ]
     <<: *server-common
     ports:
       - 3001:3001
@@ -37,11 +37,10 @@ services:
     depends_on:
       - redis
       - database
-      - typesense
 
   immich-microservices:
     container_name: immich_microservices
-    command: npm run start:debug microservices
+    command: [ "/usr/src/app/bin/immich-dev", "microservices" ]
     <<: *server-common
     # extends:
     #   file: hwaccel.yml
@@ -51,7 +50,6 @@ services:
     depends_on:
       - database
       - immich-server
-      - typesense
 
   immich-web:
     container_name: immich_web
@@ -89,30 +87,17 @@ services:
       - model-cache:/cache
     env_file:
       - .env
-    environment:
-      - NODE_ENV=development
     depends_on:
       - database
     restart: unless-stopped
 
-  typesense:
-    container_name: immich_typesense
-    image: typesense/typesense:0.24.1@sha256:9bcff2b829f12074426ca044b56160ca9d777a0c488303469143dd9f8259d4dd
-    environment:
-      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
-      - TYPESENSE_DATA_DIR=/data
-      # remove this to get debug messages
-      - GLOG_minloglevel=1
-    volumes:
-      - ${UPLOAD_LOCATION}/typesense:/data
-
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:60e49e22fa5706cd8df7d5e0bc50ee9bab7c608039fa653c4d961014237cca46
+    image: redis:6.2-alpine@sha256:c5a607fb6e1bb15d32bbcf14db22787d19e428d59e31a5da67511b49bb0f1ccc
 
   database:
     container_name: immich_postgres
-    image: postgres:14-alpine@sha256:6a0e35296341e676fe6bd8d236c72afffe2dfe3d7eb9c2405c0f3fc04500cd07
+    image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
     env_file:
       - .env
     environment:

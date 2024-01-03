@@ -68,8 +68,6 @@
 
   let album = data.album;
 
-  $user = data.user;
-
   $: album = data.album;
 
   $: {
@@ -95,7 +93,7 @@
   let titleInput: HTMLInputElement;
   let isEditingDescription = false;
   let isCreatingSharedAlbum = false;
-  let currentAlbumName = '';
+  let currentAlbumName = album.albumName;
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
@@ -111,8 +109,8 @@
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
-  $: isOwned = data.user.id == album.ownerId;
-  $: isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === data.user.id);
+  $: isOwned = $user.id == album.ownerId;
+  $: isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === $user.id);
   $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
   $: {
     if (isShowActivity) {
@@ -345,7 +343,7 @@
   };
 
   const handleRemoveUser = async (userId: string) => {
-    if (userId == 'me' || userId === data.user.id) {
+    if (userId == 'me' || userId === $user.id) {
       goto(backUrl);
       return;
     }
@@ -459,7 +457,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === ViewMode.VIEW || viewMode === ViewMode.ALBUM_OPTIONS}
-        <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close-button-click={() => goto(backUrl)}>
+        <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(backUrl)}>
           <svelte:fragment slot="trailing">
             <CircleIconButton
               title="Add Photos"
@@ -515,7 +513,7 @@
       {/if}
 
       {#if viewMode === ViewMode.SELECT_ASSETS}
-        <ControlAppBar on:close-button-click={handleCloseSelectAssets}>
+        <ControlAppBar on:close={handleCloseSelectAssets}>
           <svelte:fragment slot="leading">
             <p class="text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
@@ -541,7 +539,7 @@
       {/if}
 
       {#if viewMode === ViewMode.SELECT_THUMBNAIL}
-        <ControlAppBar on:close-button-click={() => (viewMode = ViewMode.VIEW)}>
+        <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW)}>
           <svelte:fragment slot="leading">Select Album Cover</svelte:fragment>
         </ControlAppBar>
       {/if}
@@ -578,6 +576,7 @@
                 disabled={!isOwned}
                 bind:this={titleInput}
                 title="Edit Title"
+                placeholder="Add a title"
               />
 
               <!-- ALBUM SUMMARY -->

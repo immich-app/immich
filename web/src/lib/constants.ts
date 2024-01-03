@@ -4,7 +4,9 @@ export enum AssetAction {
   FAVORITE = 'favorite',
   UNFAVORITE = 'unfavorite',
   TRASH = 'trash',
-  RESTORE = 'restore',
+  DELETE = 'delete',
+  // RESTORE = 'restore',
+  ADD = 'add',
 }
 
 export enum AppRoute {
@@ -28,6 +30,7 @@ export enum AppRoute {
   USER_SETTINGS = '/user-settings',
   MEMORY = '/memory',
   TRASH = '/trash',
+  PARTNERS = '/partners',
 
   AUTH_LOGIN = '/auth/login',
   AUTH_LOGOUT = '/auth/logout',

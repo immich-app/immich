@@ -1,4 +1,5 @@
 import {
+  Check,
   Column,
   CreateDateColumn,
   Entity,
@@ -8,10 +9,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AssetFaceEntity } from './asset-face.entity';
-import { AssetEntity } from './asset.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('person')
+@Check(`"birthDate" <= CURRENT_DATE`)
 export class PersonEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -40,8 +41,8 @@ export class PersonEntity {
   @Column({ nullable: true })
   faceAssetId!: string | null;
 
-  @ManyToOne(() => AssetEntity, { onDelete: 'SET NULL', nullable: true })
-  faceAsset!: AssetEntity | null;
+  @ManyToOne(() => AssetFaceEntity, { onDelete: 'SET NULL', nullable: true })
+  faceAsset!: AssetFaceEntity | null;
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.person)
   faces!: AssetFaceEntity[];

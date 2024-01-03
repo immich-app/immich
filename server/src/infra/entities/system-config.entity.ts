@@ -35,9 +35,8 @@ export enum SystemConfigKey {
   JOB_THUMBNAIL_GENERATION_CONCURRENCY = 'job.thumbnailGeneration.concurrency',
   JOB_METADATA_EXTRACTION_CONCURRENCY = 'job.metadataExtraction.concurrency',
   JOB_VIDEO_CONVERSION_CONCURRENCY = 'job.videoConversion.concurrency',
-  JOB_OBJECT_TAGGING_CONCURRENCY = 'job.objectTagging.concurrency',
   JOB_RECOGNIZE_FACES_CONCURRENCY = 'job.recognizeFaces.concurrency',
-  JOB_CLIP_ENCODING_CONCURRENCY = 'job.clipEncoding.concurrency',
+  JOB_CLIP_ENCODING_CONCURRENCY = 'job.smartSearch.concurrency',
   JOB_BACKGROUND_TASK_CONCURRENCY = 'job.backgroundTask.concurrency',
   JOB_STORAGE_TEMPLATE_MIGRATION_CONCURRENCY = 'job.storageTemplateMigration.concurrency',
   JOB_SEARCH_CONCURRENCY = 'job.search.concurrency',
@@ -45,12 +44,14 @@ export enum SystemConfigKey {
   JOB_LIBRARY_CONCURRENCY = 'job.library.concurrency',
   JOB_MIGRATION_CONCURRENCY = 'job.migration.concurrency',
 
+  LIBRARY_SCAN_ENABLED = 'library.scan.enabled',
+  LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
+
+  LOGGING_ENABLED = 'logging.enabled',
+  LOGGING_LEVEL = 'logging.level',
+
   MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
   MACHINE_LEARNING_URL = 'machineLearning.url',
-
-  MACHINE_LEARNING_CLASSIFICATION_ENABLED = 'machineLearning.classification.enabled',
-  MACHINE_LEARNING_CLASSIFICATION_MODEL_NAME = 'machineLearning.classification.modelName',
-  MACHINE_LEARNING_CLASSIFICATION_MIN_SCORE = 'machineLearning.classification.minScore',
 
   MACHINE_LEARNING_CLIP_ENABLED = 'machineLearning.clip.enabled',
   MACHINE_LEARNING_CLIP_MODEL_NAME = 'machineLearning.clip.modelName',
@@ -83,6 +84,8 @@ export enum SystemConfigKey {
 
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
 
+  STORAGE_TEMPLATE_ENABLED = 'storageTemplate.enabled',
+  STORAGE_TEMPLATE_HASH_VERIFICATION_ENABLED = 'storageTemplate.hashVerificationEnabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
 
   THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
@@ -94,9 +97,6 @@ export enum SystemConfigKey {
   TRASH_DAYS = 'trash.days',
 
   THEME_CUSTOM_CSS = 'theme.customCss',
-
-  LIBRARY_SCAN_ENABLED = 'library.scan.enabled',
-  LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
 }
 
 export enum TranscodePolicy {
@@ -144,6 +144,15 @@ export enum Colorspace {
   P3 = 'p3',
 }
 
+export enum LogLevel {
+  VERBOSE = 'verbose',
+  DEBUG = 'debug',
+  LOG = 'log',
+  WARN = 'warn',
+  ERROR = 'error',
+  FATAL = 'fatal',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: number;
@@ -164,15 +173,14 @@ export interface SystemConfig {
     accel: TranscodeHWAccel;
     tonemap: ToneMapping;
   };
-  job: Record<QueueName, { concurrency: number }>;
+  job: Record<Exclude<QueueName, QueueName.STORAGE_TEMPLATE_MIGRATION>, { concurrency: number }>;
+  logging: {
+    enabled: boolean;
+    level: LogLevel;
+  };
   machineLearning: {
     enabled: boolean;
     url: string;
-    classification: {
-      enabled: boolean;
-      modelName: string;
-      minScore: number;
-    };
     clip: {
       enabled: boolean;
       modelName: string;
@@ -210,6 +218,8 @@ export interface SystemConfig {
     enabled: boolean;
   };
   storageTemplate: {
+    enabled: boolean;
+    hashVerificationEnabled: boolean;
     template: string;
   };
   thumbnail: {

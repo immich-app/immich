@@ -7,7 +7,11 @@ export const keyStub = {
     id: 'my-random-guid',
     name: 'My Key',
     key: 'my-api-key (hashed)',
-    userId: authStub.admin.id,
+    userId: authStub.admin.user.id,
     user: userStub.admin,
   } as APIKeyEntity),
+};
+
+export const apiKeyCreateStub = {
+  name: 'API Key',
 };

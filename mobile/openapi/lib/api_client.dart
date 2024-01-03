@@ -215,6 +215,14 @@ class ApiClient {
           return AssetBulkUploadCheckResponseDto.fromJson(value);
         case 'AssetBulkUploadCheckResult':
           return AssetBulkUploadCheckResult.fromJson(value);
+        case 'AssetFaceResponseDto':
+          return AssetFaceResponseDto.fromJson(value);
+        case 'AssetFaceUpdateDto':
+          return AssetFaceUpdateDto.fromJson(value);
+        case 'AssetFaceUpdateItem':
+          return AssetFaceUpdateItem.fromJson(value);
+        case 'AssetFaceWithoutPersonResponseDto':
+          return AssetFaceWithoutPersonResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
         case 'AssetIdsDto':
@@ -255,8 +263,6 @@ class ApiClient {
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':
           return CheckExistingAssetsResponseDto.fromJson(value);
-        case 'ClassificationConfig':
-          return ClassificationConfig.fromJson(value);
         case 'Colorspace':
           return ColorspaceTypeTransformer().decode(value);
         case 'CreateAlbumDto':
@@ -283,6 +289,8 @@ class ApiClient {
           return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
+        case 'FaceDto':
+          return FaceDto.fromJson(value);
         case 'FileChecksumDto':
           return FileChecksumDto.fromJson(value);
         case 'FileChecksumResponseDto':
@@ -311,6 +319,8 @@ class ApiClient {
           return LibraryStatsResponseDto.fromJson(value);
         case 'LibraryType':
           return LibraryTypeTypeTransformer().decode(value);
+        case 'LogLevel':
+          return LogLevelTypeTransformer().decode(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
@@ -353,6 +363,8 @@ class ApiClient {
           return PersonStatisticsResponseDto.fromJson(value);
         case 'PersonUpdateDto':
           return PersonUpdateDto.fromJson(value);
+        case 'PersonWithFacesResponseDto':
+          return PersonWithFacesResponseDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'ReactionLevel':
@@ -415,6 +427,8 @@ class ApiClient {
           return SystemConfigLibraryDto.fromJson(value);
         case 'SystemConfigLibraryScanDto':
           return SystemConfigLibraryScanDto.fromJson(value);
+        case 'SystemConfigLoggingDto':
+          return SystemConfigLoggingDto.fromJson(value);
         case 'SystemConfigMachineLearningDto':
           return SystemConfigMachineLearningDto.fromJson(value);
         case 'SystemConfigMapDto':

@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // JobStatusDto clipEncoding
-    test('to test the property `clipEncoding`', () async {
-      // TODO
-    });
-
     // JobStatusDto library_
     test('to test the property `library_`', () async {
       // TODO
@@ -41,11 +36,6 @@ void main() {
       // TODO
     });
 
-    // JobStatusDto objectTagging
-    test('to test the property `objectTagging`', () async {
-      // TODO
-    });
-
     // JobStatusDto recognizeFaces
     test('to test the property `recognizeFaces`', () async {
       // TODO
@@ -58,6 +48,11 @@ void main() {
 
     // JobStatusDto sidecar
     test('to test the property `sidecar`', () async {
+      // TODO
+    });
+
+    // JobStatusDto smartSearch
+    test('to test the property `smartSearch`', () async {
       // TODO
     });
 

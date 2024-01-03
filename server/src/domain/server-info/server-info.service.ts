@@ -1,9 +1,10 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { ServerVersion, isDev, mimeTypes, serverVersion } from '../domain.constant';
+import { Version, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import {
-  CommunicationEvent,
+  ClientEvent,
   ICommunicationRepository,
   IServerInfoRepository,
   IStorageRepository,
@@ -25,7 +26,7 @@ import {
 
 @Injectable()
 export class ServerInfoService {
-  private logger = new Logger(ServerInfoService.name);
+  private logger = new ImmichLogger(ServerInfoService.name);
   private configCore: SystemConfigCore;
   private releaseVersion = serverVersion;
   private releaseVersionCheckedAt: DateTime | null = null;
@@ -38,7 +39,7 @@ export class ServerInfoService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.communicationRepository.addEventListener('connect', (userId) => this.handleConnect(userId));
+    this.communicationRepository.on('connect', (userId) => this.handleConnect(userId));
   }
 
   async getInfo(): Promise<ServerInfoResponseDto> {
@@ -137,7 +138,7 @@ export class ServerInfoService {
       }
 
       const githubRelease = await this.repository.getGitHubRelease();
-      const githubVersion = ServerVersion.fromString(githubRelease.tag_name);
+      const githubVersion = Version.fromString(githubRelease.tag_name);
       const publishedAt = new Date(githubRelease.published_at);
       this.releaseVersion = githubVersion;
       this.releaseVersionCheckedAt = DateTime.now();
@@ -154,12 +155,12 @@ export class ServerInfoService {
   }
 
   private async handleConnect(userId: string) {
-    this.communicationRepository.send(CommunicationEvent.SERVER_VERSION, userId, serverVersion);
+    this.communicationRepository.send(ClientEvent.SERVER_VERSION, userId, serverVersion);
     this.newReleaseNotification(userId);
   }
 
   private newReleaseNotification(userId?: string) {
-    const event = CommunicationEvent.NEW_RELEASE;
+    const event = ClientEvent.NEW_RELEASE;
     const payload = {
       isAvailable: this.releaseVersion.isNewerThan(serverVersion),
       checkedAt: this.releaseVersionCheckedAt,

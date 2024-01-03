@@ -1,11 +1,13 @@
 import {
   AccessCore,
   AssetResponseDto,
-  AuthUserDto,
+  AuthDto,
+  CacheControl,
   getLivePhotoMotionFilename,
   IAccessRepository,
   IJobRepository,
   ILibraryRepository,
+  ImmichFileResponse,
   JobName,
   mapAsset,
   mimeTypes,
@@ -14,11 +16,8 @@ import {
   UploadFile,
 } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-import { Response as Res, Response } from 'express';
-import { constants } from 'fs';
-import fs from 'fs/promises';
-import path from 'path';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
@@ -39,12 +38,9 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 
-type SendFile = Parameters<Response['sendFile']>;
-type SendFileOptions = SendFile[1];
-
 @Injectable()
 export class AssetService {
-  readonly logger = new Logger(AssetService.name);
+  readonly logger = new ImmichLogger(AssetService.name);
   private assetCore: AssetCore;
   private access: AccessCore;
 
@@ -59,7 +55,7 @@ export class AssetService {
   }
 
   public async uploadFile(
-    authUser: AuthUserDto,
+    auth: AuthDto,
     dto: CreateAssetDto,
     file: UploadFile,
     livePhotoFile?: UploadFile,
@@ -75,15 +71,15 @@ export class AssetService {
     let livePhotoAsset: AssetEntity | null = null;
 
     try {
-      const libraryId = await this.getLibraryId(authUser, dto.libraryId);
-      await this.access.requirePermission(authUser, Permission.ASSET_UPLOAD, libraryId);
+      const libraryId = await this.getLibraryId(auth, dto.libraryId);
+      await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
-        livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
+        livePhotoAsset = await this.assetCore.create(auth, livePhotoDto, livePhotoFile);
       }
 
       const asset = await this.assetCore.create(
-        authUser,
+        auth,
         { ...dto, libraryId },
         file,
         livePhotoAsset?.id,
@@ -101,7 +97,7 @@ export class AssetService {
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
-        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(auth.user.id, checksums);
         return { id: duplicate.id, duplicate: true };
       }
 
@@ -110,33 +106,29 @@ export class AssetService {
     }
   }
 
-  public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
-    return this._assetRepository.getAllByDeviceId(authUser.id, deviceId);
+  public async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
+    return this._assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
-  public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    const userId = dto.userId || authUser.id;
-    await this.access.requirePermission(authUser, Permission.TIMELINE_READ, userId);
+  public async getAllAssets(auth: AuthDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
+    const userId = dto.userId || auth.user.id;
+    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
     const assets = await this._assetRepository.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetById(
-    authUser: AuthUserDto,
-    assetId: string,
-  ): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
+  public async getAssetById(auth: AuthDto, assetId: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
+    await this.access.requirePermission(auth, Permission.ASSET_READ, assetId);
 
-    const includeMetadata = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
-    if (includeMetadata) {
+    if (!auth.sharedLink || auth.sharedLink?.showExif) {
       const data = mapAsset(asset, { withStack: true });
 
-      if (data.ownerId !== authUser.id) {
+      if (data.ownerId !== auth.user.id) {
         data.people = [];
       }
 
-      if (authUser.isPublicUser) {
+      if (auth.sharedLink) {
         delete data.owner;
       }
 
@@ -146,49 +138,50 @@ export class AssetService {
     }
   }
 
-  async serveThumbnail(authUser: AuthUserDto, assetId: string, query: GetAssetThumbnailDto, res: Res) {
-    await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
+  async serveThumbnail(auth: AuthDto, assetId: string, dto: GetAssetThumbnailDto): Promise<ImmichFileResponse> {
+    await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
     const asset = await this._assetRepository.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
 
-    try {
-      await this.sendFile(res, this.getThumbnailPath(asset, query.format));
-    } catch (e) {
-      res.header('Cache-Control', 'none');
-      this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
-      throw new InternalServerErrorException(
-        `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
-        { cause: e as Error },
-      );
-    }
+    const filepath = this.getThumbnailPath(asset, dto.format);
+
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
-  public async serveFile(authUser: AuthUserDto, assetId: string, query: ServeFileDto, res: Res) {
+  public async serveFile(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
     // this is not quite right as sometimes this returns the original still
-    await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
+    await this.access.requirePermission(auth, Permission.ASSET_VIEW, assetId);
 
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
     }
 
-    const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
+    const allowOriginalFile = !!(!auth.sharedLink || auth.sharedLink?.allowDownload);
 
     const filepath =
       asset.type === AssetType.IMAGE
-        ? this.getServePath(asset, query, allowOriginalFile)
+        ? this.getServePath(asset, dto, allowOriginalFile)
         : asset.encodedVideoPath || asset.originalPath;
 
-    await this.sendFile(res, filepath);
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
-  async getAssetSearchTerm(authUser: AuthUserDto): Promise<string[]> {
+  async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {
     const possibleSearchTerm = new Set<string>();
 
-    const rows = await this._assetRepository.getSearchPropertiesByUserId(authUser.id);
+    const rows = await this._assetRepository.getSearchPropertiesByUserId(auth.user.id);
     rows.forEach((row: SearchPropertiesDto) => {
       // tags
       row.tags?.map((tag: string) => possibleSearchTerm.add(tag?.toLowerCase()));
@@ -218,24 +211,24 @@ export class AssetService {
     return Array.from(possibleSearchTerm).filter((x) => x != null && x != '');
   }
 
-  async getCuratedLocation(authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
-    return this._assetRepository.getLocationsByUserId(authUser.id);
+  async getCuratedLocation(auth: AuthDto): Promise<CuratedLocationsResponseDto[]> {
+    return this._assetRepository.getLocationsByUserId(auth.user.id);
   }
 
-  async getCuratedObject(authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
-    return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
+  async getCuratedObject(auth: AuthDto): Promise<CuratedObjectsResponseDto[]> {
+    return this._assetRepository.getDetectedObjectsByUserId(auth.user.id);
   }
 
   async checkExistingAssets(
-    authUser: AuthUserDto,
+    auth: AuthDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return {
-      existingIds: await this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto),
+      existingIds: await this._assetRepository.getExistingAssets(auth.user.id, checkExistingAssetsDto),
     };
   }
 
-  async bulkUploadCheck(authUser: AuthUserDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
+  async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
     // support base64 and hex checksums
     for (const asset of dto.assets) {
       if (asset.checksum.length === 28) {
@@ -244,7 +237,7 @@ export class AssetService {
     }
 
     const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
-    const results = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
+    const results = await this._assetRepository.getAssetsByChecksums(auth.user.id, checksums);
     const checksumMap: Record<string, string> = {};
 
     for (const { id, checksum } of results) {
@@ -273,10 +266,6 @@ export class AssetService {
     };
   }
 
-  getExifPermission(authUser: AuthUserDto) {
-    return !authUser.isPublicUser || authUser.isShowMetadata;
-  }
-
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
@@ -294,13 +283,13 @@ export class AssetService {
     }
   }
 
-  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): string {
+  private getServePath(asset: AssetEntity, dto: ServeFileDto, allowOriginalFile: boolean): string {
     const mimeType = mimeTypes.lookup(asset.originalPath);
 
     /**
      * Serve file viewer on the web
      */
-    if (query.isWeb && mimeType != 'image/gif') {
+    if (dto.isWeb && mimeType != 'image/gif') {
       if (!asset.resizePath) {
         this.logger.error('Error serving IMAGE asset for web');
         throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
@@ -312,7 +301,7 @@ export class AssetService {
     /**
      * Serve thumbnail image for both web and mobile app
      */
-    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && mimeType === 'image/gif')) {
+    if ((!dto.isThumb && allowOriginalFile) || (dto.isWeb && mimeType === 'image/gif')) {
       return asset.originalPath;
     }
 
@@ -327,35 +316,15 @@ export class AssetService {
     return asset.resizePath;
   }
 
-  private async sendFile(res: Res, filepath: string): Promise<void> {
-    await fs.access(filepath, constants.R_OK);
-    const options: SendFileOptions = { dotfiles: 'allow' };
-    if (!path.isAbsolute(filepath)) {
-      options.root = process.cwd();
-    }
-
-    res.set('Cache-Control', 'private, max-age=86400, no-transform');
-    res.header('Content-Type', mimeTypes.lookup(filepath));
-    res.sendFile(filepath, options, (error: Error) => {
-      if (!error) {
-        return;
-      }
-
-      if (error.message !== 'Request aborted') {
-        this.logger.error(`Unable to send file: ${error.name}`, error.stack);
-      }
-    });
-  }
-
-  private async getLibraryId(authUser: AuthUserDto, libraryId?: string) {
+  private async getLibraryId(auth: AuthDto, libraryId?: string) {
     if (libraryId) {
       return libraryId;
     }
 
-    let library = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
+    let library = await this.libraryRepository.getDefaultUploadLibrary(auth.user.id);
     if (!library) {
       library = await this.libraryRepository.create({
-        ownerId: authUser.id,
+        ownerId: auth.user.id,
         name: 'Default Library',
         assets: [],
         type: LibraryType.UPLOAD,
