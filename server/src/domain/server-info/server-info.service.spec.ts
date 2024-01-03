@@ -195,6 +195,8 @@ describe(ServerInfoService.name, () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
+        isInitialized: undefined,
+        isOnboarded: false,
       });
       expect(configMock.load).toHaveBeenCalled();
     });
