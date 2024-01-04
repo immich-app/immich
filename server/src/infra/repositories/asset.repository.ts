@@ -828,6 +828,7 @@ export class AssetRepository implements IAssetRepository {
         @@ PLAINTO_TSQUERY('english', :query)`,
         { query },
       )
+      .addOrderBy('asset.fileCreatedAt', 'DESC')
       .limit(numResults)
       .getRawMany();
 
