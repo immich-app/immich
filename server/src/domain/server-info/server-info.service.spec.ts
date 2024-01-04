@@ -1,3 +1,4 @@
+import { SystemMetadataKey } from '@app/infra/entities';
 import {
   newCommunicationRepositoryMock,
   newServerInfoRepositoryMock,
@@ -200,6 +201,13 @@ describe(ServerInfoService.name, () => {
         externalDomain: '',
       });
       expect(configMock.load).toHaveBeenCalled();
+    });
+  });
+
+  describe('setAdminOnboarding', () => {
+    it('should set admin onboarding to true', async () => {
+      await sut.setAdminOnboarding();
+      expect(systemMetadataMock.set).toHaveBeenCalledWith(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
     });
   });
 
