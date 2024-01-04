@@ -12,6 +12,7 @@ import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_logo.dart';
 import 'package:immich_mobile/shared/ui/immich_title_text.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -65,18 +66,18 @@ class LoginForm extends HookConsumerWidget {
         isLoadingServer.value = true;
         final endpoint = await apiService.resolveAndSetEndpoint(serverUrl);
 
-        final loginConfig = await apiService.oAuthApi.generateOAuthConfig(
-          OAuthConfigDto(redirectUri: serverUrl),
-        );
+        // Fetch and load server config and features
+        await ref.read(serverInfoProvider.notifier).getServerInfo();
 
-        if (loginConfig != null) {
-          isOauthEnable.value = loginConfig.enabled;
-          isPasswordLoginEnable.value = loginConfig.passwordLoginEnabled;
-          oAuthButtonLabel.value = loginConfig.buttonText ?? 'OAuth';
-        } else {
-          isOauthEnable.value = false;
-          isPasswordLoginEnable.value = true;
-        }
+        final serverInfo = ref.read(serverInfoProvider);
+        final features = serverInfo.serverFeatures;
+        final config = serverInfo.serverConfig;
+
+        isOauthEnable.value = features.oauthEnabled;
+        isPasswordLoginEnable.value = features.passwordLogin;
+        oAuthButtonLabel.value = config.oauthButtonText.isNotEmpty
+            ? config.oauthButtonText
+            : 'OAuth';
 
         serverEndpoint.value = endpoint;
       } on ApiException catch (e) {
@@ -183,11 +184,11 @@ class LoginForm extends HookConsumerWidget {
     oAuthLogin() async {
       var oAuthService = ref.watch(oAuthServiceProvider);
       ref.watch(assetProvider.notifier).clearAllAsset();
-      OAuthConfigResponseDto? oAuthServerConfig;
+      String? oAuthServerUrl;
 
       try {
-        oAuthServerConfig = await oAuthService
-            .getOAuthServerConfig(sanitizeUrl(serverEndpointController.text));
+        oAuthServerUrl = await oAuthService
+            .getOAuthServerUrl(sanitizeUrl(serverEndpointController.text));
 
         isLoading.value = true;
       } catch (e) {
@@ -200,9 +201,8 @@ class LoginForm extends HookConsumerWidget {
         return;
       }
 
-      if (oAuthServerConfig != null && oAuthServerConfig.enabled) {
-        var loginResponseDto =
-            await oAuthService.oAuthLogin(oAuthServerConfig.url!);
+      if (oAuthServerUrl != null) {
+        var loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl);
 
         if (loginResponseDto != null) {
           var isSuccess = await ref
