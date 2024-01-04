@@ -55,7 +55,7 @@ Feel free to make a feature request if there's a model you want to use that isn'
 
 This is not currently implemented, but may be in the future.
 
-On the other hand, Immich uses a thumbnail image created from the video in order to scan it for a face, if there is a face in the thumbnail image of the video, Immich will try to recognize a face in thumbnail.
+On the other hand, Immich does scan video thumbnails for faces, so it can perform recognition if the face is clear in the video thumbnail.
 
 ### Does Immich have animal recognition?
 
