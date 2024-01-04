@@ -56,18 +56,9 @@ For example, say you have existing transcodes with the policy "Videos higher tha
 :::
 
 
-### Is it possible to use item compression like in App-Which-Must-Not-Be-Named?
+### Is it possible to compress images during backup?
 
-No. There was a discussion about this in the past but it was [rejected](https://github.com/immich-app/immich/pull/1242), there is an [unofficial way to achieve this](https://gist.github.com/JamesCullum/6604e504318dd326a507108f59ca7dcd).
-
-:::danger
-If you do choose to use the unofficial way, it's important to be aware of the following security risks:
-
-- The golang:1.19.4-alpine3.17 base image was released a year ago and has [18 vulnerabilities for OpenSSL](https://hub.docker.com/layers/library/golang/1.19.4-alpine3.17/images/sha256-8b532e4f43b6ccab31b2542d132720aa6e22f6164e0ed9d4885ef2d7c8b87aa5?context=explore)
-- The image `ghcr.io/jamescullum/multipart-upload-proxy:main` was last updated a long time ago and has vulnerable versions of OpenSSL and libwebp.
-- The vips-dev package relies on libwebp, which had a major CVE a few months ago.
-There may be other vulnerabilities as well.
-:::
+No. Our golden rule is that the original assets should always be untouched, so we don't think this feature is a good fit for Immich.
 
 ### How can I move all data (photos, persons, albums) from one user to another?
 

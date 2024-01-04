@@ -1,7 +1,7 @@
 # Access database (GUI)
 
 :::note
-in order to connect to the database the immich_postgres container **must be on**.
+In order to connect to the database the immich_postgres container **must be running**.
 :::
 
 :::info

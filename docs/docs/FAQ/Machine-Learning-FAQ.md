@@ -30,15 +30,6 @@ You can delete the model cache volume, which is where models are downloaded to. 
 The feature added keywords to images for metadata search, but wasn't used for smart search. Smart search made it unnecessary as it isn't limited to exact keywords. Combined with it causing crashes on some devices, using many dependencies and causing user confusion as to how search worked, it was better to remove the job altogether.
 For more info see [here](https://github.com/immich-app/immich/pull/5903)
 
-### What is the best order for ML to best work
-
-Because Immich is relies on thumbnail generation
-For machine learning [[1](/docs/developer/architecture#:~:text=For%20example%2C%20Smart%20Search%20and%20Facial%20Recognition%20relies%20on%20thumbnail%20generation)], it is recommended to wait for the thumbnail generation job to finish and then run the machine learning jobs (Smart Search and Facial Recognition)
-
-* Let all jobs run except the machine learning jobs and wait for them to finish
-* Run Smart Search
-* Run Facial Recognition
-
 ### Can I use a custom CLIP model?
 
 No, this is not supported. Only models listed in the [Huggingface](https://huggingface.co/immich-app) are compatible. Feel free to make a feature request if there's a model not listed here that you think should be added.

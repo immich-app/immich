@@ -23,15 +23,13 @@ The initial backup is the most intensive due to the number of jobs running. The 
 By default, a container has no resource constraints and can use as much of a given resource as the host's kernel scheduler allows.
 You can look at the [original docker docs](https://docs.docker.com/config/containers/resource_constraints/) or use this [guide](https://www.baeldung.com/ops/docker-memory-limit) to learn how to do this.
 
-### Can I boost machine learning speed?
+### How can I boost machine learning speed?
 
-Yes, you can by increasing the job concurrency. With higher concurrency, the host will work on more assets in parallel.
-You can do it by:
-1. Admin user login
-2. Administration
-3. jobs
-4. On the left side Manage Concurrency
-5. Change the settings as needed
+:::note
+This advice increases throughput, not latency. This is to say that it will make Smart Search jobs process more quickly, but it won't make searching faster.
+:::
+
+You can increase throughput by increasing the job concurrency for machine learning jobs (Smart Search, Recognize Faces). With higher concurrency, the host will work on more assets in parallel. You can do this by navigating to Administration > Settings > Job Settings and increasing concurrency as needed.
 
 :::danger
 On a normal machine, 2 or 3 concurrent jobs can probably max the CPU, so if you're not hitting those maximums with, say, 30 jobs.

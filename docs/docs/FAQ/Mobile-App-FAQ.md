@@ -15,14 +15,6 @@ sidebar_position: 2
 
 ### IOS app
 
-### No albums&photos seen by Immich on Iphone
-
-there are some reporting issue with iPhoneXR regarding the problem with scanning the album,we haven't yet to find the cause [see more info here](https://discord.com/channels/979116623879368755/1107718197655908412)
-
-:::note
-If you think you know what the solution to the problem might be, we'd be happy to discuss it on [Discord](https://discord.com/channels/979116623879368755/1071165397228855327)/[Github](https://github.com/immich-app/immich/discussions)
-:::
-
  ### I can't log into the application after the server update, what can I do?
  Make sure you've updated the app as well.
 
