@@ -281,12 +281,11 @@ export class StorageCore {
     }
   }
 
-  private static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
-    return join(
-      StorageCore.getFolderLocation(folder, ownerId),
-      filename.substring(0, 2),
-      filename.substring(2, 4),
-      filename,
-    );
+  static getNestedFolder(folder: StorageFolder, ownerId: string, filename: string): string {
+    return join(StorageCore.getFolderLocation(folder, ownerId), filename.substring(0, 2), filename.substring(2, 4));
+  }
+
+  static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
+    return join(this.getNestedFolder(folder, ownerId, filename), filename);
   }
 }
