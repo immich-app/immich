@@ -23,7 +23,7 @@
 </button>
 
 {#if isOpened}
-  <div class="absolute h-64 overflow-x-auto dark:bg-gray-800 rounded-lg border border-gray-700">
+  <div class="absolute w-full dark:bg-gray-800 rounded-lg border border-gray-700">
     <div class="relative border-b border-gray-700 flex">
       <div class="absolute inset-y-0 left-0 flex items-center pl-3">
         <div class="dark:text-immich-dark-fg/75">
@@ -35,18 +35,20 @@
 
       <input bind:value={searchQuery} placeholder="Search timezone..." class="ml-9 grow bg-transparent py-2" />
     </div>
-    {#each filteredOptions as option}
-      <button
-        class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-700"
-        class:bg-gray-700={option.zone === selectedOption.zone}
-        on:click={() => {
-          selectedOption = option;
-          isOpened = false;
-          searchQuery = '';
-        }}
-      >
-        {option.zone}
-      </button>
-    {/each}
+    <div class="h-64 overflow-y-auto">
+      {#each filteredOptions as option}
+        <button
+          class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-700"
+          class:bg-gray-700={option.zone === selectedOption.zone}
+          on:click={() => {
+            selectedOption = option;
+            isOpened = false;
+            searchQuery = '';
+          }}
+        >
+          {option.zone}
+        </button>
+      {/each}
+    </div>
   </div>
 {/if}
