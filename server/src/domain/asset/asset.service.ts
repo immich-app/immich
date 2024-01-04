@@ -71,6 +71,7 @@ export interface UploadRequest {
 }
 
 export interface UploadFile {
+  uuid: string;
   checksum: Buffer;
   originalPath: string;
   originalName: string;
@@ -170,13 +171,13 @@ export class AssetService {
       [UploadFieldName.PROFILE_DATA]: originalExt,
     };
 
-    return sanitize(`${this.cryptoRepository.randomUUID()}${lookup[fieldName]}`);
+    return sanitize(`${file.uuid}${lookup[fieldName]}`);
   }
 
-  getUploadFolder({ auth, fieldName }: UploadRequest): string {
+  getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
     auth = this.access.requireUploadAccess(auth);
 
-    let folder = StorageCore.getFolderLocation(StorageFolder.UPLOAD, auth.user.id);
+    let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
     if (fieldName === UploadFieldName.PROFILE_DATA) {
       folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
     }

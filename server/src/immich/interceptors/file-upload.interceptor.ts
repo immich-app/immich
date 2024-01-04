@@ -4,7 +4,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
-import { createHash } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
 import { Observable } from 'rxjs';
@@ -17,11 +17,13 @@ export enum Route {
 
 export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */
+  uuid: string;
   checksum: Buffer;
 }
 
 export function mapToUploadFile(file: ImmichFile): UploadFile {
   return {
+    uuid: file.uuid,
     checksum: file.checksum,
     originalPath: file.path,
     originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
@@ -29,6 +31,8 @@ export function mapToUploadFile(file: ImmichFile): UploadFile {
 }
 
 type DiskStorageCallback = (error: Error | null, result: string) => void;
+
+type ImmichMulterFile = Express.Multer.File & { uuid: string };
 
 interface Callback<T> {
   (error: Error): void;
@@ -118,6 +122,7 @@ export class FileUploadInterceptor implements NestInterceptor {
   }
 
   private handleFile(req: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {
+    (file as ImmichMulterFile).uuid = randomUUID();
     if (!this.isAssetUploadFile(file)) {
       this.defaultStorage._handleFile(req, file, callback);
       return;
