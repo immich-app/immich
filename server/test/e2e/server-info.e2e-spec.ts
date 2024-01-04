@@ -168,4 +168,19 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       });
     });
   });
+
+  describe('POST /server-info/admin-onboarding', () => {
+    it('should set admin onboarding', async () => {
+      const config = await api.serverInfoApi.getConfig(server);
+      expect(config.isOnboarded).toBe(false);
+
+      const { status } = await request(server)
+        .post('/server-info/admin-onboarding')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(204);
+
+      const newConfig = await api.serverInfoApi.getConfig(server);
+      expect(newConfig.isOnboarded).toBe(true);
+    });
+  });
 });

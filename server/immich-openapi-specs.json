@@ -4730,7 +4730,7 @@
         "operationId": "setAdminOnboarding",
         "parameters": [],
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
