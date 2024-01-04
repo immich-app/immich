@@ -72,6 +72,14 @@ export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload
 
 export const WEB_ROOT_PATH = join(process.env.IMMICH_WEB_ROOT || '/usr/src/app/www', 'index.html');
 
+const GEODATA_ROOT_PATH = process.env.IMMICH_REVERSE_GEOCODING_ROOT || '/usr/src/resources';
+
+export const citiesFile = 'cities500.txt';
+export const geodataDatePath = join(GEODATA_ROOT_PATH, 'geodata-date.txt');
+export const geodataAdmin1Path = join(GEODATA_ROOT_PATH, 'admin1CodesASCII.txt');
+export const geodataAdmin2Path = join(GEODATA_ROOT_PATH, 'admin2Codes.txt');
+export const geodataCitites500Path = join(GEODATA_ROOT_PATH, citiesFile);
+
 const image: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
   '.ari': ['image/ari', 'image/x-arriflex-ari'],
