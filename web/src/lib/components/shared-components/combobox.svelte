@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiMagnify } from '@mdi/js';
+  import { mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
 
   export let options: {
     zone: string;
@@ -16,39 +16,53 @@
   $: filteredOptions = options.filter((option) => option.zone.toLowerCase().includes(searchQuery.toLowerCase()));
 </script>
 
-<button
-  class="text-sm my-4 text-left w-full bg-gray-200 p-3 rounded-lg dark:text-white dark:bg-gray-600"
-  on:click={() => (isOpened = !isOpened)}
-  >{selectedOption.zone}
-</button>
+<div class="relative">
+  <button
+    class="text-sm text-left w-full bg-gray-200 p-3 rounded-lg dark:text-white dark:bg-gray-600 dark:hover:bg-gray-500 transition-all"
+    on:click={() => {
+      searchQuery = '';
+      isOpened = !isOpened;
+    }}
+    >{selectedOption.zone}
+  </button>
 
-{#if isOpened}
-  <div class="absolute w-full dark:bg-gray-800 rounded-lg border border-gray-700">
-    <div class="relative border-b border-gray-700 flex">
-      <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-        <div class="dark:text-immich-dark-fg/75">
-          <button class="flex items-center">
-            <Icon path={mdiMagnify} size="1rem" />
-          </button>
-        </div>
-      </div>
-
-      <input bind:value={searchQuery} placeholder="Search timezone..." class="ml-9 grow bg-transparent py-2" />
-    </div>
-    <div class="h-64 overflow-y-auto">
-      {#each filteredOptions as option}
-        <button
-          class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-700"
-          class:bg-gray-700={option.zone === selectedOption.zone}
-          on:click={() => {
-            selectedOption = option;
-            isOpened = false;
-            searchQuery = '';
-          }}
-        >
-          {option.zone}
-        </button>
-      {/each}
-    </div>
+  <div class="absolute right-0 top-0 h-full flex px-4 justify-center items-center">
+    <Icon path={mdiUnfoldMoreHorizontal} size="1rem" />
   </div>
-{/if}
+
+  {#if isOpened}
+    <div class="absolute w-full top-full mt-2 dark:bg-gray-800 rounded-lg border border-gray-700">
+      <div class="relative border-b border-gray-700 flex">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+          <div class="dark:text-immich-dark-fg/75">
+            <button class="flex items-center">
+              <Icon path={mdiMagnify} size="1rem" />
+            </button>
+          </div>
+        </div>
+
+        <!-- svelte-ignore a11y-autofocus -->
+        <input
+          bind:value={searchQuery}
+          autofocus
+          placeholder="Search timezone..."
+          class="ml-9 grow bg-transparent py-2"
+        />
+      </div>
+      <div class="h-64 overflow-y-auto">
+        {#each filteredOptions as option}
+          <button
+            class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-700"
+            class:bg-gray-700={option.zone === selectedOption.zone}
+            on:click={() => {
+              selectedOption = option;
+              isOpened = false;
+            }}
+          >
+            {option.zone}
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+</div>
