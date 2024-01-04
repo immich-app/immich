@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { mdiArrowRight, mdiWhiteBalanceSunny, mdiMoonWaningCrescent } from '@mdi/js';
+  import { mdiArrowRight, mdiWhiteBalanceSunny, mdiMoonWaningCrescent, mdiArrowLeft } from '@mdi/js';
   import Button from '../elements/buttons/button.svelte';
   import Icon from '../elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
@@ -8,6 +8,7 @@
 
   const dispatch = createEventDispatcher<{
     done: void;
+    previous: void;
   }>();
 
   const toggleLightTheme = () => {
@@ -56,10 +57,19 @@
     </button>
   </div>
 
-  <div class="w-full flex place-content-end">
-    <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
-      <p>Storage Template</p>
-      <Icon path={mdiArrowRight} size="18" />
-    </Button>
+  <div class="flex">
+    <div class="w-full flex place-content-start">
+      <Button class="flex gap-2 place-content-center" on:click={() => dispatch('previous')}>
+        <Icon path={mdiArrowLeft} size="18" />
+        <p>Welcome</p>
+      </Button>
+    </div>
+
+    <div class="w-full flex place-content-end">
+      <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
+        <p>Storage Template</p>
+        <Icon path={mdiArrowRight} size="18" />
+      </Button>
+    </div>
   </div>
 </OnboardingCard>

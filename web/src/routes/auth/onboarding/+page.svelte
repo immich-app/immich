@@ -14,7 +14,7 @@
     component: typeof OnboardingHello | typeof OnboardingTheme | typeof OnboadingStorageTemplate;
   }
 
-  let onboardingSteps: OnboardingStep[] = [
+  const onboardingSteps: OnboardingStep[] = [
     { name: 'hello', component: OnboardingHello },
     { name: 'theme', component: OnboardingTheme },
     { name: 'storage', component: OnboadingStorageTemplate },
@@ -35,8 +35,27 @@
       goto(`${AppRoute.AUTH_ONBOARDING}?step=${onboardingSteps[index].name}`);
     }
   };
+
+  const handlePrevious = () => {
+    index--;
+    goto(`${AppRoute.AUTH_ONBOARDING}?step=${onboardingSteps[index].name}`);
+  };
 </script>
 
-<section id="onboarding-page" class="min-w-screen flex min-h-screen place-content-center place-items-center p-4">
-  <svelte:component this={onboardingSteps[index].component} on:done={handleDoneClicked} />
+<section id="onboarding-page" class="min-w-screen flex min-h-screen p-4">
+  <div class="flex flex-col w-full">
+    <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2.5">
+      <div
+        class="progress-bar bg-immich-dark-primary/80 dark:bg-immich-primary h-2.5 rounded-full"
+        style="width: {(index / (onboardingSteps.length - 1)) * 100}%"
+      ></div>
+    </div>
+    <div class="w-full min-w-screen flex h-screen place-content-center place-items-center">
+      <svelte:component
+        this={onboardingSteps[index].component}
+        on:done={handleDoneClicked}
+        on:previous={handlePrevious}
+      />
+    </div>
+  </div>
 </section>
