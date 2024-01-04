@@ -5,7 +5,6 @@
   import OnboardingCard from './onboarding-card.svelte';
   import { createEventDispatcher } from 'svelte';
   import { colorTheme } from '$lib/stores/preferences.store';
-  import { browser } from '$app/environment';
 
   const dispatch = createEventDispatcher<{
     done: void;

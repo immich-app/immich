@@ -16,15 +16,21 @@
   import { user } from '$lib/stores/user.store';
   import type { ResetOptions } from '$lib/utils/dipatch';
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import { createEventDispatcher } from 'svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiCheck } from '@mdi/js';
 
   export let storageConfig: SystemConfigStorageTemplateDto;
   export let disabled = false;
-  export let simple = false;
+  export let minified = false;
 
   let savedConfig: SystemConfigStorageTemplateDto;
   let defaultConfig: SystemConfigStorageTemplateDto;
   let templateOptions: SystemConfigTemplateStorageOptionDto;
   let selectedPreset = '';
+
+  const dispatch = createEventDispatcher<{ save: void }>();
 
   const handleReset = (detail: ResetOptions) => {
     if (detail.default) {
@@ -126,6 +132,8 @@
         message: 'Storage template saved',
         type: NotificationType.Info,
       });
+
+      dispatch('save');
     } catch (e) {
       console.error('Error [storage-template-settings] [saveSetting]', e);
       notificationController.show({
@@ -162,7 +170,7 @@
         isEdited={!(storageConfig.enabled === savedConfig.enabled)}
       />
 
-      {#if !simple}
+      {#if !minified}
         <SettingSwitch
           title="HASH VERIFICATION ENABLED"
           {disabled}
@@ -247,7 +255,7 @@
               </div>
             </div>
 
-            {#if !simple}
+            {#if !minified}
               <div id="migration-info" class="mt-2 text-sm">
                 <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Notes</h3>
                 <section class="flex flex-col gap-2">
@@ -273,12 +281,24 @@
           </form>
         </div>
       {/if}
-      <SettingButtonsRow
-        on:reset={({ detail }) => handleReset(detail)}
-        on:save={saveSetting}
-        showResetToDefault={!isEqual(savedConfig, defaultConfig) && !simple}
-        {disabled}
-      />
+
+      {#if minified}
+        <div class="flex w-full place-content-end">
+          <Button on:click={saveSetting}>
+            <span class="flex place-content-center place-items-center gap-2">
+              Done
+              <Icon path={mdiCheck} size="18" />
+            </span>
+          </Button>
+        </div>
+      {:else}
+        <SettingButtonsRow
+          on:reset={({ detail }) => handleReset(detail)}
+          on:save={saveSetting}
+          showResetToDefault={!isEqual(savedConfig, defaultConfig) && !minified}
+          {disabled}
+        />
+      {/if}
     </div>
   {/await}
 </section>

@@ -30,12 +30,11 @@
   </p>
 
   {#if configs && $user}
-    <StorageTemplateSettings simple disabled={$featureFlags.configFile} storageConfig={configs.storageTemplate} />
+    <StorageTemplateSettings
+      minified
+      disabled={$featureFlags.configFile}
+      storageConfig={configs.storageTemplate}
+      on:save={() => dispatch('done')}
+    />
   {/if}
-  <div class="w-full flex place-content-end">
-    <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')} color="green">
-      <p>Done</p>
-      <Icon path={mdiCheck} size="18" />
-    </Button>
-  </div>
 </OnboardingCard>
