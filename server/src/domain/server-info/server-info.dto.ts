@@ -87,6 +87,7 @@ export class ServerConfigDto {
   trashDays!: number;
   isInitialized!: boolean;
   isOnboarded!: boolean;
+  externalDomain!: string;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {

@@ -94,6 +94,7 @@ export class ServerInfoService {
       oauthButtonText: config.oauth.buttonText,
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
+      externalDomain: config.server.externalDomain,
     };
   }
 

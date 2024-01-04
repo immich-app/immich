@@ -29,6 +29,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
             ),
             serverConfig: const ServerConfig(
               trashDays: 30,
+              externalDomain: '',
             ),
             serverDiskInfo: const ServerDiskInfo(
               diskAvailable: "0",
@@ -74,7 +75,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["major"]! > serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_major".tr(),
+        versionMismatchErrorMessage:
+            "profile_drawer_server_out_of_date_major".tr(),
       );
       return;
     }
@@ -82,7 +84,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["major"]! < serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_major".tr(),
+        versionMismatchErrorMessage:
+            "profile_drawer_client_out_of_date_major".tr(),
       );
       return;
     }
@@ -90,7 +93,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["minor"]! > serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_minor".tr(),
+        versionMismatchErrorMessage:
+            "profile_drawer_server_out_of_date_minor".tr(),
       );
       return;
     }
@@ -98,7 +102,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["minor"]! < serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_minor".tr(),
+        versionMismatchErrorMessage:
+            "profile_drawer_client_out_of_date_minor".tr(),
       );
       return;
     }

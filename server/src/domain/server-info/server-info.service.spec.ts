@@ -197,6 +197,7 @@ describe(ServerInfoService.name, () => {
         trashDays: 30,
         isInitialized: undefined,
         isOnboarded: false,
+        externalDomain: '',
       });
       expect(configMock.load).toHaveBeenCalled();
     });
