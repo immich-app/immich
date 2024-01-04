@@ -92,6 +92,15 @@
             bind:value={serverConfig.externalDomain}
             isEdited={serverConfig.externalDomain !== savedConfig.externalDomain}
           />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label="WELCOME MESSAGE"
+            desc="A message that is displayed on the login page."
+            bind:value={serverConfig.loginPageMessage}
+            isEdited={serverConfig.loginPageMessage !== savedConfig.loginPageMessage}
+          />
+
           <div class="ml-4">
             <SettingButtonsRow
               on:reset={({ detail }) => handleReset(detail)}

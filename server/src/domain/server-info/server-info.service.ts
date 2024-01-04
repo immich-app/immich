@@ -78,14 +78,10 @@ export class ServerInfoService {
 
   async getConfig(): Promise<ServerConfigDto> {
     const config = await this.configCore.getConfig();
-
-    // TODO move to system config
-    const loginPageMessage = process.env.PUBLIC_LOGIN_PAGE_MESSAGE || '';
-
     const isInitialized = await this.userRepository.hasAdmin();
 
     return {
-      loginPageMessage,
+      loginPageMessage: config.server.loginPageMessage,
       trashDays: config.trash.days,
       oauthButtonText: config.oauth.buttonText,
       isInitialized,

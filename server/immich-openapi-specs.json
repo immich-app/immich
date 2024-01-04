@@ -9371,10 +9371,14 @@
         "properties": {
           "externalDomain": {
             "type": "string"
+          },
+          "loginPageMessage": {
+            "type": "string"
           }
         },
         "required": [
-          "externalDomain"
+          "externalDomain",
+          "loginPageMessage"
         ],
         "type": "object"
       },

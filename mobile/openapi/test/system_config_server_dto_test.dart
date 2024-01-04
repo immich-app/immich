@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // String loginPageMessage
+    test('to test the property `loginPageMessage`', () async {
+      // TODO
+    });
+
 
   });
 

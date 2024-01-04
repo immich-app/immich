@@ -4038,6 +4038,12 @@ export interface SystemConfigServerDto {
      * @memberof SystemConfigServerDto
      */
     'externalDomain': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigServerDto
+     */
+    'loginPageMessage': string;
 }
 /**
  * 
