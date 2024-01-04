@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // bool isOnboarded
+    test('to test the property `isOnboarded`', () async {
+      // TODO
+    });
+
     // String loginPageMessage
     test('to test the property `loginPageMessage`', () async {
       // TODO

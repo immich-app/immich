@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **externalDomain** | **String** |  | 
 **isInitialized** | **bool** |  | 
+**isOnboarded** | **bool** |  | 
 **loginPageMessage** | **String** |  | 
 **oauthButtonText** | **String** |  | 
 **trashDays** | **int** |  | 

@@ -16,14 +16,21 @@
   import { user } from '$lib/stores/user.store';
   import type { ResetOptions } from '$lib/utils/dipatch';
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import { createEventDispatcher } from 'svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiCheck } from '@mdi/js';
 
   export let storageConfig: SystemConfigStorageTemplateDto;
   export let disabled = false;
+  export let minified = false;
 
   let savedConfig: SystemConfigStorageTemplateDto;
   let defaultConfig: SystemConfigStorageTemplateDto;
   let templateOptions: SystemConfigTemplateStorageOptionDto;
   let selectedPreset = '';
+
+  const dispatch = createEventDispatcher<{ save: void }>();
 
   const handleReset = (detail: ResetOptions) => {
     if (detail.default) {
@@ -115,10 +122,18 @@
       storageConfig.template = result.data.storageTemplate.template;
       savedConfig.template = result.data.storageTemplate.template;
 
+      storageConfig.enabled = result.data.storageTemplate.enabled;
+      savedConfig.enabled = result.data.storageTemplate.enabled;
+
+      storageConfig.hashVerificationEnabled = result.data.storageTemplate.hashVerificationEnabled;
+      savedConfig.hashVerificationEnabled = result.data.storageTemplate.hashVerificationEnabled;
+
       notificationController.show({
         message: 'Storage template saved',
         type: NotificationType.Info,
       });
+
+      dispatch('save');
     } catch (e) {
       console.error('Error [storage-template-settings] [saveSetting]', e);
       notificationController.show({
@@ -152,118 +167,138 @@
         {disabled}
         subtitle="Enable storage template engine"
         bind:checked={storageConfig.enabled}
+        isEdited={!(storageConfig.enabled === savedConfig.enabled)}
       />
 
-      <SettingSwitch
-        title="HASH VERIFICATION ENABLED"
-        {disabled}
-        subtitle="Enables hash verification, don't disable this unless you're certain of the implications"
-        bind:checked={storageConfig.hashVerificationEnabled}
-      />
+      {#if !minified}
+        <SettingSwitch
+          title="HASH VERIFICATION ENABLED"
+          {disabled}
+          subtitle="Enables hash verification, don't disable this unless you're certain of the implications"
+          bind:checked={storageConfig.hashVerificationEnabled}
+          isEdited={!(storageConfig.hashVerificationEnabled === savedConfig.hashVerificationEnabled)}
+        />
+      {/if}
 
-      <hr />
+      {#if storageConfig.enabled}
+        <hr />
 
-      <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>
+        <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>
 
-      <section class="support-date">
-        {#await getSupportDateTimeFormat()}
-          <LoadingSpinner />
-        {:then options}
-          <div transition:fade={{ duration: 200 }}>
-            <SupportedDatetimePanel {options} />
-          </div>
-        {/await}
-      </section>
-
-      <section class="support-date">
-        <SupportedVariablesPanel />
-      </section>
-
-      <div class="flex flex-col mt-4">
-        <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Template</h3>
-
-        <div class="my-2 text-sm">
-          <h4>PREVIEW</h4>
-        </div>
-
-        <p class="text-sm">
-          Approximately path length limit : <span
-            class="font-semibold text-immich-primary dark:text-immich-dark-primary"
-            >{parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length}</span
-          >/260
-        </p>
-
-        <p class="text-sm">
-          <code class="text-immich-primary dark:text-immich-dark-primary">{$user.storageLabel || $user.id}</code> is the
-          user's Storage Label
-        </p>
-
-        <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
-          <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-            >UPLOAD_LOCATION/{$user.storageLabel || $user.id}</span
-          >/{parsedTemplate()}.jpg
-        </p>
-
-        <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
-          <div class="flex flex-col my-2">
-            <label class="text-sm" for="preset-select">PRESET</label>
-            <select
-              class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
-              disabled={disabled || !storageConfig.enabled}
-              name="presets"
-              id="preset-select"
-              bind:value={selectedPreset}
-              on:change={handlePresetSelection}
-            >
-              {#each templateOptions.presetOptions as preset}
-                <option value={preset}>{renderTemplate(preset)}</option>
-              {/each}
-            </select>
-          </div>
-          <div class="flex gap-2 align-bottom">
-            <SettingInputField
-              label="TEMPLATE"
-              disabled={disabled || !storageConfig.enabled}
-              required
-              inputType={SettingInputFieldType.TEXT}
-              bind:value={storageConfig.template}
-              isEdited={!(storageConfig.template === savedConfig.template)}
-            />
-
-            <div class="flex-0">
-              <SettingInputField label="EXTENSION" inputType={SettingInputFieldType.TEXT} value={'.jpg'} disabled />
+        <section class="support-date">
+          {#await getSupportDateTimeFormat()}
+            <LoadingSpinner />
+          {:then options}
+            <div transition:fade={{ duration: 200 }}>
+              <SupportedDatetimePanel {options} />
             </div>
+          {/await}
+        </section>
+
+        <section class="support-date">
+          <SupportedVariablesPanel />
+        </section>
+
+        <div class="flex flex-col mt-4">
+          <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Template</h3>
+
+          <div class="my-2 text-sm">
+            <h4>PREVIEW</h4>
           </div>
 
-          <div id="migration-info" class="mt-2 text-sm">
-            <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Notes</h3>
-            <section class="flex flex-col gap-2">
-              <p>
-                Template changes will only apply to new assets. To retroactively apply the template to previously
-                uploaded assets, run the
-                <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
-                  >Storage Migration Job</a
-                >.
-              </p>
-              <p>
-                The template variable <span class="font-mono">{`{{album}}`}</span> will always be empty for new assets,
-                so manually running the
+          <p class="text-sm">
+            Approximately path length limit : <span
+              class="font-semibold text-immich-primary dark:text-immich-dark-primary"
+              >{parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length}</span
+            >/260
+          </p>
 
-                <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
-                  >Storage Migration Job</a
-                >
-                is required in order to successfully use the variable.
-              </p>
-            </section>
-          </div>
-          <SettingButtonsRow
-            on:reset={({ detail }) => handleReset(detail)}
-            on:save={saveSetting}
-            showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-            {disabled}
-          />
-        </form>
-      </div>
+          <p class="text-sm">
+            <code class="text-immich-primary dark:text-immich-dark-primary">{$user.storageLabel || $user.id}</code> is the
+            user's Storage Label
+          </p>
+
+          <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
+            <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
+              >UPLOAD_LOCATION/{$user.storageLabel || $user.id}</span
+            >/{parsedTemplate()}.jpg
+          </p>
+
+          <form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
+            <div class="flex flex-col my-2">
+              <label class="text-sm" for="preset-select">PRESET</label>
+              <select
+                class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
+                disabled={disabled || !storageConfig.enabled}
+                name="presets"
+                id="preset-select"
+                bind:value={selectedPreset}
+                on:change={handlePresetSelection}
+              >
+                {#each templateOptions.presetOptions as preset}
+                  <option value={preset}>{renderTemplate(preset)}</option>
+                {/each}
+              </select>
+            </div>
+            <div class="flex gap-2 align-bottom">
+              <SettingInputField
+                label="TEMPLATE"
+                disabled={disabled || !storageConfig.enabled}
+                required
+                inputType={SettingInputFieldType.TEXT}
+                bind:value={storageConfig.template}
+                isEdited={!(storageConfig.template === savedConfig.template)}
+              />
+
+              <div class="flex-0">
+                <SettingInputField label="EXTENSION" inputType={SettingInputFieldType.TEXT} value={'.jpg'} disabled />
+              </div>
+            </div>
+
+            {#if !minified}
+              <div id="migration-info" class="mt-2 text-sm">
+                <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Notes</h3>
+                <section class="flex flex-col gap-2">
+                  <p>
+                    Template changes will only apply to new assets. To retroactively apply the template to previously
+                    uploaded assets, run the
+                    <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
+                      >Storage Migration Job</a
+                    >.
+                  </p>
+                  <p>
+                    The template variable <span class="font-mono">{`{{album}}`}</span> will always be empty for new
+                    assets, so manually running the
+
+                    <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary"
+                      >Storage Migration Job</a
+                    >
+                    is required in order to successfully use the variable.
+                  </p>
+                </section>
+              </div>
+            {/if}
+          </form>
+        </div>
+      {/if}
+
+      {#if minified}
+        <div class="flex w-full place-content-end">
+          <Button on:click={saveSetting}>
+            <span class="flex place-content-center place-items-center gap-2">
+              Done
+              <Icon path={mdiCheck} size="18" />
+            </span>
+          </Button>
+        </div>
+      {:else}
+        <SettingButtonsRow
+          on:reset={({ detail }) => handleReset(detail)}
+          on:save={saveSetting}
+          showResetToDefault={!isEqual(savedConfig, defaultConfig) && !minified}
+          {disabled}
+        />
+      {/if}
     </div>
   {/await}
 </section>

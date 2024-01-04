@@ -15,6 +15,7 @@ class ServerConfigDto {
   ServerConfigDto({
     required this.externalDomain,
     required this.isInitialized,
+    required this.isOnboarded,
     required this.loginPageMessage,
     required this.oauthButtonText,
     required this.trashDays,
@@ -23,6 +24,8 @@ class ServerConfigDto {
   String externalDomain;
 
   bool isInitialized;
+
+  bool isOnboarded;
 
   String loginPageMessage;
 
@@ -34,6 +37,7 @@ class ServerConfigDto {
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
      other.externalDomain == externalDomain &&
      other.isInitialized == isInitialized &&
+     other.isOnboarded == isOnboarded &&
      other.loginPageMessage == loginPageMessage &&
      other.oauthButtonText == oauthButtonText &&
      other.trashDays == trashDays;
@@ -43,17 +47,19 @@ class ServerConfigDto {
     // ignore: unnecessary_parenthesis
     (externalDomain.hashCode) +
     (isInitialized.hashCode) +
+    (isOnboarded.hashCode) +
     (loginPageMessage.hashCode) +
     (oauthButtonText.hashCode) +
     (trashDays.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
+  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'externalDomain'] = this.externalDomain;
       json[r'isInitialized'] = this.isInitialized;
+      json[r'isOnboarded'] = this.isOnboarded;
       json[r'loginPageMessage'] = this.loginPageMessage;
       json[r'oauthButtonText'] = this.oauthButtonText;
       json[r'trashDays'] = this.trashDays;
@@ -70,6 +76,7 @@ class ServerConfigDto {
       return ServerConfigDto(
         externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
         isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
+        isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
         trashDays: mapValueOfType<int>(json, r'trashDays')!,
@@ -122,6 +129,7 @@ class ServerConfigDto {
   static const requiredKeys = <String>{
     'externalDomain',
     'isInitialized',
+    'isOnboarded',
     'loginPageMessage',
     'oauthButtonText',
     'trashDays',

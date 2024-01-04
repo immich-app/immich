@@ -1,8 +1,10 @@
+import { SystemMetadataKey } from '@app/infra/entities';
 import {
   newCommunicationRepositoryMock,
   newServerInfoRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  newSystemMetadataRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
 import { serverVersion } from '../domain.constant';
@@ -11,6 +13,7 @@ import {
   IServerInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  ISystemMetadataRepository,
   IUserRepository,
 } from '../repositories';
 import { ServerInfoService } from './server-info.service';
@@ -22,6 +25,7 @@ describe(ServerInfoService.name, () => {
   let serverInfoMock: jest.Mocked<IServerInfoRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
+  let systemMetadataMock: jest.Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
     configMock = newSystemConfigRepositoryMock();
@@ -29,8 +33,16 @@ describe(ServerInfoService.name, () => {
     serverInfoMock = newServerInfoRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
+    systemMetadataMock = newSystemMetadataRepositoryMock();
 
-    sut = new ServerInfoService(communicationMock, configMock, userMock, serverInfoMock, storageMock);
+    sut = new ServerInfoService(
+      communicationMock,
+      configMock,
+      userMock,
+      serverInfoMock,
+      storageMock,
+      systemMetadataMock,
+    );
   });
 
   it('should work', () => {
@@ -184,9 +196,18 @@ describe(ServerInfoService.name, () => {
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
+        isInitialized: undefined,
+        isOnboarded: false,
         externalDomain: '',
       });
       expect(configMock.load).toHaveBeenCalled();
+    });
+  });
+
+  describe('setAdminOnboarding', () => {
+    it('should set admin onboarding to true', async () => {
+      await sut.setAdminOnboarding();
+      expect(systemMetadataMock.set).toHaveBeenCalledWith(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
     });
   });
 
