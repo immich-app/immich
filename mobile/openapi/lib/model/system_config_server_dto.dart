@@ -14,25 +14,31 @@ class SystemConfigServerDto {
   /// Returns a new [SystemConfigServerDto] instance.
   SystemConfigServerDto({
     required this.externalDomain,
+    required this.loginPageMessage,
   });
 
   String externalDomain;
 
+  String loginPageMessage;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigServerDto &&
-     other.externalDomain == externalDomain;
+     other.externalDomain == externalDomain &&
+     other.loginPageMessage == loginPageMessage;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (externalDomain.hashCode);
+    (externalDomain.hashCode) +
+    (loginPageMessage.hashCode);
 
   @override
-  String toString() => 'SystemConfigServerDto[externalDomain=$externalDomain]';
+  String toString() => 'SystemConfigServerDto[externalDomain=$externalDomain, loginPageMessage=$loginPageMessage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'externalDomain'] = this.externalDomain;
+      json[r'loginPageMessage'] = this.loginPageMessage;
     return json;
   }
 
@@ -45,6 +51,7 @@ class SystemConfigServerDto {
 
       return SystemConfigServerDto(
         externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
+        loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
       );
     }
     return null;
@@ -93,6 +100,7 @@ class SystemConfigServerDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'externalDomain',
+    'loginPageMessage',
   };
 }
 
