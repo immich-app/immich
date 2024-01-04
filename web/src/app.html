@@ -18,9 +18,19 @@
       /**
        * Prevent FOUC on page load.
        */
-      const theme = localStorage.getItem('color-theme') || 'dark';
+      let theme = localStorage.getItem('color-theme') || 'dark';
+
+      if (theme === 'system') {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          theme = 'dark';
+        } else {
+          theme = 'light';
+        }
+      }
       if (theme === 'light') {
         document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
       }
     </script>
     <link rel="stylesheet" href="/custom.css" />

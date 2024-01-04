@@ -14,7 +14,7 @@
     component: typeof OnboardingHello | typeof OnboardingTheme | typeof OnboadingStorageTemplate;
   }
 
-  let onboardingSteps: OnboardingStep[] = [
+  const onboardingSteps: OnboardingStep[] = [
     { name: 'hello', component: OnboardingHello },
     { name: 'theme', component: OnboardingTheme },
     { name: 'storage', component: OnboadingStorageTemplate },

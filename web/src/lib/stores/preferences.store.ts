@@ -4,9 +4,15 @@ import { persisted } from 'svelte-local-storage-store';
 const initialTheme = browser && !window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
 
 // The 'color-theme' key is also used by app.html to prevent FOUC on page load.
-export const colorTheme = persisted<'dark' | 'light'>('color-theme', initialTheme, {
+export const colorTheme = persisted<'dark' | 'light' | 'system'>('color-theme', initialTheme, {
   serializer: {
-    parse: (text) => (text === 'light' ? text : 'dark'),
+    parse: (text: string): 'dark' | 'light' | 'system' => {
+      if (['dark', 'light', 'system'].includes(text)) {
+        return text as 'dark' | 'light' | 'system';
+      } else {
+        return 'dark';
+      }
+    },
     stringify: (obj) => obj,
   },
 });

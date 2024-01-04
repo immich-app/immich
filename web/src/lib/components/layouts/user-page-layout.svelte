@@ -3,12 +3,34 @@
   import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
   import SideBar from '../shared-components/side-bar/side-bar.svelte';
   import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { browser } from '$app/environment';
+  import { getCurrentTheme } from '$lib/utils/browser-utils';
 
   export let hideNavbar = false;
   export let showUploadButton = false;
   export let title: string | undefined = undefined;
   export let scrollbar = true;
   export let admin = false;
+
+  const changeTheme = () => {
+    const theme = getCurrentTheme('dark');
+    if (theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  };
+
+  onMount(() => {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', changeTheme);
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('change', changeTheme);
+    }
+  });
 
   $: scrollbarClass = scrollbar ? 'immich-scrollbar p-4 pb-8' : 'scrollbar-hidden';
   $: hasTitleClass = title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full';
