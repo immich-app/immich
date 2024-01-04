@@ -20,7 +20,7 @@
   import { user } from '$lib/stores/user.store';
   import { browser } from '$app/environment';
   import { colorTheme } from '$lib/stores/preferences.store';
-  import { getCurrentTheme } from '$lib/utils/browser-utils';
+  import { getCurrentTheme, hasThemeChanged } from '$lib/utils/browser-utils';
 
   let showNavigationLoadingBar = false;
   let albumId: string | undefined;
@@ -31,17 +31,22 @@
   $: {
     if (browser) {
       $colorTheme;
-      handleChangeTheme();
+      changeTheme();
     }
   }
 
-  const handleChangeTheme = () => {
+  const changeTheme = () => {
     const theme = getCurrentTheme();
     if (theme === 'light') {
       document.documentElement.classList.remove('dark');
     } else {
       document.documentElement.classList.add('dark');
     }
+  };
+
+  const handleChangeTheme = () => {
+    $hasThemeChanged = !$hasThemeChanged;
+    changeTheme();
   };
 
   onMount(() => {
