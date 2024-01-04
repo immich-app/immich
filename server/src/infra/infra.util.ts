@@ -17,4 +17,5 @@ export const DummyValue = {
   STRING: 'abcdefghi',
   BUFFER: Buffer.from('abcdefghi'),
   DATE: new Date(),
+  TIME_BUCKET: '2024-01-01T00:00:00.000Z',
 };
