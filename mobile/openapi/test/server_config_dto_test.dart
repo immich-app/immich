@@ -16,6 +16,11 @@ void main() {
   // final instance = ServerConfigDto();
 
   group('test ServerConfigDto', () {
+    // String externalDomain
+    test('to test the property `externalDomain`', () async {
+      // TODO
+    });
+
     // bool isInitialized
     test('to test the property `isInitialized`', () async {
       // TODO

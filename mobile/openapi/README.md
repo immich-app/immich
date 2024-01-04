@@ -341,6 +341,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigReverseGeocodingDto](doc//SystemConfigReverseGeocodingDto.md)
+ - [SystemConfigServerDto](doc//SystemConfigServerDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)

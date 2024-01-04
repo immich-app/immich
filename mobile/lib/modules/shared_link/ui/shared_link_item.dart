@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -71,7 +72,11 @@ class SharedLinkItem extends ConsumerWidget {
     final imageSize = math.min(context.width / 4, 100.0);
 
     void copyShareLinkToClipboard() {
-      final serverUrl = getServerUrl();
+      final externalDomain = ref.read(
+        serverInfoProvider.select((s) => s.serverConfig.externalDomain),
+      );
+      final serverUrl =
+          externalDomain.isNotEmpty ? externalDomain : getServerUrl();
       if (serverUrl == null) {
         ImmichToast.show(
           context: context,
