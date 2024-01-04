@@ -21,8 +21,8 @@
   ];
 
   $: {
-    const action = $page.url.searchParams.get('step');
-    const tempIndex = onboardingSteps.findIndex((step) => step.name === action);
+    const stepState = $page.url.searchParams.get('step');
+    const tempIndex = onboardingSteps.findIndex((step) => step.name === stepState);
     index = tempIndex >= 0 ? tempIndex : 0;
   }
 
