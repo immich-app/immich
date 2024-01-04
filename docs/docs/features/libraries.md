@@ -149,7 +149,7 @@ Only an admin can do this.
 - Click on the user edit button.
 - Set `/mnt/media` to be the external path. This folder will only contain the three folders that we want to import, so nothing else can be accessed.
   :::note
-  spaces in the path aren't supported.
+Spaces in the internal path aren't currently supported.
 
   You must import it as:
   `..:/mnt/media/my-media:ro`
