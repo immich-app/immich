@@ -65,7 +65,7 @@ No.
 
 If you installed several models and chose not to use some of them, it might be worth deleting the old models that are in immich_model-cache.
 
-To be able to do this you can run:
+To do this you can run:
 
 - `docker run -it --rm -v immich_model-cache:/mnt ubuntu bash`
 - `cd mnt`
