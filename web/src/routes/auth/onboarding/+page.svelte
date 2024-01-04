@@ -22,20 +22,16 @@
 
   $: {
     const action = $page.url.searchParams.get('step');
-    const tempIndex =
-      onboardingSteps.findIndex((step) => step.name === action) >= 0
-        ? onboardingSteps.findIndex((step) => step.name === action)
-        : 0;
-    index = tempIndex !== -1 ? tempIndex : 0;
+    const tempIndex = onboardingSteps.findIndex((step) => step.name === action);
+    index = tempIndex >= 0 ? tempIndex : 0;
   }
 
   const handleDoneClicked = async () => {
-    index++;
-
-    if (index >= onboardingSteps.length) {
+    if (index >= onboardingSteps.length - 1) {
       await api.serverInfoApi.setAdminOnboarding();
       goto(AppRoute.PHOTOS);
     } else {
+      index++;
       goto(`${AppRoute.AUTH_ONBOARDING}?step=${onboardingSteps[index].name}`);
     }
   };
