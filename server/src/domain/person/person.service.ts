@@ -469,7 +469,7 @@ export class PersonService {
           results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
           continue;
         }
-        if (mergeIds.length === 1 && i === 0) {
+        if (i === 0) {
           if ((!primaryPerson.name && mergePerson.name) || (!primaryPerson.birthDate && mergePerson.birthDate)) {
             primaryPerson = await this.repository.update({
               id: primaryPerson.id,
