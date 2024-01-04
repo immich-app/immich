@@ -48,12 +48,6 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 :::
 
-## Geocoding
-
-| Variable                           | Description                      |           Default            | Services      |
-| :--------------------------------- | :------------------------------- | :--------------------------: | :------------ |
-| `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory | `./.reverse-geocoding-dump/` | microservices |
-
 ## Ports
 
 | Variable                | Description           |  Default  | Services         |
