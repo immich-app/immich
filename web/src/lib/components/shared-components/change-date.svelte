@@ -10,7 +10,7 @@
   import { createEventDispatcher } from 'svelte';
   import { DateTime } from 'luxon';
   import ConfirmDialogue from './confirm-dialogue.svelte';
-  import Dropdown from '../elements/dropdown.svelte';
+  import Combobox from './combobox.svelte';
   export let initialDate: DateTime = DateTime.now();
 
   interface ZoneOption {
@@ -25,6 +25,10 @@
 
   const initialOption = timezones.find((item) => item.offset === 'UTC' + initialDate.toFormat('ZZ'));
 
+  let selectedOption = {
+    zone: initialOption?.zone || '',
+    offset: initialOption?.offset || '',
+  };
   let selectedDate = initialDate.toFormat("yyyy-MM-dd'T'HH:mm");
   let selectedTimezone = initialOption?.offset || null;
   let disabled = false;
@@ -120,7 +124,8 @@
         <label for="timezone">Timezone</label>
 
         <div class="relative">
-          <input
+          <Combobox bind:selectedOption options={filteredTimezones} />
+          <!-- <input
             class="text-sm my-4 w-full bg-gray-200 p-3 rounded-lg dark:text-white dark:bg-gray-600"
             id="timezoneSearch"
             type="text"
@@ -139,7 +144,7 @@
             controlable={true}
             bind:showMenu={isDropdownOpen}
             on:click-outside={isSearching ? null : closeDropdown}
-          />
+          /> -->
         </div>
       </div>
     </div>
