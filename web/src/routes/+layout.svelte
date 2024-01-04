@@ -29,7 +29,8 @@
   const isAuthRoute = (route?: string) => route?.startsWith('/auth');
 
   $: {
-    if (browser && $colorTheme) {
+    if (browser) {
+      $colorTheme;
       handleChangeTheme();
     }
   }
