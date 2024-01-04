@@ -50,7 +50,7 @@
         style="width: {(index / (onboardingSteps.length - 1)) * 100}%"
       ></div>
     </div>
-    <div class="w-full min-w-screen flex h-screen place-content-center place-items-center">
+    <div class="w-full min-w-screen py-8 flex h-full place-content-center place-items-center">
       <svelte:component
         this={onboardingSteps[index].component}
         on:done={handleDoneClicked}
