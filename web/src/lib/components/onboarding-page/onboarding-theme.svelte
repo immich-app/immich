@@ -18,16 +18,6 @@
   const toggleDarkTheme = () => {
     $colorTheme = 'dark';
   };
-
-  $: {
-    if (browser) {
-      if ($colorTheme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        document.documentElement.classList.add('dark');
-      }
-    }
-  }
 </script>
 
 <OnboardingCard>
