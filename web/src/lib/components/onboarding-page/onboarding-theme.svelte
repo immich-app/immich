@@ -28,7 +28,10 @@
 
   <div class="flex gap-4 mb-6">
     <button
-      class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl"
+      class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl {$colorTheme ==
+      'light'
+        ? 'border-[3px] border-immich-dark-primary/80 border-immich-primary'
+        : 'border border-transparent'}"
       on:click={toggleLightTheme}
     >
       <div
@@ -39,7 +42,9 @@
       </div>
     </button>
     <button
-      class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl border border-transparent"
+      class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl {$colorTheme == 'dark'
+        ? 'border-[3px] border-immich-dark-primary/80 border-immich-primary'
+        : 'border border-transparent'}"
       on:click={toggleDarkTheme}
     >
       <div
