@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { mdiCheck } from '@mdi/js';
-  import Button from '../elements/buttons/button.svelte';
-  import Icon from '../elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
   import { createEventDispatcher, onMount } from 'svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
