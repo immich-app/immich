@@ -11,6 +11,9 @@
     offset: string;
   };
   let isOpened = false;
+  let searchQuery = '';
+
+  $: filteredOptions = options.filter((option) => option.zone.toLowerCase().includes(searchQuery.toLowerCase()));
 </script>
 
 <button
@@ -30,15 +33,16 @@
         </div>
       </div>
 
-      <input placeholder="Search timezone..." class="ml-9 grow bg-transparent py-2" />
+      <input bind:value={searchQuery} placeholder="Search timezone..." class="ml-9 grow bg-transparent py-2" />
     </div>
-    {#each options as option}
+    {#each filteredOptions as option}
       <button
         class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-700"
         class:bg-gray-700={option.zone === selectedOption.zone}
         on:click={() => {
           selectedOption = option;
           isOpened = false;
+          searchQuery = '';
         }}
       >
         {option.zone}
