@@ -45,12 +45,15 @@ Immich generates three thumbnails for each asset (blurred, small, and large), as
 
 All machine learning jobs and thumbnail images are recreated.
 
-### What happens if I changed or disabled video transcoding ?
+### How can I delete transcoded videos without deleting the original?
 
-If user choose to transcode policy that makes it unnecessary and then run a transcoding job, it will delete unnecessary transcodes.
-This can be done on a per-asset basis by starting a transcoding job for an asset, or for all assets by running transcoding jobs for all assets.
+The transcode of an asset can be deleted by setting a transcode policy that makes it unnecessary, then running a transcoding job for that asset. This can be done on a per-asset basis by starting a transcoding job for an asset (with the _Refresh encoded videos_ button in the asset viewer options, or for all assets by running transcoding jobs for all assets.
 
-If user choose to changed transcode policy and rerun transcoding job for an asset, the newly encoded videos will overwrite the old ones.
+To update the transcode policy, navigate to Administration > Video Transcoding Settings > Transcoding Policy and select a policy from the drop-down. This policy will determine whether an existing transcode will be deleted or overwritten in the transcoding job. If a video should be transcoded according to this policy, an existing transcode is overwritten. If not, then it is deleted.
+
+:::note
+For example, say you have existing transcodes with the policy "Videos higher than normal resolution or not in the desired format" and switch to a narrower policy: "Videos not in the desired format". If an asset was only transcoded due to its resolution, then running a transcoding job for it will now delete the existing transcode. This is because resolution is no longer part of the transcode policy and the transcode is unnecessary as a result. Likewise, if you set the policy to "Don't transcode any videos" and run transcoding jobs for all assets, this will delete all existing transcodes as they are all unnecessary.
+:::
 
 
 ### Is it possible to use item compression like in App-Which-Must-Not-Be-Named?
