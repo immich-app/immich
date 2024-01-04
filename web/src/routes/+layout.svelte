@@ -11,7 +11,7 @@
   import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { loadConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
@@ -20,6 +20,7 @@
   import { user } from '$lib/stores/user.store';
   import { browser } from '$app/environment';
   import { colorTheme } from '$lib/stores/preferences.store';
+  import { getCurrentTheme } from '$lib/utils/browser-utils';
 
   let showNavigationLoadingBar = false;
   let albumId: string | undefined;
@@ -36,6 +37,25 @@
       }
     }
   }
+
+  const changeTheme = () => {
+    const theme = getCurrentTheme('dark');
+    if (theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  };
+
+  onMount(() => {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', changeTheme);
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('change', changeTheme);
+    }
+  });
 
   if (isSharedLinkRoute($page.route?.id)) {
     api.setKey($page.params.key);
