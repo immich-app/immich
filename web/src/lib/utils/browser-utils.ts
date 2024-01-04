@@ -2,7 +2,7 @@ import { colorTheme } from '$lib/stores/preferences.store';
 import { get } from 'svelte/store';
 
 // default theme is dark mode (see app.html)
-export const getCurrentTheme = (defaultTheme: 'dark' | 'light'): 'dark' | 'light' => {
+export const getCurrentTheme = (defaultTheme: 'dark' | 'light' = 'dark'): 'dark' | 'light' => {
   const currentTheme = get(colorTheme);
 
   if (currentTheme === 'system') {

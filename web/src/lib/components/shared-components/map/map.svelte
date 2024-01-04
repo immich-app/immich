@@ -37,7 +37,7 @@
 
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
-      theme: $mapSettings.allowDarkMode ? getCurrentTheme('dark') : 'light',
+      theme: $mapSettings.allowDarkMode ? getCurrentTheme() : 'light',
     });
     return data as StyleSpecification;
   })();

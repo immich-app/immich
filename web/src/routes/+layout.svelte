@@ -29,17 +29,13 @@
   const isAuthRoute = (route?: string) => route?.startsWith('/auth');
 
   $: {
-    if (browser) {
-      if ($colorTheme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        document.documentElement.classList.add('dark');
-      }
+    if (browser && $colorTheme) {
+      handleChangeTheme();
     }
   }
 
-  const changeTheme = () => {
-    const theme = getCurrentTheme('dark');
+  const handleChangeTheme = () => {
+    const theme = getCurrentTheme();
     if (theme === 'light') {
       document.documentElement.classList.remove('dark');
     } else {
@@ -48,12 +44,12 @@
   };
 
   onMount(() => {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', changeTheme);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
 
   onDestroy(() => {
     if (browser) {
-      document.removeEventListener('change', changeTheme);
+      document.removeEventListener('change', handleChangeTheme);
     }
   });
 
