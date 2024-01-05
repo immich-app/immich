@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -158,7 +158,7 @@ class MultiselectGrid extends HookConsumerWidget {
         final ids =
             remoteSelection(errorMessage: "home_page_share_err_local".tr())
                 .map((e) => e.remoteId!);
-        context.autoPush(SharedLinkEditRoute(assetsList: ids.toList()));
+        context.pushRoute(SharedLinkEditRoute(assetsList: ids.toList()));
       }
       processing.value = false;
       selectionEnabledHook.value = false;
@@ -301,7 +301,7 @@ class MultiselectGrid extends HookConsumerWidget {
           ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
           selectionEnabledHook.value = false;
 
-          context.autoPush(AlbumViewerRoute(albumId: result.id));
+          context.pushRoute(AlbumViewerRoute(albumId: result.id));
         }
       } finally {
         processing.value = false;

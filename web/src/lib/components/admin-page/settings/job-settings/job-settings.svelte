@@ -25,7 +25,6 @@
     JobName.SmartSearch,
     JobName.RecognizeFaces,
     JobName.VideoConversion,
-    JobName.StorageTemplateMigration,
     JobName.Migration,
   ];
 

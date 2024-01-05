@@ -674,6 +674,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
+  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
     return this.getBuilder(options)
@@ -684,6 +685,7 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
+  @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH }] })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncated = dateTrunc(options);
     return (
@@ -804,10 +806,14 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
-  @GenerateSql({ params: [DummyValue.STRING, DummyValue.UUID, { numResults: 250 }] })
-  async searchMetadata(query: string, ownerId: string, { numResults }: MetadataSearchOptions): Promise<AssetEntity[]> {
+  @GenerateSql({ params: [DummyValue.STRING, [DummyValue.UUID], { numResults: 250 }] })
+  async searchMetadata(
+    query: string,
+    userIds: string[],
+    { numResults }: MetadataSearchOptions,
+  ): Promise<AssetEntity[]> {
     const rows = await this.getBuilder({
-      userIds: [ownerId],
+      userIds: userIds,
       exifInfo: false,
       isArchived: false,
     })
@@ -822,6 +828,7 @@ export class AssetRepository implements IAssetRepository {
         @@ PLAINTO_TSQUERY('english', :query)`,
         { query },
       )
+      .addOrderBy('asset.fileCreatedAt', 'DESC')
       .limit(numResults)
       .getRawMany();
 

@@ -1,6 +1,5 @@
 import { Embedding, EmbeddingSearch, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
-import { DatabaseLock, RequireLock, asyncLock } from '@app/infra';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
@@ -42,9 +41,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   @GenerateSql({
-    params: [{ ownerId: DummyValue.UUID, embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
+    params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
   })
-  async searchCLIP({ ownerId, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
+  async searchCLIP({ userIds, embedding, numResults }: EmbeddingSearch): Promise<AssetEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -56,13 +55,13 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       results = await manager
         .createQueryBuilder(AssetEntity, 'a')
         .innerJoin('a.smartSearch', 's')
-        .where('a.ownerId = :ownerId')
+        .where('a.ownerId IN (:...userIds )')
         .andWhere('a.isVisible = true')
         .andWhere('a.isArchived = false')
         .andWhere('a.fileCreatedAt < NOW()')
         .leftJoinAndSelect('a.exifInfo', 'e')
         .orderBy('s.embedding <=> :embedding')
-        .setParameters({ ownerId, embedding: asVector(embedding) })
+        .setParameters({ userIds, embedding: asVector(embedding) })
         .limit(numResults)
         .getMany();
     });
@@ -73,14 +72,14 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   @GenerateSql({
     params: [
       {
-        ownerId: DummyValue.UUID,
+        userIds: [DummyValue.UUID],
         embedding: Array.from({ length: 512 }, Math.random),
         numResults: 100,
         maxDistance: 0.6,
       },
     ],
   })
-  async searchFaces({ ownerId, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
+  async searchFaces({ userIds, embedding, numResults, maxDistance }: EmbeddingSearch): Promise<AssetFaceEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -92,9 +91,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .createQueryBuilder(AssetFaceEntity, 'faces')
         .select('1 + (faces.embedding <=> :embedding)', 'distance')
         .innerJoin('faces.asset', 'asset')
-        .where('asset.ownerId = :ownerId')
+        .where('asset.ownerId IN (:...userIds )')
         .orderBy('1 + (faces.embedding <=> :embedding)')
-        .setParameters({ ownerId, embedding: asVector(embedding) })
+        .setParameters({ userIds, embedding: asVector(embedding) })
         .limit(numResults);
 
       this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
@@ -121,18 +120,12 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   private async upsertEmbedding(assetId: string, embedding: number[]): Promise<void> {
-    if (asyncLock.isBusy(DatabaseLock[DatabaseLock.CLIPDimSize])) {
-      this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
-      await asyncLock.acquire(DatabaseLock[DatabaseLock.CLIPDimSize], () => {});
-    }
-
     await this.smartSearchRepository.upsert(
       { assetId, embedding: () => asVector(embedding, true) },
       { conflictPaths: ['assetId'] },
     );
   }
 
-  @RequireLock(DatabaseLock.CLIPDimSize)
   private async updateDimSize(dimSize: number): Promise<void> {
     if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);

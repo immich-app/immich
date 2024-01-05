@@ -103,6 +103,7 @@ export interface IJobRepository {
   deleteCronJob(name: string): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
+  queueAll(items: JobItem[]): Promise<void>;
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;

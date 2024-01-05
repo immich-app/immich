@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -90,12 +91,12 @@ class MapLocationPickerPage extends HookConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
-                      onPressed: () => context.autoPop(selectedLatLng.value),
+                      onPressed: () => context.popRoute(selectedLatLng.value),
                       child: const Text("map_location_picker_page_use_location")
                           .tr(),
                     ),
                     ElevatedButton(
-                      onPressed: () => context.autoPop(),
+                      onPressed: () => context.popRoute(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: context.colorScheme.error,
                       ),

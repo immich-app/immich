@@ -77,6 +77,7 @@ export const testApp = {
         deleteCronJob: jest.fn(),
         validateCronExpression: jest.fn(),
         queue: (item: JobItem) => jobs && _handler(item),
+        queueAll: (items: JobItem[]) => jobs && Promise.all(items.map(_handler)).then(() => Promise.resolve()),
         resume: jest.fn(),
         empty: jest.fn(),
         setConcurrency: jest.fn(),
@@ -111,6 +112,8 @@ export const testApp = {
 };
 
 export const runAllTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
+
+export const itif = (condition: boolean) => (condition ? it : it.skip);
 
 const directoryExists = async (dirPath: string) =>
   await fs.promises

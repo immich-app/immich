@@ -162,9 +162,9 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         context_length = self.model_cfg["text_cfg"]["context_length"]
         pad_token = self.tokenizer_cfg["pad_token"]
 
-        self.size = (
-            self.preprocess_cfg["size"][0] if type(self.preprocess_cfg["size"]) == list else self.preprocess_cfg["size"]
-        )
+        size = self.preprocess_cfg["size"]
+        self.size = size[0] if isinstance(size, list) else size
+
         self.resampling = get_pil_resampling(self.preprocess_cfg["interpolation"])
         self.mean = np.array(self.preprocess_cfg["mean"], dtype=np.float32)
         self.std = np.array(self.preprocess_cfg["std"], dtype=np.float32)

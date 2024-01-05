@@ -21,6 +21,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   ImmichReadStream,
+  JobItem,
   TimeBucketOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
@@ -70,6 +71,7 @@ export interface UploadRequest {
 }
 
 export interface UploadFile {
+  uuid: string;
   checksum: Buffer;
   originalPath: string;
   originalName: string;
@@ -169,13 +171,13 @@ export class AssetService {
       [UploadFieldName.PROFILE_DATA]: originalExt,
     };
 
-    return sanitize(`${this.cryptoRepository.randomUUID()}${lookup[fieldName]}`);
+    return sanitize(`${file.uuid}${lookup[fieldName]}`);
   }
 
-  getUploadFolder({ auth, fieldName }: UploadRequest): string {
+  getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
     auth = this.access.requireUploadAccess(auth);
 
-    let folder = StorageCore.getFolderLocation(StorageFolder.UPLOAD, auth.user.id);
+    let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
     if (fieldName === UploadFieldName.PROFILE_DATA) {
       folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
     }
@@ -449,9 +451,9 @@ export class AssetService {
     );
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+      );
     }
 
     return true;
@@ -504,9 +506,7 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
 
     if (force) {
-      for (const id of ids) {
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id } });
-      }
+      await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.ASSET_DELETION, data: { id } })));
     } else {
       await this.assetRepository.softDeleteAll(ids);
       this.communicationRepository.send(ClientEvent.ASSET_TRASH, auth.user.id, ids);
@@ -529,9 +529,9 @@ export class AssetService {
 
     if (action == TrashAction.EMPTY_ALL) {
       for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
-        }
+        await this.jobRepository.queueAll(
+          assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+        );
       }
       return;
     }
@@ -566,21 +566,25 @@ export class AssetService {
   async run(auth: AuthDto, dto: AssetJobsDto) {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, dto.assetIds);
 
+    const jobs: JobItem[] = [];
+
     for (const id of dto.assetIds) {
       switch (dto.name) {
         case AssetJobName.REFRESH_METADATA:
-          await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          jobs.push({ name: JobName.METADATA_EXTRACTION, data: { id } });
           break;
 
         case AssetJobName.REGENERATE_THUMBNAIL:
-          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
           break;
 
         case AssetJobName.TRANSCODE_VIDEO:
-          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id } });
           break;
       }
     }
+
+    await this.jobRepository.queueAll(jobs);
   }
 
   private async updateMetadata(dto: ISidecarWriteJob) {

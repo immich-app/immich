@@ -5,6 +5,7 @@ import { assetApi } from './asset-api';
 import { authApi } from './auth-api';
 import { libraryApi } from './library-api';
 import { partnerApi } from './partner-api';
+import { serverInfoApi } from './server-info-api';
 import { sharedLinkApi } from './shared-link-api';
 import { userApi } from './user-api';
 
@@ -14,6 +15,7 @@ export const api = {
   apiKeyApi,
   assetApi,
   libraryApi,
+  serverInfoApi,
   sharedLinkApi,
   albumApi,
   userApi,

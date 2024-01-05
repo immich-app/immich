@@ -23,6 +23,7 @@ changelog:
         - documentation
     - title: Dependency updates
       labels:
+        - dependencies
         - renovate
     - title: Other changes
       labels:
