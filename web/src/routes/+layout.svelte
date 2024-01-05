@@ -30,6 +30,7 @@
   const isAuthRoute = (route?: string) => route?.startsWith('/auth');
 
   $: {
+    // if the $colorTheme value changes, make the appropriate class change
     if (browser) {
       $colorTheme;
       handleChangeTheme();
@@ -37,6 +38,7 @@
   }
 
   const handleChangeTheme = () => {
+    // trigger a change for some components like the map
     $hasThemeChanged = !$hasThemeChanged;
     const theme = getCurrentTheme();
     if (theme === Theme.LIGHT) {
@@ -47,6 +49,7 @@
   };
 
   onMount(() => {
+    // if the browser theme changes, changes the Immich theme too
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
 

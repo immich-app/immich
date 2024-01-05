@@ -14,7 +14,7 @@
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
   import { user } from '$lib/stores/user.store';
-  import SidebarTheme from './sidebar-theme.svelte';
+  import SidebarAppearance from './sidebar-appearance.svelte';
 
   export let keys: APIKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
@@ -67,6 +67,6 @@
   <SidebarSettings />
 </SettingAccordion>
 
-<SettingAccordion title="Theme" subtitle="Manage your Immich theme">
-  <SidebarTheme />
+<SettingAccordion title="Appearance" subtitle="Manage your Immich appearance">
+  <SidebarAppearance />
 </SettingAccordion>
