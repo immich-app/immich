@@ -26,9 +26,12 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
             serverFeatures: const ServerFeatures(
               map: true,
               trash: true,
+              oauthEnabled: false,
+              passwordLogin: true,
             ),
             serverConfig: const ServerConfig(
               trashDays: 30,
+              oauthButtonText: '',
               externalDomain: '',
             ),
             serverDiskInfo: const ServerDiskInfo(
@@ -45,10 +48,10 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
   final ServerInfoService _serverInfoService;
 
-  getServerInfo() {
-    getServerVersion();
-    getServerFeatures();
-    getServerConfig();
+  Future<void> getServerInfo() async {
+    await getServerVersion();
+    await getServerFeatures();
+    await getServerConfig();
   }
 
   getServerVersion() async {

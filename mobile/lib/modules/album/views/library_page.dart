@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -102,7 +103,7 @@ class LibraryPage extends HookConsumerWidget {
 
           return GestureDetector(
             onTap: () =>
-                context.autoPush(CreateAlbumRoute(isSharedAlbum: false)),
+                context.pushRoute(CreateAlbumRoute(isSharedAlbum: false)),
             child: Padding(
               padding:
                   const EdgeInsets.only(bottom: 32), // Adjust padding to suit
@@ -190,7 +191,7 @@ class LibraryPage extends HookConsumerWidget {
     Widget? shareTrashButton() {
       return trashEnabled
           ? InkWell(
-              onTap: () => context.autoPush(const TrashRoute()),
+              onTap: () => context.pushRoute(const TrashRoute()),
               borderRadius: const BorderRadius.all(Radius.circular(12)),
               child: const Icon(
                 Icons.delete_rounded,
@@ -219,12 +220,12 @@ class LibraryPage extends HookConsumerWidget {
                 children: [
                   buildLibraryNavButton(
                       "library_page_favorites".tr(), Icons.favorite_border, () {
-                    context.autoNavigate(const FavoritesRoute());
+                    context.navigateTo(const FavoritesRoute());
                   }),
                   const SizedBox(width: 12.0),
                   buildLibraryNavButton(
                       "library_page_archive".tr(), Icons.archive_outlined, () {
-                    context.autoNavigate(const ArchiveRoute());
+                    context.navigateTo(const ArchiveRoute());
                   }),
                 ],
               ),
@@ -270,7 +271,7 @@ class LibraryPage extends HookConsumerWidget {
 
                   return AlbumThumbnailCard(
                     album: sorted[index - 1],
-                    onTap: () => context.autoPush(
+                    onTap: () => context.pushRoute(
                       AlbumViewerRoute(
                         albumId: sorted[index - 1].id,
                       ),
@@ -314,7 +315,7 @@ class LibraryPage extends HookConsumerWidget {
                 childCount: local.length,
                 (context, index) => AlbumThumbnailCard(
                   album: local[index],
-                  onTap: () => context.autoPush(
+                  onTap: () => context.pushRoute(
                     AlbumViewerRoute(
                       albumId: local[index].id,
                     ),

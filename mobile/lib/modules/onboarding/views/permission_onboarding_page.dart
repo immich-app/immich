@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -16,7 +17,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
     final PermissionStatus permission = ref.watch(galleryPermissionNotifier);
 
     // Navigate to the main Tab Controller when permission is granted
-    void goToBackup() => context.autoReplace(const BackupControllerRoute());
+    void goToBackup() => context.replaceRoute(const BackupControllerRoute());
 
     // When the permission is denied, we show a request permission page
     buildRequestPermission() {
@@ -174,7 +175,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
                 ),
                 TextButton(
                   child: const Text('permission_onboarding_back').tr(),
-                  onPressed: () => context.autoPop(),
+                  onPressed: () => context.popRoute(),
                 ),
               ],
             ),
