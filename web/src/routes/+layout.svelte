@@ -18,12 +18,24 @@
   import { api } from '@api';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { user } from '$lib/stores/user.store';
+  import { browser } from '$app/environment';
+  import { colorTheme } from '$lib/stores/preferences.store';
 
   let showNavigationLoadingBar = false;
   let albumId: string | undefined;
 
   const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
   const isAuthRoute = (route?: string) => route?.startsWith('/auth');
+
+  $: {
+    if (browser) {
+      if ($colorTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    }
+  }
 
   if (isSharedLinkRoute($page.route?.id)) {
     api.setKey($page.params.key);

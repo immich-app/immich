@@ -166,9 +166,9 @@ jobs:
         run: npm run check:typescript
         if: ${{ !cancelled() }}
 
-      # - name: Run unit tests & coverage
-      #   run: npm run test:cov
-      #   if: ${{ !cancelled() }}
+      - name: Run unit tests & coverage
+        run: npm run test:cov
+        if: ${{ !cancelled() }}
 
   mobile-unit-tests:
     name: Mobile
@@ -268,6 +268,9 @@ jobs:
 
       - name: Run existing migrations
         run: npm run typeorm:migrations:run
+
+      - name: Test npm run schema:reset command works
+        run: npm run typeorm:schema:reset
 
       - name: Generate new migrations
         continue-on-error: true
