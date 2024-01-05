@@ -1,5 +1,6 @@
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import chokidar from 'chokidar';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
@@ -11,6 +12,7 @@ import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
 import { ImmichLogger } from '@app/infra/logger';
+import { COMPLETION_SH_TEMPLATE } from 'nest-commander/src/constants';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -37,6 +39,8 @@ export class LibraryService {
   readonly logger = new ImmichLogger(LibraryService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
+  private watchEnabled = false;
+  private watcher: chokidar.FSWatcher | null = null;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -66,8 +70,49 @@ export class LibraryService {
       config.library.scan.enabled,
     );
 
+    this.watchEnabled = config.library.watch.enabled;
+
+    for (const library of await this.repository.getAll(true, LibraryType.EXTERNAL)) {
+      if (library.watched) {
+        await this.watch(library);
+      }
+    }
+
     this.configCore.config$.subscribe((config) => {
       this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
+    });
+  }
+
+  async teardown() {
+    this.watcher?.close();
+  }
+
+  async watch(library: LibraryEntity) {
+    if (!this.watchEnabled) {
+      return;
+    }
+
+    const extensions = mimeTypes.getSupportedFileExtensions();
+
+    this.logger.log(`Watching ${library.importPaths} for ${extensions} files`);
+
+    this.watcher = chokidar.watch(library.importPaths, {
+      ignored: library.exclusionPatterns,
+      ignoreInitial: true,
+      usePolling: true,
+    });
+
+    this.watcher.on('add', async (path) => {
+      this.logger.debug(`File event: ${path}`);
+      await this.jobRepository.queue({
+        name: JobName.LIBRARY_SCAN_ASSET,
+        data: {
+          id: library.id,
+          assetPath: path,
+          ownerId: library.ownerId,
+          force: false,
+        },
+      });
     });
   }
 
@@ -106,6 +151,7 @@ export class LibraryService {
         if (!dto.name) {
           dto.name = 'New External Library';
         }
+
         break;
       case LibraryType.UPLOAD:
         if (!dto.name) {
@@ -117,8 +163,11 @@ export class LibraryService {
         if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
           throw new BadRequestException('Upload libraries cannot have exclusion patterns');
         }
+
         break;
     }
+
+    this.logger.log(`Creating ${dto.type} library for user ${auth.user.name}`);
 
     const library = await this.repository.create({
       ownerId: auth.user.id,
@@ -128,6 +177,10 @@ export class LibraryService {
       exclusionPatterns: dto.exclusionPatterns ?? [],
       isVisible: dto.isVisible ?? true,
     });
+
+    if (dto.type === LibraryType.EXTERNAL && library.watched) {
+      await this.watch(library);
+    }
 
     return mapLibrary(library);
   }
@@ -245,8 +298,6 @@ export class LibraryService {
 
     const deviceAssetId = `${basename(assetPath)}`.replace(/\s+/g, '');
 
-    const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
-
     let assetId;
     if (doImport) {
       const library = await this.repository.get(job.id, true);
@@ -254,6 +305,8 @@ export class LibraryService {
         this.logger.error('Cannot import asset into deleted library');
         return false;
       }
+
+      const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
 
       // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
       const addedAsset = await this.assetRepository.create({

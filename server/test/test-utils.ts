@@ -2,9 +2,10 @@ import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDt
 import { AppModule } from '@app/immich';
 import { dataSource } from '@app/infra';
 import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
+import chokidar from 'chokidar';
 import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
@@ -68,6 +69,8 @@ export const testApp = {
   create: async (options?: TestAppOptions): Promise<INestApplication> => {
     const { jobs } = options || { jobs: false };
 
+    await db.reset();
+
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
       .overrideProvider(IJobRepository)
       .useValue({
@@ -99,8 +102,8 @@ export const testApp = {
     return app;
   },
   reset: async (options?: ResetOptions) => {
-    await app.get(AppService).init();
     await db.reset(options);
+    await app.get(AppService).init();
   },
   teardown: async () => {
     if (app) {

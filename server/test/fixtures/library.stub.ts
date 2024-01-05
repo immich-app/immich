@@ -15,6 +15,7 @@ export const libraryStub = {
     refreshedAt: null,
     isVisible: true,
     exclusionPatterns: [],
+    watched: false,
   }),
   externalLibrary1: Object.freeze<LibraryEntity>({
     id: 'library-id',
@@ -29,5 +30,6 @@ export const libraryStub = {
     refreshedAt: null,
     isVisible: true,
     exclusionPatterns: [],
+    watched: false,
   }),
 };

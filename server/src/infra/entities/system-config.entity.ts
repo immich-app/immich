@@ -47,6 +47,8 @@ export enum SystemConfigKey {
   LIBRARY_SCAN_ENABLED = 'library.scan.enabled',
   LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
 
+  LIBRARY_WATCH_ENABLED = 'library.watch.enabled',
+
   LOGGING_ENABLED = 'logging.enabled',
   LOGGING_LEVEL = 'logging.level',
 
@@ -245,6 +247,9 @@ export interface SystemConfig {
     scan: {
       enabled: boolean;
       cronExpression: string;
+    };
+    watch: {
+      enabled: boolean;
     };
   };
   server: {

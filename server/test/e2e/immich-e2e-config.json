@@ -6,6 +6,12 @@
     "enabled": false
   },
   "logging": {
-    "enabled": false
+    "enabled": true,
+    "level": "debug"
+  },
+  "library": {
+    "watch": {
+      "enabled": true
+    }
   }
 }

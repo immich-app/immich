@@ -934,4 +934,37 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(assetsAfter).toEqual(assetsBefore);
     });
   });
+
+  describe('Automatic refresh', () => {
+    it('should automatically find new files', async () => {
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
+      );
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
+      });
+
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(beforeAssets.length).toEqual(1);
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.jpg`,
+      );
+
+      let testPassed = false;
+
+      while (!testPassed) {
+        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+        testPassed = afterAssets.length === 2;
+      }
+    });
+  });
 });

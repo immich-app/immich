@@ -32,9 +32,19 @@ export class SystemConfigLibraryScanDto {
   cronExpression!: string;
 }
 
+export class SystemConfigLibraryWatchDto {
+  @IsBoolean()
+  enabled!: boolean;
+}
+
 export class SystemConfigLibraryDto {
   @Type(() => SystemConfigLibraryScanDto)
   @ValidateNested()
   @IsObject()
   scan!: SystemConfigLibraryScanDto;
+
+  @Type(() => SystemConfigLibraryWatchDto)
+  @ValidateNested()
+  @IsObject()
+  watch!: SystemConfigLibraryWatchDto;
 }

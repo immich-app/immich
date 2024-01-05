@@ -7896,6 +7896,9 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "watched": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -7908,7 +7911,8 @@
           "exclusionPatterns",
           "createdAt",
           "updatedAt",
-          "refreshedAt"
+          "refreshedAt",
+          "watched"
         ],
         "type": "object"
       },
@@ -8658,6 +8662,9 @@
           "facialRecognition": {
             "type": "boolean"
           },
+          "libraryWatch": {
+            "type": "boolean"
+          },
           "map": {
             "type": "boolean"
           },
@@ -8694,7 +8701,8 @@
           "oauthAutoLaunch",
           "passwordLogin",
           "sidecar",
-          "search"
+          "search",
+          "libraryWatch"
         ],
         "type": "object"
       },
@@ -9233,10 +9241,14 @@
         "properties": {
           "scan": {
             "$ref": "#/components/schemas/SystemConfigLibraryScanDto"
+          },
+          "watch": {
+            "$ref": "#/components/schemas/SystemConfigLibraryWatchDto"
           }
         },
         "required": [
-          "scan"
+          "scan",
+          "watch"
         ],
         "type": "object"
       },
@@ -9252,6 +9264,17 @@
         "required": [
           "enabled",
           "cronExpression"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLibraryWatchDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },

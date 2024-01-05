@@ -53,6 +53,9 @@ export class LibraryEntity {
 
   @Column({ type: 'boolean', default: true })
   isVisible!: boolean;
+
+  @Column({ type: 'boolean', default: true })
+  watched!: boolean;
 }
 
 export enum LibraryType {
