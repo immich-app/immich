@@ -516,43 +516,14 @@ describe(PersonService.name, () => {
     });
   });
 
-  describe('handlePersonDelete', () => {
-    it('should stop if a person has not be found', async () => {
-      personMock.getById.mockResolvedValue(null);
-
-      await expect(sut.handlePersonDelete({ id: 'person-1' })).resolves.toBe(false);
-      expect(personMock.update).not.toHaveBeenCalled();
-      expect(storageMock.unlink).not.toHaveBeenCalled();
-    });
-    it('should delete a person', async () => {
-      personMock.getById.mockResolvedValue(personStub.primaryPerson);
-
-      await expect(sut.handlePersonDelete({ id: 'person-1' })).resolves.toBe(true);
-      expect(personMock.delete).toHaveBeenCalledWith(personStub.primaryPerson);
-      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.primaryPerson.thumbnailPath);
-    });
-  });
-
-  describe('handlePersonDelete', () => {
-    it('should delete person', async () => {
-      personMock.getById.mockResolvedValue(personStub.withName);
-
-      await sut.handlePersonDelete({ id: personStub.withName.id });
-
-      expect(personMock.delete).toHaveBeenCalledWith(personStub.withName);
-      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.withName.thumbnailPath);
-    });
-  });
-
   describe('handlePersonCleanup', () => {
     it('should delete people without faces', async () => {
       personMock.getAllWithoutFaces.mockResolvedValue([personStub.noName]);
 
       await sut.handlePersonCleanup();
 
-      expect(jobMock.queueAll).toHaveBeenCalledWith([
-        { name: JobName.PERSON_DELETE, data: { id: personStub.noName.id } },
-      ]);
+      expect(personMock.delete).toHaveBeenCalledWith(personStub.noName);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personStub.noName.thumbnailPath);
     });
   });
 
@@ -593,18 +564,10 @@ describe(PersonService.name, () => {
       await sut.handleQueueRecognizeFaces({ force: true });
 
       expect(assetMock.getAll).toHaveBeenCalled();
-      expect(jobMock.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.FACIAL_RECOGNITION,
-          data: { id: assetStub.image.id },
-        },
-      ]);
-      expect(jobMock.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.PERSON_DELETE,
-          data: { id: personStub.withName.id },
-        },
-      ]);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.FACIAL_RECOGNITION,
+        data: { id: assetStub.image.id },
+      });
     });
   });
 
@@ -851,9 +814,34 @@ describe(PersonService.name, () => {
 
       expect(personMock.update).not.toHaveBeenCalled();
 
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+    });
+
+    it('should merge two people with smart merge', async () => {
+      personMock.getById.mockResolvedValueOnce(personStub.randomPerson);
+      personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
+      personMock.delete.mockResolvedValue(personStub.primaryPerson);
+      personMock.update.mockResolvedValue({ ...personStub.randomPerson, name: personStub.primaryPerson.name });
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-3']));
+      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
+
+      await expect(sut.mergePerson(authStub.admin, 'person-3', { ids: ['person-1'] })).resolves.toEqual([
+        { id: 'person-1', success: true },
+      ]);
+
+      expect(personMock.reassignFaces).toHaveBeenCalledWith({
+        newPersonId: personStub.randomPerson.id,
+        oldPersonId: personStub.primaryPerson.id,
+      });
+
+      expect(personMock.update).toHaveBeenCalledWith({
+        id: personStub.randomPerson.id,
+        name: personStub.primaryPerson.name,
+      });
+
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.PERSON_DELETE,
-        data: { id: personStub.mergePerson.id },
+        data: { id: personStub.primaryPerson.id },
       });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });

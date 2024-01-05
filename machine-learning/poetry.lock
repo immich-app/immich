@@ -1161,23 +1161,6 @@ files = [
 ]
 
 [[package]]
-name = "hdbscan"
-version = "0.8.33"
-description = "Clustering based on density with variable density clusters"
-optional = false
-python-versions = "*"
-files = [
-    {file = "hdbscan-0.8.33.tar.gz", hash = "sha256:57fabc5f0e45f48d2407b35c731192abc896376411fe7e4bb836ffa03d38f90d"},
-]
-
-[package.dependencies]
-cython = ">=0.27,<3"
-joblib = ">=1.0"
-numpy = ">=1.20"
-scikit-learn = ">=0.20"
-scipy = ">=1.0"
-
-[[package]]
 name = "httpcore"
 version = "1.0.2"
 description = "A minimal low-level HTTP client."
@@ -3555,4 +3538,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "aa0cf709c3908b6584027fdc95e0bb1426abe5604a1fa6dd197ac3296a00a5eb"
+content-hash = "740b00511f571e142cd28496382b44ed4b91bf8aa08ac4140e8d731597fc42f7"

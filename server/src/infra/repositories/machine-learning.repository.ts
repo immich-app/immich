@@ -31,12 +31,6 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return res.json();
   }
 
-  async cluster(url: string, config: ClusterConfig): Promise<number[]> {
-    const body = JSON.stringify(config);
-    const res = await fetch(`${url}/cluster`, { method: 'POST', body, headers: { 'Content-Type': 'application/json' } });
-    return res.json();
-  }
-
   detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]> {
     return this.predict<DetectFaceResult[]>(url, input, { ...config, modelType: ModelType.FACIAL_RECOGNITION });
   }

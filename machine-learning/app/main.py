@@ -112,32 +112,6 @@ async def predict(
     return ORJSONResponse(outputs)
 
 
-@app.post("/cluster")
-async def cluster(req: ClusterRequest) -> Any:
-    log.info(f"Received {len(req.embeddings)} embeddings for clustering.")
-    embeddings_np = np.array(req.embeddings, dtype=np.float32)
-    embeddings_np /= np.linalg.norm(embeddings_np, axis=1, keepdims=True)
-    clusterer = HDBSCAN(
-        min_cluster_size=req.min_cluster_size,
-        min_samples=req.min_samples,
-        cluster_selection_epsilon=req.cluster_selection_epsilon,
-        max_cluster_size=req.max_cluster_size,
-        metric=req.metric,
-        alpha=req.alpha,
-        algorithm=req.algorithm,
-        leaf_size=req.leaf_size,
-        approx_min_span_tree=req.approx_min_span_tree,
-        cluster_selection_method=req.cluster_selection_method,
-    )
-    try:
-        outputs = await run(clusterer.fit_predict, embeddings_np)
-    except Exception as e:
-        log.error(f"Failed to cluster: {e}")
-        raise HTTPException(500, f"Failed to cluster: {e}")
-    log.info(f"Clustered {len(req.embeddings)} embeddings into {len(np.unique(outputs))} clusters.")
-    return ORJSONResponse(outputs.tolist())
-
-
 async def run(func: Callable, inputs: Any) -> Any:
     if thread_pool is None:
         return func(inputs)

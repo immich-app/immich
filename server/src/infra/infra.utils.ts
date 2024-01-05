@@ -1,6 +1,6 @@
 import { Paginated, PaginationOptions } from '@app/domain';
 import _ from 'lodash';
-import { Between, FindOneOptions, LessThanOrEqual, MoreThanOrEqual, ObjectLiteral, Repository } from 'typeorm';
+import { Between, FindManyOptions, LessThanOrEqual, MoreThanOrEqual, ObjectLiteral, Repository } from 'typeorm';
 import { chunks, setUnion } from '../domain/domain.util';
 import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
 
@@ -21,7 +21,7 @@ export function OptionalBetween<T>(from?: T, to?: T) {
 export async function paginate<Entity extends ObjectLiteral>(
   repository: Repository<Entity>,
   paginationOptions: PaginationOptions,
-  searchOptions?: FindOneOptions<Entity>,
+  searchOptions?: FindManyOptions<Entity>,
 ): Paginated<Entity> {
   const items = await repository.find({
     ...searchOptions,

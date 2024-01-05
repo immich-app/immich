@@ -1,4 +1,6 @@
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { FindManyOptions } from 'typeorm';
+import { PaginationOptions, Paginated } from '../domain.util';
 
 export const IPersonRepository = 'IPersonRepository';
 
@@ -43,7 +45,7 @@ export interface IPersonRepository {
   delete(entity: PersonEntity): Promise<PersonEntity | null>;
   deleteAll(): Promise<number>;
   getStatistics(personId: string): Promise<PersonStatistics>;
-  getAllFaces(): Promise<AssetFaceEntity[]>;
+  getAllFaces(pagination: PaginationOptions, options: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
   createFace(entity: Partial<AssetFaceEntity>): Promise<void>;

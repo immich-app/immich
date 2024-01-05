@@ -36,20 +36,21 @@
     handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
   }
 
-  let faceConfirm = false;
+  let confirmJob: JobName | null = null;
 
-  const handleFaceCommand = async (jobId: JobName, dto: JobCommandDto) => {
+  const handleConfirmCommand = async (jobId: JobName, dto: JobCommandDto) => {
     if (dto.force) {
-      faceConfirm = true;
+      confirmJob = jobId;
       return;
     }
 
     await handleCommand(jobId, dto);
   };
 
-  const onFaceConfirm = () => {
-    faceConfirm = false;
-    handleCommand(JobName.FaceDetection, { command: JobCommand.Start, force: true });
+  const onConfirm = () => {
+    if (!confirmJob) return;
+    handleCommand(confirmJob, { command: JobCommand.Start, force: true });
+    confirmJob = null;
   };
 
   $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
@@ -88,13 +89,14 @@
       icon: mdiFaceRecognition,
       title: api.getJobName(JobName.FaceDetection),
       subtitle: 'Detects the faces in your assets',
-      handleCommand: handleFaceCommand,
+      handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.FacialRecognition]: {
       icon: mdiVectorCircle,
       title: api.getJobName(JobName.FacialRecognition),
       subtitle: 'Group the faces in your assets into people',
+      handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.VideoConversion]: {
@@ -138,11 +140,11 @@
   }
 </script>
 
-{#if faceConfirm}
+{#if confirmJob}
   <ConfirmDialogue
     prompt="Are you sure you want to reprocess all faces? This will also clear named people."
-    on:confirm={onFaceConfirm}
-    on:cancel={() => (faceConfirm = false)}
+    on:confirm={onConfirm}
+    on:cancel={() => (confirmJob = null)}
   />
 {/if}
 

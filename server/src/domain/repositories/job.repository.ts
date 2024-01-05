@@ -70,7 +70,6 @@ export type JobItem =
   | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
   | { name: JobName.FACIAL_RECOGNITION; data: IFacialRecognitionJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
-  | { name: JobName.PERSON_DELETE; data: IEntityJob }
 
   // Clip Embedding
   | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }
