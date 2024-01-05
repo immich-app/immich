@@ -37,8 +37,10 @@
   };
 
   const handlePrevious = () => {
-    index--;
-    goto(`${AppRoute.AUTH_ONBOARDING}?step=${onboardingSteps[index].name}`);
+    if (index >= 1) {
+      index--;
+      goto(`${AppRoute.AUTH_ONBOARDING}?step=${onboardingSteps[index].name}`);
+    }
   };
 </script>
 
@@ -46,7 +48,7 @@
   <div class="flex flex-col w-full">
     <div class="w-full bg-gray-300 dark:bg-gray-600 rounded-full h-2.5">
       <div
-        class="progress-bar bg-immich-dark-primary/80 dark:bg-immich-primary h-2.5 rounded-full transition-all ease-out"
+        class="progress-bar bg-immich-dark-primary/80 dark:bg-immich-primary h-2.5 rounded-full transition-all duration-200 ease-out"
         style="width: {(index / (onboardingSteps.length - 1)) * 100}%"
       ></div>
     </div>
