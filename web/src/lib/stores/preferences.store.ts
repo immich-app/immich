@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import { Theme } from '$lib/constants';
 import { persisted } from 'svelte-local-storage-store';
 
@@ -7,8 +8,10 @@ export interface ThemeSetting {
 }
 
 const initTheme = (): ThemeSetting => {
-  if (!window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return { value: Theme.LIGHT, system: false };
+  if (browser) {
+    if (!window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return { value: Theme.LIGHT, system: false };
+    }
   }
   return { value: Theme.DARK, system: false };
 };
