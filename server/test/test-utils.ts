@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import { DateTime } from 'luxon';
 import path from 'path';
 import { Server } from 'tls';
-import { EntityTarget, ObjectLiteral } from 'typeorm';
+import { EntityTarget, ObjectLiteral, QueryFailedError } from 'typeorm';
 import { AppService } from '../src/microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
@@ -43,7 +43,13 @@ export const db = {
           deleteUsers = true;
           continue;
         }
-        await em.query(`DELETE FROM ${tableName} CASCADE;`);
+        try {
+          await em.query(`DELETE FROM ${tableName} CASCADE;`);
+        } catch (err) {
+          if (err instanceof QueryFailedError && err.message.includes('does not exist')) {
+            // Ignore error if something does not exist
+          }
+        }
       }
       if (deleteUsers) {
         await em.query(`DELETE FROM "users" CASCADE;`);
