@@ -14,7 +14,7 @@
     ScaleControl,
     Popup,
   } from 'svelte-maplibre';
-  import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
+  import { mapSettings } from '$lib/stores/preferences.store';
   import { MapMarkerResponseDto, api } from '@api';
   import maplibregl from 'maplibre-gl';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
@@ -37,7 +37,6 @@
   let marker: maplibregl.Marker | null = null;
 
   $: style = (async () => {
-    $colorTheme;
     $hasThemeChanged;
     const { data } = await api.systemConfigApi.getMapStyle({
       theme: $mapSettings.allowDarkMode ? getCurrentTheme() : Theme.LIGHT,

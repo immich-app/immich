@@ -32,22 +32,18 @@
   $: {
     if (browser) {
       $colorTheme;
-      changeTheme();
+      handleChangeTheme();
     }
   }
 
-  const changeTheme = () => {
+  const handleChangeTheme = () => {
+    $hasThemeChanged = !$hasThemeChanged;
     const theme = getCurrentTheme();
     if (theme === Theme.LIGHT) {
       document.documentElement.classList.remove('dark');
     } else {
       document.documentElement.classList.add('dark');
     }
-  };
-
-  const handleChangeTheme = () => {
-    $hasThemeChanged = !$hasThemeChanged;
-    changeTheme();
   };
 
   onMount(() => {
