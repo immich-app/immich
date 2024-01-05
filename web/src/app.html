@@ -18,7 +18,17 @@
       /**
        * Prevent FOUC on page load.
        */
-      let theme = JSON.parse(localStorage.getItem('color-theme'));
+      const colorThemeKeyName = 'color-theme';
+      let theme;
+      let fallbackTheme = { value: 'dark', system: false };
+
+      try {
+        theme = JSON.parse(localStorage.getItem(colorThemeKeyName));
+      } catch {
+        theme = fallbackTheme;
+        localStorage.setItem(colorThemeKeyName, JSON.stringify(fallbackTheme));
+      }
+
       if (theme !== null) {
         if (theme.system) {
           if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -28,7 +38,7 @@
           }
         }
       } else {
-        theme = { value: 'dark' };
+        theme = fallbackTheme;
       }
 
       if (theme.value === 'light') {
