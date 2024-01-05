@@ -9,8 +9,6 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Callable, Iterator
 from zipfile import BadZipFile
 
-from hdbscan import HDBSCAN
-import numpy as np
 import orjson
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import ORJSONResponse
@@ -22,7 +20,6 @@ from app.models.base import InferenceModel
 from .config import log, settings
 from .models.cache import ModelCache
 from .schemas import (
-    ClusterRequest,
     MessageResponse,
     ModelType,
     TextResponse,

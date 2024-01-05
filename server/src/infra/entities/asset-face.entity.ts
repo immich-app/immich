@@ -39,6 +39,10 @@ export class AssetFaceEntity {
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;
 
-  @ManyToOne(() => PersonEntity, (person) => person.faces, { onDelete: 'SET NULL', onUpdate: 'CASCADE', nullable: true })
+  @ManyToOne(() => PersonEntity, (person) => person.faces, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+    nullable: true,
+  })
   person!: PersonEntity | null;
 }

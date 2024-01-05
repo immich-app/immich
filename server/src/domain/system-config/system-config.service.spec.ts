@@ -31,7 +31,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
     [QueueName.FACE_DETECTION]: { concurrency: 2 },
-    [QueueName.FACIAL_RECOGNITION]: { concurrency: 2 },
+    [QueueName.FACIAL_RECOGNITION]: { concurrency: 1 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 5 },
@@ -74,7 +74,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       minScore: 0.7,
       maxDistance: 0.6,
-      minFaces: 1,
+      minFaces: 2,
     },
   },
   map: {

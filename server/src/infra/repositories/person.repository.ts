@@ -9,6 +9,7 @@ import {
   UpdateFacesData,
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
 import { FindManyOptions, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
@@ -50,20 +51,27 @@ export class PersonRepository implements IPersonRepository {
       .createQueryBuilder()
       .update()
       .set({ personId: newPersonId })
-      .where({ personId: oldPersonId ? oldPersonId : undefined, id: faceIds ? In(faceIds) : undefined })
+      .where(
+        _.omitBy(
+          { personId: oldPersonId ? oldPersonId : undefined, id: faceIds ? In(faceIds) : undefined },
+          _.isUndefined,
+        ),
+      )
       .execute();
 
     return result.affected ?? 0;
   }
 
-  delete(entity: PersonEntity): Promise<PersonEntity | null> {
-    return this.personRepository.remove(entity);
+  async delete(entities: PersonEntity | PersonEntity[]): Promise<void> {
+    await this.personRepository.remove(entities as any);
   }
 
-  async deleteAll(): Promise<number> {
-    const people = await this.personRepository.find();
-    await this.personRepository.remove(people);
-    return people.length;
+  async deleteAll(): Promise<void> {
+    await this.personRepository.delete({});
+  }
+
+  async deleteAllFaces(): Promise<void> {
+    await this.assetFaceRepository.delete({});
   }
 
   getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity> {

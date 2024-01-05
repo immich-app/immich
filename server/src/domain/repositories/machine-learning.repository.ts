@@ -1,5 +1,4 @@
-import { Embedding } from '.';
-import { CLIPConfig, ClusterConfig, RecognitionConfig } from '../smart-info/dto';
+import { CLIPConfig, RecognitionConfig } from '../smart-info/dto';
 
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 

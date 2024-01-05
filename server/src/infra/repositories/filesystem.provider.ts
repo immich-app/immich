@@ -64,7 +64,13 @@ export class FilesystemProvider implements IStorageRepository {
   }
 
   async unlink(file: string) {
-    await fs.unlink(file);
+    await fs.unlink(file).catch((err) => {
+      if (err.code === 'ENOENT') {
+        this.logger.warn(`File ${file} does not exist.`);
+      } else {
+        throw err;
+      }
+    });
   }
 
   stat = fs.stat;

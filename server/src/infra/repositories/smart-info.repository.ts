@@ -1,4 +1,4 @@
-import { Embedding, EmbeddingSearch, FaceEmbeddingDensityResult, FaceEmbeddingDensitySearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from '@app/domain';
+import { Embedding, EmbeddingSearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
@@ -62,8 +62,8 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .andWhere('a.fileCreatedAt < NOW()')
         .leftJoinAndSelect('a.exifInfo', 'e')
         .orderBy('s.embedding <=> :embedding')
-        .setParameters({ userIds, embedding: asVector(embedding) })
-      
+        .setParameters({ userIds, embedding: asVector(embedding) });
+
       if (numResults) {
         if (!isValidInteger(numResults, { min: 1 })) {
           throw new Error(`Invalid value for 'numResults': ${numResults}`);
@@ -136,10 +136,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       face: this.assetFaceRepository.create(row) as any as AssetFaceEntity,
       distance: row.distance,
     }));
-  }
-
-  async getFaceDensities({ k, maxDistance }: FaceEmbeddingDensitySearch): Promise<FaceEmbeddingDensityResult[]> {
-    return this.assetRepository.manager.query(`SELECT id as "faceId", density FROM get_face_densities($1, $2) ORDER BY density DESC`, [k, maxDistance]);
   }
 
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {

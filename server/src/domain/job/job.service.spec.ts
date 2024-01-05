@@ -308,10 +308,9 @@ describe(JobService.name, () => {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.FACE_DETECTION,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.ENCODE_CLIP,
-          JobName.RECOGNIZE_FACES,
+          JobName.FACE_DETECTION,
           JobName.VIDEO_CONVERSION,
         ],
       },

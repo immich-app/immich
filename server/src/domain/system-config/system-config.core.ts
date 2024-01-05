@@ -74,7 +74,7 @@ export const defaults = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       minScore: 0.7,
       maxDistance: 0.6,
-      minFaces: 1,
+      minFaces: 2,
     },
   },
   map: {

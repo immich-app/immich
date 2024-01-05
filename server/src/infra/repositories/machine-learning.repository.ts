@@ -1,7 +1,6 @@
 import {
   CLIPConfig,
   CLIPMode,
-  ClusterConfig,
   DetectFaceResult,
   IMachineLearningRepository,
   ModelConfig,
@@ -44,7 +43,11 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]> {
-    return this.predict<number[]>(url, input, { ...config, modelType: ModelType.CLIP, mode: CLIPMode.TEXT } as CLIPConfig);
+    return this.predict<number[]>(url, input, {
+      ...config,
+      modelType: ModelType.CLIP,
+      mode: CLIPMode.TEXT,
+    } as CLIPConfig);
   }
 
   async getFormData(input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<FormData> {

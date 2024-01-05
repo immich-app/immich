@@ -5,7 +5,6 @@ import {
   IBaseJob,
   IDeleteFilesJob,
   IEntityJob,
-  IFacialRecognitionJob,
   ILibraryFileJob,
   ILibraryRefreshJob,
   ISidecarWriteJob,
@@ -68,7 +67,7 @@ export type JobItem =
   | { name: JobName.QUEUE_FACE_DETECTION; data: IBaseJob }
   | { name: JobName.FACE_DETECTION; data: IEntityJob }
   | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
-  | { name: JobName.FACIAL_RECOGNITION; data: IFacialRecognitionJob }
+  | { name: JobName.FACIAL_RECOGNITION; data: IEntityJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
 
   // Clip Embedding
@@ -113,5 +112,5 @@ export interface IJobRepository {
   clear(name: QueueName, type: QueueCleanType): Promise<string[]>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
-  waitForQueueCompletion(name: QueueName): Promise<void>;
+  waitForQueueCompletion(...queues: QueueName[]): Promise<void>;
 }
