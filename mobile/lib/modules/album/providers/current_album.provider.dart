@@ -1,6 +1,15 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final currentAlbumProvider = StateProvider<Album?>((ref) {
-  return null;
-});
+part 'current_album.provider.g.dart';
+
+@riverpod
+class CurrentAlbum extends _$CurrentAlbum {
+  @override
+  Album? build() => null;
+
+  void set(Album? a) => state = a;
+}
+
+/// Mock class for testing
+abstract class CurrentAlbumInternal extends _$CurrentAlbum {}

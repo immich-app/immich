@@ -49,8 +49,8 @@ void main() {
       final a = makeAsset(id: '1', createdAt: createdAt);
       final (dt, tz) = a.getTZAdjustedTimeAndOffset();
 
-      expect(dt, createdAt);
-      expect(tz, createdAt.timeZoneOffset);
+      expect(createdAt, dt);
+      expect(createdAt.timeZoneOffset, tz);
     });
 
     test('returns createdAt in local if in utc', () {
@@ -59,8 +59,8 @@ void main() {
       final (dt, tz) = a.getTZAdjustedTimeAndOffset();
 
       final localCreatedAt = createdAt.toLocal();
-      expect(dt, localCreatedAt);
-      expect(tz, localCreatedAt.timeZoneOffset);
+      expect(localCreatedAt, dt);
+      expect(localCreatedAt.timeZoneOffset, tz);
     });
   });
 
@@ -73,8 +73,8 @@ void main() {
       final (dt, tz) = a.getTZAdjustedTimeAndOffset();
 
       final dateTimeInUTC = dateTimeOriginal.toUtc();
-      expect(dt, dateTimeInUTC);
-      expect(tz, dateTimeInUTC.timeZoneOffset);
+      expect(dateTimeInUTC, dt);
+      expect(dateTimeInUTC.timeZoneOffset, tz);
     });
 
     test('Returns dateTimeOriginal in UTC from exifInfo with invalid timezone',
@@ -89,8 +89,8 @@ void main() {
       final (dt, tz) = a.getTZAdjustedTimeAndOffset();
 
       final dateTimeInUTC = dateTimeOriginal.toUtc();
-      expect(dt, dateTimeInUTC);
-      expect(tz, dateTimeInUTC.timeZoneOffset);
+      expect(dateTimeInUTC, dt);
+      expect(dateTimeInUTC.timeZoneOffset, tz);
     });
   });
 
@@ -106,8 +106,8 @@ void main() {
 
       final adjustedTime =
           TZDateTime.from(dateTimeOriginal.toUtc(), getLocation(location));
-      expect(dt, adjustedTime);
-      expect(tz, adjustedTime.timeZoneOffset);
+      expect(adjustedTime, dt);
+      expect(adjustedTime.timeZoneOffset, tz);
     });
 
     test('With timezone as offset', () {
@@ -124,8 +124,8 @@ void main() {
       final adjustedTime = dateTimeOriginal.toUtc().add(offsetFromLocation);
 
       // Adds the offset to the actual time and returns the offset separately
-      expect(dt, adjustedTime);
-      expect(tz, offsetFromLocation);
+      expect(adjustedTime, dt);
+      expect(offsetFromLocation, tz);
     });
   });
 }

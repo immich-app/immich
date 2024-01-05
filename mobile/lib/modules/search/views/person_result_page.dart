@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -101,7 +102,7 @@ class PersonResultPage extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(name.value),
         leading: IconButton(
-          onPressed: () => context.autoPop(),
+          onPressed: () => context.popRoute(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         actions: [

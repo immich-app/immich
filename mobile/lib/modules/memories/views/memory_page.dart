@@ -1,8 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -182,14 +182,14 @@ class MemoryPage extends HookConsumerWidget {
                   currentMemory.value.assets.length;
               if (isLastAsset &&
                   (offset > notification.metrics.maxScrollExtent + 150)) {
-                context.autoPop();
+                context.popRoute();
                 return true;
               }
             }
             // Horizontal scroll handling
             if (notification.depth == 1 &&
                 (offset > notification.metrics.maxScrollExtent + 100)) {
-              context.autoPop();
+              context.popRoute();
               return true;
             }
           }
@@ -244,7 +244,7 @@ class MemoryPage extends HookConsumerWidget {
                           child: MemoryCard(
                             asset: asset,
                             onTap: () => toNextAsset(index),
-                            onClose: () => context.autoPop(),
+                            onClose: () => context.popRoute(),
                             rightCornerText: assetProgress.value,
                             title: memories[mIndex].title,
                             showTitle: index == 0,
