@@ -1,16 +1,17 @@
 import { browser } from '$app/environment';
+import { Theme } from '$lib/constants';
 import { persisted } from 'svelte-local-storage-store';
 
-const initialTheme = browser && !window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
+const initialTheme = browser && !window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.LIGHT : Theme.DARK;
 
 // The 'color-theme' key is also used by app.html to prevent FOUC on page load.
-export const colorTheme = persisted<'dark' | 'light' | 'system'>('color-theme', initialTheme, {
+export const colorTheme = persisted<Theme>('color-theme', initialTheme, {
   serializer: {
-    parse: (text: string): 'dark' | 'light' | 'system' => {
-      if (['dark', 'light', 'system'].includes(text)) {
-        return text as 'dark' | 'light' | 'system';
+    parse: (text: Theme): Theme => {
+      if (Object.values(Theme).includes(text as Theme)) {
+        return text as Theme;
       } else {
-        return 'dark';
+        return Theme.DARK;
       }
     },
     stringify: (obj) => obj,

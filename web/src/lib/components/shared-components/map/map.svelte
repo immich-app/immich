@@ -23,6 +23,7 @@
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
   import { getCurrentTheme, hasThemeChanged } from '$lib/utils/browser-utils';
+  import { Theme } from '$lib/constants';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -39,7 +40,7 @@
     $colorTheme;
     $hasThemeChanged;
     const { data } = await api.systemConfigApi.getMapStyle({
-      theme: $mapSettings.allowDarkMode ? getCurrentTheme() : 'light',
+      theme: $mapSettings.allowDarkMode ? getCurrentTheme() : Theme.LIGHT,
     });
     return data as StyleSpecification;
   })();

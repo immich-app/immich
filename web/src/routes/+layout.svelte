@@ -21,6 +21,7 @@
   import { browser } from '$app/environment';
   import { colorTheme } from '$lib/stores/preferences.store';
   import { getCurrentTheme, hasThemeChanged } from '$lib/utils/browser-utils';
+  import { Theme } from '$lib/constants';
 
   let showNavigationLoadingBar = false;
   let albumId: string | undefined;
@@ -37,7 +38,7 @@
 
   const changeTheme = () => {
     const theme = getCurrentTheme();
-    if (theme === 'light') {
+    if (theme === Theme.LIGHT) {
       document.documentElement.classList.remove('dark');
     } else {
       document.documentElement.classList.add('dark');

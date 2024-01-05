@@ -5,17 +5,18 @@
   import OnboardingCard from './onboarding-card.svelte';
   import { createEventDispatcher } from 'svelte';
   import { colorTheme } from '$lib/stores/preferences.store';
+  import { Theme } from '$lib/constants';
 
   const dispatch = createEventDispatcher<{
     done: void;
   }>();
 
   const toggleLightTheme = () => {
-    $colorTheme = 'light';
+    $colorTheme = Theme.LIGHT;
   };
 
   const toggleDarkTheme = () => {
-    $colorTheme = 'dark';
+    $colorTheme = Theme.DARK;
   };
 </script>
 

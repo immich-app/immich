@@ -3,19 +3,20 @@
   import { colorTheme } from '../../stores/preferences.store';
   import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
   import { browser } from '$app/environment';
+  import { Theme } from '$lib/constants';
 
-  $: checked = $colorTheme === 'system';
+  $: checked = $colorTheme === Theme.SYSTEM;
 
   export const handleToggle = () => {
     if (browser) {
       if (checked) {
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          $colorTheme = 'dark';
+          $colorTheme = Theme.DARK;
         } else {
-          $colorTheme = 'light';
+          $colorTheme = Theme.LIGHT;
         }
       } else {
-        $colorTheme = 'system';
+        $colorTheme = Theme.SYSTEM;
       }
     }
   };
