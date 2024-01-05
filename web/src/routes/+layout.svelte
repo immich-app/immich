@@ -31,10 +31,9 @@
 
   $: {
     // if the $colorTheme value changes, make the appropriate class change
-    if (browser) {
-      $colorTheme;
-      handleChangeTheme();
-    }
+
+    $colorTheme;
+    handleChangeTheme();
   }
 
   const handleChangeTheme = () => {
@@ -54,9 +53,7 @@
   });
 
   onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('change', handleChangeTheme);
-    }
+    document.removeEventListener('change', handleChangeTheme);
   });
 
   if (isSharedLinkRoute($page.route?.id)) {
