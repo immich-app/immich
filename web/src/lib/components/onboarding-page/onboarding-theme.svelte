@@ -5,8 +5,7 @@
   import OnboardingCard from './onboarding-card.svelte';
   import { createEventDispatcher } from 'svelte';
   import { colorTheme } from '$lib/stores/preferences.store';
-  import Moon from '$lib/assets/moon.svelte';
-  import Sun from '$lib/assets/sun.svelte';
+  import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -40,7 +39,7 @@
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
       >
-        <Sun size="96" />
+        <Icon path={sunPath} viewBox={sunViewBox} size="96" />
         <p class="font-semibold text-4xl">LIGHT</p>
       </div>
     </button>
@@ -53,7 +52,7 @@
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
       >
-        <Moon size="96" />
+        <Icon path={moonPath} viewBox={moonViewBox} size="96" />
         <p class="font-semibold text-4xl">DARK</p>
       </div>
     </button>

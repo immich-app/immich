@@ -1,9 +1,9 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import Moon from '$lib/assets/moon.svelte';
-  import Sun from '$lib/assets/sun.svelte';
+  import { moonPath, sunPath, sunViewBox } from '$lib/assets/svg-paths';
   import { colorTheme } from '$lib/stores/preferences.store';
   import IconButton from '../elements/buttons/icon-button.svelte';
+  import Icon from '../elements/icon.svelte';
 
   const toggleTheme = () => {
     $colorTheme = $colorTheme === 'dark' ? 'light' : 'dark';
@@ -22,8 +22,8 @@
 
 <IconButton on:click={toggleTheme} title="Toggle theme">
   {#if $colorTheme === 'light'}
-    <Moon />
+    <Icon path={moonPath} viewBox={sunViewBox} class="h-6 w-6" />
   {:else}
-    <Sun />
+    <Icon path={sunPath} viewBox={sunViewBox} class="h-6 w-6" />
   {/if}
 </IconButton>
