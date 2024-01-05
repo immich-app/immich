@@ -10,6 +10,7 @@ import { IBaseJob, IEntityJob, IFacialRecognitionJob, JOBS_ASSET_PAGINATION_SIZE
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
   CropOptions,
+  Embedding,
   IAccessRepository,
   IAssetRepository,
   ICryptoRepository,
@@ -356,7 +357,137 @@ export class PersonService {
     return true;
   }
 
-  async handleRecognizeFaces({ force }: IBaseJob) {
+  async handleQueueRecognizeFaces({ force }: IBaseJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    await this.jobRepository.waitForQueueCompletion(QueueName.FACE_DETECTION);
+
+    if (force) {
+      const people = await this.repository.getAll();
+      for (const person of people) {
+        await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
+      }
+      this.logger.debug(`Deleted ${people.length} people`);
+    }
+
+    const faceIds = await this.repository.getAllFaces();
+    for (const { id } of faceIds) {
+      await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, maxDistance: machineLearning.facialRecognition.maxDistance } });
+    }
+    // const maxDistance = machineLearning.facialRecognition.maxDistance;
+    // const faceDensities = await this.smartInfoRepository.getFaceDensities({ k: machineLearning.facialRecognition.minFaces, maxDistance });
+
+    // this.logger.log(`Found ${faceDensities.length} core faces`)
+    // for (const { faceId, density } of faceDensities) {
+    //   if (density) {
+    //     await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id: faceId, maxDistance } });
+    //   }
+    // }
+
+    return true;
+  }
+
+  async handleRecognizeFaces(job: IEntityJob) {
+    return this.handleRecognizeFacesMini(job);
+    // return this.handleRecognizeFacesInRadius(job);
+  }
+
+  async handleRecognizeFacesMini({ id }: IEntityJob) {
+    this.logger.log(`Recognizing faces in radius of face ${id}`);
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    const face = await this.repository.getFaceByIdWithAssets(id);
+    if (!face) {
+      this.logger.warn(`Face ${id} not found`);
+      return false;
+    }
+
+    // typeorm leaves the embedding as a string
+    const embedding: Embedding = typeof face.embedding === 'string' ? JSON.parse(face.embedding) : face.embedding;
+    const matches = await this.smartInfoRepository.searchFaces({
+      ownerId: face.asset.ownerId,
+      embedding,
+      maxDistance: machineLearning.facialRecognition.maxDistance,
+      numResults: 100,
+      // numResults: machineLearning.facialRecognition.minFaces + 1,
+    });
+
+    this.logger.log(`Face ${id} has ${matches.length} matches`);
+    // this.logger.log(JSON.stringify(matches, null, 2))
+
+    let personId = face.personId ? face.personId : matches.find((match) => match.face.personId)?.face.personId;
+    let faceIds = [id];
+
+    if (matches.length >= machineLearning.facialRecognition.minFaces + 1) {
+      if (!personId) {
+        this.logger.log(`Generating new person for face ${id}`);
+        const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+        personId = newPerson.id;
+      }
+
+      // all unassigned faces within range are assigned to the new person
+      faceIds = matches.filter((match) => !match.face.personId).map((match) => match.face.id);
+    }
+
+    if (personId) {
+      this.logger.log(`Assigning ${faceIds.length} faces to person ${personId}`);
+      await this.repository.reassignFaces({ faceIds, newPersonId: personId });
+    }
+    
+    return true;
+  }
+
+  async handleRecognizeFacesInRadius({ id }: IEntityJob) {
+    this.logger.log(`Recognizing faces in radius of face ${id}`);
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    const face = await this.repository.getFaceByIdWithAssets(id);
+    if (!face) {
+      this.logger.warn(`Face ${id} not found`);
+      return false;
+    }
+
+    // typeorm leaves the embedding as a string
+    const embedding: Embedding = typeof face.embedding === 'string' ? JSON.parse(face.embedding) : face.embedding;
+    const matches = await this.smartInfoRepository.searchFaces({
+      ownerId: face.asset.ownerId,
+      embedding,
+      maxDistance: machineLearning.facialRecognition.maxDistance,
+      noPerson: true,
+      // numResults: 1000
+    });
+
+    this.logger.log(`Face ${id} has ${matches.length} matches`);
+    this.logger.log(JSON.stringify(matches, null, 2))
+    if (matches.length > 0) {
+      let personId = face.personId;
+      if (!personId) {
+        this.logger.log(`Generating new person for face ${id}`);
+        const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+        personId = newPerson.id;
+      }
+
+      // all unassigned faces within radius are assigned to the new person
+      const faceIds = matches.map((match) => match.face.id);
+      this.logger.log(`Assigning ${faceIds.length} faces to person ${personId}`);
+      await this.repository.reassignFaces({ faceIds, newPersonId: personId });
+    }
+    
+    return true;
+  }
+
+  async handleRecognizeFacesHDBSCAN({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;

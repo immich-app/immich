@@ -1,4 +1,4 @@
-import { Embedding, EmbeddingSearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from '@app/domain';
+import { Embedding, EmbeddingSearch, FaceEmbeddingDensityResult, FaceEmbeddingDensitySearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
@@ -44,16 +44,11 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
   })
   async searchCLIP({ userIds, embedding, numResults, withArchived }: EmbeddingSearch): Promise<AssetEntity[]> {
-    if (!isValidInteger(numResults, { min: 1 })) {
-      throw new Error(`Invalid value for 'numResults': ${numResults}`);
-    }
-
     let results: AssetEntity[] = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-      await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
 
-      const query = manager
+      let query = manager
         .createQueryBuilder(AssetEntity, 'a')
         .innerJoin('a.smartSearch', 's')
         .where('a.ownerId IN (:...userIds )')
@@ -68,8 +63,16 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .leftJoinAndSelect('a.exifInfo', 'e')
         .orderBy('s.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) })
-        .limit(numResults)
-        .getMany();
+      
+      if (numResults) {
+        if (!isValidInteger(numResults, { min: 1 })) {
+          throw new Error(`Invalid value for 'numResults': ${numResults}`);
+        }
+        query = query.limit(numResults);
+        await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
+      }
+
+      results = await query.getMany();
     });
 
     return results;
@@ -91,14 +94,10 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     numResults,
     maxDistance,
     noPerson,
+    hasPerson,
   }: FaceEmbeddingSearch): Promise<FaceSearchResult[]> {
-    if (!isValidInteger(numResults, { min: 1 })) {
-      throw new Error(`Invalid value for 'numResults': ${numResults}`);
-    }
-
     let results: any[] = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-      await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
       let cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
@@ -109,27 +108,27 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .setParameters({ userIds, embedding: asVector(embedding) });
 
       if (numResults) {
+        if (!isValidInteger(numResults, { min: 1 })) {
+          throw new Error(`Invalid value for 'numResults': ${numResults}`);
+        }
         cte = cte.limit(numResults);
+        await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       }
 
       if (noPerson) {
         cte = cte.andWhere('faces."personId" IS NULL');
+      } else if (hasPerson) {
+        cte = cte.andWhere('faces."personId" IS NOT NULL');
       }
 
       this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
 
-      const query = await manager
+      const query = manager
         .createQueryBuilder()
         .select('res.*')
         .addCommonTableExpression(cte, 'cte')
         .from('cte', 'res')
         .where('res.distance <= :maxDistance', { maxDistance });
-
-      // TODO: decide whether to pre-filter or post-filter for this
-      // if (hasPerson) {
-      //   query.andWhere('res."personId" IS NOT NULL');
-      // }
-
       results = await query.getRawMany();
     });
 
@@ -137,6 +136,10 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       face: this.assetFaceRepository.create(row) as any as AssetFaceEntity,
       distance: row.distance,
     }));
+  }
+
+  async getFaceDensities({ k, maxDistance }: FaceEmbeddingDensitySearch): Promise<FaceEmbeddingDensityResult[]> {
+    return this.assetRepository.manager.query(`SELECT id as "faceId", density FROM get_face_densities($1, $2) ORDER BY density DESC`, [k, maxDistance]);
   }
 
   async upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void> {
