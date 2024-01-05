@@ -103,7 +103,7 @@ export class LibraryService {
     });
 
     this.watcher.on('add', async (path) => {
-      this.logger.debug(`File event: ${path}`);
+      this.logger.debug(`Found new file: ${path}`);
       await this.jobRepository.queue({
         name: JobName.LIBRARY_SCAN_ASSET,
         data: {
@@ -113,6 +113,15 @@ export class LibraryService {
           force: false,
         },
       });
+    });
+
+    this.watcher.on('unlink', async (path) => {
+      this.logger.debug(`Detected removed file: ${path}`);
+      const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
+
+      if (existingAssetEntity) {
+        await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
+      }
     });
   }
 

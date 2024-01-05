@@ -936,7 +936,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   });
 
   describe('Automatic refresh', () => {
-    it('should automatically find new files', async () => {
+    it('should add new files', async () => {
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
         `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
@@ -964,6 +964,67 @@ describe(`${LibraryController.name} (e2e)`, () => {
       while (!testPassed) {
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         testPassed = afterAssets.length === 2;
+      }
+    });
+
+    it('should ignore files with wrong extension', async () => {
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
+      );
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
+      });
+
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(beforeAssets.length).toEqual(1);
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.txt`,
+      );
+
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      await delay(3000);
+
+      const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(afterAssets.length).toEqual(1);
+    });
+
+    it('should offline removed files', async () => {
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
+      );
+
+      const library = await api.libraryApi.create(server, admin.accessToken, {
+        type: LibraryType.EXTERNAL,
+        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
+      });
+
+      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
+
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+
+      const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(beforeAssets.length).toEqual(1);
+
+      await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`);
+
+      let testPassed = false;
+
+      while (!testPassed) {
+        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+        testPassed = afterAssets[0].isOffline;
       }
     });
   });
