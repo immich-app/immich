@@ -43,13 +43,7 @@ export const db = {
           deleteUsers = true;
           continue;
         }
-        try {
-          await em.query(`DELETE FROM ${tableName} CASCADE;`);
-        } catch (err) {
-          if (err instanceof QueryFailedError && err.message.includes('does not exist')) {
-            // Ignore error if something does not exist
-          }
-        }
+        await em.query(`DELETE FROM ${tableName} CASCADE;`);
       }
       if (deleteUsers) {
         await em.query(`DELETE FROM "users" CASCADE;`);
