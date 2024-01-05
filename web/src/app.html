@@ -20,14 +20,15 @@
        */
       const colorThemeKeyName = 'color-theme';
       let theme;
-      let fallbackTheme = { value: 'dark', system: false };
-
-      try {
-        theme = JSON.parse(localStorage.getItem(colorThemeKeyName));
-      } catch {
-        theme = fallbackTheme;
-        localStorage.setItem(colorThemeKeyName, JSON.stringify(fallbackTheme));
+      const fallbackTheme = { value: 'dark', system: false };
+      let item = localStorage.getItem(colorThemeKeyName);
+      if (item === 'dark' || item === 'light') {
+        fallbackTheme.value = item === 'light' ? 'light' : 'dark';
+        item = JSON.stringify(fallbackTheme);
+        localStorage.setItem(colorThemeKeyName, item);
       }
+
+      theme = JSON.parse(localStorage.getItem(colorThemeKeyName));
 
       if (theme !== null) {
         if (theme.system) {
