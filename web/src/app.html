@@ -18,21 +18,26 @@
       /**
        * Prevent FOUC on page load.
        */
-      let theme = localStorage.getItem('color-theme') || 'dark';
-
-      if (theme === 'system') {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          theme = 'dark';
-        } else {
-          theme = 'light';
+      let theme = JSON.parse(localStorage.getItem('color-theme'));
+      if (theme !== null) {
+        if (theme.system) {
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            theme.value = 'dark';
+          } else {
+            theme.value = 'light';
+          }
         }
+      } else {
+        theme = { value: 'dark' };
       }
-      if (theme === 'light') {
+
+      if (theme.value === 'light') {
         document.documentElement.classList.remove('dark');
       } else {
         document.documentElement.classList.add('dark');
       }
     </script>
+
     <link rel="stylesheet" href="/custom.css" />
   </head>
 

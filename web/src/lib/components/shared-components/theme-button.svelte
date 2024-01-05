@@ -1,16 +1,13 @@
 <script lang="ts">
   import { Theme } from '$lib/constants';
   import { colorTheme } from '$lib/stores/preferences.store';
+  import { handleToggleTheme } from '$lib/utils/browser-utils';
   import IconButton from '../elements/buttons/icon-button.svelte';
-
-  const handleToggleTheme = () => {
-    $colorTheme = $colorTheme === Theme.DARK ? Theme.LIGHT : Theme.DARK;
-  };
 </script>
 
-{#if $colorTheme != Theme.SYSTEM}
+{#if !$colorTheme.system}
   <IconButton on:click={handleToggleTheme} title="Toggle theme">
-    {#if $colorTheme === 'light'}
+    {#if $colorTheme.value === Theme.LIGHT}
       <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
         ><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg
       >

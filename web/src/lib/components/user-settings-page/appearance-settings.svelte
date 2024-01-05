@@ -2,23 +2,9 @@
   import { fade } from 'svelte/transition';
   import { colorTheme } from '../../stores/preferences.store';
   import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
-  import { browser } from '$app/environment';
-  import { Theme } from '$lib/constants';
-
-  $: checked = $colorTheme === Theme.SYSTEM;
 
   export const handleToggle = () => {
-    if (browser) {
-      if (checked) {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          $colorTheme = Theme.DARK;
-        } else {
-          $colorTheme = Theme.LIGHT;
-        }
-      } else {
-        $colorTheme = Theme.SYSTEM;
-      }
-    }
+    $colorTheme.system = !$colorTheme.system;
   };
 </script>
 
@@ -29,7 +15,7 @@
         <SettingSwitch
           title="Theme selection"
           subtitle="Automatically set the theme to light or dark based on your browser's system preference"
-          bind:checked
+          bind:checked={$colorTheme.system}
           on:toggle={handleToggle}
         />
       </div>

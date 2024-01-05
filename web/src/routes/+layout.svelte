@@ -18,10 +18,10 @@
   import { api } from '@api';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { user } from '$lib/stores/user.store';
-  import { browser } from '$app/environment';
-  import { colorTheme } from '$lib/stores/preferences.store';
-  import { getCurrentTheme, hasThemeChanged } from '$lib/utils/browser-utils';
+
+  import { ThemeSetting, colorTheme } from '$lib/stores/preferences.store';
   import { Theme } from '$lib/constants';
+  import { handleToggleTheme } from '$lib/utils/browser-utils';
 
   let showNavigationLoadingBar = false;
   let albumId: string | undefined;
@@ -29,21 +29,24 @@
   const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
   const isAuthRoute = (route?: string) => route?.startsWith('/auth');
 
-  $: {
-    // if the $colorTheme value changes, make the appropriate class change
+  $: changeTheme($colorTheme);
 
-    $colorTheme;
-    handleChangeTheme();
-  }
+  const changeTheme = (theme: ThemeSetting) => {
+    if (theme.system) {
+      theme.value =
+        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
+    }
 
-  const handleChangeTheme = () => {
-    // trigger a change for some components like the map
-    $hasThemeChanged = !$hasThemeChanged;
-    const theme = getCurrentTheme();
-    if (theme === Theme.LIGHT) {
+    if (theme.value === Theme.LIGHT) {
       document.documentElement.classList.remove('dark');
     } else {
       document.documentElement.classList.add('dark');
+    }
+  };
+
+  const handleChangeTheme = () => {
+    if ($colorTheme.system) {
+      handleToggleTheme();
     }
   };
 

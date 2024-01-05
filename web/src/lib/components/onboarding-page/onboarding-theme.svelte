@@ -5,19 +5,11 @@
   import OnboardingCard from './onboarding-card.svelte';
   import { createEventDispatcher } from 'svelte';
   import { colorTheme } from '$lib/stores/preferences.store';
-  import { Theme } from '$lib/constants';
+  import { handleToggleTheme } from '$lib/utils/browser-utils';
 
   const dispatch = createEventDispatcher<{
     done: void;
   }>();
-
-  const toggleLightTheme = () => {
-    $colorTheme = Theme.LIGHT;
-  };
-
-  const toggleDarkTheme = () => {
-    $colorTheme = Theme.DARK;
-  };
 </script>
 
 <OnboardingCard>
@@ -29,11 +21,11 @@
 
   <div class="flex gap-4 mb-6">
     <button
-      class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl {$colorTheme ==
+      class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl {$colorTheme.value ==
       'light'
         ? 'border-[3px] border-immich-dark-primary/80 border-immich-primary'
         : 'border border-transparent'}"
-      on:click={toggleLightTheme}
+      on:click={handleToggleTheme}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
@@ -43,10 +35,10 @@
       </div>
     </button>
     <button
-      class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl {$colorTheme == 'dark'
+      class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl {$colorTheme.value == 'dark'
         ? 'border-[3px] border-immich-dark-primary/80 border-immich-primary'
         : 'border border-transparent'}"
-      on:click={toggleDarkTheme}
+      on:click={handleToggleTheme}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
