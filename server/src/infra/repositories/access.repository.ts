@@ -1,8 +1,7 @@
 import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
 import { Brackets, In, Repository } from 'typeorm';
-import { setUnion } from '../../domain/domain.util';
+import { chunks, setUnion } from '../../domain/domain.util';
 import {
   ActivityEntity,
   AlbumEntity,
@@ -36,7 +35,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...activityIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(activityIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.activityRepository
             .find({
               select: { id: true },
@@ -56,7 +55,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...activityIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(activityIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.activityRepository
             .find({
               select: { id: true },
@@ -78,7 +77,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...albumIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(albumIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.albumRepository
             .createQueryBuilder('album')
             .select('album.id')
@@ -104,7 +103,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...libraryIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(libraryIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.libraryRepository
             .find({
               select: { id: true },
@@ -124,7 +123,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...partnerIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(partnerIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.partnerRepository
             .createQueryBuilder('partner')
             .select('partner.sharedById')
@@ -144,7 +143,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...partnerIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(partnerIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.partnerRepository
             .createQueryBuilder('partner')
             .select('partner.sharedById')
@@ -164,7 +163,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...assetIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.albumRepository
             .createQueryBuilder('album')
             .innerJoin('album.assets', 'asset')
@@ -202,7 +201,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...assetIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.assetRepository
             .find({
               select: { id: true },
@@ -223,7 +222,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...assetIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.partnerRepository
             .createQueryBuilder('partner')
             .innerJoin('partner.sharedBy', 'sharedBy')
@@ -243,7 +242,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...assetIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.sharedLinkRepository
             .createQueryBuilder('sharedLink')
             .leftJoin('sharedLink.album', 'album')
@@ -291,7 +290,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...deviceIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(deviceIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.tokenRepository
             .find({
               select: { id: true },
@@ -313,7 +312,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...albumIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(albumIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.albumRepository
             .find({
               select: { id: true },
@@ -333,7 +332,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...albumIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(albumIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.albumRepository
             .find({
               select: { id: true },
@@ -355,7 +354,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...albumIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(albumIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.sharedLinkRepository
             .find({
               select: { albumId: true },
@@ -380,7 +379,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...personIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(personIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.personRepository
             .find({
               select: { id: true },
@@ -400,7 +399,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...assetFaceIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(assetFaceIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.assetFaceRepository
             .find({
               select: { id: true },
@@ -424,7 +423,7 @@ export class AccessRepository implements IAccessRepository {
       }
 
       return Promise.all(
-        _.chunk([...partnerIds], DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        chunks(partnerIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
           this.partnerRepository
             .createQueryBuilder('partner')
             .select('partner.sharedById')

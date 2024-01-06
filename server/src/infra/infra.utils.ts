@@ -1,6 +1,7 @@
 import { Paginated, PaginationOptions } from '@app/domain';
 import _ from 'lodash';
 import { Between, FindOneOptions, LessThanOrEqual, MoreThanOrEqual, ObjectLiteral, Repository } from 'typeorm';
+import { chunks, setUnion } from '../domain/domain.util';
 import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
 
 /**
@@ -44,22 +45,40 @@ export const isValidInteger = (value: number, options: { min?: number; max?: num
 };
 
 /**
- * Wraps a method that takes an array of parameters and sequentially calls it with chunks of the array.
+ * Wraps a method that takes a collection of parameters and sequentially calls it with chunks of the collection,
  * to overcome the maximum number of parameters allowed by the database driver.
  *
  * @param options.paramIndex The index of the function parameter to chunk. Defaults to 0.
  * @param options.flatten Whether to flatten the results. Defaults to false.
  */
-export function Chunked(options: { paramIndex?: number; flatten?: boolean } = {}): MethodDecorator {
+export function Chunked(options: { paramIndex?: number; mergeFn?: (results: any) => any } = {}): MethodDecorator {
   return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     const paramIndex = options.paramIndex ?? 0;
     descriptor.value = async function (...args: any[]) {
+      const arg = args[paramIndex];
+
+      // Early return if argument length is less than or equal to the chunk size.
+      if (
+        (arg instanceof Array && arg.length <= DATABASE_PARAMETER_CHUNK_SIZE) ||
+        (arg instanceof Set && arg.size <= DATABASE_PARAMETER_CHUNK_SIZE)
+      ) {
+        return await originalMethod.apply(this, args);
+      }
+
       return Promise.all(
-        _.chunk(args[paramIndex], DATABASE_PARAMETER_CHUNK_SIZE).map(async (chunk) => {
+        chunks(arg, DATABASE_PARAMETER_CHUNK_SIZE).map(async (chunk) => {
           await originalMethod.apply(this, [...args.slice(0, paramIndex), chunk, ...args.slice(paramIndex + 1)]);
         }),
-      ).then((results) => (options.flatten ? _.flatten(results) : results));
+      ).then((results) => (options.mergeFn ? options.mergeFn(results) : results));
     };
   };
+}
+
+export function ChunkedArray(options?: { paramIndex?: number }): MethodDecorator {
+  return Chunked({ ...options, mergeFn: _.flatten });
+}
+
+export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
+  return Chunked({ ...options, mergeFn: setUnion });
 }

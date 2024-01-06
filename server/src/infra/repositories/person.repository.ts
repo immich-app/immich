@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Chunked, asVector } from '../infra.utils';
+import { Chunked, ChunkedArray, asVector } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -237,7 +237,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
-  @Chunked({ flatten: true })
+  @ChunkedArray()
   async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
   }

@@ -27,7 +27,7 @@ import { DateTime } from 'luxon';
 import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Chunked, OptionalBetween, paginate } from '../infra.utils';
+import { Chunked, ChunkedArray, OptionalBetween, paginate } from '../infra.utils';
 
 const DEFAULT_SEARCH_SIZE = 250;
 
@@ -248,7 +248,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  @Chunked({ flatten: true })
+  @ChunkedArray()
   getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
     if (!relations) {
       relations = {
@@ -302,7 +302,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  @Chunked({ flatten: true })
+  @ChunkedArray()
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
     return this.repository.find({
       where: { library: { id: In(libraryIds) } },

@@ -7,7 +7,7 @@ import { setUnion } from '../../domain/domain.util';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
 import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
-import { Chunked } from '../infra.utils';
+import { Chunked, ChunkedArray } from '../infra.utils';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
@@ -42,7 +42,7 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  @Chunked({ flatten: true })
+  @ChunkedArray()
   getByIds(ids: string[]): Promise<AlbumEntity[]> {
     return this.repository.find({
       where: {
@@ -68,7 +68,7 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  @Chunked({ flatten: true })
+  @ChunkedArray()
   async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (!ids.length) {
@@ -192,19 +192,18 @@ export class AlbumRepository implements IAlbumRepository {
       .where('"albums_assets_assets"."assetsId" = :assetId', { assetId });
   }
 
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
-  async removeAssets(asset: AlbumAssets): Promise<void> {
-    for (const idChunk of _.chunk(asset.assetIds, DATABASE_PARAMETER_CHUNK_SIZE)) {
-      await this.dataSource
-        .createQueryBuilder()
-        .delete()
-        .from('albums_assets_assets')
-        .where({
-          albumsId: asset.albumId,
-          assetsId: In(idChunk),
-        })
-        .execute();
-    }
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  @Chunked({ paramIndex: 1 })
+  async removeAssets(albumId: string, assetIds: string[]): Promise<void> {
+    await this.dataSource
+      .createQueryBuilder()
+      .delete()
+      .from('albums_assets_assets')
+      .where({
+        albumsId: albumId,
+        assetsId: In(assetIds),
+      })
+      .execute();
   }
 
   /**
