@@ -40,7 +40,7 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.getExtensionVersion).toHaveBeenCalledTimes(1);
       expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
       expect(fatalLog).not.toHaveBeenCalled();
-    })
+    });
 
     it('should thrown an error if PostgreSQL version is below minimum supported version', async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(13, 0, 0));
@@ -48,7 +48,7 @@ describe(DatabaseService.name, () => {
       await expect(sut.init()).rejects.toThrow(/PostgreSQL/s);
 
       expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
-    })
+    });
 
     it('should return if minimum supported vectors version is installed', async () => {
       databaseMock.getExtensionVersion.mockResolvedValueOnce(new Version(0, 1, 1));
@@ -138,7 +138,7 @@ describe(DatabaseService.name, () => {
 
     it('should not suggest image if postgres version is not in 14, 15 or 16', async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(17, 0, 0));
-      databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(17, 0, 0))
+      databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(17, 0, 0));
 
       await expect(sut.init()).rejects.toThrow(/^(?:(?!tensorchord\/pgvecto-rs).)*$/s);
     });
