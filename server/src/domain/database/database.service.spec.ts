@@ -45,7 +45,7 @@ describe(DatabaseService.name, () => {
     it('should thrown an error if PostgreSQL version is below minimum supported version', async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(13, 0, 0));
 
-      await expect(sut.init()).rejects.toThrow(/^(?:(?!PostgreSQL).)*$/s);
+      await expect(sut.init()).rejects.toThrow(/PostgreSQL/s);
 
       expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
     })
@@ -137,13 +137,9 @@ describe(DatabaseService.name, () => {
     }
 
     it('should not suggest image if postgres version is not in 14, 15 or 16', async () => {
-      databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));
-      [14, 18].forEach((major) => {
-        databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(major, 0, 0));
-        databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(major, 0, 0))
-      });
+      databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(17, 0, 0));
+      databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(17, 0, 0))
 
-      await expect(sut.init()).rejects.toThrow(/^(?:(?!tensorchord\/pgvecto-rs).)*$/s);
       await expect(sut.init()).rejects.toThrow(/^(?:(?!tensorchord\/pgvecto-rs).)*$/s);
     });
 
