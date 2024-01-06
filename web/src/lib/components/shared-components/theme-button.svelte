@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Theme } from '$lib/constants';
-  import { colorTheme } from '$lib/stores/preferences.store';
-  import { handleToggleTheme } from '$lib/utils/browser-utils';
+  import { colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
   import IconButton from '../elements/buttons/icon-button.svelte';
 </script>
 

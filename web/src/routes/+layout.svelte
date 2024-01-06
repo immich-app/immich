@@ -18,10 +18,8 @@
   import { api } from '@api';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { user } from '$lib/stores/user.store';
-
-  import { ThemeSetting, colorTheme } from '$lib/stores/preferences.store';
+  import { ThemeSetting, colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
   import { Theme } from '$lib/constants';
-  import { handleToggleTheme } from '$lib/utils/browser-utils';
 
   let showNavigationLoadingBar = false;
   let albumId: string | undefined;

@@ -1,11 +1,18 @@
 import { browser } from '$app/environment';
 import { Theme } from '$lib/constants';
 import { persisted } from 'svelte-local-storage-store';
+import { get } from 'svelte/store';
 
 export interface ThemeSetting {
   value: Theme;
   system: boolean;
 }
+
+export const handleToggleTheme = () => {
+  const theme = get(colorTheme);
+  theme.value = theme.value === Theme.DARK ? Theme.LIGHT : Theme.DARK;
+  colorTheme.set(theme);
+};
 
 const initTheme = (): ThemeSetting => {
   if (browser) {
@@ -23,13 +30,10 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
   serializer: {
     parse: (text: string): ThemeSetting => {
       const parsedText: ThemeSetting = JSON.parse(text);
-      if (parsedText.system === undefined) {
-        parsedText.system = false;
-      }
       if (Object.values(Theme).includes(parsedText.value as Theme)) {
         return parsedText;
       } else {
-        return { value: Theme.DARK, system: parsedText.system };
+        return initTheme();
       }
     },
     stringify: (obj) => JSON.stringify(obj),

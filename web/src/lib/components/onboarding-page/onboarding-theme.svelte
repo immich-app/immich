@@ -4,8 +4,7 @@
   import Icon from '../elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
   import { createEventDispatcher } from 'svelte';
-  import { colorTheme } from '$lib/stores/preferences.store';
-  import { handleToggleTheme } from '$lib/utils/browser-utils';
+  import { colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
 
   const dispatch = createEventDispatcher<{
     done: void;

@@ -25,6 +25,10 @@
   }
 </script>
 
+<SettingAccordion title="Appearance" subtitle="Manage your Immich appearance">
+  <AppearanceSettings />
+</SettingAccordion>
+
 <SettingAccordion title="Account" subtitle="Manage your account">
   <UserProfileSettings user={$user} />
 </SettingAccordion>
@@ -65,8 +69,4 @@
 
 <SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
   <SidebarSettings />
-</SettingAccordion>
-
-<SettingAccordion title="Appearance" subtitle="Manage your Immich appearance">
-  <AppearanceSettings />
 </SettingAccordion>
