@@ -19,7 +19,7 @@
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiCheck } from '@mdi/js';
+  import { mdiArrowLeft, mdiCheck } from '@mdi/js';
 
   export let storageConfig: SystemConfigStorageTemplateDto;
   export let disabled = false;
@@ -30,7 +30,10 @@
   let templateOptions: SystemConfigTemplateStorageOptionDto;
   let selectedPreset = '';
 
-  const dispatch = createEventDispatcher<{ save: void }>();
+  const dispatch = createEventDispatcher<{
+    save: void;
+    previous: void;
+  }>();
 
   const handleReset = (detail: ResetOptions) => {
     if (detail.default) {
@@ -283,13 +286,21 @@
       {/if}
 
       {#if minified}
-        <div class="flex w-full place-content-end">
-          <Button on:click={saveSetting}>
-            <span class="flex place-content-center place-items-center gap-2">
-              Done
-              <Icon path={mdiCheck} size="18" />
-            </span>
-          </Button>
+        <div class="flex pt-4">
+          <div class="w-full flex place-content-start">
+            <Button class="flex gap-2 place-content-center" on:click={() => dispatch('previous')}>
+              <Icon path={mdiArrowLeft} size="18" />
+              <p>Theme</p>
+            </Button>
+          </div>
+          <div class="flex w-full place-content-end">
+            <Button on:click={saveSetting}>
+              <span class="flex place-content-center place-items-center gap-2">
+                Done
+                <Icon path={mdiCheck} size="18" />
+              </span>
+            </Button>
+          </div>
         </div>
       {:else}
         <SettingButtonsRow

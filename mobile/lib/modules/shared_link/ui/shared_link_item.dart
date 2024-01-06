@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -210,8 +211,8 @@ class SharedLinkItem extends ConsumerWidget {
               tapTargetSize:
                   MaterialTapTargetSize.shrinkWrap, // the '2023' part
             ),
-            onPressed: () =>
-                context.autoPush(SharedLinkEditRoute(existingLink: sharedLink)),
+            onPressed: () => context
+                .pushRoute(SharedLinkEditRoute(existingLink: sharedLink)),
           ),
           IconButton(
             splashRadius: 25,

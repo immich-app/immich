@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -151,7 +152,7 @@ class BackupControllerPage extends HookConsumerWidget {
             ),
             trailing: ElevatedButton(
               onPressed: () async {
-                await context.autoPush(const BackupAlbumSelectionRoute());
+                await context.pushRoute(const BackupAlbumSelectionRoute());
                 // waited until returning from selection
                 await ref
                     .read(backupProvider.notifier)
@@ -242,7 +243,7 @@ class BackupControllerPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             ref.watch(websocketProvider.notifier).listenUploadEvent();
-            context.autoPop(true);
+            context.popRoute(true);
           },
           splashRadius: 24,
           icon: const Icon(
@@ -253,7 +254,7 @@ class BackupControllerPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
-              onPressed: () => context.autoPush(const BackupOptionsRoute()),
+              onPressed: () => context.pushRoute(const BackupOptionsRoute()),
               splashRadius: 24,
               icon: const Icon(
                 Icons.settings_outlined,
