@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -108,52 +109,33 @@ class MultiselectGrid extends HookConsumerWidget {
             )
         : null;
 
-    Iterable<Asset> remoteOnly(
-      Iterable<Asset> assets, {
-      void Function()? errorCallback,
-    }) {
-      final bool onlyRemote = assets.every((e) => e.isRemote);
-      if (!onlyRemote) {
-        if (errorCallback != null) errorCallback();
-        return assets.where((a) => a.isRemote);
-      }
-      return assets;
-    }
-
-    Iterable<Asset> ownedOnly(
-      Iterable<Asset> assets, {
-      void Function()? errorCallback,
-    }) {
-      if (currentUser == null) return [];
-      final userId = currentUser.isarId;
-      final bool onlyOwned = assets.every((e) => e.ownerId == userId);
-      if (!onlyOwned) {
-        if (errorCallback != null) errorCallback();
-        return assets.where((a) => a.ownerId == userId);
-      }
-      return assets;
-    }
-
     Iterable<Asset> ownedRemoteSelection({
       String? localErrorMessage,
       String? ownerErrorMessage,
     }) {
       final assets = selection.value;
-      return remoteOnly(
-        ownedOnly(assets, errorCallback: errorBuilder(ownerErrorMessage)),
-        errorCallback: errorBuilder(localErrorMessage),
-      );
+      return assets
+          .remoteOnly(errorCallback: errorBuilder(ownerErrorMessage))
+          .ownedOnly(
+            currentUser,
+            errorCallback: errorBuilder(localErrorMessage),
+          );
     }
 
-    Iterable<Asset> remoteSelection({String? errorMessage}) => remoteOnly(
-          selection.value,
+    Iterable<Asset> remoteSelection({String? errorMessage}) =>
+        selection.value.remoteOnly(
           errorCallback: errorBuilder(errorMessage),
         );
 
     void onShareAssets(bool shareLocal) {
       processing.value = true;
       if (shareLocal) {
-        handleShareAssets(ref, context, selection.value.toList());
+        // Share = Download + Send to OS specific share sheet
+        // Filter offline assets since we cannot fetch their original file
+        final liveAssets = selection.value.nonOfflineOnly(
+          errorCallback: errorBuilder('asset_action_share_err_offline'.tr()),
+        );
+        handleShareAssets(ref, context, liveAssets);
       } else {
         final ids =
             remoteSelection(errorMessage: "home_page_share_err_local".tr())
@@ -199,10 +181,17 @@ class MultiselectGrid extends HookConsumerWidget {
       try {
         final trashEnabled =
             ref.read(serverInfoProvider.select((v) => v.serverFeatures.trash));
-        final toDelete = ownedOnly(
-          selection.value,
-          errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
-        ).toList();
+        final toDelete = selection.value
+            .ownedOnly(
+              currentUser,
+              errorCallback: errorBuilder('home_page_delete_err_partner'.tr()),
+            )
+            // Cannot delete readOnly / external assets. They are handled through library offline jobs
+            .writableOnly(
+              errorCallback:
+                  errorBuilder('asset_action_delete_err_read_only'.tr()),
+            )
+            .toList();
         await ref
             .read(assetProvider.notifier)
             .deleteAssets(toDelete, force: !trashEnabled);
@@ -331,6 +320,11 @@ class MultiselectGrid extends HookConsumerWidget {
         final remoteAssets = ownedRemoteSelection(
           localErrorMessage: 'home_page_favorite_err_local'.tr(),
           ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+        ).writableOnly(
+          // Assume readOnly assets to be present in a read-only mount. So do not write sidecar
+          errorCallback: errorBuilder(
+            'multiselect_grid_edit_date_time_err_read_only'.tr(),
+          ),
         );
         if (remoteAssets.isNotEmpty) {
           handleEditDateTime(ref, context, remoteAssets.toList());
@@ -345,6 +339,11 @@ class MultiselectGrid extends HookConsumerWidget {
         final remoteAssets = ownedRemoteSelection(
           localErrorMessage: 'home_page_favorite_err_local'.tr(),
           ownerErrorMessage: 'home_page_favorite_err_partner'.tr(),
+        ).writableOnly(
+          // Assume readOnly assets to be present in a read-only mount. So do not write sidecar
+          errorCallback: errorBuilder(
+            'multiselect_grid_edit_gps_err_read_only'.tr(),
+          ),
         );
         if (remoteAssets.isNotEmpty) {
           handleEditLocation(ref, context, remoteAssets.toList());
