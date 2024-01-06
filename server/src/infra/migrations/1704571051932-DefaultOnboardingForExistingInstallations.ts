@@ -11,5 +11,7 @@ export class DefaultOnboardingForExistingInstallations1704571051932 implements M
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DELETE FROM system_metadata WHERE key = 'admin-onboarding'`);
+  }
 }
