@@ -177,14 +177,15 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  // @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [DummyValue.UUID] })
   async removeAsset(assetId: string): Promise<void> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
     await this.dataSource
       .createQueryBuilder()
       .delete()
       .from('albums_assets_assets')
-      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId });
+      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId })
+      .execute();
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
