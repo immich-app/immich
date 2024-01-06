@@ -30,10 +30,7 @@
 
   <div class="flex gap-4 mb-6">
     <button
-      class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl {$colorTheme ==
-      'light'
-        ? 'border-[3px] border-immich-dark-primary/80 border-immich-primary'
-        : 'border border-transparent'}"
+      class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl border-[3px] border-immich-dark-primary/80 border-immich-primary dark:border dark:border-transparent"
       on:click={toggleLightTheme}
     >
       <div
@@ -44,9 +41,7 @@
       </div>
     </button>
     <button
-      class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl {$colorTheme == 'dark'
-        ? 'border-[3px] border-immich-dark-primary/80 border-immich-primary'
-        : 'border border-transparent'}"
+      class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl dark:border-[3px] dark:border-immich-dark-primary/80 dark:border-immich-dark-primary border border-transparent"
       on:click={toggleDarkTheme}
     >
       <div
@@ -59,13 +54,6 @@
   </div>
 
   <div class="flex">
-    <div class="w-full flex place-content-start">
-      <Button class="flex gap-2 place-content-center" on:click={() => dispatch('previous')}>
-        <Icon path={mdiArrowLeft} size="18" />
-        <p>Welcome</p>
-      </Button>
-    </div>
-
     <div class="w-full flex place-content-end">
       <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
         <p>Storage Template</p>
