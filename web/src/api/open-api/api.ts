@@ -2087,6 +2087,12 @@ export interface LibraryResponseDto {
      * @memberof LibraryResponseDto
      */
     'updatedAt': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof LibraryResponseDto
+     */
+    'watched': boolean;
 }
 
 
@@ -3073,6 +3079,12 @@ export interface ServerFeaturesDto {
      * @type {boolean}
      * @memberof ServerFeaturesDto
      */
+    'libraryWatch': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ServerFeaturesDto
+     */
     'map': boolean;
     /**
      * 
@@ -3823,6 +3835,12 @@ export interface SystemConfigLibraryDto {
      * @memberof SystemConfigLibraryDto
      */
     'scan': SystemConfigLibraryScanDto;
+    /**
+     * 
+     * @type {SystemConfigLibraryWatchDto}
+     * @memberof SystemConfigLibraryDto
+     */
+    'watch': SystemConfigLibraryWatchDto;
 }
 /**
  * 
@@ -3840,6 +3858,19 @@ export interface SystemConfigLibraryScanDto {
      * 
      * @type {boolean}
      * @memberof SystemConfigLibraryScanDto
+     */
+    'enabled': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface SystemConfigLibraryWatchDto
+ */
+export interface SystemConfigLibraryWatchDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SystemConfigLibraryWatchDto
      */
     'enabled': boolean;
 }

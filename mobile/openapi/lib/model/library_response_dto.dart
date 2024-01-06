@@ -23,6 +23,7 @@ class LibraryResponseDto {
     required this.refreshedAt,
     required this.type,
     required this.updatedAt,
+    required this.watched,
   });
 
   int assetCount;
@@ -45,6 +46,8 @@ class LibraryResponseDto {
 
   DateTime updatedAt;
 
+  bool watched;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is LibraryResponseDto &&
      other.assetCount == assetCount &&
@@ -56,7 +59,8 @@ class LibraryResponseDto {
      other.ownerId == ownerId &&
      other.refreshedAt == refreshedAt &&
      other.type == type &&
-     other.updatedAt == updatedAt;
+     other.updatedAt == updatedAt &&
+     other.watched == watched;
 
   @override
   int get hashCode =>
@@ -70,10 +74,11 @@ class LibraryResponseDto {
     (ownerId.hashCode) +
     (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
     (type.hashCode) +
-    (updatedAt.hashCode);
+    (updatedAt.hashCode) +
+    (watched.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt]';
+  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt, watched=$watched]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +96,7 @@ class LibraryResponseDto {
     }
       json[r'type'] = this.type;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'watched'] = this.watched;
     return json;
   }
 
@@ -116,6 +122,7 @@ class LibraryResponseDto {
         refreshedAt: mapDateTime(json, r'refreshedAt', ''),
         type: LibraryType.fromJson(json[r'type'])!,
         updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        watched: mapValueOfType<bool>(json, r'watched')!,
       );
     }
     return null;
@@ -173,6 +180,7 @@ class LibraryResponseDto {
     'refreshedAt',
     'type',
     'updatedAt',
+    'watched',
   };
 }
 

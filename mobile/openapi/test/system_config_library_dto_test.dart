@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigLibraryWatchDto watch
+    test('to test the property `watch`', () async {
+      // TODO
+    });
+
 
   });
 

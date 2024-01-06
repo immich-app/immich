@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // bool watched
+    test('to test the property `watched`', () async {
+      // TODO
+    });
+
 
   });
 
