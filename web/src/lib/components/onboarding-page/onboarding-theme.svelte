@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { mdiArrowRight, mdiArrowLeft } from '@mdi/js';
+  import { mdiArrowRight } from '@mdi/js';
   import Button from '../elements/buttons/button.svelte';
   import Icon from '../elements/icon.svelte';
   import OnboardingCard from './onboarding-card.svelte';
