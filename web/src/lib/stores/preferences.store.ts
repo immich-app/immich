@@ -30,7 +30,7 @@ export const colorTheme = persisted<ThemeSetting>('color-theme', initialTheme, {
   serializer: {
     parse: (text: string): ThemeSetting => {
       const parsedText: ThemeSetting = JSON.parse(text);
-      if (Object.values(Theme).includes(parsedText.value as Theme)) {
+      if (Object.values(Theme).includes(parsedText.value)) {
         return parsedText;
       } else {
         return initTheme();
