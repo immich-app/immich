@@ -30,7 +30,7 @@
 
       theme = JSON.parse(localStorage.getItem(colorThemeKeyName));
 
-      if (theme !== null) {
+      if (theme) {
         if (theme.system) {
           if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             theme.value = 'dark';
