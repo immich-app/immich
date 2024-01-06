@@ -23,7 +23,7 @@
       const fallbackTheme = { value: 'dark', system: false };
       let item = localStorage.getItem(colorThemeKeyName);
       if (item === 'dark' || item === 'light') {
-        fallbackTheme.value = item === 'light' ? 'light' : 'dark';
+        fallbackTheme.value = item;
         item = JSON.stringify(fallbackTheme);
         localStorage.setItem(colorThemeKeyName, item);
       }
