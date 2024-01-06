@@ -1,17 +1,13 @@
 <script lang="ts">
   import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
   import { Theme } from '$lib/constants';
-  import { colorTheme } from '$lib/stores/preferences.store';
+  import { colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import Icon from '../elements/icon.svelte';
-
-  function toggleTheme(e: MouseEvent): void {
-    throw new Error('Function not implemented.');
-  }
 </script>
 
 {#if !$colorTheme.system}
-  <IconButton on:click={toggleTheme} title="Toggle theme">
+  <IconButton on:click={handleToggleTheme} title="Toggle theme">
     {#if $colorTheme.value === Theme.LIGHT}
       <Icon path={moonPath} viewBox={sunViewBox} class="h-6 w-6" />
     {:else}
