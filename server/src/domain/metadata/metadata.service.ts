@@ -114,7 +114,14 @@ export class MetadataService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      personRepository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async init() {
@@ -189,9 +196,9 @@ export class MetadataService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } })),
+      );
     }
 
     return true;
@@ -199,7 +206,7 @@ export class MetadataService {
 
   async handleMetadataExtraction({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.isVisible) {
+    if (!asset) {
       return false;
     }
 
@@ -257,10 +264,12 @@ export class MetadataService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
-        await this.jobRepository.queue({ name, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({
+          name: force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY,
+          data: { id: asset.id },
+        })),
+      );
     }
 
     return true;

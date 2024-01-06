@@ -156,7 +156,7 @@ class ExifBottomSheet extends HookConsumerWidget {
     buildLocation() {
       // Guard no lat/lng
       if (!hasCoordinates()) {
-        return asset.isRemote
+        return asset.isRemote && !asset.isReadOnly
             ? ListTile(
                 minLeadingWidth: 0,
                 contentPadding: const EdgeInsets.all(0),
@@ -194,7 +194,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ).tr(),
-                  if (asset.isRemote)
+                  if (asset.isRemote && !asset.isReadOnly)
                     IconButton(
                       onPressed: () => handleEditLocation(
                         ref,
@@ -251,7 +251,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               fontSize: 14,
             ),
           ),
-          if (asset.isRemote)
+          if (asset.isRemote && !asset.isReadOnly)
             IconButton(
               onPressed: () => handleEditDateTime(
                 ref,

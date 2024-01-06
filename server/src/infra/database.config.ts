@@ -20,6 +20,7 @@ export const databaseConfig: PostgresConnectionOptions = {
   subscribers: [__dirname + '/subscribers/*.{js,ts}'],
   migrationsRun: false,
   connectTimeoutMS: 10000, // 10 seconds
+  parseInt8: true,
   ...urlOrParts,
 };
 

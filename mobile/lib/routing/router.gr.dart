@@ -340,18 +340,9 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     ActivitiesRoute.name: (routeData) {
-      final args = routeData.argsAs<ActivitiesRouteArgs>();
       return CustomPage<dynamic>(
         routeData: routeData,
-        child: ActivitiesPage(
-          args.albumId,
-          appBarTitle: args.appBarTitle,
-          assetId: args.assetId,
-          withAssetThumbs: args.withAssetThumbs,
-          isOwner: args.isOwner,
-          isReadOnly: args.isReadOnly,
-          key: args.key,
-        ),
+        child: const ActivitiesPage(),
         transitionsBuilder: TransitionsBuilders.slideLeft,
         durationInMilliseconds: 200,
         opaque: true,
@@ -1587,61 +1578,14 @@ class SharedLinkEditRouteArgs {
 
 /// generated route for
 /// [ActivitiesPage]
-class ActivitiesRoute extends PageRouteInfo<ActivitiesRouteArgs> {
-  ActivitiesRoute({
-    required String albumId,
-    String appBarTitle = "",
-    String? assetId,
-    bool withAssetThumbs = true,
-    bool isOwner = false,
-    bool isReadOnly = false,
-    Key? key,
-  }) : super(
+class ActivitiesRoute extends PageRouteInfo<void> {
+  const ActivitiesRoute()
+      : super(
           ActivitiesRoute.name,
           path: '/activities-page',
-          args: ActivitiesRouteArgs(
-            albumId: albumId,
-            appBarTitle: appBarTitle,
-            assetId: assetId,
-            withAssetThumbs: withAssetThumbs,
-            isOwner: isOwner,
-            isReadOnly: isReadOnly,
-            key: key,
-          ),
         );
 
   static const String name = 'ActivitiesRoute';
-}
-
-class ActivitiesRouteArgs {
-  const ActivitiesRouteArgs({
-    required this.albumId,
-    this.appBarTitle = "",
-    this.assetId,
-    this.withAssetThumbs = true,
-    this.isOwner = false,
-    this.isReadOnly = false,
-    this.key,
-  });
-
-  final String albumId;
-
-  final String appBarTitle;
-
-  final String? assetId;
-
-  final bool withAssetThumbs;
-
-  final bool isOwner;
-
-  final bool isReadOnly;
-
-  final Key? key;
-
-  @override
-  String toString() {
-    return 'ActivitiesRouteArgs{albumId: $albumId, appBarTitle: $appBarTitle, assetId: $assetId, withAssetThumbs: $withAssetThumbs, isOwner: $isOwner, isReadOnly: $isReadOnly, key: $key}';
-  }
 }
 
 /// generated route for

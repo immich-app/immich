@@ -342,7 +342,7 @@ describe(UserService.name, () => {
       userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
       await sut.createProfileImage(authStub.admin, file);
-      await expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
+      expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
     });
 
     it('should not delete the profile image if it has not been set', async () => {
@@ -352,6 +352,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(authStub.admin, file);
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
   });
 
@@ -361,6 +362,7 @@ describe(UserService.name, () => {
 
       await expect(sut.deleteProfileImage(authStub.admin)).rejects.toBeInstanceOf(BadRequestException);
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
     it('should delete the profile image if user has one', async () => {
@@ -368,7 +370,7 @@ describe(UserService.name, () => {
       const files = [userStub.profilePath.profileImagePath];
 
       await sut.deleteProfileImage(authStub.admin);
-      await expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
+      expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
     });
   });
 
@@ -456,6 +458,7 @@ describe(UserService.name, () => {
 
       expect(userMock.getDeletedUsers).toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([]);
     });
 
     it('should queue user ready for deletion', async () => {
@@ -465,7 +468,7 @@ describe(UserService.name, () => {
       await sut.handleUserDeleteCheck();
 
       expect(userMock.getDeletedUsers).toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETION, data: { id: user.id } });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.USER_DELETION, data: { id: user.id } }]);
     });
   });
 

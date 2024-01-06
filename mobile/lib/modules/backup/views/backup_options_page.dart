@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -487,9 +488,7 @@ class BackupOptionsPage extends HookConsumerWidget {
           "Backup options",
         ),
         leading: IconButton(
-          onPressed: () {
-            context.autoPop(true);
-          },
+          onPressed: () => context.popRoute(true),
           splashRadius: 24,
           icon: const Icon(
             Icons.arrow_back_ios_rounded,

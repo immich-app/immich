@@ -12,6 +12,7 @@ import {
   assetStub,
   faceStub,
   newAssetRepositoryMock,
+  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
   newMoveRepositoryMock,
@@ -24,6 +25,7 @@ import {
 import { JobName } from '../job';
 import {
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMediaRepository,
   IMoveRepository,
@@ -43,6 +45,7 @@ describe(MediaService.name, () => {
   let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
@@ -52,8 +55,9 @@ describe(MediaService.name, () => {
     moveMock = newMoveRepositoryMock();
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
 
-    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock);
+    sut = new MediaService(assetMock, personMock, jobMock, mediaMock, storageMock, configMock, moveMock, cryptoMock);
   });
 
   it('should be defined', () => {
@@ -73,17 +77,21 @@ describe(MediaService.name, () => {
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(assetMock.getWithout).not.toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_JPEG_THUMBNAIL,
-        data: { id: assetStub.image.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_JPEG_THUMBNAIL,
+          data: { id: assetStub.image.id },
+        },
+      ]);
 
       expect(personMock.getAll).toHaveBeenCalled();
       expect(personMock.getAllWithoutThumbnail).not.toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_PERSON_THUMBNAIL,
-        data: { id: personStub.newThumbnail.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: { id: personStub.newThumbnail.id },
+        },
+      ]);
     });
 
     it('should queue all people with missing thumbnail path', async () => {
@@ -102,12 +110,14 @@ describe(MediaService.name, () => {
       expect(personMock.getAll).not.toHaveBeenCalled();
       expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
       expect(personMock.getRandomFace).toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_PERSON_THUMBNAIL,
-        data: {
-          id: personStub.newThumbnail.id,
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_PERSON_THUMBNAIL,
+          data: {
+            id: personStub.newThumbnail.id,
+          },
         },
-      });
+      ]);
     });
 
     it('should queue all assets with missing resize path', async () => {
@@ -121,10 +131,12 @@ describe(MediaService.name, () => {
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_JPEG_THUMBNAIL,
-        data: { id: assetStub.image.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_JPEG_THUMBNAIL,
+          data: { id: assetStub.image.id },
+        },
+      ]);
 
       expect(personMock.getAll).not.toHaveBeenCalled();
       expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
@@ -141,10 +153,12 @@ describe(MediaService.name, () => {
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_WEBP_THUMBNAIL,
-        data: { id: assetStub.image.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_WEBP_THUMBNAIL,
+          data: { id: assetStub.image.id },
+        },
+      ]);
 
       expect(personMock.getAll).not.toHaveBeenCalled();
       expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
@@ -161,10 +175,12 @@ describe(MediaService.name, () => {
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_THUMBHASH_THUMBNAIL,
-        data: { id: assetStub.image.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          data: { id: assetStub.image.id },
+        },
+      ]);
 
       expect(personMock.getAll).not.toHaveBeenCalled();
       expect(personMock.getAllWithoutThumbnail).toHaveBeenCalled();
@@ -384,10 +400,12 @@ describe(MediaService.name, () => {
 
       expect(assetMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { type: AssetType.VIDEO });
       expect(assetMock.getWithout).not.toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.VIDEO_CONVERSION,
-        data: { id: assetStub.video.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.VIDEO_CONVERSION,
+          data: { id: assetStub.video.id },
+        },
+      ]);
     });
 
     it('should queue all video assets without encoded videos', async () => {
@@ -400,10 +418,12 @@ describe(MediaService.name, () => {
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.ENCODED_VIDEO);
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.VIDEO_CONVERSION,
-        data: { id: assetStub.video.id },
-      });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.VIDEO_CONVERSION,
+          data: { id: assetStub.video.id },
+        },
+      ]);
     });
   });
 

@@ -4,6 +4,7 @@ import {
   authStub,
   newAssetRepositoryMock,
   newMachineLearningRepositoryMock,
+  newPartnerRepositoryMock,
   newPersonRepositoryMock,
   newSmartInfoRepositoryMock,
   newSystemConfigRepositoryMock,
@@ -13,6 +14,7 @@ import { mapAsset } from '../asset';
 import {
   IAssetRepository,
   IMachineLearningRepository,
+  IPartnerRepository,
   IPersonRepository,
   ISmartInfoRepository,
   ISystemConfigRepository,
@@ -29,6 +31,7 @@ describe(SearchService.name, () => {
   let machineMock: jest.Mocked<IMachineLearningRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
+  let partnerMock: jest.Mocked<IPartnerRepository>;
 
   beforeEach(() => {
     assetMock = newAssetRepositoryMock();
@@ -36,7 +39,8 @@ describe(SearchService.name, () => {
     machineMock = newMachineLearningRepositoryMock();
     personMock = newPersonRepositoryMock();
     smartInfoMock = newSmartInfoRepositoryMock();
-    sut = new SearchService(configMock, machineMock, personMock, smartInfoMock, assetMock);
+    partnerMock = newPartnerRepositoryMock();
+    sut = new SearchService(configMock, machineMock, personMock, smartInfoMock, assetMock, partnerMock);
   });
 
   it('should work', () => {
@@ -87,6 +91,7 @@ describe(SearchService.name, () => {
     it('should search by metadata if `clip` option is false', async () => {
       const dto: SearchDto = { q: 'test query', clip: false };
       assetMock.searchMetadata.mockResolvedValueOnce([assetStub.image]);
+      partnerMock.getAll.mockResolvedValueOnce([]);
       const expectedResponse = {
         albums: {
           total: 0,
@@ -105,7 +110,7 @@ describe(SearchService.name, () => {
       const result = await sut.search(authStub.user1, dto);
 
       expect(result).toEqual(expectedResponse);
-      expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, authStub.user1.user.id, { numResults: 250 });
+      expect(assetMock.searchMetadata).toHaveBeenCalledWith(dto.q, [authStub.user1.user.id], { numResults: 250 });
       expect(smartInfoMock.searchCLIP).not.toHaveBeenCalled();
     });
 
@@ -114,6 +119,7 @@ describe(SearchService.name, () => {
       const embedding = [1, 2, 3];
       smartInfoMock.searchCLIP.mockResolvedValueOnce([assetStub.image]);
       machineMock.encodeText.mockResolvedValueOnce(embedding);
+      partnerMock.getAll.mockResolvedValueOnce([]);
       const expectedResponse = {
         albums: {
           total: 0,
@@ -133,7 +139,7 @@ describe(SearchService.name, () => {
 
       expect(result).toEqual(expectedResponse);
       expect(smartInfoMock.searchCLIP).toHaveBeenCalledWith({
-        ownerId: authStub.user1.user.id,
+        userIds: [authStub.user1.user.id],
         embedding,
         numResults: 100,
       });

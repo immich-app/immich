@@ -11,6 +11,7 @@ import { SystemConfigNewVersionCheckDto } from './system-config-new-version-chec
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
 import { SystemConfigReverseGeocodingDto } from './system-config-reverse-geocoding.dto';
+import { SystemConfigServerDto } from './system-config-server.dto';
 import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
 import { SystemConfigThemeDto } from './system-config-theme.dto';
 import { SystemConfigThumbnailDto } from './system-config-thumbnail.dto';
@@ -86,6 +87,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   library!: SystemConfigLibraryDto;
+
+  @Type(() => SystemConfigServerDto)
+  @ValidateNested()
+  @IsObject()
+  server!: SystemConfigServerDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

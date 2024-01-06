@@ -176,6 +176,7 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getSupportedMediaTypes**](doc//ServerInfoApi.md#getsupportedmediatypes) | **GET** /server-info/media-types | 
 *ServerInfoApi* | [**getTheme**](doc//ServerInfoApi.md#gettheme) | **GET** /server-info/theme | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
+*ServerInfoApi* | [**setAdminOnboarding**](doc//ServerInfoApi.md#setadminonboarding) | **POST** /server-info/admin-onboarding | 
 *SharedLinkApi* | [**addSharedLinkAssets**](doc//SharedLinkApi.md#addsharedlinkassets) | **PUT** /shared-link/{id}/assets | 
 *SharedLinkApi* | [**createSharedLink**](doc//SharedLinkApi.md#createsharedlink) | **POST** /shared-link | 
 *SharedLinkApi* | [**getAllSharedLinks**](doc//SharedLinkApi.md#getallsharedlinks) | **GET** /shared-link | 
@@ -341,6 +342,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigReverseGeocodingDto](doc//SystemConfigReverseGeocodingDto.md)
+ - [SystemConfigServerDto](doc//SystemConfigServerDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)

@@ -129,12 +129,11 @@ export class UserService {
 
   async handleUserDeleteCheck() {
     const users = await this.userRepository.getDeletedUsers();
-    for (const user of users) {
-      if (this.isReadyForDeletion(user)) {
-        await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id } });
-      }
-    }
-
+    await this.jobRepository.queueAll(
+      users.flatMap((user) =>
+        this.isReadyForDeletion(user) ? [{ name: JobName.USER_DELETION, data: { id: user.id } }] : [],
+      ),
+    );
     return true;
   }
 

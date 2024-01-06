@@ -14,12 +14,14 @@ import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } 
 import {
   AudioStreamInfo,
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  JobItem,
   VideoCodecHWConfig,
   VideoStreamInfo,
   WithoutProperty,
@@ -52,9 +54,17 @@ export class MediaService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      personRepository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob) {
@@ -65,22 +75,27 @@ export class MediaService {
     });
 
     for await (const assets of assetPagination) {
+      const jobs: JobItem[] = [];
+
       for (const asset of assets) {
         if (!asset.resizePath || force) {
-          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
           continue;
         }
         if (!asset.webpPath) {
-          await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { id: asset.id } });
         }
         if (!asset.thumbhash) {
-          await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
         }
       }
+
+      await this.jobRepository.queueAll(jobs);
     }
 
     const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
 
+    const jobs: JobItem[] = [];
     for (const person of people) {
       if (!person.faceAssetId) {
         const face = await this.personRepository.getRandomFace(person.id);
@@ -91,8 +106,10 @@ export class MediaService {
         await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
       }
 
-      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
+      jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
     }
+
+    await this.jobRepository.queueAll(jobs);
 
     return true;
   }
@@ -109,15 +126,15 @@ export class MediaService {
     }
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } })),
+      );
     }
 
     const people = await this.personRepository.getAll();
-    for (const person of people) {
-      await this.jobRepository.queue({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
-    }
+    await this.jobRepository.queueAll(
+      people.map((person) => ({ name: JobName.MIGRATE_PERSON, data: { id: person.id } })),
+    );
 
     return true;
   }
@@ -215,9 +232,9 @@ export class MediaService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } })),
+      );
     }
 
     return true;

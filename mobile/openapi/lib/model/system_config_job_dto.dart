@@ -21,7 +21,6 @@ class SystemConfigJobDto {
     required this.search,
     required this.sidecar,
     required this.smartSearch,
-    required this.storageTemplateMigration,
     required this.thumbnailGeneration,
     required this.videoConversion,
   });
@@ -42,8 +41,6 @@ class SystemConfigJobDto {
 
   JobSettingsDto smartSearch;
 
-  JobSettingsDto storageTemplateMigration;
-
   JobSettingsDto thumbnailGeneration;
 
   JobSettingsDto videoConversion;
@@ -58,7 +55,6 @@ class SystemConfigJobDto {
      other.search == search &&
      other.sidecar == sidecar &&
      other.smartSearch == smartSearch &&
-     other.storageTemplateMigration == storageTemplateMigration &&
      other.thumbnailGeneration == thumbnailGeneration &&
      other.videoConversion == videoConversion;
 
@@ -73,12 +69,11 @@ class SystemConfigJobDto {
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
-    (storageTemplateMigration.hashCode) +
     (thumbnailGeneration.hashCode) +
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -90,7 +85,6 @@ class SystemConfigJobDto {
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
-      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
       json[r'thumbnailGeneration'] = this.thumbnailGeneration;
       json[r'videoConversion'] = this.videoConversion;
     return json;
@@ -112,7 +106,6 @@ class SystemConfigJobDto {
         search: JobSettingsDto.fromJson(json[r'search'])!,
         sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
         smartSearch: JobSettingsDto.fromJson(json[r'smartSearch'])!,
-        storageTemplateMigration: JobSettingsDto.fromJson(json[r'storageTemplateMigration'])!,
         thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
         videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
       );
@@ -170,7 +163,6 @@ class SystemConfigJobDto {
     'search',
     'sidecar',
     'smartSearch',
-    'storageTemplateMigration',
     'thumbnailGeneration',
     'videoConversion',
   };

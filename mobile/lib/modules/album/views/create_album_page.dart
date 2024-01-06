@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -36,7 +37,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     );
 
     showSelectUserPage() async {
-      final bool? ok = await context.autoPush<bool?>(
+      final bool? ok = await context.pushRoute<bool?>(
         SelectUserForSharingRoute(assets: selectedAssets.value),
       );
       if (ok == true) {
@@ -58,7 +59,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
     onSelectPhotosButtonPressed() async {
       AssetSelectionPageResult? selectedAsset =
-          await context.autoPush<AssetSelectionPageResult?>(
+          await context.pushRoute<AssetSelectionPageResult?>(
         AssetSelectionRoute(
           existingAssets: selectedAssets.value,
           canDeselect: true,
@@ -202,7 +203,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         selectedAssets.value = {};
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
-        context.autoReplace(AlbumViewerRoute(albumId: newAlbum.id));
+        context.replaceRoute(AlbumViewerRoute(albumId: newAlbum.id));
       }
     }
 
@@ -214,7 +215,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             selectedAssets.value = {};
-            context.autoPop();
+            context.popRoute();
           },
           icon: const Icon(Icons.close_rounded),
         ),

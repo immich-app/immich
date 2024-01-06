@@ -9,6 +9,7 @@
   import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
   import ThumbnailSettings from '$lib/components/admin-page/settings/thumbnail/thumbnail-settings.svelte';
+  import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
@@ -93,6 +94,10 @@
 
       <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
         <PasswordLoginSettings disabled={$featureFlags.configFile} passwordLoginConfig={configs.passwordLogin} />
+      </SettingAccordion>
+
+      <SettingAccordion title="Server Settings" subtitle="Manage server settings">
+        <ServerSettings disabled={$featureFlags.configFile} serverConfig={configs.server} />
       </SettingAccordion>
 
       <SettingAccordion
