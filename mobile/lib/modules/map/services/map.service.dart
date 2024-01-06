@@ -48,10 +48,8 @@ class MapSerivce {
       if (assets.isNotEmpty) return assets[0];
 
       final dto = await _apiService.assetApi.getAssetById(remoteId);
-      if (dto == null) {
-        return null;
-      }
-      return Asset.remote(dto);
+      if (dto == null) return null;
+      return _db.assets.getByRemoteId(dto.id);
     } catch (error, stack) {
       _log.severe(
         "Cannot get asset for marker ${error.toString()}",

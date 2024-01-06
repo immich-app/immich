@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto clipEncoding
-    test('to test the property `clipEncoding`', () async {
-      // TODO
-    });
-
     // JobSettingsDto library_
     test('to test the property `library_`', () async {
       // TODO
@@ -38,11 +33,6 @@ void main() {
 
     // JobSettingsDto migration
     test('to test the property `migration`', () async {
-      // TODO
-    });
-
-    // JobSettingsDto objectTagging
-    test('to test the property `objectTagging`', () async {
       // TODO
     });
 
@@ -61,8 +51,8 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto storageTemplateMigration
-    test('to test the property `storageTemplateMigration`', () async {
+    // JobSettingsDto smartSearch
+    test('to test the property `smartSearch`', () async {
       // TODO
     });
 

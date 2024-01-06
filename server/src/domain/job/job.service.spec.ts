@@ -55,12 +55,12 @@ describe(JobService.name, () => {
     it('should run the scheduled jobs', async () => {
       await sut.handleNightlyJobs();
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_DELETION_CHECK }],
-        [{ name: JobName.USER_DELETE_CHECK }],
-        [{ name: JobName.PERSON_CLEANUP }],
-        [{ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } }],
-        [{ name: JobName.CLEAN_OLD_AUDIT_LOGS }],
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.ASSET_DELETION_CHECK },
+        { name: JobName.USER_DELETE_CHECK },
+        { name: JobName.PERSON_CLEANUP },
+        { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
+        { name: JobName.CLEAN_OLD_AUDIT_LOGS },
       ]);
     });
   });
@@ -97,9 +97,8 @@ describe(JobService.name, () => {
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
         [QueueName.BACKGROUND_TASK]: expectedJobStatus,
-        [QueueName.CLIP_ENCODING]: expectedJobStatus,
+        [QueueName.SMART_SEARCH]: expectedJobStatus,
         [QueueName.METADATA_EXTRACTION]: expectedJobStatus,
-        [QueueName.OBJECT_TAGGING]: expectedJobStatus,
         [QueueName.SEARCH]: expectedJobStatus,
         [QueueName.STORAGE_TEMPLATE_MIGRATION]: expectedJobStatus,
         [QueueName.MIGRATION]: expectedJobStatus,
@@ -139,6 +138,7 @@ describe(JobService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
     it('should handle a start video conversion command', async () => {
@@ -157,18 +157,10 @@ describe(JobService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
     });
 
-    it('should handle a start object tagging command', async () => {
-      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
-
-      await sut.handleCommand(QueueName.OBJECT_TAGGING, { command: JobCommand.START, force: false });
-
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force: false } });
-    });
-
     it('should handle a start clip encoding command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
-      await sut.handleCommand(QueueName.CLIP_ENCODING, { command: JobCommand.START, force: false });
+      await sut.handleCommand(QueueName.SMART_SEARCH, { command: JobCommand.START, force: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_ENCODE_CLIP, data: { force: false } });
     });
@@ -213,30 +205,29 @@ describe(JobService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
   });
 
-  describe('registerHandlers', () => {
+  describe('init', () => {
     it('should register a handler for each queue', async () => {
-      await sut.registerHandlers(makeMockHandlers(true));
+      await sut.init(makeMockHandlers(true));
       expect(configMock.load).toHaveBeenCalled();
       expect(jobMock.addHandler).toHaveBeenCalledTimes(Object.keys(QueueName).length);
     });
 
     it('should subscribe to config changes', async () => {
-      await sut.registerHandlers(makeMockHandlers(false));
+      await sut.init(makeMockHandlers(false));
 
       SystemConfigCore.create(newSystemConfigRepositoryMock(false)).config$.next({
         job: {
           [QueueName.BACKGROUND_TASK]: { concurrency: 10 },
-          [QueueName.CLIP_ENCODING]: { concurrency: 10 },
+          [QueueName.SMART_SEARCH]: { concurrency: 10 },
           [QueueName.METADATA_EXTRACTION]: { concurrency: 10 },
-          [QueueName.OBJECT_TAGGING]: { concurrency: 10 },
           [QueueName.RECOGNIZE_FACES]: { concurrency: 10 },
           [QueueName.SEARCH]: { concurrency: 10 },
           [QueueName.SIDECAR]: { concurrency: 10 },
           [QueueName.LIBRARY]: { concurrency: 10 },
-          [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 10 },
           [QueueName.MIGRATION]: { concurrency: 10 },
           [QueueName.THUMBNAIL_GENERATION]: { concurrency: 10 },
           [QueueName.VIDEO_CONVERSION]: { concurrency: 10 },
@@ -244,13 +235,11 @@ describe(JobService.name, () => {
       } as SystemConfig);
 
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.BACKGROUND_TASK, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.CLIP_ENCODING, 10);
+      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SMART_SEARCH, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.OBJECT_TAGGING, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.RECOGNIZE_FACES, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SIDECAR, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.LIBRARY, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.STORAGE_TEMPLATE_MIGRATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.MIGRATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.THUMBNAIL_GENERATION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.VIDEO_CONVERSION, 10);
@@ -289,37 +278,30 @@ describe(JobService.name, () => {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.CLASSIFY_IMAGE,
+          JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.ENCODE_CLIP,
           JobName.RECOGNIZE_FACES,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
         ],
       },
       {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
         jobs: [
           JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.CLASSIFY_IMAGE,
+          JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.ENCODE_CLIP,
           JobName.RECOGNIZE_FACES,
-          JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.VIDEO_CONVERSION,
         ],
       },
       {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-live-image', source: 'upload' } },
         jobs: [
-          JobName.CLASSIFY_IMAGE,
           JobName.GENERATE_WEBP_THUMBNAIL,
-          JobName.RECOGNIZE_FACES,
           JobName.GENERATE_THUMBHASH_THUMBNAIL,
           JobName.ENCODE_CLIP,
+          JobName.RECOGNIZE_FACES,
           JobName.VIDEO_CONVERSION,
         ],
-      },
-      {
-        item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },
-        jobs: [],
       },
       {
         item: { name: JobName.ENCODE_CLIP, data: { id: 'asset-1' } },
@@ -343,35 +325,36 @@ describe(JobService.name, () => {
           assetMock.getByIds.mockResolvedValue([]);
         }
 
-        await sut.registerHandlers(makeMockHandlers(true));
+        await sut.init(makeMockHandlers(true));
         await jobMock.addHandler.mock.calls[0][2](item);
         await asyncTick(3);
 
-        expect(jobMock.queue).toHaveBeenCalledTimes(jobs.length);
-        for (const jobName of jobs) {
-          expect(jobMock.queue).toHaveBeenCalledWith({ name: jobName, data: expect.anything() });
+        if (jobs.length > 1) {
+          expect(jobMock.queueAll).toHaveBeenCalledWith(
+            jobs.map((jobName) => ({ name: jobName, data: expect.anything() })),
+          );
+        } else {
+          expect(jobMock.queue).toHaveBeenCalledTimes(jobs.length);
+          for (const jobName of jobs) {
+            expect(jobMock.queue).toHaveBeenCalledWith({ name: jobName, data: expect.anything() });
+          }
         }
       });
 
       it(`should not queue any jobs when ${item.name} finishes with 'false'`, async () => {
-        await sut.registerHandlers(makeMockHandlers(false));
+        await sut.init(makeMockHandlers(false));
         await jobMock.addHandler.mock.calls[0][2](item);
         await asyncTick(3);
 
-        expect(jobMock.queue).not.toHaveBeenCalled();
+        expect(jobMock.queueAll).not.toHaveBeenCalled();
       });
     }
 
     const featureTests: Array<{ queue: QueueName; feature: FeatureFlag; configKey: SystemConfigKey }> = [
       {
-        queue: QueueName.CLIP_ENCODING,
+        queue: QueueName.SMART_SEARCH,
         feature: FeatureFlag.CLIP_ENCODE,
         configKey: SystemConfigKey.MACHINE_LEARNING_CLIP_ENABLED,
-      },
-      {
-        queue: QueueName.OBJECT_TAGGING,
-        feature: FeatureFlag.TAG_IMAGE,
-        configKey: SystemConfigKey.MACHINE_LEARNING_CLASSIFICATION_ENABLED,
       },
       {
         queue: QueueName.RECOGNIZE_FACES,

@@ -122,6 +122,7 @@ describe('AssetService', () => {
     it('should handle a file upload', async () => {
       const assetEntity = _getAsset_1();
       const file = {
+        uuid: 'random-uuid',
         originalPath: 'fake_path/asset_1.jpeg',
         mimeType: 'image/jpeg',
         checksum: Buffer.from('file hash', 'utf8'),
@@ -139,6 +140,7 @@ describe('AssetService', () => {
 
     it('should handle a duplicate', async () => {
       const file = {
+        uuid: 'random-uuid',
         originalPath: 'fake_path/asset_1.jpeg',
         mimeType: 'image/jpeg',
         checksum: Buffer.from('file hash', 'utf8'),

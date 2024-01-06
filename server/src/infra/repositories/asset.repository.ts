@@ -674,6 +674,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
+  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
     return this.getBuilder(options)
@@ -684,6 +685,7 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
+  @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH }] })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncated = dateTrunc(options);
     return (
@@ -706,9 +708,7 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('e')
       .select('city')
       .groupBy('city')
-      .having('count(city) >= :minAssetsPerField', { minAssetsPerField })
-      .orderBy('random()')
-      .limit(maxFields);
+      .having('count(city) >= :minAssetsPerField', { minAssetsPerField });
 
     const items = await this.getBuilder({
       userIds: [ownerId],
@@ -737,9 +737,7 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('si')
       .select('unnest(tags)', 'tag')
       .groupBy('tag')
-      .having('count(*) >= :minAssetsPerField', { minAssetsPerField })
-      .orderBy('random()')
-      .limit(maxFields);
+      .having('count(*) >= :minAssetsPerField', { minAssetsPerField });
 
     const items = await this.getBuilder({
       userIds: [ownerId],
@@ -808,38 +806,80 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
-  async searchMetadata(query: string, ownerId: string, { numResults }: MetadataSearchOptions): Promise<AssetEntity[]> {
-    const rows = await this.repository
-      .createQueryBuilder('assets')
-      .select('assets.*')
-      .addSelect('e.country', 'country')
-      .addSelect('e.state', 'state')
-      .addSelect('e.city', 'city')
-      .addSelect('e.description', 'description')
-      .addSelect('e.model', 'model')
-      .addSelect('e.make', 'make')
+  @GenerateSql({ params: [DummyValue.STRING, [DummyValue.UUID], { numResults: 250 }] })
+  async searchMetadata(
+    query: string,
+    userIds: string[],
+    { numResults }: MetadataSearchOptions,
+  ): Promise<AssetEntity[]> {
+    const rows = await this.getBuilder({
+      userIds: userIds,
+      exifInfo: false,
+      isArchived: false,
+    })
+      .select('asset.*')
+      .addSelect('e.*')
       .addSelect('COALESCE(si.tags, array[]::text[])', 'tags')
       .addSelect('COALESCE(si.objects, array[]::text[])', 'objects')
-      .innerJoin('smart_info', 'si', 'si."assetId" = assets."id"')
-      .innerJoin('exif', 'e', 'assets."id" = e."assetId"')
-      .where('a.ownerId = :ownerId', { ownerId })
-      .where(
-        '(e."exifTextSearchableColumn" || si."smartInfoTextSearchableColumn") @@ PLAINTO_TSQUERY(\'english\', :query)',
+      .innerJoin('exif', 'e', 'asset."id" = e."assetId"')
+      .leftJoin('smart_info', 'si', 'si."assetId" = asset."id"')
+      .andWhere(
+        `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
+        @@ PLAINTO_TSQUERY('english', :query)`,
         { query },
       )
+      .addOrderBy('asset.fileCreatedAt', 'DESC')
       .limit(numResults)
       .getRawMany();
 
     return rows.map(
-      ({ tags, objects, country, state, city, description, model, make, ...assetInfo }) =>
+      ({
+        tags,
+        objects,
+        country,
+        state,
+        city,
+        description,
+        model,
+        make,
+        dateTimeOriginal,
+        exifImageHeight,
+        exifImageWidth,
+        exposureTime,
+        fNumber,
+        fileSizeInByte,
+        focalLength,
+        iso,
+        latitude,
+        lensModel,
+        longitude,
+        modifyDate,
+        projectionType,
+        timeZone,
+        ...assetInfo
+      }) =>
         ({
           exifInfo: {
-            country,
-            state,
             city,
+            country,
+            dateTimeOriginal,
             description,
-            model,
+            exifImageHeight,
+            exifImageWidth,
+            exposureTime,
+            fNumber,
+            fileSizeInByte,
+            focalLength,
+            iso,
+            latitude,
+            lensModel,
+            longitude,
             make,
+            model,
+            modifyDate,
+            projectionType,
+            state,
+            timeZone,
           },
           smartInfo: {
             tags,

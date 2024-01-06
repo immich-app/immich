@@ -92,18 +92,6 @@ class ControlBottomAppBar extends ConsumerWidget {
                 .tr(),
             onPressed: enabled ? onFavorite : null,
           ),
-        if (hasRemote && onEditTime != null)
-          ControlBoxButton(
-            iconData: Icons.edit_calendar_outlined,
-            label: "control_bottom_app_bar_edit_time".tr(),
-            onPressed: enabled ? onEditTime : null,
-          ),
-        if (hasRemote && onEditLocation != null)
-          ControlBoxButton(
-            iconData: Icons.edit_location_alt_outlined,
-            label: "control_bottom_app_bar_edit_location".tr(),
-            onPressed: enabled ? onEditLocation : null,
-          ),
         if (onDelete != null)
           ControlBoxButton(
             iconData: Icons.delete_outline_rounded,
@@ -124,6 +112,18 @@ class ControlBottomAppBar extends ConsumerWidget {
                     }
                   }
                 : null,
+          ),
+        if (hasRemote && onEditTime != null)
+          ControlBoxButton(
+            iconData: Icons.edit_calendar_outlined,
+            label: "control_bottom_app_bar_edit_time".tr(),
+            onPressed: enabled ? onEditTime : null,
+          ),
+        if (hasRemote && onEditLocation != null)
+          ControlBoxButton(
+            iconData: Icons.edit_location_alt_outlined,
+            label: "control_bottom_app_bar_edit_location".tr(),
+            onPressed: enabled ? onEditLocation : null,
           ),
         if (!hasLocal &&
             selectionAssetState.selectedCount > 1 &&

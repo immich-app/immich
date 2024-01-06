@@ -1,2 +1,2 @@
 export * from './error.interceptor';
-export * from './file.interceptor';
+export * from './file-upload.interceptor';

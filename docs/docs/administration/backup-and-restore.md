@@ -1,5 +1,7 @@
 # Backup and Restore
 
+A [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](../guides/template-backup-script)
+
 ## Database
 
 :::caution
@@ -44,7 +46,6 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       SCHEDULE: "@daily"
-      BACKUP_NUM_KEEP: 7
       BACKUP_DIR: /db_dumps
     volumes:
       - ./db_dumps:/db_dumps

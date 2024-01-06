@@ -11,6 +11,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/album/providers/current_album.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_stack.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/current_asset.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/show_controls.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/video_player_controls_provider.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
@@ -106,6 +107,19 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     bool isParent = stackIndex.value == -1 || stackIndex.value == 0;
 
+    // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
+    ref.listen(currentAssetProvider, (_, __) {});
+    useEffect(
+      () {
+        // Delay state update to after the execution of build method
+        Future.microtask(
+          () => ref.read(currentAssetProvider.notifier).set(asset()),
+        );
+        return null;
+      },
+      [asset()],
+    );
+
     useEffect(
       () {
         isLoadPreview.value =
@@ -179,18 +193,18 @@ class GalleryViewerPage extends HookConsumerWidget {
         barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
+        useSafeArea: true,
         context: context,
         builder: (context) {
-          if (ref
-              .watch(appSettingsServiceProvider)
-              .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)) {
-            return AdvancedBottomSheet(assetDetail: asset());
-          }
           return Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.viewInsetsOf(context).bottom,
             ),
-            child: ExifBottomSheet(asset: asset()),
+            child: ref
+                    .watch(appSettingsServiceProvider)
+                    .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
+                ? AdvancedBottomSheet(assetDetail: asset())
+                : ExifBottomSheet(asset: asset()),
           );
         },
       );
@@ -224,7 +238,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isDeleted && isParent) {
           if (totalAssets == 1) {
             // Handle only one asset
-            context.autoPop();
+            context.popRoute();
           } else {
             // Go to next page otherwise
             controller.nextPage(
@@ -308,7 +322,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       final ratio = d.dy / max(d.dx.abs(), 1);
       if (d.dy > sensitivity && ratio > ratioThreshold) {
-        context.autoPop();
+        context.popRoute();
       } else if (d.dy < -sensitivity && ratio < -ratioThreshold) {
         showInfo();
       }
@@ -330,7 +344,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     handleArchive(Asset asset) {
       ref.read(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
-        context.autoPop();
+        context.popRoute();
         return;
       }
       removeAssetFromStack();
@@ -373,14 +387,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     handleActivities() {
       if (album != null && album.shared && album.remoteId != null) {
-        context.autoPush(
-          ActivitiesRoute(
-            albumId: album.remoteId!,
-            assetId: asset().remoteId,
-            withAssetThumbs: false,
-            isOwner: isOwner,
-          ),
-        );
+        context.pushRoute(const ActivitiesRoute());
       }
     }
 
@@ -555,7 +562,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                               stackElements.elementAt(stackIndex.value),
                             );
                         ctx.pop();
-                        context.autoPop();
+                        context.popRoute();
                       },
                       title: const Text(
                         "viewer_stack_use_as_main_asset",
@@ -582,7 +589,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                           childrenToRemove: [currentAsset],
                         );
                         ctx.pop();
-                        context.autoPop();
+                        context.popRoute();
                       } else {
                         await ref.read(assetStackServiceProvider).updateStack(
                           currentAsset,
@@ -610,7 +617,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                             childrenToRemove: stack,
                           );
                       ctx.pop();
-                      context.autoPop();
+                      context.popRoute();
                     },
                     title: const Text(
                       "viewer_unstack",
@@ -827,8 +834,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
                       tag: isFromDto
-                          ? '${a.remoteId}-$heroOffset'
-                          : a.id + heroOffset,
+                          ? '${currentAsset.remoteId}-$heroOffset'
+                          : currentAsset.id + heroOffset,
                       transitionOnUserGestures: true,
                     ),
                     filterQuality: FilterQuality.high,
@@ -847,8 +854,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
                       tag: isFromDto
-                          ? '${a.remoteId}-$heroOffset'
-                          : a.id + heroOffset,
+                          ? '${currentAsset.remoteId}-$heroOffset'
+                          : currentAsset.id + heroOffset,
                     ),
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,

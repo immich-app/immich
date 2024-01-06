@@ -6,7 +6,9 @@
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import { handleError } from '../../utils/handle-error';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAccountEditOutline } from '@mdi/js';
+  import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
+  import { AppRoute } from '$lib/constants';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -16,7 +18,11 @@
 
   let isShowResetPasswordConfirmation = false;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    resetPasswordSuccess: void;
+    editSuccess: void;
+  }>();
 
   const editUser = async () => {
     try {
@@ -32,7 +38,7 @@
       });
 
       if (status === 200) {
-        dispatch('edit-success');
+        dispatch('editSuccess');
       }
     } catch (error) {
       handleError(error, 'Unable to update user');
@@ -52,7 +58,7 @@
       });
 
       if (status == 200) {
-        dispatch('reset-password-success');
+        dispatch('resetPasswordSuccess');
       }
     } catch (e) {
       console.error('Error reseting user password', e);
@@ -67,8 +73,12 @@
 </script>
 
 <div
-  class="max-h-screen w-[500px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+  class="relative max-h-screen w-[500px] max-w-[95vw] overflow-y-auto rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
 >
+  <div class="absolute top-0 right-0 px-2 py-2 h-fit">
+    <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
+  </div>
+
   <div
     class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
   >
@@ -99,7 +109,7 @@
 
       <p>
         Note: To apply the Storage Label to previously uploaded assets, run the
-        <a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary">
+        <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
           Storage Migration Job</a
         >
       </p>

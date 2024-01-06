@@ -46,7 +46,6 @@ export type JobItem =
   // Storage Template
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION; data?: IBaseJob }
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IEntityJob }
-  | { name: JobName.SYSTEM_CONFIG_CHANGE; data?: IBaseJob }
 
   // Migration
   | { name: JobName.QUEUE_MIGRATION; data?: IBaseJob }
@@ -62,10 +61,6 @@ export type JobItem =
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
   | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
   | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
-
-  // Object Tagging
-  | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
-  | { name: JobName.CLASSIFY_IMAGE; data: IEntityJob }
 
   // Recognize Faces
   | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
@@ -108,6 +103,7 @@ export interface IJobRepository {
   deleteCronJob(name: string): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
+  queueAll(items: JobItem[]): Promise<void>;
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;

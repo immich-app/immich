@@ -5,18 +5,20 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Next,
   Param,
   ParseFilePipe,
   Post,
   Query,
-  Response,
+  Res,
   UploadedFiles,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Response as Res } from 'express';
-import { Auth, Authenticated, SharedLinkRoute } from '../../app.guard';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
+import { sendFile } from '../../app.utils';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
@@ -58,7 +60,7 @@ export class AssetController {
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body(new ValidationPipe({ transform: true })) dto: CreateAssetDto,
-    @Response({ passthrough: true }) res: Res,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<AssetFileUploadResponseDto> {
     const file = mapToUploadFile(files.assetData[0]);
     const _livePhotoFile = files.livePhotoData?.[0];
@@ -83,35 +85,28 @@ export class AssetController {
 
   @SharedLinkRoute()
   @Get('/file/:id')
-  @ApiOkResponse({
-    content: {
-      'application/octet-stream': { schema: { type: 'string', format: 'binary' } },
-    },
-  })
+  @FileResponse()
   async serveFile(
+    @Res() res: Response,
+    @Next() next: NextFunction,
     @Auth() auth: AuthDto,
-    @Response() res: Res,
-    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param() { id }: UUIDParamDto,
+    @Query(new ValidationPipe({ transform: true })) dto: ServeFileDto,
   ) {
-    await this.assetService.serveFile(auth, id, query, res);
+    await sendFile(res, next, () => this.assetService.serveFile(auth, id, dto));
   }
 
   @SharedLinkRoute()
   @Get('/thumbnail/:id')
-  @ApiOkResponse({
-    content: {
-      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
-      'image/webp': { schema: { type: 'string', format: 'binary' } },
-    },
-  })
+  @FileResponse()
   async getAssetThumbnail(
+    @Res() res: Response,
+    @Next() next: NextFunction,
     @Auth() auth: AuthDto,
-    @Response() res: Res,
     @Param() { id }: UUIDParamDto,
-    @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
+    @Query(new ValidationPipe({ transform: true })) dto: GetAssetThumbnailDto,
   ) {
-    await this.assetService.serveThumbnail(auth, id, query, res);
+    await sendFile(res, next, () => this.assetService.serveThumbnail(auth, id, dto));
   }
 
   @Get('/curated-objects')

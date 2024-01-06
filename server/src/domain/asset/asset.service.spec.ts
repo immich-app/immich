@@ -16,10 +16,11 @@ import {
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   AssetStats,
-  CommunicationEvent,
+  ClientEvent,
   IAssetRepository,
   ICommunicationRepository,
   ICryptoRepository,
@@ -62,6 +63,7 @@ const uploadFile = {
     auth: null,
     fieldName: UploadFieldName.ASSET_DATA,
     file: {
+      uuid: 'random-uuid',
       checksum: Buffer.from('checksum', 'utf8'),
       originalPath: 'upload/admin/image.jpeg',
       originalName: 'image.jpeg',
@@ -72,6 +74,7 @@ const uploadFile = {
       auth: authStub.admin,
       fieldName,
       file: {
+        uuid: 'random-uuid',
         mimeType: 'image/jpeg',
         checksum: Buffer.from('checksum', 'utf8'),
         originalPath: `upload/admin/${filename}`,
@@ -279,9 +282,9 @@ describe(AssetService.name, () => {
 
     it('should return upload for everything else', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id',
+        'upload/upload/admin_id/ra/nd',
       );
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id');
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
     });
   });
 
@@ -474,15 +477,16 @@ describe(AssetService.name, () => {
     });
 
     it('should download a file', async () => {
-      const stream = new Readable();
-
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
-      storageMock.createReadStream.mockResolvedValue({ stream });
 
-      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual({ stream });
-
-      expect(storageMock.createReadStream).toHaveBeenCalledWith(assetStub.image.originalPath, 'image/jpeg');
+      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/original/path.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.NONE,
+        }),
+      );
     });
 
     it('should download an archive', async () => {
@@ -762,7 +766,7 @@ describe(AssetService.name, () => {
         stackParentId: 'parent',
       });
 
-      expect(communicationMock.send).toHaveBeenCalledWith(CommunicationEvent.ASSET_UPDATE, authStub.user1.user.id, [
+      expect(communicationMock.send).toHaveBeenCalledWith(ClientEvent.ASSET_UPDATE, authStub.user1.user.id, [
         'asset-1',
       ]);
     });
@@ -782,9 +786,9 @@ describe(AssetService.name, () => {
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_DELETION, data: { id: 'asset1' } }],
-        [{ name: JobName.ASSET_DELETION, data: { id: 'asset2' } }],
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.ASSET_DELETION, data: { id: 'asset1' } },
+        { name: JobName.ASSET_DELETION, data: { id: 'asset2' } },
       ]);
     });
 
@@ -893,6 +897,7 @@ describe(AssetService.name, () => {
       await sut.handleAssetDeletion({ id: assetStub.external.id });
 
       expect(jobMock.queue).not.toBeCalled();
+      expect(jobMock.queueAll).not.toBeCalled();
       expect(assetMock.remove).not.toBeCalled();
     });
 
@@ -950,19 +955,21 @@ describe(AssetService.name, () => {
     it('should run the refresh metadata job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_METADATA }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } }]);
     });
 
     it('should run the refresh thumbnails job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([
+          { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
+        ]);
     });
 
     it('should run the transcode video', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } }]);
     });
   });
 

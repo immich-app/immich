@@ -45,7 +45,7 @@
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
 >
-  <a href="/people/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
+  <a href="{AppRoute.PEOPLE}/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
     <div class="h-48 w-48 rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow

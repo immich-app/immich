@@ -1,4 +1,4 @@
-import { ClassificationConfig, CLIPConfig, RecognitionConfig } from '../smart-info/dto';
+import { CLIPConfig, RecognitionConfig } from '../smart-info/dto';
 
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 
@@ -26,7 +26,6 @@ export interface DetectFaceResult {
 }
 
 export enum ModelType {
-  IMAGE_CLASSIFICATION = 'image-classification',
   FACIAL_RECOGNITION = 'facial-recognition',
   CLIP = 'clip',
 }
@@ -37,7 +36,6 @@ export enum CLIPMode {
 }
 
 export interface IMachineLearningRepository {
-  classifyImage(url: string, input: VisionModelInput, config: ClassificationConfig): Promise<string[]>;
   encodeImage(url: string, input: VisionModelInput, config: CLIPConfig): Promise<number[]>;
   encodeText(url: string, input: TextModelInput, config: CLIPConfig): Promise<number[]>;
   detectFaces(url: string, input: VisionModelInput, config: RecognitionConfig): Promise<DetectFaceResult[]>;

@@ -12,6 +12,7 @@
   export let cancelColor: Color = 'primary';
   export let hideCancelButton = false;
   export let disabled = false;
+  export let width = 500;
 
   const dispatch = createEventDispatcher<{ cancel: void; confirm: void; 'click-outside': void }>();
 
@@ -36,7 +37,8 @@
 
 <FullScreenModal on:clickOutside={handleClickOutside} on:escape={() => handleEscape()}>
   <div
-    class="w-[500px] max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+    class="max-w-[95vw] rounded-3xl border bg-immich-bg p-4 py-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+    style="width: {width}px"
   >
     <div
       class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"

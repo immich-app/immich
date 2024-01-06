@@ -2,9 +2,8 @@ export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
   VIDEO_CONVERSION = 'videoConversion',
-  OBJECT_TAGGING = 'objectTagging',
   RECOGNIZE_FACES = 'recognizeFaces',
-  CLIP_ENCODING = 'clipEncoding',
+  SMART_SEARCH = 'smartSearch',
   BACKGROUND_TASK = 'backgroundTask',
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   MIGRATION = 'migration',
@@ -49,16 +48,11 @@ export enum JobName {
   // storage template
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
   STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
-  SYSTEM_CONFIG_CHANGE = 'system-config-change',
 
   // migration
   QUEUE_MIGRATION = 'queue-migration',
   MIGRATE_ASSET = 'migrate-asset',
   MIGRATE_PERSON = 'migrate-person',
-
-  // object tagging
-  QUEUE_OBJECT_TAGGING = 'queue-object-tagging',
-  CLASSIFY_IMAGE = 'classify-image',
 
   // facial recognition
   PERSON_CLEANUP = 'person-cleanup',
@@ -101,7 +95,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
-  [JobName.SYSTEM_CONFIG_CHANGE]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
@@ -128,17 +121,13 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.MIGRATE_ASSET]: QueueName.MIGRATION,
   [JobName.MIGRATE_PERSON]: QueueName.MIGRATION,
 
-  // object tagging
-  [JobName.QUEUE_OBJECT_TAGGING]: QueueName.OBJECT_TAGGING,
-  [JobName.CLASSIFY_IMAGE]: QueueName.OBJECT_TAGGING,
-
   // facial recognition
   [JobName.QUEUE_RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
   [JobName.RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
 
   // clip
-  [JobName.QUEUE_ENCODE_CLIP]: QueueName.CLIP_ENCODING,
-  [JobName.ENCODE_CLIP]: QueueName.CLIP_ENCODING,
+  [JobName.QUEUE_ENCODE_CLIP]: QueueName.SMART_SEARCH,
+  [JobName.ENCODE_CLIP]: QueueName.SMART_SEARCH,
 
   // XMP sidecars
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,

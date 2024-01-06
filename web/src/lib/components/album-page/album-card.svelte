@@ -8,12 +8,13 @@
   import type { OnClick, OnShowContextMenu } from './album-card';
   import { getContextMenuPosition } from '../../utils/context-menu';
   import { mdiDotsVertical } from '@mdi/js';
+  import { user } from '$lib/stores/user.store';
 
   export let album: AlbumResponseDto;
   export let isSharingView = false;
-  export let user: UserResponseDto;
   export let showItemCount = true;
   export let showContextMenu = true;
+  export let preload = false;
   let showVerticalDots = false;
 
   $: imageData = album.albumThumbnailAssetId
@@ -83,6 +84,7 @@
 
   <div class={`relative aspect-square`}>
     <img
+      loading={preload ? 'eager' : 'lazy'}
       src={imageData}
       alt={album.id}
       class={`z-0 h-full w-full rounded-3xl object-cover transition-all duration-300 hover:shadow-lg`}
@@ -119,7 +121,7 @@
 
       {#if isSharingView}
         {#await getAlbumOwnerInfo() then albumOwner}
-          {#if user.email == albumOwner.email}
+          {#if $user.email == albumOwner.email}
             <p>Owned</p>
           {:else}
             <p>

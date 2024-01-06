@@ -1,7 +1,9 @@
 import { UserEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { AuthDto } from '../auth';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IEntityJob, JobName } from '../job';
 import {
   IAlbumRepository,
@@ -11,7 +13,6 @@ import {
   ILibraryRepository,
   IStorageRepository,
   IUserRepository,
-  ImmichReadStream,
   UserFindOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
@@ -21,7 +22,7 @@ import { UserCore } from './user.core';
 
 @Injectable()
 export class UserService {
-  private logger = new Logger(UserService.name);
+  private logger = new ImmichLogger(UserService.name);
   private userCore: UserCore;
 
   constructor(
@@ -99,12 +100,17 @@ export class UserService {
     await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [user.profileImagePath] } });
   }
 
-  async getProfileImage(id: string): Promise<ImmichReadStream> {
+  async getProfileImage(id: string): Promise<ImmichFileResponse> {
     const user = await this.findOrFail(id, {});
     if (!user.profileImagePath) {
       throw new NotFoundException('User does not have a profile image');
     }
-    return this.storageRepository.createReadStream(user.profileImagePath, 'image/jpeg');
+
+    return new ImmichFileResponse({
+      path: user.profileImagePath,
+      contentType: 'image/jpeg',
+      cacheControl: CacheControl.NONE,
+    });
   }
 
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
@@ -123,12 +129,11 @@ export class UserService {
 
   async handleUserDeleteCheck() {
     const users = await this.userRepository.getDeletedUsers();
-    for (const user of users) {
-      if (this.isReadyForDeletion(user)) {
-        await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id } });
-      }
-    }
-
+    await this.jobRepository.queueAll(
+      users.flatMap((user) =>
+        this.isReadyForDeletion(user) ? [{ name: JobName.USER_DELETION, data: { id: user.id } }] : [],
+      ),
+    );
     return true;
   }
 

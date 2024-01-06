@@ -1,56 +1,51 @@
-import * as fs from 'fs';
-import { basename } from 'node:path';
 import crypto from 'crypto';
-import Os from 'os';
 import FormData from 'form-data';
+import * as fs from 'graceful-fs';
+import { createReadStream } from 'node:fs';
+import { basename } from 'node:path';
+import Os from 'os';
 
 export class Asset {
   readonly path: string;
   readonly deviceId!: string;
 
-  assetData?: fs.ReadStream;
   deviceAssetId?: string;
   fileCreatedAt?: string;
   fileModifiedAt?: string;
-  sidecarData?: fs.ReadStream;
   sidecarPath?: string;
   fileSize!: number;
   albumName?: string;
 
-  constructor(path: string, deviceId: string) {
+  constructor(path: string) {
     this.path = path;
-    this.deviceId = deviceId;
   }
 
-  async process() {
+  async prepare() {
     const stats = await fs.promises.stat(this.path);
     this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replace(/\s+/g, '');
     this.fileCreatedAt = stats.mtime.toISOString();
     this.fileModifiedAt = stats.mtime.toISOString();
     this.fileSize = stats.size;
     this.albumName = this.extractAlbumName();
-
-    this.assetData = this.getReadStream(this.path);
-
-    // TODO: doesn't xmp replace the file extension? Will need investigation
-    const sideCarPath = `${this.path}.xmp`;
-    try {
-      fs.accessSync(sideCarPath, fs.constants.R_OK);
-      this.sidecarData = this.getReadStream(sideCarPath);
-    } catch (error) {}
   }
 
   getUploadFormData(): FormData {
-    if (!this.assetData) throw new Error('Asset data not set');
     if (!this.deviceAssetId) throw new Error('Device asset id not set');
     if (!this.fileCreatedAt) throw new Error('File created at not set');
     if (!this.fileModifiedAt) throw new Error('File modified at not set');
-    if (!this.deviceId) throw new Error('Device id not set');
+
+    // TODO: doesn't xmp replace the file extension? Will need investigation
+    const sideCarPath = `${this.path}.xmp`;
+    let sidecarData: fs.ReadStream | undefined = undefined;
+    try {
+      fs.accessSync(sideCarPath, fs.constants.R_OK);
+      sidecarData = createReadStream(sideCarPath);
+    } catch (error) {}
 
     const data: any = {
-      assetData: this.assetData as any,
+      assetData: createReadStream(this.path),
       deviceAssetId: this.deviceAssetId,
-      deviceId: this.deviceId,
+      deviceId: 'CLI',
       fileCreatedAt: this.fileCreatedAt,
       fileModifiedAt: this.fileModifiedAt,
       isFavorite: String(false),
@@ -61,15 +56,11 @@ export class Asset {
       formData.append(prop, data[prop]);
     }
 
-    if (this.sidecarData) {
-      formData.append('sidecarData', this.sidecarData);
+    if (sidecarData) {
+      formData.append('sidecarData', sidecarData);
     }
 
     return formData;
-  }
-
-  private getReadStream(path: string): fs.ReadStream {
-    return fs.createReadStream(path);
   }
 
   async delete(): Promise<void> {

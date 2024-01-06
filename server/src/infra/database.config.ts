@@ -18,17 +18,11 @@ export const databaseConfig: PostgresConnectionOptions = {
   synchronize: false,
   migrations: [__dirname + '/migrations/*.{js,ts}'],
   subscribers: [__dirname + '/subscribers/*.{js,ts}'],
-  migrationsRun: true,
+  migrationsRun: false,
   connectTimeoutMS: 10000, // 10 seconds
+  parseInt8: true,
   ...urlOrParts,
 };
 
 // this export is used by TypeORM commands in package.json#scripts
 export const dataSource = new DataSource(databaseConfig);
-
-export async function enablePrefilter() {
-  if (!dataSource.isInitialized) {
-    await dataSource.initialize();
-  }
-  await dataSource.query(`SET vectors.enable_prefilter = on`);
-}

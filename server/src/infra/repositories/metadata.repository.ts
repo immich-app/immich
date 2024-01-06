@@ -1,13 +1,18 @@
 import {
+  citiesFile,
+  geodataAdmin1Path,
+  geodataAdmin2Path,
+  geodataCitites500Path,
+  geodataDatePath,
   GeoPoint,
   IMetadataRepository,
   ImmichTags,
   ISystemMetadataRepository,
   ReverseGeocodeResult,
 } from '@app/domain';
-import { DatabaseLock, RequireLock } from '@app/infra';
 import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
-import { Inject, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
 import { createReadStream, existsSync } from 'fs';
@@ -20,8 +25,6 @@ import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
 type GeoEntity = GeodataPlacesEntity | GeodataAdmin1Entity | GeodataAdmin2Entity;
 type GeoEntityClass = typeof GeodataPlacesEntity | typeof GeodataAdmin1Entity | typeof GeodataAdmin2Entity;
 
-const CITIES_FILE = 'cities500.txt';
-
 export class MetadataRepository implements IMetadataRepository {
   constructor(
     @InjectRepository(GeodataPlacesEntity) private readonly geodataPlacesRepository: Repository<GeodataPlacesEntity>,
@@ -31,12 +34,11 @@ export class MetadataRepository implements IMetadataRepository {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  private logger = new Logger(MetadataRepository.name);
+  private logger = new ImmichLogger(MetadataRepository.name);
 
-  @RequireLock(DatabaseLock.GeodataImport)
   async init(): Promise<void> {
     this.logger.log('Initializing metadata repository');
-    const geodataDate = await readFile('/usr/src/resources/geodata-date.txt', 'utf8');
+    const geodataDate = await readFile(geodataDatePath, 'utf8');
 
     const geocodingMetadata = await this.systemMetadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
 
@@ -45,7 +47,17 @@ export class MetadataRepository implements IMetadataRepository {
     }
 
     this.logger.log('Importing geodata to database from file');
+    await this.importGeodata();
 
+    await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
+      lastUpdate: geodataDate,
+      lastImportFileName: citiesFile,
+    });
+
+    this.logger.log('Geodata import completed');
+  }
+
+  private async importGeodata() {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
@@ -64,13 +76,6 @@ export class MetadataRepository implements IMetadataRepository {
     } finally {
       await queryRunner.release();
     }
-
-    await this.systemMetadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
-      lastUpdate: geodataDate,
-      lastImportFileName: CITIES_FILE,
-    });
-
-    this.logger.log('Geodata import completed');
   }
 
   private async loadGeodataToTableFromFile<T extends GeoEntity>(
@@ -114,7 +119,7 @@ export class MetadataRepository implements IMetadataRepository {
           admin2Code: lineSplit[11],
           modificationDate: lineSplit[18],
         }),
-      `/usr/src/resources/${CITIES_FILE}`,
+      geodataCitites500Path,
       GeodataPlacesEntity,
     );
   }
@@ -127,7 +132,7 @@ export class MetadataRepository implements IMetadataRepository {
           key: lineSplit[0],
           name: lineSplit[1],
         }),
-      '/usr/src/resources/admin1CodesASCII.txt',
+      geodataAdmin1Path,
       GeodataAdmin1Entity,
     );
   }
@@ -140,7 +145,7 @@ export class MetadataRepository implements IMetadataRepository {
           key: lineSplit[0],
           name: lineSplit[1],
         }),
-      '/usr/src/resources/admin2Codes.txt',
+      geodataAdmin2Path,
       GeodataAdmin2Entity,
     );
   }

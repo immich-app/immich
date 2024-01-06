@@ -99,6 +99,7 @@ FROM
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "person"."ownerId" = $1
+  AND "asset"."isArchived" = false
   AND "person"."isHidden" = false
 GROUP BY
   "person"."id"

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from '$app/stores';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
@@ -53,7 +52,7 @@
     }
   }
 
-  $: isOwner = $page?.data?.user?.id === asset.ownerId;
+  $: isOwner = $user?.id === asset.ownerId;
 
   $: {
     // Get latest description from server
@@ -87,7 +86,13 @@
     unsubscribe();
   });
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    close: void;
+    descriptionFocusIn: void;
+    descriptionFocusOut: void;
+    click: AlbumResponseDto;
+    closeViewer: void;
+  }>();
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -114,11 +119,11 @@
   };
 
   const handleFocusIn = () => {
-    dispatch('description-focus-in');
+    dispatch('descriptionFocusIn');
   };
 
   const handleFocusOut = async () => {
-    dispatch('description-focus-out');
+    dispatch('descriptionFocusOut');
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
@@ -238,8 +243,10 @@
               on:mouseleave={() => ($boundingBoxesArray = [])}
             >
               <a
-                href="/people/{person.id}?previousRoute={albumId ? `${AppRoute.ALBUMS}/${albumId}` : AppRoute.PHOTOS}"
-                on:click={() => dispatch('close-viewer')}
+                href="{AppRoute.PEOPLE}/{person.id}?previousRoute={albumId
+                  ? `${AppRoute.ALBUMS}/${albumId}`
+                  : AppRoute.PHOTOS}"
+                on:click={() => dispatch('closeViewer')}
               >
                 <div class="relative">
                   <ImageThumbnail
@@ -257,19 +264,29 @@
                 <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 {#if person.birthDate}
                   {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  <p
-                    class="font-light"
-                    title={personBirthDate.toLocaleString(
-                      {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      },
-                      { locale: $locale },
-                    )}
-                  >
-                    Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  </p>
+                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                  {@const ageInMonths = Math.floor(
+                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  )}
+                  {#if age >= 0}
+                    <p
+                      class="font-light"
+                      title={personBirthDate.toLocaleString(
+                        {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        },
+                        { locale: $locale },
+                      )}
+                    >
+                      {#if ageInMonths <= 11}
+                        Age {ageInMonths} months
+                      {:else}
+                        Age {age}
+                      {/if}
+                    </p>
+                  {/if}
                 {/if}
               </a>
             </div>
@@ -346,7 +363,7 @@
           </button>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -509,7 +526,7 @@
           </div>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}
@@ -562,7 +579,13 @@
 
 {#if latlng && $featureFlags.loaded && $featureFlags.map}
   <div class="h-[360px]">
-    <Map mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]} center={latlng} zoom={14} simplified>
+    <Map
+      mapMarkers={[{ lat: latlng.lat, lon: latlng.lng, id: asset.id }]}
+      center={latlng}
+      zoom={15}
+      simplified
+      useLocationPin
+    >
       <svelte:fragment slot="popup" let:marker>
         {@const { lat, lon } = marker}
         <div class="flex flex-col items-center gap-1">

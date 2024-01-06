@@ -18,7 +18,8 @@ describe(`${UserController.name}`, () => {
   let userRepository: Repository<UserEntity>;
 
   beforeAll(async () => {
-    [server, app] = await testApp.create();
+    app = await testApp.create();
+    server = app.getHttpServer();
     userRepository = app.select(AppModule).get(getRepositoryToken(UserEntity));
   });
 

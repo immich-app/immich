@@ -26,7 +26,7 @@ Immich optionally uses machine learning for several features. However, it can be
 
 ### How can I lower Immich's CPU usage?
 
-The initial backup is the most intensive due to the number of jobs running. The most CPU-intensive ones are transcoding and machine learning jobs (Tag Images, Encode CLIP, Recognize Faces), and to a lesser extent thumbnail generation. Here are some ways to lower their CPU usage:
+The initial backup is the most intensive due to the number of jobs running. The most CPU-intensive ones are transcoding and machine learning jobs (Tag Images, Smart Search, Recognize Faces), and to a lesser extent thumbnail generation. Here are some ways to lower their CPU usage:
 
 - Lower the job concurrency for these jobs to 1.
 - Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
@@ -56,9 +56,9 @@ Template changes will only apply to new assets. To retroactively apply the templ
 
 This is fixed by running the storage migration job.
 
-### Why is object detection not very good?
+### Why are there so many thumbnail generation jobs?
 
-The default image tagging model is relatively small. You can change this for a larger model like `google/vit-base-patch16-224` by setting the model name under Settings > Machine Learning Settings > Image Tagging. You can then re-run the Image Tagging job to get improved tags.
+Immich generates three thumbnails for each asset (blurred, small, and large), as well as a thumbnail for each recognized face.
 
 ### How can I see Immich logs?
 

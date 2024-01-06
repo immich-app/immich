@@ -17,7 +17,7 @@ import {
   userStub,
 } from '@test';
 import { when } from 'jest-when';
-import { Readable } from 'stream';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   IAlbumRepository,
@@ -342,7 +342,7 @@ describe(UserService.name, () => {
       userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
       await sut.createProfileImage(authStub.admin, file);
-      await expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
+      expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
     });
 
     it('should not delete the profile image if it has not been set', async () => {
@@ -352,6 +352,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(authStub.admin, file);
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
   });
 
@@ -361,6 +362,7 @@ describe(UserService.name, () => {
 
       await expect(sut.deleteProfileImage(authStub.admin)).rejects.toBeInstanceOf(BadRequestException);
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
     it('should delete the profile image if user has one', async () => {
@@ -368,7 +370,7 @@ describe(UserService.name, () => {
       const files = [userStub.profilePath.profileImagePath];
 
       await sut.deleteProfileImage(authStub.admin);
-      await expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
+      expect(jobMock.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
     });
   });
 
@@ -390,15 +392,17 @@ describe(UserService.name, () => {
     });
 
     it('should return the profile picture', async () => {
-      const stream = new Readable();
-
       userMock.get.mockResolvedValue(userStub.profilePath);
-      storageMock.createReadStream.mockResolvedValue({ stream });
 
-      await expect(sut.getProfileImage(userStub.profilePath.id)).resolves.toEqual({ stream });
+      await expect(sut.getProfileImage(userStub.profilePath.id)).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/path/to/profile.jpg',
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.NONE,
+        }),
+      );
 
       expect(userMock.get).toHaveBeenCalledWith(userStub.profilePath.id, {});
-      expect(storageMock.createReadStream).toHaveBeenCalledWith('/path/to/profile.jpg', 'image/jpeg');
     });
   });
 
@@ -454,6 +458,7 @@ describe(UserService.name, () => {
 
       expect(userMock.getDeletedUsers).toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).toHaveBeenCalledWith([]);
     });
 
     it('should queue user ready for deletion', async () => {
@@ -463,7 +468,7 @@ describe(UserService.name, () => {
       await sut.handleUserDeleteCheck();
 
       expect(userMock.getDeletedUsers).toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETION, data: { id: user.id } });
+      expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.USER_DELETION, data: { id: user.id } }]);
     });
   });
 

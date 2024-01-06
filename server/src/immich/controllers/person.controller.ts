@@ -3,7 +3,6 @@ import {
   AssetResponseDto,
   AuthDto,
   BulkIdResponseDto,
-  ImmichReadStream,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
@@ -13,15 +12,12 @@ import {
   PersonStatisticsResponseDto,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Post, Put, Query, StreamableFile } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Auth, Authenticated } from '../app.guard';
-import { UseValidation } from '../app.utils';
+import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
+import { Auth, Authenticated, FileResponse } from '../app.guard';
+import { UseValidation, sendFile } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
-
-function asStreamableFile({ stream, type, length }: ImmichReadStream) {
-  return new StreamableFile(stream, { type, length });
-}
 
 @ApiTags('Person')
 @Controller('person')
@@ -74,13 +70,14 @@ export class PersonController {
   }
 
   @Get(':id/thumbnail')
-  @ApiOkResponse({
-    content: {
-      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
-    },
-  })
-  getPersonThumbnail(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
-    return this.service.getThumbnail(auth, id).then(asStreamableFile);
+  @FileResponse()
+  async getPersonThumbnail(
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ) {
+    await sendFile(res, next, () => this.service.getThumbnail(auth, id));
   }
 
   @Get(':id/assets')

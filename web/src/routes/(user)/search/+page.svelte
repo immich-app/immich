@@ -36,7 +36,7 @@
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
-  $: albums = data.results.albums.items;
+  $: albums = data.results?.albums.items;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
 
@@ -76,6 +76,10 @@
       previousRoute = from.url.href;
     }
 
+    if (from?.route.id === '/(user)/people/[personId]') {
+      previousRoute = AppRoute.PHOTOS;
+    }
+
     if (from?.route.id === '/(user)/albums/[albumId]') {
       previousRoute = AppRoute.EXPLORE;
     }
@@ -94,10 +98,10 @@
   $: isMultiSelectionMode = selectedAssets.size > 0;
   $: isAllArchived = Array.from(selectedAssets).every((asset) => asset.isArchived);
   $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
-  $: searchResultAssets = data.results.assets.items;
+  $: searchResultAssets = data.results?.assets.items;
 
   const onAssetDelete = (assetId: string) => {
-    searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => a.id !== assetId);
+    searchResultAssets = searchResultAssets?.filter((a: AssetResponseDto) => a.id !== assetId);
   };
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
@@ -126,7 +130,7 @@
       </AssetSelectControlBar>
     </div>
   {:else}
-    <ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+    <ControlAppBar on:close={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
       <div class="w-full flex-1 pl-4">
         <SearchBar grayTheme={false} value={term} />
       </div>
@@ -136,13 +140,19 @@
 
 <section class="relative mb-12 bg-immich-bg pt-32 dark:bg-immich-dark-bg">
   <section class="immich-scrollbar relative overflow-y-auto">
-    {#if albums.length}
+    {#if albums && albums.length}
       <section>
         <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">ALBUMS</div>
         <div class="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]">
-          {#each albums as album (album.id)}
+          {#each albums as album, idx (album.id)}
             <a data-sveltekit-preload-data="hover" href={`albums/${album.id}`} animate:flip={{ duration: 200 }}>
-              <AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} showContextMenu={false} />
+              <AlbumCard
+                preload={idx < 20}
+                {album}
+                isSharingView={false}
+                showItemCount={false}
+                showContextMenu={false}
+              />
             </a>
           {/each}
         </div>
@@ -151,7 +161,7 @@
       </section>
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      {#if searchResultAssets.length > 0}
+      {#if searchResultAssets && searchResultAssets.length > 0}
         <div class="pl-4">
           <GalleryViewer assets={searchResultAssets} bind:selectedAssets showArchiveIcon={true} />
         </div>

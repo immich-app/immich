@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20231207@sha256:175d55f2fff48e0edeaf359c1aa0572b923db0c19304c22136a39061b8bc8179 as dev
+FROM ghcr.io/immich-app/base-server-dev:20231228@sha256:e631113b47c7e16a06ca47d3a99bdf269e831dfa4b94f6f4cc923781fa82c4e3 as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -10,6 +10,10 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
+ENV PATH="${PATH}:/usr/src/app/bin" \
+    NODE_ENV=development \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
@@ -23,17 +27,19 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 FROM node:iron-alpine3.18 as web
 
 WORKDIR /usr/src/app
-COPY web/package.json web/package-lock.json ./
+COPY web/package*.json web/svelte.config.js .
 RUN npm ci
 COPY web .
 RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20231207@sha256:006c9170f8ddafabe49d447ea2b892563951e05e4f3e5434635cdb7ab7dd8911
+FROM ghcr.io/immich-app/base-server-prod:20231228@sha256:e51e418d904124f368eca84b504414e40c5b55f9990be043d1749fdf5d1a045c
 
 WORKDIR /usr/src/app
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin

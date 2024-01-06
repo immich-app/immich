@@ -31,6 +31,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigLoggingDto logging
+    test('to test the property `logging`', () async {
+      // TODO
+    });
+
     // SystemConfigMachineLearningDto machineLearning
     test('to test the property `machineLearning`', () async {
       // TODO
@@ -58,6 +63,11 @@ void main() {
 
     // SystemConfigReverseGeocodingDto reverseGeocoding
     test('to test the property `reverseGeocoding`', () async {
+      // TODO
+    });
+
+    // SystemConfigServerDto server
+    test('to test the property `server`', () async {
       // TODO
     });
 

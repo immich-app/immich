@@ -1,6 +1,6 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
 import { Colorspace } from '@app/infra/entities';
-import { Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
@@ -11,7 +11,7 @@ const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
 
 export class MediaRepository implements IMediaRepository {
-  private logger = new Logger(MediaRepository.name);
+  private logger = new ImmichLogger(MediaRepository.name);
 
   crop(input: string | Buffer, options: CropOptions): Promise<Buffer> {
     return sharp(input, { failOn: 'none' })
@@ -26,13 +26,16 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
     await sharp(input, { failOn: 'none' })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
-      .withMetadata({ icc: options.colorspace })
-      .toFormat(options.format, { quality: options.quality, chromaSubsampling })
+      .withIccProfile(options.colorspace)
+      .toFormat(options.format, {
+        quality: options.quality,
+        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+      })
       .toFile(output);
   }
 

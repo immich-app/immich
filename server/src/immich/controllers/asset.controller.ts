@@ -31,16 +31,19 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Next,
   Param,
   Post,
   Put,
   Query,
+  Res,
   StreamableFile,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
 import { DeviceIdDto } from '../api-v1/asset/dto/device-id.dto';
-import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
-import { UseValidation, asStreamableFile } from '../app.utils';
+import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
+import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
 import { Route } from '../interceptors';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
@@ -88,7 +91,7 @@ export class AssetController {
   @SharedLinkRoute()
   @Post('download/archive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
+  @FileResponse()
   downloadArchive(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
     return this.service.downloadArchive(auth, dto).then(asStreamableFile);
   }
@@ -96,9 +99,14 @@ export class AssetController {
   @SharedLinkRoute()
   @Post('download/:id')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  downloadFile(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
-    return this.service.downloadFile(auth, id).then(asStreamableFile);
+  @FileResponse()
+  async downloadFile(
+    @Res() res: Response,
+    @Next() next: NextFunction,
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ) {
+    await sendFile(res, next, () => this.service.downloadFile(auth, id));
   }
 
   /**

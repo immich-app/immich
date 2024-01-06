@@ -1,15 +1,15 @@
 import { AuthDto, AuthService, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
+import { ImmichLogger } from '@app/infra/logger';
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  Logger,
   SetMetadata,
   applyDecorators,
   createParamDecorator,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ApiBearerAuth, ApiCookieAuth, ApiQuery, ApiSecurity } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
 import { UAParser } from 'ua-parser-js';
 
@@ -54,6 +54,11 @@ export const Auth = createParamDecorator((data, ctx: ExecutionContext): AuthDto 
   return ctx.switchToHttp().getRequest<{ user: AuthDto }>().user;
 });
 
+export const FileResponse = () =>
+  ApiOkResponse({
+    content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
+  });
+
 export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext): LoginDetails => {
   const req = ctx.switchToHttp().getRequest<Request>();
   const userAgent = UAParser(req.headers['user-agent']);
@@ -72,7 +77,7 @@ export interface AuthRequest extends Request {
 
 @Injectable()
 export class AppGuard implements CanActivate {
-  private logger = new Logger(AppGuard.name);
+  private logger = new ImmichLogger(AppGuard.name);
 
   constructor(
     private reflector: Reflector,

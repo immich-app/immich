@@ -19,7 +19,7 @@
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
-  import { AssetAction, ProjectionType } from '$lib/constants';
+  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -424,19 +424,17 @@
     addToSharedAlbum = shared;
   };
 
-  const handleAddToNewAlbum = (event: CustomEvent) => {
+  const handleAddToNewAlbum = (albumName: string) => {
     isShowAlbumPicker = false;
 
-    const { albumName }: { albumName: string } = event.detail;
     api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } }).then((response) => {
       const album = response.data;
-      goto('/albums/' + album.id);
+      goto(`${AppRoute.ALBUMS}/${album.id}`);
     });
   };
 
-  const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
+  const handleAddToAlbum = async (album: AlbumResponseDto) => {
     isShowAlbumPicker = false;
-    const album = event.detail.album;
 
     await addAssetsToAlbum(album.id, [asset.id]);
     await getAllAlbums();
@@ -575,7 +573,7 @@
         showDetailButton={shouldShowDetailButton}
         showSlideshow={!!assetStore}
         hasStackChildren={$stackAssetsStore.length > 0}
-        on:goBack={closeViewer}
+        on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
         on:delete={trashOrDelete}
@@ -676,7 +674,7 @@
         id="stack-slideshow"
         class="z-[1005] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 mb-1 overflow-x-auto horizontal-scrollbar"
       >
-        <div class="relative whitespace-nowrap transition-all">
+        <div class="relative w-full whitespace-nowrap transition-all">
           {#each $stackAssetsStore as stackedAsset (stackedAsset.id)}
             <div
               class="{stackedAsset.id == asset.id
@@ -725,9 +723,9 @@
         albumId={album?.id}
         albums={appearsInAlbums}
         on:close={() => ($isShowDetail = false)}
-        on:close-viewer={handleCloseViewer}
-        on:description-focus-in={disableKeyDownEvent}
-        on:description-focus-out={enableKeyDownEvent}
+        on:closeViewer={handleCloseViewer}
+        on:descriptionFocusIn={disableKeyDownEvent}
+        on:descriptionFocusOut={enableKeyDownEvent}
       />
     </div>
   {/if}
@@ -759,9 +757,8 @@
   {#if isShowAlbumPicker}
     <AlbumSelectionModal
       shared={addToSharedAlbum}
-      on:newAlbum={handleAddToNewAlbum}
-      on:newSharedAlbum={handleAddToNewAlbum}
-      on:album={handleAddToAlbum}
+      on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
+      on:album={({ detail }) => handleAddToAlbum(detail)}
       on:close={() => (isShowAlbumPicker = false)}
     />
   {/if}
@@ -784,11 +781,7 @@
   {/if}
 
   {#if isShowProfileImageCrop}
-    <ProfileImageCropper
-      {asset}
-      on:close={() => (isShowProfileImageCrop = false)}
-      on:close-viewer={handleCloseViewer}
-    />
+    <ProfileImageCropper {asset} on:close={() => (isShowProfileImageCrop = false)} />
   {/if}
 </section>
 

@@ -607,6 +607,154 @@ ORDER BY
 LIMIT
   11
 
+-- AssetRepository.getTimeBuckets
+SELECT
+  COUNT("asset"."id")::int AS "count",
+  (
+    date_trunc(
+      'month',
+      (asset."localDateTime" at time zone 'UTC')
+    ) at time zone 'UTC'
+  )::timestamptz AS "timeBucket"
+FROM
+  "assets" "asset"
+  LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
+  LEFT JOIN "assets" "stack" ON "stack"."stackParentId" = "asset"."id"
+  AND ("stack"."deletedAt" IS NULL)
+WHERE
+  (
+    "asset"."isVisible" = true
+    AND "asset"."fileCreatedAt" < NOW()
+  )
+  AND ("asset"."deletedAt" IS NULL)
+GROUP BY
+  (
+    date_trunc(
+      'month',
+      (asset."localDateTime" at time zone 'UTC')
+    ) at time zone 'UTC'
+  )::timestamptz
+ORDER BY
+  (
+    date_trunc(
+      'month',
+      (asset."localDateTime" at time zone 'UTC')
+    ) at time zone 'UTC'
+  )::timestamptz DESC
+
+-- AssetRepository.getTimeBucket
+SELECT
+  "asset"."id" AS "asset_id",
+  "asset"."deviceAssetId" AS "asset_deviceAssetId",
+  "asset"."ownerId" AS "asset_ownerId",
+  "asset"."libraryId" AS "asset_libraryId",
+  "asset"."deviceId" AS "asset_deviceId",
+  "asset"."type" AS "asset_type",
+  "asset"."originalPath" AS "asset_originalPath",
+  "asset"."resizePath" AS "asset_resizePath",
+  "asset"."webpPath" AS "asset_webpPath",
+  "asset"."thumbhash" AS "asset_thumbhash",
+  "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
+  "asset"."createdAt" AS "asset_createdAt",
+  "asset"."updatedAt" AS "asset_updatedAt",
+  "asset"."deletedAt" AS "asset_deletedAt",
+  "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
+  "asset"."localDateTime" AS "asset_localDateTime",
+  "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
+  "asset"."isFavorite" AS "asset_isFavorite",
+  "asset"."isArchived" AS "asset_isArchived",
+  "asset"."isExternal" AS "asset_isExternal",
+  "asset"."isReadOnly" AS "asset_isReadOnly",
+  "asset"."isOffline" AS "asset_isOffline",
+  "asset"."checksum" AS "asset_checksum",
+  "asset"."duration" AS "asset_duration",
+  "asset"."isVisible" AS "asset_isVisible",
+  "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
+  "asset"."originalFileName" AS "asset_originalFileName",
+  "asset"."sidecarPath" AS "asset_sidecarPath",
+  "asset"."stackParentId" AS "asset_stackParentId",
+  "exifInfo"."assetId" AS "exifInfo_assetId",
+  "exifInfo"."description" AS "exifInfo_description",
+  "exifInfo"."exifImageWidth" AS "exifInfo_exifImageWidth",
+  "exifInfo"."exifImageHeight" AS "exifInfo_exifImageHeight",
+  "exifInfo"."fileSizeInByte" AS "exifInfo_fileSizeInByte",
+  "exifInfo"."orientation" AS "exifInfo_orientation",
+  "exifInfo"."dateTimeOriginal" AS "exifInfo_dateTimeOriginal",
+  "exifInfo"."modifyDate" AS "exifInfo_modifyDate",
+  "exifInfo"."timeZone" AS "exifInfo_timeZone",
+  "exifInfo"."latitude" AS "exifInfo_latitude",
+  "exifInfo"."longitude" AS "exifInfo_longitude",
+  "exifInfo"."projectionType" AS "exifInfo_projectionType",
+  "exifInfo"."city" AS "exifInfo_city",
+  "exifInfo"."livePhotoCID" AS "exifInfo_livePhotoCID",
+  "exifInfo"."state" AS "exifInfo_state",
+  "exifInfo"."country" AS "exifInfo_country",
+  "exifInfo"."make" AS "exifInfo_make",
+  "exifInfo"."model" AS "exifInfo_model",
+  "exifInfo"."lensModel" AS "exifInfo_lensModel",
+  "exifInfo"."fNumber" AS "exifInfo_fNumber",
+  "exifInfo"."focalLength" AS "exifInfo_focalLength",
+  "exifInfo"."iso" AS "exifInfo_iso",
+  "exifInfo"."exposureTime" AS "exifInfo_exposureTime",
+  "exifInfo"."profileDescription" AS "exifInfo_profileDescription",
+  "exifInfo"."colorspace" AS "exifInfo_colorspace",
+  "exifInfo"."bitsPerSample" AS "exifInfo_bitsPerSample",
+  "exifInfo"."fps" AS "exifInfo_fps",
+  "stack"."id" AS "stack_id",
+  "stack"."deviceAssetId" AS "stack_deviceAssetId",
+  "stack"."ownerId" AS "stack_ownerId",
+  "stack"."libraryId" AS "stack_libraryId",
+  "stack"."deviceId" AS "stack_deviceId",
+  "stack"."type" AS "stack_type",
+  "stack"."originalPath" AS "stack_originalPath",
+  "stack"."resizePath" AS "stack_resizePath",
+  "stack"."webpPath" AS "stack_webpPath",
+  "stack"."thumbhash" AS "stack_thumbhash",
+  "stack"."encodedVideoPath" AS "stack_encodedVideoPath",
+  "stack"."createdAt" AS "stack_createdAt",
+  "stack"."updatedAt" AS "stack_updatedAt",
+  "stack"."deletedAt" AS "stack_deletedAt",
+  "stack"."fileCreatedAt" AS "stack_fileCreatedAt",
+  "stack"."localDateTime" AS "stack_localDateTime",
+  "stack"."fileModifiedAt" AS "stack_fileModifiedAt",
+  "stack"."isFavorite" AS "stack_isFavorite",
+  "stack"."isArchived" AS "stack_isArchived",
+  "stack"."isExternal" AS "stack_isExternal",
+  "stack"."isReadOnly" AS "stack_isReadOnly",
+  "stack"."isOffline" AS "stack_isOffline",
+  "stack"."checksum" AS "stack_checksum",
+  "stack"."duration" AS "stack_duration",
+  "stack"."isVisible" AS "stack_isVisible",
+  "stack"."livePhotoVideoId" AS "stack_livePhotoVideoId",
+  "stack"."originalFileName" AS "stack_originalFileName",
+  "stack"."sidecarPath" AS "stack_sidecarPath",
+  "stack"."stackParentId" AS "stack_stackParentId"
+FROM
+  "assets" "asset"
+  LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
+  LEFT JOIN "assets" "stack" ON "stack"."stackParentId" = "asset"."id"
+  AND ("stack"."deletedAt" IS NULL)
+WHERE
+  (
+    "asset"."isVisible" = true
+    AND "asset"."fileCreatedAt" < NOW()
+    AND (
+      date_trunc(
+        'month',
+        (asset."localDateTime" at time zone 'UTC')
+      ) at time zone 'UTC'
+    )::timestamptz = $1
+  )
+  AND ("asset"."deletedAt" IS NULL)
+ORDER BY
+  (
+    date_trunc(
+      'month',
+      (asset."localDateTime" at time zone 'UTC')
+    ) at time zone 'UTC'
+  )::timestamptz DESC,
+  "asset"."fileCreatedAt" DESC
+
 -- AssetRepository.getAssetIdByCity
 WITH
   "cities" AS (
@@ -618,10 +766,6 @@ WITH
       city
     HAVING
       count(city) >= $1
-    ORDER BY
-      random() ASC
-    LIMIT
-      12
   )
 SELECT DISTINCT
   ON (c.city) "asset"."id" AS "data",
@@ -653,10 +797,6 @@ WITH
       tag
     HAVING
       count(*) >= $1
-    ORDER BY
-      random() ASC
-    LIMIT
-      12
   )
 SELECT DISTINCT
   ON (unnest("si"."tags")) "asset"."id" AS "data",
@@ -676,3 +816,32 @@ WHERE
   AND ("asset"."deletedAt" IS NULL)
 LIMIT
   12
+
+-- AssetRepository.searchMetadata
+SELECT
+  asset.*,
+  e.*,
+  COALESCE("si"."tags", array[]::text []) AS "tags",
+  COALESCE("si"."objects", array[]::text []) AS "objects"
+FROM
+  "assets" "asset"
+  INNER JOIN "exif" "e" ON asset."id" = e."assetId"
+  LEFT JOIN "smart_info" "si" ON si."assetId" = asset."id"
+WHERE
+  (
+    "asset"."isVisible" = true
+    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."ownerId" IN ($1)
+    AND "asset"."isArchived" = $2
+    AND (
+      e."exifTextSearchableColumn" || COALESCE(
+        si."smartInfoTextSearchableColumn",
+        to_tsvector('english', '')
+      )
+    ) @@ PLAINTO_TSQUERY('english', $3)
+  )
+  AND ("asset"."deletedAt" IS NULL)
+ORDER BY
+  "asset"."fileCreatedAt" DESC
+LIMIT
+  250

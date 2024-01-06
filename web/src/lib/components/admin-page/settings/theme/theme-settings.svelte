@@ -9,12 +9,21 @@
   import { fade } from 'svelte/transition';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingTextarea from '../setting-textarea.svelte';
+  import type { ResetOptions } from '$lib/utils/dipatch';
 
   export let themeConfig: SystemConfigThemeDto; // this is the config that is being edited
   export let disabled = false;
 
   let savedConfig: SystemConfigThemeDto;
   let defaultConfig: SystemConfigThemeDto;
+
+  const handleReset = (detail: ResetOptions) => {
+    if (detail.default) {
+      resetToDefault();
+    } else {
+      reset();
+    }
+  };
 
   async function getConfigs() {
     [savedConfig, defaultConfig] = await Promise.all([
@@ -84,9 +93,8 @@
             />
 
             <SettingButtonsRow
-              on:reset={reset}
+              on:reset={({ detail }) => handleReset(detail)}
               on:save={saveSetting}
-              on:reset-to-default={resetToDefault}
               showResetToDefault={!isEqual(savedConfig, defaultConfig)}
               {disabled}
             />

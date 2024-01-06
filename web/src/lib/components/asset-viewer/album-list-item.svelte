@@ -2,7 +2,9 @@
   import { AlbumResponseDto, ThumbnailFormat, api } from '@api';
   import { createEventDispatcher } from 'svelte';
 
-  const dispatcher = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    album: void;
+  }>();
 
   export let album: AlbumResponseDto;
   export let variant: 'simple' | 'full' = 'full';
@@ -24,7 +26,7 @@
 </script>
 
 <button
-  on:click={() => dispatcher('album')}
+  on:click={() => dispatch('album')}
   class="flex w-full gap-4 px-6 py-2 text-left transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
 >
   <div class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">

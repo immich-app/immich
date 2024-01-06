@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.90.2+114
+version: 1.91.4+116
 isar_version: &isar_version 3.1.0+1
 
 environment:
@@ -54,11 +54,9 @@ dependencies:
   permission_handler: ^10.2.0
   device_info_plus: ^8.1.0
   connectivity_plus: ^4.0.1
-  crypto: ^3.0.3 # TODO remove once native crypto is used on iOS
   wakelock_plus: ^1.1.1
   flutter_local_notifications: ^15.1.0+1
   timezone: ^0.9.2
-  mocktail: ^1.0.1
 
   openapi:
     path: openapi
@@ -90,6 +88,7 @@ dev_dependencies:
   custom_lint: ^0.5.6
   riverpod_lint: ^2.1.0
   riverpod_generator: ^2.3.3
+  mocktail: ^1.0.1
 
 flutter:
   uses-material-design: true

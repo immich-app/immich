@@ -1466,6 +1466,15 @@
         "operationId": "serveFile",
         "parameters": [
           {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "isThumb",
             "required": false,
             "in": "query",
@@ -1481,15 +1490,6 @@
             "schema": {
               "title": "Is request made from web",
               "type": "boolean"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
             }
           },
           {
@@ -1926,13 +1926,7 @@
         "responses": {
           "200": {
             "content": {
-              "image/jpeg": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              },
-              "image/webp": {
+              "application/octet-stream": {
                 "schema": {
                   "format": "binary",
                   "type": "string"
@@ -4499,7 +4493,7 @@
         "responses": {
           "200": {
             "content": {
-              "image/jpeg": {
+              "application/octet-stream": {
                 "schema": {
                   "format": "binary",
                   "type": "string"
@@ -4712,6 +4706,31 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/admin-onboarding": {
+      "post": {
+        "operationId": "setAdminOnboarding",
+        "parameters": [],
+        "responses": {
+          "204": {
             "description": ""
           }
         },
@@ -6080,9 +6099,10 @@
         "responses": {
           "200": {
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "format": "binary",
+                  "type": "string"
                 }
               }
             },
@@ -6193,7 +6213,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.90.2",
+    "version": "1.91.4",
     "contact": {}
   },
   "tags": [],
@@ -6475,9 +6495,6 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "clipEncoding": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
           "library": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6487,9 +6504,6 @@
           "migration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "objectTagging": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
           "recognizeFaces": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6497,6 +6511,9 @@
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "sidecar": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "smartSearch": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "storageTemplateMigration": {
@@ -6513,8 +6530,7 @@
           "thumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
-          "objectTagging",
-          "clipEncoding",
+          "smartSearch",
           "storageTemplateMigration",
           "migration",
           "backgroundTask",
@@ -7206,28 +7222,6 @@
         ],
         "type": "object"
       },
-      "ClassificationConfig": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "minScore": {
-            "type": "integer"
-          },
-          "modelName": {
-            "type": "string"
-          },
-          "modelType": {
-            "$ref": "#/components/schemas/ModelType"
-          }
-        },
-        "required": [
-          "minScore",
-          "enabled",
-          "modelName"
-        ],
-        "type": "object"
-      },
       "Colorspace": {
         "enum": [
           "srgb",
@@ -7824,9 +7818,8 @@
           "thumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
-          "objectTagging",
           "recognizeFaces",
-          "clipEncoding",
+          "smartSearch",
           "backgroundTask",
           "storageTemplateMigration",
           "migration",
@@ -7951,6 +7944,17 @@
         "enum": [
           "UPLOAD",
           "EXTERNAL"
+        ],
+        "type": "string"
+      },
+      "LogLevel": {
+        "enum": [
+          "verbose",
+          "debug",
+          "log",
+          "warn",
+          "error",
+          "fatal"
         ],
         "type": "string"
       },
@@ -8084,7 +8088,6 @@
       },
       "ModelType": {
         "enum": [
-          "image-classification",
           "facial-recognition",
           "clip"
         ],
@@ -8615,7 +8618,13 @@
       },
       "ServerConfigDto": {
         "properties": {
+          "externalDomain": {
+            "type": "string"
+          },
           "isInitialized": {
+            "type": "boolean"
+          },
+          "isOnboarded": {
             "type": "boolean"
           },
           "loginPageMessage": {
@@ -8632,7 +8641,9 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "isInitialized"
+          "isInitialized",
+          "isOnboarded",
+          "externalDomain"
         ],
         "type": "object"
       },
@@ -8668,9 +8679,6 @@
           "sidecar": {
             "type": "boolean"
           },
-          "tagImage": {
-            "type": "boolean"
-          },
           "trash": {
             "type": "boolean"
           }
@@ -8686,8 +8694,7 @@
           "oauthAutoLaunch",
           "passwordLogin",
           "sidecar",
-          "search",
-          "tagImage"
+          "search"
         ],
         "type": "object"
       },
@@ -9044,6 +9051,9 @@
           "library": {
             "$ref": "#/components/schemas/SystemConfigLibraryDto"
           },
+          "logging": {
+            "$ref": "#/components/schemas/SystemConfigLoggingDto"
+          },
           "machineLearning": {
             "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
@@ -9062,6 +9072,9 @@
           "reverseGeocoding": {
             "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
           },
+          "server": {
+            "$ref": "#/components/schemas/SystemConfigServerDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -9077,6 +9090,7 @@
         },
         "required": [
           "ffmpeg",
+          "logging",
           "machineLearning",
           "map",
           "newVersionCheck",
@@ -9088,7 +9102,8 @@
           "thumbnail",
           "trash",
           "theme",
-          "library"
+          "library",
+          "server"
         ],
         "type": "object"
       },
@@ -9172,9 +9187,6 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "clipEncoding": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9182,9 +9194,6 @@
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "migration": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "objectTagging": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "recognizeFaces": {
@@ -9196,7 +9205,7 @@
           "sidecar": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "storageTemplateMigration": {
+          "smartSearch": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "thumbnailGeneration": {
@@ -9210,9 +9219,7 @@
           "thumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
-          "objectTagging",
-          "clipEncoding",
-          "storageTemplateMigration",
+          "smartSearch",
           "migration",
           "backgroundTask",
           "search",
@@ -9248,11 +9255,23 @@
         ],
         "type": "object"
       },
+      "SystemConfigLoggingDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "level": {
+            "$ref": "#/components/schemas/LogLevel"
+          }
+        },
+        "required": [
+          "level",
+          "enabled"
+        ],
+        "type": "object"
+      },
       "SystemConfigMachineLearningDto": {
         "properties": {
-          "classification": {
-            "$ref": "#/components/schemas/ClassificationConfig"
-          },
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
@@ -9269,7 +9288,6 @@
         "required": [
           "enabled",
           "url",
-          "classification",
           "clip",
           "facialRecognition"
         ],
@@ -9378,13 +9396,36 @@
         ],
         "type": "object"
       },
+      "SystemConfigServerDto": {
+        "properties": {
+          "externalDomain": {
+            "type": "string"
+          },
+          "loginPageMessage": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "externalDomain",
+          "loginPageMessage"
+        ],
+        "type": "object"
+      },
       "SystemConfigStorageTemplateDto": {
         "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "hashVerificationEnabled": {
+            "type": "boolean"
+          },
           "template": {
             "type": "string"
           }
         },
         "required": [
+          "enabled",
+          "hashVerificationEnabled",
           "template"
         ],
         "type": "object"

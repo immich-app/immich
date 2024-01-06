@@ -18,7 +18,8 @@
 
     <LoginForm
       on:success={() => goto(AppRoute.PHOTOS, { invalidateAll: true })}
-      on:first-login={() => goto(AppRoute.AUTH_CHANGE_PASSWORD)}
+      on:firstLogin={() => goto(AppRoute.AUTH_CHANGE_PASSWORD)}
+      on:onboarding={() => goto(AppRoute.AUTH_ONBOARDING)}
     />
   </FullscreenContainer>
 {/if}

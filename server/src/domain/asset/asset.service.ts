@@ -1,5 +1,6 @@
 import { AssetEntity, LibraryType } from '@app/infra/entities';
-import { BadRequestException, Inject, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { BadRequestException, Inject } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { extname } from 'path';
@@ -7,10 +8,10 @@ import sanitize from 'sanitize-filename';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
-import { HumanReadableSize, usePagination } from '../domain.util';
+import { CacheControl, HumanReadableSize, ImmichFileResponse, usePagination } from '../domain.util';
 import { IAssetDeletionJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 import {
-  CommunicationEvent,
+  ClientEvent,
   IAccessRepository,
   IAssetRepository,
   ICommunicationRepository,
@@ -20,6 +21,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   ImmichReadStream,
+  JobItem,
   TimeBucketOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
@@ -69,13 +71,14 @@ export interface UploadRequest {
 }
 
 export interface UploadFile {
+  uuid: string;
   checksum: Buffer;
   originalPath: string;
   originalName: string;
 }
 
 export class AssetService {
-  private logger = new Logger(AssetService.name);
+  private logger = new ImmichLogger(AssetService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
 
@@ -168,13 +171,13 @@ export class AssetService {
       [UploadFieldName.PROFILE_DATA]: originalExt,
     };
 
-    return sanitize(`${this.cryptoRepository.randomUUID()}${lookup[fieldName]}`);
+    return sanitize(`${file.uuid}${lookup[fieldName]}`);
   }
 
-  getUploadFolder({ auth, fieldName }: UploadRequest): string {
+  getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
     auth = this.access.requireUploadAccess(auth);
 
-    let folder = StorageCore.getFolderLocation(StorageFolder.UPLOAD, auth.user.id);
+    let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
     if (fieldName === UploadFieldName.PROFILE_DATA) {
       folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
     }
@@ -274,7 +277,7 @@ export class AssetService {
 
     return { ...options, userIds };
   }
-  async downloadFile(auth: AuthDto, id: string): Promise<ImmichReadStream> {
+  async downloadFile(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, id);
 
     const [asset] = await this.assetRepository.getByIds([id]);
@@ -286,7 +289,11 @@ export class AssetService {
       throw new BadRequestException('Asset is offline');
     }
 
-    return this.storageRepository.createReadStream(asset.originalPath, mimeTypes.lookup(asset.originalPath));
+    return new ImmichFileResponse({
+      path: asset.originalPath,
+      contentType: mimeTypes.lookup(asset.originalPath),
+      cacheControl: CacheControl.NONE,
+    });
   }
 
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
@@ -430,7 +437,7 @@ export class AssetService {
     }
 
     await this.assetRepository.updateAll(ids, options);
-    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, auth.user.id, ids);
+    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, ids);
   }
 
   async handleAssetDeletionCheck() {
@@ -444,9 +451,9 @@ export class AssetService {
     );
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+      );
     }
 
     return true;
@@ -474,7 +481,7 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
-    this.communicationRepository.send(CommunicationEvent.ASSET_DELETE, asset.ownerId, id);
+    this.communicationRepository.send(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
     if (asset.livePhotoVideoId) {
@@ -499,12 +506,10 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
 
     if (force) {
-      for (const id of ids) {
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id } });
-      }
+      await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.ASSET_DELETION, data: { id } })));
     } else {
       await this.assetRepository.softDeleteAll(ids);
-      this.communicationRepository.send(CommunicationEvent.ASSET_TRASH, auth.user.id, ids);
+      this.communicationRepository.send(ClientEvent.ASSET_TRASH, auth.user.id, ids);
     }
   }
 
@@ -517,16 +522,16 @@ export class AssetService {
       for await (const assets of assetPagination) {
         const ids = assets.map((a) => a.id);
         await this.assetRepository.restoreAll(ids);
-        this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, auth.user.id, ids);
+        this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
       }
       return;
     }
 
     if (action == TrashAction.EMPTY_ALL) {
       for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
-        }
+        await this.jobRepository.queueAll(
+          assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+        );
       }
       return;
     }
@@ -536,7 +541,7 @@ export class AssetService {
     const { ids } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_RESTORE, ids);
     await this.assetRepository.restoreAll(ids);
-    this.communicationRepository.send(CommunicationEvent.ASSET_RESTORE, auth.user.id, ids);
+    this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
   }
 
   async updateStackParent(auth: AuthDto, dto: UpdateStackParentDto): Promise<void> {
@@ -552,7 +557,7 @@ export class AssetService {
       childIds.push(...(oldParent.stack?.map((a) => a.id) ?? []));
     }
 
-    this.communicationRepository.send(CommunicationEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId]);
+    this.communicationRepository.send(ClientEvent.ASSET_UPDATE, auth.user.id, [...childIds, newParentId]);
     await this.assetRepository.updateAll(childIds, { stackParentId: newParentId });
     // Remove ParentId of new parent if this was previously a child of some other asset
     return this.assetRepository.updateAll([newParentId], { stackParentId: null });
@@ -561,21 +566,25 @@ export class AssetService {
   async run(auth: AuthDto, dto: AssetJobsDto) {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, dto.assetIds);
 
+    const jobs: JobItem[] = [];
+
     for (const id of dto.assetIds) {
       switch (dto.name) {
         case AssetJobName.REFRESH_METADATA:
-          await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          jobs.push({ name: JobName.METADATA_EXTRACTION, data: { id } });
           break;
 
         case AssetJobName.REGENERATE_THUMBNAIL:
-          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
           break;
 
         case AssetJobName.TRANSCODE_VIDEO:
-          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id } });
           break;
       }
     }
+
+    await this.jobRepository.queueAll(jobs);
   }
 
   private async updateMetadata(dto: ISidecarWriteJob) {

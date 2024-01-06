@@ -1,6 +1,7 @@
 import { api } from '@api';
 import { redirect } from '@sveltejs/kit';
 import { AppRoute } from '../constants';
+import { getSavedUser, setUser } from '$lib/stores/user.store';
 
 export interface AuthOptions {
   admin?: true;
@@ -19,7 +20,9 @@ export const getAuthUser = async () => {
 export const authenticate = async (options?: AuthOptions) => {
   options = options || {};
 
-  const user = await getAuthUser();
+  const savedUser = getSavedUser();
+  const user = savedUser || (await getAuthUser());
+
   if (!user) {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }
@@ -28,7 +31,16 @@ export const authenticate = async (options?: AuthOptions) => {
     throw redirect(302, AppRoute.PHOTOS);
   }
 
-  return user;
+  if (!savedUser) {
+    setUser(user);
+  }
 };
 
-export const isLoggedIn = async () => getAuthUser().then((user) => !!user);
+export const isLoggedIn = async () => {
+  const savedUser = getSavedUser();
+  const user = savedUser || (await getAuthUser());
+  if (!savedUser) {
+    setUser(user);
+  }
+  return user;
+};

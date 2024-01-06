@@ -1,11 +1,13 @@
 import { AssetEntity } from '@app/infra/entities';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ImmichLogger } from '@app/infra/logger';
+import { Inject, Injectable } from '@nestjs/common';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { PersonResponseDto } from '../person';
 import {
   IAssetRepository,
   IMachineLearningRepository,
+  IPartnerRepository,
   IPersonRepository,
   ISmartInfoRepository,
   ISystemConfigRepository,
@@ -18,7 +20,7 @@ import { SearchResponseDto } from './response-dto';
 
 @Injectable()
 export class SearchService {
-  private logger = new Logger(SearchService.name);
+  private logger = new ImmichLogger(SearchService.name);
   private configCore: SystemConfigCore;
 
   constructor(
@@ -27,6 +29,7 @@ export class SearchService {
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
   }
@@ -63,6 +66,7 @@ export class SearchService {
       throw new Error('CLIP is not enabled');
     }
     const strategy = dto.clip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
+    const userIds = await this.getUserIdsToSearch(auth);
 
     let assets: AssetEntity[] = [];
 
@@ -73,10 +77,10 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        assets = await this.smartInfoRepository.searchCLIP({ ownerId: auth.user.id, embedding, numResults: 100 });
+        assets = await this.smartInfoRepository.searchCLIP({ userIds: userIds, embedding, numResults: 100 });
         break;
       case SearchStrategy.TEXT:
-        assets = await this.assetRepository.searchMetadata(query, auth.user.id, { numResults: 250 });
+        assets = await this.assetRepository.searchMetadata(query, userIds, { numResults: 250 });
       default:
         break;
     }
@@ -95,5 +99,15 @@ export class SearchService {
         facets: [],
       },
     };
+  }
+
+  private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {
+    const userIds: string[] = [auth.user.id];
+    const partners = await this.partnerRepository.getAll(auth.user.id);
+    const partnersIds = partners
+      .filter((partner) => partner.sharedBy && partner.inTimeline)
+      .map((partner) => partner.sharedById);
+    userIds.push(...partnersIds);
+    return userIds;
   }
 }
