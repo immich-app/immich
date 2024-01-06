@@ -71,7 +71,7 @@ export class DatabaseService {
 
   private async assertPostgresql() {
     const { major } = await this.databaseRepository.getPostgresVersion();
-    if (major < 14) {
+    if (major < this.minPostgresVersion) {
       throw new Error(`
         The PostgreSQL version is ${major}, which is older than the minimum supported version ${this.minPostgresVersion}.
         Please upgrade to this version or later.`);
