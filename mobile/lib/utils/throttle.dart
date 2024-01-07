@@ -6,8 +6,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 /// Also make sures to call the last Action after the elapsed interval
 class Throttler {
   final Duration interval;
-  FutureOr<void> Function()? _lastAction;
-  Timer? _timer;
   DateTime? _lastActionTime;
 
   Throttler({required this.interval});
@@ -17,23 +15,10 @@ class Throttler {
         (DateTime.now().difference(_lastActionTime!) > interval)) {
       action();
       _lastActionTime = DateTime.now();
-      _timer?.cancel();
-    } else {
-      // Schedule a timer to be executed after the difference
-      _timer?.cancel();
-      _timer = Timer(DateTime.now().difference(_lastActionTime!), _callAndRest);
     }
   }
 
-  void _callAndRest() {
-    _lastAction?.call();
-    _timer = null;
-  }
-
   void dispose() {
-    _timer?.cancel();
-    _timer = null;
-    _lastAction = null;
     _lastActionTime = null;
   }
 }

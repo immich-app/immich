@@ -30,10 +30,7 @@ class MapSettingsSheet extends HookConsumerWidget {
                     .read(mapStateNotifierProvider.notifier)
                     .switchTheme(mode),
               ),
-              const Divider(
-                height: 30,
-                thickness: 2,
-              ),
+              const Divider(height: 30, thickness: 2),
               MapSettingsListTile(
                 title: "map_settings_only_show_favorites",
                 selected: mapState.showFavoriteOnly,

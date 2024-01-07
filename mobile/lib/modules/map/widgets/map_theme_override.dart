@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -19,24 +18,27 @@ class MapThemeOveride extends StatefulHookConsumerWidget {
 
 class _MapThemeOverideState extends ConsumerState<MapThemeOveride>
     with WidgetsBindingObserver {
-  late ThemeMode theme;
-  bool isDarkTheme = false;
+  late ThemeMode _theme;
+  bool _isDarkTheme = false;
+
+  bool get _isSystemDark =>
+      WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+      Brightness.dark;
 
   bool checkDarkTheme() {
-    return theme == ThemeMode.dark ||
-        theme == ThemeMode.system &&
-            PlatformDispatcher.instance.platformBrightness == Brightness.dark;
+    return _theme == ThemeMode.dark ||
+        _theme == ThemeMode.system && _isSystemDark;
   }
 
   @override
   void initState() {
     super.initState();
-    theme = widget.themeMode ??
+    _theme = widget.themeMode ??
         ref.read(mapStateNotifierProvider.select((v) => v.themeMode));
     setState(() {
-      isDarkTheme = checkDarkTheme();
+      _isDarkTheme = checkDarkTheme();
     });
-    if (theme == ThemeMode.system) {
+    if (_theme == ThemeMode.system) {
       WidgetsBinding.instance.addObserver(this);
     }
   }
@@ -44,7 +46,7 @@ class _MapThemeOverideState extends ConsumerState<MapThemeOveride>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (theme != ThemeMode.system) {
+    if (_theme != ThemeMode.system) {
       WidgetsBinding.instance.removeObserver(this);
     }
   }
@@ -59,36 +61,33 @@ class _MapThemeOverideState extends ConsumerState<MapThemeOveride>
   void didChangePlatformBrightness() {
     super.didChangePlatformBrightness();
 
-    if (theme == ThemeMode.system) {
-      setState(
-        () => isDarkTheme =
-            PlatformDispatcher.instance.platformBrightness == Brightness.dark,
-      );
+    if (_theme == ThemeMode.system) {
+      setState(() => _isDarkTheme = _isSystemDark);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    theme = widget.themeMode ??
+    _theme = widget.themeMode ??
         ref.watch(mapStateNotifierProvider.select((v) => v.themeMode));
 
-    useValueChanged<ThemeMode, void>(theme, (_, __) {
-      if (theme == ThemeMode.system) {
+    useValueChanged<ThemeMode, void>(_theme, (_, __) {
+      if (_theme == ThemeMode.system) {
         WidgetsBinding.instance.addObserver(this);
       } else {
         WidgetsBinding.instance.removeObserver(this);
       }
       setState(() {
-        isDarkTheme = checkDarkTheme();
+        _isDarkTheme = checkDarkTheme();
       });
     });
 
     return Theme(
-      data: isDarkTheme ? immichDarkTheme : immichLightTheme,
+      data: _isDarkTheme ? immichDarkTheme : immichLightTheme,
       child: widget.mapBuilder.call(
         ref.watch(
           mapStateNotifierProvider.select(
-            (v) => isDarkTheme ? v.darkStyleFetched : v.lightStyleFetched,
+            (v) => _isDarkTheme ? v.darkStyleFetched : v.lightStyleFetched,
           ),
         ),
       ),
