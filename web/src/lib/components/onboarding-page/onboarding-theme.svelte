@@ -6,19 +6,12 @@
   import { createEventDispatcher } from 'svelte';
   import { colorTheme } from '$lib/stores/preferences.store';
   import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
+  import { Theme } from '$lib/constants';
 
   const dispatch = createEventDispatcher<{
     done: void;
     previous: void;
   }>();
-
-  const toggleLightTheme = () => {
-    $colorTheme = 'light';
-  };
-
-  const toggleDarkTheme = () => {
-    $colorTheme = 'dark';
-  };
 </script>
 
 <OnboardingCard>
@@ -31,7 +24,7 @@
   <div class="flex gap-4 mb-6">
     <button
       class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl border-[3px] border-immich-dark-primary/80 border-immich-primary dark:border dark:border-transparent"
-      on:click={toggleLightTheme}
+      on:click={() => ($colorTheme.value = Theme.LIGHT)}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
@@ -42,7 +35,7 @@
     </button>
     <button
       class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl dark:border-[3px] dark:border-immich-dark-primary/80 dark:border-immich-dark-primary border border-transparent"
-      on:click={toggleDarkTheme}
+      on:click={() => ($colorTheme.value = Theme.DARK)}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
