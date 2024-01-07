@@ -2,6 +2,7 @@
   import { fade } from 'svelte/transition';
   import { colorTheme } from '../../stores/preferences.store';
   import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
+  import { thumbnailsZoom } from '$lib/stores/user.store';
 
   export const handleToggle = () => {
     $colorTheme.system = !$colorTheme.system;
@@ -18,6 +19,11 @@
           bind:checked={$colorTheme.system}
           on:toggle={handleToggle}
         />
+      </div>
+      <div class="ml-4">
+        <label for="thumbnails-zoom">Thumbnails zoom</label>
+        <input type="range" id="thumbnails-zoom" min="0.5" max="2" step="0.1" bind:value={$thumbnailsZoom} />
+        <label for="thumbnails-zoom">{$thumbnailsZoom}</label>
       </div>
     </div>
   </div>
