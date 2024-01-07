@@ -1,8 +1,6 @@
+import { DatabaseExtension, DatabaseService, IDatabaseRepository, Version } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import { newDatabaseRepositoryMock } from '@test';
-import { Version } from '../domain.constant';
-import { DatabaseExtension, IDatabaseRepository } from '../repositories';
-import { DatabaseService } from './database.service';
 
 describe(DatabaseService.name, () => {
   let sut: DatabaseService;
@@ -28,11 +26,11 @@ describe(DatabaseService.name, () => {
   });
 
   describe('init', () => {
-    it('should return if minimum supported PostgreSQL and vectors version are installed', async () => {
+    it('should resolve successfully if minimum supported PostgreSQL and vectors version are installed', async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(14, 0, 0));
       databaseMock.getExtensionVersion.mockResolvedValueOnce(new Version(0, 1, 1));
 
-      await sut.init();
+      await expect(sut.init()).resolves.toBeUndefined();
 
       expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(2);
       expect(databaseMock.createExtension).toHaveBeenCalledWith(DatabaseExtension.VECTORS);
@@ -42,18 +40,18 @@ describe(DatabaseService.name, () => {
       expect(fatalLog).not.toHaveBeenCalled();
     });
 
-    it('should thrown an error if PostgreSQL version is below minimum supported version', async () => {
+    it('should throw an error if PostgreSQL version is below minimum supported version', async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(13, 0, 0));
 
-      await expect(sut.init()).rejects.toThrow(/PostgreSQL/s);
+      await expect(sut.init()).rejects.toThrow(/PostgreSQL version is 13/s);
 
       expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
     });
 
-    it('should return if minimum supported vectors version is installed', async () => {
+    it('should resolve successfully if minimum supported vectors version is installed', async () => {
       databaseMock.getExtensionVersion.mockResolvedValueOnce(new Version(0, 1, 1));
 
-      await sut.init();
+      await expect(sut.init()).resolves.toBeUndefined();
 
       expect(databaseMock.createExtension).toHaveBeenCalledWith(DatabaseExtension.VECTORS);
       expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
@@ -62,10 +60,10 @@ describe(DatabaseService.name, () => {
       expect(fatalLog).not.toHaveBeenCalled();
     });
 
-    it('should return if maximum supported vectors version is installed', async () => {
+    it('should resolve successfully if maximum supported vectors version is installed', async () => {
       databaseMock.getExtensionVersion.mockResolvedValueOnce(new Version(0, 1, 11));
 
-      await sut.init();
+      await expect(sut.init()).resolves.toBeUndefined();
 
       expect(databaseMock.createExtension).toHaveBeenCalledWith(DatabaseExtension.VECTORS);
       expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
@@ -127,14 +125,15 @@ describe(DatabaseService.name, () => {
       expect(databaseMock.runMigrations).not.toHaveBeenCalled();
     });
 
-    for (const major of [14, 15, 16]) {
-      it(`should suggest image with postgres ${major} if database is ${major}`, async () => {
+    it.each([{ major: 14 }, { major: 15 }, { major: 16 }])(
+      `should suggest image with postgres $major if database is $major`,
+      async ({ major }) => {
         databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));
         databaseMock.getPostgresVersion.mockResolvedValue(new Version(major, 0, 0));
 
         await expect(sut.init()).rejects.toThrow(new RegExp(`tensorchord\/pgvecto-rs:pg${major}-v0\\.1\\.11`, 's'));
-      });
-    }
+      },
+    );
 
     it('should not suggest image if postgres version is not in 14, 15 or 16', async () => {
       databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(17, 0, 0));
@@ -143,7 +142,7 @@ describe(DatabaseService.name, () => {
       await expect(sut.init()).rejects.toThrow(/^(?:(?!tensorchord\/pgvecto-rs).)*$/s);
     });
 
-    it('should set the image to the maximum supported version', async () => {
+    it('should reject and suggest the maximum supported version when unsupported pgvecto.rs version is in use', async () => {
       databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));
 
       await expect(sut.init()).rejects.toThrow(/('tensorchord\/pgvecto-rs:pg14-v0\.1\.11')/s);
