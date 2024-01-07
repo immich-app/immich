@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,9 @@ import 'package:immich_mobile/modules/map/widgets/map_asset_grid.dart';
 import 'package:immich_mobile/modules/map/widgets/map_bottom_sheet.dart';
 import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
 import 'package:immich_mobile/modules/map/widgets/positioned_asset_marker_icon.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/debounce.dart';
@@ -160,6 +163,27 @@ class MapPage extends HookConsumerWidget {
       });
     }
 
+    Future<void> onMarkerTapped() async {
+      final assetId = selectedMarker.value?.marker.assetRemoteId;
+      if (assetId == null) {
+        return;
+      }
+
+      final asset = await ref.read(dbProvider).assets.getByRemoteId(assetId);
+      if (asset == null) {
+        return;
+      }
+
+      context.pushRoute(
+        GalleryViewerRoute(
+          initialIndex: 0,
+          loadAsset: (index) => asset,
+          totalAssets: 1,
+          heroOffset: 0,
+        ),
+      );
+    }
+
     /// BOTTOM SHEET CALLBACKS
 
     Future<void> onMapMoved() async {
@@ -234,8 +258,9 @@ class MapPage extends HookConsumerWidget {
                     selectedMarker: selectedMarker,
                     onMapCreated: onMapCreated,
                     onMapMoved: onMapMoved,
-                    onMarkerClicked: onMarkerClicked,
+                    onMapClicked: onMarkerClicked,
                     onStyleLoaded: reloadLayers,
+                    onMarkerTapped: onMarkerTapped,
                   ),
                   // Should be a part of the body and not scaffold::bottomsheet for the
                   // location button to be hit testable
@@ -264,8 +289,9 @@ class MapPage extends HookConsumerWidget {
                           selectedMarker: selectedMarker,
                           onMapCreated: onMapCreated,
                           onMapMoved: onMapMoved,
-                          onMarkerClicked: onMarkerClicked,
+                          onMapClicked: onMarkerClicked,
                           onStyleLoaded: reloadLayers,
+                          onMarkerTapped: onMarkerTapped,
                         ),
                         Positioned(
                           right: 0,
@@ -320,17 +346,19 @@ class _MapWithMarker extends StatelessWidget {
   final AsyncValue<String> style;
   final MapCreatedCallback onMapCreated;
   final OnCameraIdleCallback onMapMoved;
-  final OnMapClickCallback onMarkerClicked;
+  final OnMapClickCallback onMapClicked;
   final OnStyleLoadedCallback onStyleLoaded;
+  final Function()? onMarkerTapped;
   final ValueNotifier<_AssetMarkerMeta?> selectedMarker;
 
   const _MapWithMarker({
     required this.style,
     required this.onMapCreated,
     required this.onMapMoved,
-    required this.onMarkerClicked,
+    required this.onMapClicked,
     required this.onStyleLoaded,
     required this.selectedMarker,
+    this.onMarkerTapped,
   });
 
   @override
@@ -351,7 +379,7 @@ class _MapWithMarker extends StatelessWidget {
                 trackCameraPosition: true,
                 onMapCreated: onMapCreated,
                 onCameraIdle: onMapMoved,
-                onMapClick: onMarkerClicked,
+                onMapClick: onMapClicked,
                 onStyleLoadedCallback: onStyleLoaded,
                 tiltGesturesEnabled: false,
                 dragEnabled: false,
@@ -366,6 +394,7 @@ class _MapWithMarker extends StatelessWidget {
                       point: value.point,
                       assetRemoteId: value.marker.assetRemoteId,
                       durationInMilliseconds: value.shouldAnimate ? 100 : 0,
+                      onTap: onMarkerTapped,
                     )
                   : const SizedBox.shrink(),
             ),

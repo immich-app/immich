@@ -13,7 +13,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
   final double size;
   final int durationInMilliseconds;
 
-  final Function(String)? onTap;
+  final Function()? onTap;
 
   const PositionedAssetMarkerIcon({
     required this.point,
@@ -32,7 +32,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
       top: point.y / ratio - size,
       duration: Duration(milliseconds: durationInMilliseconds),
       child: GestureDetector(
-        onTap: () => onTap?.call(assetRemoteId),
+        onTap: () => onTap?.call(),
         child: SizedBox.square(
           dimension: size,
           child: _AssetMarkerIcon(
