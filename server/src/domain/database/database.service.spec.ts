@@ -28,6 +28,28 @@ describe(DatabaseService.name, () => {
   });
 
   describe('init', () => {
+    it('should return if minimum supported PostgreSQL and vectors version are installed', async () => {
+      databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(14, 0, 0));
+      databaseMock.getExtensionVersion.mockResolvedValueOnce(new Version(0, 1, 1));
+
+      await sut.init();
+
+      expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(2);
+      expect(databaseMock.createExtension).toHaveBeenCalledWith(DatabaseExtension.VECTORS);
+      expect(databaseMock.createExtension).toHaveBeenCalledTimes(1);
+      expect(databaseMock.getExtensionVersion).toHaveBeenCalledTimes(1);
+      expect(databaseMock.runMigrations).toHaveBeenCalledTimes(1);
+      expect(fatalLog).not.toHaveBeenCalled();
+    });
+
+    it('should thrown an error if PostgreSQL version is below minimum supported version', async () => {
+      databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(13, 0, 0));
+
+      await expect(sut.init()).rejects.toThrow(/PostgreSQL/s);
+
+      expect(databaseMock.getPostgresVersion).toHaveBeenCalledTimes(1);
+    });
+
     it('should return if minimum supported vectors version is installed', async () => {
       databaseMock.getExtensionVersion.mockResolvedValueOnce(new Version(0, 1, 1));
 
@@ -108,17 +130,16 @@ describe(DatabaseService.name, () => {
     for (const major of [14, 15, 16]) {
       it(`should suggest image with postgres ${major} if database is ${major}`, async () => {
         databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));
-        databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(major, 0, 0));
+        databaseMock.getPostgresVersion.mockResolvedValue(new Version(major, 0, 0));
 
         await expect(sut.init()).rejects.toThrow(new RegExp(`tensorchord\/pgvecto-rs:pg${major}-v0\\.1\\.11`, 's'));
       });
     }
 
     it('should not suggest image if postgres version is not in 14, 15 or 16', async () => {
-      databaseMock.getExtensionVersion.mockResolvedValue(new Version(0, 0, 1));
-      [13, 17].forEach((major) => databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(major, 0, 0)));
+      databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(17, 0, 0));
+      databaseMock.getPostgresVersion.mockResolvedValueOnce(new Version(17, 0, 0));
 
-      await expect(sut.init()).rejects.toThrow(/^(?:(?!tensorchord\/pgvecto-rs).)*$/s);
       await expect(sut.init()).rejects.toThrow(/^(?:(?!tensorchord\/pgvecto-rs).)*$/s);
     });
 
