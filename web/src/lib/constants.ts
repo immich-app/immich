@@ -57,3 +57,9 @@ export const dateFormats = {
     year: 'numeric',
   },
 };
+
+// should be the same values as the ones in the app.html
+export enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+}

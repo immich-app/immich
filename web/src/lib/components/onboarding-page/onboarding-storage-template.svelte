@@ -8,6 +8,7 @@
 
   const dispatch = createEventDispatcher<{
     done: void;
+    previous: void;
   }>();
 
   let configs: SystemConfigDto | null = null;
@@ -32,6 +33,7 @@
       disabled={$featureFlags.configFile}
       storageConfig={configs.storageTemplate}
       on:save={() => dispatch('done')}
+      on:previous={() => dispatch('previous')}
     />
   {/if}
 </OnboardingCard>

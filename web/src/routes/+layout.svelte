@@ -11,15 +11,15 @@
   import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { loadConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { api } from '@api';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { user } from '$lib/stores/user.store';
-  import { browser } from '$app/environment';
-  import { colorTheme } from '$lib/stores/preferences.store';
+  import { ThemeSetting, colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
+  import { Theme } from '$lib/constants';
 
   let showNavigationLoadingBar = false;
   let albumId: string | undefined;
@@ -27,15 +27,35 @@
   const isSharedLinkRoute = (route: string | null) => route?.startsWith('/(user)/share/[key]');
   const isAuthRoute = (route?: string) => route?.startsWith('/auth');
 
-  $: {
-    if (browser) {
-      if ($colorTheme === 'light') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        document.documentElement.classList.add('dark');
-      }
+  $: changeTheme($colorTheme);
+
+  const changeTheme = (theme: ThemeSetting) => {
+    if (theme.system) {
+      theme.value =
+        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
     }
-  }
+
+    if (theme.value === Theme.LIGHT) {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  };
+
+  const handleChangeTheme = () => {
+    if ($colorTheme.system) {
+      handleToggleTheme();
+    }
+  };
+
+  onMount(() => {
+    // if the browser theme changes, changes the Immich theme too
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
+  });
+
+  onDestroy(() => {
+    document.removeEventListener('change', handleChangeTheme);
+  });
 
   if (isSharedLinkRoute($page.route?.id)) {
     api.setKey($page.params.key);

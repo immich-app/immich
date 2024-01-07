@@ -187,8 +187,8 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void showInfo() {
       showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(15.0)),
         ),
         barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,
@@ -220,6 +220,16 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     void handleDelete(Asset deleteAsset) async {
+      // Cannot delete readOnly / external assets. They are handled through library offline jobs
+      if (asset().isReadOnly) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_delete_err_read_only'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
       Future<bool> onDelete(bool force) async {
         final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
           {deleteAsset},
@@ -319,11 +329,20 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     shareAsset() {
-      ref.watch(imageViewerStateProvider.notifier).shareAsset(asset(), context);
+      if (asset().isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_share_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+      ref.read(imageViewerStateProvider.notifier).shareAsset(asset(), context);
     }
 
     handleArchive(Asset asset) {
-      ref.watch(assetProvider.notifier).toggleArchive([asset]);
+      ref.read(assetProvider.notifier).toggleArchive([asset]);
       if (isParent) {
         context.popRoute();
         return;
@@ -344,6 +363,26 @@ class GalleryViewerPage extends HookConsumerWidget {
           );
         },
       );
+    }
+
+    handleDownload() {
+      if (asset().isLocal) {
+        return;
+      }
+      if (asset().isOffline) {
+        ImmichToast.show(
+          durationInSecond: 1,
+          context: context,
+          msg: 'asset_action_share_err_offline'.tr(),
+          gravity: ToastGravity.BOTTOM,
+        );
+        return;
+      }
+
+      ref.read(imageViewerStateProvider.notifier).downloadAsset(
+            asset(),
+            context,
+          );
     }
 
     handleActivities() {
@@ -371,12 +410,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                   asset().isLocal ? () => handleUpload(asset()) : null,
               onDownloadPressed: asset().isLocal
                   ? null
-                  : () => ref
-                      .watch(imageViewerStateProvider.notifier)
-                      .downloadAsset(
-                        asset(),
-                        context,
-                      ),
+                  : () =>
+                      ref.read(imageViewerStateProvider.notifier).downloadAsset(
+                            asset(),
+                            context,
+                          ),
               onToggleMotionVideo: (() {
                 isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
               }),
@@ -641,13 +679,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (isOwner) (_) => handleArchive(asset()),
         if (isOwner && stack.isNotEmpty) (_) => showStackActionItems(),
         if (isOwner) (_) => handleDelete(asset()),
-        if (!isOwner)
-          (_) => asset().isLocal
-              ? null
-              : ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                    asset(),
-                    context,
-                  ),
+        if (!isOwner) (_) => handleDownload(),
       ];
 
       return IgnorePointer(

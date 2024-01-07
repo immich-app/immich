@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
-import 'package:immich_mobile/modules/search/ui/search_result_grid.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
+import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SearchType {
@@ -39,7 +38,6 @@ class SearchResultPage extends HookConsumerWidget {
     final searchTermController = useTextEditingController(text: "");
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
-    final isDisplayDateGroup = useState(true);
 
     FocusNode? searchFocusNode;
 
@@ -48,9 +46,6 @@ class SearchResultPage extends HookConsumerWidget {
         searchFocusNode = FocusNode();
 
         var searchType = _getSearchType(searchTerm);
-        searchType.isClip
-            ? isDisplayDateGroup.value = false
-            : isDisplayDateGroup.value = true;
 
         Future.delayed(
           Duration.zero,
@@ -63,18 +58,13 @@ class SearchResultPage extends HookConsumerWidget {
       [],
     );
 
-    onSearchSubmitted(String newSearchTerm) {
+    Future<void> onSearchSubmitted(String newSearchTerm) {
       debugPrint("Re-Search with $newSearchTerm");
       searchFocusNode?.unfocus();
       isNewSearch.value = false;
       currentSearchTerm.value = newSearchTerm;
-
       var searchType = _getSearchType(newSearchTerm);
-      searchType.isClip
-          ? isDisplayDateGroup.value = false
-          : isDisplayDateGroup.value = true;
-
-      ref
+      return ref
           .watch(searchResultPageProvider.notifier)
           .search(searchType.searchTerm, clipEnable: searchType.isClip);
     }
@@ -148,9 +138,10 @@ class SearchResultPage extends HookConsumerWidget {
       );
     }
 
+    Future<void> refresh() async => onSearchSubmitted(currentSearchTerm.value);
+
     buildSearchResult() {
-      var searchResultPageState = ref.watch(searchResultPageProvider);
-      var allSearchAssets = ref.watch(searchResultPageProvider).searchResult;
+      final searchResultPageState = ref.watch(searchResultPageProvider);
 
       if (searchResultPageState.isError) {
         return Padding(
@@ -164,15 +155,15 @@ class SearchResultPage extends HookConsumerWidget {
       }
 
       if (searchResultPageState.isSuccess) {
-        if (isDisplayDateGroup.value) {
-          return ImmichAssetGrid(
-            assets: allSearchAssets,
-          );
-        } else {
-          return SearchResultGrid(
-            assets: allSearchAssets,
-          );
-        }
+        return MultiselectGrid(
+          renderListProvider: searchRenderListProvider,
+          archiveEnabled: true,
+          deleteEnabled: true,
+          editEnabled: true,
+          favoriteEnabled: true,
+          stackEnabled: false,
+          onRefresh: refresh,
+        );
       }
 
       return const SizedBox();
