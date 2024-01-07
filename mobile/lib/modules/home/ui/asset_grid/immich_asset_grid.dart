@@ -33,7 +33,6 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool shrinkWrap;
   final bool showDragScroll;
   final bool showStack;
-  final bool detectScaleGesture;
 
   const ImmichAssetGrid({
     super.key,
@@ -54,7 +53,6 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.shrinkWrap = false,
     this.showDragScroll = true,
     this.showStack = false,
-    this.detectScaleGesture = true,
   });
 
   @override
@@ -80,54 +78,49 @@ class ImmichAssetGrid extends HookConsumerWidget {
     }
 
     Widget buildAssetGridView(RenderList renderList) {
-      final grid = ImmichAssetGridView(
-        onRefresh: onRefresh,
-        assetsPerRow: perRow.value,
-        listener: listener,
-        showStorageIndicator: showStorageIndicator ??
-            settings.getSetting(AppSettingsEnum.storageIndicator),
-        renderList: renderList,
-        margin: margin,
-        selectionActive: selectionActive,
-        preselectedAssets: preselectedAssets,
-        canDeselect: canDeselect,
-        dynamicLayout:
-            dynamicLayout ?? settings.getSetting(AppSettingsEnum.dynamicLayout),
-        showMultiSelectIndicator: showMultiSelectIndicator,
-        visibleItemsListener: visibleItemsListener,
-        topWidget: topWidget,
-        heroOffset: heroOffset(),
-        shrinkWrap: shrinkWrap,
-        showDragScroll: showDragScroll,
-        showStack: showStack,
+      return RawGestureDetector(
+        gestures: {
+          CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<
+                  CustomScaleGestureRecognizer>(
+              () => CustomScaleGestureRecognizer(),
+              (CustomScaleGestureRecognizer scale) {
+            scale.onStart = (details) {
+              baseScaleFactor.value = scaleFactor.value;
+            };
+
+            scale.onUpdate = (details) {
+              scaleFactor.value = max(
+                min(5.0, baseScaleFactor.value * details.scale),
+                1.0,
+              );
+              if (7 - scaleFactor.value.toInt() != perRow.value) {
+                perRow.value = 7 - scaleFactor.value.toInt();
+              }
+            };
+          }),
+        },
+        child: ImmichAssetGridView(
+          onRefresh: onRefresh,
+          assetsPerRow: perRow.value,
+          listener: listener,
+          showStorageIndicator: showStorageIndicator ??
+              settings.getSetting(AppSettingsEnum.storageIndicator),
+          renderList: renderList,
+          margin: margin,
+          selectionActive: selectionActive,
+          preselectedAssets: preselectedAssets,
+          canDeselect: canDeselect,
+          dynamicLayout: dynamicLayout ??
+              settings.getSetting(AppSettingsEnum.dynamicLayout),
+          showMultiSelectIndicator: showMultiSelectIndicator,
+          visibleItemsListener: visibleItemsListener,
+          topWidget: topWidget,
+          heroOffset: heroOffset(),
+          shrinkWrap: shrinkWrap,
+          showDragScroll: showDragScroll,
+          showStack: showStack,
+        ),
       );
-
-      return detectScaleGesture
-          ? RawGestureDetector(
-              gestures: {
-                CustomScaleGestureRecognizer:
-                    GestureRecognizerFactoryWithHandlers<
-                            CustomScaleGestureRecognizer>(
-                        () => CustomScaleGestureRecognizer(),
-                        (CustomScaleGestureRecognizer scale) {
-                  scale.onStart = (details) {
-                    baseScaleFactor.value = scaleFactor.value;
-                  };
-
-                  scale.onUpdate = (details) {
-                    scaleFactor.value = max(
-                      min(5.0, baseScaleFactor.value * details.scale),
-                      1.0,
-                    );
-                    if (7 - scaleFactor.value.toInt() != perRow.value) {
-                      perRow.value = 7 - scaleFactor.value.toInt();
-                    }
-                  };
-                }),
-              },
-              child: grid,
-            )
-          : grid;
     }
 
     if (renderList != null) return buildAssetGridView(renderList!);

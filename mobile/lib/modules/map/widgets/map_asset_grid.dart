@@ -139,7 +139,6 @@ class MapAssetGrid extends HookConsumerWidget {
                               assetsPerRow: assetsPerRow,
                               showMultiSelectIndicator: false,
                               selectionActive: value.isNotEmpty,
-                              detectScaleGesture: false,
                               listener: onAssetsSelected,
                               visibleItemsListener: (pos) => gridScrollThrottler
                                   .run(() => handleVisibleItems(pos)),
