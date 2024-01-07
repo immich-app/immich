@@ -6,7 +6,8 @@ sidebar_position: 4
 
 ### Can I import assets to Immich while maintaining existing album structure?
 
-Yes you can by using Immich CLI with -a command, see [this document](/docs/features/command-line-interface) for more info.
+Yes. You can by use [Immich CLI](/docs/features/command-line-interface) along with the `--album` flag.
 
 ### Is there a way to select the order in which photos are presented when an album is opened?
-Not yet, but this is a [planned feature](https://github.com/immich-app/immich/discussions/1689).
+
+No, not yet. For updates on this planned feature, follow the [GitHub discussion](https://github.com/immich-app/immich/discussions/1689),

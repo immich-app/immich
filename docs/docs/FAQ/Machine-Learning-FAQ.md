@@ -1,6 +1,7 @@
 ---
 sidebar_position: 6
 ---
+
 # Machine Learning
 
 ### How does smart search work?
