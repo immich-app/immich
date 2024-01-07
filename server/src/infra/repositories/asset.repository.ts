@@ -27,7 +27,7 @@ import { DateTime } from 'luxon';
 import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { OptionalBetween, paginate } from '../infra.utils';
+import { Chunked, ChunkedArray, OptionalBetween, paginate } from '../infra.utils';
 
 const DEFAULT_SEARCH_SIZE = 250;
 
@@ -248,6 +248,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
   getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
     if (!relations) {
       relations = {
@@ -301,6 +302,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
     return this.repository.find({
       where: { library: { id: In(libraryIds) } },
@@ -380,14 +382,17 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
+  @Chunked()
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
   }
 
+  @Chunked()
   async softDeleteAll(ids: string[]): Promise<void> {
     await this.repository.softDelete({ id: In(ids), isExternal: false });
   }
 
+  @Chunked()
   async restoreAll(ids: string[]): Promise<void> {
     await this.repository.restore({ id: In(ids) });
   }

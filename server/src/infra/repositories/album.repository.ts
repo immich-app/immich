@@ -1,10 +1,13 @@
 import { AlbumAsset, AlbumAssetCount, AlbumAssets, AlbumInfoOptions, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
 import { DataSource, FindOptionsOrder, FindOptionsRelations, In, IsNull, Not, Repository } from 'typeorm';
+import { setUnion } from '../../domain/domain.util';
 import { dataSource } from '../database.config';
 import { AlbumEntity, AssetEntity } from '../entities';
-import { DummyValue, GenerateSql } from '../infra.util';
+import { DATABASE_PARAMETER_CHUNK_SIZE, DummyValue, GenerateSql } from '../infra.util';
+import { Chunked, ChunkedArray } from '../infra.utils';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
@@ -39,6 +42,7 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
   getByIds(ids: string[]): Promise<AlbumEntity[]> {
     return this.repository.find({
       where: {
@@ -64,6 +68,7 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
   async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (!ids.length) {
@@ -188,15 +193,16 @@ export class AlbumRepository implements IAlbumRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetIds: [DummyValue.UUID] }] })
-  async removeAssets(asset: AlbumAssets): Promise<void> {
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  @Chunked({ paramIndex: 1 })
+  async removeAssets(albumId: string, assetIds: string[]): Promise<void> {
     await this.dataSource
       .createQueryBuilder()
       .delete()
       .from('albums_assets_assets')
       .where({
-        albumsId: asset.albumId,
-        assetsId: In(asset.assetIds),
+        albumsId: albumId,
+        assetsId: In(assetIds),
       })
       .execute();
   }
@@ -216,12 +222,19 @@ export class AlbumRepository implements IAlbumRepository {
       .from('albums_assets_assets', 'albums_assets')
       .where('"albums_assets"."albumsId" = :albumId', { albumId });
 
-    if (assetIds?.length) {
-      query.andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds });
+    if (!assetIds?.length) {
+      const result = await query.getRawMany();
+      return new Set(result.map((row) => row['assetId']));
     }
 
-    const result = await query.getRawMany();
-    return new Set(result.map((row) => row['assetId']));
+    return Promise.all(
+      _.chunk(assetIds, DATABASE_PARAMETER_CHUNK_SIZE).map((idChunk) =>
+        query
+          .andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds: idChunk })
+          .getRawMany()
+          .then((result) => new Set(result.map((row) => row['assetId']))),
+      ),
+    ).then((results) => setUnion(...results));
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })

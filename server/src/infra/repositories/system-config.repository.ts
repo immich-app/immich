@@ -5,6 +5,7 @@ import { readFile } from 'fs/promises';
 import { In, Repository } from 'typeorm';
 import { SystemConfigEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
+import { Chunked } from '../infra.utils';
 
 export class SystemConfigRepository implements ISystemConfigRepository {
   constructor(
@@ -29,6 +30,7 @@ export class SystemConfigRepository implements ISystemConfigRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
+  @Chunked()
   async deleteKeys(keys: string[]): Promise<void> {
     await this.repository.delete({ key: In(keys) });
   }

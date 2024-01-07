@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { asVector } from '../infra.utils';
+import { Chunked, ChunkedArray, asVector } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -32,10 +32,14 @@ export class PersonRepository implements IPersonRepository {
       .getRawMany();
 
     const assetIds = results.map(({ assetId }) => assetId);
-
-    await this.assetFaceRepository.delete({ personId: oldPersonId, assetId: In(assetIds) });
+    await this.deletePersonFromAssets(oldPersonId, assetIds);
 
     return assetIds;
+  }
+
+  @Chunked({ paramIndex: 1 })
+  async deletePersonFromAssets(personId: string, assetIds: string[]): Promise<void> {
+    await this.assetFaceRepository.delete({ personId: personId, assetId: In(assetIds) });
   }
 
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
@@ -234,6 +238,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
+  @ChunkedArray()
   async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
     return this.assetFaceRepository.find({ where: ids, relations: { asset: true }, withDeleted: true });
   }
