@@ -37,18 +37,6 @@ export const db = {
               .map((entity) => entity.tableName)
               .filter((tableName) => !tableName.startsWith('geodata'));
 
-      const tryQuery = async (query: string) => {
-        await em.query(`SAVEPOINT savepoint;`);
-        try {
-          await em.query(query);
-        } catch (err) {
-          if (err instanceof QueryFailedError && err.message.includes('does not exist')) {
-            // Ignore error if something does not exist
-            await em.query(`ROLLBACK TO SAVEPOINT savepoint;`);
-          }
-        }
-      };
-
       let deleteUsers = false;
       for (const tableName of tableNames) {
         if (tableName === 'users') {
@@ -56,10 +44,10 @@ export const db = {
           continue;
         }
 
-        await tryQuery(`DELETE FROM ${tableName} CASCADE;`);
+        await em.query(`DELETE FROM ${tableName} CASCADE;`);
       }
       if (deleteUsers) {
-        await tryQuery(`DELETE FROM "users" CASCADE;`);
+        await em.query(`DELETE FROM "users" CASCADE;`);
       }
     });
   },
@@ -81,8 +69,6 @@ let app: INestApplication;
 export const testApp = {
   create: async (options?: TestAppOptions): Promise<INestApplication> => {
     const { jobs } = options || { jobs: false };
-
-    await db.reset();
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
       .overrideProvider(IJobRepository)
@@ -115,8 +101,9 @@ export const testApp = {
     return app;
   },
   reset: async (options?: ResetOptions) => {
-    await db.reset(options);
     await app.get(AppService).init();
+    await db.reset(options);
+    await app.get(AppService).teardown();
   },
   teardown: async () => {
     if (app) {

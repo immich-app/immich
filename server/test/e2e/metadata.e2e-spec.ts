@@ -21,21 +21,19 @@ describe(`${AssetController.name} (e2e)`, () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    app = await testApp.create({ jobs: true });
-    server = app.getHttpServer();
-  });
-
-  beforeEach(async () => {
-    await db.reset();
-    await restoreTempFolder();
-    await api.authApi.adminSignUp(server);
-    admin = await api.authApi.adminLogin(server);
+    server = (await testApp.create({ jobs: true })).getHttpServer();
   });
 
   afterAll(async () => {
-    await db.disconnect();
-    await app.close();
+    await testApp.teardown();
     await restoreTempFolder();
+  });
+
+  beforeEach(async () => {
+    await testApp.reset();
+    await restoreTempFolder();
+    await api.authApi.adminSignUp(server);
+    admin = await api.authApi.adminLogin(server);
   });
 
   describe.only('should strip metadata of', () => {

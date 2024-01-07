@@ -76,6 +76,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         clipEncode: false,
         configFile: true,
         facialRecognition: false,
+        libraryWatch: true,
         map: true,
         reverseGeocoding: false,
         oauth: false,
