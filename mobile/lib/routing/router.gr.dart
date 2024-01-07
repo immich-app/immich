@@ -1593,7 +1593,7 @@ class ActivitiesRoute extends PageRouteInfo<void> {
 class MapLocationPickerRoute extends PageRouteInfo<MapLocationPickerRouteArgs> {
   MapLocationPickerRoute({
     Key? key,
-    LatLng? initialLatLng,
+    LatLng initialLatLng = const LatLng(0, 0),
   }) : super(
           MapLocationPickerRoute.name,
           path: '/map-location-picker-page',
@@ -1609,12 +1609,12 @@ class MapLocationPickerRoute extends PageRouteInfo<MapLocationPickerRouteArgs> {
 class MapLocationPickerRouteArgs {
   const MapLocationPickerRouteArgs({
     this.key,
-    this.initialLatLng,
+    this.initialLatLng = const LatLng(0, 0),
   });
 
   final Key? key;
 
-  final LatLng? initialLatLng;
+  final LatLng initialLatLng;
 
   @override
   String toString() {

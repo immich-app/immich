@@ -4,15 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
 import 'package:immich_mobile/modules/map/widgets/positioned_asset_marker_icon.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-// A non-interactive thumbnail of a map in the given coordinates with optional markers
+/// A non-interactive thumbnail of a map in the given coordinates with optional markers
+///
+/// User can provide either a [assetMarkerRemoteId] to display the asset's thumbnail or set
+/// [showMarkerPin] to true which would display a marker pin instead. If both are provided,
+/// [assetMarkerRemoteId] will take precedence
 class MapThumbnail extends HookConsumerWidget {
   final Function(Point<double>, LatLng)? onTap;
   final LatLng centre;
   final String? assetMarkerRemoteId;
+  final bool showMarkerPin;
   final double zoom;
   final double height;
   final double width;
@@ -27,6 +33,7 @@ class MapThumbnail extends HookConsumerWidget {
     this.onTap,
     this.zoom = 8,
     this.assetMarkerRemoteId,
+    this.showMarkerPin = false,
     this.themeMode,
     this.showAttribution = true,
   });
@@ -34,16 +41,24 @@ class MapThumbnail extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final offsettedCentre = LatLng(centre.latitude + 0.002, centre.longitude);
+    final controller = useRef<MaplibreMapController?>(null);
     final position = useValueNotifier<Point<num>?>(null);
 
-    Future<void> onMapCreated(MaplibreMapController controller) async {
+    Future<void> onMapCreated(MaplibreMapController mapController) async {
+      controller.value = mapController;
       if (assetMarkerRemoteId != null) {
         // The iOS impl returns wrong toScreenLocation without the delay
         Future.delayed(
           const Duration(milliseconds: 100),
           () async =>
-              position.value = await controller.toScreenLocation(centre),
+              position.value = await mapController.toScreenLocation(centre),
         );
+      }
+    }
+
+    Future<void> onStyleLoaded() async {
+      if (showMarkerPin && controller.value != null) {
+        await controller.value?.addMarkerAtLatLng(centre);
       }
     }
 
@@ -63,6 +78,7 @@ class MapThumbnail extends HookConsumerWidget {
                       CameraPosition(target: offsettedCentre, zoom: zoom),
                   styleString: style,
                   onMapCreated: onMapCreated,
+                  onStyleLoadedCallback: onStyleLoaded,
                   onMapClick: onTap,
                   doubleClickZoomEnabled: false,
                   dragEnabled: false,

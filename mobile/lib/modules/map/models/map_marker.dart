@@ -19,12 +19,9 @@ class MapMarker {
     );
   }
 
-  static MapMarker? fromDto(MapMarkerResponseDto dto) {
-    if (dto.lat < -90 || dto.lat > 90 || dto.lon < -180 || dto.lon > 180) {
-      return null;
-    }
-    return MapMarker(latLng: LatLng(dto.lat, dto.lon), assetRemoteId: dto.id);
-  }
+  MapMarker.fromDto(MapMarkerResponseDto dto)
+      : latLng = LatLng(dto.lat, dto.lon),
+        assetRemoteId = dto.id;
 
   @override
   String toString() =>
