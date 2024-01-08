@@ -90,7 +90,7 @@ export class LibraryService {
       return;
     }
 
-    for (const id in this.watchers.keys) {
+    for (const id in this.watchers) {
       await this.unwatch(id);
     }
   }
@@ -100,14 +100,9 @@ export class LibraryService {
       return;
     }
 
-    const a = JSON.stringify(this.watchers);
-
-    console.warn(`Stopping automatic watch of library ${id}: ${a}`);
-
     if (this.watchers.hasOwnProperty(id)) {
       await this.watchers[id].close();
       delete this.watchers[id];
-      console.warn(`Stopped automatic watch of library ${id}`);
     }
   }
 
@@ -125,13 +120,13 @@ export class LibraryService {
       throw new Error('Cannot watch library with no import paths');
     }
 
-    console.warn(`Starting automatic watch of library ${library.id}`);
-
     // TODO: filter by file extension
 
     // Stop any previous watchers of this library
 
     await this.unwatch(library.id);
+
+    this.logger.debug(`Starting automatic watch of library ${library.id}`);
 
     this.watchers[library.id] = chokidar.watch(library.importPaths, {
       ignored: library.exclusionPatterns,
@@ -258,7 +253,9 @@ export class LibraryService {
       throw new BadRequestException('Cannot delete the last upload library');
     }
 
-    await this.unwatch(id);
+    if (library.isWatched) {
+      await this.unwatch(id);
+    }
 
     await this.repository.softDelete(id);
     await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id } });
