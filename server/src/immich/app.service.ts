@@ -67,6 +67,7 @@ export class AppService {
     await this.configService.init();
     this.storageService.init();
     await this.libraryService.init();
+    await this.serverService.init();
     await this.serverService.handleVersionCheck();
     this.logger.log(`Feature Flags: ${JSON.stringify(await this.serverService.getFeatures(), null, 2)}`);
   }
