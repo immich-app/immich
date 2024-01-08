@@ -49,7 +49,7 @@ You can access the web from `http://your-machine-ip:2283` or `http://localhost:2
 
 ### Mobile app
 
-The mobile app `(/mobile)` will required Flutter toolchain to be installed on your system.
+The mobile app `(/mobile)` will required Flutter toolchain 3.13.x to be installed on your system.
 
 Please refer to the [Flutter's official documentation](https://flutter.dev/docs/get-started/install) for more information on setting up the toolchain on your machine.
 
