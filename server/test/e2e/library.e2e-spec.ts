@@ -1,6 +1,7 @@
 import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import { api } from '@test/api';
 import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from '@test/test-utils';
 import * as fs from 'fs';
@@ -941,18 +942,29 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
   describe('Automatic refresh', () => {
     let library: LibraryResponseDto;
+    let warnLog: jest.SpyInstance;
 
     beforeEach(async () => {
+      // warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
+
       library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
+        importPaths: [
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`,
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`,
+          `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`,
+        ],
       });
 
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
+      await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
+      await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
+      await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
+
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file1.jpg`,
       );
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
@@ -962,10 +974,14 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(beforeAssets.length).toEqual(1);
     });
 
+    afterEach(() => {
+      warnLog.mockRestore();
+    });
+
     it('should add new files', async () => {
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file2.jpg`,
       );
 
       let testPassed = false;
@@ -976,10 +992,34 @@ describe(`${LibraryController.name} (e2e)`, () => {
       }
     });
 
+    it('should add new files in multiple import paths', async () => {
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file2.jpg`,
+      );
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file3.jpg`,
+      );
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3/file4.jpg`,
+      );
+
+      let testPassed = false;
+
+      while (!testPassed) {
+        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+        testPassed = afterAssets.length === 4;
+      }
+    });
+
     it('should ignore files with wrong extension', async () => {
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.txt`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file2.txt`,
       );
 
       function delay(ms: number) {
@@ -993,7 +1033,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it('should offline removed files', async () => {
-      await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`);
+      await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file1.jpg`);
 
       // This must be fixed before merge
       let testPassed = false;

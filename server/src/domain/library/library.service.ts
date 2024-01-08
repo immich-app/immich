@@ -130,9 +130,12 @@ export class LibraryService {
 
     this.logger.debug(`Starting to watch library ${library.id}`);
 
-    // TODO: filter by file extension
+    const base = library.importPaths.length === 1 ? library.importPaths[0] : `{${library.importPaths.join(',')}}`;
+    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
 
-    this.watchers[library.id] = chokidar.watch(library.importPaths, {
+    console.warn(`${base}/**/${extensions}`);
+
+    this.watchers[library.id] = chokidar.watch(`${base}/**/${extensions}`, {
       ignored: library.exclusionPatterns,
       ignoreInitial: true,
       usePolling: true,
