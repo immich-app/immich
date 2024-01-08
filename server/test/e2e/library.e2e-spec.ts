@@ -16,16 +16,20 @@ describe(`${LibraryController.name} (e2e)`, () => {
     server = (await testApp.create({ jobs: true })).getHttpServer();
   });
 
-  afterAll(async () => {
-    await testApp.teardown();
-    await restoreTempFolder();
-  });
-
   beforeEach(async () => {
     await testApp.reset();
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
+  });
+
+  afterEach(async () => {
+    await testApp.stopWatcher();
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
+    await restoreTempFolder();
   });
 
   describe('GET /library', () => {
@@ -936,21 +940,26 @@ describe(`${LibraryController.name} (e2e)`, () => {
   });
 
   describe('Automatic refresh', () => {
-    it('should add new files', async () => {
-      await fs.promises.copyFile(
-        `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
-      );
+    let library: LibraryResponseDto;
 
-      const library = await api.libraryApi.create(server, admin.accessToken, {
+    beforeEach(async () => {
+      library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
       });
 
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
+      );
 
+      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
+      await api.libraryApi.watch(server, admin.accessToken, library.id);
+    });
+
+    it('should add new files', async () => {
       const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(beforeAssets.length).toEqual(1);
 
@@ -972,15 +981,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
         `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
       );
-
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
-      });
-
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
 
       const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(beforeAssets.length).toEqual(1);
@@ -1006,20 +1006,12 @@ describe(`${LibraryController.name} (e2e)`, () => {
         `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
       );
 
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
-      });
-
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
       const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(beforeAssets.length).toEqual(1);
 
       await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`);
 
+      // This must be fixed before merge
       let testPassed = false;
 
       while (!testPassed) {

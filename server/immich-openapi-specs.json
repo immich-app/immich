@@ -9711,6 +9711,9 @@
           "isVisible": {
             "type": "boolean"
           },
+          "isWatched": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           }

@@ -47,6 +47,10 @@ export class UpdateLibraryDto {
   @IsNotEmpty({ each: true })
   @IsString({ each: true })
   exclusionPatterns?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  isWatched?: boolean;
 }
 
 export class CrawlOptionsDto {
@@ -121,6 +125,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     assetCount,
     importPaths: entity.importPaths,
     exclusionPatterns: entity.exclusionPatterns,
-    watched: entity.watched,
+    watched: entity.isWatched,
   };
 }

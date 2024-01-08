@@ -2,16 +2,15 @@ import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDt
 import { AppModule } from '@app/immich';
 import { dataSource } from '@app/infra';
 import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { INestApplication, Logger } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
-import chokidar from 'chokidar';
 import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
 import path from 'path';
 import { Server } from 'tls';
-import { EntityTarget, ObjectLiteral, QueryFailedError } from 'typeorm';
+import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../src/microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
@@ -103,7 +102,9 @@ export const testApp = {
   reset: async (options?: ResetOptions) => {
     await app.get(AppService).init();
     await db.reset(options);
-    await app.get(AppService).teardown();
+  },
+  stopWatcher: async () => {
+    await app.get(AppService).stopWatcher();
   },
   teardown: async () => {
     if (app) {

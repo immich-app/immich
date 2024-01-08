@@ -1,4 +1,4 @@
-import { AssetType, LibraryEntity, LibraryType } from '@app/infra/entities';
+import { AssetType, LibraryType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import chokidar from 'chokidar';
 import { R_OK } from 'node:constants';
@@ -12,7 +12,6 @@ import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
 import { ImmichLogger } from '@app/infra/logger';
-import { COMPLETION_SH_TEMPLATE } from 'nest-commander/src/constants';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -40,7 +39,7 @@ export class LibraryService {
   private access: AccessCore;
   private configCore: SystemConfigCore;
   private watchEnabled = false;
-  private watcher: chokidar.FSWatcher | null = null;
+  private watchers: Record<string, chokidar.FSWatcher> = {};
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -72,37 +71,67 @@ export class LibraryService {
 
     this.watchEnabled = config.library.watch.enabled;
 
-    for (const library of await this.repository.getAll(true, LibraryType.EXTERNAL)) {
-      if (library.watched) {
-        await this.watch(library);
+    /*   if (this.watchEnabled) {
+      for (const library of await this.repository.getAll(true, LibraryType.EXTERNAL)) {
+        if (library.isWatched) {
+          // For all libraries that are watched, start the watcher process
+          await this.watch(library.id);
+        }
       }
-    }
+    } */
 
     this.configCore.config$.subscribe((config) => {
       this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
     });
   }
 
-  async teardown() {
-    this.watcher?.close();
-  }
-
-  async watch(library: LibraryEntity) {
+  async unwatchAll() {
     if (!this.watchEnabled) {
       return;
     }
 
-    const extensions = mimeTypes.getSupportedFileExtensions();
+    for (const id in this.watchers.keys) {
+      await this.unwatch(id);
+    }
+  }
 
-    this.logger.log(`Watching ${library.importPaths} for ${extensions} files`);
+  async unwatch(id: string) {
+    if (!this.watchEnabled) {
+      return;
+    }
 
-    this.watcher = chokidar.watch(library.importPaths, {
+    if (this.watchers.hasOwnProperty(id)) {
+      await this.watchers[id].close();
+      delete this.watchers[id];
+      console.warn(`Stopped automatic watch of library ${id}`);
+    }
+  }
+
+  async watch(id: string) {
+    if (!this.watchEnabled) {
+      return;
+    }
+
+    const library = await this.repository.get(id);
+    if (!library || !library.isWatched || library.importPaths.length === 0) {
+      return false;
+    }
+
+    console.warn(`Starting automatic watch of library ${library.id}`);
+
+    // TODO: filter by file extension
+
+    // Stop any previous watchers of this library
+
+    await this.unwatch(library.id);
+
+    this.watchers[library.id] = chokidar.watch(library.importPaths, {
       ignored: library.exclusionPatterns,
       ignoreInitial: true,
       usePolling: true,
     });
 
-    this.watcher.on('add', async (path) => {
+    this.watchers[library.id].on('add', async (path) => {
       this.logger.debug(`Found new file: ${path}`);
       await this.jobRepository.queue({
         name: JobName.LIBRARY_SCAN_ASSET,
@@ -115,7 +144,7 @@ export class LibraryService {
       });
     });
 
-    this.watcher.on('unlink', async (path) => {
+    this.watchers[library.id].on('unlink', async (path) => {
       this.logger.debug(`Detected removed file: ${path}`);
       const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
 
@@ -187,8 +216,8 @@ export class LibraryService {
       isVisible: dto.isVisible ?? true,
     });
 
-    if (dto.type === LibraryType.EXTERNAL && library.watched) {
-      await this.watch(library);
+    if (dto.type === LibraryType.EXTERNAL && library.isWatched) {
+      await this.watch(library.id);
     }
 
     return mapLibrary(library);
@@ -197,6 +226,15 @@ export class LibraryService {
   async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update({ id, ...dto });
+
+    if (dto.isWatched !== undefined) {
+      if (dto.isWatched) {
+        await this.watch(id);
+      } else {
+        await this.watchers[id].close();
+      }
+    }
+
     return mapLibrary(library);
   }
 
@@ -208,6 +246,8 @@ export class LibraryService {
     if (library.type === LibraryType.UPLOAD && uploadCount <= 1) {
       throw new BadRequestException('Cannot delete the last upload library');
     }
+
+    await this.unwatch(id);
 
     await this.repository.softDelete(id);
     await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id } });

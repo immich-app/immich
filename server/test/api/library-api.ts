@@ -44,4 +44,20 @@ export const libraryApi = {
     expect(status).toBe(200);
     return body;
   },
+  watch: async (server: any, accessToken: string, id: string) => {
+    const { body, status } = await request(server)
+      .put(`/library/${id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ isWatched: true });
+    expect(status).toBe(200);
+    return body as LibraryResponseDto;
+  },
+  unwatch: async (server: any, accessToken: string, id: string) => {
+    const { body, status } = await request(server)
+      .put(`/library/${id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ isWatched: false });
+    expect(status).toBe(200);
+    return body as LibraryResponseDto;
+  },
 };

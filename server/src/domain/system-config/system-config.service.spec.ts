@@ -130,6 +130,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: '0 0 * * *',
     },
+    watch: { enabled: true },
   },
 });
 

@@ -1,13 +1,11 @@
 import { AssetResponseDto, LoginResponseDto } from '@app/domain';
 import { AssetController } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
 import { api } from '@test/api';
 import * as fs from 'fs';
 
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
-  db,
   itif,
   restoreTempFolder,
   runAllTests,
@@ -16,7 +14,6 @@ import {
 import { exiftool } from 'exiftool-vendored';
 
 describe(`${AssetController.name} (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
 
@@ -24,16 +21,20 @@ describe(`${AssetController.name} (e2e)`, () => {
     server = (await testApp.create({ jobs: true })).getHttpServer();
   });
 
-  afterAll(async () => {
-    await testApp.teardown();
-    await restoreTempFolder();
-  });
-
   beforeEach(async () => {
     await testApp.reset();
     await restoreTempFolder();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
+  });
+
+  afterEach(async () => {
+    await testApp.stopWatcher();
+  });
+
+  afterAll(async () => {
+    await testApp.teardown();
+    await restoreTempFolder();
   });
 
   describe.only('should strip metadata of', () => {
@@ -79,8 +80,6 @@ describe(`${AssetController.name} (e2e)`, () => {
       await fs.promises.writeFile(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.jpg`, thumbnail);
 
       const exifData = await exiftool.read(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.jpg`);
-
-      console.log(assetWithLocation);
 
       expect(exifData).not.toHaveProperty('GPSLongitude');
       expect(exifData).not.toHaveProperty('GPSLatitude');
