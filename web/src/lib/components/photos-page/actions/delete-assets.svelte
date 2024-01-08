@@ -2,11 +2,11 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { createEventDispatcher } from 'svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiTimerSand, mdiDeleteOutline } from '@mdi/js';
-  import { deleteAssets } from '$lib/utils/actions';
+  import { OnAssetDelete, deleteAssets } from '$lib/utils/actions';
 
   export let onAssetDelete: OnAssetDelete;
   export let menuItem = false;

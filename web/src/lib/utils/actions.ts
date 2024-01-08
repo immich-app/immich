@@ -1,7 +1,12 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 import { api } from '@api';
 import { handleError } from './handle-error';
-import type { OnAssetDelete } from '$lib/components/photos-page/asset-select-control-bar.svelte';
+
+export type OnAssetDelete = (assetId: string) => void;
+export type OnRestore = (ids: string[]) => void;
+export type OnArchive = (ids: string[], isArchived: boolean) => void;
+export type OnFavorite = (ids: string[], favorite: boolean) => void;
+export type OnStack = (ids: string[]) => void;
 
 export const deleteAssets = async (force: boolean, onAssetDelete: OnAssetDelete, ids: string[]) => {
   try {
