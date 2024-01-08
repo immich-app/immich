@@ -79,6 +79,7 @@ export class AppService {
     });
 
     await this.metadataService.init();
+    await this.libraryService.init();
   }
 
   async stopWatcher() {

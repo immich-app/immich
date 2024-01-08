@@ -100,6 +100,10 @@ export class LibraryService {
       return;
     }
 
+    const a = JSON.stringify(this.watchers);
+
+    console.warn(`Stopping automatic watch of library ${id}: ${a}`);
+
     if (this.watchers.hasOwnProperty(id)) {
       await this.watchers[id].close();
       delete this.watchers[id];
@@ -113,8 +117,12 @@ export class LibraryService {
     }
 
     const library = await this.repository.get(id);
-    if (!library || !library.isWatched || library.importPaths.length === 0) {
+    if (!library || !library.isWatched) {
       return false;
+    }
+
+    if (library.importPaths.length === 0) {
+      throw new Error('Cannot watch library with no import paths');
     }
 
     console.warn(`Starting automatic watch of library ${library.id}`);
@@ -229,9 +237,12 @@ export class LibraryService {
 
     if (dto.isWatched !== undefined) {
       if (dto.isWatched) {
+        if (!this.watchEnabled) {
+          throw new Error('Cannot watch library when the library watch feature flag is disabled');
+        }
         await this.watch(id);
       } else {
-        await this.watchers[id].close();
+        await this.unwatch(id);
       }
     }
 

@@ -957,12 +957,12 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
       await api.libraryApi.watch(server, admin.accessToken, library.id);
+
+      const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(beforeAssets.length).toEqual(1);
     });
 
     it('should add new files', async () => {
-      const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      expect(beforeAssets.length).toEqual(1);
-
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
         `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.jpg`,
@@ -977,14 +977,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it('should ignore files with wrong extension', async () => {
-      await fs.promises.copyFile(
-        `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
-      );
-
-      const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      expect(beforeAssets.length).toEqual(1);
-
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
         `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.txt`,
@@ -1001,14 +993,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it('should offline removed files', async () => {
-      await fs.promises.copyFile(
-        `${IMMICH_TEST_ASSET_PATH}/albums/nature/cyclamen_persicum.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`,
-      );
-
-      const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-      expect(beforeAssets.length).toEqual(1);
-
       await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/file1.jpg`);
 
       // This must be fixed before merge
