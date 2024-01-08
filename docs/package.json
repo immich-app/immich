@@ -14,7 +14,8 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "check": "tsc"
+    "check": "tsc",
+    "index" : "node docs/auto-index.js"
   },
   "dependencies": {
     "@docusaurus/core": "^2.4.3",
