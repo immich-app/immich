@@ -45,6 +45,15 @@ export class ServerInfoService {
     this.communicationRepository.on('connect', (userId) => this.handleConnect(userId));
   }
 
+  async init(): Promise<void> {
+    await this.handleVersionCheck();
+
+    const featureFlags = await this.getFeatures();
+    if (featureFlags.configFile) {
+      await this.setAdminOnboarding();
+    }
+  }
+
   async getInfo(): Promise<ServerInfoResponseDto> {
     const libraryBase = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
     const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
