@@ -26,6 +26,8 @@ export const serverConfig = writable<ServerConfig>({
   loginPageMessage: '',
   trashDays: 30,
   isInitialized: false,
+  isOnboarded: false,
+  externalDomain: '',
 });
 
 export const loadConfig = async () => {

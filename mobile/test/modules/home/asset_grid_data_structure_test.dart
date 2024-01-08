@@ -75,7 +75,7 @@ void main() {
       // 5 Assets => 2 Rows
       // Day 1
       // 5 Assets => 2 Rows
-      expect(renderList.elements.length, 4);
+      expect(renderList.elements, hasLength(4));
       expect(
         renderList.elements[0].type,
         RenderAssetGridElementType.monthTitle,
@@ -122,7 +122,7 @@ void main() {
         RenderAssetGridElementType.monthTitle,
       ];
 
-      expect(renderList.elements.length, types.length);
+      expect(renderList.elements, hasLength(types.length));
 
       for (int i = 0; i < renderList.elements.length; i++) {
         expect(renderList.elements[i].type, types[i]);

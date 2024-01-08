@@ -100,6 +100,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
   passwordLogin: {
     enabled: true,
   },
+  server: {
+    externalDomain: '',
+    loginPageMessage: '',
+  },
   storageTemplate: {
     enabled: false,
     hashVerificationEnabled: true,

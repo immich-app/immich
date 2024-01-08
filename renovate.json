@@ -76,5 +76,5 @@
     "flutter_map",
     "flutter_map_heatmap"
   ],
-  "labels": ["renovate"]
+  "labels": ["dependencies", "renovate"]
 }

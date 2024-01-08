@@ -1,17 +1,14 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/etag.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
-import 'package:immich_mobile/shared/services/hash.service.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
-import 'package:mocktail/mocktail.dart';
+
+import '../../test_utils.dart';
+import 'shared_mocks.dart';
 
 void main() {
   Asset makeAsset({
@@ -39,22 +36,6 @@ void main() {
     );
   }
 
-  Isar loadDb() {
-    return Isar.openSync(
-      [
-        ExifInfoSchema,
-        AssetSchema,
-        AlbumSchema,
-        UserSchema,
-        StoreValueSchema,
-        LoggerMessageSchema,
-        ETagSchema,
-      ],
-      maxSizeMiB: 256,
-      directory: ".",
-    );
-  }
-
   group('Test SyncService grouped', () {
     late final Isar db;
     final MockHashService hs = MockHashService();
@@ -67,8 +48,7 @@ void main() {
     );
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
-      await Isar.initializeIsarCore(download: true);
-      db = loadDb();
+      db = await TestUtils.initIsar();
       ImmichLogger();
       db.writeTxnSync(() => db.clearSync());
       Store.init(db);
@@ -97,7 +77,7 @@ void main() {
       expect(db.assets.countSync(), 5);
       final bool c1 =
           await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
-      expect(c1, false);
+      expect(c1, isFalse);
       expect(db.assets.countSync(), 5);
     });
 
@@ -114,7 +94,7 @@ void main() {
       expect(db.assets.countSync(), 5);
       final bool c1 =
           await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
-      expect(c1, true);
+      expect(c1, isTrue);
       expect(db.assets.countSync(), 7);
     });
 
@@ -131,22 +111,22 @@ void main() {
       expect(db.assets.countSync(), 5);
       final bool c1 =
           await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
-      expect(c1, true);
+      expect(c1, isTrue);
       expect(db.assets.countSync(), 8);
       final bool c2 =
           await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
-      expect(c2, false);
+      expect(c2, isFalse);
       expect(db.assets.countSync(), 8);
       remoteAssets.removeAt(4);
       final bool c3 =
           await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
-      expect(c3, true);
+      expect(c3, isTrue);
       expect(db.assets.countSync(), 7);
       remoteAssets.add(makeAsset(checksum: "k", remoteId: "2-1e"));
       remoteAssets.add(makeAsset(checksum: "l", remoteId: "2-2"));
       final bool c4 =
           await s.syncRemoteAssetsToDb(owner, _failDiff, (u) => remoteAssets);
-      expect(c4, true);
+      expect(c4, isTrue);
       expect(db.assets.countSync(), 9);
     });
 
@@ -164,7 +144,7 @@ void main() {
         (user, since) async => (toUpsert, toDelete),
         (user) => throw Exception(),
       );
-      expect(c, true);
+      expect(c, isTrue);
       expect(db.assets.countSync(), 6);
     });
   });
@@ -172,5 +152,3 @@ void main() {
 
 Future<(List<Asset>?, List<String>?)> _failDiff(User user, DateTime time) =>
     Future.value((null, null));
-
-class MockHashService extends Mock implements HashService {}

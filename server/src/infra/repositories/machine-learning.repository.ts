@@ -12,16 +12,20 @@ import {
 import { Injectable } from '@nestjs/common';
 import { readFile } from 'fs/promises';
 
+const errorPrefix = 'Machine learning request';
+
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
   private async post<T>(url: string, input: TextModelInput | VisionModelInput, config: ModelConfig): Promise<T> {
     const formData = await this.getFormData(input, config);
-    const res = await fetch(`${url}/predict`, { method: 'POST', body: formData });
+
+    const res = await fetch(`${url}/predict`, { method: 'POST', body: formData }).catch((error: Error | any) => {
+      throw new Error(`${errorPrefix} to "${url}" failed with ${error?.cause || error}`);
+    });
+
     if (res.status >= 400) {
-      throw new Error(
-        `Request ${config.modelType ? `for ${config.modelType.replace('-', ' ')} ` : ''}` +
-          `failed with status ${res.status}: ${res.statusText}`,
-      );
+      const modelType = config.modelType ? ` for ${config.modelType.replace('-', ' ')}` : '';
+      throw new Error(`${errorPrefix}${modelType} failed with status ${res.status}: ${res.statusText}`);
     }
     return res.json();
   }
