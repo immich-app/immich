@@ -107,11 +107,19 @@ export class LibraryService {
   }
 
   async watch(id: string) {
+    // Stop any previous watchers of this library
+    await this.unwatch(id);
+
+    // Start a new watcher in the background
+    await this.jobRepository.queue({ name: JobName.LIBRARY_WATCH, data: { id } });
+  }
+
+  async handleWatchLibrary(job: IEntityJob): Promise<boolean> {
     if (!this.watchEnabled) {
-      return;
+      return false;
     }
 
-    const library = await this.repository.get(id);
+    const library = await this.repository.get(job.id);
     if (!library || !library.isWatched) {
       return false;
     }
@@ -120,13 +128,9 @@ export class LibraryService {
       throw new Error('Cannot watch library with no import paths');
     }
 
+    this.logger.debug(`Starting to watch library ${library.id}`);
+
     // TODO: filter by file extension
-
-    // Stop any previous watchers of this library
-
-    await this.unwatch(library.id);
-
-    this.logger.debug(`Starting automatic watch of library ${library.id}`);
 
     this.watchers[library.id] = chokidar.watch(library.importPaths, {
       ignored: library.exclusionPatterns,
@@ -155,6 +159,8 @@ export class LibraryService {
         await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
       }
     });
+
+    return true;
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {

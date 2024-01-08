@@ -75,7 +75,7 @@ export type JobItem =
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
-  // Audit log cleanup
+  // Audit Log Cleanup
   | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
 
   // Asset Deletion
@@ -89,7 +89,8 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
-  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
+  | { name: JobName.LIBRARY_WATCH; data: IEntityJob };
 
 export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
 export type JobItemHandler = (item: JobItem) => Promise<void>;
