@@ -279,7 +279,7 @@
         }
         return;
       case 'Delete':
-        trashOrDelete();
+        trashOrDelete(shiftKey);
         return;
       case 'Escape':
         if (isShowDeleteConfirmation) {
@@ -360,11 +360,13 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  $: trashOrDelete = !(force || !isTrashEnabled)
-    ? trashAsset
-    : () => {
-        isShowDeleteConfirmation = true;
-      };
+  const trashOrDelete = (forceDelete: boolean = false) => {
+    if (!(force || !isTrashEnabled) && !forceDelete) {
+      trashAsset();
+      return;
+    }
+    isShowDeleteConfirmation = true;
+  };
 
   const trashAsset = async () => {
     try {
@@ -576,7 +578,7 @@
         on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
-        on:delete={trashOrDelete}
+        on:delete={() => trashOrDelete()}
         on:favorite={toggleFavorite}
         on:addToAlbum={() => openAlbumPicker(false)}
         on:addToSharedAlbum={() => openAlbumPicker(true)}

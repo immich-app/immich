@@ -19,6 +19,7 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
+  import { deleteAssets } from '$lib/utils/actions';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -70,8 +71,11 @@
       return;
     }
 
+    const key = event.key;
+    const shiftKey = event.shiftKey;
+
     if (!$showAssetViewer) {
-      switch (event.key) {
+      switch (key) {
         case 'Escape':
           dispatch('escape');
           return;
@@ -84,6 +88,16 @@
         case '/':
           event.preventDefault();
           goto(AppRoute.EXPLORE);
+          return;
+        case 'Delete':
+          if ($isMultiSelectState) {
+            const ids = Array.from($selectedAssets)
+              .filter((a) => !a.isExternal)
+              .map((a) => a.id);
+
+            deleteAssets(shiftKey, (assetId) => assetStore.removeAsset(assetId), ids);
+            assetInteractionStore.clearMultiselect();
+          }
           return;
       }
     }
