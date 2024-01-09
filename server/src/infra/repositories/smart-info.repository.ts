@@ -112,7 +112,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
           throw new Error(`Invalid value for 'numResults': ${numResults}`);
         }
         cte = cte.limit(numResults);
-        await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
+        if (numResults > 64) { // setting k too low messes with prefilter recall
+          await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
+        }
       }
 
       if (noPerson) {

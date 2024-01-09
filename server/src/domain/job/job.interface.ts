@@ -36,6 +36,6 @@ export interface ISidecarWriteJob extends IEntityJob {
   longitude?: number;
 }
 
-export interface IFacialRecognitionJob extends IEntityJob {
-  numResults: number;
+export interface IDeferrableJob extends IEntityJob {
+  deferred?: boolean;
 }

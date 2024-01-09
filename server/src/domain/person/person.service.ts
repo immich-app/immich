@@ -8,7 +8,7 @@ import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { CacheControl, ImmichFileResponse, usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IFacialRecognitionJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import { IBaseJob, IDeferrableJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
   CropOptions,
@@ -364,20 +364,16 @@ export class PersonService {
       this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
     );
 
-    const faceCount = await this.repository.getFaceCount();
-    this.logger.debug(`Found ${faceCount} faces to process`);
-    const numResults = Math.min(Math.max(faceCount / 100, 100), 1000); // increase the number of results for large libraries up to 1000
-
     for await (const page of facePagination) {
       await this.jobRepository.queueAll(
-        page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id, numResults } })),
+        page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id, deferred: false } })),
       );
     }
 
     return true;
   }
 
-  async handleRecognizeFaces({ id, numResults }: IFacialRecognitionJob) {
+  async handleRecognizeFaces({ id, deferred }: IDeferrableJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
@@ -389,35 +385,56 @@ export class PersonService {
       return false;
     }
 
+    if (face.personId) {
+      this.logger.debug(`Face ${id} already has a person assigned`);
+      return true;
+    }
+
     // typeorm leaves the embedding as a string
     const embedding: Embedding = typeof face.embedding === 'string' ? JSON.parse(face.embedding) : face.embedding;
     const matches = await this.smartInfoRepository.searchFaces({
       userIds: [face.asset.ownerId],
       embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
-      numResults, // TODO: use vbase
+      numResults: machineLearning.facialRecognition.minFaces,
     });
 
-    this.logger.debug(`Face ${id} has ${matches.length} matches`);
-
-    let personId = matches.find((match) => match.face.personId)?.face.personId; // `matches` also includes the face itself
-    let faceIds = [id];
+    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length > 1 ? 'es' : ''}`);
 
     const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
-    if (isCore) {
-      if (!personId) {
+    if (!isCore && !deferred) {
+      this.logger.debug(`Face ${id} is not a core face. Deferring for later processing`);
+      this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
+      return true;
+    }
+
+    let personId = matches.find((match) => match.face.personId)?.face.personId; // `matches` also includes the face itself
+    if (!personId) {
+      const matchWithPerson = await this.smartInfoRepository.searchFaces({
+        userIds: [face.asset.ownerId],
+        embedding,
+        maxDistance: machineLearning.facialRecognition.maxDistance,
+        numResults: 1,
+        hasPerson: true,
+      });
+
+      if (matchWithPerson.length > 0) {
+        personId = matchWithPerson[0].face.personId;
+      }
+    }
+    
+    let faceIds = [id];
+    if (!personId && isCore) {
         this.logger.log(`Creating new person for face ${id}`);
         const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
         await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
         personId = newPerson.id;
-      }
 
-      // all unassigned faces within range are assigned to the new person
       faceIds = matches.filter((match) => !match.face.personId).map((match) => match.face.id);
     }
 
     if (personId) {
-      this.logger.debug(`Assigning ${faceIds.length} faces to person ${personId}`);
+      this.logger.debug(`Assigning ${faceIds.length} face${faceIds.length > 1 ? 's' : ''} to person ${personId}`);
       await this.repository.reassignFaces({ faceIds, newPersonId: personId });
     }
 

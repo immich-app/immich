@@ -3,6 +3,7 @@ import { JobName, QueueName } from '../job/job.constants';
 import {
   IAssetDeletionJob,
   IBaseJob,
+  IDeferrableJob,
   IDeleteFilesJob,
   IEntityJob,
   ILibraryFileJob,
@@ -67,7 +68,7 @@ export type JobItem =
   | { name: JobName.QUEUE_FACE_DETECTION; data: IBaseJob }
   | { name: JobName.FACE_DETECTION; data: IEntityJob }
   | { name: JobName.QUEUE_FACIAL_RECOGNITION; data: IBaseJob }
-  | { name: JobName.FACIAL_RECOGNITION; data: IEntityJob }
+  | { name: JobName.FACIAL_RECOGNITION; data: IDeferrableJob }
   | { name: JobName.GENERATE_PERSON_THUMBNAIL; data: IEntityJob }
 
   // Clip Embedding
