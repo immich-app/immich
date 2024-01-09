@@ -35,3 +35,7 @@ export interface ISidecarWriteJob extends IEntityJob {
   latitude?: number;
   longitude?: number;
 }
+
+export interface IFacialRecognitionJob extends IEntityJob {
+  numResults: number;
+}

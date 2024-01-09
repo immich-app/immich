@@ -8,7 +8,7 @@ import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { CacheControl, ImmichFileResponse, usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
+import { IBaseJob, IEntityJob, IFacialRecognitionJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
   CropOptions,
@@ -364,16 +364,20 @@ export class PersonService {
       this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
     );
 
+    const faceCount = await this.repository.getFaceCount();
+    this.logger.debug(`Found ${faceCount} faces to process`);
+    const numResults = Math.min(Math.max(faceCount / 100, 100), 1000); // increase the number of results for large libraries up to 1000
+
     for await (const page of facePagination) {
       await this.jobRepository.queueAll(
-        page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id } })),
+        page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id, numResults } })),
       );
     }
 
     return true;
   }
 
-  async handleRecognizeFaces({ id }: IEntityJob) {
+  async handleRecognizeFaces({ id, numResults }: IFacialRecognitionJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
@@ -391,7 +395,7 @@ export class PersonService {
       userIds: [face.asset.ownerId],
       embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
-      numResults: 100,
+      numResults, // TODO: use vbase
     });
 
     this.logger.debug(`Face ${id} has ${matches.length} matches`);
