@@ -93,7 +93,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     embedding,
     numResults,
     maxDistance,
-    noPerson,
     hasPerson,
   }: FaceEmbeddingSearch): Promise<FaceSearchResult[]> {
     let results: any[] = [];
@@ -117,9 +116,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         }
       }
 
-      if (noPerson) {
-        cte = cte.andWhere('faces."personId" IS NULL');
-      } else if (hasPerson) {
+      if (hasPerson) {
         cte = cte.andWhere('faces."personId" IS NOT NULL');
       }
 
