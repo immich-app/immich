@@ -6,6 +6,7 @@ import { APIKeyService } from './api-key';
 import { AssetService } from './asset';
 import { AuditService } from './audit';
 import { AuthService } from './auth';
+import { DatabaseService } from './database';
 import { JobService } from './job';
 import { LibraryService } from './library';
 import { MediaService } from './media';
@@ -18,7 +19,7 @@ import { SharedLinkService } from './shared-link';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
-import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
+import { SystemConfigService } from './system-config';
 import { TagService } from './tag';
 import { UserService } from './user';
 
@@ -29,6 +30,7 @@ const providers: Provider[] = [
   AssetService,
   AuditService,
   AuthService,
+  DatabaseService,
   JobService,
   MediaService,
   MetadataService,
@@ -45,13 +47,6 @@ const providers: Provider[] = [
   TagService,
   UserService,
   ImmichLogger,
-  {
-    provide: INITIAL_SYSTEM_CONFIG,
-    inject: [SystemConfigService],
-    useFactory: async (configService: SystemConfigService) => {
-      return configService.getConfig();
-    },
-  },
 ];
 
 @Global()

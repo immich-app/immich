@@ -17,7 +17,6 @@ class AllJobStatusResponseDto {
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
-    required this.objectTagging,
     required this.recognizeFaces,
     required this.search,
     required this.sidecar,
@@ -34,8 +33,6 @@ class AllJobStatusResponseDto {
   JobStatusDto metadataExtraction;
 
   JobStatusDto migration;
-
-  JobStatusDto objectTagging;
 
   JobStatusDto recognizeFaces;
 
@@ -57,7 +54,6 @@ class AllJobStatusResponseDto {
      other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
      other.migration == migration &&
-     other.objectTagging == objectTagging &&
      other.recognizeFaces == recognizeFaces &&
      other.search == search &&
      other.sidecar == sidecar &&
@@ -73,7 +69,6 @@ class AllJobStatusResponseDto {
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
-    (objectTagging.hashCode) +
     (recognizeFaces.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
@@ -83,7 +78,7 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, objectTagging=$objectTagging, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,7 +86,6 @@ class AllJobStatusResponseDto {
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
-      json[r'objectTagging'] = this.objectTagging;
       json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
@@ -114,7 +108,6 @@ class AllJobStatusResponseDto {
         library_: JobStatusDto.fromJson(json[r'library'])!,
         metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobStatusDto.fromJson(json[r'migration'])!,
-        objectTagging: JobStatusDto.fromJson(json[r'objectTagging'])!,
         recognizeFaces: JobStatusDto.fromJson(json[r'recognizeFaces'])!,
         search: JobStatusDto.fromJson(json[r'search'])!,
         sidecar: JobStatusDto.fromJson(json[r'sidecar'])!,
@@ -173,7 +166,6 @@ class AllJobStatusResponseDto {
     'library',
     'metadataExtraction',
     'migration',
-    'objectTagging',
     'recognizeFaces',
     'search',
     'sidecar',

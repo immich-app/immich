@@ -22,11 +22,9 @@
     JobName.MetadataExtraction,
     JobName.Library,
     JobName.Sidecar,
-    JobName.ObjectTagging,
     JobName.SmartSearch,
     JobName.RecognizeFaces,
     JobName.VideoConversion,
-    JobName.StorageTemplateMigration,
     JobName.Migration,
   ];
 

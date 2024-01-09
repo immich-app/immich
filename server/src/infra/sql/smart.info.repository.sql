@@ -4,6 +4,8 @@
 START TRANSACTION
 SET
   LOCAL vectors.k = '100'
+SET
+  LOCAL vectors.enable_prefilter = on
 SELECT
   "a"."id" AS "a_id",
   "a"."deviceAssetId" AS "a_deviceAssetId",
@@ -67,7 +69,7 @@ FROM
   LEFT JOIN "exif" "e" ON "e"."assetId" = "a"."id"
 WHERE
   (
-    "a"."ownerId" = $1
+    "a"."ownerId" IN ($1)
     AND "a"."isVisible" = true
     AND "a"."isArchived" = false
     AND "a"."fileCreatedAt" < NOW()
@@ -101,7 +103,7 @@ WITH
       INNER JOIN "assets" "asset" ON "asset"."id" = "faces"."assetId"
       AND ("asset"."deletedAt" IS NULL)
     WHERE
-      "asset"."ownerId" = $2
+      "asset"."ownerId" IN ($2)
     ORDER BY
       1 + ("faces"."embedding" <= > $3) ASC
     LIMIT

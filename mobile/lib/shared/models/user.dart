@@ -51,6 +51,21 @@ class User {
         avatarColor = dto.avatarColor.toAvatarColor(),
         inTimeline = dto.inTimeline ?? false;
 
+  /// Base user dto used where the complete user object is not required
+  User.fromSimpleUserDto(UserDto dto)
+      : id = dto.id,
+        email = dto.email,
+        name = dto.name,
+        profileImagePath = dto.profileImagePath,
+        avatarColor = dto.avatarColor.toAvatarColor(),
+        // Fill the remaining fields with placeholders
+        isAdmin = false,
+        inTimeline = false,
+        memoryEnabled = false,
+        isPartnerSharedBy = false,
+        isPartnerSharedWith = false,
+        updatedAt = DateTime.now();
+
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
   DateTime updatedAt;

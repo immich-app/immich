@@ -83,7 +83,6 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         passwordLogin: true,
         search: true,
         sidecar: true,
-        tagImage: false,
         trash: true,
       });
     });
@@ -98,6 +97,8 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
         isInitialized: true,
+        externalDomain: '',
+        isOnboarded: false,
       });
     });
   });
@@ -165,6 +166,21 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       expect(body).toEqual({
         customCss: '',
       });
+    });
+  });
+
+  describe('POST /server-info/admin-onboarding', () => {
+    it('should set admin onboarding', async () => {
+      const config = await api.serverInfoApi.getConfig(server);
+      expect(config.isOnboarded).toBe(false);
+
+      const { status } = await request(server)
+        .post('/server-info/admin-onboarding')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(204);
+
+      const newConfig = await api.serverInfoApi.getConfig(server);
+      expect(newConfig.isOnboarded).toBe(true);
     });
   });
 });

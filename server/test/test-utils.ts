@@ -1,6 +1,6 @@
 import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
-import { dataSource, databaseChecks } from '@app/infra';
+import { dataSource } from '@app/infra';
 import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -24,7 +24,9 @@ export interface ResetOptions {
 }
 export const db = {
   reset: async (options?: ResetOptions) => {
-    await databaseChecks();
+    if (!dataSource.isInitialized) {
+      await dataSource.initialize();
+    }
     await dataSource.transaction(async (em) => {
       const entities = options?.entities || [];
       const tableNames =
@@ -75,6 +77,7 @@ export const testApp = {
         deleteCronJob: jest.fn(),
         validateCronExpression: jest.fn(),
         queue: (item: JobItem) => jobs && _handler(item),
+        queueAll: (items: JobItem[]) => jobs && Promise.all(items.map(_handler)).then(() => Promise.resolve()),
         resume: jest.fn(),
         empty: jest.fn(),
         setConcurrency: jest.fn(),
@@ -87,10 +90,7 @@ export const testApp = {
 
     app = await moduleFixture.createNestApplication().init();
     await app.listen(0);
-
-    if (jobs) {
-      await app.get(AppService).init();
-    }
+    await app.get(AppService).init();
 
     const port = app.getHttpServer().address().port;
     const protocol = app instanceof Server ? 'https' : 'http';
@@ -99,6 +99,7 @@ export const testApp = {
     return app;
   },
   reset: async (options?: ResetOptions) => {
+    await app.get(AppService).init();
     await db.reset(options);
   },
   teardown: async () => {
@@ -111,6 +112,8 @@ export const testApp = {
 };
 
 export const runAllTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
+
+export const itif = (condition: boolean) => (condition ? it : it.skip);
 
 const directoryExists = async (dirPath: string) =>
   await fs.promises

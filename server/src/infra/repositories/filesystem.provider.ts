@@ -9,13 +9,9 @@ import {
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
-import fs, { readdir, writeFile } from 'fs/promises';
+import fs, { copyFile, readdir, rename, writeFile } from 'fs/promises';
 import { glob } from 'glob';
-import mv from 'mv';
-import { promisify } from 'node:util';
 import path from 'path';
-
-const moveFile = promisify<string, string, mv.Options>(mv);
 
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
@@ -54,15 +50,9 @@ export class FilesystemProvider implements IStorageRepository {
 
   writeFile = writeFile;
 
-  async moveFile(source: string, destination: string): Promise<void> {
-    this.logger.verbose(`Moving ${source} to ${destination}`);
+  rename = rename;
 
-    if (await this.checkFileExists(destination)) {
-      throw new Error(`Destination file already exists: ${destination}`);
-    }
-
-    await moveFile(source, destination, { mkdirp: true, clobber: true });
-  }
+  copyFile = copyFile;
 
   async checkFileExists(filepath: string, mode = constants.F_OK): Promise<boolean> {
     try {

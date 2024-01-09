@@ -1,7 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -31,7 +31,7 @@ class MemoryLane extends HookConsumerWidget {
                         child: GestureDetector(
                           onTap: () {
                             HapticFeedback.heavyImpact();
-                            context.autoPush(
+                            context.pushRoute(
                               MemoryRoute(
                                 memories: memories,
                                 memoryIndex: index,

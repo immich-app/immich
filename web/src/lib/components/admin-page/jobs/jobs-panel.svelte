@@ -15,7 +15,6 @@
     mdiImageSearch,
     mdiLibraryShelves,
     mdiTable,
-    mdiTagMultiple,
     mdiVideo,
   } from '@mdi/js';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
@@ -77,13 +76,6 @@
       allText: 'SYNC',
       missingText: 'DISCOVER',
       disabled: !$featureFlags.sidecar,
-    },
-    [JobName.ObjectTagging]: {
-      icon: mdiTagMultiple,
-      title: api.getJobName(JobName.ObjectTagging),
-      subtitle:
-        'Run machine learning on assets to tag objects\nNote that some assets may not have any objects detected',
-      disabled: !$featureFlags.tagImage,
     },
     [JobName.SmartSearch]: {
       icon: mdiImageSearch,

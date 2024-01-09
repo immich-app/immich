@@ -17,7 +17,7 @@ import 'package:latlong2/latlong.dart';
 void handleShareAssets(
   WidgetRef ref,
   BuildContext context,
-  List<Asset> selection,
+  Iterable<Asset> selection,
 ) {
   showDialog(
     context: context,

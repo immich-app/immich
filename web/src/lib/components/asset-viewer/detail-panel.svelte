@@ -52,7 +52,7 @@
     }
   }
 
-  $: isOwner = $user.id === asset.ownerId;
+  $: isOwner = $user?.id === asset.ownerId;
 
   $: {
     // Get latest description from server
@@ -264,19 +264,29 @@
                 <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 {#if person.birthDate}
                   {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  <p
-                    class="font-light"
-                    title={personBirthDate.toLocaleString(
-                      {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      },
-                      { locale: $locale },
-                    )}
-                  >
-                    Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  </p>
+                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                  {@const ageInMonths = Math.floor(
+                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  )}
+                  {#if age >= 0}
+                    <p
+                      class="font-light"
+                      title={personBirthDate.toLocaleString(
+                        {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        },
+                        { locale: $locale },
+                      )}
+                    >
+                      {#if ageInMonths <= 11}
+                        Age {ageInMonths} months
+                      {:else}
+                        Age {age}
+                      {/if}
+                    </p>
+                  {/if}
                 {/if}
               </a>
             </div>
@@ -353,7 +363,7 @@
           </button>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -516,7 +526,7 @@
           </div>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}

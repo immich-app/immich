@@ -5,6 +5,7 @@ export * from './api-key';
 export * from './asset';
 export * from './audit';
 export * from './auth';
+export * from './database';
 export * from './domain.config';
 export * from './domain.constant';
 export * from './domain.module';

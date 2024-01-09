@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20231214@sha256:cd5be516b27c0c402bee3a6a93d8c83dfd5a827c18a2343cb97b55f3be98151b as dev
+FROM ghcr.io/immich-app/base-server-dev:20240105@sha256:d88528d55ef13a5df37e141fdb3e00834a4a4673d1cfa243ac999cf87ed79eb6 as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -10,7 +10,10 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
-ENV PATH="${PATH}:/usr/src/app/bin"
+ENV PATH="${PATH}:/usr/src/app/bin" \
+    NODE_ENV=development \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
@@ -31,10 +34,12 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20231214@sha256:b214f86683fde081b09beed2d7bfc28bec55c829751ccf2e02ad7dd18293f5e0
+FROM ghcr.io/immich-app/base-server-prod:20240105@sha256:0472a2689e3d95a498bc0a424c63650cdad446c2959cc91cdf7771ee832ccadc
 
 WORKDIR /usr/src/app
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin

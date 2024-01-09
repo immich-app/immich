@@ -508,6 +508,11 @@ FROM
 WHERE
   "AlbumEntity"."deletedAt" IS NULL
 
+-- AlbumRepository.removeAsset
+DELETE FROM "albums_assets_assets"
+WHERE
+  "albums_assets_assets"."assetsId" = $1
+
 -- AlbumRepository.removeAssets
 DELETE FROM "albums_assets_assets"
 WHERE

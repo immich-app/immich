@@ -1,4 +1,3 @@
-import { describe, expect, it } from '@jest/globals';
 import { timeToSeconds } from './time-to-seconds';
 
 describe('converting time to seconds', () => {

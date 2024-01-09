@@ -13,6 +13,7 @@ import {
   CropOptions,
   IAccessRepository,
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMachineLearningRepository,
   IMediaRepository,
@@ -21,6 +22,7 @@ import {
   ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  JobItem,
   UpdateFacesData,
   WithoutProperty,
 } from '../repositories';
@@ -59,10 +61,18 @@ export class PersonService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, repository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      repository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
@@ -144,6 +154,8 @@ export class PersonService {
     this.logger.debug(
       `Changing feature photos for ${changeFeaturePhoto.length} ${changeFeaturePhoto.length > 1 ? 'people' : 'person'}`,
     );
+
+    const jobs: JobItem[] = [];
     for (const personId of changeFeaturePhoto) {
       const assetFace = await this.repository.getRandomFace(personId);
 
@@ -152,15 +164,11 @@ export class PersonService {
           id: personId,
           faceAssetId: assetFace.id,
         });
-
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_PERSON_THUMBNAIL,
-          data: {
-            id: personId,
-          },
-        });
+        jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personId } });
       }
     }
+
+    await this.jobRepository.queueAll(jobs);
   }
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
@@ -198,6 +206,11 @@ export class PersonService {
     let person = await this.findOrFail(id);
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
+
+    // Check if the birthDate is in the future
+    if (birthDate && new Date(birthDate) > new Date()) {
+      throw new BadRequestException('Date of birth cannot be in the future');
+    }
 
     if (name !== undefined || birthDate !== undefined || isHidden !== undefined) {
       person = await this.repository.update({ id, name, birthDate, isHidden });
@@ -256,8 +269,10 @@ export class PersonService {
     const people = await this.repository.getAllWithoutFaces();
     for (const person of people) {
       this.logger.debug(`Person ${person.name || person.id} no longer has any faces, deleting.`);
-      await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
     }
+    await this.jobRepository.queueAll(
+      people.map((person) => ({ name: JobName.PERSON_DELETE, data: { id: person.id } })),
+    );
 
     return true;
   }
@@ -276,16 +291,16 @@ export class PersonService {
 
     if (force) {
       const people = await this.repository.getAll();
-      for (const person of people) {
-        await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: person.id } });
-      }
+      await this.jobRepository.queueAll(
+        people.map((person) => ({ name: JobName.PERSON_DELETE, data: { id: person.id } })),
+      );
       this.logger.debug(`Deleted ${people.length} people`);
     }
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.RECOGNIZE_FACES, data: { id: asset.id } })),
+      );
     }
 
     return true;
@@ -319,7 +334,7 @@ export class PersonService {
 
     for (const { embedding, ...rest } of faces) {
       const matches = await this.smartInfoRepository.searchFaces({
-        ownerId: asset.ownerId,
+        userIds: [asset.ownerId],
         embedding,
         numResults: 1,
         maxDistance: machineLearning.facialRecognition.maxDistance,
