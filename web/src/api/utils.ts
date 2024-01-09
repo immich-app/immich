@@ -20,7 +20,8 @@ export const copyToClipboard = async (secret: string) => {
 };
 
 export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  return `${externalDomain || window.location.origin}/share/${key}`;
+  const url = externalDomain || window.location.origin;
+  return `${url + url.endsWith('/') ? '' : '/'}share/${key}`;
 };
 
 export const oauth = {
