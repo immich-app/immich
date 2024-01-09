@@ -93,7 +93,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
               _BottomBar(
                 selectedLatLng: selectedLatLng,
                 onUseLocation: () => onClose(selectedLatLng.value),
-                onGetCurrentLocation: getCurrentLocation, // Adding the getCurrentLocation method
+                onGetCurrentLocation: getCurrentLocation,
               ),
             ],
           ),
@@ -134,14 +134,13 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 class _BottomBar extends StatelessWidget {
   final ValueNotifier<LatLng> selectedLatLng;
   final Function() onUseLocation;
-  final Function() onGetCurrentLocation; // Adding a function for current location
+  final Function() onGetCurrentLocation;
 
   const _BottomBar({
     required this.selectedLatLng,
     required this.onUseLocation,
-    required this.onGetCurrentLocation, // Initialize in the constructor
+    required this.onGetCurrentLocation,
   });
-
 
   @override
   Widget build(BuildContext context) {
