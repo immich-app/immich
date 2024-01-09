@@ -12,26 +12,6 @@ Immich comes preconfigured with an upload library for each user. All assets uplo
 
 External libraries tracks assets stored outside of immich, i.e. in the file system. Immich will only read data from the files, and will not modify them in any way. Therefore, the delete button is disabled for external assets. When the external library is scanned, immich will read the metadata from the file and create an asset in the library for each image or video file. These items will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc.
 
-# Step by Step Guide
-
-In order to create an external library, the administrator must:
-
-- Click on 'Administration' (top right).
-- Click on 'Edit' next to the user.
-- Set the external path - this would be the path that is exposed to the immich microservices service.
-- Click 'Confirm'.
-- Click into the user profile (top right) then click into 'Libraries'.
-- Click 'Create External Library'.
-- Next to the new library, click the three dots, then click 'Edit Import Paths'.
-- Set up your path relative to the external path you set earlier - e.g., if you set the external path to be `/mnt/media/external` and your Import Paths to `/photos`, then you will end up with `/mnt/media/external/photos`.
-- Click 'Save'.
-- Click 'Scan All Libraries'.
-
-To confirm it's working, you can open up a Docker shell for the immich microservices, and you should see similar outputs to this:
-`[Nest] 7 - 11/24/2023, 1:06:39 AM LOG [MediaService] Successfully generated WEBP image thumbnail for asset b6d37673-5931-4b25-8380-89135021f48b`
-
-# Scanning functionality
-
 If a file is modified outside of Immich, the changes will not be reflected in immich until the library is scanned again. There are different ways to scan a library depending on the use case:
 
 - Scan Library Files: This is the default scan method and also the quickest. It will scan all files in the library and add new files to the library. It will notice if any files are missing (see below) but not check existing assets

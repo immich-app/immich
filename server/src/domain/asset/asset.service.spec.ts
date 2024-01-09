@@ -63,6 +63,7 @@ const uploadFile = {
     auth: null,
     fieldName: UploadFieldName.ASSET_DATA,
     file: {
+      uuid: 'random-uuid',
       checksum: Buffer.from('checksum', 'utf8'),
       originalPath: 'upload/admin/image.jpeg',
       originalName: 'image.jpeg',
@@ -73,6 +74,7 @@ const uploadFile = {
       auth: authStub.admin,
       fieldName,
       file: {
+        uuid: 'random-uuid',
         mimeType: 'image/jpeg',
         checksum: Buffer.from('checksum', 'utf8'),
         originalPath: `upload/admin/${filename}`,
@@ -280,9 +282,9 @@ describe(AssetService.name, () => {
 
     it('should return upload for everything else', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id',
+        'upload/upload/admin_id/ra/nd',
       );
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id');
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
     });
   });
 

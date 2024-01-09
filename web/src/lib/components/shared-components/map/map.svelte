@@ -22,6 +22,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
+  import { Theme } from '$lib/constants';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -36,7 +37,7 @@
 
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
-      theme: $mapSettings.allowDarkMode ? $colorTheme : 'light',
+      theme: $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT,
     });
     return data as StyleSpecification;
   })();

@@ -4725,6 +4725,31 @@
         ]
       }
     },
+    "/server-info/admin-onboarding": {
+      "post": {
+        "operationId": "setAdminOnboarding",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
     "/server-info/config": {
       "get": {
         "operationId": "getServerConfig",
@@ -6188,7 +6213,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.91.4",
+    "version": "1.92.1",
     "contact": {}
   },
   "tags": [],
@@ -8593,7 +8618,13 @@
       },
       "ServerConfigDto": {
         "properties": {
+          "externalDomain": {
+            "type": "string"
+          },
           "isInitialized": {
+            "type": "boolean"
+          },
+          "isOnboarded": {
             "type": "boolean"
           },
           "loginPageMessage": {
@@ -8610,7 +8641,9 @@
           "trashDays",
           "oauthButtonText",
           "loginPageMessage",
-          "isInitialized"
+          "isInitialized",
+          "isOnboarded",
+          "externalDomain"
         ],
         "type": "object"
       },
@@ -9039,6 +9072,9 @@
           "reverseGeocoding": {
             "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
           },
+          "server": {
+            "$ref": "#/components/schemas/SystemConfigServerDto"
+          },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
@@ -9066,7 +9102,8 @@
           "thumbnail",
           "trash",
           "theme",
-          "library"
+          "library",
+          "server"
         ],
         "type": "object"
       },
@@ -9356,6 +9393,21 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigServerDto": {
+        "properties": {
+          "externalDomain": {
+            "type": "string"
+          },
+          "loginPageMessage": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "externalDomain",
+          "loginPageMessage"
         ],
         "type": "object"
       },

@@ -127,6 +127,10 @@ export const defaults = Object.freeze<SystemConfig>({
       cronExpression: CronExpression.EVERY_DAY_AT_MIDNIGHT,
     },
   },
+  server: {
+    externalDomain: '',
+    loginPageMessage: '',
+  },
 });
 
 export enum FeatureFlag {

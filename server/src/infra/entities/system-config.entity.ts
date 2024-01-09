@@ -84,6 +84,9 @@ export enum SystemConfigKey {
 
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
 
+  SERVER_EXTERNAL_DOMAIN = 'server.externalDomain',
+  SERVER_LOGIN_PAGE_MESSAGE = 'server.loginPageMessage',
+
   STORAGE_TEMPLATE_ENABLED = 'storageTemplate.enabled',
   STORAGE_TEMPLATE_HASH_VERIFICATION_ENABLED = 'storageTemplate.hashVerificationEnabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
@@ -243,5 +246,9 @@ export interface SystemConfig {
       enabled: boolean;
       cronExpression: string;
     };
+  };
+  server: {
+    externalDomain: string;
+    loginPageMessage: string;
   };
 }

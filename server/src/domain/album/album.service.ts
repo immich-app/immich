@@ -231,7 +231,7 @@ export class AlbumService {
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
     if (removedIds.length > 0) {
-      await this.albumRepository.removeAssets({ albumId: id, assetIds: removedIds });
+      await this.albumRepository.removeAssets(id, removedIds);
       await this.albumRepository.update({ id, updatedAt: new Date() });
       if (album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
         await this.albumRepository.updateThumbnails();

@@ -19,6 +19,11 @@ export const copyToClipboard = async (secret: string) => {
   }
 };
 
+export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
+  const url = externalDomain || window.location.origin;
+  return `${url + url.endsWith('/') ? '' : '/'}share/${key}`;
+};
+
 export const oauth = {
   isCallback: (location: Location) => {
     const search = location.search;

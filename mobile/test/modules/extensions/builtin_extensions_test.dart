@@ -11,9 +11,9 @@ void main() {
       );
     });
     test('malformed', () {
-      expect("".toDuration(), null);
-      expect("1:2".toDuration(), null);
-      expect("a:b:c".toDuration(), null);
+      expect("".toDuration(), isNull);
+      expect("1:2".toDuration(), isNull);
+      expect("a:b:c".toDuration(), isNull);
     });
   });
   group('Test uniqueConsecutive', () {
@@ -29,17 +29,17 @@ void main() {
 
     test('noDuplicates', () {
       final a = [1, 2, 3];
-      expect(a.uniqueConsecutive(), [1, 2, 3]);
+      expect(a.uniqueConsecutive(), orderedEquals([1, 2, 3]));
     });
 
     test('unsortedDuplicates', () {
       final a = [1, 2, 1, 3];
-      expect(a.uniqueConsecutive(), [1, 2, 1, 3]);
+      expect(a.uniqueConsecutive(), orderedEquals([1, 2, 1, 3]));
     });
 
     test('sortedDuplicates', () {
       final a = [6, 6, 2, 3, 3, 3, 4, 5, 1, 1];
-      expect(a.uniqueConsecutive(), [6, 2, 3, 4, 5, 1]);
+      expect(a.uniqueConsecutive(), orderedEquals([6, 2, 3, 4, 5, 1]));
     });
 
     test('withKey', () {
@@ -48,7 +48,7 @@ void main() {
         a.uniqueConsecutive(
           compare: (s1, s2) => s1.length.compareTo(s2.length),
         ),
-        ["a", "bb", "ddd"],
+        orderedEquals(["a", "bb", "ddd"]),
       );
     });
   });

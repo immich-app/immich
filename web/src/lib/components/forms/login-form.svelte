@@ -19,6 +19,7 @@
   const dispatch = createEventDispatcher<{
     success: void;
     firstLogin: void;
+    onboarding: void;
   }>();
 
   onMount(async () => {
@@ -57,14 +58,21 @@
       errorMessage = '';
       loading = true;
 
-      const { data } = await api.authenticationApi.login({
+      const { data: user } = await api.authenticationApi.login({
         loginCredentialDto: {
           email,
           password,
         },
       });
 
-      if (!data.isAdmin && data.shouldChangePassword) {
+      const { data: serverConfig } = await api.serverInfoApi.getServerConfig();
+
+      if (user.isAdmin && !serverConfig.isOnboarded) {
+        dispatch('onboarding');
+        return;
+      }
+
+      if (!user.isAdmin && user.shouldChangePassword) {
         dispatch('firstLogin');
         return;
       }

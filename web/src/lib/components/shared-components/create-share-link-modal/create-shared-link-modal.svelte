@@ -5,7 +5,7 @@
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, copyToClipboard, SharedLinkResponseDto, SharedLinkType } from '@api';
+  import { api, copyToClipboard, makeSharedLinkUrl, SharedLinkResponseDto, SharedLinkType } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import BaseModal from '../base-modal.svelte';
@@ -13,6 +13,7 @@
   import DropdownButton from '../dropdown-button.svelte';
   import { notificationController, NotificationType } from '../notification/notification';
   import { mdiLink } from '@mdi/js';
+  import { serverConfig } from '$lib/stores/server-config.store';
 
   export let albumId: string | undefined = undefined;
   export let assetIds: string[] = [];
@@ -82,7 +83,7 @@
           showMetadata,
         },
       });
-      sharedLink = `${window.location.origin}/share/${data.key}`;
+      sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
     } catch (e) {
       handleError(e, 'Failed to create shared link');
     }
@@ -182,7 +183,7 @@
       {:else}
         <div class="text-sm">
           Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
-            >{editingLink.description}</span
+            >{editingLink.description || ''}</span
           >
         </div>
       {/if}
