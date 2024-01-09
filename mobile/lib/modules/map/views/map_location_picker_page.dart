@@ -10,6 +10,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:immich_mobile/modules/map/utils/map_utils.dart';
 
 class MapLocationPickerPage extends HookConsumerWidget {
   final LatLng initialLatLng;
@@ -40,6 +41,16 @@ class MapLocationPickerPage extends HookConsumerWidget {
 
     void onClose([LatLng? selected]) {
       context.popRoute(selected);
+    }
+
+    Future<void> getCurrentLocation() async {
+      var (currentLocation, locationPermission)  = await MapUtils.checkPermAndGetLocation(context);
+      if (currentLocation == null) {
+        return;
+      }
+      var currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude);
+      selectedLatLng.value = currentLatLng;
+      controller.value?.animateCamera(CameraUpdate.newLatLng(currentLatLng));
     }
 
     return MapThemeOveride(
@@ -79,6 +90,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
               _BottomBar(
                 selectedLatLng: selectedLatLng,
                 onUseLocation: () => onClose(selectedLatLng.value),
+                onGetCurrentLocation: getCurrentLocation, // Adding the getCurrentLocation method
               ),
             ],
           ),
@@ -119,10 +131,12 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 class _BottomBar extends StatelessWidget {
   final ValueNotifier<LatLng> selectedLatLng;
   final Function() onUseLocation;
+  final Function() onGetCurrentLocation; // Adding a function for current location
 
   const _BottomBar({
     required this.selectedLatLng,
     required this.onUseLocation,
+    required this.onGetCurrentLocation, // Initialize in the constructor
   });
 
   @override
@@ -150,6 +164,12 @@ class _BottomBar extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onUseLocation,
               child: const Text("map_location_picker_page_use_location").tr(),
+            ),
+          ),
+          Center(
+            child: ElevatedButton(
+              onPressed: onGetCurrentLocation,
+              child: const Icon(Icons.my_location),
             ),
           ),
         ],
