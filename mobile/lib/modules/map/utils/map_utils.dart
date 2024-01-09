@@ -63,7 +63,7 @@ class MapUtils {
         'features': markers.map(_addFeature).toList(),
       };
 
-  static Future<(Position?, LocationPermission?)> checkOrGetLocationPermission(
+  static Future<(Position?, LocationPermission?)> checkPermAndGetLocation(
     BuildContext context,
   ) async {
     try {

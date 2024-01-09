@@ -216,7 +216,7 @@ class MapPage extends HookConsumerWidget {
     }
 
     void onZoomToLocation() async {
-      final location = await MapUtils.checkOrGetLocationPermission(context);
+      final location = await MapUtils.checkPermAndGetLocation(context);
       if (location.$2 != null) {
         if (location.$2 == LocationPermission.unableToDetermine &&
             context.mounted) {
