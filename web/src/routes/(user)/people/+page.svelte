@@ -45,20 +45,7 @@
   let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
 
-  let visiblePeopleGridWidth: number;
-  let allPeopleGridWidth: number;
-  let innerWidth: number;
   let innerHeight: number;
-  let thumbnailWidth: string | null = null;
-  let thumbnailWidthHidden: string | null = null;
-
-  $: {
-    if (selectHidden) {
-      thumbnailWidthHidden = calculateOptimalThumbnailWidth(allPeopleGridWidth, innerWidth);
-    } else {
-      thumbnailWidth = calculateOptimalThumbnailWidth(visiblePeopleGridWidth, innerWidth);
-    }
-  }
 
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
@@ -75,24 +62,6 @@
       document.removeEventListener('keydown', onKeyboardPress);
     }
   });
-
-  const calculateOptimalThumbnailWidth = (width: number, globalWidth: number): string => {
-    const isLg = globalWidth < 1024;
-    const minThumbnailWidth = isLg ? 40 : 60;
-    const maxThumbnailWidth = isLg ? 130 : 180;
-    const gapWidth = 4;
-
-    const numThumbnails = Math.floor(width / (minThumbnailWidth + gapWidth));
-    const optimalWidth = Math.min(
-      maxThumbnailWidth,
-      Math.max(minThumbnailWidth, Math.floor((width * gapWidth) / numThumbnails)),
-    );
-
-    const actualNumThumbnails = Math.floor((width + gapWidth) / (optimalWidth + gapWidth));
-    const adjustedWidth = Math.floor(width / actualNumThumbnails) - gapWidth;
-
-    return adjustedWidth.toString();
-  };
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
@@ -377,7 +346,7 @@
   };
 </script>
 
-<svelte:window bind:innerWidth bind:innerHeight />
+<svelte:window bind:innerHeight />
 
 {#if showMergeModal}
   <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
@@ -404,13 +373,11 @@
     {/if}
   </svelte:fragment>
 
-  {#if countVisiblePeople > 0 && thumbnailWidth}
-    <div class="flex flex-row flex-wrap gap-1" bind:clientWidth={visiblePeopleGridWidth}>
+  {#if countVisiblePeople > 0}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
       {#each people as person, idx (person.id)}
         {#if !person.isHidden}
           <PeopleCard
-            width={thumbnailWidth}
-            height={thumbnailWidth}
             {person}
             preload={idx < 20}
             on:change-name={() => handleChangeName(person)}
@@ -481,34 +448,30 @@
     bind:toggleVisibility
     screenHeight={innerHeight}
   >
-    <div class="flex flex-row flex-wrap gap-1" bind:clientWidth={allPeopleGridWidth}>
-      {#if thumbnailWidth}
-        {#each people as person, idx (person.id)}
-          <button
-            class="relative"
-            style:width="{thumbnailWidthHidden}px"
-            style:height="{thumbnailWidthHidden}px"
-            on:click={() => (person.isHidden = !person.isHidden)}
-            on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
-            on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
-          >
-            <ImageThumbnail
-              preload={idx < 20}
-              bind:hidden={person.isHidden}
-              shadow
-              url={api.getPeopleThumbnailUrl(person.id)}
-              altText={person.name}
-              widthStyle="100%"
-              bind:eyeColor={eyeColorMap[person.id]}
-            />
-            {#if person.name}
-              <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
-                {person.name}
-              </span>
-            {/if}
-          </button>
-        {/each}
-      {/if}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
+      {#each people as person, idx (person.id)}
+        <button
+          class="relative"
+          on:click={() => (person.isHidden = !person.isHidden)}
+          on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
+          on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
+        >
+          <ImageThumbnail
+            preload={idx < 20}
+            bind:hidden={person.isHidden}
+            shadow
+            url={api.getPeopleThumbnailUrl(person.id)}
+            altText={person.name}
+            widthStyle="100%"
+            bind:eyeColor={eyeColorMap[person.id]}
+          />
+          {#if person.name}
+            <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+              {person.name}
+            </span>
+          {/if}
+        </button>
+      {/each}
     </div>
   </ShowHide>
 {/if}

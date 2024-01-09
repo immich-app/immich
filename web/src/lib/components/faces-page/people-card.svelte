@@ -13,8 +13,6 @@
 
   export let person: PersonResponseDto;
   export let preload = false;
-  export let width: string;
-  export let height: string;
 
   type MenuItemEvent = 'change-name' | 'set-birth-date' | 'merge-people' | 'hide-person';
   let dispatch = createEventDispatcher<{
@@ -46,11 +44,9 @@
   on:mouseenter={() => (showVerticalDots = true)}
   on:mouseleave={() => (showVerticalDots = false)}
   role="group"
-  style:width="{width}px"
-  style:height="{height}px"
 >
   <a href="{AppRoute.PEOPLE}/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
-    <div class="rounded-xl brightness-95 filter">
+    <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
         {preload}
