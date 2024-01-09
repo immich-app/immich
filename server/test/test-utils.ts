@@ -1,10 +1,9 @@
 import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
-import { dataSource } from '@app/infra';
+import { InfraModule, InfraTestModule, dataSource } from '@app/infra';
 import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-
 import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
@@ -69,6 +68,8 @@ export const testApp = {
     const { jobs } = options || { jobs: false };
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
+      .overrideModule(InfraModule)
+      .useModule(InfraTestModule)
       .overrideProvider(IJobRepository)
       .useValue({
         addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
