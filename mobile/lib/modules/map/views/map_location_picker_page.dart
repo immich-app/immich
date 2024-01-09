@@ -11,6 +11,7 @@ import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/modules/map/widgets/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:immich_mobile/modules/map/utils/map_utils.dart';
+import 'package:geolocator/geolocator.dart';
 
 class MapLocationPickerPage extends HookConsumerWidget {
   final LatLng initialLatLng;
@@ -45,7 +46,8 @@ class MapLocationPickerPage extends HookConsumerWidget {
 
     Future<void> getCurrentLocation() async {
       var (currentLocation, locationPermission)  = await MapUtils.checkPermAndGetLocation(context);
-      if (locationPermission == false) {
+      if (locationPermission == LocationPermission.denied ||
+          locationPermission == LocationPermission.deniedForever) {
         return;
       }
       if (currentLocation == null) {
