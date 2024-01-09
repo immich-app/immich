@@ -223,7 +223,7 @@ To do this you can run:
 
 ### Why is Immich slow on low-memory systems like the Raspberry Pi?
 
-Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ/Performance-FAQ#how-can-i-lower-immichs-cpu-usage) this or transfer to host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning) ,or [disable](/docs/FAQ/Machine-Learning-FAQ#how-can-i-disable-machine-learning) machine learning entirely.
+Immich optionally uses machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#how-can-i-lower-immichs-cpu-and-ram-usage) this or transfer to host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning) ,or [disable](/docs/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
 
 ### How can I lower Immich's CPU and RAM usage?
 
@@ -233,7 +233,7 @@ The initial backup is the most intensive due to the number of jobs running. The 
 - Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
 - Under Settings > Machine Learning Settings > Facial Recognition > Model Name, you can change the facial recognition model to `buffalo_s` instead of `buffalo_l`. The former is a smaller and faster model, albeit not as good.
   - You _must_ re-run the Recognize Faces job for all images after this for facial recognition on new images to work properly.
-- If these changes are not enough, see [below](/docs/FAQ/Machine-Learning-FAQ#how-can-i-disable-machine-learning) for how you can disable machine learning.
+- If these changes are not enough, see [below](/docs/FAQ#how-can-i-disable-machine-learning) for how you can disable machine learning.
 
 ### How can I change the amount of CPU and RAM that Immich uses?
 
