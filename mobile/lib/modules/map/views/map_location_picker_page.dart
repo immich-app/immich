@@ -45,6 +45,9 @@ class MapLocationPickerPage extends HookConsumerWidget {
 
     Future<void> getCurrentLocation() async {
       var (currentLocation, locationPermission)  = await MapUtils.checkPermAndGetLocation(context);
+      if (locationPermission == false) {
+        return;
+      }
       if (currentLocation == null) {
         return;
       }
@@ -139,6 +142,7 @@ class _BottomBar extends StatelessWidget {
     required this.onGetCurrentLocation, // Initialize in the constructor
   });
 
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -160,17 +164,18 @@ class _BottomBar extends StatelessWidget {
               ),
             ],
           ),
-          Center(
-            child: ElevatedButton(
-              onPressed: onUseLocation,
-              child: const Text("map_location_picker_page_use_location").tr(),
-            ),
-          ),
-          Center(
-            child: ElevatedButton(
-              onPressed: onGetCurrentLocation,
-              child: const Icon(Icons.my_location),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: onUseLocation,
+                child: const Text("map_location_picker_page_use_location").tr(),
+              ),
+              ElevatedButton(
+                onPressed: onGetCurrentLocation,
+                child: const Icon(Icons.my_location),
+              ),
+            ],
           ),
         ],
       ),
