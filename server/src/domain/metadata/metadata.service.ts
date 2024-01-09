@@ -3,6 +3,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
+import fs from 'fs';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
@@ -470,7 +471,18 @@ export class MetadataService {
   ): Promise<{ exifData: ExifEntityWithoutGeocodeAndTypeOrm; tags: ImmichTags }> {
     const stats = await this.storageRepository.stat(asset.originalPath);
     const mediaTags = await this.repository.readTags(asset.originalPath);
-    const sidecarTags = asset.sidecarPath ? await this.repository.readTags(asset.sidecarPath) : null;
+
+    let sidecarTags = null;
+    if (asset.sidecarPath) {
+      // check if sidecar-file exists
+      if (fs.existsSync(asset.sidecarPath)) {
+        sidecarTags = await this.repository.readTags(asset.sidecarPath);
+      } else {
+        this.logger.error(
+          `Sidecar-File '${asset.sidecarPath}' for asset '${asset.id}' does not exist on the filesystem`,
+        );
+      }
+    }
 
     // ensure date from sidecar is used if present
     const hasDateOverride = !!this.getDateTimeOriginal(sidecarTags);
