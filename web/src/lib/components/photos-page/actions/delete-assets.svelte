@@ -48,13 +48,13 @@
       }
 
       notificationController.show({
-        message: `${force ? 'Permanently deleted' : 'Trashed'} ${ids.length} assets`,
+        message: `${force ? 'Définitivement supprimé' : 'Supprimer'} ${ids.length} ressources`,
         type: NotificationType.Info,
       });
 
       clearSelect();
     } catch (e) {
-      handleError(e, 'Error deleting assets');
+      handleError(e, 'Erreur de suppressions des ressources');
     } finally {
       isShowConfirmation = false;
       loading = false;
@@ -68,31 +68,31 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text={force ? 'Permanently Delete' : 'Delete'} on:click={handleTrash} />
+  <MenuOption text={force ? 'Définitivement supprimé' : 'Supprimer'} on:click={handleTrash} />
 {:else if loading}
-  <CircleIconButton title="Loading" icon={mdiTimerSand} />
+  <CircleIconButton title="Chargement" icon={mdiTimerSand} />
 {:else}
-  <CircleIconButton title="Delete" icon={mdiDeleteOutline} on:click={handleTrash} />
+  <CircleIconButton title="Supprimer" icon={mdiDeleteOutline} on:click={handleTrash} />
 {/if}
 
 {#if isShowConfirmation}
   <ConfirmDialogue
-    title="Permanently Delete Asset{getOwnedAssets().size > 1 ? 's' : ''}"
-    confirmText="Delete"
+    title="Supprimer définitevement la ressource{getOwnedAssets().size > 1 ? 's' : ''}"
+    confirmText="Supprimer"
     on:confirm={handleDelete}
     on:cancel={() => (isShowConfirmation = false)}
     on:escape={escape}
   >
     <svelte:fragment slot="prompt">
       <p>
-        Are you sure you want to permanently delete
+        Êtes-vous sûr de vouloir supprimer définitivement
         {#if getOwnedAssets().size > 1}
-          these <b>{getOwnedAssets().size}</b> assets? This will also remove them from their album(s).
+          ces <b>{getOwnedAssets().size}</b> ressources ? Cela les retirera également de leur(s) album(s).
         {:else}
-          this asset? This will also remove it from its album(s).
+          cette ressource ? Cela la retirera également de son(ses) album(s).
         {/if}
       </p>
-      <p><b>You cannot undo this action!</b></p>
+      <p><b>Vous ne pouvez pas annuler cette action !</b></p>
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}

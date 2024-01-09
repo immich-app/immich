@@ -38,7 +38,7 @@
 
 <ControlAppBar on:close={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   <p class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
-    Selected {assets.size.toLocaleString($locale)}
+    Sélectionné {assets.size.toLocaleString($locale)}
   </p>
   <slot slot="trailing" />
 </ControlAppBar>

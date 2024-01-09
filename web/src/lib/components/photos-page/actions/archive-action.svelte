@@ -15,7 +15,7 @@
   export let menuItem = false;
   export let unarchive = false;
 
-  $: text = unarchive ? 'Unarchive' : 'Archive';
+  $: text = unarchive ? 'Déarchiver' : 'Archiver';
   $: icon = unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline;
 
   let loading = false;
@@ -41,13 +41,13 @@
       onArchive?.(ids, isArchived);
 
       notificationController.show({
-        message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length}`,
+        message: `${isArchived ? 'Archivé' : 'Déarchivé'} ${ids.length}`,
         type: NotificationType.Info,
       });
 
       clearSelect();
     } catch (error) {
-      handleError(error, `Unable to ${isArchived ? 'archive' : 'unarchive'}`);
+      handleError(error, `Impossible de ${isArchived ? 'archiver' : 'déarchiver'}`);
     } finally {
       loading = false;
     }
@@ -60,7 +60,7 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title="Loading" icon={mdiTimerSand} />
+    <CircleIconButton title="Chargement" icon={mdiTimerSand} />
   {:else}
     <CircleIconButton title={text} {icon} on:click={handleArchive} />
   {/if}

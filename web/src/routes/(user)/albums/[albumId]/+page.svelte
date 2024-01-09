@@ -722,14 +722,14 @@
 
 {#if viewMode === ViewMode.CONFIRM_DELETE}
   <ConfirmDialogue
-    title="Delete album"
-    confirmText="Delete"
+    title="Supprimer l'album"
+    confirmText="Supprimer"
     on:confirm={handleRemoveAlbum}
     on:cancel={() => (viewMode = ViewMode.VIEW)}
   >
     <svelte:fragment slot="prompt">
-      <p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>
-      <p>If this album is shared, other users will not be able to access it anymore.</p>
+      <p>Êtes-vous sûr de vouloir supprimer l'album <b>{album.albumName}</b>?</p>
+      <p>Si cet album est partagé, les autres utilisateurs ne pourront plus y accéder.</p>
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}

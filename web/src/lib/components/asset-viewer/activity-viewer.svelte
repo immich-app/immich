@@ -167,7 +167,7 @@
           <Icon path={mdiClose} size="24" />
         </button>
 
-        <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Activity</p>
+        <p class="text-lg text-immich-fg dark:text-immich-dark-fg">Activité</p>
       </div>
     </div>
     {#if innerHeight}
@@ -207,7 +207,7 @@
                     on:outclick={() => (showDeleteReaction[index] = false)}
                     on:click={() => handleDeleteReaction(reaction, index)}
                   >
-                    Remove
+                    Retirer
                   </button>
                 {/if}
               </div>

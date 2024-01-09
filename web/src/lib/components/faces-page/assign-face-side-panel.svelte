@@ -113,7 +113,7 @@
       searchedPeopleCopy = data;
       searchWord = searchName;
     } catch (error) {
-      handleError(error, "Can't search people");
+      handleError(error, "Impossible de chercher des personnes");
     } finally {
       clearTimeout(timeout);
     }
@@ -150,7 +150,7 @@
       <div class="flex justify-end gap-2">
         <button
           class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
-          title="Search existing person"
+          title="Chercher une personne détectée"
           on:click={() => {
             searchFaces = true;
           }}
@@ -163,7 +163,7 @@
           <button
             class="flex place-content-center place-items-center rounded-full p-3 transition-colors hover:bg-gray-200 dark:text-immich-dark-fg dark:hover:bg-gray-900"
             on:click={handleCreatePerson}
-            title="Create new person"
+            title="Créer une nouvelle personne"
           >
             <div>
               <Icon path={mdiPlus} size="24" />
@@ -188,7 +188,7 @@
         <input
           class="w-full gap-2 bg-immich-bg dark:bg-immich-dark-bg"
           type="text"
-          placeholder="Name or nickname"
+          placeholder="Prénom"
           bind:value={searchName}
           on:input={searchPeople}
           use:initInput

@@ -4,7 +4,7 @@
 
 version: "3.8"
 
-name: immich-dev
+name: memoirevive-dev
 
 x-server-build: &server-common
   image: immich-server-dev:latest
@@ -19,6 +19,7 @@ x-server-build: &server-common
     - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
     - /usr/src/app/node_modules
     - /etc/localtime:/etc/localtime:ro
+    - "C:/Nouveau dossier:/mnt/media"
   env_file:
     - .env
   ulimits:
@@ -42,9 +43,9 @@ services:
     container_name: immich_microservices
     command: [ "/usr/src/app/bin/immich-dev", "microservices" ]
     <<: *server-common
-    # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
+    extends:
+       file: hwaccel.yml
+       service: hwaccel
     ports:
       - 9231:9230
     depends_on:

@@ -75,7 +75,7 @@
     <img
       bind:this={img}
       src={api.getProfileImageUrl(user.id)}
-      alt="Profile image of {title}"
+      alt="Photo de profil de {title}"
       class="h-full w-full object-cover"
       class:hidden={showFallback}
       draggable="false"

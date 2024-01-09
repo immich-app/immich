@@ -42,7 +42,7 @@
       console.error('Error [album-viewer] [removeAssetFromAlbum]', e);
       notificationController.show({
         type: NotificationType.Error,
-        message: 'Error removing assets from album, check console for more details',
+        message: "Erreur lors de la suppression des ressources de l'album, contactez votre admnistrateur.",
       });
     } finally {
       isShowConfirmation = false;
@@ -51,27 +51,27 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Remove from album" on:click={() => (isShowConfirmation = true)} />
+  <MenuOption text="Retirer de l'album" on:click={() => (isShowConfirmation = true)} />
 {:else}
-  <CircleIconButton title="Remove from album" icon={mdiDeleteOutline} on:click={() => (isShowConfirmation = true)} />
+  <CircleIconButton title="Retirer de l'album" icon={mdiDeleteOutline} on:click={() => (isShowConfirmation = true)} />
 {/if}
 
 {#if isShowConfirmation}
   <ConfirmDialogue
-    title="Remove from {album.albumName}"
-    confirmText="Remove"
+    title="Retirer de {album.albumName}"
+    confirmText="Retirer"
     on:confirm={removeFromAlbum}
     on:cancel={() => (isShowConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
       <p>
-        Are you sure you want to remove
+        Êtes-vous sûr de vouloir retirer
         {#if getAssets().size > 1}
-          these <b>{getAssets().size}</b> assets
+          ces  <b>{getAssets().size}</b> ressources
         {:else}
-          this asset
+          cette ressource
         {/if}
-        from the album?
+        de l'album ?
       </p>
     </svelte:fragment>
   </ConfirmDialogue>

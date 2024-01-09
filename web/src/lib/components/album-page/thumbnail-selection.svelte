@@ -30,7 +30,7 @@
 >
   <ControlAppBar on:close={() => dispatch('close')}>
     <svelte:fragment slot="leading">
-      <p class="text-lg">Select album cover</p>
+      <p class="text-lg">Sélectionner la couverture d'album</p>
     </svelte:fragment>
 
     <svelte:fragment slot="trailing">
@@ -40,7 +40,7 @@
         disabled={selectedThumbnail == undefined}
         on:click={() => dispatch('thumbnail', selectedThumbnail)}
       >
-        Done
+        Terminé
       </Button>
     </svelte:fragment>
   </ControlAppBar>

@@ -52,7 +52,7 @@
 
   let sortByOptions: Record<string, Sort> = {
     albumTitle: {
-      title: 'Album title',
+      title: "Titre de l'album",
       sortDesc: $albumViewSettings.sortDesc, // Load Sort Direction
       widthClass: 'text-left w-8/12 sm:w-4/12 md:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]',
       sortFn: (reverse, albums) => {
@@ -60,7 +60,7 @@
       },
     },
     numberOfAssets: {
-      title: 'Number of assets',
+      title: 'Nombre de ressources',
       sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'text-center w-4/12 m:w-2/12 md:w-2/12 xl:w-[15%] 2xl:w-[12%]',
       sortFn: (reverse, albums) => {
@@ -68,7 +68,7 @@
       },
     },
     lastModified: {
-      title: 'Last modified',
+      title: 'Dernière modification',
       sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'text-center hidden sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]',
       sortFn: (reverse, albums) => {
@@ -76,7 +76,7 @@
       },
     },
     created: {
-      title: 'Created date',
+      title: 'Date de création',
       sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'text-center hidden sm:block w-3/12 xl:w-[15%] 2xl:w-[12%]',
       sortFn: (reverse, albums) => {
@@ -84,7 +84,7 @@
       },
     },
     mostRecent: {
-      title: 'Most recent photo',
+      title: 'Photo la plus récente',
       sortDesc: $albumViewSettings.sortDesc,
       widthClass: 'text-center hidden xl:block xl:w-[15%] 2xl:w-[12%]',
       sortFn: (reverse, albums) => {
@@ -250,7 +250,7 @@
     <LinkButton on:click={handleCreateAlbum}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiPlusBoxOutline} size="18" />
-        Create album
+        Créer un album
       </div>
     </LinkButton>
 
@@ -277,10 +277,10 @@
       <div class="flex place-items-center gap-2 text-sm">
         {#if $albumViewSettings.view === AlbumViewMode.List}
           <Icon path={mdiViewGridOutline} size="18" />
-          <p class="hidden sm:block">Cover</p>
+          <p class="hidden sm:block">Couverture</p>
         {:else}
           <Icon path={mdiFormatListBulletedSquare} size="18" />
-          <p class="hidden sm:block">List</p>
+          <p class="hidden sm:block">Liste</p>
         {/if}
       </div>
     </LinkButton>
@@ -373,7 +373,7 @@
     <!-- Empty Message -->
   {:else}
     <EmptyPlaceholder
-      text="Create an album to organize your photos and videos"
+      text="Créer un album pour organiser les photos et les vidéos"
       actionHandler={handleCreateAlbum}
       alt="Empty albums"
     />
@@ -386,7 +386,7 @@
     <MenuOption on:click={() => setAlbumToDelete()}>
       <span class="flex place-content-center place-items-center gap-2">
         <Icon path={mdiDeleteOutline} size="18" />
-        <p>Delete album</p>
+        <p>Supprimer l'album</p>
       </span>
     </MenuOption>
   </ContextMenu>
@@ -400,8 +400,8 @@
     on:cancel={() => (albumToDelete = null)}
   >
     <svelte:fragment slot="prompt">
-      <p>Are you sure you want to delete the album <b>{albumToDelete.albumName}</b>?</p>
-      <p>If this album is shared, other users will not be able to access it anymore.</p>
+      <p>Êtes-vous sûr de vouloir supprimer <b>{albumToDelete.albumName}</b>?</p>
+      <p>Si cet album est partagé, les autres utilisateurs ne pourront plus y accéder</p>
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}

@@ -40,7 +40,7 @@
       await api.assetApi.emptyTrash();
 
       notificationController.show({
-        message: `Empty trash initiated. Refresh the page to see the changes`,
+        message: `Vidage de la corbeille lancé. Actualisez la page pour voir les modifications`,
         type: NotificationType.Info,
       });
     } catch (e) {
@@ -53,7 +53,7 @@
       await api.assetApi.restoreTrash();
 
       notificationController.show({
-        message: `Restore trash initiated. Refresh the page to see the changes`,
+        message: `Vidage de la corbeille lancé. Actualisez la page pour voir les modifications`,
         type: NotificationType.Info,
       });
     } catch (e) {
@@ -76,24 +76,24 @@
       <LinkButton on:click={handleRestoreTrash}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiHistory} size="18" />
-          Restore All
+          Tout Restaurer
         </div>
       </LinkButton>
       <LinkButton on:click={() => (isShowEmptyConfirmation = true)}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDeleteOutline} size="18" />
-          Empty Trash
+          Vider la corbeille
         </div>
       </LinkButton>
     </div>
 
     <AssetGrid forceDelete {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
-        Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
+        Les éléments mis dans la corbeille seront définitivement supprimés après {$serverConfig.trashDays} jours.
       </p>
       <EmptyPlaceholder
-        text="Trashed photos and videos will show up here."
-        alt="Empty trash can"
+        text="Les photos et vidéos supprimées s'afficheront ici."
+        alt="Vider la corbeille"
         slot="empty"
         src={empty3Url}
       />
@@ -103,14 +103,14 @@
 
 {#if isShowEmptyConfirmation}
   <ConfirmDialogue
-    title="Empty Trash"
-    confirmText="Empty"
+    title="Vider la corbeille"
+    confirmText="Vider"
     on:confirm={handleEmptyTrash}
     on:cancel={() => (isShowEmptyConfirmation = false)}
   >
     <svelte:fragment slot="prompt">
-      <p>Are you sure you want to empty the trash? This will remove all the assets in trash permanently from Immich.</p>
-      <p><b>You cannot undo this action!</b></p>
+      <p>Êtes-vous sûr de vouloir vider la poubelle ? Cela supprimera définitivement tous les actifs dans la corbeille de la Mémoire Vive.</p>
+      <p><b>Vous ne pouvez pas annuler cette action !</b></p>
     </svelte:fragment>
   </ConfirmDialogue>
 {/if}

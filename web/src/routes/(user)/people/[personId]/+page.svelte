@@ -175,7 +175,7 @@
       });
 
       notificationController.show({
-        message: 'Changed visibility succesfully',
+        message: 'Changement de visibilité effectué',
         type: NotificationType.Info,
       });
 
@@ -197,7 +197,7 @@
 
     await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
 
-    notificationController.show({ message: 'Feature photo updated', type: NotificationType.Info });
+    notificationController.show({ message: 'Photo à jour', type: NotificationType.Info });
     assetInteractionStore.clearMultiselect();
 
     viewMode = ViewMode.VIEW_ASSETS;
@@ -224,7 +224,7 @@
         mergePersonDto: { ids: [personToMerge.id] },
       });
       notificationController.show({
-        message: 'Merge people succesfully',
+        message: 'Personnes combinées',
         type: NotificationType.Info,
       });
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
@@ -260,7 +260,7 @@
       });
 
       notificationController.show({
-        message: 'Change name succesfully',
+        message: 'Changement du nom effectué',
         type: NotificationType.Info,
       });
     } catch (error) {
@@ -330,7 +330,7 @@
         return person;
       });
 
-      notificationController.show({ message: 'Date of birth saved successfully', type: NotificationType.Info });
+      notificationController.show({ message: 'Date de naissance enregistrée', type: NotificationType.Info });
     } catch (error) {
       handleError(error, 'Unable to save date of birth');
     }
@@ -382,16 +382,16 @@
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
       <CreateSharedLink />
       <SelectAllAssets {assetStore} {assetInteractionStore} />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add">
+      <AssetSelectContextMenu icon={mdiPlus} title="ajouter">
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
       <DeleteAssets onAssetDelete={(assetId) => $assetStore.removeAsset(assetId)} />
-      <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
-        <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
+      <AssetSelectContextMenu icon={mdiDotsVertical} title="ajouter">
+        <DownloadAction menuItem filename="{data.person.name || 'memoire_vive'}.zip" />
         <FavoriteAction menuItem removeFavorite={isAllFavorite} />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
-        <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
+        <MenuOption text="Corriger la correspondance incorrecte" on:click={handleReassignAssets} />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
       </AssetSelectContextMenu>
@@ -401,11 +401,11 @@
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(previousRoute)}>
         <svelte:fragment slot="trailing">
           <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-            <MenuOption text="Change feature photo" on:click={() => (viewMode = ViewMode.SELECT_PERSON)} />
-            <MenuOption text="Set date of birth" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
-            <MenuOption text="Merge person" on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)} />
+            <MenuOption text="Changer la photo à jour" on:click={() => (viewMode = ViewMode.SELECT_PERSON)} />
+            <MenuOption text="Déterminer la date de naissance" on:click={() => (viewMode = ViewMode.BIRTH_DATE)} />
+            <MenuOption text="Fusionner personnes" on:click={() => (viewMode = ViewMode.MERGE_PEOPLE)} />
             <MenuOption
-              text={data.person.isHidden ? 'Unhide person' : 'Hide person'}
+              text={data.person.isHidden ? 'Démasquer personne' : 'Masquer personne'}
               on:click={() => toggleHidePerson()}
             />
           </AssetSelectContextMenu>
@@ -415,7 +415,7 @@
 
     {#if viewMode === ViewMode.SELECT_PERSON}
       <ControlAppBar on:close={() => (viewMode = ViewMode.VIEW_ASSETS)}>
-        <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
+        <svelte:fragment slot="leading">Sélectionner la photo à jour</svelte:fragment>
       </ControlAppBar>
     {/if}
   {/if}
@@ -473,8 +473,8 @@
                         {`${numberOfAssets} asset${numberOfAssets > 1 ? 's' : ''}`}
                       </p>
                     {:else}
-                      <p class="font-medium">Add a name</p>
-                      <p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
+                      <p class="font-medium">Ajouter un nom</p>
+                      <p class="text-sm text-gray-500 dark:text-immich-gray">Retrouver les par leur nom lors de la recherche</p>
                     {/if}
                   </div>
                 </button>

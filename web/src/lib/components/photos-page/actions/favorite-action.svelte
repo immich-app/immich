@@ -15,7 +15,7 @@
   export let menuItem = false;
   export let removeFavorite: boolean;
 
-  $: text = removeFavorite ? 'Remove from Favorites' : 'Favorite';
+  $: text = removeFavorite ? 'Retirer des favoris' : 'Favoris';
   $: icon = removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline;
 
   let loading = false;
@@ -42,13 +42,13 @@
       onFavorite?.(ids, isFavorite);
 
       notificationController.show({
-        message: isFavorite ? `Added ${ids.length} to favorites` : `Removed ${ids.length} from favorites`,
+        message: isFavorite ? `Ajouté ${ids.length} aux favoris` : `Retiré ${ids.length} des favoris`,
         type: NotificationType.Info,
       });
 
       clearSelect();
     } catch (error) {
-      handleError(error, `Unable to ${isFavorite ? 'add to' : 'remove from'} favorites`);
+      handleError(error, `Impossible ${isFavorite ? "d'ajouter aux" : 'de retirer des'} favoris`);
     } finally {
       loading = false;
     }
@@ -61,7 +61,7 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title="Loading" icon={mdiTimerSand} />
+    <CircleIconButton title="Chargement" icon={mdiTimerSand} />
   {:else}
     <CircleIconButton title={text} {icon} on:click={handleFavorite} />
   {/if}

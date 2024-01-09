@@ -54,7 +54,7 @@
       exclusionPatterns = library.exclusionPatterns;
       addExclusionPattern = false;
     } catch (error) {
-      handleError(error, 'Unable to add exclude pattern');
+      handleError(error, "Impossible d'ajouter un motif d'exclusion");
     }
   };
 
@@ -71,7 +71,7 @@
       library.exclusionPatterns[editExclusionPattern] = editedExclusionPattern;
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      handleError(error, 'Unable to edit exclude pattern');
+      handleError(error, "Impossible de modifier un motif d'exclusion");
     } finally {
       editExclusionPattern = null;
     }
@@ -91,7 +91,7 @@
       library.exclusionPatterns = library.exclusionPatterns.filter((path) => path != pathToDelete);
       exclusionPatterns = library.exclusionPatterns;
     } catch (error) {
-      handleError(error, 'Unable to delete exclude pattern');
+      handleError(error, "Impossible de supprimer un motif d'exclusion");
     } finally {
       editExclusionPattern = null;
     }
@@ -100,7 +100,7 @@
 
 {#if addExclusionPattern}
   <LibraryExclusionPatternForm
-    submitText="Add"
+    submitText="Ajouter"
     bind:exclusionPattern={exclusionPatternToAdd}
     on:submit={handleAddExclusionPattern}
     on:cancel={() => {
@@ -111,7 +111,7 @@
 
 {#if editExclusionPattern != null}
   <LibraryExclusionPatternForm
-    submitText="Save"
+    submitText="Sauvegarder"
     canDelete={true}
     bind:exclusionPattern={editedExclusionPattern}
     on:submit={handleEditExclusionPattern}
@@ -157,7 +157,7 @@
       >
         <td class="w-3/4 text-ellipsis px-4 text-sm">
           {#if exclusionPatterns.length === 0}
-            No pattern added
+            Aucun motif ajouté
           {/if}
         </td>
         <td class="w-1/4 text-ellipsis px-4 text-sm"
@@ -165,7 +165,7 @@
             size="sm"
             on:click={() => {
               addExclusionPattern = true;
-            }}>Add Exclusion Pattern</Button
+            }}>Ajouter un motif d'exclusion</Button
           ></td
         ></tr
       >
@@ -173,7 +173,7 @@
   </table>
 
   <div class="flex w-full justify-end gap-4">
-    <Button size="sm" color="gray" on:click={() => handleCancel()}>Cancel</Button>
-    <Button size="sm" type="submit">Save</Button>
+    <Button size="sm" color="gray" on:click={() => handleCancel()}>Annuler</Button>
+    <Button size="sm" type="submit">Sauvegarder</Button>
   </div>
 </form>

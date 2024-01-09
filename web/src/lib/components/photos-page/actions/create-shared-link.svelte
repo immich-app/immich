@@ -16,7 +16,7 @@
   };
 </script>
 
-<CircleIconButton title="Share" icon={mdiShareVariantOutline} on:click={() => (showModal = true)} />
+<CircleIconButton title="Partage" icon={mdiShareVariantOutline} on:click={() => (showModal = true)} />
 
 {#if showModal}
   <CreateSharedLinkModal

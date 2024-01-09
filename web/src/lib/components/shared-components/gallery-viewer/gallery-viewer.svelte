@@ -54,7 +54,7 @@
         pushState(selectedAsset.id);
       }
     } catch (e) {
-      handleError(e, 'Cannot navigate to the next asset');
+      handleError(e, 'Impossible de naviguer vers la ressource suivante');
     }
   };
 
@@ -66,7 +66,7 @@
         pushState(selectedAsset.id);
       }
     } catch (e) {
-      handleError(e, 'Cannot navigate to previous asset');
+      handleError(e, 'Impossible de naviguer vers la ressource précédente');
     }
   };
 

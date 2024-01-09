@@ -23,7 +23,7 @@
       dispatch('submit', { ...apiKey, name: apiKeyName });
     } else {
       notificationController.show({
-        message: "Your API Key name shouldn't be empty",
+        message: "Le nom de votre clé API ne doit pas être vide",
         type: NotificationType.Warning,
       });
     }
@@ -45,7 +45,7 @@
 
     <form on:submit|preventDefault={handleSubmit} autocomplete="off">
       <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="name">Name</label>
+        <label class="immich-form-label" for="name">Nom</label>
         <input class="immich-form-input" id="name" name="name" type="text" bind:value={apiKeyName} />
       </div>
 

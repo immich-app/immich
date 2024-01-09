@@ -20,11 +20,11 @@
 </script>
 
 <OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">STORAGE TEMPLATE</p>
+  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">MODÈLE DE STOCKAGE</p>
 
   <p>
-    The storage template is used to determine the folder structure and file name of your media files. You can use
-    variables to customize the template to your liking.
+    Le modèle de stockage est utilisé pour déterminer la structure des dossiers et le nom des fichiers de vos fichiers multimédias.
+    Vous pouvez utiliser des variables pour personnaliser le modèle selon vos préférences.
   </p>
 
   {#if configs && $user}

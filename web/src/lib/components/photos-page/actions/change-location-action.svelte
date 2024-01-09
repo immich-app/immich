@@ -25,14 +25,14 @@
         },
       });
     } catch (error) {
-      handleError(error, 'Unable to update location');
+      handleError(error, "Impossible de mettre à jour l'emplacement");
     }
     clearSelect();
   }
 </script>
 
 {#if menuItem}
-  <MenuOption text="Change location" on:click={() => (isShowChangeLocation = true)} />
+  <MenuOption text="Changer l'emplacement" on:click={() => (isShowChangeLocation = true)} />
 {/if}
 {#if isShowChangeLocation}
   <ChangeLocation

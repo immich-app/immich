@@ -122,15 +122,15 @@
       {#if isSharingView}
         {#await getAlbumOwnerInfo() then albumOwner}
           {#if $user.email == albumOwner.email}
-            <p>Owned</p>
+            <p>Propriétaire</p>
           {:else}
             <p>
-              Shared by {albumOwner.name}
+              Partagé par {albumOwner.name}
             </p>
           {/if}
         {/await}
       {:else if album.shared}
-        <p>Shared</p>
+        <p>Partagé</p>
       {/if}
     </span>
   </div>

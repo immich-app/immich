@@ -56,10 +56,10 @@
     try {
       await api.albumApi.removeUserFromAlbum({ id: album.id, userId });
       dispatch('remove', userId);
-      const message = userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.name}`;
+      const message = userId === 'me' ? `Restant ${album.albumName}` : `Retiré ${selectedRemoveUser.name}`;
       notificationController.show({ type: NotificationType.Info, message });
     } catch (e) {
-      handleError(e, 'Unable to remove user');
+      handleError(e, "Impossible de retirer l'utilisateur");
     } finally {
       selectedRemoveUser = null;
     }
@@ -82,7 +82,7 @@
         </div>
 
         <div id="icon-{album.owner.id}" class="flex place-items-center">
-          <p class="text-sm">Owner</p>
+          <p class="text-sm">Propriétaire</p>
         </div>
       </div>
       {#each album.sharedUsers as user}
@@ -107,7 +107,7 @@
 
                 {#if selectedMenuUser === user}
                   <ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
-                    <MenuOption on:click={handleMenuRemove} text="Remove" />
+                    <MenuOption on:click={handleMenuRemove} text="Retirer" />
                   </ContextMenu>
                 {/if}
               </div>
@@ -115,7 +115,7 @@
               <button
                 on:click={() => (selectedRemoveUser = user)}
                 class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
-                >Leave</button
+                >Sortir</button
               >
             {/if}
           </div>
@@ -127,9 +127,9 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialogue
-    title="Leave Album?"
-    prompt="Are you sure you want to leave {album.albumName}?"
-    confirmText="Leave"
+    title="Quitter l'album?"
+    prompt="Êtes-vous sur de vouloir quitter {album.albumName}?"
+    confirmText="Quitter"
     on:confirm={handleRemoveUser}
     on:cancel={() => (selectedRemoveUser = null)}
   />
@@ -137,9 +137,9 @@
 
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialogue
-    title="Remove User?"
-    prompt="Are you sure you want to remove {selectedRemoveUser.name}"
-    confirmText="Remove"
+    title="Retirer l'utilisateur?"
+    prompt="Êtes-vous sur de vouloir retirer {selectedRemoveUser.name}"
+    confirmText="Retirer"
     on:confirm={handleRemoveUser}
     on:cancel={() => (selectedRemoveUser = null)}
   />

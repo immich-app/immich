@@ -231,7 +231,7 @@
 
             {#if nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">
-                <p class="text-xs font-semibold text-gray-200">UP NEXT</p>
+                <p class="text-xs font-semibold text-gray-200">À SUIVRE</p>
                 <p class="text-xl">{nextMemory.title}</p>
               </div>
             {/if}

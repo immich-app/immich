@@ -136,8 +136,8 @@
 <noscript
   class="absolute z-[1000] flex h-screen w-screen place-content-center place-items-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
 >
-  <FullscreenContainer title="Welcome to Immich">
-    To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
+  <FullscreenContainer title="Bienvenue sur la Mémoire Vive">
+    Pour utiliser la Mémoire Vive, vous devez utiliser un navigateur compatible avec Javascript
   </FullscreenContainer>
 </noscript>
 

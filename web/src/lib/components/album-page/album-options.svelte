@@ -33,7 +33,7 @@
 
         <div class=" items-center justify-center p-4">
           <div class="py-2">
-            <h2 class="text-gray text-sm mb-3">SHARING</h2>
+            <h2 class="text-gray text-sm mb-3">PARTAGE</h2>
             <div class="p-2">
               <SettingSwitch
                 title="Comments & likes"
@@ -50,14 +50,14 @@
                 <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
                   <div><Icon path={mdiPlus} size="25" /></div>
                 </div>
-                <div>Invite People</div>
+                <div>Invitations</div>
               </button>
               <div class="flex items-center gap-2 py-2 mt-2">
                 <div>
                   <UserAvatar {user} size="md" />
                 </div>
                 <div class="w-full">{user.name}</div>
-                <div>Owner</div>
+                <div>Propriétaire</div>
               </div>
               {#each album.sharedUsers as user (user.id)}
                 <div class="flex items-center gap-2 py-2">

@@ -113,14 +113,14 @@
     <div class="fixed z-[100] top-0 left-0 w-full">
       <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
         <CreateSharedLink />
-        <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
-        <AssetSelectContextMenu icon={mdiPlus} title="Add">
+        <CircleIconButton title="Sélectionner tout" icon={mdiSelectAll} on:click={handleSelectAll} />
+        <AssetSelectContextMenu icon={mdiPlus} title="Ajouter">
           <AddToAlbum />
           <AddToAlbum shared />
         </AssetSelectContextMenu>
         <DeleteAssets {onAssetDelete} />
 
-        <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
+        <AssetSelectContextMenu icon={mdiDotsVertical} title="Ajouter">
           <DownloadAction menuItem />
           <FavoriteAction menuItem removeFavorite={isAllFavorite} />
           <ArchiveAction menuItem unarchive={isAllArchived} />
@@ -169,8 +169,8 @@
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
           <div class="flex flex-col content-center items-center text-center">
             <Icon path={mdiImageOffOutline} size="3.5em" />
-            <p class="mt-5 text-3xl font-medium">No results</p>
-            <p class="text-base font-normal">Try a synonym or more general keyword</p>
+            <p class="mt-5 text-3xl font-medium">Aucun résultats</p>
+            <p class="text-base font-normal">Essayez un synonyme, en anglais, un autre terme ou attendez que l'indexation de l'IA soit terminé</p>
           </div>
         </div>
       {/if}

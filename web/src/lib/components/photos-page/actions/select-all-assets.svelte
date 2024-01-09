@@ -29,14 +29,14 @@
 
       selecting = false;
     } catch (e) {
-      handleError(e, 'Error selecting all assets');
+      handleError(e, 'Impossible de sélectionner toutes les ressources');
     }
   };
 </script>
 
 {#if selecting}
-  <CircleIconButton title="Delete" icon={mdiTimerSand} />
+  <CircleIconButton title="Supprimer" icon={mdiTimerSand} />
 {/if}
 {#if !selecting}
-  <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
+  <CircleIconButton title="Tout sélectionner" icon={mdiSelectAll} on:click={handleSelectAll} />
 {/if}

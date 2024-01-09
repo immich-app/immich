@@ -132,7 +132,7 @@
           reactions = [...reactions, isLiked];
         }
       } catch (error) {
-        handleError(error, "Can't change favorite for asset");
+        handleError(error, "Impossible de changer le favori pour la ressource");
       }
     }
   };
@@ -152,7 +152,7 @@
           isLiked = null;
         }
       } catch (error) {
-        handleError(error, "Can't get Favorite");
+        handleError(error, "Impossible d'obtenir les favoris");
       }
     }
   };
@@ -163,7 +163,7 @@
         const { data } = await api.activityApi.getActivityStatistics({ assetId: asset.id, albumId: album.id });
         numberOfComments = data.comments;
       } catch (error) {
-        handleError(error, "Can't get number of comments");
+        handleError(error, "Impossible d'obtenir le nombre de commentaires");
       }
     }
   };
@@ -240,7 +240,7 @@
       const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
       appearsInAlbums = data;
     } catch (e) {
-      console.error('Error getting album that asset belong to', e);
+      console.error("Erreur lors de la récupération de l'album auquel appartient la ressource", e);
     }
   };
 
@@ -373,11 +373,11 @@
       dispatch('action', { type: AssetAction.TRASH, asset });
 
       notificationController.show({
-        message: 'Moved to trash',
+        message: 'Déplacé dans la corbeille',
         type: NotificationType.Info,
       });
     } catch (e) {
-      handleError(e, 'Unable to trash asset');
+      handleError(e, 'Impossible de mettre la ressource à la corbeille');
     }
   };
 
@@ -388,11 +388,11 @@
       dispatch('action', { type: AssetAction.DELETE, asset });
 
       notificationController.show({
-        message: 'Permanently deleted asset',
+        message: 'Ressource définitivement supprimée',
         type: NotificationType.Info,
       });
     } catch (e) {
-      handleError(e, 'Unable to delete asset');
+      handleError(e, 'Impossible de supprimer la ressource');
     } finally {
       isShowDeleteConfirmation = false;
     }
@@ -412,10 +412,10 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: asset.isFavorite ? `Added to favorites` : `Removed from favorites`,
+        message: asset.isFavorite ? `Ajouté aux favoris` : `Retiré des favoris`,
       });
     } catch (error) {
-      await handleError(error, `Unable to ${asset.isFavorite ? `add asset to` : `remove asset from`} favorites`);
+      await handleError(error, `Impossible de ${asset.isFavorite ? 'ajouter la ressource aux' : 'retirer la ressource des'} favoris`);
     }
   };
 
@@ -466,10 +466,10 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: asset.isArchived ? `Added to archive` : `Removed from archive`,
+        message: asset.isArchived ? `Ajouté à l'archive` : `Retiré de l'archive`,
       });
     } catch (error) {
-      await handleError(error, `Unable to ${asset.isArchived ? `add asset to` : `remove asset from`} archive`);
+      await handleError(error, `Impossible de ${asset.isArchived ? 'ajouter la ressource à' : 'retirer la ressource de'} l'archive`);
     }
   };
 
@@ -478,7 +478,7 @@
       await api.assetApi.runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
       notificationController.show({ type: NotificationType.Info, message: api.getAssetJobMessage(name) });
     } catch (error) {
-      await handleError(error, `Unable to submit job`);
+      await handleError(error, `Impossible de soumettre la tâche`);
     }
   };
 
@@ -509,7 +509,7 @@
     try {
       await assetViewerHtmlElement.requestFullscreen();
     } catch (error) {
-      console.error('Error entering fullscreen', error);
+      console.error("Erreur lors de l'entrée en mode plein écran", error);
       $slideshowState = SlideshowState.StopSlideshow;
     }
   };
@@ -520,7 +520,7 @@
         await document.exitFullscreen();
       }
     } catch (error) {
-      console.error('Error exiting fullscreen', error);
+      console.error('Erreur lors de la sortie du mode plein écran', error);
     } finally {
       $stopSlideshowProgress = true;
       $slideshowState = SlideshowState.None;
@@ -549,9 +549,9 @@
       }
 
       dispatch('close');
-      notificationController.show({ type: NotificationType.Info, message: 'Un-stacked', timeout: 1500 });
+      notificationController.show({ type: NotificationType.Info, message: 'Dépilé', timeout: 1500 });
     } catch (error) {
-      await handleError(error, `Unable to unstack`);
+      await handleError(error, `Impossible de dépiler`);  
     }
   };
 </script>
@@ -772,10 +772,9 @@
     >
       <svelte:fragment slot="prompt">
         <p>
-          Are you sure you want to delete this {getAssetType(asset.type).toLowerCase()}? This will also remove it from
-          its album(s).
+          Êtes-vous sûr de vouloir supprimer ce {getAssetType(asset.type).toLowerCase()} ? Cela le retirera également de son(ses) album(s).
         </p>
-        <p><b>You cannot undo this action!</b></p>
+        <p><b>Vous ne pouvez pas annuler cette action !</b></p>
       </svelte:fragment>
     </ConfirmDialogue>
   {/if}

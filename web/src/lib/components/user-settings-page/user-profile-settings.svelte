@@ -26,11 +26,11 @@
       setUser(data);
 
       notificationController.show({
-        message: 'Saved profile',
+        message: 'Profil enregistré',
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save profile');
+      handleError(error, "Impossible d'enregistrer le profil");
     }
   };
 </script>
@@ -41,18 +41,18 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="USER ID"
+          label="IDENTIFIANT DE L'UTILISATEUR"
           bind:value={user.id}
           disabled={true}
         />
 
         <SettingInputField inputType={SettingInputFieldType.EMAIL} label="EMAIL" bind:value={user.email} />
 
-        <SettingInputField inputType={SettingInputFieldType.TEXT} label="NAME" bind:value={user.name} required={true} />
+        <SettingInputField inputType={SettingInputFieldType.TEXT} label="NOM" bind:value={user.name} required={true} />
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="STORAGE LABEL"
+          label="NOM DU STOCKAGE"
           disabled={true}
           value={user.storageLabel || ''}
           required={false}
@@ -60,14 +60,14 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label="EXTERNAL PATH"
+          label="CHEMIN EXTERNE"
           disabled={true}
           value={user.externalPath || ''}
           required={false}
         />
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSaveProfile()}>Save</Button>
+          <Button type="submit" size="sm" on:click={() => handleSaveProfile()}>Enregistrer</Button>
         </div>
       </div>
     </form>

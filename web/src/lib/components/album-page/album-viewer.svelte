@@ -114,21 +114,21 @@
       <svelte:fragment slot="leading">
         <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
           <ImmichLogo height={30} width={30} />
-          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">Mémoire Vive</h1>
         </a>
       </svelte:fragment>
 
       <svelte:fragment slot="trailing">
         {#if sharedLink.allowUpload}
           <CircleIconButton
-            title="Add Photos"
+            title="Ajouter des photos"
             on:click={() => openFileUploadDialog(album.id)}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if album.assetCount > 0 && sharedLink.allowDownload}
-          <CircleIconButton title="Download" on:click={() => downloadAlbum()} icon={mdiFolderDownloadOutline} />
+          <CircleIconButton title="Télécharger" on:click={() => downloadAlbum()} icon={mdiFolderDownloadOutline} />
         {/if}
 
         <ThemeButton />
@@ -154,7 +154,7 @@
         <span class="my-4 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
           <p class="">{getDateRange()}</p>
           <p>·</p>
-          <p>{album.assetCount} items</p>
+          <p>{album.assetCount} ressources</p>
         </span>
       {/if}
 

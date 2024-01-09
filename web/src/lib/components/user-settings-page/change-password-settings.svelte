@@ -22,7 +22,7 @@
       });
 
       notificationController.show({
-        message: 'Updated password',
+        message: 'Mot de passe modifié',
         type: NotificationType.Info,
       });
 
@@ -32,7 +32,7 @@
     } catch (error) {
       console.error('Error [user-profile] [changePassword]', error);
       notificationController.show({
-        message: (error as ApiError)?.response?.data?.message || 'Unable to change password',
+        message: (error as ApiError)?.response?.data?.message || 'Impossible de changer le mot de passe',
         type: NotificationType.Error,
       });
     }
@@ -45,21 +45,21 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label="PASSWORD"
+          label="MOT DE PASSE"
           bind:value={password}
           required={true}
         />
 
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label="NEW PASSWORD"
+          label="NOUVEAU MOT DE PASSE"
           bind:value={newPassword}
           required={true}
         />
 
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
-          label="CONFIRM PASSWORD"
+          label="CONFIRMER LE MOT DE PASSE"
           bind:value={confirmPassword}
           required={true}
         />
@@ -69,7 +69,7 @@
             type="submit"
             size="sm"
             disabled={!(password && newPassword && newPassword === confirmPassword)}
-            on:click={() => handleChangePassword()}>Save</Button
+            on:click={() => handleChangePassword()}>Terminer</Button
           >
         </div>
       </div>

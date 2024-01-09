@@ -8,8 +8,8 @@
 
 <FullscreenContainer title={data.meta.title}>
   <p slot="message">
-    Since you are the first user on the system, you will be assigned as the Admin and are responsible for administrative
-    tasks, and additional users will be created by you.
+    Étant donné que vous êtes le premier utilisateur du système, vous serez désigné comme administrateur 
+    et vous serez responsable des tâches administratives. Les utilisateurs supplémentaires seront créés par vous.
   </p>
 
   <AdminRegistrationForm />

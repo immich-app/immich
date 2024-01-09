@@ -74,7 +74,7 @@
       selectedPersonToCreate = new Array<string | null>(peopleWithFaces.length);
       selectedPersonToReassign = new Array<PersonResponseDto | null>(peopleWithFaces.length);
     } catch (error) {
-      handleError(error, "Can't get faces");
+      handleError(error, "Impossible d'obtenir les visages");
     } finally {
       clearTimeout(timeout);
     }
@@ -128,7 +128,7 @@
           type: NotificationType.Info,
         });
       } catch (error) {
-        handleError(error, "Can't apply changes");
+        handleError(error, "Impossible d'appliquer les modifications");
       }
     }
 
@@ -176,14 +176,14 @@
           <Icon path={mdiArrowLeftThin} size="24" />
         </div>
       </button>
-      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Edit faces</p>
+      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">Editer les visages</p>
     </div>
     {#if !isShowLoadingDone}
       <button
         class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
         on:click={() => handleEditFaces()}
       >
-        Done
+        Fait
       </button>
     {:else}
       <LoadingSpinner />

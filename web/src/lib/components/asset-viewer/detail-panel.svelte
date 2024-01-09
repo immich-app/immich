@@ -143,7 +143,7 @@
     try {
       await api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
     } catch (error) {
-      handleError(error, 'Unable to change date');
+      handleError(error, 'Impossible de changer la date');
     }
   }
 
@@ -161,7 +161,7 @@
         },
       });
     } catch (error) {
-      handleError(error, 'Unable to change location');
+      handleError(error, 'Impossible de changer la localisation');
     }
   }
 </script>
@@ -181,11 +181,11 @@
   {#if asset.isOffline}
     <section class="px-4 py-4">
       <div role="alert">
-        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">Asset offline</div>
+        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">Ressource hors-ligne</div>
         <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            This asset is offline. Immich can not access its file location. Please ensure the asset is available and
-            then rescan the library.
+            Cette ressource est hors ligne. La Mémoire Vive ne peut pas accéder à son emplacement de fichier. Assurez-vous que la ressource est disponible, 
+            puis relancez la numérisation de la bibliothèque.
           </p>
         </div>
       </div>
@@ -281,7 +281,7 @@
                       )}
                     >
                       {#if ageInMonths <= 11}
-                        Age {ageInMonths} months
+                        Age {ageInMonths} mois
                       {:else}
                         Age {age}
                       {/if}
@@ -298,12 +298,12 @@
 
   <div class="px-4 py-4">
     {#if !asset.exifInfo && !asset.isExternal}
-      <p class="text-sm">NO EXIF INFO AVAILABLE</p>
+    <p class="text-sm">AUCUNE INFORMATION EXIF DISPONIBLE</p>
     {:else if !asset.exifInfo && asset.isExternal}
       <div class="flex gap-4 py-4">
         <div>
           <p class="break-all">
-            Metadata not loaded for {asset.originalPath}
+            Métadonnées non chargées pour {asset.originalPath}
           </p>
         </div>
       </div>
@@ -533,14 +533,14 @@
         on:keydown={(event) => event.key === 'Enter' && (isShowChangeLocation = true)}
         tabindex="0"
         role="button"
-        title="Add location"
+        title="Ajouter une localisation"
       >
         <div class="flex gap-4">
           <div>
             <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
           </div>
 
-          <p>Add a location</p>
+          <p>Ajouter une localisation</p>
         </div>
         <div class="focus:outline-none p-1">
           <Icon path={mdiPencil} size="20" />
@@ -595,7 +595,7 @@
             target="_blank"
             class="font-medium text-immich-primary"
           >
-            Open in OpenStreetMap
+            Ouvrir dans OpenStreetMap
           </a>
         </div>
       </svelte:fragment>
@@ -605,7 +605,7 @@
 
 {#if asset.owner && !isOwner}
   <section class="px-6 pt-6 dark:text-immich-dark-fg">
-    <p class="text-sm">SHARED BY</p>
+    <p class="text-sm">PARTAGÉ PAR</p>
     <div class="flex gap-4 pt-4">
       <div>
         <UserAvatar user={asset.owner} size="md" />
@@ -622,7 +622,7 @@
 
 {#if albums.length > 0}
   <section class="p-6 dark:text-immich-dark-fg">
-    <p class="pb-4 text-sm">APPEARS IN</p>
+    <p class="pb-4 text-sm">APPARAÎT DANS</p>
     {#each albums as album}
       <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -644,9 +644,9 @@
           <div class="mb-auto mt-auto">
             <p class="dark:text-immich-dark-primary">{album.albumName}</p>
             <div class="flex gap-2 text-sm">
-              <p>{album.assetCount} items</p>
+              <p>{album.assetCount} éléments</p>
               {#if album.shared}
-                <p>· Shared</p>
+                <p>· Partagé</p>
               {/if}
             </div>
           </div>

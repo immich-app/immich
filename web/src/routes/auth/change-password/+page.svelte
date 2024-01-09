@@ -17,11 +17,11 @@
 
 <FullscreenContainer title={data.meta.title}>
   <p slot="message">
-    Hi {$user.name} ({$user.email}),
+    Salut {$user.name} ({$user.email}),
     <br />
     <br />
-    This is either the first time you are signing into the system or a request has been made to change your password. Please
-    enter the new password below.
+    Soit c'est la première fois que vous vous connectez au système, soit une demande de changement de mot de passe a été faite. 
+    Veuillez entrer le nouveau mot de passe ci-dessous.
   </p>
 
   <ChangePasswordForm user={$user} on:success={onSuccessHandler} />

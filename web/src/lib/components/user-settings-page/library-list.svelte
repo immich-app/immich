@@ -102,11 +102,11 @@
       const createdLibrary = data;
 
       notificationController.show({
-        message: `Created library: ${createdLibrary.name}`,
+        message: `Bibliothèque créée: ${createdLibrary.name}`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to create library');
+      handleError(error, 'Impossible de créer une bibliothèque');
     } finally {
       await readLibraryList();
     }
@@ -121,7 +121,7 @@
       const libraryId = libraries[updateLibraryIndex].id;
       await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });
     } catch (error) {
-      handleError(error, 'Unable to update library');
+      handleError(error, 'Impossible de mettre à jour la bibliothèque');
     } finally {
       closeAll();
       await readLibraryList();
@@ -140,11 +140,11 @@
     try {
       await api.libraryApi.deleteLibrary({ id: deleteLibrary.id });
       notificationController.show({
-        message: `Library deleted`,
+        message: `Bibliothèque supprimée`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to remove library');
+      handleError(error, 'Impossible de supprimer la bibliothèque');
     } finally {
       confirmDeleteLibrary = null;
       deleteLibrary = null;
@@ -160,11 +160,11 @@
         }
       }
       notificationController.show({
-        message: `Refreshing all libraries`,
+        message: `Actualisation de toutes les bibliothèques en cours`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to scan libraries');
+      handleError(error, 'Impossible de numériser les bibliothèques.');
     }
   };
 
@@ -172,11 +172,11 @@
     try {
       await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: {} });
       notificationController.show({
-        message: `Scanning library for new files`,
+        message: `Numérisation de la bibliothèque pour de nouveaux fichiers en cours`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to scan library');
+      handleError(error, 'Impossible de scanner la bibliothèque');
     }
   };
 
@@ -184,11 +184,11 @@
     try {
       await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
       notificationController.show({
-        message: `Scanning library for changed files`,
+        message: `Numérisation de la bibliothèque pour les fichiers modifiés en cours`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to scan library');
+      handleError(error, 'Impossible de scanner la bibliothèque');
     }
   };
 
@@ -196,11 +196,11 @@
     try {
       await api.libraryApi.scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
       notificationController.show({
-        message: `Forcing refresh of all library files`,
+        message: `Forcer la mise à jour de tous les fichiers de la bibliothèque en cours`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to scan library');
+      handleError(error, 'Impossible de scanner la bibliothèque');
     }
   };
 
@@ -208,11 +208,11 @@
     try {
       await api.libraryApi.removeOfflineFiles({ id: libraryId });
       notificationController.show({
-        message: `Removing Offline Files`,
+        message: `Retirer les fichiers hors-ligne`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to remove offline files');
+      handleError(error, 'Impossible de retirer les fichiers hors-ligne');
     }
   };
 
@@ -266,7 +266,7 @@
   const onDeleteLibraryClicked = () => {
     closeAll();
 
-    if (selectedLibrary && confirm(`Are you sure you want to delete ${selectedLibrary.name} library?`) == true) {
+    if (selectedLibrary && confirm("Êtes-vous sûr de vouloir supprimer la bibliothèque ${selectedLibrary.name} ?") == true) {
       refreshStats(selectedLibraryIndex);
       if (totalCount[selectedLibraryIndex] > 0) {
         deleteAssetCount = totalCount[selectedLibraryIndex];
@@ -281,8 +281,8 @@
 
 {#if confirmDeleteLibrary}
   <ConfirmDialogue
-    title="Warning!"
-    prompt="Are you sure you want to delete this library? This will DELETE all {deleteAssetCount} contained assets and cannot be undone."
+    title="Attention!"
+    prompt="Êtes-vous sûr de vouloir supprimer cette bibliothèque ? Cela SUPPRIMERA toutes les {deleteAssetCount} ressources qu'elle contient et ne pourra pas être annulé."
     on:confirm={handleDelete}
     on:cancel={() => (confirmDeleteLibrary = null)}
   />
@@ -297,9 +297,9 @@
         >
           <tr class="flex w-full place-items-center">
             <th class="w-1/6 text-center text-sm font-medium">Type</th>
-            <th class="w-1/3 text-center text-sm font-medium">Name</th>
-            <th class="w-1/5 text-center text-sm font-medium">Assets</th>
-            <th class="w-1/6 text-center text-sm font-medium">Size</th>
+            <th class="w-1/3 text-center text-sm font-medium">Nom</th>
+            <th class="w-1/5 text-center text-sm font-medium">Ressources</th>
+            <th class="w-1/6 text-center text-sm font-medium">Taille</th>
             <th class="w-1/6 text-center text-sm font-medium" />
           </tr>
         </thead>
@@ -343,27 +343,27 @@
                 {#if showContextMenu}
                   <Portal target="body">
                     <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
-                      <MenuOption on:click={() => onRenameClicked()} text={`Rename`} />
+                      <MenuOption on:click={() => onRenameClicked()} text={`Renommer`} />
 
                       {#if selectedLibrary && selectedLibrary.type === LibraryType.External}
-                        <MenuOption on:click={() => onEditImportPathClicked()} text="Edit Import Paths" />
-                        <MenuOption on:click={() => onScanSettingClicked()} text="Scan Settings" />
+                        <MenuOption on:click={() => onEditImportPathClicked()} text="Editer les chemins d'importations" />
+                        <MenuOption on:click={() => onScanSettingClicked()} text="Réglage de numérisation" />
                         <hr />
-                        <MenuOption on:click={() => onScanNewLibraryClicked()} text="Scan New Library Files" />
+                        <MenuOption on:click={() => onScanNewLibraryClicked()} text="Numériser les nouveaux fichiers de la bibliothèque" />
                         <MenuOption
                           on:click={() => onScanAllLibraryFilesClicked()}
-                          text="Re-scan All Library Files"
-                          subtitle={'Only refreshes modified files'}
+                          text="Re-numériser les fichiers de la bibliothèque"
+                          subtitle={'Seulement les fichiers modifiés'}
                         />
                         <MenuOption
                           on:click={() => onForceScanAllLibraryFilesClicked()}
-                          text="Force Re-scan All Library Files"
-                          subtitle={'Refreshes every file'}
+                          text="Forcer la nouvelle numérisation de tous les fichiers de la bibliothèque"
+                          subtitle={'Actualise chaque fichier'}
                         />
                         <hr />
-                        <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Remove Offline Files" />
+                        <MenuOption on:click={() => onRemoveOfflineFilesClicked()} text="Retirer les fichiers hors-ligne" />
                         <MenuOption on:click={() => onDeleteLibraryClicked()}>
-                          <p class="text-red-600">Delete library</p>
+                          <p class="text-red-600">Supprimer la bibliothèque</p>
                         </MenuOption>
                       {/if}
                     </ContextMenu>
@@ -403,8 +403,8 @@
       </table>
     {/if}
     <div class="my-2 flex justify-end gap-2">
-      <Button size="sm" on:click={() => handleScanAll()}>Scan All Libraries</Button>
-      <Button size="sm" on:click={() => handleCreate(LibraryType.External)}>Create External Library</Button>
+      <Button size="sm" on:click={() => handleScanAll()}>Scanner toutes les bibliothèques</Button>
+      <Button size="sm" on:click={() => handleCreate(LibraryType.External)}>Créer une bibliothèque externe</Button>
     </div>
   </div>
 </section>

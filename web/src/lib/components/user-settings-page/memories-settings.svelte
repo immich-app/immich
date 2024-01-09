@@ -22,9 +22,9 @@
 
       Object.assign(user, data);
 
-      notificationController.show({ message: 'Saved settings', type: NotificationType.Info });
+      notificationController.show({ message: 'Paramètres sauvegardés', type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to update settings');
+      handleError(error, "Impossible d'enregistrer les paramètres");
     }
   };
 </script>
@@ -35,13 +35,13 @@
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
           <SettingSwitch
-            title="Time-based memories"
-            subtitle="Photos from previous years"
+            title="Souvenirs basés sur le temps"
+            subtitle="Photos des années précédentes"
             bind:checked={user.memoriesEnabled}
           />
         </div>
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSave()}>Save</Button>
+          <Button type="submit" size="sm" on:click={() => handleSave()}>Sauvegarder</Button>
         </div>
       </div>
     </form>

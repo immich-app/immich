@@ -41,7 +41,7 @@
         dispatch('editSuccess');
       }
     } catch (error) {
-      handleError(error, 'Unable to update user');
+      handleError(error, "Impossible de créer l'utilisateur");
     }
   };
 
@@ -61,9 +61,9 @@
         dispatch('resetPasswordSuccess');
       }
     } catch (e) {
-      console.error('Error reseting user password', e);
+      console.error("Erreur lors de la réinitialisation du mot de passe de l'utilisateur", e);
       notificationController.show({
-        message: 'Error reseting user password, check console for more details',
+        message: "Erreur lors de la réinitialisation du mot de passe de l'utilisateur, contactez votre admnistrateur",
         type: NotificationType.Error,
       });
     } finally {
@@ -83,7 +83,7 @@
     class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
   >
     <Icon path={mdiAccountEditOutline} size="4em" />
-    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit user</h1>
+    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Editer l'utilisateur</h1>
   </div>
 
   <form on:submit|preventDefault={editUser} autocomplete="off">
@@ -93,12 +93,12 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="name">Name</label>
+      <label class="immich-form-label" for="name">Nom</label>
       <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="storage-label">Storage Label</label>
+      <label class="immich-form-label" for="storage-label">Structure de sauvegarde</label>
       <input
         class="immich-form-input"
         id="storage-label"
@@ -108,15 +108,15 @@
       />
 
       <p>
-        Note: To apply the Storage Label to previously uploaded assets, run the
+        Note : Pour appliquer l'étiquette de stockage aux ressources déjà téléchargées, exécutez le
         <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
-          Storage Migration Job</a
+          Job de migration du stockage</a
         >
       </p>
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="external-path">External Path</label>
+      <label class="immich-form-label" for="external-path">Chemin externe</label>
       <input
         class="immich-form-input"
         id="external-path"
@@ -126,8 +126,8 @@
       />
 
       <p>
-        Note: Absolute path of parent import directory. A user can only import files if they exist at or under this
-        path.
+        Remarque : Chemin absolu du répertoire parent d'importation. Un utilisateur ne peut importer des fichiers
+         que s'ils existent à cet emplacement ou en dessous de celui-ci
       </p>
     </div>
 
@@ -141,10 +141,10 @@
     <div class="mt-8 flex w-full gap-4 px-4">
       {#if canResetPassword}
         <Button color="light-red" fullwidth on:click={() => (isShowResetPasswordConfirmation = true)}
-          >Reset password</Button
+          >Reinitialiser le mot de passe</Button
         >
       {/if}
-      <Button type="submit" fullwidth>Confirm</Button>
+      <Button type="submit" fullwidth>Confirmer</Button>
     </div>
   </form>
 </div>
@@ -158,7 +158,7 @@
   >
     <svelte:fragment slot="prompt">
       <p>
-        Are you sure you want to reset <b>{user.name}</b>'s password?
+        Êtes-vous sûr de vouloir réinitialiser le mot de passe de <b>{user.name}</b> ?
       </p>
     </svelte:fragment>
   </ConfirmDialogue>

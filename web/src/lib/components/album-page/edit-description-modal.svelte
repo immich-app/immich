@@ -23,7 +23,7 @@
     <div
       class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
-      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Edit description</h1>
+      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Editer la description</h1>
     </div>
 
     <form on:submit|preventDefault={handleSubmit} autocomplete="off">
@@ -41,7 +41,7 @@
       </div>
 
       <div class="mt-8 flex w-full gap-4 px-4">
-        <Button color="gray" fullwidth on:click={handleCancel}>Cancel</Button>
+        <Button color="gray" fullwidth on:click={handleCancel}>Annuler</Button>
         <Button type="submit" fullwidth>Ok</Button>
       </div>
     </form>

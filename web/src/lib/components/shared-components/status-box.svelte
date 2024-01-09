@@ -42,7 +42,7 @@
       <Icon path={mdiCloud} size={'24'} />
     </div>
     <div class="hidden group-hover:sm:block md:block">
-      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
+      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Stockage</p>
       {#if $serverInfoStore}
         <div class="my-2 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
           <!-- style={`width: ${$downloadAssets[fileName]}%`} -->
@@ -52,8 +52,8 @@
           />
         </div>
         <p class="text-xs">
-          {asByteUnitString($serverInfoStore?.diskUseRaw, $locale)} of
-          {asByteUnitString($serverInfoStore?.diskSizeRaw, $locale)} used
+          {asByteUnitString($serverInfoStore?.diskUseRaw, $locale)} des
+          {asByteUnitString($serverInfoStore?.diskSizeRaw, $locale)} utilisés
         </p>
       {:else}
         <div class="mt-2">
@@ -70,15 +70,15 @@
       <Icon path={mdiDns} size={'24'} />
     </div>
     <div class="hidden text-xs group-hover:sm:block md:block">
-      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
+      <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Serveur</p>
 
       <div class="mt-2 flex justify-between justify-items-center">
         <p>Status</p>
 
         {#if $connected}
-          <p class="font-medium text-immich-primary dark:text-immich-dark-primary">Online</p>
+          <p class="font-medium text-immich-primary dark:text-immich-dark-primary">En service</p>
         {:else}
-          <p class="font-medium text-red-500">Offline</p>
+          <p class="font-medium text-red-500">Hors-service</p>
         {/if}
       </div>
 
@@ -86,14 +86,14 @@
         <p>Version</p>
         {#if $connected && version}
           <a
-            href="https://github.com/immich-app/immich/releases"
+            href="https://rfstudio.fr"
             class="font-medium text-immich-primary dark:text-immich-dark-primary"
             target="_blank"
           >
             {version}
           </a>
         {:else}
-          <p class="font-medium text-red-500">Unknown</p>
+          <p class="font-medium text-red-500">Inconnu</p>
         {/if}
       </div>
     </div>

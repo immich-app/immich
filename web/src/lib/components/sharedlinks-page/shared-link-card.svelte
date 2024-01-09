@@ -94,14 +94,14 @@
       <div class="font-mono text-xs font-semibold text-gray-500 dark:text-gray-400">
         {#if link.expiresAt}
           {#if isExpired(link.expiresAt)}
-            <p class="font-bold text-red-600 dark:text-red-400">Expired</p>
+            <p class="font-bold text-red-600 dark:text-red-400">Expiré</p>
           {:else}
             <p>
-              Expires {getCountDownExpirationDate()}
+              Expire {getCountDownExpirationDate()}
             </p>
           {/if}
         {:else}
-          <p>Expires ∞</p>
+          <p>Expire ∞</p>
         {/if}
       </div>
 
@@ -112,7 +112,7 @@
               {link.album?.albumName.toUpperCase()}
             </p>
           {:else if link.type === SharedLinkType.Individual}
-            <p>INDIVIDUAL SHARE</p>
+            <p>Partage individuel</p>
           {/if}
 
           {#if !link.expiresAt || !isExpired(link.expiresAt)}
@@ -145,7 +145,7 @@
         <div
           class="flex w-[100px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
-          Download
+          Téléchargement
         </div>
       {/if}
 
@@ -161,7 +161,7 @@
         <div
           class="flex w-[100px] place-content-center place-items-center rounded-full bg-immich-primary px-2 py-1 text-xs text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray"
         >
-          Password
+          Mot de passe
         </div>
       {/if}
     </div>

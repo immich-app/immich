@@ -30,7 +30,7 @@
   {#if $isMultiSelectState}
     <AssetSelectControlBar assets={$selectedAssets} clearSelect={assetInteractionStore.clearMultiselect}>
       <CreateSharedLink />
-      <AssetSelectContextMenu icon={mdiPlus} title="Add">
+      <AssetSelectContextMenu icon={mdiPlus} title="Ajouter">
         <AddToAlbum />
         <AddToAlbum shared />
       </AssetSelectContextMenu>
@@ -40,7 +40,7 @@
     <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(AppRoute.SHARING)}>
       <svelte:fragment slot="leading">
         <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-          {data.partner.name}'s photos
+          Photos de {data.partner.name}
         </p>
       </svelte:fragment>
     </ControlAppBar>

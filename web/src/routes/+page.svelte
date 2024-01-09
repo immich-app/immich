@@ -10,11 +10,11 @@
       <ImmichLogo class="text-center" height="200" width="200" />
     </div>
     <h1 class="font-immich-title text-4xl font-bold text-immich-primary dark:text-immich-dark-primary">
-      Welcome to IMMICH Web
+      Bienvenue sur la Mémoire Vive
     </h1>
     <a href={AppRoute.AUTH_REGISTER}>
       <Button size="lg" rounded="lg">
-        <span class="px-2 font-bold">Getting Started</span>
+        <span class="px-2 font-bold">Démarrer</span>
       </Button>
     </a>
   </div>

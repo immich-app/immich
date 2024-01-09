@@ -5,7 +5,7 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiCloudDownloadOutline } from '@mdi/js';
 
-  export let filename = 'immich.zip';
+  export let filename = 'memoirevive.zip';
   export let menuItem = false;
 
   const { getAssets, clearSelect } = getAssetControlContext();
@@ -24,7 +24,7 @@
 </script>
 
 {#if menuItem}
-  <MenuOption text="Download" on:click={handleDownloadFiles} />
+  <MenuOption text="Télécharger" on:click={handleDownloadFiles} />
 {:else}
-  <CircleIconButton title="Download" icon={mdiCloudDownloadOutline} on:click={handleDownloadFiles} />
+  <CircleIconButton title="Télécharger" icon={mdiCloudDownloadOutline} on:click={handleDownloadFiles} />
 {/if}

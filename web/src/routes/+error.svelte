@@ -21,7 +21,7 @@
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
       <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
         <ImmichLogo height="35" width="35" />
-        <h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+        <h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">Mémoire Vive</h1>
       </a>
     </div>
   </section>
@@ -34,7 +34,7 @@
         <div>
           <div class="flex items-center justify-between gap-4 px-4 py-4">
             <h1 class="font-medium text-immich-primary dark:text-immich-dark-primary">
-              🚨 Error - Something went wrong
+              🚨 Erreur - Quelque chose s'est mal passé
             </h1>
             <div class="flex justify-end">
               <button
@@ -61,40 +61,40 @@
           <hr />
 
           <div class="flex place-content-center place-items-center justify-around">
-            <!-- href="https://github.com/immich-app/immich/issues/new" -->
+            <!-- href="mailto:tfreger@rfstudio.fr" -->
             <a
-              href="https://discord.com/invite/D8JsnBEuKb"
+              href="https://rfstudio.fr"
               target="_blank"
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
               <button class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiMessage} size={24} />
-                <p class="text-sm">Get Help</p>
+                <p class="text-sm">Obtenir de l'aide</p>
               </button>
             </a>
 
             <a
-              href="https://github.com/immich-app/immich/releases"
+              href="https://github.com/theophilefreger"
               target="_blank"
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
               <button class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiPartyPopper} size={24} />
-                <p class="text-sm">Read Changelog</p>
+                <p class="text-sm">Lire la note de mise à jour</p>
               </button>
             </a>
 
             <a
-              href="https://immich.app/docs/guides/docker-help"
+              href="https://github.com/theophilefreger"
               target="_blank"
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
             >
               <button class="flex flex-col place-content-center place-items-center gap-2">
                 <Icon path={mdiCodeTags} size={24} />
-                <p class="text-sm">Check Logs</p>
+                <p class="text-sm">Lire les changements</p>
               </button>
             </a>
           </div>

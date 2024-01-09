@@ -25,7 +25,7 @@
       notificationController.show({ message: api.getAssetJobMessage(name), type: NotificationType.Info });
       clearSelect();
     } catch (error) {
-      handleError(error, 'Unable to submit job');
+      handleError(error, 'Impossible de soumettre la tâche');
     }
   };
 </script>

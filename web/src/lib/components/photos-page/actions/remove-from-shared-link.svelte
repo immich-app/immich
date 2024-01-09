@@ -35,23 +35,23 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: `Removed ${count} assets`,
+        message: `${count} ressources supprimées`,
       });
 
       clearSelect();
     } catch (error) {
-      handleError(error, 'Unable to remove assets from shared link');
+      handleError(error, 'Impossible de retirer les ressources du lien partagé');
     }
   };
 </script>
 
-<CircleIconButton title="Remove from shared link" on:click={() => (removing = true)} icon={mdiDeleteOutline} />
+<CircleIconButton title="Retirer du lien partagé" on:click={() => (removing = true)} icon={mdiDeleteOutline} />
 
 {#if removing}
   <ConfirmDialogue
-    title="Remove Assets?"
-    prompt="Are you sure you want to remove {getAssets().size} asset(s) from this shared link?"
-    confirmText="Remove"
+    title="Retirer les ressources?"
+    prompt="Êtes-vous sûr de vouloir retirer {getAssets().size} ressource(s) de ce lien partagé ?"
+    confirmText="Retirer"
     on:confirm={() => handleRemove()}
     on:cancel={() => (removing = false)}
   />

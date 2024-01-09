@@ -21,8 +21,8 @@ export const load = (async () => {
 
   return {
     meta: {
-      title: 'Welcome 🎉',
-      description: 'Immich Web Interface',
+      title: 'Bienvenue 🎉',
+      description: 'Interface web de la Mémoire Vive de RF STUDIO',
     },
   };
 }) satisfies PageLoad;

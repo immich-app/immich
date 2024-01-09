@@ -15,10 +15,10 @@
 </script>
 
 <OnboardingCard>
-  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">COLOR THEME</p>
+  <p class="text-xl text-immich-primary dark:text-immich-dark-primary">THÈME DE COULEUR</p>
 
   <div>
-    <p class="pb-6 font-light">Choose a color theme for your instance. You can change this later in your settings.</p>
+    <p class="pb-6 font-light">Choisissez un thème de couleur pour votre instance. Vous pouvez le modifier ultérieurement dans vos paramètres.</p>
   </div>
 
   <div class="flex gap-4 mb-6">
@@ -30,7 +30,7 @@
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
       >
         <Icon path={sunPath} viewBox={sunViewBox} size="96" />
-        <p class="font-semibold text-4xl">LIGHT</p>
+        <p class="font-semibold text-4xl">CLAIR</p>
       </div>
     </button>
     <button
@@ -41,7 +41,7 @@
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
       >
         <Icon path={moonPath} viewBox={moonViewBox} size="96" />
-        <p class="font-semibold text-4xl">DARK</p>
+        <p class="font-semibold text-4xl">FONCÉ</p>
       </div>
     </button>
   </div>
@@ -49,7 +49,7 @@
   <div class="flex">
     <div class="w-full flex place-content-end">
       <Button class="flex gap-2 place-content-center" on:click={() => dispatch('done')}>
-        <p>Storage Template</p>
+        <p>Structure de stockage</p>
         <Icon path={mdiArrowRight} size="18" />
       </Button>
     </div>

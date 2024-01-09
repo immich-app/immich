@@ -34,7 +34,7 @@
       const { data } = await api.keyApi.createApiKey({ aPIKeyCreateDto: detail });
       secret = data.secret;
     } catch (error) {
-      handleError(error, 'Unable to create a new API Key');
+      handleError(error, 'Impossible de créer une clée API');
     } finally {
       await refreshKeys();
       newKey = null;
@@ -49,11 +49,11 @@
     try {
       await api.keyApi.updateApiKey({ id: editKey.id, aPIKeyUpdateDto: { name: detail.name } });
       notificationController.show({
-        message: `Saved API Key`,
+        message: `Clé API enregistrée`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save API Key');
+      handleError(error, "Impossible d'enregistrer une clé API");
     } finally {
       await refreshKeys();
       editKey = null;
@@ -68,11 +68,11 @@
     try {
       await api.keyApi.deleteApiKey({ id: deleteKey.id });
       notificationController.show({
-        message: `Removed API Key: ${deleteKey.name}`,
+        message: `Retirer la clé API: ${deleteKey.name}`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to remove API Key');
+      handleError(error, 'Impossible de retirer la clé API');
     } finally {
       await refreshKeys();
       deleteKey = null;
@@ -82,8 +82,8 @@
 
 {#if newKey}
   <APIKeyForm
-    title="New API Key"
-    submitText="Create"
+    title="Nouvelle clé API"
+    submitText="Créer"
     apiKey={newKey}
     on:submit={({ detail }) => handleCreate(detail)}
     on:cancel={() => (newKey = null)}
@@ -96,7 +96,7 @@
 
 {#if editKey}
   <APIKeyForm
-    submitText="Save"
+    submitText="Enregistrer"
     apiKey={editKey}
     on:submit={({ detail }) => handleUpdate(detail)}
     on:cancel={() => (editKey = null)}
@@ -105,7 +105,7 @@
 
 {#if deleteKey}
   <ConfirmDialogue
-    prompt="Are you sure you want to delete this API Key?"
+    prompt="Voulez-vous créer une clé API?"
     on:confirm={() => handleDelete()}
     on:cancel={() => (deleteKey = null)}
   />

@@ -31,7 +31,7 @@
       const { id, albumName } = response.data;
 
       notificationController.show({
-        message: `Added ${assetIds.length} to ${albumName}`,
+        message: `Ajouté ${assetIds.length} à ${albumName}`,
         type: NotificationType.Info,
       });
 
@@ -49,7 +49,7 @@
   };
 </script>
 
-<MenuOption on:click={() => (showAlbumPicker = true)} text={shared ? 'Add to Shared Album' : 'Add to Album'} />
+<MenuOption on:click={() => (showAlbumPicker = true)} text={shared ? 'Ajouter à un album partagé' : 'Ajouter à un album'} />
 
 {#if showAlbumPicker}
   <AlbumSelectionModal

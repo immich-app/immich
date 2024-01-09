@@ -22,11 +22,11 @@
         user = data;
 
         notificationController.show({
-          message: 'Linked OAuth account',
+          message: 'Compte OAuth lié',
           type: NotificationType.Info,
         });
       } catch (error) {
-        handleError(error, 'Unable to link OAuth account');
+        handleError(error, 'Impossible de lier le compte OAuth');
       } finally {
         goto('?open=oauth');
       }
@@ -40,11 +40,11 @@
       const { data } = await oauth.unlink();
       user = data;
       notificationController.show({
-        message: 'Unlinked OAuth account',
+        message: 'Compte OAuth désolidarisé',
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to unlink account');
+      handleError(error, 'Impossible de désolidariser le compte');
     }
   };
 </script>
@@ -58,9 +58,9 @@
         </div>
       {:else if $featureFlags.oauth}
         {#if user.oauthId}
-          <Button size="sm" on:click={() => handleUnlink()}>Unlink Oauth</Button>
+          <Button size="sm" on:click={() => handleUnlink()}>Désolidariser Oauth</Button>
         {:else}
-          <Button size="sm" on:click={() => oauth.authorize(window.location)}>Link to OAuth</Button>
+          <Button size="sm" on:click={() => oauth.authorize(window.location)}>Lien vers OAuth</Button>
         {/if}
       {/if}
     </div>

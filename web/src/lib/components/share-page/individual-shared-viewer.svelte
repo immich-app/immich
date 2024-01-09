@@ -32,7 +32,7 @@
   });
 
   const downloadAssets = async () => {
-    await downloadArchive(`immich-shared.zip`, { assetIds: assets.map((asset) => asset.id) });
+    await downloadArchive(`partage-memoirevive.zip`, { assetIds: assets.map((asset) => asset.id) });
   };
 
   const handleUploadAssets = async (files: File[] = []) => {
@@ -54,11 +54,11 @@
       const added = data.filter((item) => item.success).length;
 
       notificationController.show({
-        message: `Added ${added} assets`,
+        message: `Ajouté ${added} ressources`,
         type: NotificationType.Info,
       });
     } catch (e) {
-      await handleError(e, 'Unable to add assets to shared link');
+      await handleError(e, "Impossible d'ajouter les ressources au lien partagé");
     }
   };
 
@@ -70,9 +70,9 @@
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
   {#if isMultiSelectionMode}
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-      <CircleIconButton title="Select all" icon={mdiSelectAll} on:click={handleSelectAll} />
+      <CircleIconButton title="Sélectionner tout" icon={mdiSelectAll} on:click={handleSelectAll} />
       {#if sharedLink?.allowDownload}
-        <DownloadAction filename="immich-shared.zip" />
+        <DownloadAction filename="partage-memoirevive.zip" />
       {/if}
       {#if isOwned}
         <RemoveFromSharedLink bind:sharedLink />
@@ -83,17 +83,17 @@
       <svelte:fragment slot="leading">
         <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
           <ImmichLogo height="30" width="30" />
-          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
+          <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">Mémoire Vive</h1>
         </a>
       </svelte:fragment>
 
       <svelte:fragment slot="trailing">
         {#if sharedLink?.allowUpload}
-          <CircleIconButton title="Add Photos" on:click={() => handleUploadAssets()} icon={mdiFileImagePlusOutline} />
+          <CircleIconButton title="Ajouter des photos" on:click={() => handleUploadAssets()} icon={mdiFileImagePlusOutline} />
         {/if}
 
         {#if sharedLink?.allowDownload}
-          <CircleIconButton title="Download" on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
+          <CircleIconButton title="Télécharger" on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
         {/if}
       </svelte:fragment>
     </ControlAppBar>

@@ -22,9 +22,9 @@
 
     try {
       await api.authenticationApi.logoutAuthDevice({ id: deleteDevice.id });
-      notificationController.show({ message: `Logged out device`, type: NotificationType.Info });
+      notificationController.show({ message: `Appareil déconnecté`, type: NotificationType.Info });
     } catch (error) {
-      handleError(error, 'Unable to log out device');
+      handleError(error, "Impossible de déconnecter l'appareil");
     } finally {
       await refresh();
       deleteDevice = null;
@@ -35,11 +35,11 @@
     try {
       await api.authenticationApi.logoutAuthDevices();
       notificationController.show({
-        message: `Logged out all devices`,
+        message: `Déconnecté de tos les appareils`,
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to log out all devices');
+      handleError(error, 'Impossible de déconnecter tous les appareils');
     } finally {
       await refresh();
       deleteAll = false;
@@ -49,7 +49,7 @@
 
 {#if deleteDevice}
   <ConfirmDialogue
-    prompt="Are you sure you want to log out this device?"
+    prompt="Êtes-vous sûr de vouloir vous déconnecter de cet appareil ?"
     on:confirm={() => handleDelete()}
     on:cancel={() => (deleteDevice = null)}
   />
@@ -57,7 +57,7 @@
 
 {#if deleteAll}
   <ConfirmDialogue
-    prompt="Are you sure you want to log out all devices?"
+    prompt="Êtes-vous sûr de vouloir vous déconnecter de tous les appareils ?"
     on:confirm={() => handleDeleteAll()}
     on:cancel={() => (deleteAll = false)}
   />
@@ -66,13 +66,13 @@
 <section class="my-4">
   {#if currentDevice}
     <div class="mb-6">
-      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">CURRENT DEVICE</h3>
+      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">APPAREIL ACTUEL</h3>
       <DeviceCard device={currentDevice} />
     </div>
   {/if}
   {#if otherDevices.length > 0}
     <div class="mb-6">
-      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">OTHER DEVICES</h3>
+      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">AUTRES APPAREILS</h3>
       {#each otherDevices as device, i}
         <DeviceCard {device} on:delete={() => (deleteDevice = device)} />
         {#if i !== otherDevices.length - 1}
@@ -80,9 +80,9 @@
         {/if}
       {/each}
     </div>
-    <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">LOG OUT ALL DEVICES</h3>
+    <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">DÉCONNECTER TOUS LES APPAREILS</h3>
     <div class="flex justify-end">
-      <Button color="red" size="sm" on:click={() => (deleteAll = true)}>Log Out All Devices</Button>
+      <Button color="red" size="sm" on:click={() => (deleteAll = true)}>Déconnecter tous les appareils</Button>
     </div>
   {/if}
 </section>

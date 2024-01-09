@@ -37,14 +37,14 @@
       notificationController.show({
         message:
           ($errorCounter > 0
-            ? `Upload completed with ${$errorCounter} error${$errorCounter > 1 ? 's' : ''}`
-            : 'Upload success') + ', refresh the page to see new upload assets.',
+            ? `Téléchargement terminé avec ${$errorCounter} erreur${$errorCounter > 1 ? 's' : ''}`
+            : 'Téléchargement réussi') + ', rafraîchissez la page pour voir les nouvelles ressources téléchargées.',
         type: $errorCounter > 0 ? NotificationType.Warning : NotificationType.Info,
       });
 
       if ($duplicateCounter > 0) {
         notificationController.show({
-          message: `Skipped ${$duplicateCounter} duplicate picture${$duplicateCounter > 1 ? 's' : ''}`,
+          message: `Passé ${$duplicateCounter} image${$duplicateCounter > 1 ? 's' : ''} en double`,
           type: NotificationType.Warning,
         });
       }
@@ -61,12 +61,12 @@
         <div class="place-item-center mb-4 flex justify-between">
           <div class="flex flex-col gap-1">
             <p class="immich-form-label text-xm">
-              Remaining {$remainingUploads} - Processed {$successCounter + $errorCounter}/{$totalUploadCounter}
+              En attente {$remainingUploads} - Traité {$successCounter + $errorCounter}/{$totalUploadCounter}
             </p>
             <p class="immich-form-label text-xs">
-              Uploaded <span class="text-immich-success">{$successCounter}</span> - Error
+              Sauvegardé <span class="text-immich-success">{$successCounter}</span> - Erreur
               <span class="text-immich-error">{$errorCounter}</span>
-              - Duplicates <span class="text-immich-warning">{$duplicateCounter}</span>
+              - Doublons <span class="text-immich-warning">{$duplicateCounter}</span>
             </p>
           </div>
           <div class="flex flex-col items-end">
@@ -79,7 +79,7 @@
                 on:click={() => (showOptions = !showOptions)}
               />
               <CircleIconButton
-                title="Minimize"
+                title="Minimiser"
                 icon={mdiWindowMinimize}
                 size="14"
                 padding="1"
@@ -88,7 +88,7 @@
             </div>
             {#if $hasError}
               <CircleIconButton
-                title="Dismiss all errors"
+                title="Rejeter toutes les erreurs"
                 icon={mdiCancel}
                 size="14"
                 padding="1"
@@ -100,7 +100,7 @@
         {#if showOptions}
           <div class="immich-scrollbar mb-4 max-h-[400px] overflow-y-auto rounded-lg pr-2">
             <div class="flex h-[26px] place-items-center gap-1">
-              <label class="immich-form-label" for="upload-concurrency">Upload concurrency</label>
+              <label class="immich-form-label" for="upload-concurrency">Concurrence de téléchargement</label>
             </div>
             <input
               class="immich-form-input w-full"

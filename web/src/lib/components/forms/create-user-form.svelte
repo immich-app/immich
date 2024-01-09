@@ -17,7 +17,7 @@
 
   $: {
     if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
-      error = 'Password does not match';
+      error = 'Le mot de passe ne correspond pas';
       canCreateUser = false;
     } else {
       error = '';
@@ -53,24 +53,24 @@
         });
 
         if (status === 201) {
-          success = 'New user created';
+          success = 'Nouvel utilisateur créé';
 
           dispatch('submit');
 
           isCreatingUser = false;
           return;
         } else {
-          error = 'Error create user account';
+          error = 'Erreur lors de la création du compte utilisateur';
           isCreatingUser = false;
         }
       } catch (e) {
-        error = 'Error create user account';
+        error = 'Erreur lors de la création du compte utilisateur';
         isCreatingUser = false;
 
         console.log('[ERROR] registerUser', e);
 
         notificationController.show({
-          message: `Error create new user, check console for more detail`,
+          message: `Erreur lors de la création du compte utilisateur, contactez votre administrateur`,
           type: NotificationType.Error,
         });
       }
@@ -83,9 +83,9 @@
 >
   <div class="flex flex-col place-content-center place-items-center gap-4 px-4">
     <ImmichLogo class="text-center" height="100" width="100" />
-    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Create new user</h1>
+    <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Créer nouvel utilisateur</h1>
     <p class="rounded-md border p-4 font-mono text-sm text-gray-600 dark:border-immich-dark-bg dark:text-gray-300">
-      Please provide your user with the password, they will have to change it on their first sign in.
+      Veuillez fournir à votre utilisateur le mot de passe. Ils devront le changer lors de leur première connexion
     </p>
   </div>
 
@@ -96,12 +96,12 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="password">Password</label>
+      <label class="immich-form-label" for="password">Mot de passe</label>
       <input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="confirmPassword">Confirm Password</label>
+      <label class="immich-form-label" for="confirmPassword">Confirmer le mot de passe</label>
       <input
         class="immich-form-input"
         id="confirmPassword"
@@ -113,7 +113,7 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="name">Name</label>
+      <label class="immich-form-label" for="name">Nom</label>
       <input class="immich-form-input" id="name" name="name" type="text" required />
     </div>
 
@@ -125,8 +125,8 @@
       <p class="ml-4 text-sm text-immich-primary">{success}</p>
     {/if}
     <div class="flex w-full gap-4 p-4">
-      <Button color="gray" fullwidth on:click={() => dispatch('cancel')}>Cancel</Button>
-      <Button type="submit" disabled={isCreatingUser} fullwidth>Create</Button>
+      <Button color="gray" fullwidth on:click={() => dispatch('cancel')}>Annuler</Button>
+      <Button type="submit" disabled={isCreatingUser} fullwidth>Créer</Button>
     </div>
   </form>
 </div>

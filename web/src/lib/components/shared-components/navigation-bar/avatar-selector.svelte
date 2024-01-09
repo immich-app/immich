@@ -22,7 +22,7 @@
     >
       <div class="flex items-center">
         <h1 class="px-4 w-full self-center font-medium text-immich-primary dark:text-immich-dark-primary text-sm">
-          SELECT AVATAR COLOR
+          Sélectionner la couleur de l'avatar
         </h1>
         <div>
           <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />

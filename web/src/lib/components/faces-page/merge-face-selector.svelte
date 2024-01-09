@@ -57,7 +57,7 @@
 
     if (selectedPeople.length >= 5) {
       notificationController.show({
-        message: 'You can only merge up to 5 faces at a time',
+        message: "Vous ne pouvez fusionner que jusqu'à 5 visages à la fois",
         type: NotificationType.Info,
       });
       return;
@@ -74,12 +74,12 @@
       });
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
-        message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
+        message: `Fusionné ${count} ${count === 1 ? 'personne' : 'personnes'}`,
         type: NotificationType.Info,
       });
       dispatch('merge');
     } catch (error) {
-      handleError(error, 'Cannot merge people');
+      handleError(error, 'Impossible de fusionner les personnes');
     } finally {
       isShowConfirmation = false;
     }
@@ -95,9 +95,9 @@
   <ControlAppBar on:close={onClose}>
     <svelte:fragment slot="leading">
       {#if hasSelection}
-        Selected {selectedPeople.length}
+        Sélectionnés {selectedPeople.length}
       {:else}
-        Merge people
+        Fusionner les personnes
       {/if}
       <div />
     </svelte:fragment>
@@ -110,14 +110,14 @@
         }}
       >
         <Icon path={mdiMerge} size={18} />
-        <span class="ml-2"> Merge</span></Button
+        <span class="ml-2"> Fusionner</span></Button
       >
     </svelte:fragment>
   </ControlAppBar>
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
       <div class="mb-10 h-[200px] place-content-center place-items-center">
-        <p class="mb-4 text-center uppercase dark:text-white">Choose matching people to merge</p>
+        <p class="mb-4 text-center uppercase dark:text-white">Choisissez les personnes correspondantes à fusionner</p>
 
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
           {#each selectedPeople as person (person.id)}
@@ -161,7 +161,7 @@
         on:cancel={() => (isShowConfirmation = false)}
       >
         <svelte:fragment slot="prompt">
-          <p>Are you sure you want merge these people ?</p></svelte:fragment
+          <p>Êtes-vous sûr de vouloir fusionner ces personnes ?</p></svelte:fragment
         >
       </ConfirmDialogue>
     {/if}

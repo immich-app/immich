@@ -94,7 +94,7 @@
           : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {showBigSearchBar
           ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
           : 'rounded-3xl border border-transparent bg-gray-200'}"
-        placeholder="Search your photos"
+        placeholder="Recherche intelligente"
         required
         pattern="^(?!m:$).*$"
         bind:value
@@ -120,16 +120,16 @@
       >
         <div class="flex px-5 pt-5 text-left text-sm">
           <p>
-            Smart search is enabled by default, to search for metadata use the syntax <span
+            La recherche intelligente est activée par défaut. Pour une recherche classique, utilisez la syntaxe suivante : <span
               class="rounded-lg bg-gray-100 p-2 font-mono font-semibold leading-7 text-immich-primary dark:bg-gray-900 dark:text-immich-dark-primary"
-              >m:your-search-term</span
+              >m:votre-recherche</span
             >
           </p>
         </div>
 
         {#if $savedSearchTerms.length > 0}
           <div class="flex items-center justify-between px-5 pt-5 text-xs">
-            <p>RECENT SEARCHES</p>
+            <p>Recherches récentes</p>
             <div class="flex w-18 items-center justify-center">
               <button
                 type="button"

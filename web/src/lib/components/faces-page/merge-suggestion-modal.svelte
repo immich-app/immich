@@ -36,7 +36,7 @@
     >
       <div class="relative flex items-center justify-between">
         <h1 class="truncate px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">
-          Merge People - {title}
+          Fusionner les personnes - {title}
         </h1>
         <div class="p-2">
           <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
@@ -106,13 +106,12 @@
           </div>
         {/if}
       </div>
-
       <div class="flex px-4 md:px-8 md:pt-4">
-        <h1 class="text-xl text-gray-500 dark:text-gray-300">Are these the same person?</h1>
+        <h1 class="text-xl text-gray-500 dark:text-gray-300">S'agit-il de la même personne ?</h1>
       </div>
       <div class="flex px-4 pt-2 md:px-8">
-        <p class="text-sm text-gray-500 dark:text-gray-300">They will be merged together</p>
-      </div>
+        <p class="text-sm text-gray-500 dark:text-gray-300">Elles seront fusionnées ensemble</p>
+      </div>      
       <div class="mt-8 flex w-full gap-4 px-4 pb-4">
         <Button color="gray" fullwidth on:click={() => dispatch('reject')}>No</Button>
         <Button fullwidth on:click={() => dispatch('confirm', [personMerge1, personMerge2])}>Yes</Button>

@@ -52,7 +52,7 @@
       people = data;
       searchWord = name;
     } catch (error) {
-      handleError(error, "Can't search people");
+      handleError(error, "Impossible de rechercher des personnes");
     } finally {
       clearTimeout(timeout);
     }
@@ -72,7 +72,7 @@
     autofocus
     class="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
     type="text"
-    placeholder="Search names"
+    placeholder="Rechercher des noms"
     bind:value={name}
     on:input={() => searchPeople(false)}
   />

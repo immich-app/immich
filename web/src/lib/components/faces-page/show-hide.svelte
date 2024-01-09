@@ -27,7 +27,7 @@
   >
     <div class="flex items-center">
       <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
-      <p class="ml-4 hidden sm:block">Show & hide people</p>
+      <p class="ml-4 hidden sm:block">Afficher et masquer les personnes</p>
     </div>
     <div class="flex items-center justify-end">
       <div class="flex items-center md:mr-8">
@@ -39,7 +39,7 @@
         />
       </div>
       {#if !showLoadingSpinner}
-        <IconButton on:click={() => dispatch('done')}>Done</IconButton>
+        <IconButton on:click={() => dispatch('done')}>Fait</IconButton>
       {:else}
         <LoadingSpinner />
       {/if}

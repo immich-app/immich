@@ -28,10 +28,10 @@
       class="flex flex-col place-content-center place-items-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
     >
       <Icon path={mdiKeyVariant} size="4em" />
-      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">API Key</h1>
+      <h1 class="text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Clé API</h1>
 
       <p class="text-sm dark:text-immich-dark-fg">
-        This value will only be shown once. Please be sure to copy it before closing the window.
+        Cette valeur ne sera affichée qu'une seule fois. Assurez-vous de la copier avant de fermer la fenêtre.
       </p>
     </div>
 
@@ -42,9 +42,9 @@
 
     <div class="mt-8 flex w-full gap-4 px-4">
       {#if canCopyImagesToClipboard}
-        <Button on:click={() => copyToClipboard(secret)} fullwidth>Copy to Clipboard</Button>
+        <Button on:click={() => copyToClipboard(secret)} fullwidth>Copier dans le presse-papiers</Button>
       {/if}
-      <Button on:click={() => handleDone()} fullwidth>Done</Button>
+      <Button on:click={() => handleDone()} fullwidth>Terminé</Button>
     </div>
   </div>
 </FullScreenModal>

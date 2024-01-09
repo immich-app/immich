@@ -52,7 +52,7 @@
         {#if device.deviceType || device.deviceOS}
           <span>{device.deviceOS || 'Unknown'} • {device.deviceType || 'Unknown'}</span>
         {:else}
-          <span>Unknown</span>
+          <span>Inconnu</span>
         {/if}
       </span>
       <div class="text-sm">

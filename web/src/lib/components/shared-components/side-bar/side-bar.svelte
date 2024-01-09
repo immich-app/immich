@@ -55,7 +55,7 @@
           <LoadingSpinner />
         {:then data}
           <div>
-            <p>{data.videos.toLocaleString($locale)} Videos</p>
+            <p>{data.videos.toLocaleString($locale)} Vidéos</p>
             <p>{data.images.toLocaleString($locale)} Photos</p>
           </div>
         {/await}
@@ -80,7 +80,7 @@
   {#if $sidebarSettings.sharing}
     <a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
       <SideBarButton
-        title="Sharing"
+        title="Partage"
         icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
         isSelected={isSharingSelected}
       >
@@ -98,7 +98,7 @@
   {/if}
 
   <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
-    <p class="hidden p-6 group-hover:sm:block md:block">LIBRARY</p>
+    <p class="hidden p-6 group-hover:sm:block md:block">BIBLIOTHÈQUE</p>
     <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
   </div>
   <a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
@@ -112,7 +112,7 @@
           <LoadingSpinner />
         {:then data}
           <div>
-            <p>{data.videos.toLocaleString($locale)} Videos</p>
+            <p>{data.videos.toLocaleString($locale)} Vidéos</p>
             <p>{data.images.toLocaleString($locale)} Photos</p>
           </div>
         {/await}
@@ -144,7 +144,7 @@
           <LoadingSpinner />
         {:then data}
           <div>
-            <p>{data.videos.toLocaleString($locale)} Videos</p>
+            <p>{data.videos.toLocaleString($locale)} Vidéos</p>
             <p>{data.images.toLocaleString($locale)} Photos</p>
           </div>
         {/await}
@@ -160,7 +160,7 @@
             <LoadingSpinner />
           {:then data}
             <div>
-              <p>{data.videos.toLocaleString($locale)} Videos</p>
+              <p>{data.videos.toLocaleString($locale)} Vidéos</p>
               <p>{data.images.toLocaleString($locale)} Photos</p>
             </div>
           {/await}

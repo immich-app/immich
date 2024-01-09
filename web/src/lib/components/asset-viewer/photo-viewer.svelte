@@ -87,14 +87,14 @@
       await copyImageToClipboard(assetData);
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Copied image to clipboard.',
+        message: 'Image copiée dans le presse-papiers.',
         timeout: 3000,
       });
     } catch (err) {
       console.error('Error [photo-viewer]:', err);
       notificationController.show({
         type: NotificationType.Error,
-        message: 'Copying image to clipboard failed.',
+        message: "Échec de la copie de l'image dans le presse-papiers.",
       });
     }
   };

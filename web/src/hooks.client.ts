@@ -2,7 +2,7 @@ import type { HandleClientError } from '@sveltejs/kit';
 import type { AxiosError, AxiosResponse } from 'axios';
 
 const LOG_PREFIX = '[hooks.client.ts]';
-const DEFAULT_MESSAGE = 'Hmm, not sure about that. Check the logs or open a ticket?';
+const DEFAULT_MESSAGE = "Hmm, pas sûr de ça. Vérifiez les journaux ou ouvrez un ticket ?";
 
 const parseError = (error: unknown) => {
   const httpError = error as AxiosError;

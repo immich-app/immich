@@ -41,11 +41,11 @@
   {#if hasPeople}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">People</p>
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">Personnes</p>
         <a
           href={AppRoute.PEOPLE}
           class="pr-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
-          draggable="false">View All</a
+          draggable="false">Voir tout</a
         >
       </div>
       <div
@@ -73,7 +73,7 @@
   {#if places.length > 0}
     <div class="mb-6 mt-2">
       <div>
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">Places</p>
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">Lieux</p>
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each places as item (item.data.id)}

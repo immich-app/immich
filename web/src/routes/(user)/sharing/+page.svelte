@@ -44,14 +44,14 @@
     <LinkButton on:click={createSharedAlbum}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
         <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">Create shared album</span>
+        <span class="leading-none max-sm:text-xs">Créer un album partagé</span>
       </div>
     </LinkButton>
 
     <LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
       <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
         <Icon path={mdiLink} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">Shared links</span>
+        <span class="leading-none max-sm:text-xs">Créer un lien de partage</span>
       </div>
     </LinkButton>
   </div>
@@ -60,7 +60,7 @@
     {#if data.partners.length > 0}
       <div class="mb-6 mt-2">
         <div>
-          <p class="mb-4 font-medium dark:text-immich-dark-fg">Partners</p>
+          <p class="mb-4 font-medium dark:text-immich-dark-fg">Partenaires</p>
         </div>
 
         <div class="flex flex-row flex-wrap gap-4">
@@ -104,8 +104,8 @@
         <!-- Empty List -->
         {#if data.sharedAlbums.length === 0}
           <EmptyPlaceholder
-            text="Create a shared album to share photos and videos with people in your network"
-            alt="Empty album list"
+            text="Créez un album partagé pour partager des photos et des vidéos avec les personnes de votre réseau."
+            alt="Liste d'albums vide"
             src={empty2Url}
           />
         {/if}

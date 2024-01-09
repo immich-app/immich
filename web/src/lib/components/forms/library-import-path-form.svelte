@@ -35,20 +35,20 @@
 
     <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off">
       <p class="p-5 text-sm">
-        Specify a folder to import. This folder, including subfolders, will be scanned for images and videos. Note that
-        you are only allowed to import paths inside of your account's external path, configured in the administrative
-        settings.
+        Spécifiez un dossier à importer. Ce dossier, y compris les sous-dossiers, sera analysé à la recherche d'images et de vidéos. 
+        Notez que vous n'êtes autorisé à importer que des chemins situés à l'intérieur du chemin externe de votre compte, 
+        configuré dans les paramètres administratifs.
       </p>
 
       <div class="m-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="path">Path</label>
+        <label class="immich-form-label" for="path">Chemin</label>
         <input class="immich-form-input" id="path" name="path" type="text" bind:value={importPath} />
       </div>
 
       <div class="mt-8 flex w-full gap-4 px-4">
         <Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
         {#if canDelete}
-          <Button color="red" fullwidth on:click={() => dispatch('delete')}>Delete</Button>
+          <Button color="red" fullwidth on:click={() => dispatch('delete')}>Supprimer</Button>
         {/if}
 
         <Button type="submit" fullwidth>{submitText}</Button>

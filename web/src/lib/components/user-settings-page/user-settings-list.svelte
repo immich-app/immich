@@ -25,48 +25,48 @@
   }
 </script>
 
-<SettingAccordion title="Appearance" subtitle="Manage your Immich appearance">
+<SettingAccordion title="Thème" subtitle="Modifier l'apparance de Mémoire Vive">
   <AppearanceSettings />
 </SettingAccordion>
 
-<SettingAccordion title="Account" subtitle="Manage your account">
+<SettingAccordion title="Compte" subtitle="Modifier vos paramètres de compte">
   <UserProfileSettings user={$user} />
 </SettingAccordion>
 
-<SettingAccordion title="API Keys" subtitle="Manage your API keys">
+<SettingAccordion title="Clé API" subtitle="Paramètres des clés API">
   <UserAPIKeyList bind:keys />
 </SettingAccordion>
 
-<SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
+<SettingAccordion title="Appareils autorisés" subtitle="Modifier vos appareils enregistrés">
   <DeviceList bind:devices />
 </SettingAccordion>
 
-<SettingAccordion title="Libraries" subtitle="Manage your asset libraries">
+<SettingAccordion title="Bibliothèques" subtitle="Modifier les paramètres des ressources">
   <LibraryList />
 </SettingAccordion>
 
-<SettingAccordion title="Memories" subtitle="Manage what you see in your memories.">
+<SettingAccordion title="Memories" subtitle="Modifier ce que vous souhaitez voir">
   <MemoriesSettings user={$user} />
 </SettingAccordion>
 
 {#if $featureFlags.loaded && $featureFlags.oauth}
   <SettingAccordion
     title="OAuth"
-    subtitle="Manage your OAuth connection"
+    subtitle="Modifier votre connexion à OAuth"
     isOpen={oauthOpen || $page.url.searchParams.get('open') === 'oauth'}
   >
     <OAuthSettings user={$user} />
   </SettingAccordion>
 {/if}
 
-<SettingAccordion title="Password" subtitle="Change your password">
+<SettingAccordion title="Mot de passe" subtitle="Modifier votre mot de passe">
   <ChangePasswordSettings />
 </SettingAccordion>
 
-<SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
+<SettingAccordion title="Partage" subtitle="Modifier ce que peuvent voir vos partenaires">
   <PartnerSettings user={$user} />
 </SettingAccordion>
 
-<SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
+<SettingAccordion title="Sidebar" subtitle="Modifier les menus de la sidebar">
   <SidebarSettings />
 </SettingAccordion>

@@ -37,31 +37,31 @@
     <div
       class="max-w-lg rounded-3xl border bg-immich-bg px-8 py-10 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg"
     >
-      <p class="mb-4 text-2xl">🎉 NEW VERSION AVAILABLE 🎉</p>
+      <p class="mb-4 text-2xl">🎉 Nouvelle version disponible 🎉</p>
 
       <div>
-        Hi friend, there is a new release of
-        <span class="font-immich-title font-bold text-immich-primary dark:text-immich-dark-primary">IMMICH</span>,
-        please take your time to visit the
+        Une nouvelle mise à jour de la 
+        <span class="font-immich-title font-bold text-immich-primary dark:text-immich-dark-primary">Mémoire Vive</span>,
+        prenez le temps de découvrir la  
         <span class="font-medium underline"
-          ><a href="https://github.com/immich-app/immich/releases/latest" target="_blank" rel="noopener noreferrer"
-            >release notes</a
+          ><a href="https://github.com/theophilefreger" target="_blank" rel="noopener noreferrer"
+            >note de mise à jour</a
           ></span
         >
-        and ensure your <code>docker-compose</code>, and <code>.env</code> setup is up-to-date to prevent any misconfigurations,
-        especially if you use WatchTower or any mechanism that handles updating your application automatically.
+        et assurez-vous que votre configuration <code>docker-compose</code> et <code>.env</code> est à jour pour éviter toute mauvaise configuration,
+        en particulier si vous utilisez WatchTower ou un mécanisme qui gère la mise à jour de votre application automatiquement.
       </div>
 
-      <div class="mt-4 font-medium">Your friend, Alex</div>
+      <div class="mt-4 font-medium">Votre ami, Théophile</div>
 
       <div class="font-sm mt-8">
-        <code>Server Version: {serverVersion}</code>
+        <code>Version du serveur: {serverVersion}</code>
         <br />
-        <code>Latest Version: {releaseVersion}</code>
+        <code>Dernière version: {releaseVersion}</code>
       </div>
 
       <div class="mt-8 text-right">
-        <Button fullwidth on:click={onAcknowledge}>Acknowledge</Button>
+        <Button fullwidth on:click={onAcknowledge}>Renseignements</Button>
       </div>
     </div>
   </FullScreenModal>

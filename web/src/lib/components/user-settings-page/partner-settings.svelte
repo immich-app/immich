@@ -78,7 +78,7 @@
       removePartner = null;
       await refreshPartners();
     } catch (error) {
-      handleError(error, 'Unable to remove partner');
+      handleError(error, 'Impossible de retirer le partenaire');
     }
   };
 
@@ -91,7 +91,7 @@
       await refreshPartners();
       createPartner = false;
     } catch (error) {
-      handleError(error, 'Unable to add partners');
+      handleError(error, "Impossible d'ajouter le partenaire");
     }
   };
 
@@ -102,7 +102,7 @@
       partner.inTimeline = inTimeline;
       partners = partners;
     } catch (error) {
-      handleError(error, 'Unable to update timeline display status');
+      handleError(error, "Impossible de mettre à jour le statut d'affichage de la chronologie.");
     }
   };
 </script>
@@ -129,7 +129,7 @@
               on:click={() => (removePartner = partner.user)}
               icon={mdiClose}
               size={'16'}
-              title="Stop sharing your photos with this user"
+              title="Arrêter de partager vos photos avec cet utilisateur"
             />
           {/if}
         </div>
@@ -138,14 +138,14 @@
           <!-- I am sharing my assets with this user -->
           {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">SHARED WITH {partner.user.name.toUpperCase()}</p>
-            <p class="text-md">{partner.user.name} can access</p>
+            <p class="text-xs font-medium my-4">PARTAGÉ AVEC {partner.user.name.toUpperCase()}</p>
+            <p class="text-md">{partner.user.name} peut accéder</p>
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
-                <Icon path={mdiCheck} /> All your photos and videos except those in Archived and Deleted
+                <Icon path={mdiCheck} /> Toutes vos photos et vidéos, à l'exception de celles dans les archives et les éléments supprimés.
               </li>
               <li class="flex gap-2 place-items-center py-1">
-                <Icon path={mdiCheck} /> The location where your photos were taken
+                <Icon path={mdiCheck} /> La localisation de vos photos
               </li>
             </ul>
           {/if}
@@ -153,10 +153,10 @@
           <!-- this user is sharing assets with me -->
           {#if partner.sharedWithMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">PHOTOS FROM {partner.user.name.toUpperCase()}</p>
+            <p class="text-xs font-medium my-4">PHOTOS DE {partner.user.name.toUpperCase()}</p>
             <SettingSwitch
-              title="Show in timeline"
-              subtitle="Show photos and videos from this user in your timeline"
+              title="Visible dans la Timeline"
+              subtitle="Afficher les photos et vidéos de cet utilisateur dans la Timeline."
               bind:checked={partner.inTimeline}
               on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
             />
@@ -167,7 +167,7 @@
   {/if}
 
   <div class="flex justify-end mt-5">
-    <Button size="sm" on:click={() => (createPartner = true)}>Add partner</Button>
+    <Button size="sm" on:click={() => (createPartner = true)}>Ajouter un partenaire</Button>
   </div>
 </section>
 
@@ -181,8 +181,8 @@
 
 {#if removePartner}
   <ConfirmDialogue
-    title="Stop sharing your photos?"
-    prompt="{removePartner.name} will no longer be able to access your photos."
+    title="Arrêter de partager vos photos ?"
+    prompt="{removePartner.name} ne pourra plus accéder à vos photos"
     on:cancel={() => (removePartner = null)}
     on:confirm={() => handleRemovePartner()}
   />

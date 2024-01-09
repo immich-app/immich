@@ -56,14 +56,14 @@
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
       <ImmichLogo width={24} />
-      <p class="font-medium">Invite to album</p>
+      <p class="font-medium">Partager l'album</p>
     </span>
   </svelte:fragment>
 
   <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if selectedUsers.length > 0}
       <div class="mb-2 flex place-items-center gap-4 overflow-x-auto px-5 py-2">
-        <p class="font-medium">To</p>
+        <p class="font-medium">Vers</p>
 
         {#each selectedUsers as user}
           {#key user.id}
@@ -110,7 +110,7 @@
       </div>
     {:else}
       <p class="p-5 text-sm">
-        Looks like you have shared this album with all users or you don't have any user to share with.
+        Il semble que vous ayez partagé cet album avec tous les utilisateurs ou que vous n'ayez aucun utilisateur avec qui le partager.
       </p>
     {/if}
 
@@ -128,7 +128,7 @@
       on:click={() => dispatch('share')}
     >
       <Icon path={mdiLink} size={24} />
-      <p class="text-sm">Create link</p>
+      <p class="text-sm">Créer le lien</p>
     </button>
 
     {#if sharedLinks.length}
@@ -137,7 +137,7 @@
         on:click={() => goto(AppRoute.SHARED_LINKS)}
       >
         <Icon path={mdiShareCircle} size={24} />
-        <p class="text-sm">View links</p>
+        <p class="text-sm">Afficher les liens</p>
       </button>
     {/if}
   </div>

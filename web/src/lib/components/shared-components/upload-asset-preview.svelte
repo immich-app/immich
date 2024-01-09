@@ -58,14 +58,14 @@
           </p>
         {:else if uploadAsset.state === UploadState.PENDING}
           <div class="h-[15px] rounded-md bg-immich-dark-gray transition-all dark:bg-immich-gray" style="width: 100%" />
-          <p class="absolute top-0 h-full w-full text-center text-[10px]">Pending</p>
+          <p class="absolute top-0 h-full w-full text-center text-[10px]">En attente</p>
         {:else if uploadAsset.state === UploadState.ERROR}
           <div class="h-[15px] rounded-md bg-immich-error transition-all" style="width: 100%" />
-          <p class="absolute top-0 h-full w-full text-center text-[10px]">Error</p>
+          <p class="absolute top-0 h-full w-full text-center text-[10px]">Erreur</p>
         {:else if uploadAsset.state === UploadState.DUPLICATED}
           <div class="h-[15px] rounded-md bg-immich-warning transition-all" style="width: 100%" />
           <p class="absolute top-0 h-full w-full text-center text-[10px]">
-            Skipped
+            Ignoré
             {#if uploadAsset.message}
               ({uploadAsset.message})
             {/if}
@@ -73,7 +73,7 @@
         {:else if uploadAsset.state === UploadState.DONE}
           <div class="h-[15px] rounded-md bg-immich-success transition-all" style="width: 100%" />
           <p class="absolute top-0 h-full w-full text-center text-[10px]">
-            Uploaded
+            Sauvegardé
             {#if uploadAsset.message}
               ({uploadAsset.message})
             {/if}
@@ -85,14 +85,14 @@
       <div class="flex h-full flex-col place-content-center place-items-center justify-items-center pr-2">
         <button
           on:click={() => handleRetry(uploadAsset)}
-          title="Retry upload"
+          title="Retenter la sauvegarde"
           class="flex h-full w-full place-content-center place-items-center text-sm"
         >
           <span class="text-immich-dark-gray dark:text-immich-dark-fg"><Icon path={mdiRefresh} size="20" /></span>
         </button>
         <button
           on:click={() => uploadAssetsStore.removeUploadAsset(uploadAsset.id)}
-          title="Dismiss error"
+          title="Rejeter l'erreur"
           class="flex h-full w-full place-content-center place-items-center text-sm"
         >
           <span class="text-immich-error"><Icon path={mdiCancel} size="20" /></span>

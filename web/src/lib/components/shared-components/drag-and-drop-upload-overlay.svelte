@@ -35,6 +35,6 @@
     }}
   >
     <ImmichLogo class="m-16 w-48 animate-bounce" />
-    <div class="text-2xl">Drop files anywhere to upload</div>
+    <div class="text-2xl">Déposez des fichiers n'importe où pour les télécharger</div>
   </div>
 {/if}

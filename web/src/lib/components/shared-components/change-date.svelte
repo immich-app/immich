@@ -99,8 +99,8 @@
   <ConfirmDialogue
     confirmColor="primary"
     cancelColor="secondary"
-    title="Edit date & time"
-    prompt="Please select a new date:"
+    title="Editer la date & l'heure"
+    prompt="Choissisez une nouvelle date:"
     {disabled}
     on:confirm={handleConfirm}
     on:cancel={handleCancel}
@@ -108,7 +108,7 @@
     <div class="flex flex-col text-md px-4 text-center gap-2" slot="prompt">
       <div class="mt-2" />
       <div class="flex flex-col">
-        <label for="datetime">Date and Time</label>
+        <label for="datetime">Date et heure</label>
         <input
           class="text-sm my-4 w-full bg-gray-200 p-4 rounded-lg dark:text-white dark:bg-gray-600"
           id="datetime"
@@ -124,7 +124,7 @@
             class="text-sm my-4 w-full bg-gray-200 p-3 rounded-lg dark:text-white dark:bg-gray-600"
             id="timezoneSearch"
             type="text"
-            placeholder="Search timezone..."
+            placeholder="=Recherche timezone..."
             bind:value={searchQuery}
             on:input={updateSearchQuery}
             on:focus={onSearchFocused}

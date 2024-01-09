@@ -41,11 +41,11 @@
       isShowSelectAvatar = false;
 
       notificationController.show({
-        message: 'Saved profile',
+        message: 'Profil enregistré',
         type: NotificationType.Info,
       });
     } catch (error) {
-      handleError(error, 'Unable to save profile');
+      handleError(error, "Impossible d'enregistrer le profil");
     }
   };
 </script>
@@ -86,7 +86,7 @@
       <Button color="dark-gray" size="sm" shadow={false} border>
         <div class="flex place-content-center place-items-center gap-2 px-2">
           <Icon path={mdiCog} size="18" />
-          Account Settings
+          Réglage du compte
         </div>
       </Button>
     </a>
@@ -98,7 +98,7 @@
       on:click={() => dispatch('logout')}
     >
       <Icon path={mdiLogout} size={24} />
-      Sign Out</button
+      Déconnexion</button
     >
   </div>
 </div>

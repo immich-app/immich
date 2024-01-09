@@ -21,14 +21,14 @@
         assetBulkUpdateDto: { ids, dateTimeOriginal },
       });
     } catch (error) {
-      handleError(error, 'Unable to change date');
+      handleError(error, 'Impossible de changer la date');
     }
     clearSelect();
   };
 </script>
 
 {#if menuItem}
-  <MenuOption text="Change date" on:click={() => (isShowChangeDate = true)} />
+  <MenuOption text="Changer la date" on:click={() => (isShowChangeDate = true)} />
 {/if}
 {#if isShowChangeDate}
   <ChangeDate

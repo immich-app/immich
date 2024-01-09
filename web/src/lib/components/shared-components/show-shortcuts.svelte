@@ -6,17 +6,17 @@
 
   const shortcuts = {
     general: [
-      { key: ['←', '→'], action: 'Previous or next photo' },
-      { key: ['Esc'], action: 'Back, close, or deselect' },
-      { key: ['/'], action: 'Search your photos' },
+      { key: ['←', '→'], action: 'Photo suivante ou précédente' },
+      { key: ['Esc'], action: 'Revenir en arrière, fermer ou désélectionner' },
+      { key: ['/'], action: 'Rechercher' },
     ],
     actions: [
-      { key: ['f'], action: 'Favorite or unfavorite photo' },
-      { key: ['i'], action: 'Show or hide info' },
-      { key: ['⇧', 'a'], action: 'Archive or unarchive photo' },
-      { key: ['⇧', 'd'], action: 'Download' },
-      { key: ['Space'], action: 'Play or pause video' },
-      { key: ['Del'], action: 'Delete Asset' },
+      { key: ['f'], action: 'Marquer ou démarquer la photo comme favorite' },
+      { key: ['i'], action: 'Afficher ou masquer les infos' },
+      { key: ['⇧', 'a'], action: 'Marquer ou démarquer la photo comme archive' },
+      { key: ['⇧', 'd'], action: 'Télécharger' },
+      { key: ['Space'], action: "Play ou pause d'une vidéo" },
+      { key: ['Del'], action: 'Supprimer une ressource' },
     ],
   };
   const dispatch = createEventDispatcher<{
@@ -30,7 +30,7 @@
       class="w-[400px] max-w-[125vw] rounded-3xl border bg-immich-bg shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-fg md:w-[650px]"
     >
       <div class="relative px-4 pt-4">
-        <h1 class="px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">Keyboard Shortcuts</h1>
+        <h1 class="px-4 py-4 font-medium text-immich-primary dark:text-immich-dark-primary">Raccourcis clavier</h1>
         <div class="absolute inset-y-0 right-0 px-4 py-4">
           <CircleIconButton icon={mdiClose} on:click={() => dispatch('close')} />
         </div>
@@ -38,7 +38,7 @@
 
       <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
         <div class="px-4 py-4">
-          <h2>General</h2>
+          <h2>Géneral</h2>
           <div class="text-sm">
             {#each shortcuts.general as shortcut}
               <div class="grid grid-cols-[20%_80%] items-center gap-4 pt-4 text-sm">

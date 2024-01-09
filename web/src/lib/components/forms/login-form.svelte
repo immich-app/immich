@@ -35,7 +35,7 @@
         return;
       } catch (e) {
         console.error('Error [login-form] [oauth.callback]', e);
-        oauthError = (await getServerErrorMessage(e)) || 'Unable to complete OAuth login';
+        oauthError = (await getServerErrorMessage(e)) || 'Impossible de terminer la connexion OAuth';
         oauthLoading = false;
       }
     }
@@ -47,7 +47,7 @@
         return;
       }
     } catch (error) {
-      await handleError(error, 'Unable to connect!');
+      await handleError(error, 'Impossible de se connecter !');
     }
 
     oauthLoading = false;
@@ -80,7 +80,7 @@
       dispatch('success');
       return;
     } catch (error) {
-      errorMessage = (await getServerErrorMessage(error)) || 'Incorrect email or password';
+      errorMessage = (await getServerErrorMessage(error)) || 'Email ou mot de passe incorrect';
       loading = false;
       return;
     }
@@ -115,7 +115,7 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="password">Password</label>
+      <label class="immich-form-label" for="password">Mot de passe</label>
       <input
         class="immich-form-input"
         id="password"
@@ -134,7 +134,7 @@
             <LoadingSpinner />
           </span>
         {:else}
-          Login
+          Identifiant
         {/if}
       </Button>
     </div>
@@ -148,7 +148,7 @@
       <span
         class="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-immich-dark-gray dark:text-white"
       >
-        or
+        ou
       </span>
     </div>
   {/if}
@@ -176,5 +176,5 @@
 {/if}
 
 {#if !$featureFlags.passwordLogin && !$featureFlags.oauth}
-  <p class="p-4 text-center dark:text-immich-dark-fg">Login has been disabled.</p>
+  <p class="p-4 text-center dark:text-immich-dark-fg"> La connexion a été désactivée.</p>
 {/if}

@@ -82,10 +82,10 @@
 {#if showContextMenu}
   <Portal target="body">
     <ContextMenu {...contextMenuPosition} on:outclick={() => onMenuExit()}>
-      <MenuOption on:click={() => onMenuClick('hide-person')} text="Hide Person" />
-      <MenuOption on:click={() => onMenuClick('change-name')} text="Change name" />
-      <MenuOption on:click={() => onMenuClick('set-birth-date')} text="Set date of birth" />
-      <MenuOption on:click={() => onMenuClick('merge-people')} text="Merge People" />
+      <MenuOption on:click={() => onMenuClick('hide-person')} text="Masquer la personne" />
+      <MenuOption on:click={() => onMenuClick('change-name')} text="Changer le nom" />
+      <MenuOption on:click={() => onMenuClick('set-birth-date')} text="Définir la date de naissance" />
+      <MenuOption on:click={() => onMenuClick('merge-people')} text="Fusionner les personnes" />       
     </ContextMenu>
   </Portal>
 {/if}

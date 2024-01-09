@@ -35,7 +35,7 @@
     <FavoriteAction removeFavorite onFavorite={(ids) => assetStore.removeAssets(ids)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Ajouter">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
@@ -52,8 +52,8 @@
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
     <EmptyPlaceholder
-      text="Add favorites to quickly find your best pictures and videos"
-      alt="Empty favorites"
+      text="Ajoutez des favoris pour trouver rapidement vos meilleures photos et vidéos"
+      alt="Favoris vide"
       slot="empty"
     />
   </AssetGrid>

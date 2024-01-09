@@ -43,9 +43,9 @@
 >
   <div class="flex w-full flex-col">
     {#if queueStatus.isPaused}
-      <JobTileStatus color="warning">Paused</JobTileStatus>
+      <JobTileStatus color="warning">Pause</JobTileStatus>
     {:else if queueStatus.isActive}
-      <JobTileStatus color="success">Active</JobTileStatus>
+      <JobTileStatus color="success">Actif</JobTileStatus>
     {/if}
     <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
       <div class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary">
@@ -57,7 +57,7 @@
           {#if jobCounts.failed > 0}
             <Badge color="primary">
               <span class="text-sm">
-                {jobCounts.failed.toLocaleString($locale)} failed
+                {jobCounts.failed.toLocaleString($locale)} échoué
               </span>
               <Button
                 size="tiny"
@@ -71,7 +71,7 @@
           {#if jobCounts.delayed > 0}
             <Badge color="secondary">
               <span class="text-sm">
-                {jobCounts.delayed.toLocaleString($locale)} delayed
+                {jobCounts.delayed.toLocaleString($locale)} retardé
               </span>
             </Badge>
           {/if}
@@ -116,12 +116,12 @@
         color="light-gray"
         on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
       >
-        <Icon path={mdiAlertCircle} size="36" /> DISABLED
+        <Icon path={mdiAlertCircle} size="36" /> DESACTIVÉ
       </JobTileButton>
     {:else if !isIdle}
       {#if waitingCount > 0}
         <JobTileButton color="gray" on:click={() => dispatch('command', { command: JobCommand.Empty, force: false })}>
-          <Icon path={mdiClose} size="24" /> CLEAR
+          <Icon path={mdiClose} size="24" /> EFFACER
         </JobTileButton>
       {/if}
       {#if queueStatus.isPaused}
@@ -131,7 +131,7 @@
           on:click={() => dispatch('command', { command: JobCommand.Resume, force: false })}
         >
           <!-- size property is not reactive, so have to use width and height -->
-          <Icon path={mdiFastForward} {size} /> RESUME
+          <Icon path={mdiFastForward} {size} /> REPRENDRE
         </JobTileButton>
       {:else}
         <JobTileButton
@@ -158,7 +158,7 @@
         color="light-gray"
         on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
       >
-        <Icon path={mdiPlay} size="48" /> START
+        <Icon path={mdiPlay} size="48" /> DEMARRER
       </JobTileButton>
     {/if}
   </div>

@@ -25,13 +25,13 @@
       onRestore?.(ids);
 
       notificationController.show({
-        message: `Restored ${ids.length}`,
+        message: `Restauré ${ids.length}`,
         type: NotificationType.Info,
       });
 
       clearSelect();
     } catch (e) {
-      handleError(e, 'Error restoring assets');
+      handleError(e, 'Erreur lors de la restauration des ressources');
     } finally {
       loading = false;
     }
@@ -40,5 +40,5 @@
 
 <Button disabled={loading} size="sm" color="transparent-gray" shadow={false} rounded="lg" on:click={handleRestore}>
   <Icon path={mdiHistory} size="24" />
-  <span class="ml-2">Restore</span>
+  <span class="ml-2">Restaurer</span>
 </Button>

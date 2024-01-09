@@ -42,16 +42,16 @@
       onStack?.(ids);
 
       notificationController.show({
-        message: `Stacked ${ids.length + 1} assets`,
+        message: `${ids.length + 1} ressources empilés`,
         type: NotificationType.Info,
         timeout: 1500,
       });
 
       clearSelect();
     } catch (error) {
-      handleError(error, `Unable to stack`);
+      handleError(error, `Impossible d'empiler`);
     }
   };
 </script>
 
-<MenuOption text="Stack" on:click={handleStack} />
+<MenuOption text="Empiler" on:click={handleStack} />

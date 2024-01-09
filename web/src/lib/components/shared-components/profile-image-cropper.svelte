@@ -28,13 +28,13 @@
     canvas.height = img.height;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      throw new Error('Could not get canvas context.');
+      throw new Error("Impossible d'obtenir le contexte du canevas.");
     }
     ctx.drawImage(img, 0, 0);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData?.data;
     if (!data) {
-      throw new Error('Could not get image data.');
+      throw new Error("Impossible d'obtenir les données de l'image.");
     }
     for (let i = 0; i < data.length; i += 4) {
       if (data[i + 3] < 255) {
@@ -50,7 +50,7 @@
       if (await hasTransparentPixels(blob)) {
         notificationController.show({
           type: NotificationType.Error,
-          message: 'Profile pictures cannot have transparent pixels. Please zoom in and/or move the image.',
+          message: "Les photos de profil ne peuvent pas contenir de pixels transparents. Veuillez zoomer et/ou déplacer l'image.",
           timeout: 3000,
         });
         return;
@@ -59,11 +59,11 @@
       await api.userApi.createProfileImage({ file });
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Profile picture set.',
+        message: "Photo de profil définie.",
         timeout: 3000,
       });
     } catch (err) {
-      handleError(err, 'Error setting profile picture.');
+      handleError(err, "Erreur lors de la définition de la photo de profil.");
     }
     dispatch('close');
   };
@@ -72,7 +72,7 @@
 <BaseModal on:close>
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
-      <p class="font-medium">Set profile picture</p>
+      <p class="font-medium">Définir la photo de profil</p>
     </span>
   </svelte:fragment>
   <div class="flex place-items-center items-center justify-center">
@@ -84,7 +84,7 @@
   </div>
   <span class="flex justify-end p-4">
     <Button on:click={handleSetProfilePicture}>
-      <p>Set as profile picture</p>
+      <p>Définir comme photo de profil</p>
     </Button>
   </span>
   <div class="mb-2 flex max-h-[400px] flex-col" />

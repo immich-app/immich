@@ -36,8 +36,8 @@
   }>();
 
   const expiredDateOption: ImmichDropDownOption = {
-    default: 'Never',
-    options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days'],
+    default: 'Jamais',
+    options: ['Jamais', '30 minutes', '1 heure', '6 heures', '1 jour', '7 jours', '30 jours'],
   };
 
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
@@ -85,7 +85,7 @@
       });
       sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
     } catch (e) {
-      handleError(e, 'Failed to create shared link');
+      handleError(e, 'Impossible de créer le lien partagé');
     }
   };
 
@@ -94,22 +94,22 @@
       return;
     }
 
-    await copyToClipboard(password ? `Link: ${sharedLink}\nPassword: ${password}` : sharedLink);
+    await copyToClipboard(password ? `Lien: ${sharedLink}\nMot de passe: ${password}` : sharedLink);
   };
 
   const getExpirationTimeInMillisecond = () => {
     switch (expirationTime) {
       case '30 minutes':
         return 30 * 60 * 1000;
-      case '1 hour':
+      case '1 heure':
         return 60 * 60 * 1000;
-      case '6 hours':
+      case '6 heures':
         return 6 * 60 * 60 * 1000;
-      case '1 day':
+      case '1 jour':
         return 24 * 60 * 60 * 1000;
-      case '7 days':
+      case '7 jours':
         return 7 * 24 * 60 * 60 * 1000;
-      case '30 days':
+      case '30 jours':
         return 30 * 24 * 60 * 60 * 1000;
       default:
         return 0;
@@ -142,12 +142,12 @@
 
       notificationController.show({
         type: NotificationType.Info,
-        message: 'Edited',
+        message: 'Edité',
       });
 
       dispatch('close');
     } catch (e) {
-      handleError(e, 'Failed to edit shared link');
+      handleError(e, "Impossible d'éditer le lien partagé");
     }
   };
 </script>
@@ -157,9 +157,9 @@
     <span class="flex place-items-center gap-2">
       <Icon path={mdiLink} size={24} />
       {#if editingLink}
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Edit link</p>
+        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Éditer le lien</p>
       {:else}
-        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Create link to share</p>
+        <p class="font-medium text-immich-fg dark:text-immich-dark-fg">Créer un lien de partage</p>
       {/if}
     </span>
   </svelte:fragment>
@@ -167,10 +167,10 @@
   <section class="mx-6 mb-6">
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
-        <div>Let anyone with the link see photos and people in this album.</div>
+        <div>Permettez à quiconque disposant du lien de voir les photos et les personnes de cet album</div>
       {:else}
         <div class="text-sm">
-          Public album | <span class="text-immich-primary dark:text-immich-dark-primary"
+          Album public | <span class="text-immich-primary dark:text-immich-dark-primary"
             >{editingLink.album?.albumName}</span
           >
         </div>
@@ -179,10 +179,10 @@
 
     {#if shareType === SharedLinkType.Individual}
       {#if !editingLink}
-        <div>Let anyone with the link see the selected photo(s)</div>
+        <div>Permettez à quiconque disposant du lien de voir les photos séléctionnés</div>
       {:else}
         <div class="text-sm">
-          Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
+          Partage individuel | <span class="text-immich-primary dark:text-immich-dark-primary"
             >{editingLink.description || ''}</span
           >
         </div>
@@ -190,7 +190,7 @@
     {/if}
 
     <div class="mb-2 mt-4">
-      <p class="text-xs">LINK OPTIONS</p>
+      <p class="text-xs">Options de lien</p>
     </div>
     <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 overflow-y-auto">
       <div class="flex flex-col">
@@ -201,35 +201,35 @@
         <div class="mb-2">
           <SettingInputField
             inputType={SettingInputFieldType.TEXT}
-            label="Password"
+            label="Mot de passe"
             bind:value={password}
             disabled={!enablePassword}
           />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={'Require password'} />
+          <SettingSwitch bind:checked={enablePassword} title={'Nécessite un mot de passe'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showMetadata} title={'Show metadata'} />
+          <SettingSwitch bind:checked={showMetadata} title={'Métadonnées visibles'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
+          <SettingSwitch bind:checked={allowDownload} title={'Autoriser les utilisateurs publics à télécharger'} />
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowUpload} title={'Allow public user to upload'} />
+          <SettingSwitch bind:checked={allowUpload} title={'Autoriser les utilisateurs publics à uploader'} />
         </div>
 
         <div class="text-sm">
           {#if editingLink}
             <p class="immich-form-label my-2">
-              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={'Change expiration time'} />
+              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={"Changer l'expiration"} />
             </p>
           {:else}
-            <p class="immich-form-label my-2">Expire after</p>
+            <p class="immich-form-label my-2">Expire après</p>
           {/if}
 
           <DropdownButton
@@ -248,11 +248,11 @@
     {#if !sharedLink}
       {#if editingLink}
         <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleEditLink}>Confirm</Button>
+          <Button size="sm" rounded="lg" on:click={handleEditLink}>Confirmer</Button>
         </div>
       {:else}
         <div class="flex justify-end">
-          <Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Create link</Button>
+          <Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Créer le lien</Button>
         </div>
       {/if}
     {:else}
@@ -260,7 +260,7 @@
         <input class="immich-form-input w-full" bind:value={sharedLink} disabled />
 
         {#if canCopyImagesToClipboard}
-          <Button on:click={() => handleCopy()}>Copy</Button>
+          <Button on:click={() => handleCopy()}>Copier</Button>
         {/if}
       </div>
     {/if}

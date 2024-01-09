@@ -24,7 +24,7 @@
   <div
     class="flex w-96 max-w-lg flex-col gap-8 rounded-3xl border bg-white p-8 shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   >
-    <h1 class="self-center text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Map Settings</h1>
+    <h1 class="self-center text-2xl font-medium text-immich-primary dark:text-immich-dark-primary">Réglage de la carte</h1>
 
     <form
       on:submit|preventDefault={() => dispatch('save', settings)}
@@ -36,7 +36,7 @@
       {#if customDateRange}
         <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
           <div class="flex items-center justify-between gap-8">
-            <label class="immich-form-label shrink-0 text-sm" for="date-after">Date after</label>
+            <label class="immich-form-label shrink-0 text-sm" for="date-after">Date après</label>
             <input
               class="immich-form-input w-40"
               type="date"
@@ -46,7 +46,7 @@
             />
           </div>
           <div class="flex items-center justify-between gap-8">
-            <label class="immich-form-label shrink-0 text-sm" for="date-before">Date before</label>
+            <label class="immich-form-label shrink-0 text-sm" for="date-before">Date avant</label>
             <input class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
           </div>
           <div class="flex justify-center text-xs">
@@ -57,40 +57,40 @@
                 settings.dateBefore = '';
               }}
             >
-              Remove custom date range
+              Supprimer la plage de dates personnalisée
             </LinkButton>
           </div>
         </div>
       {:else}
         <div in:fly={{ y: -10, duration: 200 }} class="flex flex-col gap-1">
           <SettingSelect
-            label="Date range"
+            label="Plage de date"
             name="date-range"
             bind:value={settings.relativeDate}
             options={[
               {
                 value: '',
-                text: 'All',
+                text: 'Tout',
               },
               {
                 value: Duration.fromObject({ hours: 24 }).toISO() || '',
-                text: 'Past 24 hours',
+                text: 'Dernières 24 heures',
               },
               {
                 value: Duration.fromObject({ days: 7 }).toISO() || '',
-                text: 'Past 7 days',
+                text: 'Dernière semaine',
               },
               {
                 value: Duration.fromObject({ days: 30 }).toISO() || '',
-                text: 'Past 30 days',
+                text: 'Dernier mois',
               },
               {
                 value: Duration.fromObject({ years: 1 }).toISO() || '',
-                text: 'Past year',
+                text: 'Dernière année',
               },
               {
                 value: Duration.fromObject({ years: 3 }).toISO() || '',
-                text: 'Past 3 years',
+                text: 'Dernières 3 années',
               },
             ]}
           />
@@ -101,15 +101,15 @@
                 settings.relativeDate = '';
               }}
             >
-              Use custom date range instead
+              Utilisez plutôt une plage de dates personnalisée.
             </LinkButton>
           </div>
         </div>
       {/if}
 
       <div class="mt-4 flex w-full gap-4">
-        <Button color="gray" size="sm" fullwidth on:click={handleClose}>Cancel</Button>
-        <Button type="submit" size="sm" fullwidth>Save</Button>
+        <Button color="gray" size="sm" fullwidth on:click={handleClose}>Annuler</Button>
+        <Button type="submit" size="sm" fullwidth>Sauvegarder</Button>
       </div>
     </form>
   </div>

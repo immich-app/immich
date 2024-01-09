@@ -1,6 +1,6 @@
 {
-	"name": "Immich",
-	"short_name": "Immich",
+	"name": "Mémoire Vive",
+	"short_name": "Mémoire Vive",
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#ffffff",
@@ -30,6 +30,6 @@
 			"purpose": "maskable"
 		}
 	],
-	"description": "Self-hosted photo and video backup solution directly from your mobile phone.",
+	"description": "Mémoire Vive de RF STUDIO",
 	"lang": "en"
 }

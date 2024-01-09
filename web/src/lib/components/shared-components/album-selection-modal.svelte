@@ -52,7 +52,7 @@
   <svelte:fragment slot="title">
     <span class="flex place-items-center gap-2">
       <p class="font-medium">
-        Add to {shared ? 'Shared ' : ''}Album
+        Ajouté à {shared ? 'Shared ' : ''}l'album
       </p>
     </span>
   </svelte:fragment>
@@ -88,7 +88,7 @@
             <Icon path={mdiPlus} size="30" />
           </div>
           <p class="">
-            New {shared ? 'Shared ' : ''}Album {#if search.length > 0}<b>{search}</b>{/if}
+            Nouvel {shared ? 'Shared ' : ''}Album {#if search.length > 0}<b>{search}</b>{/if}
           </p>
         </button>
         {#if filteredAlbums.length > 0}
@@ -101,7 +101,7 @@
 
           {#if !shared}
             <p class="px-5 py-3 text-xs">
-              {#if search.length === 0}ALL
+              {#if search.length === 0}TOUT
               {/if}ALBUMS
             </p>
           {/if}
@@ -109,9 +109,9 @@
             <AlbumListItem {album} searchQuery={search} on:album={() => handleSelect(album)} />
           {/each}
         {:else if albums.length > 0}
-          <p class="px-5 py-1 text-sm">It looks like you do not have any albums with this name yet.</p>
+          <p class="px-5 py-1 text-sm">Il semble que vous n'ayez pas encore d'albums avec ce nom.</p>
         {:else}
-          <p class="px-5 py-1 text-sm">It looks like you do not have any albums yet.</p>
+          <p class="px-5 py-1 text-sm">Il semble que vous n'ayez pas encore d'albums.</p>
         {/if}
       </div>
     {/if}

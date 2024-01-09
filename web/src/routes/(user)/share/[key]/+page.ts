@@ -17,8 +17,8 @@ export const load = (async ({ params }) => {
     return {
       sharedLink,
       meta: {
-        title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
-        description: sharedLink.description || `${assetCount} shared photos & videos.`,
+        title: sharedLink.album ? sharedLink.album.albumName : 'Partage public',
+        description: sharedLink.description || `${assetCount} ressources en partage.`,
         imageUrl: assetId
           ? api.getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
           : '/feature-panel.png',
@@ -32,13 +32,13 @@ export const load = (async ({ params }) => {
         passwordRequired: true,
         sharedLinkKey: key,
         meta: {
-          title: 'Password Required',
+          title: 'Mot de passe requis',
         },
       };
     }
 
     throw error(404, {
-      message: 'Invalid shared link',
+      message: 'Lien de partage invalide.',
     });
   }
 }) satisfies PageLoad;

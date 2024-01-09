@@ -42,6 +42,6 @@
       bind:value={name}
       on:input={() => dispatch('input')}
     />
-    <Button size="sm" type="submit">Done</Button>
+    <Button size="sm" type="submit">Terminé</Button>
   </form>
 </div>

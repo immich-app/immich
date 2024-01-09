@@ -40,7 +40,7 @@
 <ConfirmDialogue
   confirmColor="primary"
   cancelColor="secondary"
-  title="Change Location"
+  title="Changer la localisation"
   width={800}
   on:confirm={handleConfirm}
   on:cancel={handleCancel}

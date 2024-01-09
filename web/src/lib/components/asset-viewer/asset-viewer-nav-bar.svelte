@@ -86,7 +86,8 @@
         isOpacity={true}
         icon={mdiAlertOutline}
         on:click={() => dispatch('showDetail')}
-        title="Asset Offline"
+        title="
+        Ressource hors ligne"
       />
     {/if}
     {#if showMotionPlayButton}
@@ -94,14 +95,14 @@
         <CircleIconButton
           isOpacity={true}
           icon={mdiMotionPauseOutline}
-          title="Stop Motion Photo"
+          title="Stop Live Photo"
           on:click={() => dispatch('stopMotionPhoto')}
         />
       {:else}
         <CircleIconButton
           isOpacity={true}
           icon={mdiPlaySpeed}
-          title="Play Motion Photo"
+          title="Play Live Photo"
           on:click={() => dispatch('playMotionPhoto')}
         />
       {/if}
@@ -122,7 +123,7 @@
       <CircleIconButton
         isOpacity={true}
         icon={mdiContentCopy}
-        title="Copy Image"
+        title="Copie Image"
         on:click={() => {
           const copyEvent = new CustomEvent('copyImage');
           window.dispatchEvent(copyEvent);
@@ -135,7 +136,7 @@
         isOpacity={true}
         icon={mdiCloudDownloadOutline}
         on:click={() => dispatch('download')}
-        title="Download"
+        title="Télécharger"
       />
     {/if}
     {#if showDetailButton}
@@ -151,33 +152,33 @@
         isOpacity={true}
         icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
         on:click={() => dispatch('favorite')}
-        title={asset.isFavorite ? 'Unfavorite' : 'Favorite'}
+        title={asset.isFavorite ? 'Unfavori' : 'Favori'}
       />
     {/if}
 
     {#if isOwner}
       {#if !asset.isReadOnly || !asset.isExternal}
-        <CircleIconButton isOpacity={true} icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+        <CircleIconButton isOpacity={true} icon={mdiDeleteOutline} on:click={() => dispatch('delete')} title="Supprimer" />
       {/if}
       <div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
-        <CircleIconButton isOpacity={true} icon={mdiDotsVertical} on:click={showOptionsMenu} title="More" />
+        <CircleIconButton isOpacity={true} icon={mdiDotsVertical} on:click={showOptionsMenu} title="Plus" />
         {#if isShowAssetOptions}
           <ContextMenu {...contextMenuPosition} direction="left">
             {#if showSlideshow}
-              <MenuOption on:click={() => onMenuClick('playSlideShow')} text="Slideshow" />
+              <MenuOption on:click={() => onMenuClick('playSlideShow')} text="Diaporama" />
             {/if}
-            <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
-            <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
+            <MenuOption on:click={() => onMenuClick('addToAlbum')} text="Ajouter à l'album" />
+            <MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Ajouter à l'album partagé" />
 
             {#if isOwner}
               <MenuOption
                 on:click={() => dispatch('toggleArchive')}
-                text={asset.isArchived ? 'Unarchive' : 'Archive'}
+                text={asset.isArchived ? 'Unarchiver' : 'Archiver'}
               />
-              <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
+              <MenuOption on:click={() => onMenuClick('asProfileImage')} text="Photo de profil" />
 
               {#if hasStackChildren}
-                <MenuOption on:click={() => onMenuClick('unstack')} text="Un-Stack" />
+                <MenuOption on:click={() => onMenuClick('unstack')} text="Dépiler" />
               {/if}
 
               <MenuOption

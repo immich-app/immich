@@ -56,7 +56,7 @@
   >
     <CreateSharedLink on:escape={() => (handleEscapeKey = true)} />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
-    <AssetSelectContextMenu icon={mdiPlus} title="Add">
+    <AssetSelectContextMenu icon={mdiPlus} title="Ajouter">
       <AddToAlbum />
       <AddToAlbum shared />
     </AssetSelectContextMenu>
@@ -90,7 +90,7 @@
       <MemoryLane />
     {/if}
     <EmptyPlaceholder
-      text="CLICK TO UPLOAD YOUR FIRST PHOTO"
+      text="CLIQUEZ POUR DÉPOSER VOTRE PREMIÈRE PHOTO"
       actionHandler={() => openFileUploadDialog()}
       slot="empty"
     />

@@ -46,7 +46,7 @@
     <div class="flex place-items-center justify-between px-5 py-3">
       <div>
         <slot name="title">
-          <p>Modal Title</p>
+          <p>Titre de la fenêtre modale</p>
         </slot>
       </div>
 
