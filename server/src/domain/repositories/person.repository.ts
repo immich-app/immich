@@ -29,10 +29,9 @@ export interface PersonStatistics {
 }
 
 export interface IPersonRepository {
-  getAll(): Promise<PersonEntity[]>;
+  getAll(pagination: PaginationOptions, options?: FindManyOptions<PersonEntity>): Paginated<PersonEntity>;
   getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
-  getAllWithoutThumbnail(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
 
@@ -43,7 +42,7 @@ export interface IPersonRepository {
   delete(entities: PersonEntity | PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
   deleteAllFaces(): Promise<void>;
-  getAllFaces(pagination: PaginationOptions, options: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
+  getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
   getFaceById(id: string): Promise<AssetFaceEntity>;
   getFaceByIdWithAssets(id: string, relations?: FindOptionsRelations<AssetFaceEntity>): Promise<AssetFaceEntity | null>;
   getFaces(assetId: string): Promise<AssetFaceEntity[]>;

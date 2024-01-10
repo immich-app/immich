@@ -257,6 +257,18 @@ export class PersonService {
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
+  private async deleteAllPeople() {
+    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.repository.getAll(pagination),
+    );
+
+    for await (const people of personPagination) {
+      await this.delete(people); // deletes thumbnails too
+    }
+
+    await this.repository.deleteAllFaces();
+  }
+
   async handlePersonCleanup() {
     const people = await this.repository.getAllWithoutFaces();
     await this.delete(people);
@@ -270,8 +282,7 @@ export class PersonService {
     }
 
     if (force) {
-      const people = await this.repository.getAll();
-      await this.delete(people); // deletes thumbnails too
+      await this.deleteAllPeople();
       await this.repository.deleteAllFaces();
     }
 
@@ -356,8 +367,7 @@ export class PersonService {
     await this.jobRepository.waitForQueueCompletion(QueueName.THUMBNAIL_GENERATION, QueueName.FACE_DETECTION);
 
     if (force) {
-      const people = await this.repository.getAll();
-      await this.delete(people);
+      this.deleteAllPeople();
     }
 
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>

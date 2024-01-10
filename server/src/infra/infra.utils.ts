@@ -23,12 +23,17 @@ export async function paginate<Entity extends ObjectLiteral>(
   paginationOptions: PaginationOptions,
   searchOptions?: FindManyOptions<Entity>,
 ): Paginated<Entity> {
-  const items = await repository.find({
-    ...searchOptions,
-    // Take one more item to check if there's a next page
-    take: paginationOptions.take + 1,
-    skip: paginationOptions.skip,
-  });
+  const items = await repository.find(
+    _.omitBy(
+      {
+        ...searchOptions,
+        // Take one more item to check if there's a next page
+        take: paginationOptions.take + 1,
+        skip: paginationOptions.skip,
+      },
+      _.isUndefined,
+    ),
+  );
 
   const hasNextPage = items.length > paginationOptions.take;
   items.splice(paginationOptions.take);

@@ -4,7 +4,6 @@ export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
   return {
     getById: jest.fn(),
     getAll: jest.fn(),
-    getAllWithoutThumbnail: jest.fn(),
     getAllForUser: jest.fn(),
     getAssets: jest.fn(),
     getAllWithoutFaces: jest.fn(),

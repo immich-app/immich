@@ -51,18 +51,12 @@ export class PersonRepository implements IPersonRepository {
     await this.assetFaceRepository.delete({});
   }
 
-  getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity> {
+  getAllFaces(pagination: PaginationOptions, options: FindManyOptions<AssetFaceEntity> = {}): Paginated<AssetFaceEntity> {
     return paginate(this.assetFaceRepository, pagination, options);
   }
 
-  @GenerateSql()
-  getAll(): Promise<PersonEntity[]> {
-    return this.personRepository.find();
-  }
-
-  @GenerateSql()
-  getAllWithoutThumbnail(): Promise<PersonEntity[]> {
-    return this.personRepository.findBy({ thumbnailPath: '' });
+  getAll(pagination: PaginationOptions, options: FindManyOptions<PersonEntity> = {}): Paginated<PersonEntity> {
+    return paginate(this.personRepository, pagination, options);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

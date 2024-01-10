@@ -561,7 +561,10 @@ describe(PersonService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue([personStub.withName]);
+      personMock.getAll.mockResolvedValue({
+        items: [personStub.withName],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueDetectFaces({ force: true });
 
@@ -578,8 +581,10 @@ describe(PersonService.name, () => {
       if (!faceStub.face1.person) {
         throw new Error('faceStub.face1.person is null');
       }
-
-      personMock.getAll.mockResolvedValue([faceStub.face1.person]);
+      personMock.getAll.mockResolvedValue({
+        items: [faceStub.face1.person],
+        hasNextPage: false,
+      });
       personMock.getAllFaces.mockResolvedValue({
         items: [faceStub.face1],
         hasNextPage: false,
@@ -630,7 +635,10 @@ describe(PersonService.name, () => {
     });
 
     it('should queue all assets', async () => {
-      personMock.getAll.mockResolvedValue([]);
+      personMock.getAll.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
       personMock.getAllFaces.mockResolvedValue({
         items: [faceStub.face1],
         hasNextPage: false,
@@ -651,8 +659,10 @@ describe(PersonService.name, () => {
       if (!faceStub.face1.person) {
         throw new Error('faceStub.face1.person is null');
       }
-
-      personMock.getAll.mockResolvedValue([faceStub.face1.person]);
+      personMock.getAll.mockResolvedValue({
+        items: [faceStub.face1.person],
+        hasNextPage: false,
+      });
       personMock.getAllFaces.mockResolvedValue({
         items: [faceStub.face1],
         hasNextPage: false,
