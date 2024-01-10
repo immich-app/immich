@@ -6,6 +6,9 @@
   import { SystemConfigDto, api } from '@api';
   import { user } from '$lib/stores/user.store';
   import AdminSettings from '../admin-page/settings/admin-settings.svelte';
+  import { mdiArrowLeft, mdiCheck } from '@mdi/js';
+  import Button from '../elements/buttons/button.svelte';
+  import Icon from '../elements/icon.svelte';
 
   const dispatch = createEventDispatcher<{
     done: void;
@@ -29,14 +32,7 @@
   </p>
 
   {#if config && $user}
-    <AdminSettings
-      {config}
-      let:defaultConfig
-      let:savedConfig
-      let:handleSave
-      let:handleReset
-      on:save={() => dispatch('done')}
-    >
+    <AdminSettings {config} let:defaultConfig let:savedConfig let:handleSave let:handleReset>
       <StorageTemplateSettings
         minified
         disabled={$featureFlags.configFile}
@@ -45,7 +41,29 @@
         {savedConfig}
         on:save={({ detail }) => handleSave(detail)}
         on:reset={({ detail }) => handleReset(detail)}
-      />
+      >
+        <div class="flex pt-4">
+          <div class="w-full flex place-content-start">
+            <Button class="flex gap-2 place-content-center" on:click={() => dispatch('previous')}>
+              <Icon path={mdiArrowLeft} size="18" />
+              <p>Theme</p>
+            </Button>
+          </div>
+          <div class="flex w-full place-content-end">
+            <Button
+              on:click={() => {
+                handleSave({ storageTemplate: config?.storageTemplate });
+                dispatch('done');
+              }}
+            >
+              <span class="flex place-content-center place-items-center gap-2">
+                Done
+                <Icon path={mdiCheck} size="18" />
+              </span>
+            </Button>
+          </div>
+        </div>
+      </StorageTemplateSettings>
     </AdminSettings>
   {/if}
 </OnboardingCard>

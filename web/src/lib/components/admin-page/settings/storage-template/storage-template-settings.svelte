@@ -11,9 +11,6 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import { user } from '$lib/stores/user.store';
   import { createEventDispatcher } from 'svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowLeft, mdiCheck } from '@mdi/js';
   import SettingSwitch from '../setting-switch.svelte';
   import type { SettingsEventType } from '../admin-settings';
 
@@ -209,22 +206,7 @@
       {/if}
 
       {#if minified}
-        <div class="flex pt-4">
-          <div class="w-full flex place-content-start">
-            <Button class="flex gap-2 place-content-center" on:click={() => dispatch('previous')}>
-              <Icon path={mdiArrowLeft} size="18" />
-              <p>Theme</p>
-            </Button>
-          </div>
-          <div class="flex w-full place-content-end">
-            <Button on:click={() => dispatch('save', { storageTemplate: config.storageTemplate })}>
-              <span class="flex place-content-center place-items-center gap-2">
-                Done
-                <Icon path={mdiCheck} size="18" />
-              </span>
-            </Button>
-          </div>
-        </div>
+        <slot />
       {:else}
         <SettingButtonsRow
           on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['storageTemplate'] })}
