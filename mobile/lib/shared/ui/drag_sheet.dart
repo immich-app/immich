@@ -10,7 +10,7 @@ class CustomDraggingHandle extends StatelessWidget {
       width: 30,
       decoration: BoxDecoration(
         color: Colors.grey[500],
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
       ),
     );
   }
