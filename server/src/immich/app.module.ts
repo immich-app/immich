@@ -37,7 +37,8 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
 @Module({
   imports: [
     //
-    DomainModule.register({ imports: [InfraModule] }),
+    InfraModule,
+    DomainModule,
     ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([AssetEntity]),
   ],

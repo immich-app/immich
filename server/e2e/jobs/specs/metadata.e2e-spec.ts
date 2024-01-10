@@ -1,8 +1,9 @@
 import { AssetResponseDto, LoginResponseDto } from '@app/domain';
 import { AssetController } from '@app/immich';
-import { api } from '@test/api';
+import { INestApplication } from '@nestjs/common';
+import { exiftool } from 'exiftool-vendored';
 import * as fs from 'fs';
-
+import { api } from '../client';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
@@ -10,8 +11,7 @@ import {
   restoreTempFolder,
   runAllTests,
   testApp,
-} from '@test/test-utils';
-import { exiftool } from 'exiftool-vendored';
+} from '../utils';
 
 describe(`${AssetController.name} (e2e)`, () => {
   let server: any;

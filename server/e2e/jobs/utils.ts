@@ -1,17 +1,16 @@
 import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
-import { dataSource } from '@app/infra';
+import { InfraModule, InfraTestModule, dataSource } from '@app/infra';
 import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-
 import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
 import path from 'path';
 import { Server } from 'tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
-import { AppService } from '../src/microservices/app.service';
+import { AppService } from '../../src/microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
@@ -64,7 +63,7 @@ interface TestAppOptions {
 }
 
 let app: INestApplication;
-export let jobMock: any;
+export let jobMock: IJobRepository;
 
 export const testApp = {
   jobMock: IJobRepository,
@@ -93,6 +92,8 @@ export const testApp = {
     } as IJobRepository;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
+      .overrideModule(InfraModule)
+      .useModule(InfraTestModule)
       .overrideProvider(IJobRepository)
       .useValue(jobMock)
       .compile();

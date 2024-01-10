@@ -16,7 +16,7 @@ export default async () => {
   let IMMICH_TEST_ASSET_PATH: string = '';
 
   if (process.env.IMMICH_TEST_ASSET_PATH === undefined) {
-    IMMICH_TEST_ASSET_PATH = path.normalize(`${__dirname}/../assets/`);
+    IMMICH_TEST_ASSET_PATH = path.normalize(`${__dirname}/../../test/assets/`);
     process.env.IMMICH_TEST_ASSET_PATH = IMMICH_TEST_ASSET_PATH;
   } else {
     IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
@@ -47,7 +47,6 @@ export default async () => {
   }
 
   process.env.NODE_ENV = 'development';
-  process.env.IMMICH_TEST_ENV = 'true';
   process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/immich-e2e-config.json`);
   process.env.TZ = 'Z';
 };

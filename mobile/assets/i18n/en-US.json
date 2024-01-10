@@ -378,7 +378,6 @@
   "share_dialog_preparing": "Preparing...",
   "shared_link_app_bar_title": "Shared Links",
   "shared_link_clipboard_copied_massage": "Copied to clipboard",
-  "shared_link_clipboard_text": "Link: {}\nPassword: {}",
   "shared_link_create_app_bar_title": "Create link to share",
   "shared_link_create_error": "Error while creating shared link",
   "shared_link_create_info": "Let anyone with the link see the selected photo(s)",

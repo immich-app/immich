@@ -1,8 +1,8 @@
-import { api } from '@test/api';
-import { restoreTempFolder, testApp } from 'immich/test/test-utils';
+import { APIKeyCreateResponseDto } from '@app/domain';
+import { api } from '@test/../e2e/api/client';
+import { restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
 import { LoginResponseDto } from 'src/api/open-api';
 import ServerInfo from 'src/commands/server-info';
-import { APIKeyCreateResponseDto } from '@app/domain';
 import { CLI_BASE_OPTIONS, spyOnConsole } from 'test/cli-test-utils';
 
 describe(`server-info (e2e)`, () => {
