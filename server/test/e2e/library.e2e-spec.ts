@@ -2,8 +2,15 @@ import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
+import { JobRepository } from '@app/infra/repositories';
 import { api } from '@test/api';
-import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from '@test/test-utils';
+import {
+  IMMICH_TEST_ASSET_PATH,
+  IMMICH_TEST_ASSET_TEMP_PATH,
+  jobMock,
+  restoreTempFolder,
+  testApp,
+} from '@test/test-utils';
 import * as fs from 'fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
@@ -942,11 +949,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
   describe('Automatic refresh', () => {
     let library: LibraryResponseDto;
-    let warnLog: jest.SpyInstance;
 
     beforeEach(async () => {
-      // warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
-
       library = await api.libraryApi.create(server, admin.accessToken, {
         type: LibraryType.EXTERNAL,
         importPaths: [
@@ -972,10 +976,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       const beforeAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(beforeAssets.length).toEqual(1);
-    });
-
-    afterEach(() => {
-      warnLog.mockRestore();
     });
 
     it('should add new files', async () => {
@@ -1017,6 +1017,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
     });
 
     it('should ignore files with wrong extension', async () => {
+      jest.clearAllMocks();
+
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file2.txt`,
@@ -1030,6 +1032,8 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(afterAssets.length).toEqual(1);
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should offline removed files', async () => {

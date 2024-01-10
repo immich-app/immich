@@ -130,12 +130,13 @@ export class LibraryService {
 
     this.logger.debug(`Starting to watch library ${library.id}`);
 
-    const base = library.importPaths.length === 1 ? library.importPaths[0] : `{${library.importPaths.join(',')}}`;
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
+    const extensions = mimeTypes.getSupportedFileExtensions();
 
-    console.warn(`${base}/**/${extensions}`);
+    const watchPattern = library.importPaths.flatMap((importPath) =>
+      extensions.map((extension) => `${importPath}/**/*${extension}`),
+    );
 
-    this.watchers[library.id] = chokidar.watch(`${base}/**/${extensions}`, {
+    this.watchers[library.id] = chokidar.watch(watchPattern, {
       ignored: library.exclusionPatterns,
       ignoreInitial: true,
       usePolling: true,
@@ -506,7 +507,7 @@ export class LibraryService {
         assetPath.match(new RegExp(`^${user.externalPath}`)),
       );
 
-    this.logger.debug(`Found ${crawledAssetPaths.length} assets when crawling import paths ${library.importPaths}`);
+    this.logger.debug(`Found ${crawledAssetPaths.length} asset(s) when crawling import paths ${library.importPaths}`);
     const assetsInLibrary = await this.assetRepository.getByLibraryId([job.id]);
     const onlineFiles = new Set(crawledAssetPaths);
     const offlineAssetIds = assetsInLibrary
