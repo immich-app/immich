@@ -12,7 +12,11 @@ import 'package:isar/isar.dart';
 class SharedAlbumNotifier extends StateNotifier<List<Album>> {
   SharedAlbumNotifier(this._albumService, Isar db) : super([]) {
     final query = db.albums.filter().sharedEqualTo(true).sortByCreatedAtDesc();
-    query.findAll().then((value) => state = value);
+    query.findAll().then((value) {
+      if (mounted) {
+        state = value;
+      }
+    });
     _streamSub = query.watch().listen((data) => state = data);
   }
 
