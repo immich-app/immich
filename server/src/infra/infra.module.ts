@@ -28,7 +28,7 @@ import {
   immichAppConfig,
 } from '@app/domain';
 import { BullModule } from '@nestjs/bullmq';
-import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
+import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';

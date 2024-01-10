@@ -10,7 +10,7 @@ services:
       dockerfile: server/Dockerfile
       target: dev
     entrypoint: ['/usr/local/bin/npm', 'run']
-    command: test:e2e
+    command: e2e:jobs
     volumes:
       - /usr/src/app/node_modules
     environment:
@@ -24,6 +24,7 @@ services:
 
   database:
     image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
+    command: -c fsync=off -c shared_preload_libraries=vectors.so
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres

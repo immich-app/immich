@@ -8,11 +8,11 @@ import {
 import { SharedLinkController } from '@app/immich';
 import { SharedLinkType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { api } from '@test/api';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
-import { testApp } from '@test/test-utils';
 import { DateTime } from 'luxon';
 import request from 'supertest';
+import { api } from '../client';
+import { testApp } from '../utils';
 
 describe(`${SharedLinkController.name} (e2e)`, () => {
   let server: any;

@@ -10,8 +10,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e-tests:
-    name: Server (e2e)
+  server-e2e-api:
+    name: Server (e2e-api)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run e2e tests
+        run: npm run e2e:api
+
+  server-e2e-jobs:
+    name: Server (e2e-jobs)
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +38,7 @@ jobs:
           submodules: "recursive"
 
       - name: Run e2e tests
-        run: make test-server-e2e
+        run: make server-e2e-jobs
 
   doc-tests:
     name: Docs

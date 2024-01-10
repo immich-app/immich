@@ -1,7 +1,7 @@
 import { LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
-import { api } from '@test/api';
-import { IMMICH_TEST_ASSET_PATH, runAllTests, testApp } from '@test/test-utils';
+import { api } from '../client';
+import { IMMICH_TEST_ASSET_PATH, runAllTests, testApp } from '../utils';
 
 describe(`Supported file formats (e2e)`, () => {
   let server: any;
