@@ -42,7 +42,7 @@
 {#if $featureFlags.configFile}
   <div class="mb-8 flex flex-row items-center gap-2 rounded-md bg-gray-100 p-3 dark:bg-gray-800">
     <Icon path={mdiAlert} class="text-yellow-400" size={18} />
-    <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">Config is currently set by a config file</h2>
+    <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">La configuration est actuellement définie par un fichier de configuration</h2>
   </div>
 {/if}
 
@@ -51,13 +51,13 @@
     <LinkButton on:click={() => copyToClipboard(JSON.stringify(configs, null, 2))}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiContentCopy} size="18" />
-        Copy to Clipboard
+        Copier dans le presse-papier
       </div>
     </LinkButton>
     <LinkButton on:click={() => downloadConfig()}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiDownload} size="18" />
-        Export as JSON
+        Exporter au format JSON
       </div>
     </LinkButton>
   </div>
@@ -108,7 +108,7 @@
         <StorageTemplateSettings disabled={$featureFlags.configFile} storageConfig={configs.storageTemplate} />
       </SettingAccordion>
 
-      <SettingAccordion title="Theme Settings" subtitle="Manage customization of the Immich web interface">
+      <SettingAccordion title="Theme Settings" subtitle="Gérer la personnalisation de l'interface web de la Mémoire Vive">
         <ThemeSettings disabled={$featureFlags.configFile} themeConfig={configs.theme} />
       </SettingAccordion>
 
