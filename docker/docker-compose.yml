@@ -1,23 +1,16 @@
 version: "3.8"
 
-#
-# WARNING: Make sure to use the docker-compose.yml of the current release:
-#
-# https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
-#
-# The compose file on main may not be compatible with the latest release.
-#
-
-name: immich
+name: memoirevive
 
 services:
   immich-server:
-    container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    container_name: memoirevive_server
+    image: ghcr.io/theophilefreger/immich-server:main
     command: [ "start.sh", "immich" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
+      - "C:/Nouveau dossier:/mnt/media"
     env_file:
       - .env
     ports:
@@ -28,15 +21,16 @@ services:
     restart: always
 
   immich-microservices:
-    container_name: immich_microservices
-    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
-    # extends:
-    #   file: hwaccel.yml
-    #   service: hwaccel
+    container_name: memoirevive_microservices
+    image: ghcr.io/theophilefreger/immich-server:main
+    extends:
+       file: hwaccel.yml
+       service: hwaccel
     command: [ "start.sh", "microservices" ]
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}:/usr/src/app/uploads
       - /etc/localtime:/etc/localtime:ro
+      - "C:/Nouveau dossier:/mnt/media"
     env_file:
       - .env
     depends_on:
@@ -45,8 +39,8 @@ services:
     restart: always
 
   immich-machine-learning:
-    container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    container_name: memoirevive_machine_learning
+    image: ghcr.io/theophilefreger/immich-machine-learning:main
     volumes:
       - model-cache:/cache
     env_file:
@@ -55,7 +49,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:c5a607fb6e1bb15d32bbcf14db22787d19e428d59e31a5da67511b49bb0f1ccc
+    image: redis:6.2-alpine@sha256:b6124ab2e45cc332e16398022a411d7e37181f21ff7874835e0180f56a09e82a
     restart: always
 
   database:
