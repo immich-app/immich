@@ -64,6 +64,21 @@ class ControlBottomAppBar extends ConsumerWidget {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
 
+    void showForceDeleteDialog(
+      Function(bool) deleteCb, {
+      String? alertMsg,
+    }) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return DeleteDialog(
+            alert: alertMsg,
+            onDelete: () => deleteCb(true),
+          );
+        },
+      );
+    }
+
     void handleRemoteDelete(
       bool force,
       Function(bool) deleteCb, {
@@ -73,15 +88,7 @@ class ControlBottomAppBar extends ConsumerWidget {
         deleteCb(force);
         return;
       }
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return DeleteDialog(
-            alert: alertMsg,
-            onDelete: () => deleteCb(force),
-          );
-        },
-      );
+      showForceDeleteDialog(deleteCb, alertMsg: alertMsg);
     }
 
     List<Widget> renderActionButtons() {
@@ -130,6 +137,12 @@ class ControlBottomAppBar extends ConsumerWidget {
                         alertMsg: "delete_dialog_alert_remote",
                       )
                   : null,
+              onLongPressed: enabled
+                  ? () => showForceDeleteDialog(
+                        onDeleteServer!,
+                        alertMsg: "delete_dialog_alert_remote",
+                      )
+                  : null,
             ),
           ),
         if (hasLocal && onDeleteLocal != null)
@@ -156,7 +169,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                   : null,
             ),
           ),
-        if ((hasLocal || hasRemote) && onDelete != null)
+        if (hasLocal && hasRemote && onDelete != null)
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(
@@ -165,6 +178,8 @@ class ControlBottomAppBar extends ConsumerWidget {
               onPressed: enabled
                   ? () => handleRemoteDelete(!trashEnabled, onDelete!)
                   : null,
+              onLongPressed:
+                  enabled ? () => showForceDeleteDialog(onDeleteServer!) : null,
             ),
           ),
         if (hasRemote && onEditTime != null)
