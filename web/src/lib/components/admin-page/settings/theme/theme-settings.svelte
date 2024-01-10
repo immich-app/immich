@@ -85,8 +85,8 @@
           <div class="ml-4">
             <SettingTextarea
               {disabled}
-              label="Custom CSS"
-              desc="Cascading Style Sheets allow the design of Immich to be customized."
+              label="CSS personnalisé"
+              desc="Les feuilles de style en cascade permettent de personnaliser la conception de la Mémoire Vive"
               bind:value={themeConfig.customCss}
               required={true}
               isEdited={themeConfig.customCss !== savedConfig.customCss}
