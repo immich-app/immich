@@ -6,9 +6,9 @@
   import { createEventDispatcher } from 'svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiTimerSand, mdiDeleteOutline } from '@mdi/js';
-  import { OnAssetDelete, deleteAssets } from '$lib/utils/actions';
+  import { OnDelete, deleteAssets } from '$lib/utils/actions';
 
-  export let onAssetDelete: OnAssetDelete;
+  export let onAssetDelete: OnDelete;
   export let menuItem = false;
   export let force = !$featureFlags.trash;
 
