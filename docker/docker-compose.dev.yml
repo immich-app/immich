@@ -19,7 +19,6 @@ x-server-build: &server-common
     - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
     - /usr/src/app/node_modules
     - /etc/localtime:/etc/localtime:ro
-    - "C:/Nouveau dossier:/mnt/media"
   env_file:
     - .env
   ulimits:
