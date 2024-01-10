@@ -13,7 +13,7 @@ import _ from 'lodash';
 import { FindManyOptions, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { Chunked, ChunkedArray, asVector, paginate } from '../infra.utils';
+import { ChunkedArray, asVector, paginate } from '../infra.utils';
 
 export class PersonRepository implements IPersonRepository {
   constructor(
@@ -21,29 +21,6 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
-
-  /**
-   * Before reassigning faces, delete potential key violations
-   */
-  async prepareReassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<string[]> {
-    const results = await this.assetFaceRepository
-      .createQueryBuilder('face')
-      .select('face."assetId"')
-      .where(`face."personId" IN (:...ids)`, { ids: [oldPersonId, newPersonId] })
-      .groupBy('face."assetId"')
-      .having('COUNT(face."personId") > 1')
-      .getRawMany();
-
-    const assetIds = results.map(({ assetId }) => assetId);
-    await this.deletePersonFromAssets(oldPersonId, assetIds);
-
-    return assetIds;
-  }
-
-  @Chunked({ paramIndex: 1 })
-  async deletePersonFromAssets(personId: string, assetIds: string[]): Promise<void> {
-    await this.assetFaceRepository.delete({ personId: personId, assetId: In(assetIds) });
-  }
 
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
   async reassignFaces({ oldPersonId, faceIds, newPersonId }: UpdateFacesData): Promise<number> {
@@ -251,9 +228,5 @@ export class PersonRepository implements IPersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ personId });
-  }
-
-  async getFaceCount(): Promise<number> {
-    return this.assetFaceRepository.count();
   }
 }

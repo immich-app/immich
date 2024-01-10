@@ -122,7 +122,7 @@ describe(PersonService.name, () => {
         people: [responseDto],
       });
       expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
-        minimumFaceCount: 1,
+        minimumFaceCount: 3,
         withHidden: false,
       });
     });
@@ -134,7 +134,7 @@ describe(PersonService.name, () => {
         people: [responseDto],
       });
       expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
-        minimumFaceCount: 1,
+        minimumFaceCount: 3,
         withHidden: false,
       });
     });
@@ -155,7 +155,7 @@ describe(PersonService.name, () => {
         ],
       });
       expect(personMock.getAllForUser).toHaveBeenCalledWith(authStub.admin.user.id, {
-        minimumFaceCount: 1,
+        minimumFaceCount: 3,
         withHidden: true,
       });
     });
@@ -624,7 +624,7 @@ describe(PersonService.name, () => {
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
-          data: { id: faceStub.face1.id },
+          data: { id: faceStub.face1.id, deferred: false },
         },
       ]);
     });
@@ -642,7 +642,7 @@ describe(PersonService.name, () => {
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
-          data: { id: faceStub.face1.id },
+          data: { id: faceStub.face1.id, deferred: false },
         },
       ]);
     });
@@ -664,7 +664,7 @@ describe(PersonService.name, () => {
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
-          data: { id: faceStub.face1.id },
+          data: { id: faceStub.face1.id, deferred: false },
         },
       ]);
       expect(personMock.delete).toHaveBeenCalledWith([faceStub.face1.person]);
@@ -719,7 +719,7 @@ describe(PersonService.name, () => {
           enabled: true,
           maxDistance: 0.6,
           minScore: 0.7,
-          minFaces: 1,
+          minFaces: 3,
           modelName: 'buffalo_l',
         },
       );
@@ -759,7 +759,17 @@ describe(PersonService.name, () => {
     it('should return false if face does not exist', async () => {
       personMock.getFaceByIdWithAssets.mockResolvedValue(null);
 
-      await sut.handleRecognizeFaces({ id: faceStub.face1.id });
+      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(false);
+
+      expect(personMock.reassignFaces).not.toHaveBeenCalled();
+      expect(personMock.create).not.toHaveBeenCalled();
+      expect(personMock.createFace).not.toHaveBeenCalled();
+    });
+
+    it('should return true if face already has an assigned person', async () => {
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
+
+      expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(true);
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
@@ -767,20 +777,6 @@ describe(PersonService.name, () => {
     });
 
     it('should match existing person', async () => {
-      smartInfoMock.searchFaces.mockResolvedValue([{ face: faceStub.primaryFace1, distance: 0.5 }]);
-      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.face1);
-
-      await sut.handleRecognizeFaces({ id: faceStub.face1.id });
-
-      expect(personMock.reassignFaces).toHaveBeenCalledWith({
-        faceIds: [faceStub.face1.id],
-        newPersonId: faceStub.primaryFace1.personId,
-      });
-      expect(personMock.create).not.toHaveBeenCalled();
-      expect(personMock.createFace).not.toHaveBeenCalled();
-    });
-
-    it('should match existing person and reassign matches with no person if core point', async () => {
       if (!faceStub.primaryFace1.person) {
         throw new Error('faceStub.primaryFace1.person is null');
       }
@@ -792,6 +788,9 @@ describe(PersonService.name, () => {
         { face: faceStub.face1, distance: 0.4 },
       ] as FaceSearchResult[];
 
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 1 },
+      ]);
       smartInfoMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(faceStub.primaryFace1.person);
@@ -801,7 +800,7 @@ describe(PersonService.name, () => {
       expect(personMock.create).not.toHaveBeenCalled();
       expect(personMock.reassignFaces).toHaveBeenCalledTimes(1);
       expect(personMock.reassignFaces).toHaveBeenCalledWith({
-        faceIds: expect.arrayContaining([faceStub.noPerson1.id, faceStub.noPerson2.id]),
+        faceIds: expect.arrayContaining([faceStub.noPerson1.id]),
         newPersonId: faceStub.primaryFace1.person.id,
       });
       expect(personMock.reassignFaces).toHaveBeenCalledWith({
@@ -816,6 +815,9 @@ describe(PersonService.name, () => {
         { face: faceStub.noPerson2, distance: 0.3 },
       ] as FaceSearchResult[];
 
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 1 },
+      ]);
       smartInfoMock.searchFaces.mockResolvedValue(faces);
       personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
       personMock.create.mockResolvedValue(personStub.withName);
@@ -827,10 +829,48 @@ describe(PersonService.name, () => {
         faceAssetId: faceStub.noPerson1.id,
       });
       expect(personMock.reassignFaces).toHaveBeenCalledWith({
-        // primaryFace1 should not be included as it has a person
-        faceIds: [faceStub.noPerson1.id, faceStub.noPerson2.id],
+        faceIds: [faceStub.noPerson1.id],
         newPersonId: personStub.withName.id,
       });
+    });
+
+    it('should defer non-core faces to end of queue', async () => {
+      const faces = [{ face: faceStub.noPerson1, distance: 0.0 }] as FaceSearchResult[];
+
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 2 },
+      ]);
+      smartInfoMock.searchFaces.mockResolvedValue(faces);
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
+      personMock.create.mockResolvedValue(personStub.withName);
+
+      await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.FACIAL_RECOGNITION,
+        data: { id: faceStub.noPerson1.id, deferred: true },
+      });
+      expect(smartInfoMock.searchFaces).toHaveBeenCalledTimes(1);
+      expect(personMock.create).not.toHaveBeenCalled();
+      expect(personMock.reassignFaces).not.toHaveBeenCalled();
+    });
+
+    it('should not assign person to non-core face with no matching person', async () => {
+      const faces = [{ face: faceStub.noPerson1, distance: 0.0 }] as FaceSearchResult[];
+
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.MACHINE_LEARNING_FACIAL_RECOGNITION_MIN_FACES, value: 2 },
+      ]);
+      smartInfoMock.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
+      personMock.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
+      personMock.create.mockResolvedValue(personStub.withName);
+
+      await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id, deferred: true });
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(smartInfoMock.searchFaces).toHaveBeenCalledTimes(2);
+      expect(personMock.create).not.toHaveBeenCalled();
+      expect(personMock.reassignFaces).not.toHaveBeenCalled();
     });
   });
 

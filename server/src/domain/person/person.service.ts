@@ -385,8 +385,8 @@ export class PersonService {
       return false;
     }
 
-    if (face.personId && deferred) {
-      this.logger.warn(`Deferred non-core face ${id} already has a person assigned`);
+    if (face.personId) {
+      this.logger.debug(`Face ${id} already has a person assigned`);
       return true;
     }
 
@@ -396,7 +396,7 @@ export class PersonService {
       userIds: [face.asset.ownerId],
       embedding,
       maxDistance: machineLearning.facialRecognition.maxDistance,
-      numResults: 64,
+      numResults: machineLearning.facialRecognition.minFaces,
     });
 
     this.logger.debug(`Face ${id} has ${matches.length} match${matches.length != 1 ? 'es' : ''}`);
@@ -404,7 +404,7 @@ export class PersonService {
     const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
-      this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
+      await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
       return true;
     }
 
@@ -423,21 +423,16 @@ export class PersonService {
       }
     }
 
-    let faceIds = [id];
-    if (isCore) {
-      if (!personId) {
-        this.logger.log(`Creating new person for face ${id}`);
-        const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
-        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
-        personId = newPerson.id;
-      }
-
-      faceIds = matches.filter((match) => !match.face.personId).map((match) => match.face.id);
+    if (isCore && !personId) {
+      this.logger.log(`Creating new person for face ${id}`);
+      const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+      personId = newPerson.id;
     }
 
-    if (personId && faceIds.length > 0) {
-      this.logger.debug(`Assigning ${faceIds.length} face${faceIds.length != 1 ? 's' : ''} to person ${personId}`);
-      await this.repository.reassignFaces({ faceIds, newPersonId: personId });
+    if (personId) {
+      this.logger.debug(`Assigning face ${id} to person ${personId}`);
+      await this.repository.reassignFaces({ faceIds: [id], newPersonId: personId });
     }
 
     return true;
