@@ -182,8 +182,9 @@ class AssetNotifier extends StateNotifier<bool> {
     _deleteInProgress = true;
     state = true;
     try {
+      final hasLocal = deleteAssets.any((a) => a.storage == AssetState.local);
       final localDeleted = await _deleteLocalAssets(deleteAssets);
-      final remoteDeleted = localDeleted.isNotEmpty
+      final remoteDeleted = (hasLocal && localDeleted.isNotEmpty) || !hasLocal
           ? await _deleteRemoteAssets(deleteAssets, force)
           : [];
       if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
