@@ -1,5 +1,5 @@
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
-import { FindManyOptions, FindOptionsRelations } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 
 export const IPersonRepository = 'IPersonRepository';

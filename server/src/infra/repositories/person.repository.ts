@@ -10,7 +10,7 @@ import {
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
-import { FindManyOptions, FindOptionsRelations, In, Repository } from 'typeorm';
+import { FindManyOptions, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { ChunkedArray, asVector, paginate } from '../infra.utils';
@@ -51,7 +51,10 @@ export class PersonRepository implements IPersonRepository {
     await this.assetFaceRepository.delete({});
   }
 
-  getAllFaces(pagination: PaginationOptions, options: FindManyOptions<AssetFaceEntity> = {}): Paginated<AssetFaceEntity> {
+  getAllFaces(
+    pagination: PaginationOptions,
+    options: FindManyOptions<AssetFaceEntity> = {},
+  ): Paginated<AssetFaceEntity> {
     return paginate(this.assetFaceRepository, pagination, options);
   }
 

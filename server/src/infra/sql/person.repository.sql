@@ -7,36 +7,6 @@ SET
 WHERE
   "personId" = $2
 
--- PersonRepository.getAll
-SELECT
-  "PersonEntity"."id" AS "PersonEntity_id",
-  "PersonEntity"."createdAt" AS "PersonEntity_createdAt",
-  "PersonEntity"."updatedAt" AS "PersonEntity_updatedAt",
-  "PersonEntity"."ownerId" AS "PersonEntity_ownerId",
-  "PersonEntity"."name" AS "PersonEntity_name",
-  "PersonEntity"."birthDate" AS "PersonEntity_birthDate",
-  "PersonEntity"."thumbnailPath" AS "PersonEntity_thumbnailPath",
-  "PersonEntity"."faceAssetId" AS "PersonEntity_faceAssetId",
-  "PersonEntity"."isHidden" AS "PersonEntity_isHidden"
-FROM
-  "person" "PersonEntity"
-
--- PersonRepository.getAllWithoutThumbnail
-SELECT
-  "PersonEntity"."id" AS "PersonEntity_id",
-  "PersonEntity"."createdAt" AS "PersonEntity_createdAt",
-  "PersonEntity"."updatedAt" AS "PersonEntity_updatedAt",
-  "PersonEntity"."ownerId" AS "PersonEntity_ownerId",
-  "PersonEntity"."name" AS "PersonEntity_name",
-  "PersonEntity"."birthDate" AS "PersonEntity_birthDate",
-  "PersonEntity"."thumbnailPath" AS "PersonEntity_thumbnailPath",
-  "PersonEntity"."faceAssetId" AS "PersonEntity_faceAssetId",
-  "PersonEntity"."isHidden" AS "PersonEntity_isHidden"
-FROM
-  "person" "PersonEntity"
-WHERE
-  ("PersonEntity"."thumbnailPath" = $1)
-
 -- PersonRepository.getAllForUser
 SELECT
   "person"."id" AS "person_id",
@@ -94,6 +64,7 @@ SELECT
   "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
   "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
   "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
+  "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
   "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
   "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -124,6 +95,7 @@ FROM
       "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
       "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
       "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
+      "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
       "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
       "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
       "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -159,6 +131,7 @@ FROM
       "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
       "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
       "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
+      "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
       "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
       "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
       "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -304,6 +277,7 @@ FROM
       "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
       "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
       "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
+      "AssetEntity__AssetEntity_faces"."embedding" AS "AssetEntity__AssetEntity_faces_embedding",
       "AssetEntity__AssetEntity_faces"."imageWidth" AS "AssetEntity__AssetEntity_faces_imageWidth",
       "AssetEntity__AssetEntity_faces"."imageHeight" AS "AssetEntity__AssetEntity_faces_imageHeight",
       "AssetEntity__AssetEntity_faces"."boundingBoxX1" AS "AssetEntity__AssetEntity_faces_boundingBoxX1",
@@ -372,6 +346,7 @@ SELECT
   "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
   "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
   "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
+  "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
   "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
   "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
@@ -423,6 +398,7 @@ SELECT
   "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
   "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
   "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
+  "AssetFaceEntity"."embedding" AS "AssetFaceEntity_embedding",
   "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
   "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
   "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",

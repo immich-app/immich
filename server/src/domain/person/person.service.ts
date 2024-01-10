@@ -365,7 +365,7 @@ export class PersonService {
     await this.jobRepository.waitForQueueCompletion(QueueName.THUMBNAIL_GENERATION, QueueName.FACE_DETECTION);
 
     if (force) {
-      this.deleteAllPeople();
+      await this.deleteAllPeople();
     }
 
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
@@ -373,7 +373,6 @@ export class PersonService {
     );
 
     for await (const page of facePagination) {
-      this.logger.log(`Queueing ${page.length} faces for recognition`)
       await this.jobRepository.queueAll(
         page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id, deferred: false } })),
       );
