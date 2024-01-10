@@ -60,6 +60,7 @@
       api.assetApi.getAssetById({ id: asset.id }).then((res) => {
         people = res.data?.people || [];
         textarea.value = res.data?.exifInfo?.description || '';
+        autoGrowHeight();
       });
     }
   }
@@ -112,10 +113,9 @@
     showEditFaces = false;
   };
 
-  const autoGrowHeight = (e: Event) => {
-    const target = e.target as HTMLTextAreaElement;
-    target.style.height = 'auto';
-    target.style.height = `${target.scrollHeight}px`;
+  const autoGrowHeight = () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
   const handleFocusIn = () => {

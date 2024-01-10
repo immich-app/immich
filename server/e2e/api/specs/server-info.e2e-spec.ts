@@ -1,9 +1,9 @@
 import { LoginResponseDto } from '@app/domain';
 import { ServerInfoController } from '@app/immich';
-import { api } from '@test/api';
 import { errorStub, userDto } from '@test/fixtures';
-import { testApp } from '@test/test-utils';
 import request from 'supertest';
+import { api } from '../client';
+import { testApp } from '../utils';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
   let server: any;
@@ -73,11 +73,11 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
       const { status, body } = await request(server).get('/server-info/features');
       expect(status).toBe(200);
       expect(body).toEqual({
-        clipEncode: false,
-        configFile: true,
-        facialRecognition: false,
+        clipEncode: true,
+        configFile: false,
+        facialRecognition: true,
         map: true,
-        reverseGeocoding: false,
+        reverseGeocoding: true,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,

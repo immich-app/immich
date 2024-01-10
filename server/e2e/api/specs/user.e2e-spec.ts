@@ -3,11 +3,11 @@ import { AppModule, UserController } from '@app/immich';
 import { UserEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { api } from '@test/api';
 import { errorStub, userDto, userSignupStub, userStub } from '@test/fixtures';
-import { testApp } from '@test/test-utils';
 import request from 'supertest';
 import { Repository } from 'typeorm';
+import { api } from '../client';
+import { testApp } from '../utils';
 
 describe(`${UserController.name}`, () => {
   let app: INestApplication;

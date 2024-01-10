@@ -16,8 +16,8 @@ stage:
 pull-stage:
 	docker compose -f ./docker/docker-compose.staging.yml pull
 
-test-server-e2e:
-	docker compose -f ./server/test/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+server-e2e-jobs:
+	docker compose -f ./server/e2e/docker-compose.server-e2e.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
 
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans

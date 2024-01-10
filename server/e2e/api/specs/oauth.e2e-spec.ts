@@ -1,8 +1,8 @@
 import { OAuthController } from '@app/immich';
-import { api } from '@test/api';
 import { errorStub } from '@test/fixtures';
-import { testApp } from '@test/test-utils';
 import request from 'supertest';
+import { api } from '../client';
+import { testApp } from '../utils';
 
 describe(`${OAuthController.name} (e2e)`, () => {
   let server: any;
