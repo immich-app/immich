@@ -128,7 +128,7 @@ export class LibraryService {
       throw new Error('Cannot watch library with no import paths');
     }
 
-    this.logger.debug(`Starting to watch library ${library.id}`);
+    this.logger.debug(`Starting to watch library ${library.id} with import paths ${library.importPaths}`);
 
     const extensions = mimeTypes.getSupportedFileExtensions();
 
@@ -249,6 +249,10 @@ export class LibraryService {
       } else {
         await this.unwatch(id);
       }
+    }
+
+    if (dto.importPaths || dto.exclusionPatterns) {
+      await this.watch(id);
     }
 
     return mapLibrary(library);

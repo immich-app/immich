@@ -44,6 +44,14 @@ export const libraryApi = {
     expect(status).toBe(200);
     return body;
   },
+  setExclusionPatterns: async (server: any, accessToken: string, id: string, exclusionPatterns: string[]) => {
+    const { body, status } = await request(server)
+      .put(`/library/${id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ exclusionPatterns });
+    expect(status).toBe(200);
+    return body as LibraryResponseDto;
+  },
   watch: async (server: any, accessToken: string, id: string) => {
     const { body, status } = await request(server)
       .put(`/library/${id}`)

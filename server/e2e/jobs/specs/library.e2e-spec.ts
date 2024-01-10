@@ -661,10 +661,58 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
+    it('should ignore excluded paths', async () => {
+      await api.libraryApi.setExclusionPatterns(server, admin.accessToken, library.id, ['**/dir2/**']);
+
+      jest.clearAllMocks();
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
+      );
+
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      await delay(3000);
+
+      const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(afterAssets.length).toEqual(1);
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+
+    it('should use updated import paths', async () => {
+      await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`, { recursive: true });
+
+      await api.libraryApi.setImportPaths(server, admin.accessToken, library.id, [
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`,
+      ]);
+
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      await delay(1000);
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4/file2.jpg`,
+      );
+
+      await delay(3000);
+
+      const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(afterAssets.length).toEqual(2);
+    });
+
+    // TODO: check what happens when importpaths are modified
+
     it('should offline removed files', async () => {
       await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file1.jpg`);
 
-      // This must be fixed before merge
+      // TODO: This must be fixed before merge
       let testPassed = false;
 
       while (!testPassed) {
