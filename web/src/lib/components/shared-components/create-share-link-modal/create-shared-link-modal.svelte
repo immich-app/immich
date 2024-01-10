@@ -94,7 +94,7 @@
       return;
     }
 
-    await copyToClipboard(password ? `Link: ${sharedLink}\nPassword: ${password}` : sharedLink);
+    await copyToClipboard(sharedLink);
   };
 
   const getExpirationTimeInMillisecond = () => {
