@@ -114,10 +114,10 @@ class MultiselectGrid extends HookConsumerWidget {
     }) {
       final assets = selection.value;
       return assets
-          .remoteOnly(errorCallback: errorBuilder(ownerErrorMessage))
+          .remoteOnly(errorCallback: errorBuilder(localErrorMessage))
           .ownedOnly(
             currentUser,
-            errorCallback: errorBuilder(localErrorMessage),
+            errorCallback: errorBuilder(ownerErrorMessage),
           );
     }
 
