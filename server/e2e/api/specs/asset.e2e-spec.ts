@@ -13,11 +13,11 @@ import { AssetController } from '@app/immich';
 import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
 import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
-import { api } from '@test/api';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
-import { generateAsset, testApp, today, yesterday } from '@test/test-utils';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
+import { api } from '../client';
+import { generateAsset, testApp, today, yesterday } from '../utils';
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
   const dto: Record<string, any> = {

@@ -10,7 +10,7 @@ import { DateTime } from 'luxon';
 import path from 'path';
 import { Server } from 'tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
-import { AppService } from '../src/microservices/app.service';
+import { AppService } from '../../src/microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);

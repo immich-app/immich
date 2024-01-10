@@ -1,9 +1,9 @@
 import { LoginResponseDto, PartnerDirection } from '@app/domain';
 import { PartnerController } from '@app/immich';
-import { api } from '@test/api';
 import { errorStub, userDto } from '@test/fixtures';
-import { testApp } from '@test/test-utils';
 import request from 'supertest';
+import { api } from '../client';
+import { testApp } from '../utils';
 
 describe(`${PartnerController.name} (e2e)`, () => {
   let server: any;

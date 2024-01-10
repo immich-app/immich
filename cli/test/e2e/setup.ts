@@ -37,6 +37,6 @@ export default async () => {
   }
 
   process.env.NODE_ENV = 'development';
-  process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/../../../server/test/e2e/immich-e2e-config.json`);
+  process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/../../../server/e2e/jobs/immich-e2e-config.json`);
   process.env.TZ = 'Z';
 };

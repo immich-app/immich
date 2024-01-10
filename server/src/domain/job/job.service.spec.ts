@@ -2,7 +2,6 @@ import { SystemConfig, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetStub,
-  asyncTick,
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
@@ -327,7 +326,6 @@ describe(JobService.name, () => {
 
         await sut.init(makeMockHandlers(true));
         await jobMock.addHandler.mock.calls[0][2](item);
-        await asyncTick(3);
 
         if (jobs.length > 1) {
           expect(jobMock.queueAll).toHaveBeenCalledWith(
@@ -344,7 +342,6 @@ describe(JobService.name, () => {
       it(`should not queue any jobs when ${item.name} finishes with 'false'`, async () => {
         await sut.init(makeMockHandlers(false));
         await jobMock.addHandler.mock.calls[0][2](item);
-        await asyncTick(3);
 
         expect(jobMock.queueAll).not.toHaveBeenCalled();
       });

@@ -8,10 +8,10 @@ import {
 } from '@app/domain';
 import { SearchController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
-import { api } from '@test/api';
 import { errorStub, searchStub } from '@test/fixtures';
-import { generateAsset, testApp } from '@test/test-utils';
 import request from 'supertest';
+import { api } from '../client';
+import { generateAsset, testApp } from '../utils';
 
 describe(`${SearchController.name}`, () => {
   let app: INestApplication;

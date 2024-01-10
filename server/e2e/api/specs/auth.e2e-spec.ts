@@ -1,5 +1,4 @@
 import { AuthController } from '@app/immich';
-import { api } from '@test/api';
 import {
   adminSignupStub,
   changePasswordStub,
@@ -9,8 +8,9 @@ import {
   loginStub,
   uuidStub,
 } from '@test/fixtures';
-import { testApp } from '@test/test-utils';
 import request from 'supertest';
+import { api } from '../client';
+import { testApp } from '../utils';
 
 const name = 'Immich Admin';
 const password = 'Password123';

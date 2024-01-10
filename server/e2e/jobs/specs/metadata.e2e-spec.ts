@@ -1,9 +1,9 @@
 import { AssetResponseDto, LoginResponseDto } from '@app/domain';
 import { AssetController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
-import { api } from '@test/api';
+import { exiftool } from 'exiftool-vendored';
 import * as fs from 'fs';
-
+import { api } from '../client';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
@@ -12,8 +12,7 @@ import {
   restoreTempFolder,
   runAllTests,
   testApp,
-} from '@test/test-utils';
-import { exiftool } from 'exiftool-vendored';
+} from '../utils';
 
 describe(`${AssetController.name} (e2e)`, () => {
   let app: INestApplication;
@@ -33,8 +32,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   });
 
   afterAll(async () => {
-    await db.disconnect();
-    await app.close();
+    await testApp.teardown();
     await restoreTempFolder();
   });
 
@@ -81,8 +79,6 @@ describe(`${AssetController.name} (e2e)`, () => {
       await fs.promises.writeFile(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.jpg`, thumbnail);
 
       const exifData = await exiftool.read(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.jpg`);
-
-      console.log(assetWithLocation);
 
       expect(exifData).not.toHaveProperty('GPSLongitude');
       expect(exifData).not.toHaveProperty('GPSLatitude');
