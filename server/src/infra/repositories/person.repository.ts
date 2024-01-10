@@ -113,13 +113,12 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getFaceByIdWithAssets(id: string, relations: FindOptionsRelations<AssetFaceEntity> = {}): Promise<AssetFaceEntity | null> {
+  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOne({
       where: { id },
       relations: {
         person: true,
         asset: true,
-        ...relations,
       },
     });
   }

@@ -265,8 +265,6 @@ export class PersonService {
     for await (const people of personPagination) {
       await this.delete(people); // deletes thumbnails too
     }
-
-    await this.repository.deleteAllFaces();
   }
 
   async handlePersonCleanup() {
@@ -375,6 +373,7 @@ export class PersonService {
     );
 
     for await (const page of facePagination) {
+      this.logger.log(`Queueing ${page.length} faces for recognition`)
       await this.jobRepository.queueAll(
         page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id, deferred: false } })),
       );
@@ -389,7 +388,7 @@ export class PersonService {
       return true;
     }
 
-    const face = await this.repository.getFaceByIdWithAssets(id, { embedding: false });
+    const face = await this.repository.getFaceByIdWithAssets(id);
     if (!face) {
       this.logger.warn(`Face ${id} not found`);
       return false;

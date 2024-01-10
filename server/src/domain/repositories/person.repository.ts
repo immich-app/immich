@@ -44,7 +44,7 @@ export interface IPersonRepository {
   deleteAllFaces(): Promise<void>;
   getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
   getFaceById(id: string): Promise<AssetFaceEntity>;
-  getFaceByIdWithAssets(id: string, relations?: FindOptionsRelations<AssetFaceEntity>): Promise<AssetFaceEntity | null>;
+  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null>;
   getFaces(assetId: string): Promise<AssetFaceEntity[]>;
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
