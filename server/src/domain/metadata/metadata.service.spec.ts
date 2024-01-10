@@ -630,7 +630,8 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarSync', () => {
     it('should not error', async () => {
-      await sut.handleSidecarSync();
+      assetMock.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+      await sut.handleSidecarSync({ id: assetStub.livePhotoMotionAsset.id });
     });
   });
 
