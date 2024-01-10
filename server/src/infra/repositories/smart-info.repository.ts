@@ -123,13 +123,13 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
       this.faceColumns.forEach((col) => cte.addSelect(`faces.${col}`, col));
 
-      const query = manager
+      results = await manager
         .createQueryBuilder()
         .select('res.*')
         .addCommonTableExpression(cte, 'cte')
         .from('cte', 'res')
-        .where('res.distance <= :maxDistance', { maxDistance });
-      results = await query.getRawMany();
+        .where('res.distance <= :maxDistance', { maxDistance })
+        .getRawMany();
     });
 
     return results.map((row) => ({

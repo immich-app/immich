@@ -6,7 +6,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Awaitable, Callable, Iterator
+from typing import Any, AsyncGenerator, Callable, Iterator
 from zipfile import BadZipFile
 
 import orjson
