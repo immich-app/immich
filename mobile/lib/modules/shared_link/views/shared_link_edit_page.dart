@@ -267,15 +267,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     }
 
     void copyLinkToClipboard() {
-      Clipboard.setData(
-        ClipboardData(
-          text: passwordController.text.isEmpty
-              ? newShareLink.value
-              : "shared_link_clipboard_text".tr(
-                  args: [newShareLink.value, passwordController.text],
-                ),
-        ),
-      ).then((_) {
+      Clipboard.setData(ClipboardData(text: newShareLink.value)).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

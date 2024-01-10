@@ -89,9 +89,7 @@ class SharedLinkItem extends ConsumerWidget {
       }
 
       Clipboard.setData(
-        ClipboardData(
-          text: "$serverUrl/share/${sharedLink.key}",
-        ),
+        ClipboardData(text: "$serverUrl/share/${sharedLink.key}"),
       ).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
