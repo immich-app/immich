@@ -6,7 +6,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Callable, Iterator
+from typing import Any, AsyncGenerator, Awaitable, Callable, Iterator
 from zipfile import BadZipFile
 
 import orjson
@@ -109,7 +109,7 @@ async def predict(
     return ORJSONResponse(outputs)
 
 
-async def run(func: Callable, inputs: Any) -> Any:
+async def run(func: Callable[..., Any], inputs: Any) -> Any:
     if thread_pool is None:
         return func(inputs)
     return await asyncio.get_running_loop().run_in_executor(thread_pool, func, inputs)

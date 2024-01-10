@@ -7,50 +7,6 @@ SET
 WHERE
   "personId" = $2
 
--- PersonRepository.getAllFaces
-SELECT
-  "AssetFaceEntity"."id" AS "AssetFaceEntity_id",
-  "AssetFaceEntity"."assetId" AS "AssetFaceEntity_assetId",
-  "AssetFaceEntity"."personId" AS "AssetFaceEntity_personId",
-  "AssetFaceEntity"."imageWidth" AS "AssetFaceEntity_imageWidth",
-  "AssetFaceEntity"."imageHeight" AS "AssetFaceEntity_imageHeight",
-  "AssetFaceEntity"."boundingBoxX1" AS "AssetFaceEntity_boundingBoxX1",
-  "AssetFaceEntity"."boundingBoxY1" AS "AssetFaceEntity_boundingBoxY1",
-  "AssetFaceEntity"."boundingBoxX2" AS "AssetFaceEntity_boundingBoxX2",
-  "AssetFaceEntity"."boundingBoxY2" AS "AssetFaceEntity_boundingBoxY2",
-  "AssetFaceEntity__AssetFaceEntity_asset"."id" AS "AssetFaceEntity__AssetFaceEntity_asset_id",
-  "AssetFaceEntity__AssetFaceEntity_asset"."deviceAssetId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceAssetId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."ownerId" AS "AssetFaceEntity__AssetFaceEntity_asset_ownerId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."libraryId" AS "AssetFaceEntity__AssetFaceEntity_asset_libraryId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."deviceId" AS "AssetFaceEntity__AssetFaceEntity_asset_deviceId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."type" AS "AssetFaceEntity__AssetFaceEntity_asset_type",
-  "AssetFaceEntity__AssetFaceEntity_asset"."originalPath" AS "AssetFaceEntity__AssetFaceEntity_asset_originalPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."resizePath" AS "AssetFaceEntity__AssetFaceEntity_asset_resizePath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."webpPath" AS "AssetFaceEntity__AssetFaceEntity_asset_webpPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."thumbhash" AS "AssetFaceEntity__AssetFaceEntity_asset_thumbhash",
-  "AssetFaceEntity__AssetFaceEntity_asset"."encodedVideoPath" AS "AssetFaceEntity__AssetFaceEntity_asset_encodedVideoPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."createdAt" AS "AssetFaceEntity__AssetFaceEntity_asset_createdAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."updatedAt" AS "AssetFaceEntity__AssetFaceEntity_asset_updatedAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."deletedAt" AS "AssetFaceEntity__AssetFaceEntity_asset_deletedAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."fileCreatedAt" AS "AssetFaceEntity__AssetFaceEntity_asset_fileCreatedAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."localDateTime" AS "AssetFaceEntity__AssetFaceEntity_asset_localDateTime",
-  "AssetFaceEntity__AssetFaceEntity_asset"."fileModifiedAt" AS "AssetFaceEntity__AssetFaceEntity_asset_fileModifiedAt",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isFavorite" AS "AssetFaceEntity__AssetFaceEntity_asset_isFavorite",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isArchived" AS "AssetFaceEntity__AssetFaceEntity_asset_isArchived",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isExternal" AS "AssetFaceEntity__AssetFaceEntity_asset_isExternal",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isReadOnly" AS "AssetFaceEntity__AssetFaceEntity_asset_isReadOnly",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isOffline" AS "AssetFaceEntity__AssetFaceEntity_asset_isOffline",
-  "AssetFaceEntity__AssetFaceEntity_asset"."checksum" AS "AssetFaceEntity__AssetFaceEntity_asset_checksum",
-  "AssetFaceEntity__AssetFaceEntity_asset"."duration" AS "AssetFaceEntity__AssetFaceEntity_asset_duration",
-  "AssetFaceEntity__AssetFaceEntity_asset"."isVisible" AS "AssetFaceEntity__AssetFaceEntity_asset_isVisible",
-  "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
-  "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
-  "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."stackParentId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackParentId"
-FROM
-  "asset_faces" "AssetFaceEntity"
-  LEFT JOIN "assets" "AssetFaceEntity__AssetFaceEntity_asset" ON "AssetFaceEntity__AssetFaceEntity_asset"."id" = "AssetFaceEntity"."assetId"
-
 -- PersonRepository.getAll
 SELECT
   "PersonEntity"."id" AS "PersonEntity_id",

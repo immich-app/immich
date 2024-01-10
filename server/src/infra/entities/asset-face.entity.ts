@@ -15,7 +15,7 @@ export class AssetFaceEntity {
   personId!: string | null;
 
   @Index('face_index', { synchronize: false })
-  @Column({ type: 'float4', array: true })
+  @Column({ type: 'float4', array: true, select: false })
   embedding!: number[];
 
   @Column({ default: 0, type: 'int' })

@@ -379,7 +379,7 @@ export class PersonService {
       return true;
     }
 
-    const face = await this.repository.getFaceByIdWithAssets(id);
+    const face = await this.repository.getFaceByIdWithAssets(id, { embedding: false });
     if (!face) {
       this.logger.warn(`Face ${id} not found`);
       return false;

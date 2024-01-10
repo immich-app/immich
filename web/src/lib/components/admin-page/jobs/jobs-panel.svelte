@@ -48,7 +48,9 @@
   };
 
   const onConfirm = () => {
-    if (!confirmJob) return;
+    if (!confirmJob) {
+      return;
+    }
     handleCommand(confirmJob, { command: JobCommand.Start, force: true });
     confirmJob = null;
   };
