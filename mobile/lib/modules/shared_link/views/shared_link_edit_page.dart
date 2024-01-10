@@ -350,10 +350,13 @@ class SharedLinkEditPage extends HookConsumerWidget {
       final externalDomain = ref.read(
         serverInfoProvider.select((s) => s.serverConfig.externalDomain),
       );
-      final serverUrl =
+      var serverUrl =
           externalDomain.isNotEmpty ? externalDomain : getServerUrl();
+      if (serverUrl != null && !serverUrl.endsWith('/')) {
+        serverUrl += '/';
+      }
       if (newLink != null && serverUrl != null) {
-        newShareLink.value = "$serverUrl/share/${newLink.key}";
+        newShareLink.value = "${serverUrl}share/${newLink.key}";
         copyLinkToClipboard();
       } else if (newLink == null) {
         ImmichToast.show(
