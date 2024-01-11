@@ -1,6 +1,6 @@
 import { BaseCommand } from '../cli/base-command';
 
-export default class ServerInfo extends BaseCommand {
+export class ServerInfo extends BaseCommand {
   public async run() {
     await this.connect();
     const { data: versionInfo } = await this.immichApi.serverInfoApi.getServerVersion();

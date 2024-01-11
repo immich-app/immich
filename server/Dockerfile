@@ -26,10 +26,16 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 # web build
 FROM node:iron-alpine3.18 as web
 
-WORKDIR /usr/src/app
-COPY web/package*.json web/svelte.config.js .
+WORKDIR /usr/src/open-api/typescript-sdk
+COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
 RUN npm ci
-COPY web .
+COPY open-api/typescript-sdk/ ./
+RUN npm run build
+
+WORKDIR /usr/src/app
+COPY web/package*.json web/svelte.config.js ./
+RUN npm ci
+COPY web ./
 RUN npm run build
 
 
