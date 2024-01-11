@@ -32,6 +32,11 @@ export class SearchDto {
   @Optional()
   @Transform(toBoolean)
   motion?: boolean;
+
+  @IsBoolean()
+  @Optional()
+  @Transform(toBoolean)
+  searchArchived?: boolean;
 }
 
 export class SearchPeopleDto {

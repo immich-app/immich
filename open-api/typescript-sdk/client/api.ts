@@ -14596,10 +14596,11 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
          * @param {boolean} [recent] 
          * @param {boolean} [motion] 
+         * @param {boolean} [searchArchived] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', recent?: boolean, motion?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', recent?: boolean, motion?: boolean, searchArchived?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -14643,6 +14644,10 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (motion !== undefined) {
                 localVarQueryParameter['motion'] = motion;
+            }
+
+            if (searchArchived !== undefined) {
+                localVarQueryParameter['searchArchived'] = searchArchived;
             }
 
 
@@ -14733,11 +14738,12 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
          * @param {boolean} [recent] 
          * @param {boolean} [motion] 
+         * @param {boolean} [searchArchived] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', recent?: boolean, motion?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, recent, motion, options);
+        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', recent?: boolean, motion?: boolean, searchArchived?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, recent, motion, searchArchived, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -14776,7 +14782,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @throws {RequiredError}
          */
         search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig): AxiosPromise<SearchResponseDto> {
-            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.recent, requestParameters.motion, options).then((request) => request(axios, basePath));
+            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.recent, requestParameters.motion, requestParameters.searchArchived, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -14837,6 +14843,13 @@ export interface SearchApiSearchRequest {
      * @memberof SearchApiSearch
      */
     readonly motion?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearch
+     */
+    readonly searchArchived?: boolean
 }
 
 /**
@@ -14885,7 +14898,7 @@ export class SearchApi extends BaseAPI {
      * @memberof SearchApi
      */
     public search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig) {
-        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.recent, requestParameters.motion, options).then((request) => request(this.axios, this.basePath));
+        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.recent, requestParameters.motion, requestParameters.searchArchived, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
