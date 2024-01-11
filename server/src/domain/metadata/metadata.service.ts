@@ -31,6 +31,7 @@ import {
 } from '../repositories';
 import { StorageCore } from '../storage';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
+import { exiftool } from 'exiftool-vendored';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [
@@ -367,6 +368,7 @@ export class MetadataService {
     let length = 0;
     let padding = 0;
 
+    // Not needed for extractBinaryTagToBuffer()
     if (isMotionPhoto && directory) {
       for (const entry of directory) {
         if (entry.Item.Semantic == 'MotionPhoto') {
@@ -390,11 +392,22 @@ export class MetadataService {
     try {
       const stat = await this.storageRepository.stat(asset.originalPath);
       const position = stat.size - length - padding;
-      const video = await this.storageRepository.readFile(asset.originalPath, {
-        buffer: Buffer.alloc(length),
-        position,
-        length,
-      });
+      let video: Buffer;
+      if (tags.EmbeddedVideoType === "MotionPhoto_Data" && tags.EmbeddedVideo) {
+        video = await exiftool.extractBinaryTagToBuffer("EmbeddedVideoFile", asset.originalPath)
+        await exiftool.end()
+      }
+      else if (tags.MotionPhotoVideo) {
+        video = await exiftool.extractBinaryTagToBuffer("MotionPhotoVideo", asset.originalPath)
+        await exiftool.end()
+      }
+      else {
+        video = await this.storageRepository.readFile(asset.originalPath, {
+          buffer: Buffer.alloc(length),
+          position,
+          length,
+        });
+      }
       const checksum = this.cryptoRepository.hashSha1(video);
 
       const motionPath = StorageCore.getAndroidMotionPath(asset);

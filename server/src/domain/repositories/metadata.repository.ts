@@ -1,4 +1,4 @@
-import { Tags } from 'exiftool-vendored';
+import { BinaryField, Tags } from 'exiftool-vendored';
 
 export const IMetadataRepository = 'IMetadataRepository';
 
@@ -27,6 +27,9 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
   ImagePixelDepth?: string;
   FocalLength?: number;
   Duration?: number | ExifDuration;
+  EmbeddedVideoType?: string;
+  EmbeddedVideo?: BinaryField;
+  MotionPhotoVideo?: BinaryField;
 }
 
 export interface IMetadataRepository {
