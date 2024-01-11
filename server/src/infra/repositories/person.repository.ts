@@ -39,8 +39,8 @@ export class PersonRepository implements IPersonRepository {
     return result.affected ?? 0;
   }
 
-  async delete(entities: PersonEntity | PersonEntity[]): Promise<void> {
-    await this.personRepository.remove(entities as any);
+  async delete(entities: PersonEntity[]): Promise<void> {
+    await this.personRepository.remove(entities);
   }
 
   async deleteAll(): Promise<void> {

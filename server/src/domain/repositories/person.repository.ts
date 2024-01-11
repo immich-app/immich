@@ -39,7 +39,7 @@ export interface IPersonRepository {
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   createFace(entity: Partial<AssetFaceEntity>): Promise<void>;
-  delete(entities: PersonEntity | PersonEntity[]): Promise<void>;
+  delete(entities: PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
   deleteAllFaces(): Promise<void>;
   getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
