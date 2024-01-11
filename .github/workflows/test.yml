@@ -12,7 +12,7 @@ concurrency:
 jobs:
   server-e2e-api:
     name: Server (e2e-api)
-    runs-on: ubuntu-latest
+    runs-on: mich
     defaults:
       run:
         working-directory: ./server
@@ -29,7 +29,7 @@ jobs:
 
   server-e2e-jobs:
     name: Server (e2e-jobs)
-    runs-on: ubuntu-latest
+    runs-on: mich
 
     steps:
       - name: Checkout code
