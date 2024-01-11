@@ -2,7 +2,7 @@ import { AssetFaceEntity } from '@app/infra/entities';
 import { assetStub } from './asset.stub';
 import { personStub } from './person.stub';
 
-type NonNullableProperty<T> = { [P in keyof T]: NonNullable<T[P]>; };
+type NonNullableProperty<T> = { [P in keyof T]: NonNullable<T[P]> };
 
 export const faceStub = {
   face1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
