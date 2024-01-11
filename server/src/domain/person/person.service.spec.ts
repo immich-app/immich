@@ -578,9 +578,6 @@ describe(PersonService.name, () => {
     });
 
     it('should delete existing people and faces if forced', async () => {
-      if (!faceStub.face1.person) {
-        throw new Error('faceStub.face1.person is null');
-      }
       personMock.getAll.mockResolvedValue({
         items: [faceStub.face1.person],
         hasNextPage: false,
@@ -656,9 +653,6 @@ describe(PersonService.name, () => {
     });
 
     it('should delete existing people and faces if forced', async () => {
-      if (!faceStub.face1.person) {
-        throw new Error('faceStub.face1.person is null');
-      }
       personMock.getAll.mockResolvedValue({
         items: [faceStub.face1.person],
         hasNextPage: false,
