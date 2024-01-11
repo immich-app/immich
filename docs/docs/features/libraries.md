@@ -34,9 +34,11 @@ If you add assets from an external library to an album and then move the asset t
 
 ### Deleted External Assets
 
+Note: Either a manual or scheduled library scan must have been performed to identify offline assets before this process will work.
+
 In all above scan methods, Immich will check if any files are missing. This can happen if files are deleted, or if they are on a storage location that is currently unavailable, like a network drive that is not mounted, or a USB drive that has been unplugged. In order to prevent accidental deletion of assets, Immich will not immediately delete an asset from the library if the file is missing. Instead, the asset will be internally marked as offline and will still be visible in the main timeline. If the file is moved back to its original location and the library is scanned again, the asset will be restored.
 
-Finally, files can be deleted from Immich via the `Remove Offline Files` job. Any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich. Note that a library scan must be performed first to mark the assets as offline.
+Finally, files can be deleted from Immich via the `Remove Offline Files` job. This job can be found by the three dots menu for the associated external storage that was configured under user account settings > libraries (the same location described at [create external libraries](#create-external-libraries)). When this job is run, any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
 
 ### Import Paths
 
