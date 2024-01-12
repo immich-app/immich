@@ -456,6 +456,7 @@ export class MetadataService {
       bitsPerSample: this.getBitsPerSample(tags),
       colorspace: tags.ColorSpace ?? null,
       dateTimeOriginal: this.getDateTimeOriginal(tags) ?? asset.fileCreatedAt,
+      description: (tags.ImageDescription || tags.Description) ?? '',
       exifImageHeight: validate(tags.ImageHeight),
       exifImageWidth: validate(tags.ImageWidth),
       exposureTime: tags.ExposureTime ?? null,
