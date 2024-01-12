@@ -90,14 +90,14 @@
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
       title: api.getJobName(JobName.FaceDetection),
-      subtitle: 'Detects the faces in your assets',
+      subtitle: 'Detect the faces in assets',
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.FacialRecognition]: {
       icon: mdiTagFaces,
       title: api.getJobName(JobName.FacialRecognition),
-      subtitle: 'Group the faces in your assets into people',
+      subtitle: 'Group detected faces into people',
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },

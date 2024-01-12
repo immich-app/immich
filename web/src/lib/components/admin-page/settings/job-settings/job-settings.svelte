@@ -37,7 +37,7 @@
     <form autocomplete="off" on:submit|preventDefault>
       {#each jobNames as jobName}
         <div class="ml-4 mt-4 flex flex-col gap-4">
-            {#if isSystemConfigJobDto(jobName)}
+          {#if isSystemConfigJobDto(jobName)}
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               {disabled}
@@ -47,16 +47,16 @@
               required={true}
               isEdited={!(config.job[jobName].concurrency == savedConfig.job[jobName].concurrency)}
             />
-            {:else}
-              <SettingInputField
-                inputType={SettingInputFieldType.NUMBER}
-                label="{api.getJobName(jobName)} Concurrency"
-                desc=""
-                value="1"
-                disabled={true}
-                title="This job is not concurrency-safe."
-              />
-            {/if}
+          {:else}
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label="{api.getJobName(jobName)} Concurrency"
+              desc=""
+              value="1"
+              disabled={true}
+              title="This job is not concurrency-safe."
+            />
+          {/if}
         </div>
       {/each}
 
