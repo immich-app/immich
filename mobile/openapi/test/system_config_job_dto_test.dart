@@ -26,11 +26,6 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto facialRecognition
-    test('to test the property `facialRecognition`', () async {
-      // TODO
-    });
-
     // JobSettingsDto library_
     test('to test the property `library_`', () async {
       // TODO

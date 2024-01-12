@@ -10,7 +10,6 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **backgroundTask** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **faceDetection** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
-**facialRecognition** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **library_** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **metadataExtraction** | [**JobSettingsDto**](JobSettingsDto.md) |  | 
 **migration** | [**JobSettingsDto**](JobSettingsDto.md) |  | 

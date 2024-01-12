@@ -15,7 +15,6 @@ class SystemConfigJobDto {
   SystemConfigJobDto({
     required this.backgroundTask,
     required this.faceDetection,
-    required this.facialRecognition,
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
@@ -29,8 +28,6 @@ class SystemConfigJobDto {
   JobSettingsDto backgroundTask;
 
   JobSettingsDto faceDetection;
-
-  JobSettingsDto facialRecognition;
 
   JobSettingsDto library_;
 
@@ -52,7 +49,6 @@ class SystemConfigJobDto {
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
      other.backgroundTask == backgroundTask &&
      other.faceDetection == faceDetection &&
-     other.facialRecognition == facialRecognition &&
      other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
      other.migration == migration &&
@@ -67,7 +63,6 @@ class SystemConfigJobDto {
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
     (faceDetection.hashCode) +
-    (facialRecognition.hashCode) +
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
@@ -78,13 +73,12 @@ class SystemConfigJobDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
       json[r'faceDetection'] = this.faceDetection;
-      json[r'facialRecognition'] = this.facialRecognition;
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
@@ -106,7 +100,6 @@ class SystemConfigJobDto {
       return SystemConfigJobDto(
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
         faceDetection: JobSettingsDto.fromJson(json[r'faceDetection'])!,
-        facialRecognition: JobSettingsDto.fromJson(json[r'facialRecognition'])!,
         library_: JobSettingsDto.fromJson(json[r'library'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobSettingsDto.fromJson(json[r'migration'])!,
@@ -164,7 +157,6 @@ class SystemConfigJobDto {
   static const requiredKeys = <String>{
     'backgroundTask',
     'faceDetection',
-    'facialRecognition',
     'library',
     'metadataExtraction',
     'migration',
