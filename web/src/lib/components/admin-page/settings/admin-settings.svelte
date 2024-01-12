@@ -7,7 +7,6 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import _ from 'lodash';
   import type { SettingsEventType } from './admin-settings';
   import { createEventDispatcher, onMount } from 'svelte';
 
@@ -46,7 +45,7 @@
 
   const reset = async (configKeys: Array<keyof SystemConfigDto>) => {
     const { data: resetConfig } = await api.systemConfigApi.getConfig();
-    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: _.get(resetConfig, key) }), config);
+    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: resetConfig[key] }), config);
 
     notificationController.show({
       message: 'Reset settings to the recent saved settings',
@@ -55,7 +54,7 @@
   };
 
   const resetToDefault = async (configKeys: Array<keyof SystemConfigDto>) => {
-    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: _.get(defaultConfig, key) }), config);
+    config = configKeys.reduce((acc, key) => ({ ...acc, [key]: defaultConfig[key] }), config);
 
     notificationController.show({
       message: 'Reset settings to default',
