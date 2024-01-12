@@ -54,16 +54,20 @@
 
   $: isOwner = $user?.id === asset.ownerId;
 
-  $: {
+  const handleNewAsset = async (newAsset: AssetResponseDto) => {
+    description = newAsset?.exifInfo?.description || '';
+
     // Get latest description from server
-    if (asset.id && !api.isSharedLink) {
-      api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-        people = res.data?.people || [];
-        textarea.value = res.data?.exifInfo?.description || '';
-        autoGrowHeight();
-      });
+    if (newAsset.id && !api.isSharedLink) {
+      const { data } = await api.assetApi.getAssetById({ id: asset.id });
+      people = data?.people || [];
+      description = data.exifInfo?.description || '';
+      textarea.value = description;
+      autoGrowHeight();
     }
-  }
+  };
+
+  $: handleNewAsset(asset);
 
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
@@ -192,18 +196,21 @@
     </section>
   {/if}
 
-  <section class="mx-4 mt-10" style:display={!isOwner && textarea?.value == '' ? 'none' : 'block'}>
-    <textarea
-      bind:this={textarea}
-      class="max-h-[500px]
+  <section class="mx-4 mt-10" style:display={!isOwner && description === '' ? 'none' : 'block'}>
+    {#if !isOwner || api.isSharedLink}
+      <span>{description}</span>
+    {:else}
+      <textarea
+        bind:this={textarea}
+        class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-      placeholder={!isOwner ? '' : 'Add a description'}
-      on:focusin={handleFocusIn}
-      on:focusout={handleFocusOut}
-      on:input={autoGrowHeight}
-      bind:value={description}
-      disabled={!isOwner}
-    />
+        placeholder={!isOwner ? '' : 'Add a description'}
+        on:focusin={handleFocusIn}
+        on:focusout={handleFocusOut}
+        on:input={autoGrowHeight}
+        bind:value={description}
+      />
+    {/if}
   </section>
 
   {#if !api.isSharedLink && people.length > 0}

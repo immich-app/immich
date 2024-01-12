@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     request_threads: int = os.cpu_count() or 4
     model_inter_op_threads: int = 1
     model_intra_op_threads: int = 2
+    ann: bool = True
 
     class Config:
         env_prefix = "MACHINE_LEARNING_"

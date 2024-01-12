@@ -1,6 +1,6 @@
 # Remote Machine Learning
 
-To alleviate [performance issues on low-memory systems](/docs/FAQ.md#why-is-immich-slow-on-low-memory-systems-like-the-raspberry-pi) like the Raspberry Pi, you may also host Immich's machine-learning container on a more powerful system (e.g. your laptop or desktop computer):
+To alleviate [performance issues on low-memory systems](/docs/FAQ.mdx#why-is-immich-slow-on-low-memory-systems-like-the-raspberry-pi) like the Raspberry Pi, you may also host Immich's machine-learning container on a more powerful system (e.g. your laptop or desktop computer):
 
 - Set the URL in Machine Learning Settings on the Admin Settings page to point to the designated ML system, e.g. `http://workstation:3003`.
 - Copy the following `docker-compose.yml` to your ML system.

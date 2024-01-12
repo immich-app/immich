@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
-import onnxruntime as ort
 from PIL import Image
 from tokenizers import Encoding, Tokenizer
 
@@ -33,24 +32,12 @@ class BaseCLIPEncoder(InferenceModel):
     def _load(self) -> None:
         if self.mode == "text" or self.mode is None:
             log.debug(f"Loading clip text model '{self.model_name}'")
-
-            self.text_model = ort.InferenceSession(
-                self.textual_path.as_posix(),
-                sess_options=self.sess_options,
-                providers=self.providers,
-                provider_options=self.provider_options,
-            )
+            self.text_model = self._make_session(self.textual_path)
             log.debug(f"Loaded clip text model '{self.model_name}'")
 
         if self.mode == "vision" or self.mode is None:
             log.debug(f"Loading clip vision model '{self.model_name}'")
-
-            self.vision_model = ort.InferenceSession(
-                self.visual_path.as_posix(),
-                sess_options=self.sess_options,
-                providers=self.providers,
-                provider_options=self.provider_options,
-            )
+            self.vision_model = self._make_session(self.visual_path)
             log.debug(f"Loaded clip vision model '{self.model_name}'")
 
     def _predict(self, image_or_text: Image.Image | str) -> ndarray_f32:
@@ -61,12 +48,10 @@ class BaseCLIPEncoder(InferenceModel):
             case Image.Image():
                 if self.mode == "text":
                     raise TypeError("Cannot encode image as text-only model")
-
                 outputs: ndarray_f32 = self.vision_model.run(None, self.transform(image_or_text))[0][0]
             case str():
                 if self.mode == "vision":
                     raise TypeError("Cannot encode text as vision-only model")
-
                 outputs = self.text_model.run(None, self.tokenize(image_or_text))[0][0]
             case _:
                 raise TypeError(f"Expected Image or str, but got: {type(image_or_text)}")
