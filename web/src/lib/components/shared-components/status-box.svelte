@@ -12,13 +12,32 @@
   const { serverVersion, connected } = websocketStore;
 
   let userInfo: UserResponseDto;
+  let usageClasses = '';
 
   $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
-  $: usedPercentage = Math.round(($serverInfoStore?.diskUseRaw / $serverInfoStore?.diskSizeRaw) * 100);
   $: hasQuota = userInfo?.quotaSizeInBytes !== null;
   $: availableBytes = (hasQuota ? userInfo?.quotaSizeInBytes : $serverInfoStore.diskSizeRaw) || 0;
   $: usedBytes = (hasQuota ? userInfo?.quotaUsageInBytes : $serverInfoStore.diskUseRaw) || 0;
-  $: isStorageExceeded = usedBytes > availableBytes;
+  $: usedPercentage = Math.round((usedBytes / availableBytes) * 100);
+
+  const onUpdate = () => {
+    usedPercentage = 81;
+    usageClasses = getUsageClass();
+  };
+
+  const getUsageClass = () => {
+    if (usedPercentage >= 95) {
+      return 'bg-red-500';
+    }
+
+    if (usedPercentage > 80) {
+      return 'bg-yellow-500';
+    }
+
+    return 'bg-immich-primary dark:bg-immich-dark-primary';
+  };
+
+  $: userInfo && onUpdate();
 
   onMount(async () => {
     await refresh();
@@ -37,7 +56,10 @@
 </script>
 
 <div class="dark:text-immich-dark-fg">
-  <div class="storage-status grid grid-cols-[64px_auto]">
+  <div
+    class="storage-status grid grid-cols-[64px_auto]"
+    title="Used {asByteUnitString(usedBytes, $locale, 3)} of {asByteUnitString(availableBytes, $locale, 3)}"
+  >
     <div class="pb-[2.15rem] pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary group-hover:sm:pb-0 md:pb-0">
       <Icon path={mdiChartPie} size="24" />
     </div>
@@ -45,12 +67,9 @@
       <p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
       {#if $serverInfoStore}
         <div class="my-2 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-          <div
-            class="h-[7px] rounded-full bg-immich-primary dark:bg-immich-dark-primary"
-            style="width: {usedPercentage}%"
-          />
+          <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%" />
         </div>
-        <p class={`text-xs ${isStorageExceeded ? 'text-red-500' : ''}`}>
+        <p class="text-xs">
           {asByteUnitString(usedBytes, $locale)} of
           {asByteUnitString(availableBytes, $locale)} used
         </p>
