@@ -2059,6 +2059,12 @@ export interface LibraryResponseDto {
     'importPaths': Array<string>;
     /**
      * 
+     * @type {boolean}
+     * @memberof LibraryResponseDto
+     */
+    'isWatched': boolean;
+    /**
+     * 
      * @type {string}
      * @memberof LibraryResponseDto
      */
@@ -2087,12 +2093,6 @@ export interface LibraryResponseDto {
      * @memberof LibraryResponseDto
      */
     'updatedAt': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof LibraryResponseDto
-     */
-    'watched': boolean;
 }
 
 

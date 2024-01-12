@@ -92,7 +92,7 @@ export class LibraryResponseDto {
   createdAt!: Date;
   updatedAt!: Date;
   refreshedAt!: Date | null;
-  watched!: boolean;
+  isWatched!: boolean;
 }
 
 export class LibraryStatsResponseDto {
@@ -125,6 +125,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     assetCount,
     importPaths: entity.importPaths,
     exclusionPatterns: entity.exclusionPatterns,
-    watched: entity.isWatched,
+    isWatched: entity.isWatched,
   };
 }

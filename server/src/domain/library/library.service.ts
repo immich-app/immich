@@ -142,6 +142,10 @@ export class LibraryService {
       usePolling: true,
     });
 
+    this.watchers[library.id].on('all', (event, path) => {
+      console.log(event, path);
+    });
+
     this.watchers[library.id].on('add', async (path) => {
       this.logger.debug(`Found new file: ${path}`);
       await this.jobRepository.queue({
@@ -247,11 +251,10 @@ export class LibraryService {
         }
         await this.watch(id);
       } else {
+        this.logger.debug(`Unwatching library ${id}`);
         await this.unwatch(id);
       }
-    }
-
-    if (dto.importPaths || dto.exclusionPatterns) {
+    } else if (dto.importPaths || dto.exclusionPatterns) {
       await this.watch(id);
     }
 

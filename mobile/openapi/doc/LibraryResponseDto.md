@@ -13,12 +13,12 @@ Name | Type | Description | Notes
 **exclusionPatterns** | **List<String>** |  | [default to const []]
 **id** | **String** |  | 
 **importPaths** | **List<String>** |  | [default to const []]
+**isWatched** | **bool** |  | 
 **name** | **String** |  | 
 **ownerId** | **String** |  | 
 **refreshedAt** | [**DateTime**](DateTime.md) |  | 
 **type** | [**LibraryType**](LibraryType.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
-**watched** | **bool** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

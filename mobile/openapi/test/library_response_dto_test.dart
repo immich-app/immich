@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // bool isWatched
+    test('to test the property `isWatched`', () async {
+      // TODO
+    });
+
     // String name
     test('to test the property `name`', () async {
       // TODO
@@ -63,11 +68,6 @@ void main() {
 
     // DateTime updatedAt
     test('to test the property `updatedAt`', () async {
-      // TODO
-    });
-
-    // bool watched
-    test('to test the property `watched`', () async {
       // TODO
     });
 

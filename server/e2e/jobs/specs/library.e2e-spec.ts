@@ -609,12 +609,14 @@ describe(`${LibraryController.name} (e2e)`, () => {
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file2.jpg`,
       );
 
-      let testPassed = false;
-
-      while (!testPassed) {
-        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-        testPassed = afterAssets.length === 2;
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
       }
+
+      await delay(3000);
+
+      const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(afterAssets.length).toEqual(2);
     });
 
     it('should add new files in multiple import paths', async () => {
@@ -633,12 +635,15 @@ describe(`${LibraryController.name} (e2e)`, () => {
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3/file4.jpg`,
       );
 
-      let testPassed = false;
-
-      while (!testPassed) {
-        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-        testPassed = afterAssets.length === 4;
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
       }
+
+      await delay(3000);
+
+      const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(afterAssets.length).toEqual(4);
     });
 
     it('should ignore files with wrong extension', async () => {
@@ -712,13 +717,14 @@ describe(`${LibraryController.name} (e2e)`, () => {
     it('should offline removed files', async () => {
       await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file1.jpg`);
 
-      // TODO: This must be fixed before merge
-      let testPassed = false;
-
-      while (!testPassed) {
-        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-        testPassed = afterAssets[0].isOffline;
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
       }
+
+      await delay(3000);
+
+      const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(afterAssets[0].isOffline).toEqual(true);
     });
   });
 });

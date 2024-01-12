@@ -7879,6 +7879,9 @@
             },
             "type": "array"
           },
+          "isWatched": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -7896,9 +7899,6 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
-          },
-          "watched": {
-            "type": "boolean"
           }
         },
         "required": [
@@ -7912,7 +7912,7 @@
           "createdAt",
           "updatedAt",
           "refreshedAt",
-          "watched"
+          "isWatched"
         ],
         "type": "object"
       },

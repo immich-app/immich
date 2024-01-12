@@ -18,12 +18,12 @@ class LibraryResponseDto {
     this.exclusionPatterns = const [],
     required this.id,
     this.importPaths = const [],
+    required this.isWatched,
     required this.name,
     required this.ownerId,
     required this.refreshedAt,
     required this.type,
     required this.updatedAt,
-    required this.watched,
   });
 
   int assetCount;
@@ -36,6 +36,8 @@ class LibraryResponseDto {
 
   List<String> importPaths;
 
+  bool isWatched;
+
   String name;
 
   String ownerId;
@@ -46,8 +48,6 @@ class LibraryResponseDto {
 
   DateTime updatedAt;
 
-  bool watched;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is LibraryResponseDto &&
      other.assetCount == assetCount &&
@@ -55,12 +55,12 @@ class LibraryResponseDto {
      other.exclusionPatterns == exclusionPatterns &&
      other.id == id &&
      other.importPaths == importPaths &&
+     other.isWatched == isWatched &&
      other.name == name &&
      other.ownerId == ownerId &&
      other.refreshedAt == refreshedAt &&
      other.type == type &&
-     other.updatedAt == updatedAt &&
-     other.watched == watched;
+     other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -70,15 +70,15 @@ class LibraryResponseDto {
     (exclusionPatterns.hashCode) +
     (id.hashCode) +
     (importPaths.hashCode) +
+    (isWatched.hashCode) +
     (name.hashCode) +
     (ownerId.hashCode) +
     (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
     (type.hashCode) +
-    (updatedAt.hashCode) +
-    (watched.hashCode);
+    (updatedAt.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt, watched=$watched]';
+  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, isWatched=$isWatched, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -87,6 +87,7 @@ class LibraryResponseDto {
       json[r'exclusionPatterns'] = this.exclusionPatterns;
       json[r'id'] = this.id;
       json[r'importPaths'] = this.importPaths;
+      json[r'isWatched'] = this.isWatched;
       json[r'name'] = this.name;
       json[r'ownerId'] = this.ownerId;
     if (this.refreshedAt != null) {
@@ -96,7 +97,6 @@ class LibraryResponseDto {
     }
       json[r'type'] = this.type;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
-      json[r'watched'] = this.watched;
     return json;
   }
 
@@ -117,12 +117,12 @@ class LibraryResponseDto {
         importPaths: json[r'importPaths'] is List
             ? (json[r'importPaths'] as List).cast<String>()
             : const [],
+        isWatched: mapValueOfType<bool>(json, r'isWatched')!,
         name: mapValueOfType<String>(json, r'name')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         refreshedAt: mapDateTime(json, r'refreshedAt', ''),
         type: LibraryType.fromJson(json[r'type'])!,
         updatedAt: mapDateTime(json, r'updatedAt', '')!,
-        watched: mapValueOfType<bool>(json, r'watched')!,
       );
     }
     return null;
@@ -175,12 +175,12 @@ class LibraryResponseDto {
     'exclusionPatterns',
     'id',
     'importPaths',
+    'isWatched',
     'name',
     'ownerId',
     'refreshedAt',
     'type',
     'updatedAt',
-    'watched',
   };
 }
 
