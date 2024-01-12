@@ -368,7 +368,6 @@ export class MetadataService {
     let length = 0;
     let padding = 0;
 
-    // Not needed for extractBinaryTagToBuffer()
     if (isMotionPhoto && directory) {
       for (const entry of directory) {
         if (entry.Item.Semantic == 'MotionPhoto') {
@@ -393,14 +392,16 @@ export class MetadataService {
       const stat = await this.storageRepository.stat(asset.originalPath);
       const position = stat.size - length - padding;
       let video: Buffer;
+      // Samsung MotionPhoto video extraction
+      // JPEG-encoded
       if (tags.EmbeddedVideoType === "MotionPhoto_Data" && tags.EmbeddedVideo) {
-        video = await exiftool.extractBinaryTagToBuffer("EmbeddedVideoFile", asset.originalPath)
-        await exiftool.end()
+        video = await this.repository.extractBinaryTag("EmbeddedVideo", asset.originalPath)
       }
+      // HEIC-encoded
       else if (tags.MotionPhotoVideo) {
-        video = await exiftool.extractBinaryTagToBuffer("MotionPhotoVideo", asset.originalPath)
-        await exiftool.end()
+        video = await this.repository.extractBinaryTag("MotionPhotoVideo", asset.originalPath)
       }
+      // Default video extraction
       else {
         video = await this.storageRepository.readFile(asset.originalPath, {
           buffer: Buffer.alloc(length),
