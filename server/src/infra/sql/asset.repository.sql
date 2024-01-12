@@ -226,7 +226,6 @@ SELECT
   "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
   "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
   "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
-  "AssetEntity__AssetEntity_faces"."embedding" AS "AssetEntity__AssetEntity_faces_embedding",
   "AssetEntity__AssetEntity_faces"."imageWidth" AS "AssetEntity__AssetEntity_faces_imageWidth",
   "AssetEntity__AssetEntity_faces"."imageHeight" AS "AssetEntity__AssetEntity_faces_imageHeight",
   "AssetEntity__AssetEntity_faces"."boundingBoxX1" AS "AssetEntity__AssetEntity_faces_boundingBoxX1",
