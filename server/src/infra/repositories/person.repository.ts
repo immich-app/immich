@@ -10,7 +10,7 @@ import {
 } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
-import { FindManyOptions, In, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { ChunkedArray, asVector, paginate } from '../infra.utils';
@@ -116,14 +116,25 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null> {
-    return this.assetFaceRepository.findOne({
-      where: { id },
-      relations: {
-        person: true,
-        asset: true,
-      },
-    });
+  getFaceByIdWithAssets(
+    id: string,
+    relations: FindOptionsRelations<AssetFaceEntity>,
+    select: FindOptionsSelect<AssetFaceEntity>,
+  ): Promise<AssetFaceEntity | null> {
+    return this.assetFaceRepository.findOne(
+      _.omitBy(
+        {
+          where: { id },
+          relations: {
+            ...relations,
+            person: true,
+            asset: true,
+          },
+          select,
+        },
+        _.isUndefined,
+      ),
+    );
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
