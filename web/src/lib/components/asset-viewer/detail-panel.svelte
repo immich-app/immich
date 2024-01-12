@@ -65,6 +65,12 @@
     }
   }
 
+  const handleNewAsset = (newAsset: AssetResponseDto) => {
+    description = newAsset?.exifInfo?.description || '';
+  };
+
+  $: handleNewAsset(asset);
+
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
     const lng = asset.exifInfo?.longitude;
