@@ -122,31 +122,35 @@ export class JobRepository implements IJobRepository {
       return;
     }
 
-    const itemsByQueue = items.reduce<Record<string, JobItem[]>>((acc, item) => {
+    const promises = [];
+    const itemsByQueue = {} as Record<string, (JobItem & { data: any; options: JobsOptions | undefined })[]>;
+    for (const item of items) {
       const queueName = JOBS_TO_QUEUE[item.name];
-      acc[queueName] = acc[queueName] || [];
-      acc[queueName].push(item);
-      return acc;
-    }, {});
-
-    for (const [queueName, items] of Object.entries(itemsByQueue)) {
-      const queue = this.getQueue(queueName as QueueName);
-      const jobs = items.map((item) => ({
+      const job = {
         name: item.name,
-        data: (item as { data?: any })?.data || {},
+        data: item.data || {},
         options: this.getJobOptions(item) || undefined,
-      }));
-      await queue.addBulk(jobs);
+      } as JobItem & { data: any; options: JobsOptions | undefined };
+
+      if (job.options?.jobId) {
+        // need to use add() instead of addBulk() for jobId deduplication
+        promises.push(this.getQueue(queueName).add(item.name, item.data, job.options));
+      } else {
+        itemsByQueue[queueName] = itemsByQueue[queueName] || [];
+        itemsByQueue[queueName].push(job);
+      }
     }
+
+    for (const [queueName, jobs] of Object.entries(itemsByQueue)) {
+      const queue = this.getQueue(queueName as QueueName);
+      promises.push(queue.addBulk(jobs));
+    }
+
+    await Promise.all(promises);
   }
 
   async queue(item: JobItem): Promise<void> {
-    const jobName = item.name;
-    const jobData = item.data ?? {};
-    const jobOptions = this.getJobOptions(item) || undefined;
-
-    // need to use add() instead of addBulk() for jobId deduplication
-    await this.getQueue(JOBS_TO_QUEUE[jobName]).add(jobName, jobData, jobOptions);
+    return this.queueAll([item]);
   }
 
   async waitForQueueCompletion(...queues: QueueName[]): Promise<void> {

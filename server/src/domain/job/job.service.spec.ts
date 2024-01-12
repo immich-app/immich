@@ -234,7 +234,6 @@ describe(JobService.name, () => {
           [QueueName.SMART_SEARCH]: { concurrency: 10 },
           [QueueName.METADATA_EXTRACTION]: { concurrency: 10 },
           [QueueName.FACE_DETECTION]: { concurrency: 10 },
-          [QueueName.FACIAL_RECOGNITION]: { concurrency: 10 },
           [QueueName.SEARCH]: { concurrency: 10 },
           [QueueName.SIDECAR]: { concurrency: 10 },
           [QueueName.LIBRARY]: { concurrency: 10 },
@@ -248,7 +247,6 @@ describe(JobService.name, () => {
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SMART_SEARCH, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.FACE_DETECTION, 10);
-      expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.FACIAL_RECOGNITION, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.SIDECAR, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.LIBRARY, 10);
       expect(jobMock.setConcurrency).toHaveBeenCalledWith(QueueName.MIGRATION, 10);
