@@ -40,6 +40,93 @@
     downloadBlob(blob, downloadKey);
     setTimeout(() => downloadManager.clear(downloadKey), 5_000);
   };
+
+  const settings = [
+    {
+      item: JobSettings,
+      title: 'Job Settings',
+      subtitle: 'Manage job concurrency',
+      isOpen: openSettings.includes('job'),
+    },
+    {
+      item: LibrarySettings,
+      title: 'Library',
+      subtitle: 'Manage library settings',
+      isOpen: openSettings.includes('library'),
+    },
+    {
+      item: LoggingSettings,
+      title: 'Logging',
+      subtitle: 'Manage log settings',
+      isOpen: openSettings.includes('logging'),
+    },
+    {
+      item: MachineLearningSettings,
+      title: 'Machine Learning Settings',
+      subtitle: 'Manage machine learning features and settings',
+      isOpen: openSettings.includes('machineLearning'),
+    },
+    {
+      item: MapSettings,
+      title: 'Map & GPS Settings',
+      subtitle: 'Manage map related features and setting',
+      isOpen: openSettings.some((key) => ['map', 'reverseGeocoding'].includes(key)),
+    },
+    {
+      item: OAuthSettings,
+      title: 'OAuth Authentication',
+      subtitle: 'Manage the login with OAuth settings',
+      isOpen: openSettings.includes('oauth'),
+    },
+    {
+      item: PasswordLoginSettings,
+      title: 'Password Authentication',
+      subtitle: 'Manage the login with password settings',
+      isOpen: openSettings.includes('passwordLogin'),
+    },
+    {
+      item: ServerSettings,
+      title: 'Server Settings',
+      subtitle: 'Manage server settings',
+      isOpen: openSettings.includes('server'),
+    },
+    {
+      item: StorageTemplateSettings,
+      title: 'Storage Template',
+      subtitle: 'Manage the folder structure and file name of the upload asset',
+      isOpen: openSettings.includes('storageTemplate'),
+    },
+    {
+      item: ThemeSettings,
+      title: 'Theme Settings',
+      subtitle: 'Manage customization of the Immich web interface',
+      isOpen: openSettings.includes('theme'),
+    },
+    {
+      item: ThumbnailSettings,
+      title: 'Thumbnail Settings',
+      subtitle: 'Manage the resolution of thumbnail sizes',
+      isOpen: openSettings.includes('thumbnail'),
+    },
+    {
+      item: TrashSettings,
+      title: 'Trash Settings',
+      subtitle: 'Manage trash settings',
+      isOpen: openSettings.includes('trash'),
+    },
+    {
+      item: NewVersionCheckSettings,
+      title: 'Version Check',
+      subtitle: 'Enable/disable the new version notification',
+      isOpen: openSettings.includes('newVersionCheck'),
+    },
+    {
+      item: FFmpegSettings,
+      title: 'Video Transcoding Settings',
+      subtitle: 'Manage the resolution and encoding information of the video files',
+      isOpen: openSettings.includes('ffmpeg'),
+    },
+  ];
 </script>
 
 {#if $featureFlags.configFile}
@@ -66,194 +153,18 @@
   </div>
 
   <AdminSettings {config} let:handleReset let:handleSave let:savedConfig let:defaultConfig>
-    <SettingAccordion title="Job Settings" subtitle="Manage job concurrency" isOpen={openSettings.includes('job')}>
-      <JobSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion title="Library" subtitle="Manage library settings" isOpen={openSettings.includes('library')}>
-      <LibrarySettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion title="Logging" subtitle="Manage log settings" isOpen={openSettings.includes('logging')}>
-      <LoggingSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Machine Learning Settings"
-      subtitle="Manage machine learning features and settings"
-      isOpen={openSettings.includes('machineLearning')}
-    >
-      <MachineLearningSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Map & GPS Settings"
-      subtitle="Manage map related features and setting"
-      isOpen={openSettings.some((key) => ['map', 'reverseGeocoding'].includes(key))}
-    >
-      <MapSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="OAuth Authentication"
-      subtitle="Manage the login with OAuth settings"
-      isOpen={openSettings.includes('oauth')}
-    >
-      <OAuthSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Password Authentication"
-      subtitle="Manage login with password settings"
-      isOpen={openSettings.includes('passwordLogin')}
-    >
-      <PasswordLoginSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion title="Server Settings" subtitle="Manage server settings">
-      <ServerSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Storage Template"
-      subtitle="Manage the folder structure and file name of the upload asset"
-      isOpen={openSettings.includes('storageTemplate')}
-    >
-      <StorageTemplateSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Theme Settings"
-      subtitle="Manage customization of the Immich web interface"
-      isOpen={openSettings.includes('theme')}
-    >
-      <ThemeSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Thumbnail Settings"
-      subtitle="Manage the resolution of thumbnail sizes"
-      isOpen={openSettings.includes('thumbnail')}
-    >
-      <ThumbnailSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion title="Trash Settings" subtitle="Manage trash settings" isOpen={openSettings.includes('trash')}>
-      <TrashSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Version Check"
-      subtitle="Enable/disable the new version notification"
-      isOpen={openSettings.includes('newVersionCheck')}
-    >
-      <NewVersionCheckSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
-
-    <SettingAccordion
-      title="Video Transcoding Settings"
-      subtitle="Manage the resolution and encoding information of the video files"
-      isOpen={openSettings.includes('ffmpeg')}
-    >
-      <FFmpegSettings
-        on:save={({ detail }) => handleSave(detail)}
-        on:reset={({ detail }) => handleReset(detail)}
-        disabled={$featureFlags.configFile}
-        {defaultConfig}
-        {config}
-        {savedConfig}
-      />
-    </SettingAccordion>
+    {#each settings as { item, title, subtitle, isOpen }}
+      <SettingAccordion {title} {subtitle} {isOpen}>
+        <svelte:component
+          this={item}
+          on:save={({ detail }) => handleSave(detail)}
+          on:reset={({ detail }) => handleReset(detail)}
+          disabled={$featureFlags.configFile}
+          {defaultConfig}
+          {config}
+          {savedConfig}
+        />
+      </SettingAccordion>
+    {/each}
   </AdminSettings>
 </UserPageLayout>
