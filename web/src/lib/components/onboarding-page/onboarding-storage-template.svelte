@@ -32,7 +32,7 @@
   </p>
 
   {#if config && $user}
-    <AdminSettings {config} let:defaultConfig let:savedConfig let:handleSave let:handleReset>
+    <AdminSettings bind:config let:defaultConfig let:savedConfig let:handleSave let:handleReset>
       <StorageTemplateSettings
         minified
         disabled={$featureFlags.configFile}

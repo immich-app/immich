@@ -152,7 +152,7 @@
     </LinkButton>
   </div>
 
-  <AdminSettings {config} let:handleReset let:handleSave let:savedConfig let:defaultConfig>
+  <AdminSettings bind:config let:handleReset let:handleSave let:savedConfig let:defaultConfig>
     <section id="setting-content" class="flex place-content-center sm:mx-4">
       <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
         {#each settings as { item, title, subtitle, isOpen }}
