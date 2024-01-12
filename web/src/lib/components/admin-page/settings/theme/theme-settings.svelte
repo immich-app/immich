@@ -19,23 +19,21 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <div class="ml-4">
-          <SettingTextarea
-            {disabled}
-            label="Custom CSS"
-            desc="Cascading Style Sheets allow the design of Immich to be customized."
-            bind:value={config.theme.customCss}
-            required={true}
-            isEdited={config.theme.customCss !== savedConfig.theme.customCss}
-          />
+        <SettingTextarea
+          {disabled}
+          label="Custom CSS"
+          desc="Cascading Style Sheets allow the design of Immich to be customized."
+          bind:value={config.theme.customCss}
+          required={true}
+          isEdited={config.theme.customCss !== savedConfig.theme.customCss}
+        />
 
-          <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['theme'] })}
-            on:save={() => dispatch('save', { theme: config.theme })}
-            showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-            {disabled}
-          />
-        </div>
+        <SettingButtonsRow
+          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['theme'] })}
+          on:save={() => dispatch('save', { theme: config.theme })}
+          showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+          {disabled}
+        />
       </div>
     </form>
   </div>

@@ -18,21 +18,19 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
-        <div class="ml-4">
-          <SettingSwitch
-            title="ENABLED"
-            subtitle="Enable period requests to GitHub to check for new releases"
-            bind:checked={config.newVersionCheck.enabled}
-            {disabled}
-          />
-          <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['newVersionCheck'] })}
-            on:save={() => dispatch('save', { newVersionCheck: config.newVersionCheck })}
-            showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-            {disabled}
-          />
-        </div>
+      <div class="ml-4 mt-4">
+        <SettingSwitch
+          title="ENABLED"
+          subtitle="Enable period requests to GitHub to check for new releases"
+          bind:checked={config.newVersionCheck.enabled}
+          {disabled}
+        />
+        <SettingButtonsRow
+          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['newVersionCheck'] })}
+          on:save={() => dispatch('save', { newVersionCheck: config.newVersionCheck })}
+          showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+          {disabled}
+        />
       </div>
     </form>
   </div>

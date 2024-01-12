@@ -18,7 +18,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
-      <div class="mt-2">
+      <div class="mt-4 ml-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label="EXTERNAL DOMAIN"

@@ -47,22 +47,20 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
-        <div class="ml-4">
-          <SettingSwitch
-            title="ENABLED"
-            {disabled}
-            subtitle="Login with email and password"
-            bind:checked={config.passwordLogin.enabled}
-          />
+      <div class="ml-4 mt-4 flex flex-col">
+        <SettingSwitch
+          title="ENABLED"
+          {disabled}
+          subtitle="Login with email and password"
+          bind:checked={config.passwordLogin.enabled}
+        />
 
-          <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['passwordLogin'] })}
-            on:save={() => handleSave()}
-            showResetToDefault={!isEqual(savedConfig.passwordLogin, defaultConfig.passwordLogin)}
-            {disabled}
-          />
-        </div>
+        <SettingButtonsRow
+          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['passwordLogin'] })}
+          on:save={() => handleSave()}
+          showResetToDefault={!isEqual(savedConfig.passwordLogin, defaultConfig.passwordLogin)}
+          {disabled}
+        />
       </div>
     </form>
   </div>

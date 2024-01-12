@@ -82,7 +82,7 @@
 
 <section class="dark:text-immich-dark-fg">
   {#await getTemplateOptions() then}
-    <div id="directory-path-builder" class="flex flex-col gap-4 m-4">
+    <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch
         title="ENABLED"
         {disabled}

@@ -20,35 +20,30 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" on:submit|preventDefault>
       <div class="ml-4 mt-4 flex flex-col gap-4">
-        <div class="ml-4">
-          <SettingSwitch title="ENABLED" {disabled} subtitle="Logging" bind:checked={config.logging.enabled} />
-        </div>
+        <SettingSwitch title="ENABLED" {disabled} subtitle="Logging" bind:checked={config.logging.enabled} />
+        <SettingSelect
+          label="LEVEL"
+          desc="When enabled, what log level to use."
+          bind:value={config.logging.level}
+          options={[
+            { value: LogLevel.Fatal, text: 'Fatal' },
+            { value: LogLevel.Error, text: 'Error' },
+            { value: LogLevel.Warn, text: 'Warn' },
+            { value: LogLevel.Log, text: 'Log' },
+            { value: LogLevel.Debug, text: 'Debug' },
+            { value: LogLevel.Verbose, text: 'Verbose' },
+          ]}
+          name="level"
+          isEdited={config.logging.level !== savedConfig.logging.level}
+          disabled={disabled || !config.logging.enabled}
+        />
 
-        <div class="ml-4">
-          <SettingSelect
-            label="LEVEL"
-            desc="When enabled, what log level to use."
-            bind:value={config.logging.level}
-            options={[
-              { value: LogLevel.Fatal, text: 'Fatal' },
-              { value: LogLevel.Error, text: 'Error' },
-              { value: LogLevel.Warn, text: 'Warn' },
-              { value: LogLevel.Log, text: 'Log' },
-              { value: LogLevel.Debug, text: 'Debug' },
-              { value: LogLevel.Verbose, text: 'Verbose' },
-            ]}
-            name="level"
-            isEdited={config.logging.level !== savedConfig.logging.level}
-            disabled={disabled || !config.logging.enabled}
-          />
-
-          <SettingButtonsRow
-            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['logging'] })}
-            on:save={() => dispatch('save', { logging: config.logging })}
-            showResetToDefault={!isEqual(savedConfig.logging, defaultConfig.logging)}
-            {disabled}
-          />
-        </div>
+        <SettingButtonsRow
+          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['logging'] })}
+          on:save={() => dispatch('save', { logging: config.logging })}
+          showResetToDefault={!isEqual(savedConfig.logging, defaultConfig.logging)}
+          {disabled}
+        />
       </div>
     </form>
   </div>
