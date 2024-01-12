@@ -95,7 +95,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     maxDistance,
     hasPerson,
   }: FaceEmbeddingSearch): Promise<FaceSearchResult[]> {
-    let results: any[] = [];
+    let results: Array<AssetFaceEntity & { distance: number }> = [];
     await this.assetRepository.manager.transaction(async (manager) => {
       await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
       let cte = manager
@@ -133,7 +133,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     });
 
     return results.map((row) => ({
-      face: this.assetFaceRepository.create(row) as any as AssetFaceEntity,
+      face: this.assetFaceRepository.create(row),
       distance: row.distance,
     }));
   }
