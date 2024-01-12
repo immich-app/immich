@@ -107,10 +107,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run npm install in cli
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install (cli)
         run: npm ci
 
-      - name: Run npm install in server
+      - name: Run npm install (server)
         run: npm ci
         working-directory: ./server
 
@@ -143,10 +147,14 @@ jobs:
         with:
           submodules: "recursive"
 
-      - name: Run npm install in cli
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install (cli)
         run: npm ci
 
-      - name: Run npm install in server
+      - name: Run npm install (server)
         run: npm ci
         working-directory: ./server
 
@@ -163,6 +171,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
 
       - name: Run npm install
         run: npm ci
@@ -237,14 +249,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run API generation
-        run: npm --prefix server run api:generate
+        run: make open-api
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files
         with:
           files: |
             mobile/openapi
-            web/src/api/open-api
+            open-api/typescript-sdk
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |

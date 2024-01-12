@@ -25,8 +25,15 @@ prod:
 prod-scale:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
-api:
-	npm --prefix server run api:generate
+.PHONY: open-api
+open-api:
+	cd ./open-api && bash ./bin/generate-open-api.sh
+
+open-api-dart:
+	cd ./open-api && bash ./bin/generate-open-api.sh dart
+
+open-api-typescript:
+	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 
 sql:
 	npm --prefix server run sql:generate

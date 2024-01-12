@@ -1,8 +1,8 @@
 import { APIKeyCreateResponseDto } from '@app/domain';
 import { api } from '@test/../e2e/api/client';
 import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
-import { LoginResponseDto } from 'src/api/open-api';
-import Upload from 'src/commands/upload';
+import { LoginResponseDto } from '@immich/sdk';
+import { Upload } from 'src/commands/upload';
 import { CLI_BASE_OPTIONS, spyOnConsole } from 'test/cli-test-utils';
 
 describe(`upload (e2e)`, () => {

@@ -5,7 +5,7 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { createEventDispatcher } from 'svelte';
-  import type { AlbumResponseDto, UserResponseDto } from '../../../api/open-api';
+  import type { AlbumResponseDto, UserResponseDto } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let album: AlbumResponseDto;

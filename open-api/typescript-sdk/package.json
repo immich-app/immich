@@ -1,0 +1,27 @@
+{
+  "name": "@immich/sdk",
+  "version": "1.92.1",
+  "description": "",
+  "type": "commonjs",
+  "main": "./build/cjs/index.js",
+  "module": "./build/esm/index.js",
+  "typings": "./build/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js",
+      "default": "./build/cjs/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.27.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}
