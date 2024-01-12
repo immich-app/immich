@@ -66,3 +66,34 @@ Immich stores two types of content in the filesystem: (1) original, unmodified c
 1. `UPLOAD_LOCATION/library`
 1. `UPLOAD_LOCATION/upload`
 1. `UPLOAD_LOCATION/profile`
+
+**1. User-Specific Folders:**
+
+- Each user has a unique string representing them.
+  - The main user is "Admin" (but only for `\library\library\`)
+  - Other users have different string identifiers.
+- You can find your user ID in Account Account Settings > Account > User ID.
+
+**2. Asset Types and Storage Locations:**
+
+- **Source Assets:**
+  - Original assets uploaded through the browser interface&mobile&CLI.
+  - Stored in `\library\library\<userID>`.
+- **Avatar Images:**
+  - User profile images.
+  - Stored in `\library\profile\<userID>`.
+- **Thumbs Images:**
+  - Preview images (blurred, small, large) for each asset and thumbnails for recognized faces.
+  - Stored in `\library\thumbs\<userID>`.
+- **Encoded Assets:**
+  - By default, unless otherwise specified re-encoded video assets for wider compatibility .
+  - Stored in `\library\encoded-video\<userID>`.
+- **Files in Upload Queue (Mobile):**
+  - Files uploaded through mobile apps.
+  - Temporarily located in `\library\upload\<userID>`.
+  - Transferred to `\library\library\<userID>` upon successful upload.
+
+:::danger
+Do not touch the files inside these folders under any circumstances except taking a backup, changing or removing an asset can cause untracked and missing files.
+You can think of it as App-Which-Must-Not-Be-Named, the only access to viewing, changing and deleting assets is only through the mobile or browser interface.
+:::
