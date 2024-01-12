@@ -28,8 +28,7 @@ Invoke-RestMethod -Uri 'http://YOUR_IP_HERE:2283/api/asset' -Method Delete -Head
 'Content-Type' = 'application/json'
 'x-api-key' = 'YOUR_API_KEY_HERE'
 } -Body "{"force": true, "ids": ["$line"]}"
-}  
+}
 ```
-
 
 Thanks to [DooMRunneR](https://discord.com/channels/979116623879368755/1179655214870040596/1194308198413373482) for writing this script.

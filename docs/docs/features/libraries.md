@@ -71,7 +71,7 @@ Sometimes, an external library will not scan correctly. This can happen if the i
 - Are the volumes identical between the `server` and `microservices` container?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
 - Are the permissions set correctly?
-- Are the slash in the path appears correctly as `/`
+- Are you using forward slashes everywhere? (`/`)
 
 If all else fails, you can always start a shell inside the container and check if the path is accessible. For example, `docker exec -it immich_microservices /bin/bash` will start a bash shell. If your import path, for instance, is `/data/import/photos`, you can check if the files are accessible by running `ls /data/import/photos`. Also check the `immich_server` container in the same way.
 
