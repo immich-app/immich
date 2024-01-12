@@ -15,7 +15,9 @@ SELECT
   "UserEntity"."createdAt" AS "UserEntity_createdAt",
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled"
+  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
+  "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
   "users" "UserEntity"
 WHERE
@@ -60,7 +62,9 @@ SELECT
   "user"."createdAt" AS "user_createdAt",
   "user"."deletedAt" AS "user_deletedAt",
   "user"."updatedAt" AS "user_updatedAt",
-  "user"."memoriesEnabled" AS "user_memoriesEnabled"
+  "user"."memoriesEnabled" AS "user_memoriesEnabled",
+  "user"."quotaSizeInBytes" AS "user_quotaSizeInBytes",
+  "user"."quotaUsageInBytes" AS "user_quotaUsageInBytes"
 FROM
   "users" "user"
 WHERE
@@ -82,7 +86,9 @@ SELECT
   "UserEntity"."createdAt" AS "UserEntity_createdAt",
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled"
+  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
+  "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
   "users" "UserEntity"
 WHERE
@@ -106,7 +112,9 @@ SELECT
   "UserEntity"."createdAt" AS "UserEntity_createdAt",
   "UserEntity"."deletedAt" AS "UserEntity_deletedAt",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
-  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled"
+  "UserEntity"."memoriesEnabled" AS "UserEntity_memoriesEnabled",
+  "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
 FROM
   "users" "UserEntity"
 WHERE
@@ -119,6 +127,7 @@ LIMIT
 SELECT
   "users"."id" AS "userId",
   "users"."name" AS "userName",
+  "users"."quotaSizeInBytes" AS "quotaSizeInBytes",
   COUNT("assets"."id") FILTER (
     WHERE
       "assets"."type" = 'IMAGE'

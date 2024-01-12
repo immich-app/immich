@@ -37,9 +37,10 @@ export enum JobName {
   METADATA_EXTRACTION = 'metadata-extraction',
   LINK_LIVE_PHOTOS = 'link-live-photos',
 
-  // user deletion
+  // user
   USER_DELETION = 'user-deletion',
   USER_DELETE_CHECK = 'user-delete-check',
+  USER_SYNC_USAGE = 'user-sync-usage',
 
   // asset
   ASSET_DELETION = 'asset-deletion',
@@ -95,6 +96,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
+  [JobName.USER_SYNC_USAGE]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,

@@ -2,12 +2,15 @@ import { IUserRepository, UserFindOptions, UserListFilter, UserStatsQueryRespons
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
-import { UserEntity } from '../entities';
+import { AssetEntity, UserEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
-  constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {}
+  constructor(
+    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
+  ) {}
 
   async get(userId: string, options: UserFindOptions): Promise<UserEntity | null> {
     options = options || {};
@@ -91,6 +94,7 @@ export class UserRepository implements IUserRepository {
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
       .addSelect('COALESCE(SUM(exif.fileSizeInByte), 0)', 'usage')
+      .addSelect('users.quotaSizeInBytes', 'quotaSizeInBytes')
       .leftJoin('users.assets', 'assets')
       .leftJoin('assets.exifInfo', 'exif')
       .groupBy('users.id')
@@ -101,9 +105,30 @@ export class UserRepository implements IUserRepository {
       stat.photos = Number(stat.photos);
       stat.videos = Number(stat.videos);
       stat.usage = Number(stat.usage);
+      stat.quotaSizeInBytes = stat.quotaSizeInBytes;
     }
 
     return stats;
+  }
+
+  async updateUsage(id: string, delta: number): Promise<void> {
+    await this.userRepository.increment({ id }, 'quotaUsageInBytes', delta);
+  }
+
+  async syncUsage() {
+    const subQuery = this.assetRepository
+      .createQueryBuilder('assets')
+      .select('COALESCE(SUM(exif."fileSizeInByte"), 0)')
+      .leftJoin('assets.exifInfo', 'exif')
+      .where('assets.ownerId = users.id')
+      .withDeleted();
+
+    await this.userRepository
+      .createQueryBuilder('users')
+      .leftJoin('users.assets', 'assets')
+      .update()
+      .set({ quotaUsageInBytes: () => `(${subQuery.getQuery()})` })
+      .execute();
   }
 
   private async save(user: Partial<UserEntity>) {

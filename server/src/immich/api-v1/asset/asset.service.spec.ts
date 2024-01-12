@@ -1,4 +1,4 @@
-import { IJobRepository, ILibraryRepository, JobName } from '@app/domain';
+import { IJobRepository, ILibraryRepository, IUserRepository, JobName } from '@app/domain';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
@@ -9,6 +9,7 @@ import {
   newAccessRepositoryMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
+  newUserRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
 import { QueryFailedError } from 'typeorm';
@@ -87,11 +88,13 @@ describe('AssetService', () => {
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let libraryMock: jest.Mocked<ILibraryRepository>;
+  let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(() => {
     assetRepositoryMock = {
       get: jest.fn(),
       create: jest.fn(),
+      upsertExif: jest.fn(),
 
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
@@ -107,8 +110,9 @@ describe('AssetService', () => {
     accessMock = newAccessRepositoryMock();
     jobMock = newJobRepositoryMock();
     libraryMock = newLibraryRepositoryMock();
+    userMock = newUserRepositoryMock();
 
-    sut = new AssetService(accessMock, assetRepositoryMock, jobMock, libraryMock);
+    sut = new AssetService(accessMock, assetRepositoryMock, jobMock, libraryMock, userMock);
 
     when(assetRepositoryMock.get)
       .calledWith(assetStub.livePhotoStillAsset.id)
@@ -127,6 +131,7 @@ describe('AssetService', () => {
         mimeType: 'image/jpeg',
         checksum: Buffer.from('file hash', 'utf8'),
         originalName: 'asset_1.jpeg',
+        size: 42,
       };
       const dto = _getCreateAssetDto();
 
@@ -136,6 +141,7 @@ describe('AssetService', () => {
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
 
       expect(assetRepositoryMock.create).toHaveBeenCalled();
+      expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, file.size);
     });
 
     it('should handle a duplicate', async () => {
@@ -145,6 +151,7 @@ describe('AssetService', () => {
         mimeType: 'image/jpeg',
         checksum: Buffer.from('file hash', 'utf8'),
         originalName: 'asset_1.jpeg',
+        size: 0,
       };
       const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], '');
@@ -160,6 +167,7 @@ describe('AssetService', () => {
         name: JobName.DELETE_FILES,
         data: { files: ['fake_path/asset_1.jpeg', undefined, undefined] },
       });
+      expect(userMock.updateUsage).not.toHaveBeenCalled();
     });
 
     it('should handle a live photo', async () => {
@@ -187,6 +195,7 @@ describe('AssetService', () => {
         ],
         [{ name: JobName.METADATA_EXTRACTION, data: { id: assetStub.livePhotoStillAsset.id, source: 'upload' } }],
       ]);
+      expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, 111);
     });
   });
 

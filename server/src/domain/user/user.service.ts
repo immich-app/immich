@@ -127,6 +127,11 @@ export class UserService {
     return { admin, password, provided: !!providedPassword };
   }
 
+  async handleUserSyncUsage() {
+    await this.userRepository.syncUsage();
+    return true;
+  }
+
   async handleUserDeleteCheck() {
     const users = await this.userRepository.getDeletedUsers();
     await this.jobRepository.queueAll(
