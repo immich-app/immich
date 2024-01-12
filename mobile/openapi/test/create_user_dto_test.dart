@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // int quotaSizeInBytes
+    test('to test the property `quotaSizeInBytes`', () async {
+      // TODO
+    });
+
     // String storageLabel
     test('to test the property `storageLabel`', () async {
       // TODO

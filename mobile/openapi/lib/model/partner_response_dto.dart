@@ -25,6 +25,8 @@ class PartnerResponseDto {
     required this.name,
     required this.oauthId,
     required this.profileImagePath,
+    required this.quotaSizeInBytes,
+    required this.quotaUsageInBytes,
     required this.shouldChangePassword,
     required this.storageLabel,
     required this.updatedAt,
@@ -66,6 +68,10 @@ class PartnerResponseDto {
 
   String profileImagePath;
 
+  int? quotaSizeInBytes;
+
+  int quotaUsageInBytes;
+
   bool shouldChangePassword;
 
   String? storageLabel;
@@ -86,6 +92,8 @@ class PartnerResponseDto {
      other.name == name &&
      other.oauthId == oauthId &&
      other.profileImagePath == profileImagePath &&
+     other.quotaSizeInBytes == quotaSizeInBytes &&
+     other.quotaUsageInBytes == quotaUsageInBytes &&
      other.shouldChangePassword == shouldChangePassword &&
      other.storageLabel == storageLabel &&
      other.updatedAt == updatedAt;
@@ -105,12 +113,14 @@ class PartnerResponseDto {
     (name.hashCode) +
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+    (quotaUsageInBytes.hashCode) +
     (shouldChangePassword.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, inTimeline=$inTimeline, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, externalPath=$externalPath, id=$id, inTimeline=$inTimeline, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, oauthId=$oauthId, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -142,6 +152,12 @@ class PartnerResponseDto {
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileImagePath'] = this.profileImagePath;
+    if (this.quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
+    } else {
+    //  json[r'quotaSizeInBytes'] = null;
+    }
+      json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
@@ -172,6 +188,8 @@ class PartnerResponseDto {
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
+        quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         updatedAt: mapDateTime(json, r'updatedAt', '')!,
@@ -232,6 +250,8 @@ class PartnerResponseDto {
     'name',
     'oauthId',
     'profileImagePath',
+    'quotaSizeInBytes',
+    'quotaUsageInBytes',
     'shouldChangePassword',
     'storageLabel',
     'updatedAt',
