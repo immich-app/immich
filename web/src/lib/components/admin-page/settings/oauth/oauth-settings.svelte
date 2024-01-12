@@ -62,7 +62,7 @@
     <form autocomplete="off" on:submit|preventDefault class="mx-4 flex flex-col gap-4 py-4">
       <p class="text-sm dark:text-immich-dark-fg">
         For more details about this feature, refer to the <a
-          href="https://immich.app/docs/administration/oauth#mobile-redirect-uri"
+          href="https://immich.app/docs/administration/oauth"
           class="underline"
           target="_blank"
           rel="noreferrer">docs</a
@@ -142,7 +142,7 @@
 
       <SettingSwitch
         title="MOBILE REDIRECT URI OVERRIDE"
-        subtitle="Enable when `app.immich:/` is an invalid redirect URI."
+        subtitle="Enable when 'app.immich:/' is an invalid redirect URI."
         disabled={disabled || !config.oauth.enabled}
         on:click={() => handleToggleOverride()}
         bind:checked={config.oauth.mobileOverrideEnabled}
