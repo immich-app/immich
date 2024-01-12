@@ -1,4 +1,4 @@
-import { QueueName } from '@app/domain';
+import { ConcurrentQueueName } from '@app/domain';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
@@ -176,7 +176,7 @@ export interface SystemConfig {
     accel: TranscodeHWAccel;
     tonemap: ToneMapping;
   };
-  job: Record<Exclude<QueueName, QueueName.STORAGE_TEMPLATE_MIGRATION>, { concurrency: number }>;
+  job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
     enabled: boolean;
     level: LogLevel;

@@ -9222,9 +9222,6 @@
           "faceDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "facialRecognition": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9259,7 +9256,6 @@
           "backgroundTask",
           "search",
           "faceDetection",
-          "facialRecognition",
           "sidecar",
           "library"
         ],

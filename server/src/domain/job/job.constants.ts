@@ -13,6 +13,11 @@ export enum QueueName {
   LIBRARY = 'library',
 }
 
+export type ConcurrentQueueName = Exclude<
+  QueueName,
+  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION
+>;
+
 export enum JobCommand {
   START = 'start',
   PAUSE = 'pause',
