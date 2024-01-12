@@ -401,7 +401,6 @@ export class PersonService {
       return true;
     }
 
-    // typeorm leaves the embedding as a string
     const matches = await this.smartInfoRepository.searchFaces({
       userIds: [face.asset.ownerId],
       embedding: face.embedding,
