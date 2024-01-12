@@ -201,7 +201,7 @@ export class MetadataRepository implements IMetadataRepository {
       }) as Promise<ImmichTags | null>;
   }
 
-  extractBinaryTag(tagName: string, path: string): Promise<Buffer> {
+  extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
     return exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 

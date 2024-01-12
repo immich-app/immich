@@ -1,7 +1,7 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { ExifDateTime, Tags, exiftool } from 'exiftool-vendored';
+import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import _ from 'lodash';
@@ -394,11 +394,11 @@ export class MetadataService {
       // Samsung MotionPhoto video extraction
       // JPEG-encoded
       if (tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideo) {
-        video = await this.repository.extractBinaryTag('EmbeddedVideo', asset.originalPath);
+        video = await this.repository.extractBinaryTag(asset.originalPath, 'EmbeddedVideo');
       }
       // HEIC-encoded
       else if (tags.MotionPhotoVideo) {
-        video = await this.repository.extractBinaryTag('MotionPhotoVideo', asset.originalPath);
+        video = await this.repository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
       }
       // Default video extraction
       else {
