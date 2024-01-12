@@ -15,7 +15,7 @@
     mdiImageSearch,
     mdiLibraryShelves,
     mdiTable,
-    mdiVectorCircle,
+    mdiTagFaces,
     mdiVideo,
   } from '@mdi/js';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
@@ -95,7 +95,7 @@
       disabled: !$featureFlags.facialRecognition,
     },
     [JobName.FacialRecognition]: {
-      icon: mdiVectorCircle,
+      icon: mdiTagFaces,
       title: api.getJobName(JobName.FacialRecognition),
       subtitle: 'Group the faces in your assets into people',
       handleCommand: handleConfirmCommand,
