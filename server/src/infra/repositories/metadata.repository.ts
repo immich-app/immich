@@ -202,7 +202,7 @@ export class MetadataRepository implements IMetadataRepository {
   }
 
   extractBinaryTag(tagName: string, path: string): Promise<Buffer> {
-    return exiftool.extractBinaryTagToBuffer(tagName, path)
+    return exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {

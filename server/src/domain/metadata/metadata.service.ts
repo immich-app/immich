@@ -1,7 +1,7 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { ExifDateTime, Tags } from 'exiftool-vendored';
+import { ExifDateTime, Tags, exiftool } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import _ from 'lodash';
@@ -31,7 +31,6 @@ import {
 } from '../repositories';
 import { StorageCore } from '../storage';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
-import { exiftool } from 'exiftool-vendored';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [
@@ -394,12 +393,12 @@ export class MetadataService {
       let video: Buffer;
       // Samsung MotionPhoto video extraction
       // JPEG-encoded
-      if (tags.EmbeddedVideoType === "MotionPhoto_Data" && tags.EmbeddedVideo) {
-        video = await this.repository.extractBinaryTag("EmbeddedVideo", asset.originalPath)
+      if (tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideo) {
+        video = await this.repository.extractBinaryTag('EmbeddedVideo', asset.originalPath);
       }
       // HEIC-encoded
       else if (tags.MotionPhotoVideo) {
-        video = await this.repository.extractBinaryTag("MotionPhotoVideo", asset.originalPath)
+        video = await this.repository.extractBinaryTag('MotionPhotoVideo', asset.originalPath);
       }
       // Default video extraction
       else {
