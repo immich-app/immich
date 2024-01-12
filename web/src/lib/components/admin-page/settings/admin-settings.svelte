@@ -73,8 +73,6 @@
   });
 </script>
 
-<section id="setting-content" class="flex place-content-center sm:mx-4">
-  <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-    <slot {handleReset} {handleSave} {savedConfig} {defaultConfig} />
-  </section>
-</section>
+{#if savedConfig && defaultConfig}
+  <slot {handleReset} {handleSave} {savedConfig} {defaultConfig} />
+{/if}

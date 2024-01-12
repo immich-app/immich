@@ -153,18 +153,22 @@
   </div>
 
   <AdminSettings {config} let:handleReset let:handleSave let:savedConfig let:defaultConfig>
-    {#each settings as { item, title, subtitle, isOpen }}
-      <SettingAccordion {title} {subtitle} {isOpen}>
-        <svelte:component
-          this={item}
-          on:save={({ detail }) => handleSave(detail)}
-          on:reset={({ detail }) => handleReset(detail)}
-          disabled={$featureFlags.configFile}
-          {defaultConfig}
-          {config}
-          {savedConfig}
-        />
-      </SettingAccordion>
-    {/each}
+    <section id="setting-content" class="flex place-content-center sm:mx-4">
+      <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+        {#each settings as { item, title, subtitle, isOpen }}
+          <SettingAccordion {title} {subtitle} {isOpen}>
+            <svelte:component
+              this={item}
+              on:save={({ detail }) => handleSave(detail)}
+              on:reset={({ detail }) => handleReset(detail)}
+              disabled={$featureFlags.configFile}
+              {defaultConfig}
+              {config}
+              {savedConfig}
+            />
+          </SettingAccordion>
+        {/each}
+      </section>
+    </section>
   </AdminSettings>
 </UserPageLayout>
