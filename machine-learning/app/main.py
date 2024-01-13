@@ -43,7 +43,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             f"{f'after {settings.model_ttl}s of inactivity' if settings.model_ttl > 0 else 'disabled'}."
         )
     )
-    
+
     try:
         if settings.request_threads > 0:
             # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
