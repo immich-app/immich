@@ -161,7 +161,12 @@ class InferenceModel(ABC):
 
     @property
     def provider_options_default(self) -> list[dict[str, Any]]:
-        return [{"arena_extend_strategy": "kSameAsRequested"}] * len(self.providers)
+        return [
+            {"arena_extend_strategy": "kSameAsRequested"}
+            if provider in {"CPUExecutionProvider", "CUDAExecutionProvider"}
+            else {}
+            for provider in self.providers
+        ]
 
     @property
     def sess_options(self) -> ort.SessionOptions:

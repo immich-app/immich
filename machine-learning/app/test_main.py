@@ -68,7 +68,7 @@ class TestBase:
         encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert encoder.provider_options == [
-            {"arena_extend_strategy": "kSameAsRequested"},
+            {},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
@@ -108,7 +108,7 @@ class TestBase:
         )
 
         assert sess_options is encoder.sess_options
-    
+
     def test_sets_default_cache_dir(self) -> None:
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
 
@@ -119,13 +119,13 @@ class TestBase:
         encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=cache_dir)
 
         assert encoder.cache_dir == cache_dir
-    
+
     def test_casts_cache_dir_string_to_path(self) -> None:
         cache_dir = "/test_cache"
         encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=cache_dir)
 
         assert encoder.cache_dir == Path(cache_dir)
-    
+
     def test_clear_cache(self, mocker: MockerFixture) -> None:
         mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
         mock_rmtree.avoids_symlink_attacks = True
@@ -140,7 +140,7 @@ class TestBase:
 
         mock_rmtree.assert_called_once_with(encoder.cache_dir)
         info.assert_called_once()
-    
+
     def test_clear_cache_warns_if_path_does_not_exist(self, mocker: MockerFixture) -> None:
         mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
         mock_rmtree.avoids_symlink_attacks = True
@@ -155,7 +155,7 @@ class TestBase:
 
         mock_rmtree.assert_not_called()
         warning.assert_called_once()
-    
+
     def test_clear_cache_raises_exception_if_vulnerable_to_symlink_attack(self, mocker: MockerFixture) -> None:
         mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
         mock_rmtree.avoids_symlink_attacks = False
@@ -169,7 +169,7 @@ class TestBase:
             encoder.clear_cache()
 
         mock_rmtree.assert_not_called()
-    
+
     def test_clear_cache_replaces_file_with_dir_if_path_is_file(self, mocker: MockerFixture) -> None:
         mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
         mock_rmtree.avoids_symlink_attacks = True
@@ -186,7 +186,7 @@ class TestBase:
         mock_cache_dir.unlink.assert_called_once()
         mock_cache_dir.mkdir.assert_called_once()
         warning.assert_called_once()
-    
+
     def test_make_session_return_ann_if_available(self, mocker: MockerFixture) -> None:
         mock_cache_dir = mocker.Mock()
         mock_cache_dir.is_file.return_value = True
@@ -194,12 +194,12 @@ class TestBase:
         mocker.patch.object(settings, "ann", True)
         mocker.patch("ann.ann.is_available", True)
         mock_session = mocker.patch("app.models.base.AnnSession")
-        
+
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         encoder._make_session(mock_cache_dir)
 
         mock_session.assert_called_once()
-    
+
     def test_make_session_return_ort_if_available_and_ann_is_not(self, mocker: MockerFixture) -> None:
         mock_cache_dir = mocker.Mock()
         mock_cache_dir.is_file.return_value = True
@@ -207,12 +207,12 @@ class TestBase:
         mocker.patch.object(settings, "ann", False)
         mocker.patch("ann.ann.is_available", False)
         mock_session = mocker.patch("app.models.base.ort.InferenceSession")
-        
+
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         encoder._make_session(mock_cache_dir)
 
         mock_session.assert_called_once()
-    
+
     def test_make_session_raises_exception_if_path_does_not_exist(self, mocker: MockerFixture) -> None:
         mock_cache_dir = mocker.Mock()
         mock_cache_dir.is_file.return_value = False
@@ -220,7 +220,7 @@ class TestBase:
         mocker.patch("ann.ann.is_available", False)
         mock_ann = mocker.patch("app.models.base.ort.InferenceSession")
         mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
-        
+
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
         with pytest.raises(ValueError):
             encoder._make_session(mock_cache_dir)
