@@ -45,11 +45,12 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     )
     
     try:
-        # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
-        thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
+        if settings.request_threads > 0:
+            # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
+            thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
+            log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
         if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
             asyncio.ensure_future(idle_shutdown_task())
-        log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
         yield
     finally:
         log.handlers.clear()
