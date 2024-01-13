@@ -226,3 +226,42 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   }
   return ids;
 };
+
+export async function stackAssets(assets: Array<AssetResponseDto>, onStack: (ds: string[]) => void) {
+  try {
+    const parent = assets.at(0);
+
+    if (parent == undefined) {
+      return;
+    }
+
+    const children = assets.slice(1);
+    const ids = children.map(({ id }) => id);
+
+    if (children.length > 0) {
+      await api.assetApi.updateAssets({ assetBulkUpdateDto: { ids, stackParentId: parent.id } });
+    }
+
+    let childrenCount = parent.stackCount ?? 0;
+    for (const asset of children) {
+      asset.stackParentId = parent?.id;
+      // Add grand-children's count to new parent
+      childrenCount += asset.stackCount == null ? 1 : asset.stackCount + 1;
+      // Reset children stack info
+      asset.stackCount = null;
+      asset.stack = [];
+    }
+
+    parent.stackCount = childrenCount;
+
+    notificationController.show({
+      message: `Stacked ${ids.length + 1} assets`,
+      type: NotificationType.Info,
+      timeout: 1500,
+    });
+
+    onStack(ids);
+  } catch (error) {
+    handleError(error, `Unable to stack`);
+  }
+}
