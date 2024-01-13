@@ -6,12 +6,13 @@ from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
+from numpy.typing import NDArray
 from PIL import Image
 from tokenizers import Encoding, Tokenizer
 
 from app.config import clean_name, log
 from app.models.transforms import crop, get_pil_resampling, normalize, resize, to_numpy
-from app.schemas import ModelType, ndarray_f32, ndarray_i32
+from app.schemas import ModelType
 
 from .base import InferenceModel
 
@@ -40,7 +41,7 @@ class BaseCLIPEncoder(InferenceModel):
             self.vision_model = self._make_session(self.visual_path)
             log.debug(f"Loaded clip vision model '{self.model_name}'")
 
-    def _predict(self, image_or_text: Image.Image | str) -> ndarray_f32:
+    def _predict(self, image_or_text: Image.Image | str) -> NDArray[np.float32]:
         if isinstance(image_or_text, bytes):
             image_or_text = Image.open(BytesIO(image_or_text))
 
@@ -48,7 +49,7 @@ class BaseCLIPEncoder(InferenceModel):
             case Image.Image():
                 if self.mode == "text":
                     raise TypeError("Cannot encode image as text-only model")
-                outputs: ndarray_f32 = self.vision_model.run(None, self.transform(image_or_text))[0][0]
+                outputs: NDArray[np.float32] = self.vision_model.run(None, self.transform(image_or_text))[0][0]
             case str():
                 if self.mode == "vision":
                     raise TypeError("Cannot encode text as vision-only model")
@@ -59,11 +60,11 @@ class BaseCLIPEncoder(InferenceModel):
         return outputs
 
     @abstractmethod
-    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
+    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
         pass
 
     @abstractmethod
-    def transform(self, image: Image.Image) -> dict[str, ndarray_f32]:
+    def transform(self, image: Image.Image) -> dict[str, NDArray[np.float32]]:
         pass
 
     @property
@@ -161,11 +162,11 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         self.tokenizer.enable_truncation(max_length=context_length)
         log.debug(f"Loaded tokenizer for CLIP model '{self.model_name}'")
 
-    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
+    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
         tokens: Encoding = self.tokenizer.encode(text)
         return {"text": np.array([tokens.ids], dtype=np.int32)}
 
-    def transform(self, image: Image.Image) -> dict[str, ndarray_f32]:
+    def transform(self, image: Image.Image) -> dict[str, NDArray[np.float32]]:
         image = resize(image, self.size)
         image = crop(image, self.size)
         image_np = to_numpy(image)
@@ -174,7 +175,7 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
 
 class MCLIPEncoder(OpenCLIPEncoder):
-    def tokenize(self, text: str) -> dict[str, ndarray_i32]:
+    def tokenize(self, text: str) -> dict[str, NDArray[np.int32]]:
         tokens: Encoding = self.tokenizer.encode(text)
         return {
             "input_ids": np.array([tokens.ids], dtype=np.int32),
