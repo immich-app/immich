@@ -45,7 +45,7 @@ services:
     <<: *server-common
     # extends:
     #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl]
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     ports:
       - 9231:9230
     depends_on:
@@ -81,10 +81,12 @@ services:
     image: immich-machine-learning-dev:latest
     # extends:
     #   file: hwaccel.ml.yml
-    #   service: cpu # set to one of [armnn, cuda, openvino]
+    #   service: cpu # set to one of [armnn, cuda, openvino] for accelerated inference
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
+      args:
+        - DEVICE=cpu # set to one of [armnn, cuda, openvino] for accelerated inference
     ports:
       - 3003:3003
     volumes:
