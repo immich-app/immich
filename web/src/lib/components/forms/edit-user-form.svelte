@@ -4,11 +4,12 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { handleError } from '../../utils/handle-error';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
   import { AppRoute } from '$lib/constants';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { handleError } from '$lib/utils/handle-error';
+  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -24,6 +25,8 @@
     editSuccess: void;
   }>();
 
+  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
+
   const editUser = async () => {
     try {
       const { id, email, name, storageLabel, externalPath } = user;
@@ -34,6 +37,7 @@
           name,
           storageLabel: storageLabel || '',
           externalPath: externalPath || '',
+          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
         },
       });
 
@@ -95,6 +99,11 @@
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">Name</label>
       <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
+    </div>
+
+    <div class="m-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="quotaSize">Quota Size (GB)</label>
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
     </div>
 
     <div class="m-4 flex flex-col gap-2">

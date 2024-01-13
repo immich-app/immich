@@ -7409,6 +7409,11 @@
           "password": {
             "type": "string"
           },
+          "quotaSizeInBytes": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
           "storageLabel": {
             "nullable": true,
             "type": "string"
@@ -8192,6 +8197,15 @@
           "profileImagePath": {
             "type": "string"
           },
+          "quotaSizeInBytes": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "quotaUsageInBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
           "shouldChangePassword": {
             "type": "boolean"
           },
@@ -8206,10 +8220,8 @@
         },
         "required": [
           "avatarColor",
-          "id",
-          "name",
-          "email",
-          "profileImagePath",
+          "quotaSizeInBytes",
+          "quotaUsageInBytes",
           "storageLabel",
           "externalPath",
           "shouldChangePassword",
@@ -8217,7 +8229,11 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId"
+          "oauthId",
+          "id",
+          "name",
+          "email",
+          "profileImagePath"
         ],
         "type": "object"
       },
@@ -9757,6 +9773,11 @@
           "password": {
             "type": "string"
           },
+          "quotaSizeInBytes": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
           "shouldChangePassword": {
             "type": "boolean"
           },
@@ -9772,6 +9793,11 @@
       "UsageByUserDto": {
         "properties": {
           "photos": {
+            "type": "integer"
+          },
+          "quotaSizeInBytes": {
+            "format": "int64",
+            "nullable": true,
             "type": "integer"
           },
           "usage": {
@@ -9793,7 +9819,8 @@
           "userName",
           "photos",
           "videos",
-          "usage"
+          "usage",
+          "quotaSizeInBytes"
         ],
         "type": "object"
       },
@@ -9878,6 +9905,15 @@
           "profileImagePath": {
             "type": "string"
           },
+          "quotaSizeInBytes": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "quotaUsageInBytes": {
+            "format": "int64",
+            "type": "integer"
+          },
           "shouldChangePassword": {
             "type": "boolean"
           },
@@ -9892,10 +9928,8 @@
         },
         "required": [
           "avatarColor",
-          "id",
-          "name",
-          "email",
-          "profileImagePath",
+          "quotaSizeInBytes",
+          "quotaUsageInBytes",
           "storageLabel",
           "externalPath",
           "shouldChangePassword",
@@ -9903,7 +9937,11 @@
           "createdAt",
           "deletedAt",
           "updatedAt",
-          "oauthId"
+          "oauthId",
+          "id",
+          "name",
+          "email",
+          "profileImagePath"
         ],
         "type": "object"
       },

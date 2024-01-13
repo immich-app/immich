@@ -164,6 +164,7 @@ export class JobService {
       { name: JobName.PERSON_CLEANUP },
       { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
       { name: JobName.CLEAN_OLD_AUDIT_LOGS },
+      { name: JobName.USER_SYNC_USAGE },
     ]);
   }
 

@@ -250,7 +250,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual(user1Albums[0]);
+      expect(body).toEqual({ ...user1Albums[0], assets: [expect.objectContaining(user1Albums[0].assets[0])] });
     });
 
     it('should return album info for shared album', async () => {
@@ -259,7 +259,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual(user2Albums[0]);
+      expect(body).toEqual({ ...user2Albums[0], assets: [expect.objectContaining(user2Albums[0].assets[0])] });
     });
 
     it('should return album info with assets when withoutAssets is undefined', async () => {
@@ -268,7 +268,7 @@ describe(`${AlbumController.name} (e2e)`, () => {
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);
-      expect(body).toEqual(user1Albums[0]);
+      expect(body).toEqual({ ...user1Albums[0], assets: [expect.objectContaining(user1Albums[0].assets[0])] });
     });
 
     it('should return album info without assets when withoutAssets is true', async () => {
