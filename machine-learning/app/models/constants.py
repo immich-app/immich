@@ -1,6 +1,5 @@
 from app.config import clean_name
 
-
 _OPENCLIP_MODELS = {
     "RN50__openai",
     "RN50__yfcc15m",
