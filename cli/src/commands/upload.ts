@@ -107,6 +107,7 @@ export class Upload extends BaseCommand {
               const formData = asset.getUploadFormData();
               const res = await this.uploadAsset(formData);
               existingAssetId = res.data.id;
+              uploadCounter++;
             }
 
             if ((options.album || options.albumName) && asset.albumName !== undefined) {
@@ -129,7 +130,6 @@ export class Upload extends BaseCommand {
           }
 
           totalSizeUploaded += asset.fileSize;
-          uploadCounter++;
         }
 
         sizeSoFar += asset.fileSize;
