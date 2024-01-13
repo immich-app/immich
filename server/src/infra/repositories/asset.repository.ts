@@ -474,11 +474,12 @@ export class AssetRepository implements IAssetRepository {
       case WithoutProperty.EXIF:
         relations = {
           exifInfo: true,
+          jobStatus: true,
         };
         where = {
           isVisible: true,
-          exifInfo: {
-            assetId: IsNull(),
+          jobStatus: {
+            metadataExtractedAt: IsNull(),
           },
         };
         break;
