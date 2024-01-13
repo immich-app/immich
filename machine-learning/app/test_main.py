@@ -95,7 +95,7 @@ class TestBase:
         assert encoder.sess_options.inter_op_num_threads == 0
         assert encoder.sess_options.intra_op_num_threads == 0
 
-    def test_sets_default_sess_options_sets_threads_if_non_cpu_and_set_threads(self, mocker) -> None:
+    def test_sets_default_sess_options_sets_threads_if_non_cpu_and_set_threads(self, mocker: MockerFixture) -> None:
         mock_settings = mocker.patch("app.models.base.settings", autospec=True)
         mock_settings.model_inter_op_threads = 2
         mock_settings.model_intra_op_threads = 4
