@@ -79,7 +79,7 @@ class InferenceModel(ABC):
 
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
-            log.warn(
+            log.warning(
                 f"Attempted to clear cache for model '{self.model_name}', but cache directory does not exist",
             )
             return
@@ -90,7 +90,7 @@ class InferenceModel(ABC):
             log.info(f"Cleared cache directory for model '{self.model_name}'.")
             rmtree(self.cache_dir)
         else:
-            log.warn(
+            log.warning(
                 (
                     f"Encountered file instead of directory at cache path "
                     f"for '{self.model_name}'. Removing file and replacing with a directory."
