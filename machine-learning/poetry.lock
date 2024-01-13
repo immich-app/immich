@@ -2052,21 +2052,21 @@ sympy = "*"
 
 [[package]]
 name = "onnxruntime-openvino"
-version = "1.16.0"
+version = "1.15.0"
 description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
 optional = false
 python-versions = "*"
 files = [
-    {file = "onnxruntime_openvino-1.16.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7537ec4d6f444fbc6c5deaa73192ac7297b5184da183623f61b9f9dbc740eaa7"},
-    {file = "onnxruntime_openvino-1.16.0-cp310-cp310-win_amd64.whl", hash = "sha256:014ba013d9cb07146bfe4dd76da631235eb5caac57845071ac3eb0263686ad1c"},
-    {file = "onnxruntime_openvino-1.16.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d67415d1f0bcfff1aec4d4402a3c5effde94c21173af84bc45dc9d6d4eec717c"},
-    {file = "onnxruntime_openvino-1.16.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9ad290f3618758044a9d05f649f63f1dee01cbb179fa61443fbaaec16a5db903"},
+    {file = "onnxruntime_openvino-1.15.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ac9bfe245312e897f219dfef619c0d98f4797ffb008ad55aa41aedb32b522f72"},
+    {file = "onnxruntime_openvino-1.15.0-cp310-cp310-win_amd64.whl", hash = "sha256:a31cd9c9848dc196803d74ea46152fe0f3dd876bc5769eff7e3776fef4c654de"},
+    {file = "onnxruntime_openvino-1.15.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0c9bc1614f9d267d62023287035d204d9840ac0057d1c7a770a27acdd1642662"},
+    {file = "onnxruntime_openvino-1.15.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d0c5808b7b876e5f6a083228bd43fc1028096cb9b485f466bf980d8f72d8424d"},
 ]
 
 [package.dependencies]
 coloredlogs = "*"
 flatbuffers = "*"
-numpy = ">=1.26.1"
+numpy = ">=1.21.6"
 packaging = "*"
 protobuf = "*"
 sympy = "*"
@@ -3601,4 +3601,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "d3e0e8dedb3295c33c14775acbe91a9347725062bade69f3e195f57fa765e86f"
+content-hash = "c982d5c5fee76ca102d823010a538f287ac98583f330ebee3c0775c5f42f117d"
