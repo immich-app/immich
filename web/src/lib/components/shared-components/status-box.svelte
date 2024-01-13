@@ -21,7 +21,6 @@
   $: usedPercentage = Math.round((usedBytes / availableBytes) * 100);
 
   const onUpdate = () => {
-    usedPercentage = 81;
     usageClasses = getUsageClass();
   };
 
