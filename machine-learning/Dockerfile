@@ -37,6 +37,7 @@ RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} 
 FROM python:3.11-slim-bookworm@sha256:cfd7ed5c11a88ce533d69a1da2fd932d647f9eb6791c5b4ddce081aedf7f7876 as prod-cpu
 
 FROM openvino/ubuntu22_runtime:2023.1.0 as prod-openvino
+USER root
 
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 as prod-cuda
 
