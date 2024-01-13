@@ -89,14 +89,21 @@ class TestBase:
         assert encoder.sess_options.intra_op_num_threads == 2
         assert encoder.sess_options.enable_cpu_mem_arena is False
 
-    def test_default_sets_parallel_sess_options_if_multiple_inter_op_threads(self, mocker: MockerFixture) -> None:
-        mock_settings = mocker.patch("app.models.base.settings")
-        mock_settings.model_inter_op_threads = 2
+    def test_sets_default_sess_options_does_not_set_threads_if_non_cpu_and_default_threads(self) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
 
-        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        assert encoder.sess_options.inter_op_num_threads == 0
+        assert encoder.sess_options.intra_op_num_threads == 0
+
+    def test_sets_default_sess_options_sets_threads_if_non_cpu_and_set_threads(self, mocker) -> None:
+        mock_settings = mocker.patch("app.models.base.settings", autospec=True)
+        mock_settings.model_inter_op_threads = 2
+        mock_settings.model_intra_op_threads = 4
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
 
         assert encoder.sess_options.inter_op_num_threads == 2
-        assert encoder.sess_options.execution_mode == ort.ExecutionMode.ORT_PARALLEL
+        assert encoder.sess_options.intra_op_num_threads == 4
 
     def test_sets_sess_options_kwarg(self) -> None:
         sess_options = ort.SessionOptions()

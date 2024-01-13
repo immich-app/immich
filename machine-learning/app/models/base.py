@@ -168,10 +168,15 @@ class InferenceModel(ABC):
                 case "CPUExecutionProvider" | "CUDAExecutionProvider":
                     option = {"arena_extend_strategy": "kSameAsRequested"}
                 case "OpenVINOExecutionProvider":
-                    device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-                    log.debug(f"Available OpenVINO devices: {device_ids}")
-                    gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
-                    option = {"device_id": gpu_devices[0]} if gpu_devices else {}
+                    try:
+                        device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
+                        log.debug(f"Available OpenVINO devices: {device_ids}")
+                        gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
+                        option = {"device_id": gpu_devices[0]} if gpu_devices else {}
+                    except AttributeError as e:
+                        log.warning("Failed to get OpenVINO device IDs. Using default options.")
+                        log.error(e)
+                        option = {}
                 case _:
                     option = {}
             options.append(option)
@@ -199,7 +204,7 @@ class InferenceModel(ABC):
         # these defaults work well for CPU, but bottleneck GPU
         elif settings.model_inter_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
             sess_options.inter_op_num_threads = 1
-        
+
         if settings.model_intra_op_threads > 0:
             sess_options.intra_op_num_threads = settings.model_intra_op_threads
         elif settings.model_intra_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
