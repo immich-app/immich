@@ -31,5 +31,9 @@ services:
                 - video
 
   openvino:
+    device_cgroup_rules:
+      - "c 189:* rmw"
     devices:
       - /dev/dri:/dev/dri
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb

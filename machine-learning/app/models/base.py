@@ -148,6 +148,7 @@ class InferenceModel(ABC):
     @property
     def providers_default(self) -> list[str]:
         available_providers = set(ort.get_available_providers())
+        log.debug(f"Available ORT providers: {available_providers}")
         return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
     @property
@@ -161,12 +162,20 @@ class InferenceModel(ABC):
 
     @property
     def provider_options_default(self) -> list[dict[str, Any]]:
-        return [
-            {"arena_extend_strategy": "kSameAsRequested"}
-            if provider in {"CPUExecutionProvider", "CUDAExecutionProvider"}
-            else {}
-            for provider in self.providers
-        ]
+        options = []
+        for provider in self.providers:
+            match provider:
+                case "CPUExecutionProvider" | "CUDAExecutionProvider":
+                    option = {"arena_extend_strategy": "kSameAsRequested"}
+                case "OpenVINOExecutionProvider":
+                    device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
+                    log.debug(f"Available OpenVINO devices: {device_ids}")
+                    gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
+                    option = {"device_id": gpu_devices[0]} if gpu_devices else {}
+                case _:
+                    option = {}
+            options.append(option)
+        return options
 
     @property
     def sess_options(self) -> ort.SessionOptions:
@@ -182,11 +191,20 @@ class InferenceModel(ABC):
     @property
     def sess_options_default(self) -> ort.SessionOptions:
         sess_options = PicklableSessionOptions()
+        sess_options.enable_cpu_mem_arena = False
 
         # avoid thread contention between models
-        sess_options.inter_op_num_threads = settings.model_inter_op_threads
-        sess_options.intra_op_num_threads = settings.model_intra_op_threads
-        sess_options.enable_cpu_mem_arena = False
+        if settings.model_inter_op_threads > 0:
+            sess_options.inter_op_num_threads = settings.model_inter_op_threads
+        # these defaults work well for CPU, but bottleneck GPU
+        elif settings.model_inter_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
+            sess_options.inter_op_num_threads = 1
+        
+        if settings.model_intra_op_threads > 0:
+            sess_options.intra_op_num_threads = settings.model_intra_op_threads
+        elif settings.model_intra_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
+            sess_options.intra_op_num_threads = 2
+
         if sess_options.inter_op_num_threads > 1:
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 

@@ -51,7 +51,7 @@ onnxruntime-gpu = "^1.15.0"
 optional = true
 
 [tool.poetry.group.openvino.dependencies]
-onnxruntime-openvino = "^1.15.0"
+onnxruntime-openvino = ">=1.15.0,<1.16.0"
 
 [tool.poetry.group.armnn]
 optional = true

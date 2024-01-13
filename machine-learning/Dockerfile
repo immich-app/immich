@@ -2,7 +2,9 @@ ARG DEVICE=cpu
 
 FROM python:3.11-bookworm@sha256:ba7a7ac30c38e119c4304f98ef0e188f90f4f67a958bb6899da9defb99bfb471 as builder-cpu
 
-FROM python:3.10-bookworm@sha256:77335ff30c2b89e66ae3b70589ca20a3f3cf1c815710438d14d61661b37d1a4a as builder-openvino
+FROM openvino/ubuntu22_runtime:2023.1.0 as builder-openvino
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends python3-dev
 
 FROM builder-cpu as builder-cuda
 
@@ -20,21 +22,21 @@ FROM builder-${DEVICE} as builder
 ARG DEVICE
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
-  PIP_NO_CACHE_DIR=true
+  PIP_NO_CACHE_DIR=true \
+  VIRTUAL_ENV="/opt/venv" \
+  PATH="/opt/venv/bin:${PATH}"
 
 RUN pip install --upgrade pip && pip install poetry
 RUN poetry config installer.max-workers 10 && \
     poetry config virtualenvs.create false
-RUN python -m venv /opt/venv
-
-ENV VIRTUAL_ENV="/opt/venv" PATH="/opt/venv/bin:${PATH}"
+RUN python3 -m venv /opt/venv
 
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
 FROM python:3.11-slim-bookworm@sha256:cfd7ed5c11a88ce533d69a1da2fd932d647f9eb6791c5b4ddce081aedf7f7876 as prod-cpu
 
-FROM python:3.10-slim-bookworm@sha256:a2c9b8dd3da225debeb156176c111752499d152b7505146c1373364766d762a4 as prod-openvino
+FROM openvino/ubuntu22_runtime:2023.1.0 as prod-openvino
 
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 as prod-cuda
 
