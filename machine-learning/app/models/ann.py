@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, NamedTuple
 
-from numpy import ascontiguousarray
+import numpy as np
+from numpy.typing import NDArray
 
 from ann.ann import Ann
-from app.schemas import ndarray_f32, ndarray_i32
 
 from ..config import log, settings
 
@@ -56,10 +56,10 @@ class AnnSession:
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, ndarray_f32] | dict[str, ndarray_i32],
+        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
         run_options: Any = None,
-    ) -> list[ndarray_f32]:
-        inputs: list[ndarray_f32] = [ascontiguousarray(v) for v in input_feed.values()]
+    ) -> list[NDArray[np.float32]]:
+        inputs: list[NDArray[np.float32]] = [np.ascontiguousarray(v) for v in input_feed.values()]
         return self.ann.execute(self.model, inputs)
 
 

@@ -2,11 +2,11 @@ import asyncio
 import gc
 import os
 import signal
-import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Iterator
+from contextlib import asynccontextmanager
+from typing import Any, AsyncGenerator, Iterator
 from zipfile import BadZipFile
 
 import orjson
@@ -26,7 +26,6 @@ from .schemas import (
 )
 
 MultiPartParser.max_file_size = 2**26  # spools to disk if payload is 64 MiB or larger
-app = FastAPI()
 
 model_cache = ModelCache(ttl=settings.model_ttl, revalidate=settings.model_ttl > 0)
 thread_pool: ThreadPoolExecutor | None = None
@@ -35,8 +34,8 @@ active_requests = 0
 last_called: float | None = None
 
 
-@app.on_event("startup")
-def startup() -> None:
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     global thread_pool
     log.info(
         (
@@ -50,9 +49,8 @@ def startup() -> None:
         asyncio.ensure_future(idle_shutdown_task())
     log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
 
+    yield
 
-@app.on_event("shutdown")
-def shutdown() -> None:
     log.handlers.clear()
     for model in model_cache.cache._cache.values():
         del model
@@ -69,6 +67,9 @@ def update_state() -> Iterator[None]:
         yield
     finally:
         active_requests -= 1
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/", response_model=MessageResponse)
