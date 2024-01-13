@@ -43,20 +43,21 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             f"{f'after {settings.model_ttl}s of inactivity' if settings.model_ttl > 0 else 'disabled'}."
         )
     )
-    # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
-    thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
-    if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
-        asyncio.ensure_future(idle_shutdown_task())
-    log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
-
-    yield
-
-    log.handlers.clear()
-    for model in model_cache.cache._cache.values():
-        del model
-    if thread_pool is not None:
-        thread_pool.shutdown()
-    gc.collect()
+    
+    try:
+        # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
+        thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
+        if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
+            asyncio.ensure_future(idle_shutdown_task())
+        log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
+        yield
+    finally:
+        log.handlers.clear()
+        for model in model_cache.cache._cache.values():
+            del model
+        if thread_pool is not None:
+            thread_pool.shutdown()
+        gc.collect()
 
 
 def update_state() -> Iterator[None]:
