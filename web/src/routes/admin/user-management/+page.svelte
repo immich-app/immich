@@ -14,6 +14,7 @@
   import type { PageData } from './$types';
   import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { user } from '$lib/stores/user.store';
+  import { asByteUnitString } from '$lib/utils/byte-units';
 
   export let data: PageData;
 
@@ -195,7 +196,7 @@
                 <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
                     {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
-                      <Icon path={mdiCheck} size="16" />
+                      {asByteUnitString(immichUser.quotaSizeInBytes, $locale)}
                     {:else}
                       <Icon path={mdiClose} size="16" />
                     {/if}
