@@ -61,6 +61,7 @@ export class UserService {
 
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
     await this.findOrFail(dto.id, {});
+    await this.userRepository.syncUsage();
     return this.userCore.updateUser(auth.user, dto.id, dto).then(mapUser);
   }
 
