@@ -48,7 +48,6 @@
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
-  export let force = false;
   export let withStacked = false;
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
@@ -361,7 +360,7 @@
   };
 
   const trashOrDelete = (forceDelete: boolean = false) => {
-    if (!(force || !isTrashEnabled) && !forceDelete) {
+    if (isTrashEnabled && !forceDelete) {
       trashAsset();
       return;
     }

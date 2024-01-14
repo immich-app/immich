@@ -31,7 +31,6 @@
   export let album: AlbumResponseDto | null = null;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
-  export let forceDelete = false;
 
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
@@ -424,7 +423,6 @@
       {withStacked}
       {assetStore}
       asset={$viewingAsset}
-      force={forceDelete || !isTrashEnabled}
       {isShared}
       {album}
       on:previous={() => handlePrevious()}
