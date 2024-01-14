@@ -140,15 +140,15 @@ class ControlBottomAppBar extends ConsumerWidget {
               label: "control_bottom_app_bar_delete_from_local".tr(),
               onPressed: enabled
                   ? () {
+                      if (!selectionAssetState.hasLocal) {
+                        return onDeleteLocal?.call(true);
+                      }
+
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return DeleteLocalOnlyDialog(
                             onDeleteLocal: onDeleteLocal!,
-
-                            /// selectionAssetState.hasLocal has to be used instead of hasLocal since hasLocal is set
-                            /// to true even if merged assets are part of the selection
-                            showWarning: selectionAssetState.hasLocal,
                           );
                         },
                       );
@@ -156,7 +156,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                   : null,
             ),
           ),
-        if ((hasLocal || hasRemote) && onDelete != null)
+        if (hasLocal && hasRemote && onDelete != null)
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(
