@@ -29,15 +29,12 @@ class ImmichSearchBar extends HookConsumerWidget
 
       searchFocusNode.requestFocus();
     }
-    onSearchFocusRequest() {
-      focusSearch();
-    }
 
     useEffect(
       () {
-        searchFocusNotifier.addListener(onSearchFocusRequest);
+        searchFocusNotifier.addListener(focusSearch);
         return () {
-          searchFocusNotifier.removeListener(onSearchFocusRequest);
+          searchFocusNotifier.removeListener(focusSearch);
         };
       },
       [],
