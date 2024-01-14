@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
-import 'package:immich_mobile/modules/search/providers/search_focus_notifier.provider.dart';
 
 class ImmichSearchBar extends HookConsumerWidget
     implements PreferredSizeWidget {
@@ -36,9 +35,9 @@ class ImmichSearchBar extends HookConsumerWidget
 
     useEffect(
       () {
-        searchFocusNotifierProvider.addListener(onSearchFocusRequest);
+        searchFocusNotifier.addListener(onSearchFocusRequest);
         return () {
-          searchFocusNotifierProvider.removeListener(onSearchFocusRequest);
+          searchFocusNotifier.removeListener(onSearchFocusRequest);
         };
       },
       [],
@@ -92,4 +91,14 @@ class ImmichSearchBar extends HookConsumerWidget
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+// Used to focus search from outside this widget.
+// For example when double pressing the search nav icon.
+final searchFocusNotifier = SearchFocusNotifier();
+
+class SearchFocusNotifier with ChangeNotifier {
+  void requestFocus() {
+    notifyListeners();
+  }
 }
