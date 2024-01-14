@@ -115,7 +115,8 @@ export class UserRepository implements IUserRepository {
     await this.userRepository.increment({ id }, 'quotaUsageInBytes', delta);
   }
 
-  async syncUsage() {
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async syncUsage(id?: string) {
     const subQuery = this.assetRepository
       .createQueryBuilder('assets')
       .select('COALESCE(SUM(exif."fileSizeInByte"), 0)')
@@ -123,12 +124,17 @@ export class UserRepository implements IUserRepository {
       .where('assets.ownerId = users.id')
       .withDeleted();
 
-    await this.userRepository
+    const query = this.userRepository
       .createQueryBuilder('users')
       .leftJoin('users.assets', 'assets')
       .update()
-      .set({ quotaUsageInBytes: () => `(${subQuery.getQuery()})` })
-      .execute();
+      .set({ quotaUsageInBytes: () => `(${subQuery.getQuery()})` });
+
+    if (id) {
+      query.where('users.id = :id', { id });
+    }
+
+    await query.execute();
   }
 
   private async save(user: Partial<UserEntity>) {
