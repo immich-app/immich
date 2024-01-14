@@ -198,7 +198,7 @@
 
   <section class="mx-4 mt-10" style:display={!isOwner && description === '' ? 'none' : 'block'}>
     {#if !isOwner || api.isSharedLink}
-      <span>{description}</span>
+      <span class="break-words">{description}</span>
     {:else}
       <textarea
         bind:this={textarea}

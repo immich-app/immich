@@ -1,12 +1,9 @@
 from enum import StrEnum
-from typing import Any, Protocol, TypeAlias, TypedDict, TypeGuard
+from typing import Any, Protocol, TypedDict, TypeGuard
 
 import numpy as np
+import numpy.typing as npt
 from pydantic import BaseModel
-
-ndarray_f32: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
-ndarray_i64: TypeAlias = np.ndarray[int, np.dtype[np.int64]]
-ndarray_i32: TypeAlias = np.ndarray[int, np.dtype[np.int32]]
 
 
 class TextResponse(BaseModel):
@@ -35,7 +32,7 @@ class HasProfiling(Protocol):
 
 class Face(TypedDict):
     boundingBox: BoundingBox
-    embedding: ndarray_f32
+    embedding: npt.NDArray[np.float32]
     imageWidth: int
     imageHeight: int
     score: float
@@ -43,3 +40,7 @@ class Face(TypedDict):
 
 def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
     return hasattr(obj, "profiling") and isinstance(obj.profiling, dict)
+
+
+def is_ndarray(obj: Any, dtype: "type[np._DTypeScalar_co]") -> "TypeGuard[npt.NDArray[np._DTypeScalar_co]]":
+    return isinstance(obj, np.ndarray) and obj.dtype == dtype

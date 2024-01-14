@@ -32,6 +32,8 @@ const adminSignupResponse = {
   deletedAt: null,
   oauthId: '',
   memoriesEnabled: true,
+  quotaUsageInBytes: 0,
+  quotaSizeInBytes: null,
 };
 
 describe(`${AuthController.name} (e2e)`, () => {

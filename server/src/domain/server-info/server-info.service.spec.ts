@@ -221,6 +221,7 @@ describe(ServerInfoService.name, () => {
           photos: 10,
           videos: 11,
           usage: 12345,
+          quotaSizeInBytes: 0,
         },
         {
           userId: 'user2',
@@ -228,6 +229,7 @@ describe(ServerInfoService.name, () => {
           photos: 10,
           videos: 20,
           usage: 123456,
+          quotaSizeInBytes: 0,
         },
         {
           userId: 'user3',
@@ -235,6 +237,7 @@ describe(ServerInfoService.name, () => {
           photos: 100,
           videos: 0,
           usage: 987654,
+          quotaSizeInBytes: 0,
         },
       ]);
 
@@ -245,6 +248,7 @@ describe(ServerInfoService.name, () => {
         usageByUser: [
           {
             photos: 10,
+            quotaSizeInBytes: 0,
             usage: 12345,
             userName: '1 User',
             userId: 'user1',
@@ -252,6 +256,7 @@ describe(ServerInfoService.name, () => {
           },
           {
             photos: 10,
+            quotaSizeInBytes: 0,
             usage: 123456,
             userName: '2 User',
             userId: 'user2',
@@ -259,6 +264,7 @@ describe(ServerInfoService.name, () => {
           },
           {
             photos: 100,
+            quotaSizeInBytes: 0,
             usage: 987654,
             userName: '3 User',
             userId: 'user3',

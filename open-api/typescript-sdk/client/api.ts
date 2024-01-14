@@ -1474,6 +1474,12 @@ export interface CreateUserDto {
     'password': string;
     /**
      * 
+     * @type {number}
+     * @memberof CreateUserDto
+     */
+    'quotaSizeInBytes'?: number | null;
+    /**
+     * 
      * @type {string}
      * @memberof CreateUserDto
      */
@@ -2485,6 +2491,18 @@ export interface PartnerResponseDto {
      * @memberof PartnerResponseDto
      */
     'profileImagePath': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof PartnerResponseDto
+     */
+    'quotaSizeInBytes': number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PartnerResponseDto
+     */
+    'quotaUsageInBytes': number;
     /**
      * 
      * @type {boolean}
@@ -4583,6 +4601,12 @@ export interface UpdateUserDto {
     'password'?: string;
     /**
      * 
+     * @type {number}
+     * @memberof UpdateUserDto
+     */
+    'quotaSizeInBytes'?: number | null;
+    /**
+     * 
      * @type {boolean}
      * @memberof UpdateUserDto
      */
@@ -4608,6 +4632,12 @@ export interface UsageByUserDto {
      * @memberof UsageByUserDto
      */
     'photos': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof UsageByUserDto
+     */
+    'quotaSizeInBytes': number | null;
     /**
      * 
      * @type {number}
@@ -4766,6 +4796,18 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'profileImagePath': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof UserResponseDto
+     */
+    'quotaSizeInBytes': number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof UserResponseDto
+     */
+    'quotaUsageInBytes': number;
     /**
      * 
      * @type {boolean}

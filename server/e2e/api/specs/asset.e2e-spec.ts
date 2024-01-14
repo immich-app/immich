@@ -43,6 +43,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   let assetRepository: IAssetRepository;
   let user1: LoginResponseDto;
   let user2: LoginResponseDto;
+  let userWithQuota: LoginResponseDto;
   let libraries: LibraryResponseDto[];
   let asset1: AssetResponseDto;
   let asset2: AssetResponseDto;
@@ -75,11 +76,13 @@ describe(`${AssetController.name} (e2e)`, () => {
     await Promise.all([
       api.userApi.create(server, admin.accessToken, userDto.user1),
       api.userApi.create(server, admin.accessToken, userDto.user2),
+      api.userApi.create(server, admin.accessToken, userDto.userWithQuota),
     ]);
 
-    [user1, user2] = await Promise.all([
+    [user1, user2, userWithQuota] = await Promise.all([
       api.authApi.login(server, userDto.user1),
       api.authApi.login(server, userDto.user2),
+      api.authApi.login(server, userDto.userWithQuota),
     ]);
 
     const [user1Libraries, user2Libraries] = await Promise.all([
@@ -633,6 +636,46 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(errorStub.badRequest('Not found or no asset.upload access'));
+    });
+
+    it('should update the used quota', async () => {
+      const content = randomBytes(32);
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${userWithQuota.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', 'true')
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', content, 'example.jpg');
+
+      expect(status).toBe(201);
+      expect(body).toEqual({ id: expect.any(String), duplicate: false });
+
+      const { body: user } = await request(server)
+        .get('/user/me')
+        .set('Authorization', `Bearer ${userWithQuota.accessToken}`);
+
+      expect(user).toEqual(expect.objectContaining({ quotaUsageInBytes: 32 }));
+    });
+
+    it('should not upload an asset if it would exceed the quota', async () => {
+      const content = randomBytes(420);
+      const { body, status } = await request(server)
+        .post('/asset/upload')
+        .set('Authorization', `Bearer ${userWithQuota.accessToken}`)
+        .field('deviceAssetId', 'example-image')
+        .field('deviceId', 'TEST')
+        .field('fileCreatedAt', new Date().toISOString())
+        .field('fileModifiedAt', new Date().toISOString())
+        .field('isFavorite', 'true')
+        .field('duration', '0:00:00.000000')
+        .attach('assetData', content, 'example.jpg');
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorStub.badRequest('Quota has been exceeded!'));
     });
   });
 

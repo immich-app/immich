@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ctypes import CDLL, Array, c_bool, c_char_p, c_int, c_ulong, c_void_p
 from os.path import exists
-from typing import Any, Generic, Protocol, Type, TypeVar
+from typing import Any, Protocol, TypeVar
 
 import numpy as np
 from numpy.typing import NDArray

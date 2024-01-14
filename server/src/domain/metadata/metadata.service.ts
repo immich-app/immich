@@ -252,6 +252,11 @@ export class MetadataService {
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
 
+    await this.assetRepository.upsertJobStatus({
+      assetId: asset.id,
+      metadataExtractedAt: new Date(),
+    });
+
     return true;
   }
 

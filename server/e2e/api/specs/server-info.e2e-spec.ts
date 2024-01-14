@@ -129,6 +129,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
         usage: 0,
         usageByUser: [
           {
+            quotaSizeInBytes: null,
             photos: 0,
             usage: 0,
             userName: 'Immich Admin',
@@ -136,6 +137,7 @@ describe(`${ServerInfoController.name} (e2e)`, () => {
             videos: 0,
           },
           {
+            quotaSizeInBytes: null,
             photos: 0,
             usage: 0,
             userName: 'User 1',

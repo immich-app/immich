@@ -39,9 +39,10 @@ export type JobItem =
   | { name: JobName.GENERATE_WEBP_THUMBNAIL; data: IEntityJob }
   | { name: JobName.GENERATE_THUMBHASH_THUMBNAIL; data: IEntityJob }
 
-  // User Deletion
+  // User
   | { name: JobName.USER_DELETE_CHECK; data?: IBaseJob }
   | { name: JobName.USER_DELETION; data: IEntityJob }
+  | { name: JobName.USER_SYNC_USAGE; data?: IBaseJob }
 
   // Storage Template
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION; data?: IBaseJob }

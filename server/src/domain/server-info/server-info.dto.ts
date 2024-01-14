@@ -45,6 +45,8 @@ export class UsageByUserDto {
   videos!: number;
   @ApiProperty({ type: 'integer', format: 'int64' })
   usage!: number;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  quotaSizeInBytes!: number | null;
 }
 
 export class ServerStatsResponseDto {
