@@ -94,8 +94,7 @@
             const ids = Array.from($selectedAssets)
               .filter((a) => !a.isExternal)
               .map((a) => a.id);
-
-            deleteAssets(shiftKey, (assetId) => assetStore.removeAsset(assetId), ids);
+            deleteAssets(!(isTrashEnabled && !shiftKey), (assetId) => assetStore.removeAsset(assetId), ids);
             assetInteractionStore.clearMultiselect();
           }
           return;

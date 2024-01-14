@@ -365,6 +365,10 @@
       trashAsset();
       return;
     }
+    if(forceDelete){
+      deleteAsset();
+      return;
+    }
     isShowDeleteConfirmation = true;
   };
 
