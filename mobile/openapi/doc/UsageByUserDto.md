@@ -9,6 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **photos** | **int** |  | 
+**quotaSizeInBytes** | **int** |  | 
 **usage** | **int** |  | 
 **userId** | **String** |  | 
 **userName** | **String** |  | 

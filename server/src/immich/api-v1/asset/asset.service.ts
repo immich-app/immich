@@ -2,11 +2,13 @@ import {
   AccessCore,
   AssetResponseDto,
   AuthDto,
+  CacheControl,
   getLivePhotoMotionFilename,
   IAccessRepository,
   IJobRepository,
   ILibraryRepository,
   ImmichFileResponse,
+  IUserRepository,
   JobName,
   mapAsset,
   mimeTypes,
@@ -48,6 +50,7 @@ export class AssetService {
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.access = AccessCore.create(accessRepository);
@@ -72,6 +75,7 @@ export class AssetService {
     try {
       const libraryId = await this.getLibraryId(auth, dto.libraryId);
       await this.access.requirePermission(auth, Permission.ASSET_UPLOAD, libraryId);
+      AssetCore.requireQuota(auth, file.size);
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false, libraryId };
         livePhotoAsset = await this.assetCore.create(auth, livePhotoDto, livePhotoFile);
@@ -84,6 +88,8 @@ export class AssetService {
         livePhotoAsset?.id,
         sidecarFile?.originalPath,
       );
+
+      await this.userRepository.updateUsage(auth.user.id, (livePhotoFile?.size || 0) + file.size);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
@@ -147,7 +153,11 @@ export class AssetService {
 
     const filepath = this.getThumbnailPath(asset, dto.format);
 
-    return new ImmichFileResponse({ path: filepath, contentType: mimeTypes.lookup(filepath), cacheControl: true });
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
   public async serveFile(auth: AuthDto, assetId: string, dto: ServeFileDto): Promise<ImmichFileResponse> {
@@ -166,7 +176,11 @@ export class AssetService {
         ? this.getServePath(asset, dto, allowOriginalFile)
         : asset.encodedVideoPath || asset.originalPath;
 
-    return new ImmichFileResponse({ path: filepath, contentType: mimeTypes.lookup(filepath), cacheControl: true });
+    return new ImmichFileResponse({
+      path: filepath,
+      contentType: mimeTypes.lookup(filepath),
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
   }
 
   async getAssetSearchTerm(auth: AuthDto): Promise<string[]> {

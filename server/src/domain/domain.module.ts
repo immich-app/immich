@@ -1,11 +1,12 @@
 import { ImmichLogger } from '@app/infra/logger';
-import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
+import { Global, Module, Provider } from '@nestjs/common';
 import { ActivityService } from './activity';
 import { AlbumService } from './album';
 import { APIKeyService } from './api-key';
 import { AssetService } from './asset';
 import { AuditService } from './audit';
 import { AuthService } from './auth';
+import { DatabaseService } from './database';
 import { JobService } from './job';
 import { LibraryService } from './library';
 import { MediaService } from './media';
@@ -18,7 +19,7 @@ import { SharedLinkService } from './shared-link';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
-import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
+import { SystemConfigService } from './system-config';
 import { TagService } from './tag';
 import { UserService } from './user';
 
@@ -29,10 +30,12 @@ const providers: Provider[] = [
   AssetService,
   AuditService,
   AuthService,
+  DatabaseService,
+  ImmichLogger,
   JobService,
+  LibraryService,
   MediaService,
   MetadataService,
-  LibraryService,
   PersonService,
   PartnerService,
   SearchService,
@@ -44,25 +47,12 @@ const providers: Provider[] = [
   SystemConfigService,
   TagService,
   UserService,
-  ImmichLogger,
-  {
-    provide: INITIAL_SYSTEM_CONFIG,
-    inject: [SystemConfigService],
-    useFactory: async (configService: SystemConfigService) => {
-      return configService.getConfig();
-    },
-  },
 ];
 
 @Global()
-@Module({})
-export class DomainModule {
-  static register(options: Pick<ModuleMetadata, 'imports'>): DynamicModule {
-    return {
-      module: DomainModule,
-      imports: options.imports,
-      providers: [...providers],
-      exports: [...providers],
-    };
-  }
-}
+@Module({
+  imports: [],
+  providers: [...providers],
+  exports: [...providers],
+})
+export class DomainModule {}

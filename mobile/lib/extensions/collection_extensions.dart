@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 
 extension ListExtension<E> on List<E> {
   List<E> uniqueConsecutive({
@@ -37,5 +39,60 @@ extension IntListExtension on Iterable<int> {
     final list = Int64List(length);
     list.setAll(0, this);
     return list;
+  }
+}
+
+extension AssetListExtension on Iterable<Asset> {
+  /// Returns the assets that are already available in the Immich server
+  Iterable<Asset> remoteOnly({
+    void Function()? errorCallback,
+  }) {
+    final bool onlyRemote = every((e) => e.isRemote);
+    if (!onlyRemote) {
+      if (errorCallback != null) errorCallback();
+      return where((a) => a.isRemote);
+    }
+    return this;
+  }
+
+  /// Returns the assets that are owned by the user passed to the [owner] param
+  /// If [owner] is null, an empty list is returned
+  Iterable<Asset> ownedOnly(
+    User? owner, {
+    void Function()? errorCallback,
+  }) {
+    if (owner == null) return [];
+    final userId = owner.isarId;
+    final bool onlyOwned = every((e) => e.ownerId == userId);
+    if (!onlyOwned) {
+      if (errorCallback != null) errorCallback();
+      return where((a) => a.ownerId == userId);
+    }
+    return this;
+  }
+
+  /// Returns the assets that are present on a file system which has write permission
+  /// This filters out assets on readOnly external library to which we cannot perform any write operation
+  Iterable<Asset> writableOnly({
+    void Function()? errorCallback,
+  }) {
+    final bool onlyWritable = every((e) => !e.isReadOnly);
+    if (!onlyWritable) {
+      if (errorCallback != null) errorCallback();
+      return where((a) => !a.isReadOnly);
+    }
+    return this;
+  }
+
+  /// Filters out offline assets and returns those that are still accessible by the Immich server
+  Iterable<Asset> nonOfflineOnly({
+    void Function()? errorCallback,
+  }) {
+    final bool onlyLive = every((e) => !e.isOffline);
+    if (!onlyLive) {
+      if (errorCallback != null) errorCallback();
+      return where((a) => !a.isOffline);
+    }
+    return this;
   }
 }

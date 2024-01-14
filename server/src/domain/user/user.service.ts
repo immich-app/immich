@@ -3,7 +3,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { AuthDto } from '../auth';
-import { ImmichFileResponse } from '../domain.util';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IEntityJob, JobName } from '../job';
 import {
   IAlbumRepository,
@@ -109,7 +109,7 @@ export class UserService {
     return new ImmichFileResponse({
       path: user.profileImagePath,
       contentType: 'image/jpeg',
-      cacheControl: false,
+      cacheControl: CacheControl.NONE,
     });
   }
 
@@ -127,14 +127,18 @@ export class UserService {
     return { admin, password, provided: !!providedPassword };
   }
 
+  async handleUserSyncUsage() {
+    await this.userRepository.syncUsage();
+    return true;
+  }
+
   async handleUserDeleteCheck() {
     const users = await this.userRepository.getDeletedUsers();
-    for (const user of users) {
-      if (this.isReadyForDeletion(user)) {
-        await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id } });
-      }
-    }
-
+    await this.jobRepository.queueAll(
+      users.flatMap((user) =>
+        this.isReadyForDeletion(user) ? [{ name: JobName.USER_DELETION, data: { id: user.id } }] : [],
+      ),
+    );
     return true;
   }
 

@@ -82,15 +82,19 @@ class MapSettingsDialog extends HookConsumerWidget {
           ),
           DropdownMenuEntry(
             value: 1,
-            label: "map_settings_date_range_option_days".plural(1),
+            label: "map_settings_date_range_option_day".tr(),
           ),
           DropdownMenuEntry(
             value: 7,
-            label: "map_settings_date_range_option_days".plural(7),
+            label: "map_settings_date_range_option_days".tr(
+              args: ["7"],
+            ),
           ),
           DropdownMenuEntry(
             value: 30,
-            label: "map_settings_date_range_option_days".plural(30),
+            label: "map_settings_date_range_option_days".tr(
+              args: ["30"],
+            ),
           ),
           DropdownMenuEntry(
             value: now
@@ -105,7 +109,7 @@ class MapSettingsDialog extends HookConsumerWidget {
                   ),
                 )
                 .inDays,
-            label: "map_settings_date_range_option_years".plural(1),
+            label: "map_settings_date_range_option_year".tr(),
           ),
           DropdownMenuEntry(
             value: now
@@ -120,7 +124,7 @@ class MapSettingsDialog extends HookConsumerWidget {
                   ),
                 )
                 .inDays,
-            label: "map_settings_date_range_option_years".plural(3),
+            label: "map_settings_date_range_option_years".tr(args: ["3"]),
           ),
         ],
       );

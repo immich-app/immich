@@ -10,9 +10,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e-tests:
-    name: Server (e2e)
-    runs-on: ubuntu-latest
+  server-e2e-api:
+    name: Server (e2e-api)
+    runs-on: mich
+    defaults:
+      run:
+        working-directory: ./server
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run e2e tests
+        run: npm run e2e:api
+
+  server-e2e-jobs:
+    name: Server (e2e-jobs)
+    runs-on: mich
 
     steps:
       - name: Checkout code
@@ -21,7 +38,7 @@ jobs:
           submodules: "recursive"
 
       - name: Run e2e tests
-        run: docker compose -f ./docker/docker-compose.test.yml up --renew-anon-volumes --abort-on-container-exit --exit-code-from immich-server --remove-orphans --build
+        run: make server-e2e-jobs
 
   doc-tests:
     name: Docs
@@ -90,8 +107,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run npm install
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install (cli)
         run: npm ci
+
+      - name: Run npm install (server)
+        run: npm ci
+        working-directory: ./server
 
       - name: Run linter
         run: npm run lint
@@ -109,6 +134,33 @@ jobs:
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
+  cli-e2e-tests:
+    name: CLI (e2e)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./cli
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
+
+      - name: Run npm install (cli)
+        run: npm ci
+
+      - name: Run npm install (server)
+        run: npm ci
+        working-directory: ./server
+
+      - name: Run e2e tests
+        run: npm run test:e2e
+
   web-unit-tests:
     name: Web
     runs-on: ubuntu-latest
@@ -119,6 +171,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Run setup typescript-sdk
+        run: npm ci && npm run build
+        working-directory: ./open-api/typescript-sdk
 
       - name: Run npm install
         run: npm ci
@@ -139,9 +195,9 @@ jobs:
         run: npm run check:typescript
         if: ${{ !cancelled() }}
 
-      # - name: Run unit tests & coverage
-      #   run: npm run test:cov
-      #   if: ${{ !cancelled() }}
+      - name: Run unit tests & coverage
+        run: npm run test:cov
+        if: ${{ !cancelled() }}
 
   mobile-unit-tests:
     name: Mobile
@@ -176,13 +232,13 @@ jobs:
           poetry install --with dev
       - name: Lint with ruff
         run: |
-          poetry run ruff check --format=github app export
+          poetry run ruff check --output-format=github app export
       - name: Check black formatting
         run: |
           poetry run black --check app export
       - name: Run mypy type checking
         run: |
-          poetry run mypy --install-types --non-interactive --strict app/ export/
+          poetry run mypy --install-types --non-interactive --strict app/
       - name: Run tests and coverage
         run: |
           poetry run pytest --cov app
@@ -193,14 +249,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run API generation
-        run: npm --prefix server run api:generate
+        run: make open-api
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files
         with:
           files: |
             mobile/openapi
-            web/src/api/open-api
+            open-api/typescript-sdk
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
@@ -241,6 +297,9 @@ jobs:
 
       - name: Run existing migrations
         run: npm run typeorm:migrations:run
+
+      - name: Test npm run schema:reset command works
+        run: npm run typeorm:schema:reset
 
       - name: Generate new migrations
         continue-on-error: true

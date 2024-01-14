@@ -36,11 +36,6 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto objectTagging
-    test('to test the property `objectTagging`', () async {
-      // TODO
-    });
-
     // JobSettingsDto recognizeFaces
     test('to test the property `recognizeFaces`', () async {
       // TODO
@@ -58,11 +53,6 @@ void main() {
 
     // JobSettingsDto smartSearch
     test('to test the property `smartSearch`', () async {
-      // TODO
-    });
-
-    // JobSettingsDto storageTemplateMigration
-    test('to test the property `storageTemplateMigration`', () async {
       // TODO
     });
 

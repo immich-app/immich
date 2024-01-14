@@ -56,7 +56,7 @@ const config = {
           editUrl: 'https://github.com/immich-app/immich/tree/main/docs/',
         },
         api: {
-          path: '../server/immich-openapi-specs.json',
+          path: '../open-api/immich-openapi-specs.json',
           routeBasePath: '/docs/api',
         },
         // blog: {

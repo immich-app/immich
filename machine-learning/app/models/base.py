@@ -10,8 +10,11 @@ import onnxruntime as ort
 from huggingface_hub import snapshot_download
 from typing_extensions import Buffer
 
+import ann.ann
+
 from ..config import get_cache_dir, get_hf_model_name, log, settings
 from ..schemas import ModelType
+from .ann import AnnSession
 
 
 class InferenceModel(ABC):
@@ -35,7 +38,7 @@ class InferenceModel(ABC):
         )
         log.debug(
             (
-                f"Setting '{self.model_name}' execution providers to {self.providers}"
+                f"Setting '{self.model_name}' execution providers to {self.providers} "
                 "in descending order of preference"
             ),
         )
@@ -55,7 +58,7 @@ class InferenceModel(ABC):
     def download(self) -> None:
         if not self.cached:
             log.info(
-                (f"Downloading {self.model_type.replace('-', ' ')} model '{self.model_name}'." "This may take a while.")
+                f"Downloading {self.model_type.replace('-', ' ')} model '{self.model_name}'. This may take a while."
             )
             self._download()
 
@@ -63,7 +66,7 @@ class InferenceModel(ABC):
         if self.loaded:
             return
         self.download()
-        log.info(f"Loading {self.model_type.replace('-', ' ')} model '{self.model_name}'")
+        log.info(f"Loading {self.model_type.replace('-', ' ')} model '{self.model_name}' to memory")
         self._load()
         self.loaded = True
 
@@ -119,11 +122,11 @@ class InferenceModel(ABC):
     def clear_cache(self) -> None:
         if not self.cache_dir.exists():
             log.warn(
-                f"Attempted to clear cache for model '{self.model_name}' but cache directory does not exist.",
+                f"Attempted to clear cache for model '{self.model_name}', but cache directory does not exist",
             )
             return
         if not rmtree.avoids_symlink_attacks:
-            raise RuntimeError("Attempted to clear cache, but rmtree is not safe on this platform.")
+            raise RuntimeError("Attempted to clear cache, but rmtree is not safe on this platform")
 
         if self.cache_dir.is_dir():
             log.info(f"Cleared cache directory for model '{self.model_name}'.")
@@ -137,6 +140,21 @@ class InferenceModel(ABC):
             )
             self.cache_dir.unlink()
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+    def _make_session(self, model_path: Path) -> AnnSession | ort.InferenceSession:
+        armnn_path = model_path.with_suffix(".armnn")
+        if settings.ann and ann.ann.is_available and armnn_path.is_file():
+            session = AnnSession(armnn_path)
+        elif model_path.is_file():
+            session = ort.InferenceSession(
+                model_path.as_posix(),
+                sess_options=self.sess_options,
+                providers=self.providers,
+                provider_options=self.provider_options,
+            )
+        else:
+            raise ValueError(f"the file model_path='{model_path}' does not exist")
+        return session
 
 
 # HF deep copies configs, so we need to make session options picklable

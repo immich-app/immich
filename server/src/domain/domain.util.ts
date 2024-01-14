@@ -13,13 +13,20 @@ import {
   ValidationOptions,
 } from 'class-validator';
 import { CronJob } from 'cron';
+import _ from 'lodash';
 import { basename, extname } from 'node:path';
 import sanitize from 'sanitize-filename';
+
+export enum CacheControl {
+  PRIVATE_WITH_CACHE = 'private_with_cache',
+  PRIVATE_WITHOUT_CACHE = 'private_without_cache',
+  NONE = 'none',
+}
 
 export class ImmichFileResponse {
   public readonly path!: string;
   public readonly contentType!: string;
-  public readonly cacheControl!: boolean;
+  public readonly cacheControl!: CacheControl;
 
   constructor(response: ImmichFileResponse) {
     Object.assign(this, response);
@@ -167,6 +174,32 @@ export function Optional({ nullable, ...validationOptions }: OptionalOptions = {
   }
 
   return ValidateIf((obj: any, v: any) => v !== undefined, validationOptions);
+}
+
+/**
+ * Chunks an array or set into smaller arrays of the specified size.
+ *
+ * @param collection The collection to chunk.
+ * @param size The size of each chunk.
+ */
+export function chunks<T>(collection: Array<T> | Set<T>, size: number): T[][] {
+  if (collection instanceof Set) {
+    const result = [];
+    let chunk = [];
+    for (const elem of collection) {
+      chunk.push(elem);
+      if (chunk.length === size) {
+        result.push(chunk);
+        chunk = [];
+      }
+    }
+    if (chunk.length > 0) {
+      result.push(chunk);
+    }
+    return result;
+  } else {
+    return _.chunk(collection, size);
+  }
 }
 
 // NOTE: The following Set utils have been added here, to easily determine where they are used.

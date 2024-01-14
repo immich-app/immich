@@ -1,4 +1,4 @@
-import { FeatureFlags, IServerVersion } from '@app/domain';
+import { FeatureFlags, IVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
@@ -25,7 +25,7 @@ export class ServerInfoResponseDto {
   diskUsagePercentage!: number;
 }
 
-export class ServerVersionResponseDto implements IServerVersion {
+export class ServerVersionResponseDto implements IVersion {
   @ApiProperty({ type: 'integer' })
   major!: number;
   @ApiProperty({ type: 'integer' })
@@ -45,6 +45,8 @@ export class UsageByUserDto {
   videos!: number;
   @ApiProperty({ type: 'integer', format: 'int64' })
   usage!: number;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  quotaSizeInBytes!: number | null;
 }
 
 export class ServerStatsResponseDto {
@@ -86,6 +88,8 @@ export class ServerConfigDto {
   @ApiProperty({ type: 'integer' })
   trashDays!: number;
   isInitialized!: boolean;
+  isOnboarded!: boolean;
+  externalDomain!: string;
 }
 
 export class ServerFeaturesDto implements FeatureFlags {
@@ -100,5 +104,4 @@ export class ServerFeaturesDto implements FeatureFlags {
   passwordLogin!: boolean;
   sidecar!: boolean;
   search!: boolean;
-  tagImage!: boolean;
 }

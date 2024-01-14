@@ -26,7 +26,6 @@ class JobName {
   static const thumbnailGeneration = JobName._(r'thumbnailGeneration');
   static const metadataExtraction = JobName._(r'metadataExtraction');
   static const videoConversion = JobName._(r'videoConversion');
-  static const objectTagging = JobName._(r'objectTagging');
   static const recognizeFaces = JobName._(r'recognizeFaces');
   static const smartSearch = JobName._(r'smartSearch');
   static const backgroundTask = JobName._(r'backgroundTask');
@@ -41,7 +40,6 @@ class JobName {
     thumbnailGeneration,
     metadataExtraction,
     videoConversion,
-    objectTagging,
     recognizeFaces,
     smartSearch,
     backgroundTask,
@@ -91,7 +89,6 @@ class JobNameTypeTransformer {
         case r'thumbnailGeneration': return JobName.thumbnailGeneration;
         case r'metadataExtraction': return JobName.metadataExtraction;
         case r'videoConversion': return JobName.videoConversion;
-        case r'objectTagging': return JobName.objectTagging;
         case r'recognizeFaces': return JobName.recognizeFaces;
         case r'smartSearch': return JobName.smartSearch;
         case r'backgroundTask': return JobName.backgroundTask;

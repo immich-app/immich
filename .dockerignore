@@ -1,5 +1,5 @@
 .vscode/
-cli/
+
 design/
 docker/
 docs/
@@ -8,7 +8,7 @@ machine-learning/
 misc/
 mobile/
 
-server/node_modules
+server/node_modules/
 server/coverage/
 server/.reverse-geocoding-dump/
 server/upload/
@@ -18,3 +18,11 @@ web/node_modules/
 web/coverage/
 web/.svelte-kit
 web/build/
+
+cli/node_modules/
+cli/.reverse-geocoding-dump/
+cli/upload/
+cli/dist/
+
+open-api/typescript-sdk/node_modules/
+open-api/typescript-sdk/build/

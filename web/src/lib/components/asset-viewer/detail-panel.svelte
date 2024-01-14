@@ -52,17 +52,22 @@
     }
   }
 
-  $: isOwner = $user.id === asset.ownerId;
+  $: isOwner = $user?.id === asset.ownerId;
 
-  $: {
+  const handleNewAsset = async (newAsset: AssetResponseDto) => {
+    description = newAsset?.exifInfo?.description || '';
+
     // Get latest description from server
-    if (asset.id && !api.isSharedLink) {
-      api.assetApi.getAssetById({ id: asset.id }).then((res) => {
-        people = res.data?.people || [];
-        textarea.value = res.data?.exifInfo?.description || '';
-      });
+    if (newAsset.id && !api.isSharedLink) {
+      const { data } = await api.assetApi.getAssetById({ id: asset.id });
+      people = data?.people || [];
+      description = data.exifInfo?.description || '';
+      textarea.value = description;
+      autoGrowHeight();
     }
-  }
+  };
+
+  $: handleNewAsset(asset);
 
   $: latlng = (() => {
     const lat = asset.exifInfo?.latitude;
@@ -112,10 +117,9 @@
     showEditFaces = false;
   };
 
-  const autoGrowHeight = (e: Event) => {
-    const target = e.target as HTMLTextAreaElement;
-    target.style.height = 'auto';
-    target.style.height = `${target.scrollHeight}px`;
+  const autoGrowHeight = () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
   const handleFocusIn = () => {
@@ -192,18 +196,21 @@
     </section>
   {/if}
 
-  <section class="mx-4 mt-10" style:display={!isOwner && textarea?.value == '' ? 'none' : 'block'}>
-    <textarea
-      bind:this={textarea}
-      class="max-h-[500px]
+  <section class="mx-4 mt-10" style:display={!isOwner && description === '' ? 'none' : 'block'}>
+    {#if !isOwner || api.isSharedLink}
+      <span class="break-words">{description}</span>
+    {:else}
+      <textarea
+        bind:this={textarea}
+        class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-      placeholder={!isOwner ? '' : 'Add a description'}
-      on:focusin={handleFocusIn}
-      on:focusout={handleFocusOut}
-      on:input={autoGrowHeight}
-      bind:value={description}
-      disabled={!isOwner}
-    />
+        placeholder={!isOwner ? '' : 'Add a description'}
+        on:focusin={handleFocusIn}
+        on:focusout={handleFocusOut}
+        on:input={autoGrowHeight}
+        bind:value={description}
+      />
+    {/if}
   </section>
 
   {#if !api.isSharedLink && people.length > 0}
@@ -264,19 +271,29 @@
                 <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
                 {#if person.birthDate}
                   {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  <p
-                    class="font-light"
-                    title={personBirthDate.toLocaleString(
-                      {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      },
-                      { locale: $locale },
-                    )}
-                  >
-                    Age {Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
-                  </p>
+                  {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                  {@const ageInMonths = Math.floor(
+                    DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  )}
+                  {#if age >= 0}
+                    <p
+                      class="font-light"
+                      title={personBirthDate.toLocaleString(
+                        {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        },
+                        { locale: $locale },
+                      )}
+                    >
+                      {#if ageInMonths <= 11}
+                        Age {ageInMonths} months
+                      {:else}
+                        Age {age}
+                      {/if}
+                    </p>
+                  {/if}
                 {/if}
               </a>
             </div>
@@ -353,7 +370,7 @@
           </button>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -516,7 +533,7 @@
           </div>
         {/if}
       </div>
-    {:else if !asset.exifInfo?.city && !asset.isReadOnly && $user && asset.ownerId === $user.id}
+    {:else if !asset.exifInfo?.city && !asset.isReadOnly && isOwner}
       <div
         class="flex justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
         on:click={() => (isShowChangeLocation = true)}

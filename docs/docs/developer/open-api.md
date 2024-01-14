@@ -13,5 +13,5 @@ npm run api:generate # Run from the `server/` directory
 You can find the generated client SDK in the `web/src/api` for Typescript SDK and `mobile/openapi` for Dart SDK.
 
 :::tip
-This can also be run via `make api` from the project root directory (not in the `server` folder)
+This can also be run via `make open-api` from the project root directory (not in the `server` folder)
 :::

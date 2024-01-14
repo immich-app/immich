@@ -1,6 +1,6 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -32,14 +32,15 @@ import {
   TagController,
   UserController,
 } from './controllers';
-import { ErrorInterceptor, FileServeInterceptor, FileUploadInterceptor } from './interceptors';
+import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
 
 @Module({
   imports: [
     //
-    DomainModule.register({ imports: [InfraModule] }),
+    InfraModule,
+    DomainModule,
     ScheduleModule.forRoot(),
-    TypeOrmModule.forFeature([AssetEntity]),
+    TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
   ],
   controllers: [
     ActivityController,
@@ -66,7 +67,6 @@ import { ErrorInterceptor, FileServeInterceptor, FileUploadInterceptor } from '.
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
-    { provide: APP_INTERCEPTOR, useClass: FileServeInterceptor },
     { provide: APP_GUARD, useClass: AppGuard },
     { provide: IAssetRepository, useClass: AssetRepository },
     AppService,

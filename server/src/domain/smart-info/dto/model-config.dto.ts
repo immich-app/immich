@@ -18,15 +18,6 @@ export class ModelConfig {
   modelType?: ModelType;
 }
 
-export class ClassificationConfig extends ModelConfig {
-  @IsNumber()
-  @Min(0)
-  @Max(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  minScore!: number;
-}
-
 export class CLIPConfig extends ModelConfig {
   @IsEnum(CLIPMode)
   @Optional()

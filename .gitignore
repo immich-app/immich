@@ -1,3 +1,5 @@
+**/node_modules/**
+
 .DS_Store
 .vscode/*
 !.vscode/launch.json
@@ -12,3 +14,5 @@ mobile/gradle.properties
 mobile/openapi/pubspec.lock
 mobile/*.jks
 mobile/libisar.dylib
+
+open-api/typescript-sdk/build

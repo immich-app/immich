@@ -46,7 +46,7 @@
   role="group"
 >
   <a href="{AppRoute.PEOPLE}/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
-    <div class="h-48 w-48 rounded-xl brightness-95 filter">
+    <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
         {preload}

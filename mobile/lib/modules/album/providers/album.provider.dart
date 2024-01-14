@@ -16,7 +16,11 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     final query = db.albums
         .filter()
         .owner((q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId));
-    query.findAll().then((value) => state = value);
+    query.findAll().then((value) {
+      if (mounted) {
+        state = value;
+      }
+    });
     _streamSub = query.watch().listen((data) => state = data);
   }
   final AlbumService _albumService;

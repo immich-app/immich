@@ -1,7 +1,6 @@
 import tempfile
 import warnings
 from dataclasses import dataclass, field
-from math import e
 from pathlib import Path
 
 import open_clip

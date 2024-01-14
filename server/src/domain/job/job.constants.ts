@@ -2,7 +2,6 @@ export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
   VIDEO_CONVERSION = 'videoConversion',
-  OBJECT_TAGGING = 'objectTagging',
   RECOGNIZE_FACES = 'recognizeFaces',
   SMART_SEARCH = 'smartSearch',
   BACKGROUND_TASK = 'backgroundTask',
@@ -38,9 +37,10 @@ export enum JobName {
   METADATA_EXTRACTION = 'metadata-extraction',
   LINK_LIVE_PHOTOS = 'link-live-photos',
 
-  // user deletion
+  // user
   USER_DELETION = 'user-deletion',
   USER_DELETE_CHECK = 'user-delete-check',
+  USER_SYNC_USAGE = 'user-sync-usage',
 
   // asset
   ASSET_DELETION = 'asset-deletion',
@@ -54,10 +54,6 @@ export enum JobName {
   QUEUE_MIGRATION = 'queue-migration',
   MIGRATE_ASSET = 'migrate-asset',
   MIGRATE_PERSON = 'migrate-person',
-
-  // object tagging
-  QUEUE_OBJECT_TAGGING = 'queue-object-tagging',
-  CLASSIFY_IMAGE = 'classify-image',
 
   // facial recognition
   PERSON_CLEANUP = 'person-cleanup',
@@ -100,6 +96,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
+  [JobName.USER_SYNC_USAGE]: QueueName.BACKGROUND_TASK,
 
   // conversion
   [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
@@ -125,10 +122,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_MIGRATION]: QueueName.MIGRATION,
   [JobName.MIGRATE_ASSET]: QueueName.MIGRATION,
   [JobName.MIGRATE_PERSON]: QueueName.MIGRATION,
-
-  // object tagging
-  [JobName.QUEUE_OBJECT_TAGGING]: QueueName.OBJECT_TAGGING,
-  [JobName.CLASSIFY_IMAGE]: QueueName.OBJECT_TAGGING,
 
   // facial recognition
   [JobName.QUEUE_RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,

@@ -26,9 +26,13 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
             serverFeatures: const ServerFeatures(
               map: true,
               trash: true,
+              oauthEnabled: false,
+              passwordLogin: true,
             ),
             serverConfig: const ServerConfig(
               trashDays: 30,
+              oauthButtonText: '',
+              externalDomain: '',
             ),
             serverDiskInfo: const ServerDiskInfo(
               diskAvailable: "0",
@@ -44,10 +48,10 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
   final ServerInfoService _serverInfoService;
 
-  getServerInfo() {
-    getServerVersion();
-    getServerFeatures();
-    getServerConfig();
+  Future<void> getServerInfo() async {
+    await getServerVersion();
+    await getServerFeatures();
+    await getServerConfig();
   }
 
   getServerVersion() async {
@@ -74,7 +78,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["major"]! > serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_major".tr(),
+        versionMismatchErrorMessage:
+            "profile_drawer_server_out_of_date_major".tr(),
       );
       return;
     }
@@ -82,7 +87,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["major"]! < serverVersion.major) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_major".tr(),
+        versionMismatchErrorMessage:
+            "profile_drawer_client_out_of_date_major".tr(),
       );
       return;
     }
@@ -90,7 +96,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["minor"]! > serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_minor".tr(),
+        versionMismatchErrorMessage:
+            "profile_drawer_server_out_of_date_minor".tr(),
       );
       return;
     }
@@ -98,7 +105,8 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     if (appVersion["minor"]! < serverVersion.minor) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_minor".tr(),
+        versionMismatchErrorMessage:
+            "profile_drawer_client_out_of_date_minor".tr(),
       );
       return;
     }

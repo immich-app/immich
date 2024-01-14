@@ -44,10 +44,7 @@ class BackupService {
     final String deviceId = Store.get(StoreKey.deviceId);
 
     try {
-      return await _apiService.assetApi.getUserAssetsByDeviceId(deviceId);
-
-      // TODO! Start using this in 1.92.0
-      // return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
+      return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
@@ -394,8 +391,12 @@ class BackupService {
         continue;
       } finally {
         if (Platform.isIOS) {
-          file?.deleteSync();
-          livePhotoFile?.deleteSync();
+          try {
+            await file?.delete();
+            await livePhotoFile?.delete();
+          } catch (e) {
+            debugPrint("ERROR deleting file: ${e.toString()}");
+          }
         }
       }
     }

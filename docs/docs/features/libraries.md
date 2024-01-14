@@ -34,9 +34,11 @@ If you add assets from an external library to an album and then move the asset t
 
 ### Deleted External Assets
 
+Note: Either a manual or scheduled library scan must have been performed to identify offline assets before this process will work.
+
 In all above scan methods, Immich will check if any files are missing. This can happen if files are deleted, or if they are on a storage location that is currently unavailable, like a network drive that is not mounted, or a USB drive that has been unplugged. In order to prevent accidental deletion of assets, Immich will not immediately delete an asset from the library if the file is missing. Instead, the asset will be internally marked as offline and will still be visible in the main timeline. If the file is moved back to its original location and the library is scanned again, the asset will be restored.
 
-Finally, files can be deleted from Immich via the `Remove Offline Files` job. Any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich. Note that a library scan must be performed first to mark the assets as offline.
+Finally, files can be deleted from Immich via the `Remove Offline Files` job. This job can be found by the three dots menu for the associated external storage that was configured under user account settings > libraries (the same location described at [create external libraries](#create-external-libraries)). When this job is run, any assets marked as offline will then be removed from Immich. Run this job whenever files have been deleted from the file system and you want to remove them from Immich.
 
 ### Import Paths
 
@@ -51,6 +53,7 @@ Sometimes, an external library will not scan correctly. This can happen if the i
 - Are the volumes identical between the `server` and `microservices` container?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
 - Are the permissions set correctly?
+- Are you using forward slashes everywhere? (`/`)
 
 If all else fails, you can always start a shell inside the container and check if the path is accessible. For example, `docker exec -it immich_microservices /bin/bash` will start a bash shell. If your import path, for instance, is `/data/import/photos`, you can check if the files are accessible by running `ls /data/import/photos`. Also check the `immich_server` container in the same way.
 
@@ -102,6 +105,7 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
++     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 
 
   immich-microservices:
@@ -110,6 +114,7 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
++     - "C:/Users/user_name/Desktop/my media:/mnt/media/my-media:ro" # import path in Windows system.
 ```
 
 :::tip
@@ -125,6 +130,14 @@ Only an admin can do this.
 - Navigate to `Administration > Users` page on the web.
 - Click on the user edit button.
 - Set `/mnt/media` to be the external path. This folder will only contain the three folders that we want to import, so nothing else can be accessed.
+  :::note
+  Spaces in the internal path aren't currently supported.
+
+  You must import it as:
+  `..:/mnt/media/my-media:ro`
+  instead of
+  `..:/mnt/media/my media:ro`
+  :::
 
 ### Create External Libraries
 

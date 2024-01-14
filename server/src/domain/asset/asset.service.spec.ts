@@ -13,10 +13,11 @@ import {
   newPartnerRepositoryMock,
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
+  newUserRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
-import { ImmichFileResponse } from '../domain.util';
+import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {
   AssetStats,
@@ -28,6 +29,7 @@ import {
   IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  IUserRepository,
   JobItem,
   TimeBucketSize,
 } from '../repositories';
@@ -63,9 +65,11 @@ const uploadFile = {
     auth: null,
     fieldName: UploadFieldName.ASSET_DATA,
     file: {
+      uuid: 'random-uuid',
       checksum: Buffer.from('checksum', 'utf8'),
       originalPath: 'upload/admin/image.jpeg',
       originalName: 'image.jpeg',
+      size: 1000,
     },
   },
   filename: (fieldName: UploadFieldName, filename: string) => {
@@ -73,10 +77,12 @@ const uploadFile = {
       auth: authStub.admin,
       fieldName,
       file: {
+        uuid: 'random-uuid',
         mimeType: 'image/jpeg',
         checksum: Buffer.from('checksum', 'utf8'),
         originalPath: `upload/admin/${filename}`,
         originalName: filename,
+        size: 1000,
       },
     };
   },
@@ -165,6 +171,7 @@ describe(AssetService.name, () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let userMock: jest.Mocked<IUserRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let partnerMock: jest.Mocked<IPartnerRepository>;
@@ -180,6 +187,7 @@ describe(AssetService.name, () => {
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    userMock = newUserRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     partnerMock = newPartnerRepositoryMock();
 
@@ -190,6 +198,7 @@ describe(AssetService.name, () => {
       jobMock,
       configMock,
       storageMock,
+      userMock,
       communicationMock,
       partnerMock,
     );
@@ -280,9 +289,9 @@ describe(AssetService.name, () => {
 
     it('should return upload for everything else', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id',
+        'upload/upload/admin_id/ra/nd',
       );
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id');
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
     });
   });
 
@@ -482,7 +491,7 @@ describe(AssetService.name, () => {
         new ImmichFileResponse({
           path: '/original/path.jpg',
           contentType: 'image/jpeg',
-          cacheControl: false,
+          cacheControl: CacheControl.NONE,
         }),
       );
     });
@@ -784,9 +793,9 @@ describe(AssetService.name, () => {
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_DELETION, data: { id: 'asset1' } }],
-        [{ name: JobName.ASSET_DELETION, data: { id: 'asset2' } }],
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.ASSET_DELETION, data: { id: 'asset1' } },
+        { name: JobName.ASSET_DELETION, data: { id: 'asset2' } },
       ]);
     });
 
@@ -834,7 +843,7 @@ describe(AssetService.name, () => {
     });
 
     it('should remove faces', async () => {
-      const assetWithFace = { ...(assetStub.image as AssetEntity), faces: [faceStub.face1, faceStub.mergeFace1] };
+      const assetWithFace = { ...assetStub.image, faces: [faceStub.face1, faceStub.mergeFace1] };
 
       when(assetMock.getById).calledWith(assetWithFace.id).mockResolvedValue(assetWithFace);
 
@@ -861,9 +870,7 @@ describe(AssetService.name, () => {
     });
 
     it('should update stack parent if asset has stack children', async () => {
-      when(assetMock.getById)
-        .calledWith(assetStub.primaryImage.id)
-        .mockResolvedValue(assetStub.primaryImage as AssetEntity);
+      when(assetMock.getById).calledWith(assetStub.primaryImage.id).mockResolvedValue(assetStub.primaryImage);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id });
 
@@ -876,9 +883,7 @@ describe(AssetService.name, () => {
     });
 
     it('should not schedule delete-files job for readonly assets', async () => {
-      when(assetMock.getById)
-        .calledWith(assetStub.readOnly.id)
-        .mockResolvedValue(assetStub.readOnly as AssetEntity);
+      when(assetMock.getById).calledWith(assetStub.readOnly.id).mockResolvedValue(assetStub.readOnly);
 
       await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
 
@@ -888,20 +893,17 @@ describe(AssetService.name, () => {
     });
 
     it('should not process assets from external library without fromExternal flag', async () => {
-      when(assetMock.getById)
-        .calledWith(assetStub.external.id)
-        .mockResolvedValue(assetStub.external as AssetEntity);
+      when(assetMock.getById).calledWith(assetStub.external.id).mockResolvedValue(assetStub.external);
 
       await sut.handleAssetDeletion({ id: assetStub.external.id });
 
-      expect(jobMock.queue).not.toBeCalled();
-      expect(assetMock.remove).not.toBeCalled();
+      expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
+      expect(assetMock.remove).not.toHaveBeenCalled();
     });
 
     it('should process assets from external library with fromExternal flag', async () => {
-      when(assetMock.getById)
-        .calledWith(assetStub.external.id)
-        .mockResolvedValue(assetStub.external as AssetEntity);
+      when(assetMock.getById).calledWith(assetStub.external.id).mockResolvedValue(assetStub.external);
 
       await sut.handleAssetDeletion({ id: assetStub.external.id, fromExternal: true });
 
@@ -946,25 +948,34 @@ describe(AssetService.name, () => {
         ],
       ]);
     });
+
+    it('should update usage', async () => {
+      when(assetMock.getById).calledWith(assetStub.image.id).mockResolvedValue(assetStub.image);
+      await sut.handleAssetDeletion({ id: assetStub.image.id });
+
+      expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
+    });
   });
 
   describe('run', () => {
     it('should run the refresh metadata job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_METADATA }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } }]);
     });
 
     it('should run the refresh thumbnails job', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([
+          { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
+        ]);
     });
 
     it('should run the transcode video', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO }),
-        expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } });
+        expect(jobMock.queueAll).toHaveBeenCalledWith([{ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } }]);
     });
   });
 

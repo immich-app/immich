@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.0.4",
+  "version": "2.0.6",
   "description": "Command Line Interface (CLI) for Immich",
   "main": "dist/index.js",
   "bin": {
@@ -12,31 +12,31 @@
     "cli"
   ],
   "dependencies": {
+    "@immich/sdk": "file:../open-api/typescript-sdk",
     "axios": "^1.6.2",
     "byte-size": "^8.1.1",
     "cli-progress": "^3.12.0",
     "commander": "^11.0.0",
     "form-data": "^4.0.0",
     "glob": "^10.3.1",
+    "graceful-fs": "^4.2.11",
     "yaml": "^2.3.1"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "^10.4.0",
     "@types/byte-size": "^8.1.0",
-    "@types/chai": "^4.3.5",
     "@types/cli-progress": "^3.11.0",
     "@types/jest": "^29.5.2",
-    "@types/js-yaml": "^4.0.5",
-    "@types/mime-types": "^2.1.1",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "chai": "^4.3.7",
     "eslint": "^8.43.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-jest": "^27.2.2",
     "eslint-plugin-prettier": "^5.0.0",
-    "eslint-plugin-unicorn": "^49.0.0",
+    "eslint-plugin-unicorn": "^50.0.0",
+    "immich": "file:../server",
     "jest": "^29.5.0",
     "jest-extended": "^4.0.0",
     "jest-message-util": "^29.5.0",
@@ -50,13 +50,15 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --max-warnings 0",
+    "lint:fix": "npm run lint -- --fix",
     "prepack": "npm run build",
     "test": "jest",
     "test:cov": "jest --coverage",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand"
   },
   "jest": {
     "clearMocks": true,
@@ -71,10 +73,15 @@
       "^.+\\.ts$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "<rootDir>/src/**/*.(t|j)s"
+      "<rootDir>/src/**/*.(t|j)s",
+      "!**/open-api/**"
     ],
     "moduleNameMapper": {
-      "^@api(|/.*)$": "<rootDir>/src/api/$1"
+      "^@api(|/.*)$": "<rootDir>/src/api/$1",
+      "^@test(|/.*)$": "<rootDir>../server/test/$1",
+      "^@app/immich(|/.*)$": "<rootDir>../server/src/immich/$1",
+      "^@app/infra(|/.*)$": "<rootDir>../server/src/infra/$1",
+      "^@app/domain(|/.*)$": "<rootDir>../server/src/domain/$1"
     },
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"
