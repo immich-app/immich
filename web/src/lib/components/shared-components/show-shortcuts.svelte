@@ -28,7 +28,7 @@
       { key: ['⇧', 'a'], action: 'Archive or unarchive photo' },
       { key: ['⇧', 'd'], action: 'Download' },
       { key: ['Space'], action: 'Play or pause video' },
-      { key: ['Del'], action: 'Trash/Delete Asset', info: 'press ⇧ to force delete when trash is enabled' },
+      { key: ['Del'], action: 'Trash/Delete Asset', info: 'press ⇧ to permanently delete asset without confirmation' },
     ],
   };
   const dispatch = createEventDispatcher<{
