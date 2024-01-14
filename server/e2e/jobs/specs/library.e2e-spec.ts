@@ -619,6 +619,37 @@ describe(`${LibraryController.name} (e2e)`, () => {
       expect(afterAssets.length).toEqual(2);
     });
 
+    it('should add new files with case insensitive extensions', async () => {
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file2.JPG`,
+      );
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file3.Jpg`,
+      );
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file4.jpG`,
+      );
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file5.jPg`,
+      );
+
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      await delay(3000);
+
+      const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(afterAssets.length).toEqual(5);
+    });
+
     it('should add new files in multiple import paths', async () => {
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
@@ -654,6 +685,16 @@ describe(`${LibraryController.name} (e2e)`, () => {
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file2.txt`,
       );
 
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file3.TXT`,
+      );
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file4.TxT`,
+      );
+
       function delay(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
@@ -668,6 +709,28 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
     it('should ignore excluded paths', async () => {
       await api.libraryApi.setExclusionPatterns(server, admin.accessToken, library.id, ['**/dir2/**']);
+
+      jest.clearAllMocks();
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
+      );
+
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      await delay(3000);
+
+      const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
+      expect(afterAssets.length).toEqual(1);
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+
+    it('should ignore excluded paths without case sensitivity', async () => {
+      await api.libraryApi.setExclusionPatterns(server, admin.accessToken, library.id, ['**/DIR2/**']);
 
       jest.clearAllMocks();
 

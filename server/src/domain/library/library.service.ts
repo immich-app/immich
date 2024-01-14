@@ -1,6 +1,8 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import chokidar from 'chokidar';
+import picomatch from 'picomatch';
+
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
@@ -130,40 +132,38 @@ export class LibraryService {
 
     this.logger.debug(`Starting to watch library ${library.id} with import paths ${library.importPaths}`);
 
-    const extensions = mimeTypes.getSupportedFileExtensions();
+    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
 
-    const watchPattern = library.importPaths.flatMap((importPath) =>
-      extensions.map((extension) => `${importPath}/**/*${extension}`),
-    );
+    const matcher = picomatch(`**/${extensions}`, {
+      nocase: true,
+      ignore: library.exclusionPatterns,
+    });
 
-    this.watchers[library.id] = chokidar.watch(watchPattern, {
-      ignored: library.exclusionPatterns,
+    this.watchers[library.id] = chokidar.watch(library.importPaths, {
       ignoreInitial: true,
       usePolling: true,
     });
 
-    this.watchers[library.id].on('all', (event, path) => {
-      console.log(event, path);
-    });
-
     this.watchers[library.id].on('add', async (path) => {
-      this.logger.debug(`Found new file: ${path}`);
-      await this.jobRepository.queue({
-        name: JobName.LIBRARY_SCAN_ASSET,
-        data: {
-          id: library.id,
-          assetPath: path,
-          ownerId: library.ownerId,
-          force: false,
-        },
-      });
+      this.logger.debug(`File add event received for ${path}`);
+      if (matcher(path)) {
+        await this.jobRepository.queue({
+          name: JobName.LIBRARY_SCAN_ASSET,
+          data: {
+            id: library.id,
+            assetPath: path,
+            ownerId: library.ownerId,
+            force: false,
+          },
+        });
+      }
     });
 
     this.watchers[library.id].on('unlink', async (path) => {
       this.logger.debug(`Detected removed file: ${path}`);
       const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
 
-      if (existingAssetEntity) {
+      if (existingAssetEntity && matcher(path)) {
         await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
       }
     });
