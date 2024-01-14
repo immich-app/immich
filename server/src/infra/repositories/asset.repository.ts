@@ -363,19 +363,16 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(id: string, relations: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null> {
-    if (!relations) {
-      relations = {
+    return this.repository.findOne({
+      where: { id },
+      relations: {
         faces: {
           person: true,
         },
         library: true,
         stack: true,
-      };
-    }
-
-    return this.repository.findOne({
-      where: { id },
-      relations,
+        ...relations,
+      },
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
     });

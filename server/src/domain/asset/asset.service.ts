@@ -465,14 +465,7 @@ export class AssetService {
   async handleAssetDeletion(job: IAssetDeletionJob) {
     const { id, fromExternal } = job;
 
-    const asset = await this.assetRepository.getById(id, {
-      faces: {
-        person: true,
-      },
-      library: true,
-      stack: true,
-      exifInfo: true,
-    });
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
 
     if (!asset) {
       return false;
