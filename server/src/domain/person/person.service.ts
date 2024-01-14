@@ -470,8 +470,7 @@ export class PersonService {
 
     const allowedIds = await this.access.checkAccess(auth, Permission.PERSON_MERGE, mergeIds);
 
-    for (let i = 0; i < mergeIds.length; i++) {
-      const mergeId = mergeIds[i];
+    for (const mergeId of mergeIds) {
       const hasAccess = allowedIds.has(mergeId);
       if (!hasAccess) {
         results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NO_PERMISSION });
@@ -484,15 +483,15 @@ export class PersonService {
           results.push({ id: mergeId, success: false, error: BulkIdErrorReason.NOT_FOUND });
           continue;
         }
-        if (i === 0) {
-          if ((!primaryPerson.name && mergePerson.name) || (!primaryPerson.birthDate && mergePerson.birthDate)) {
-            primaryPerson = await this.repository.update({
-              id: primaryPerson.id,
-              name: mergePerson.name || undefined,
-              birthDate: mergePerson.birthDate || undefined,
-            });
-          }
+
+        if ((!primaryPerson.name && mergePerson.name) || (!primaryPerson.birthDate && mergePerson.birthDate)) {
+          primaryPerson = await this.repository.update({
+            id: primaryPerson.id,
+            name: mergePerson.name || undefined,
+            birthDate: mergePerson.birthDate || undefined,
+          });
         }
+
         const mergeName = mergePerson.name || mergePerson.id;
         const mergeData: UpdateFacesData = { oldPersonId: mergeId, newPersonId: id };
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
