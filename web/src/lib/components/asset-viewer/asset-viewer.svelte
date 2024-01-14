@@ -365,7 +365,7 @@
       trashAsset();
       return;
     }
-    if(forceDelete){
+    if (forceDelete) {
       deleteAsset();
       return;
     }
