@@ -6,7 +6,7 @@ import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from './comma
 import { PromptPasswordQuestions, ResetAdminPasswordCommand } from './commands/reset-admin-password.command';
 
 @Module({
-  imports: [DomainModule.register({ imports: [InfraModule] })],
+  imports: [InfraModule, DomainModule],
   providers: [
     ResetAdminPasswordCommand,
     PromptPasswordQuestions,

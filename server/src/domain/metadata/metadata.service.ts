@@ -252,6 +252,11 @@ export class MetadataService {
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
     });
 
+    await this.assetRepository.upsertJobStatus({
+      assetId: asset.id,
+      metadataExtractedAt: new Date(),
+    });
+
     return true;
   }
 
@@ -457,7 +462,7 @@ export class MetadataService {
       fileSizeInByte: stats.size,
       fNumber: validate(tags.FNumber),
       focalLength: validate(tags.FocalLength),
-      fps: validate(tags.VideoFrameRate),
+      fps: validate(parseFloat(tags.VideoFrameRate!)),
       iso: validate(tags.ISO),
       latitude: validate(tags.GPSLatitude),
       lensModel: tags.LensModel ?? null,

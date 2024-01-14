@@ -9,7 +9,7 @@ import {
   ServerInfoApi,
   SystemConfigApi,
   UserApi,
-} from './open-api';
+} from '@immich/sdk';
 import { ApiConfiguration } from '../cores/api-configuration';
 import FormData from 'form-data';
 

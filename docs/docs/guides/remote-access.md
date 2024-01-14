@@ -1,6 +1,7 @@
 # Remote Access
 
 This page gives a few pointers on how to access your Immich instance from outside your LAN.
+You can read the [full discussion in Discord](https://discord.com/channels/979116623879368755/1122615710846308484)
 
 :::danger
 Never forward port 2283 directly to the internet without additional configuration. This will expose the web interface via http to the internet, making you succeptible to [man in the middle](https://en.wikipedia.org/wiki/Man-in-the-middle_attack) attacks.

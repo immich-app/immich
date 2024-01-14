@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, SystemConfigStorageTemplateDto, SystemConfigTemplateStorageOptionDto } from '@api';
+  import { api, SystemConfigDto, SystemConfigTemplateStorageOptionDto } from '@api';
   import * as luxon from 'luxon';
   import handlebar from 'handlebars';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
@@ -8,50 +8,26 @@
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import { isEqual } from 'lodash-es';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import { user } from '$lib/stores/user.store';
-  import type { ResetOptions } from '$lib/utils/dipatch';
-  import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import { createEventDispatcher } from 'svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowLeft, mdiCheck } from '@mdi/js';
+  import SettingSwitch from '../setting-switch.svelte';
+  import type { SettingsEventType } from '../admin-settings';
 
-  export let storageConfig: SystemConfigStorageTemplateDto;
+  export let savedConfig: SystemConfigDto;
+  export let defaultConfig: SystemConfigDto;
+  export let config: SystemConfigDto; // this is the config that is being edited
   export let disabled = false;
   export let minified = false;
 
-  let savedConfig: SystemConfigStorageTemplateDto;
-  let defaultConfig: SystemConfigStorageTemplateDto;
+  const dispatch = createEventDispatcher<SettingsEventType>();
   let templateOptions: SystemConfigTemplateStorageOptionDto;
   let selectedPreset = '';
 
-  const dispatch = createEventDispatcher<{
-    save: void;
-    previous: void;
-  }>();
-
-  const handleReset = (detail: ResetOptions) => {
-    if (detail.default) {
-      resetToDefault();
-    } else {
-      reset();
-    }
+  const getTemplateOptions = async () => {
+    templateOptions = await api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data);
+    selectedPreset = savedConfig.storageTemplate.template;
   };
-
-  async function getConfigs() {
-    [savedConfig, defaultConfig, templateOptions] = await Promise.all([
-      api.systemConfigApi.getConfig().then((res) => res.data.storageTemplate),
-      api.systemConfigApi.getConfigDefaults().then((res) => res.data.storageTemplate),
-      api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data),
-    ]);
-
-    selectedPreset = savedConfig.template;
-  }
 
   const getSupportDateTimeFormat = async () => {
     const { data } = await api.systemConfigApi.getStorageTemplateOptions();
@@ -60,7 +36,7 @@
 
   $: parsedTemplate = () => {
     try {
-      return renderTemplate(storageConfig.template);
+      return renderTemplate(config.storageTemplate.template);
     } catch (error) {
       return 'error';
     }
@@ -99,78 +75,20 @@
     return template(substitutions);
   };
 
-  async function reset() {
-    const { data: resetConfig } = await api.systemConfigApi.getConfig();
-
-    storageConfig.template = resetConfig.storageTemplate.template;
-    savedConfig.template = resetConfig.storageTemplate.template;
-
-    notificationController.show({
-      message: 'Reset storage template settings to the recent saved settings',
-      type: NotificationType.Info,
-    });
-  }
-
-  async function saveSetting() {
-    try {
-      const { data: currentConfig } = await api.systemConfigApi.getConfig();
-
-      const result = await api.systemConfigApi.updateConfig({
-        systemConfigDto: {
-          ...currentConfig,
-          storageTemplate: storageConfig,
-        },
-      });
-
-      storageConfig.template = result.data.storageTemplate.template;
-      savedConfig.template = result.data.storageTemplate.template;
-
-      storageConfig.enabled = result.data.storageTemplate.enabled;
-      savedConfig.enabled = result.data.storageTemplate.enabled;
-
-      storageConfig.hashVerificationEnabled = result.data.storageTemplate.hashVerificationEnabled;
-      savedConfig.hashVerificationEnabled = result.data.storageTemplate.hashVerificationEnabled;
-
-      notificationController.show({
-        message: 'Storage template saved',
-        type: NotificationType.Info,
-      });
-
-      dispatch('save');
-    } catch (e) {
-      console.error('Error [storage-template-settings] [saveSetting]', e);
-      notificationController.show({
-        message: 'Unable to save settings',
-        type: NotificationType.Error,
-      });
-    }
-  }
-
-  async function resetToDefault() {
-    const { data: defaultConfig } = await api.systemConfigApi.getConfigDefaults();
-
-    storageConfig.template = defaultConfig.storageTemplate.template;
-
-    notificationController.show({
-      message: 'Reset storage template to default',
-      type: NotificationType.Info,
-    });
-  }
-
   const handlePresetSelection = () => {
-    storageConfig.template = selectedPreset;
+    config.storageTemplate.template = selectedPreset;
   };
 </script>
 
 <section class="dark:text-immich-dark-fg">
-  {#await getConfigs() then}
-    <div id="directory-path-builder" class="flex flex-col gap-4 m-4">
+  {#await getTemplateOptions() then}
+    <div id="directory-path-builder" class="flex flex-col gap-4 {minified ? '' : 'ml-4 mt-4'}">
       <SettingSwitch
         title="ENABLED"
         {disabled}
         subtitle="Enable storage template engine"
-        bind:checked={storageConfig.enabled}
-        isEdited={!(storageConfig.enabled === savedConfig.enabled)}
+        bind:checked={config.storageTemplate.enabled}
+        isEdited={!(config.storageTemplate.enabled === savedConfig.storageTemplate.enabled)}
       />
 
       {#if !minified}
@@ -178,12 +96,14 @@
           title="HASH VERIFICATION ENABLED"
           {disabled}
           subtitle="Enables hash verification, don't disable this unless you're certain of the implications"
-          bind:checked={storageConfig.hashVerificationEnabled}
-          isEdited={!(storageConfig.hashVerificationEnabled === savedConfig.hashVerificationEnabled)}
+          bind:checked={config.storageTemplate.hashVerificationEnabled}
+          isEdited={!(
+            config.storageTemplate.hashVerificationEnabled === savedConfig.storageTemplate.hashVerificationEnabled
+          )}
         />
       {/if}
 
-      {#if storageConfig.enabled}
+      {#if config.storageTemplate.enabled}
         <hr />
 
         <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">Variables</h3>
@@ -232,7 +152,7 @@
               <label class="text-sm" for="preset-select">PRESET</label>
               <select
                 class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
-                disabled={disabled || !storageConfig.enabled}
+                disabled={disabled || !config.storageTemplate.enabled}
                 name="presets"
                 id="preset-select"
                 bind:value={selectedPreset}
@@ -246,11 +166,11 @@
             <div class="flex gap-2 align-bottom">
               <SettingInputField
                 label="TEMPLATE"
-                disabled={disabled || !storageConfig.enabled}
+                disabled={disabled || !config.storageTemplate.enabled}
                 required
                 inputType={SettingInputFieldType.TEXT}
-                bind:value={storageConfig.template}
-                isEdited={!(storageConfig.template === savedConfig.template)}
+                bind:value={config.storageTemplate.template}
+                isEdited={!(config.storageTemplate.template === savedConfig.storageTemplate.template)}
               />
 
               <div class="flex-0">
@@ -286,26 +206,11 @@
       {/if}
 
       {#if minified}
-        <div class="flex pt-4">
-          <div class="w-full flex place-content-start">
-            <Button class="flex gap-2 place-content-center" on:click={() => dispatch('previous')}>
-              <Icon path={mdiArrowLeft} size="18" />
-              <p>Theme</p>
-            </Button>
-          </div>
-          <div class="flex w-full place-content-end">
-            <Button on:click={saveSetting}>
-              <span class="flex place-content-center place-items-center gap-2">
-                Done
-                <Icon path={mdiCheck} size="18" />
-              </span>
-            </Button>
-          </div>
-        </div>
+        <slot />
       {:else}
         <SettingButtonsRow
-          on:reset={({ detail }) => handleReset(detail)}
-          on:save={saveSetting}
+          on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['storageTemplate'] })}
+          on:save={() => dispatch('save', { storageTemplate: config.storageTemplate })}
           showResetToDefault={!isEqual(savedConfig, defaultConfig) && !minified}
           {disabled}
         />

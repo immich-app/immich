@@ -197,7 +197,7 @@ export const useSwagger = (app: INestApplication, isDev: boolean) => {
 
   if (isDev) {
     // Generate API Documentation only in development mode
-    const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
+    const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(doc), null, 2), { encoding: 'utf8' });
   }
 };
