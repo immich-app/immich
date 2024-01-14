@@ -59,9 +59,7 @@ class ImmichSearchBar extends HookConsumerWidget
         controller: searchTermController,
         focusNode: searchFocusNode,
         autofocus: false,
-        onTap: focusSearch
-          focusSearch();
-        },
+        onTap: focusSearch,
         onSubmitted: (searchTerm) {
           onSubmitted(searchTerm);
           searchTermController.clear();
