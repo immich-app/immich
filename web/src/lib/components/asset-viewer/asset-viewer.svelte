@@ -360,14 +360,15 @@
   };
 
   const trashOrDelete = (forceDelete: boolean = false) => {
-    if (isTrashEnabled && !forceDelete) {
-      trashAsset();
-      return;
-    }
     if (forceDelete) {
       deleteAsset();
       return;
     }
+    if (isTrashEnabled) {
+      trashAsset();
+      return;
+    }
+
     isShowDeleteConfirmation = true;
   };
 
