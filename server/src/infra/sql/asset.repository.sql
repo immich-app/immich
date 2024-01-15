@@ -397,109 +397,40 @@ WHERE
   )
 
 -- AssetRepository.getById
-SELECT DISTINCT
-  "distinctAlias"."AssetEntity_id" AS "ids_AssetEntity_id"
+SELECT
+  "AssetEntity"."id" AS "AssetEntity_id",
+  "AssetEntity"."deviceAssetId" AS "AssetEntity_deviceAssetId",
+  "AssetEntity"."ownerId" AS "AssetEntity_ownerId",
+  "AssetEntity"."libraryId" AS "AssetEntity_libraryId",
+  "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
+  "AssetEntity"."type" AS "AssetEntity_type",
+  "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
+  "AssetEntity"."resizePath" AS "AssetEntity_resizePath",
+  "AssetEntity"."webpPath" AS "AssetEntity_webpPath",
+  "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
+  "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
+  "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
+  "AssetEntity"."updatedAt" AS "AssetEntity_updatedAt",
+  "AssetEntity"."deletedAt" AS "AssetEntity_deletedAt",
+  "AssetEntity"."fileCreatedAt" AS "AssetEntity_fileCreatedAt",
+  "AssetEntity"."localDateTime" AS "AssetEntity_localDateTime",
+  "AssetEntity"."fileModifiedAt" AS "AssetEntity_fileModifiedAt",
+  "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
+  "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
+  "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
+  "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
+  "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
+  "AssetEntity"."checksum" AS "AssetEntity_checksum",
+  "AssetEntity"."duration" AS "AssetEntity_duration",
+  "AssetEntity"."isVisible" AS "AssetEntity_isVisible",
+  "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
+  "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
+  "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
+  "AssetEntity"."stackParentId" AS "AssetEntity_stackParentId"
 FROM
-  (
-    SELECT
-      "AssetEntity"."id" AS "AssetEntity_id",
-      "AssetEntity"."deviceAssetId" AS "AssetEntity_deviceAssetId",
-      "AssetEntity"."ownerId" AS "AssetEntity_ownerId",
-      "AssetEntity"."libraryId" AS "AssetEntity_libraryId",
-      "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
-      "AssetEntity"."type" AS "AssetEntity_type",
-      "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-      "AssetEntity"."resizePath" AS "AssetEntity_resizePath",
-      "AssetEntity"."webpPath" AS "AssetEntity_webpPath",
-      "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
-      "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
-      "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
-      "AssetEntity"."updatedAt" AS "AssetEntity_updatedAt",
-      "AssetEntity"."deletedAt" AS "AssetEntity_deletedAt",
-      "AssetEntity"."fileCreatedAt" AS "AssetEntity_fileCreatedAt",
-      "AssetEntity"."localDateTime" AS "AssetEntity_localDateTime",
-      "AssetEntity"."fileModifiedAt" AS "AssetEntity_fileModifiedAt",
-      "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
-      "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
-      "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-      "AssetEntity"."isReadOnly" AS "AssetEntity_isReadOnly",
-      "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
-      "AssetEntity"."checksum" AS "AssetEntity_checksum",
-      "AssetEntity"."duration" AS "AssetEntity_duration",
-      "AssetEntity"."isVisible" AS "AssetEntity_isVisible",
-      "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
-      "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
-      "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
-      "AssetEntity"."stackParentId" AS "AssetEntity_stackParentId",
-      "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
-      "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
-      "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
-      "AssetEntity__AssetEntity_faces"."imageWidth" AS "AssetEntity__AssetEntity_faces_imageWidth",
-      "AssetEntity__AssetEntity_faces"."imageHeight" AS "AssetEntity__AssetEntity_faces_imageHeight",
-      "AssetEntity__AssetEntity_faces"."boundingBoxX1" AS "AssetEntity__AssetEntity_faces_boundingBoxX1",
-      "AssetEntity__AssetEntity_faces"."boundingBoxY1" AS "AssetEntity__AssetEntity_faces_boundingBoxY1",
-      "AssetEntity__AssetEntity_faces"."boundingBoxX2" AS "AssetEntity__AssetEntity_faces_boundingBoxX2",
-      "AssetEntity__AssetEntity_faces"."boundingBoxY2" AS "AssetEntity__AssetEntity_faces_boundingBoxY2",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."id" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_id",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."createdAt" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_createdAt",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."updatedAt" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_updatedAt",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."ownerId" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_ownerId",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."name" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_name",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."birthDate" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_birthDate",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."thumbnailPath" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_thumbnailPath",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."faceAssetId" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_faceAssetId",
-      "8258e303a73a72cf6abb13d73fb592dde0d68280"."isHidden" AS "8258e303a73a72cf6abb13d73fb592dde0d68280_isHidden",
-      "AssetEntity__AssetEntity_library"."id" AS "AssetEntity__AssetEntity_library_id",
-      "AssetEntity__AssetEntity_library"."name" AS "AssetEntity__AssetEntity_library_name",
-      "AssetEntity__AssetEntity_library"."ownerId" AS "AssetEntity__AssetEntity_library_ownerId",
-      "AssetEntity__AssetEntity_library"."type" AS "AssetEntity__AssetEntity_library_type",
-      "AssetEntity__AssetEntity_library"."importPaths" AS "AssetEntity__AssetEntity_library_importPaths",
-      "AssetEntity__AssetEntity_library"."exclusionPatterns" AS "AssetEntity__AssetEntity_library_exclusionPatterns",
-      "AssetEntity__AssetEntity_library"."createdAt" AS "AssetEntity__AssetEntity_library_createdAt",
-      "AssetEntity__AssetEntity_library"."updatedAt" AS "AssetEntity__AssetEntity_library_updatedAt",
-      "AssetEntity__AssetEntity_library"."deletedAt" AS "AssetEntity__AssetEntity_library_deletedAt",
-      "AssetEntity__AssetEntity_library"."refreshedAt" AS "AssetEntity__AssetEntity_library_refreshedAt",
-      "AssetEntity__AssetEntity_library"."isVisible" AS "AssetEntity__AssetEntity_library_isVisible",
-      "AssetEntity__AssetEntity_stack"."id" AS "AssetEntity__AssetEntity_stack_id",
-      "AssetEntity__AssetEntity_stack"."deviceAssetId" AS "AssetEntity__AssetEntity_stack_deviceAssetId",
-      "AssetEntity__AssetEntity_stack"."ownerId" AS "AssetEntity__AssetEntity_stack_ownerId",
-      "AssetEntity__AssetEntity_stack"."libraryId" AS "AssetEntity__AssetEntity_stack_libraryId",
-      "AssetEntity__AssetEntity_stack"."deviceId" AS "AssetEntity__AssetEntity_stack_deviceId",
-      "AssetEntity__AssetEntity_stack"."type" AS "AssetEntity__AssetEntity_stack_type",
-      "AssetEntity__AssetEntity_stack"."originalPath" AS "AssetEntity__AssetEntity_stack_originalPath",
-      "AssetEntity__AssetEntity_stack"."resizePath" AS "AssetEntity__AssetEntity_stack_resizePath",
-      "AssetEntity__AssetEntity_stack"."webpPath" AS "AssetEntity__AssetEntity_stack_webpPath",
-      "AssetEntity__AssetEntity_stack"."thumbhash" AS "AssetEntity__AssetEntity_stack_thumbhash",
-      "AssetEntity__AssetEntity_stack"."encodedVideoPath" AS "AssetEntity__AssetEntity_stack_encodedVideoPath",
-      "AssetEntity__AssetEntity_stack"."createdAt" AS "AssetEntity__AssetEntity_stack_createdAt",
-      "AssetEntity__AssetEntity_stack"."updatedAt" AS "AssetEntity__AssetEntity_stack_updatedAt",
-      "AssetEntity__AssetEntity_stack"."deletedAt" AS "AssetEntity__AssetEntity_stack_deletedAt",
-      "AssetEntity__AssetEntity_stack"."fileCreatedAt" AS "AssetEntity__AssetEntity_stack_fileCreatedAt",
-      "AssetEntity__AssetEntity_stack"."localDateTime" AS "AssetEntity__AssetEntity_stack_localDateTime",
-      "AssetEntity__AssetEntity_stack"."fileModifiedAt" AS "AssetEntity__AssetEntity_stack_fileModifiedAt",
-      "AssetEntity__AssetEntity_stack"."isFavorite" AS "AssetEntity__AssetEntity_stack_isFavorite",
-      "AssetEntity__AssetEntity_stack"."isArchived" AS "AssetEntity__AssetEntity_stack_isArchived",
-      "AssetEntity__AssetEntity_stack"."isExternal" AS "AssetEntity__AssetEntity_stack_isExternal",
-      "AssetEntity__AssetEntity_stack"."isReadOnly" AS "AssetEntity__AssetEntity_stack_isReadOnly",
-      "AssetEntity__AssetEntity_stack"."isOffline" AS "AssetEntity__AssetEntity_stack_isOffline",
-      "AssetEntity__AssetEntity_stack"."checksum" AS "AssetEntity__AssetEntity_stack_checksum",
-      "AssetEntity__AssetEntity_stack"."duration" AS "AssetEntity__AssetEntity_stack_duration",
-      "AssetEntity__AssetEntity_stack"."isVisible" AS "AssetEntity__AssetEntity_stack_isVisible",
-      "AssetEntity__AssetEntity_stack"."livePhotoVideoId" AS "AssetEntity__AssetEntity_stack_livePhotoVideoId",
-      "AssetEntity__AssetEntity_stack"."originalFileName" AS "AssetEntity__AssetEntity_stack_originalFileName",
-      "AssetEntity__AssetEntity_stack"."sidecarPath" AS "AssetEntity__AssetEntity_stack_sidecarPath",
-      "AssetEntity__AssetEntity_stack"."stackParentId" AS "AssetEntity__AssetEntity_stack_stackParentId"
-    FROM
-      "assets" "AssetEntity"
-      LEFT JOIN "asset_faces" "AssetEntity__AssetEntity_faces" ON "AssetEntity__AssetEntity_faces"."assetId" = "AssetEntity"."id"
-      LEFT JOIN "person" "8258e303a73a72cf6abb13d73fb592dde0d68280" ON "8258e303a73a72cf6abb13d73fb592dde0d68280"."id" = "AssetEntity__AssetEntity_faces"."personId"
-      LEFT JOIN "libraries" "AssetEntity__AssetEntity_library" ON "AssetEntity__AssetEntity_library"."id" = "AssetEntity"."libraryId"
-      LEFT JOIN "assets" "AssetEntity__AssetEntity_stack" ON "AssetEntity__AssetEntity_stack"."stackParentId" = "AssetEntity"."id"
-    WHERE
-      ("AssetEntity"."id" = $1)
-  ) "distinctAlias"
-ORDER BY
-  "AssetEntity_id" ASC
+  "assets" "AssetEntity"
+WHERE
+  ("AssetEntity"."id" = $1)
 LIMIT
   1
 
