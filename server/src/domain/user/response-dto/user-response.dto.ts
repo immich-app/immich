@@ -33,9 +33,9 @@ export class UserResponseDto extends UserDto {
   updatedAt!: Date;
   oauthId!: string;
   memoriesEnabled?: boolean;
-  @ApiProperty({ type: 'integer', format: 'int64' })
+  @ApiProperty({ type: 'integer', format: 'int64', default: 0 })
   quotaSizeInBytes!: number | null;
-  @ApiProperty({ type: 'integer', format: 'int64' })
+  @ApiProperty({ type: 'integer', format: 'int64', default: 0 })
   quotaUsageInBytes!: number;
 }
 
