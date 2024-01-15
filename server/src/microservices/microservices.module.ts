@@ -12,5 +12,7 @@ export class MicroservicesModule implements OnModuleInit {
 
   async onModuleInit() {
     await this.appService.init();
+    // This is split up to make e2e testing possible
+    await this.appService.postInit();
   }
 }

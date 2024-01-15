@@ -68,4 +68,11 @@ export const libraryApi = {
     expect(status).toBe(200);
     return body as LibraryResponseDto;
   },
+  deleteLibrary: async (server: any, accessToken: string, id: string) => {
+    const { body, status } = await request(server)
+      .delete(`/library/${id}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(status).toBe(200);
+    return body as LibraryResponseDto;
+  },
 };

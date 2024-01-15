@@ -73,17 +73,13 @@ export class LibraryService {
 
     this.watchEnabled = config.library.watch.enabled;
 
-    /*   if (this.watchEnabled) {
-      for (const library of await this.repository.getAll(true, LibraryType.EXTERNAL)) {
-        if (library.isWatched) {
-          // For all libraries that are watched, start the watcher process
-          await this.watch(library.id);
-        }
-      }
-    } */
-
     this.configCore.config$.subscribe((config) => {
       this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
+    });
+
+    await this.jobRepository.queue({
+      name: JobName.LIBRARY_INITIALIZE_WATCHERS,
+      data: {},
     });
   }
 
@@ -116,6 +112,18 @@ export class LibraryService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_WATCH, data: { id } });
   }
 
+  async handleInitializeWatchers(): Promise<boolean> {
+    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
+
+    for (const library of libraries) {
+      if (library.isWatched) {
+        await this.watch(library.id);
+      }
+    }
+
+    return true;
+  }
+
   async handleWatchLibrary(job: IEntityJob): Promise<boolean> {
     if (!this.watchEnabled) {
       return false;
@@ -136,16 +144,16 @@ export class LibraryService {
 
     const matcher = picomatch(`**/${extensions}`, {
       nocase: true,
-      ignore: library.exclusionPatterns,
     });
 
     this.watchers[library.id] = chokidar.watch(library.importPaths, {
       ignoreInitial: true,
       usePolling: true,
+      ignored: library.exclusionPatterns,
     });
 
     this.watchers[library.id].on('add', async (path) => {
-      this.logger.debug(`File add event received for ${path}`);
+      this.logger.debug(`File add event received for ${path} and library id ${library.id}}`);
       if (matcher(path)) {
         await this.jobRepository.queue({
           name: JobName.LIBRARY_SCAN_ASSET,
@@ -222,8 +230,6 @@ export class LibraryService {
         break;
     }
 
-    this.logger.log(`Creating ${dto.type} library for user ${auth.user.name}`);
-
     const library = await this.repository.create({
       ownerId: auth.user.id,
       name: dto.name,
@@ -232,6 +238,8 @@ export class LibraryService {
       exclusionPatterns: dto.exclusionPatterns ?? [],
       isVisible: dto.isVisible ?? true,
     });
+
+    this.logger.log(`Creating ${dto.type} library for user ${auth.user.name}`);
 
     if (dto.type === LibraryType.EXTERNAL && library.isWatched) {
       await this.watch(library.id);

@@ -108,9 +108,13 @@ export const testApp = {
 
     return app;
   },
+  getJobMock: async () => {
+    return (await app.get(IJobRepository)) as jest.Mock<typeof IJobRepository>;
+  },
   reset: async (options?: ResetOptions) => {
     await app.get(AppService).init();
     await db.reset(options);
+    await app.get(AppService).postInit();
   },
   stopWatcher: async () => {
     await app.get(AppService).stopWatcher();

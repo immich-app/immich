@@ -1,4 +1,4 @@
-import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
+import { IJobRepository, JobName, LibraryResponseDto, LoginResponseDto } from '@app/domain';
 import { LibraryController } from '@app/immich';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { errorStub, uuidStub } from '@test/fixtures';
@@ -788,6 +788,25 @@ describe(`${LibraryController.name} (e2e)`, () => {
 
       const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(afterAssets[0].isOffline).toEqual(true);
+    });
+
+    it('should stop watching library when deleted', async () => {
+      await api.libraryApi.deleteLibrary(server, admin.accessToken, library.id);
+
+      jest.clearAllMocks();
+
+      await fs.promises.copyFile(
+        `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
+      );
+
+      function delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      await delay(3000);
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
     });
   });
 });

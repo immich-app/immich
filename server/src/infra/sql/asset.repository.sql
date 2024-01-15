@@ -460,6 +460,7 @@ FROM
       "AssetEntity__AssetEntity_library"."deletedAt" AS "AssetEntity__AssetEntity_library_deletedAt",
       "AssetEntity__AssetEntity_library"."refreshedAt" AS "AssetEntity__AssetEntity_library_refreshedAt",
       "AssetEntity__AssetEntity_library"."isVisible" AS "AssetEntity__AssetEntity_library_isVisible",
+      "AssetEntity__AssetEntity_library"."isWatched" AS "AssetEntity__AssetEntity_library_isWatched",
       "AssetEntity__AssetEntity_stack"."id" AS "AssetEntity__AssetEntity_stack_id",
       "AssetEntity__AssetEntity_stack"."deviceAssetId" AS "AssetEntity__AssetEntity_stack_deviceAssetId",
       "AssetEntity__AssetEntity_stack"."ownerId" AS "AssetEntity__AssetEntity_stack_ownerId",
