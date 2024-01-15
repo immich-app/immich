@@ -81,6 +81,7 @@ Future<void> initApp() async {
 
   PlatformDispatcher.instance.onError = (error, stack) {
     log.severe('PlatformDispatcher - Catch all error: $error', error, stack);
+    debugPrint("PlatformDispatcher - Catch all error: $error $stack");
     return true;
   };
 
