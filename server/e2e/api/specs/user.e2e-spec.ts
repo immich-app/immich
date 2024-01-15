@@ -263,7 +263,7 @@ describe(`${UserController.name}`, () => {
         deletedAt: '2023-01-01T00:00:00.000Z',
       } as any);
 
-      expect.any(before);
+      expect(after).toStrictEqual(before);
     });
 
     it('should update first and last name', async () => {
