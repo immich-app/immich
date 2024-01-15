@@ -22,7 +22,6 @@
   const dispatch = createEventDispatcher<{
     confirm: void;
     cancel: void;
-    escape: void;
   }>();
 </script>
 
@@ -31,7 +30,7 @@
   confirmText="Delete"
   on:confirm={handleConfirm}
   on:cancel={() => dispatch('cancel')}
-  on:escape={() => dispatch('escape')}
+  on:escape={() => dispatch('cancel')}
 >
   <svelte:fragment slot="prompt">
     <p>
