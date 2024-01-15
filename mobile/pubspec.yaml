@@ -26,10 +26,11 @@ dependencies:
   chewie: ^1.4.0
   badges: ^2.0.2
   socket_io_client: ^2.0.0-beta.4-nullsafety.0
+  # Update it to tag once next stable release
   maplibre_gl:
       git:
-        url: https://github.com/shenlong-tanwen/flutter-maplibre-gl.git
-        ref: feat/heatmap-layer
+        url: https://github.com/maplibre/flutter-maplibre-gl.git
+        ref: acb428a005efd9832a0a8e7ef0945f899dfb3ca5
   geolocator: ^10.0.0 # used to move to current location in map view
   flutter_udid: ^2.0.0
   package_info_plus: ^4.1.0
