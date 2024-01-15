@@ -5,7 +5,7 @@
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { formatGroupTitle, splitBucketIntoDateGroups } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto } from '@api';
@@ -20,6 +20,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { deleteAssets } from '$lib/utils/actions';
+  import DeleteAssetDialog from './delete-asset-dialog.svelte';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -29,6 +30,7 @@
   export let withStacked = false;
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
+  export let isShowDeleteConfirmation = false;
 
   $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
 
@@ -42,6 +44,9 @@
 
   $: timelineY = element?.scrollTop || 0;
   $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
+  $: idsSelectedAssets = Array.from($selectedAssets)
+    .filter((a) => !a.isExternal)
+    .map((a) => a.id);
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
@@ -64,6 +69,12 @@
 
     assetStore.disconnect();
   });
+
+  const trashOrDelete = (force: boolean = false) => {
+    isShowDeleteConfirmation = false;
+    deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
+    assetInteractionStore.clearMultiselect();
+  };
 
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
@@ -90,11 +101,16 @@
           return;
         case 'Delete':
           if ($isMultiSelectState) {
-            const ids = Array.from($selectedAssets)
-              .filter((a) => !a.isExternal)
-              .map((a) => a.id);
-            deleteAssets(!(isTrashEnabled && !shiftKey), (assetId) => assetStore.removeAsset(assetId), ids);
-            assetInteractionStore.clearMultiselect();
+            if (shiftKey || !isTrashEnabled) {
+              if ($showDeleteModal) {
+                isShowDeleteConfirmation = true;
+                return;
+              }
+              trashOrDelete(true);
+              return;
+            }
+
+            trashOrDelete();
           }
           return;
       }
@@ -342,6 +358,15 @@
 </script>
 
 <svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} />
+
+{#if isShowDeleteConfirmation}
+  <DeleteAssetDialog
+    size={idsSelectedAssets.length}
+    on:cancel={() => (isShowDeleteConfirmation = false)}
+    on:escape={() => (isShowDeleteConfirmation = false)}
+    on:confirm={() => trashOrDelete()}
+  />
+{/if}
 
 {#if showShortcuts}
   <ShowShortcuts on:close={() => (showShortcuts = !showShortcuts)} />
