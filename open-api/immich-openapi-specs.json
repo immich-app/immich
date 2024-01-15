@@ -8198,14 +8198,13 @@
             "type": "string"
           },
           "quotaSizeInBytes": {
-            "default": 0,
             "format": "int64",
             "nullable": true,
             "type": "integer"
           },
           "quotaUsageInBytes": {
-            "default": 0,
             "format": "int64",
+            "nullable": true,
             "type": "integer"
           },
           "shouldChangePassword": {
@@ -9908,14 +9907,13 @@
             "type": "string"
           },
           "quotaSizeInBytes": {
-            "default": 0,
             "format": "int64",
             "nullable": true,
             "type": "integer"
           },
           "quotaUsageInBytes": {
-            "default": 0,
             "format": "int64",
+            "nullable": true,
             "type": "integer"
           },
           "shouldChangePassword": {

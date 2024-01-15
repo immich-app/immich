@@ -71,12 +71,12 @@ void main() {
       // TODO
     });
 
-    // int quotaSizeInBytes (default value: 0)
+    // int quotaSizeInBytes
     test('to test the property `quotaSizeInBytes`', () async {
       // TODO
     });
 
-    // int quotaUsageInBytes (default value: 0)
+    // int quotaUsageInBytes
     test('to test the property `quotaUsageInBytes`', () async {
       // TODO
     });

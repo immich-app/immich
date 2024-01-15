@@ -20,8 +20,8 @@ Name | Type | Description | Notes
 **name** | **String** |  | 
 **oauthId** | **String** |  | 
 **profileImagePath** | **String** |  | 
-**quotaSizeInBytes** | **int** |  | [default to 0]
-**quotaUsageInBytes** | **int** |  | [default to 0]
+**quotaSizeInBytes** | **int** |  | 
+**quotaUsageInBytes** | **int** |  | 
 **shouldChangePassword** | **bool** |  | 
 **storageLabel** | **String** |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 

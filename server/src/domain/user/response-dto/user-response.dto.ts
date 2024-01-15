@@ -33,10 +33,10 @@ export class UserResponseDto extends UserDto {
   updatedAt!: Date;
   oauthId!: string;
   memoriesEnabled?: boolean;
-  @ApiProperty({ type: 'integer', format: 'int64', default: 0 })
+  @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes!: number | null;
-  @ApiProperty({ type: 'integer', format: 'int64', default: 0 })
-  quotaUsageInBytes!: number;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  quotaUsageInBytes!: number | null;
 }
 
 export const mapSimpleUser = (entity: UserEntity): UserDto => {
