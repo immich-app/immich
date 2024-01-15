@@ -24,7 +24,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
-import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
+import path from 'path';
+import { And, Brackets, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { Chunked, ChunkedArray, OptionalBetween, paginate } from '../infra.utils';
@@ -820,9 +821,13 @@ export class AssetRepository implements IAssetRepository {
       .innerJoin('exif', 'e', 'asset."id" = e."assetId"')
       .leftJoin('smart_info', 'si', 'si."assetId" = asset."id"')
       .andWhere(
-        `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
-        @@ PLAINTO_TSQUERY('english', :query)`,
-        { query },
+        new Brackets((qb) => {
+          qb.where(
+            `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
+          @@ PLAINTO_TSQUERY('english', :query)`,
+            { query },
+          ).orWhere('asset."originalFileName" = :path', { path: path.parse(query).name });
+        }),
       )
       .addOrderBy('asset.fileCreatedAt', 'DESC')
       .limit(numResults)

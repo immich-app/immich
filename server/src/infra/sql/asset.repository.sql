@@ -765,11 +765,14 @@ WHERE
     AND "asset"."ownerId" IN ($1)
     AND "asset"."isArchived" = $2
     AND (
-      e."exifTextSearchableColumn" || COALESCE(
-        si."smartInfoTextSearchableColumn",
-        to_tsvector('english', '')
-      )
-    ) @@ PLAINTO_TSQUERY('english', $3)
+      (
+        e."exifTextSearchableColumn" || COALESCE(
+          si."smartInfoTextSearchableColumn",
+          to_tsvector('english', '')
+        )
+      ) @@ PLAINTO_TSQUERY('english', $3)
+      OR asset."originalFileName" = $4
+    )
   )
   AND ("asset"."deletedAt" IS NULL)
 ORDER BY
