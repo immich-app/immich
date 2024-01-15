@@ -24,7 +24,6 @@ dependencies:
   fluttertoast: ^8.2.2
   video_player: ^2.2.18
   chewie: ^1.4.0
-  badges: ^2.0.2
   socket_io_client: ^2.0.0-beta.4-nullsafety.0
   flutter_map: ^4.0.0
   flutter_map_heatmap: ^0.0.4
