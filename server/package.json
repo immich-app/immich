@@ -58,7 +58,7 @@
     "exiftool-vendored": "~24.3.0",
     "exiftool-vendored.pl": "12.72",
     "fluent-ffmpeg": "^2.1.2",
-    "geo-tz": "^7.0.7",
+    "geo-tz": "^8.0.0",
     "glob": "^10.3.3",
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
