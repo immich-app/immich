@@ -46,7 +46,6 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   async searchCLIP({ userIds, embedding, numResults, withArchived }: EmbeddingSearch): Promise<AssetEntity[]> {
     let results: AssetEntity[] = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-      await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
 
       let query = manager
         .createQueryBuilder(AssetEntity, 'a')
@@ -62,14 +61,16 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       }
       query.andWhere('a.isVisible = true').andWhere('a.fileCreatedAt < NOW()');
 
+      let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
       if (numResults) {
         if (!isValidInteger(numResults, { min: 1 })) {
           throw new Error(`Invalid value for 'numResults': ${numResults}`);
         }
         query = query.limit(numResults);
-        await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
+        runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults}`;
       }
 
+      await manager.query(runtimeConfig);
       results = await query.getMany();
     });
 
@@ -95,24 +96,23 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }: FaceEmbeddingSearch): Promise<FaceSearchResult[]> {
     let results: Array<AssetFaceEntity & { distance: number }> = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-      await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
       let cte = manager
         .createQueryBuilder(AssetFaceEntity, 'faces')
-        .select('1 + (faces.embedding <=> :embedding)', 'distance')
+        .select('faces.embedding <=> :embedding', 'distance')
         .innerJoin('faces.asset', 'asset')
         .where('asset.ownerId IN (:...userIds )')
-        .orderBy('1 + (faces.embedding <=> :embedding)')
+        .orderBy('faces.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
+      let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
       if (numResults) {
         if (!isValidInteger(numResults, { min: 1 })) {
           throw new Error(`Invalid value for 'numResults': ${numResults}`);
         }
-        cte = cte.limit(numResults);
-        if (numResults > 64) {
-          // setting k too low messes with prefilter recall
-          await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
-        }
+        const limit = Math.max(numResults, 64);
+        cte = cte.limit(limit);
+        // setting this too low messes with prefilter recall
+        runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${limit}`;
       }
 
       if (hasPerson) {
@@ -122,7 +122,8 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       for (const col of this.faceColumns) {
         cte.addSelect(`faces.${col}`, col);
       }
-
+      
+      await manager.query(runtimeConfig);
       results = await manager
         .createQueryBuilder()
         .select('res.*')
@@ -176,7 +177,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
       await manager.query(`
         CREATE INDEX clip_index ON smart_search
-          USING vectors (embedding cosine_ops) WITH (options = $$
+          USING vectors (embedding vector_cos_ops) WITH (options = $$
           [indexing.hnsw]
           m = 16
           ef_construction = 300

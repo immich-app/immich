@@ -6,7 +6,7 @@ export class AddCLIPEmbeddingIndex1700713994428 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS clip_index ON smart_search
-      USING vectors (embedding cosine_ops) WITH (options = $$
+      USING vectors (embedding vector_cos_ops) WITH (options = $$
       [indexing.hnsw]
       m = 16
       ef_construction = 300
