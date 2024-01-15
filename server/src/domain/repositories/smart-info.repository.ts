@@ -1,4 +1,5 @@
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity } from '@app/infra/entities';
+import { Paginated, PaginationOptions } from '../domain.util';
 
 export const ISmartInfoRepository = 'ISmartInfoRepository';
 
@@ -23,7 +24,7 @@ export interface FaceSearchResult {
 
 export interface ISmartInfoRepository {
   init(modelName: string): Promise<void>;
-  searchCLIP(search: EmbeddingSearch): Promise<AssetEntity[]>;
+  searchCLIP(search: EmbeddingSearch, pagination: PaginationOptions): Paginated<AssetEntity>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   upsert(smartInfo: Partial<SmartInfoEntity>, embedding?: Embedding): Promise<void>;
 }

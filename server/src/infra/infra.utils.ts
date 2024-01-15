@@ -1,6 +1,14 @@
 import { Paginated, PaginationOptions } from '@app/domain';
 import _ from 'lodash';
-import { Between, FindManyOptions, LessThanOrEqual, MoreThanOrEqual, ObjectLiteral, Repository } from 'typeorm';
+import {
+  Between,
+  FindManyOptions,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { chunks, setUnion } from '../domain/domain.util';
 import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
 
@@ -18,9 +26,14 @@ export function OptionalBetween<T>(from?: T, to?: T) {
   }
 }
 
+export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
+  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
+  return Number.isInteger(value) && value >= min && value <= max;
+};
+
 export async function paginate<Entity extends ObjectLiteral>(
   repository: Repository<Entity>,
-  paginationOptions: PaginationOptions,
+  { take, skip }: PaginationOptions,
   searchOptions?: FindManyOptions<Entity>,
 ): Paginated<Entity> {
   const items = await repository.find(
@@ -28,26 +41,36 @@ export async function paginate<Entity extends ObjectLiteral>(
       {
         ...searchOptions,
         // Take one more item to check if there's a next page
-        take: paginationOptions.take + 1,
-        skip: paginationOptions.skip,
+        take: take + 1,
+        skip,
       },
       _.isUndefined,
     ),
   );
 
-  const hasNextPage = items.length > paginationOptions.take;
-  items.splice(paginationOptions.take);
+  const hasNextPage = items.length > take;
+  items.splice(take);
+
+  return { items, hasNextPage };
+}
+
+export async function paginatedBuilder<Entity extends ObjectLiteral>(
+  qb: SelectQueryBuilder<Entity>,
+  { take, skip }: PaginationOptions,
+): Paginated<Entity> {
+  const items = await qb
+    .take(take + 1)
+    .skip(skip)
+    .getMany();
+
+  const hasNextPage = items.length > take;
+  items.splice(take);
 
   return { items, hasNextPage };
 }
 
 export const asVector = (embedding: number[], quote = false) =>
   quote ? `'[${embedding.join(',')}]'` : `[${embedding.join(',')}]`;
-
-export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
-  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
-  return Number.isInteger(value) && value >= min && value <= max;
-};
 
 /**
  * Wraps a method that takes a collection of parameters and sequentially calls it with chunks of the collection,

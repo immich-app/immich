@@ -81,12 +81,8 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        assets = await this.smartInfoRepository.searchCLIP({
-          userIds: userIds,
-          embedding,
-          numResults: 100,
-          withArchived,
-        });
+        const results = await this.smartInfoRepository.searchCLIP({ userIds, embedding, withArchived }, { take: dto.take || 100 });
+        assets = results.items;
         break;
       }
       case SearchStrategy.TEXT: {

@@ -1,6 +1,6 @@
 import { AssetType } from '@app/infra/entities';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsPositive, IsString } from 'class-validator';
 import { Optional, toBoolean } from '../../domain.util';
 
 export class SearchDto {
@@ -43,6 +43,14 @@ export class SearchDto {
   @Optional()
   @Transform(toBoolean)
   withArchived?: boolean;
+
+  @IsPositive()
+  @Optional()
+  take?: number;
+
+  @IsInt()
+  @Optional()
+  skip?: number;
 }
 
 export class SearchPeopleDto {

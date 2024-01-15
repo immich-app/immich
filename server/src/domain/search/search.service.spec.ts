@@ -150,7 +150,7 @@ describe(SearchService.name, () => {
     it('should search by CLIP if `clip` option is true', async () => {
       const dto: SearchDto = { q: 'test query', clip: true };
       const embedding = [1, 2, 3];
-      smartInfoMock.searchCLIP.mockResolvedValueOnce([assetStub.image]);
+      smartInfoMock.searchCLIP.mockResolvedValueOnce({ items: [assetStub.image], hasNextPage: false });
       machineMock.encodeText.mockResolvedValueOnce(embedding);
       partnerMock.getAll.mockResolvedValueOnce([]);
       const expectedResponse = {

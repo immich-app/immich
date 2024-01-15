@@ -5,6 +5,9 @@ import {
   FaceEmbeddingSearch,
   FaceSearchResult,
   ISmartInfoRepository,
+  Paginated,
+  PaginationOptions,
+  PaginationResult,
 } from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
@@ -14,7 +17,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { asVector, isValidInteger } from '../infra.utils';
+import { asVector, isValidInteger, paginatedBuilder } from '../infra.utils';
 
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {
@@ -51,35 +54,23 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   @GenerateSql({
     params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
   })
-  async searchCLIP({ userIds, embedding, numResults, withArchived }: EmbeddingSearch): Promise<AssetEntity[]> {
-    if (!isValidInteger(numResults, { min: 1 })) {
-      throw new Error(`Invalid value for 'numResults': ${numResults}`);
+  async searchCLIP({ userIds, embedding }: EmbeddingSearch, pagination: PaginationOptions): Paginated<AssetEntity> {
+    const query = this.assetRepository
+      .createQueryBuilder('a')
+      .innerJoin('a.smartSearch', 's')
+      .where('a.ownerId IN (:...userIds )')
+      .andWhere('a.isVisible = true')
+      .andWhere('a.fileCreatedAt < NOW()')
+      .leftJoinAndSelect('a.exifInfo', 'e')
+      // .orderBy('s.embedding <=> :embedding')
+      .setParameters({ userIds, embedding: asVector(embedding) });
+
+    if (!withArchived) {
+      query.andWhere('a.isArchived = false');
     }
 
-    // setting this too low messes with prefilter recall
-    numResults = Math.max(numResults, 64);
-
-    let results: AssetEntity[] = [];
-    await this.assetRepository.manager.transaction(async (manager) => {
-      const query = manager
-        .createQueryBuilder(AssetEntity, 'a')
-        .innerJoin('a.smartSearch', 's')
-        .leftJoinAndSelect('a.exifInfo', 'e')
-        .where('a.ownerId IN (:...userIds )')
-        .orderBy('s.embedding <=> :embedding')
-        .setParameters({ userIds, embedding: asVector(embedding) });
-
-      if (!withArchived) {
-        query.andWhere('a.isArchived = false');
-      }
-      query.andWhere('a.isVisible = true').andWhere('a.fileCreatedAt < NOW()');
-      query.limit(numResults);
-
-      await manager.query(this.getRuntimeConfig(numResults));
-      results = await query.getMany();
-    });
-
-    return results;
+    await manager.query(this.getRuntimeConfig(numResults));
+    return paginatedBuilder<AssetEntity>(query, pagination);;
   }
 
   @GenerateSql({
