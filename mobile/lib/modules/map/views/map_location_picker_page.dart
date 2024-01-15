@@ -13,6 +13,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:immich_mobile/modules/map/utils/map_utils.dart';
 import 'package:geolocator/geolocator.dart';
 
+@RoutePage<LatLng?>()
 class MapLocationPickerPage extends HookConsumerWidget {
   final LatLng initialLatLng;
 
@@ -45,7 +46,8 @@ class MapLocationPickerPage extends HookConsumerWidget {
     }
 
     Future<void> getCurrentLocation() async {
-      var (currentLocation, locationPermission)  = await MapUtils.checkPermAndGetLocation(context);
+      var (currentLocation, locationPermission) =
+          await MapUtils.checkPermAndGetLocation(context);
       if (locationPermission == LocationPermission.denied ||
           locationPermission == LocationPermission.deniedForever) {
         return;
@@ -53,7 +55,8 @@ class MapLocationPickerPage extends HookConsumerWidget {
       if (currentLocation == null) {
         return;
       }
-      var currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude);
+      var currentLatLng =
+          LatLng(currentLocation.latitude, currentLocation.longitude);
       selectedLatLng.value = currentLatLng;
       controller.value?.animateCamera(CameraUpdate.newLatLng(currentLatLng));
     }
