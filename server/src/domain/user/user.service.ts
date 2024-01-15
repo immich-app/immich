@@ -62,7 +62,7 @@ export class UserService {
   async update(auth: AuthDto, dto: UpdateUserDto): Promise<UserResponseDto> {
     const user = await this.findOrFail(dto.id, {});
 
-    if (user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
+    if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
       await this.userRepository.syncUsage(dto.id);
     }
 
