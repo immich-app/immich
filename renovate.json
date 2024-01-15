@@ -66,6 +66,10 @@
       "matchPackageNames": ["node"],
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
       "versioning": "node"
+    },
+    {
+      "matchPackageNames": ["com.google.guava:guava"],
+      "versionCompatibility": "^(?<version>[^-]+)-(?<compatibility>.*)?$"
     }
   ],
   "ignorePaths": ["mobile/openapi/pubspec.yaml"],
