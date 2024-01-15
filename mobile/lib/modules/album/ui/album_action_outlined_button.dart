@@ -7,11 +7,11 @@ class AlbumActionOutlinedButton extends StatelessWidget {
   final IconData iconData;
 
   const AlbumActionOutlinedButton({
-    Key? key,
+    super.key,
     this.onPressed,
     required this.labelText,
     required this.iconData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -52,7 +52,7 @@ class DraggableScrollbar extends StatefulWidget {
   final bool alwaysVisibleScrollThumb;
 
   DraggableScrollbar({
-    Key? key,
+    super.key,
     this.alwaysVisibleScrollThumb = false,
     required this.heightScrollThumb,
     required this.backgroundColor,
@@ -64,11 +64,10 @@ class DraggableScrollbar extends StatefulWidget {
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),
     this.labelTextBuilder,
     this.labelConstraints,
-  })  : assert(child.scrollDirection == Axis.vertical),
-        super(key: key);
+  }) : assert(child.scrollDirection == Axis.vertical);
 
   DraggableScrollbar.rrect({
-    Key? key,
+    super.key,
     Key? scrollThumbKey,
     this.alwaysVisibleScrollThumb = false,
     required this.child,
@@ -82,11 +81,10 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
         scrollThumbBuilder =
-            _thumbRRectBuilder(scrollThumbKey, alwaysVisibleScrollThumb),
-        super(key: key);
+            _thumbRRectBuilder(scrollThumbKey, alwaysVisibleScrollThumb);
 
   DraggableScrollbar.arrows({
-    Key? key,
+    super.key,
     Key? scrollThumbKey,
     this.alwaysVisibleScrollThumb = false,
     required this.child,
@@ -100,11 +98,10 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
         scrollThumbBuilder =
-            _thumbArrowBuilder(scrollThumbKey, alwaysVisibleScrollThumb),
-        super(key: key);
+            _thumbArrowBuilder(scrollThumbKey, alwaysVisibleScrollThumb);
 
   DraggableScrollbar.semicircle({
-    Key? key,
+    super.key,
     Key? scrollThumbKey,
     this.alwaysVisibleScrollThumb = false,
     required this.child,
@@ -121,8 +118,7 @@ class DraggableScrollbar extends StatefulWidget {
           heightScrollThumb * 0.6,
           scrollThumbKey,
           alwaysVisibleScrollThumb,
-        ),
-        super(key: key);
+        );
 
   @override
   DraggableScrollbarState createState() => DraggableScrollbarState();
@@ -288,12 +284,12 @@ class ScrollLabel extends StatelessWidget {
       BoxConstraints.tightFor(width: 72.0, height: 28.0);
 
   const ScrollLabel({
-    Key? key,
+    super.key,
     required this.child,
     required this.animation,
     required this.backgroundColor,
     this.constraints = _defaultConstraints,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -625,10 +621,10 @@ class SlideFadeTransition extends StatelessWidget {
   final Widget child;
 
   const SlideFadeTransition({
-    Key? key,
+    super.key,
     required this.animation,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

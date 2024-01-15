@@ -1,5 +1,5 @@
 /// A wrapper for [CuratedLocationsResponseDto] objects
-/// and [CuratedObjectsResponseDto] to be displayed in 
+/// and [CuratedObjectsResponseDto] to be displayed in
 /// a view
 class CuratedContent {
   /// The label to show associated with this curated object

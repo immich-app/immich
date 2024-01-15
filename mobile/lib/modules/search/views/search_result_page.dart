@@ -27,9 +27,9 @@ SearchType _getSearchType(String searchTerm) {
 
 class SearchResultPage extends HookConsumerWidget {
   const SearchResultPage({
-    Key? key,
+    super.key,
     required this.searchTerm,
-  }) : super(key: key);
+  });
 
   final String searchTerm;
 

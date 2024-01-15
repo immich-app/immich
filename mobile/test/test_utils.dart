@@ -21,7 +21,7 @@ import 'mock_http_override.dart';
 
 // Listener Mock to test when a provider notifies its listeners
 class ListenerMock<T> extends Mock {
-  void call(T? previous, T next);
+  void listen(T? previous, T next);
 }
 
 final class TestUtils {

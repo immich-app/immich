@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class FailedBackupStatusPage extends HookConsumerWidget {
-  const FailedBackupStatusPage({Key? key}) : super(key: key);
+  const FailedBackupStatusPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final errorBackupList = ref.watch(errorBackupListProvider);

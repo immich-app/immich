@@ -25,7 +25,7 @@ const _defaultDecoration = BoxDecoration(
 /// to user gestures, updates to  the controller state and mounts the entire PhotoView Layout
 class PhotoViewCore extends StatefulWidget {
   const PhotoViewCore({
-    Key? key,
+    super.key,
     required this.imageProvider,
     required this.backgroundDecoration,
     required this.gaplessPlayback,
@@ -47,11 +47,10 @@ class PhotoViewCore extends StatefulWidget {
     required this.filterQuality,
     required this.disableGestures,
     required this.enablePanAlways,
-  })  : customChild = null,
-        super(key: key);
+  }) : customChild = null;
 
   const PhotoViewCore.customChild({
-    Key? key,
+    super.key,
     required this.customChild,
     required this.backgroundDecoration,
     this.heroAttributes,
@@ -73,8 +72,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.disableGestures,
     required this.enablePanAlways,
   })  : imageProvider = null,
-        gaplessPlayback = false,
-        super(key: key);
+        gaplessPlayback = false;
 
   final Decoration? backgroundDecoration;
   final ImageProvider? imageProvider;
@@ -359,15 +357,15 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             onScaleStart: onScaleStart,
             onScaleUpdate: onScaleUpdate,
             onScaleEnd: onScaleEnd,
-            onDragStart:  widget.onDragStart != null
-               ? (details) => widget.onDragStart!(context, details, value)
-               : null,
-            onDragEnd:  widget.onDragEnd != null
-               ? (details) => widget.onDragEnd!(context, details, value)
-               : null,
+            onDragStart: widget.onDragStart != null
+                ? (details) => widget.onDragStart!(context, details, value)
+                : null,
+            onDragEnd: widget.onDragEnd != null
+                ? (details) => widget.onDragEnd!(context, details, value)
+                : null,
             onDragUpdate: widget.onDragUpdate != null
-               ? (details) => widget.onDragUpdate!(context, details, value)
-               : null,
+                ? (details) => widget.onDragUpdate!(context, details, value)
+                : null,
             hitDetector: this,
             onTapUp: widget.onTapUp != null
                 ? (details) => widget.onTapUp!(context, details, value)

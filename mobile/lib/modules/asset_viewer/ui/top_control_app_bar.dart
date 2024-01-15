@@ -8,7 +8,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
-    Key? key,
+    super.key,
     required this.asset,
     required this.onMoreInfoPressed,
     required this.onDownloadPressed,
@@ -20,7 +20,7 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.isOwner,
     required this.onActivitiesPressed,
     required this.isPartner,
-  }) : super(key: key);
+  });
 
   final Asset asset;
   final Function onMoreInfoPressed;

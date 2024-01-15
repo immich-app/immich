@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/tab.provider.dart';
 
 class TabControllerPage extends HookConsumerWidget {
-  const TabControllerPage({Key? key}) : super(key: key);
+  const TabControllerPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

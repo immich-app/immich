@@ -11,10 +11,10 @@ import 'package:openapi/api.dart';
 
 class AlbumThumbnailListTile extends StatelessWidget {
   const AlbumThumbnailListTile({
-    Key? key,
+    super.key,
     required this.album,
     this.onTap,
-  }) : super(key: key);
+  });
 
   final Album album;
   final void Function()? onTap;

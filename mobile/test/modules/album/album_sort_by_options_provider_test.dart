@@ -253,7 +253,7 @@ void main() {
       final listener = ListenerMock<AlbumSortMode>();
       container.listen(
         albumSortByOptionsProvider,
-        listener,
+        listener.listen,
         fireImmediately: true,
       );
 
@@ -268,9 +268,9 @@ void main() {
           .changeSortMode(AlbumSortMode.title);
 
       verifyInOrder([
-        () => listener.call(null, AlbumSortMode.created),
-        () => listener.call(AlbumSortMode.created, AlbumSortMode.mostOldest),
-        () => listener.call(AlbumSortMode.mostOldest, AlbumSortMode.title),
+        () => listener.listen(null, AlbumSortMode.created),
+        () => listener.listen(AlbumSortMode.created, AlbumSortMode.mostOldest),
+        () => listener.listen(AlbumSortMode.mostOldest, AlbumSortMode.title),
       ]);
 
       verifyNoMoreInteractions(listener);
@@ -318,7 +318,7 @@ void main() {
       final listener = ListenerMock<bool>();
       container.listen(
         albumSortOrderProvider,
-        listener,
+        listener.listen,
         fireImmediately: true,
       );
 
@@ -331,9 +331,9 @@ void main() {
           .changeSortDirection(false);
 
       verifyInOrder([
-        () => listener.call(null, false),
-        () => listener.call(false, true),
-        () => listener.call(true, false),
+        () => listener.listen(null, false),
+        () => listener.listen(false, true),
+        () => listener.listen(true, false),
       ]);
 
       verifyNoMoreInteractions(listener);

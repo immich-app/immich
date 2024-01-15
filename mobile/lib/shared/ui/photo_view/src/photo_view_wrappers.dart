@@ -7,7 +7,7 @@ import 'utils/photo_view_utils.dart';
 
 class ImageWrapper extends StatefulWidget {
   const ImageWrapper({
-    Key? key,
+    super.key,
     required this.imageProvider,
     required this.loadingBuilder,
     required this.backgroundDecoration,
@@ -36,7 +36,7 @@ class ImageWrapper extends StatefulWidget {
     required this.errorBuilder,
     required this.enablePanAlways,
     required this.index,
-  }) : super(key: key);
+  });
 
   final ImageProvider imageProvider;
   final LoadingBuilder? loadingBuilder;
@@ -237,7 +237,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
 class CustomChildWrapper extends StatelessWidget {
   const CustomChildWrapper({
-    Key? key,
+    super.key,
     this.child,
     required this.childSize,
     required this.backgroundDecoration,
@@ -263,7 +263,7 @@ class CustomChildWrapper extends StatelessWidget {
     required this.filterQuality,
     required this.disableGestures,
     required this.enablePanAlways,
-  }) : super(key: key);
+  });
 
   final Widget? child;
   final Size? childSize;

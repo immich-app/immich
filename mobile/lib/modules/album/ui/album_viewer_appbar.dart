@@ -16,14 +16,14 @@ import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 class AlbumViewerAppbar extends HookConsumerWidget
     implements PreferredSizeWidget {
   const AlbumViewerAppbar({
-    Key? key,
+    super.key,
     required this.album,
     required this.userId,
     required this.titleFocusNode,
     this.onAddPhotos,
     this.onAddUsers,
     required this.onActivities,
-  }) : super(key: key);
+  });
 
   final Album album;
   final String userId;

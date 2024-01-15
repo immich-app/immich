@@ -13,7 +13,6 @@ class AuthGuard extends AutoRouteGuard {
   AuthGuard(this._apiService);
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
-
     resolver.next(true);
 
     try {

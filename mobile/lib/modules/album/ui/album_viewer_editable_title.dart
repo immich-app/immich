@@ -10,10 +10,10 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
   final Album album;
   final FocusNode titleFocusNode;
   const AlbumViewerEditableTitle({
-    Key? key,
+    super.key,
     required this.album,
     required this.titleFocusNode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

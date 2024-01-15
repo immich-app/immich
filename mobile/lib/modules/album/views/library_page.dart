@@ -12,7 +12,7 @@ import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 
 class LibraryPage extends HookConsumerWidget {
-  const LibraryPage({Key? key}) : super(key: key);
+  const LibraryPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

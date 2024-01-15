@@ -11,13 +11,13 @@ class ConfirmDialog extends ConsumerWidget {
   final String ok;
 
   const ConfirmDialog({
-    Key? key,
+    super.key,
     required this.onOk,
     required this.title,
     required this.content,
     this.cancel = "delete_dialog_cancel",
     this.ok = "backup_controller_page_background_battery_info_ok",
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

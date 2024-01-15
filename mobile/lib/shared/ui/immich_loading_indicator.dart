@@ -5,9 +5,9 @@ class ImmichLoadingIndicator extends StatelessWidget {
   final double? borderRadius;
 
   const ImmichLoadingIndicator({
-    Key? key,
+    super.key,
     this.borderRadius,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

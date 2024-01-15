@@ -17,7 +17,7 @@ double getScaleForScaleState(
     case PhotoViewScaleState.covering:
       return _clampSize(
         _scaleForCovering(
-          scaleBoundaries.outerSize, 
+          scaleBoundaries.outerSize,
           scaleBoundaries.childSize,
         ),
         scaleBoundaries,

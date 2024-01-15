@@ -52,7 +52,10 @@ class ImmichTestLoginHelper {
   }
 
   Future<void> pressLoginButton() async {
-    await pumpUntilFound(tester, find.textContaining("login_form_button_text".tr()));
+    await pumpUntilFound(
+      tester,
+      find.textContaining("login_form_button_text".tr()),
+    );
     final button = find.textContaining("login_form_button_text".tr());
     await tester.tap(button);
   }
@@ -62,7 +65,7 @@ class ImmichTestLoginHelper {
   }
 
   Future<void> assertLoginFailed({int timeoutSeconds = 15}) async {
-      await pumpUntilFound(tester, find.text("login_form_failed_login".tr()));
+    await pumpUntilFound(tester, find.text("login_form_failed_login".tr()));
   }
 }
 
@@ -80,9 +83,9 @@ enum LoginCredentials {
   ),
 
   wrongInstanceUrl(
-  "https://does-not-exist.preview.immich.app",
-  "demo@immich.app",
-  "demo",
+    "https://does-not-exist.preview.immich.app",
+    "demo@immich.app",
+    "demo",
   );
 
   const LoginCredentials(this.server, this.email, this.password);

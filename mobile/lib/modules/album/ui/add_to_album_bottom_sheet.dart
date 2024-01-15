@@ -19,9 +19,9 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
   final List<Asset> assets;
 
   const AddToAlbumBottomSheet({
-    Key? key,
+    super.key,
     required this.assets,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

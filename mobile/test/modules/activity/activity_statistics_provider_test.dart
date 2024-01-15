@@ -32,7 +32,7 @@ void main() {
 
     container.listen(
       activityStatisticsProvider('test-album', 'test-asset'),
-      listener,
+      listener.listen,
       fireImmediately: true,
     );
 
@@ -40,8 +40,8 @@ void main() {
     await Future.delayed(const Duration(milliseconds: 1));
 
     verifyInOrder([
-      () => listener.call(null, 0),
-      () => listener.call(0, 5),
+      () => listener.listen(null, 0),
+      () => listener.listen(0, 5),
     ]);
 
     verifyNoMoreInteractions(listener);
@@ -55,7 +55,7 @@ void main() {
     final provider = activityStatisticsProvider('test-album');
     container.listen(
       provider,
-      listener,
+      listener.listen,
       fireImmediately: true,
     );
 
@@ -76,7 +76,7 @@ void main() {
     final provider = activityStatisticsProvider('new-album', 'test-asset');
     container.listen(
       provider,
-      listener,
+      listener.listen,
       fireImmediately: true,
     );
 

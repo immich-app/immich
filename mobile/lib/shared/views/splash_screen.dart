@@ -12,7 +12,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
-  const SplashScreenPage({Key? key}) : super(key: key);
+  const SplashScreenPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

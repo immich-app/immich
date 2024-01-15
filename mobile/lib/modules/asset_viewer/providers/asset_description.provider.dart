@@ -14,7 +14,7 @@ class AssetDescriptionNotifier extends StateNotifier<String> {
 
   AssetDescriptionNotifier(
     this._db,
-    this._service, 
+    this._service,
     this._asset,
   ) : super('') {
     _fetchLocalDescription();
@@ -34,9 +34,7 @@ class AssetDescriptionNotifier extends StateNotifier<String> {
     }
 
     // Subscribe to local changes
-    final exifInfo = await _db
-        .exifInfos
-        .get(localExifId);
+    final exifInfo = await _db.exifInfos.get(localExifId);
 
     // Guard
     if (exifInfo?.description == null) {
@@ -75,13 +73,11 @@ class AssetDescriptionNotifier extends StateNotifier<String> {
       return;
     }
 
-    return _service
-        .setDescription(description, remoteAssetId, localExifId);
+    return _service.setDescription(description, remoteAssetId, localExifId);
   }
 }
 
-final assetDescriptionProvider = StateNotifierProvider
-    .autoDispose
+final assetDescriptionProvider = StateNotifierProvider.autoDispose
     .family<AssetDescriptionNotifier, String, Asset>(
   (ref, asset) => AssetDescriptionNotifier(
     ref.watch(dbProvider),
@@ -89,5 +85,3 @@ final assetDescriptionProvider = StateNotifierProvider
     asset,
   ),
 );
-
-

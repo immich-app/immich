@@ -3,14 +3,14 @@ import 'package:immich_mobile/modules/asset_viewer/ui/animated_play_pause.dart';
 
 class CenterPlayButton extends StatelessWidget {
   const CenterPlayButton({
-    Key? key,
+    super.key,
     required this.backgroundColor,
     this.iconColor,
     required this.show,
     required this.isPlaying,
     required this.isFinished,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final Color backgroundColor;
   final Color? iconColor;

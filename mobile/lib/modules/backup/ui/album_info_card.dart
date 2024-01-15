@@ -14,8 +14,7 @@ class AlbumInfoCard extends HookConsumerWidget {
   final Uint8List? imageData;
   final AvailableAlbum albumInfo;
 
-  const AlbumInfoCard({Key? key, this.imageData, required this.albumInfo})
-      : super(key: key);
+  const AlbumInfoCard({super.key, this.imageData, required this.albumInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -12,8 +12,8 @@ import 'package:video_player/video_player.dart';
 
 class VideoPlayerControls extends ConsumerStatefulWidget {
   const VideoPlayerControls({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   VideoPlayerControlsState createState() => VideoPlayerControlsState();

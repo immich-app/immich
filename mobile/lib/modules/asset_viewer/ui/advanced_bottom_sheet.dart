@@ -7,8 +7,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 class AdvancedBottomSheet extends HookConsumerWidget {
   final Asset assetDetail;
 
-  const AdvancedBottomSheet({Key? key, required this.assetDetail})
-      : super(key: key);
+  const AdvancedBottomSheet({super.key, required this.assetDetail});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

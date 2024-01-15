@@ -10,8 +10,8 @@ import 'package:intl/intl.dart';
 
 class AppLogPage extends HookConsumerWidget {
   const AppLogPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

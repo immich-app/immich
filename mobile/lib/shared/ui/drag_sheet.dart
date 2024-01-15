@@ -18,11 +18,11 @@ class CustomDraggingHandle extends StatelessWidget {
 
 class ControlBoxButton extends StatelessWidget {
   const ControlBoxButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.iconData,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final String label;
   final IconData iconData;

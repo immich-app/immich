@@ -31,7 +31,7 @@ import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class MultiselectGrid extends HookConsumerWidget {
   const MultiselectGrid({
-    Key? key,
+    super.key,
     required this.renderListProvider,
     this.onRefresh,
     this.buildLoadingIndicator,
@@ -44,7 +44,7 @@ class MultiselectGrid extends HookConsumerWidget {
     this.editEnabled = false,
     this.unarchive = false,
     this.unfavorite = false,
-  }) : super(key: key);
+  });
 
   final ProviderListenable<AsyncValue<RenderList>> renderListProvider;
   final Future<void> Function()? onRefresh;

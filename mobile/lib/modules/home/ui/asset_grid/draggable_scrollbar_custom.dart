@@ -57,7 +57,7 @@ class DraggableScrollbar extends StatefulWidget {
   final Function(bool scrolling) scrollStateListener;
 
   DraggableScrollbar.semicircle({
-    Key? key,
+    super.key,
     Key? scrollThumbKey,
     this.alwaysVisibleScrollThumb = false,
     required this.child,
@@ -76,8 +76,7 @@ class DraggableScrollbar extends StatefulWidget {
           heightScrollThumb * 0.6,
           scrollThumbKey,
           alwaysVisibleScrollThumb,
-        ),
-        super(key: key);
+        );
 
   @override
   DraggableScrollbarState createState() => DraggableScrollbarState();
@@ -170,12 +169,12 @@ class ScrollLabel extends StatelessWidget {
       BoxConstraints.tightFor(width: 72.0, height: 28.0);
 
   const ScrollLabel({
-    Key? key,
+    super.key,
     required this.child,
     required this.animation,
     required this.backgroundColor,
     this.constraints = _defaultConstraints,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -509,10 +508,10 @@ class SlideFadeTransition extends StatelessWidget {
   final Widget child;
 
   const SlideFadeTransition({
-    Key? key,
+    super.key,
     required this.animation,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

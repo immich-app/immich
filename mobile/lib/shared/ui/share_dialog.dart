@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class ShareDialog extends StatelessWidget {
-  const ShareDialog({Key? key}) : super(key: key);
+  const ShareDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,8 +13,7 @@ class ShareDialog extends StatelessWidget {
           const CircularProgressIndicator(),
           Container(
             margin: const EdgeInsets.only(top: 12),
-            child: const Text('share_dialog_preparing')
-                .tr(),
+            child: const Text('share_dialog_preparing').tr(),
           ),
         ],
       ),

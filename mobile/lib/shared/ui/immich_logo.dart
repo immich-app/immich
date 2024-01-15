@@ -21,5 +21,4 @@ class ImmichLogo extends StatelessWidget {
       ),
     );
   }
-
 }

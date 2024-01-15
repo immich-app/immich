@@ -8,8 +8,8 @@ import 'package:immich_mobile/modules/settings/services/app_settings.service.dar
 
 class StorageIndicator extends HookConsumerWidget {
   const StorageIndicator({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

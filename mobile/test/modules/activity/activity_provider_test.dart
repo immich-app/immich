@@ -73,7 +73,7 @@ void main() {
     listener = ListenerMock();
     container.listen(
       provider,
-      listener,
+      listener.listen,
       fireImmediately: true,
     );
 
@@ -82,8 +82,8 @@ void main() {
 
   test('Returns a list of activity', () async {
     verifyInOrder([
-      () => listener.call(null, const AsyncLoading()),
-      () => listener.call(
+      () => listener.listen(null, const AsyncLoading()),
+      () => listener.listen(
             const AsyncLoading(),
             any(
               that: allOf(
