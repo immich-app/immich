@@ -365,14 +365,7 @@ export class AssetRepository implements IAssetRepository {
   getById(id: string, relations: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null> {
     return this.repository.findOne({
       where: { id },
-      relations: {
-        faces: {
-          person: true,
-        },
-        library: true,
-        stack: true,
-        ...relations,
-      },
+      relations,
       // We are specifically asking for this asset. Return it even if it is soft deleted
       withDeleted: true,
     });
