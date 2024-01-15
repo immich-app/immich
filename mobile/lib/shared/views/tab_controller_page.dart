@@ -11,6 +11,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/tab.provider.dart';
 
+@RoutePage()
 class TabControllerPage extends HookConsumerWidget {
   const TabControllerPage({Key? key}) : super(key: key);
 
@@ -167,6 +168,15 @@ class TabControllerPage extends HookConsumerWidget {
       );
     }
 
+    Future<bool> returnBackToHome(TabsRouter tabsRouter) async {
+      bool atHomeTab = tabsRouter.activeIndex == 0;
+      if (!atHomeTab) {
+        tabsRouter.setActiveIndex(0);
+      }
+
+      return atHomeTab;
+    }
+
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
       routes: [
@@ -175,17 +185,15 @@ class TabControllerPage extends HookConsumerWidget {
         const SharingRoute(),
         const LibraryRoute(),
       ],
-      builder: (context, child, animation) {
+      duration: const Duration(milliseconds: 600),
+      transitionBuilder: (context, child, animation) => FadeTransition(
+        opacity: animation,
+        child: child,
+      ),
+      builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
         return WillPopScope(
-          onWillPop: () async {
-            bool atHomeTab = tabsRouter.activeIndex == 0;
-            if (!atHomeTab) {
-              tabsRouter.setActiveIndex(0);
-            }
-
-            return atHomeTab;
-          },
+          onWillPop: () => returnBackToHome(tabsRouter),
           child: LayoutBuilder(
             builder: (context, constraints) {
               const medium = 600;
@@ -194,22 +202,14 @@ class TabControllerPage extends HookConsumerWidget {
               if (constraints.maxWidth < medium) {
                 // Normal phone width
                 bottom = bottomNavigationBar(tabsRouter);
-                body = FadeTransition(
-                  opacity: animation,
-                  child: child,
-                );
+                body = child;
               } else {
                 // Medium tablet width
                 bottom = null;
                 body = Row(
                   children: [
                     navigationRail(tabsRouter),
-                    Expanded(
-                      child: FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      ),
-                    ),
+                    Expanded(child: child),
                   ],
                 );
               }

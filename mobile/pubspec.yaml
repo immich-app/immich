@@ -20,7 +20,7 @@ dependencies:
   cached_network_image: ^3.2.2
   flutter_cache_manager: ^3.3.0
   intl: ^0.18.0
-  auto_route: ^5.0.1
+  auto_route: ^7.0.0
   fluttertoast: ^8.2.2
   video_player: ^2.2.18
   chewie: ^1.4.0
@@ -76,7 +76,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.1
   build_runner: ^2.2.1
-  auto_route_generator: ^5.0.2
+  auto_route_generator: ^7.0.0
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.2.16
   isar_generator: *isar_version

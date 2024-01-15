@@ -64,137 +64,164 @@ import 'package:photo_manager/photo_manager.dart' hide LatLng;
 
 part 'router.gr.dart';
 
-@MaterialAutoRouter(
-  replaceInRouteName: 'Page,Route',
-  routes: <AutoRoute>[
-    AutoRoute(page: SplashScreenPage, initial: true),
+@AutoRouterConfig(replaceInRouteName: 'Page,Route')
+class AppRouter extends _$AppRouter {
+  late final AuthGuard _authGuard;
+  late final DuplicateGuard _duplicateGuard;
+  late final BackupPermissionGuard _backupPermissionGuard;
+
+  AppRouter(
+    ApiService apiService,
+    GalleryPermissionNotifier galleryPermissionNotifier,
+  ) {
+    _authGuard = AuthGuard(apiService);
+    _duplicateGuard = DuplicateGuard();
+    _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
+  }
+
+  @override
+  RouteType get defaultRouteType => const RouteType.material();
+
+  @override
+  late final List<AutoRoute> routes = [
+    AutoRoute(page: SplashScreenRoute.page, initial: true),
     AutoRoute(
-      page: PermissionOnboardingPage,
-      guards: [AuthGuard, DuplicateGuard],
+      page: PermissionOnboardingRoute.page,
+      guards: [_authGuard, _duplicateGuard],
     ),
-    AutoRoute(
-      page: LoginPage,
-      guards: [
-        DuplicateGuard,
-      ],
-    ),
-    AutoRoute(page: ChangePasswordPage),
+    AutoRoute(page: LoginRoute.page, guards: [_duplicateGuard]),
+    AutoRoute(page: ChangePasswordRoute.page),
     CustomRoute(
-      page: TabControllerPage,
-      guards: [AuthGuard, DuplicateGuard],
+      page: TabControllerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
       children: [
-        AutoRoute(page: HomePage, guards: [AuthGuard, DuplicateGuard]),
-        AutoRoute(page: SearchPage, guards: [AuthGuard, DuplicateGuard]),
-        AutoRoute(page: SharingPage, guards: [AuthGuard, DuplicateGuard]),
-        AutoRoute(page: LibraryPage, guards: [AuthGuard, DuplicateGuard]),
+        AutoRoute(page: HomeRoute.page, guards: [_authGuard, _duplicateGuard]),
+        AutoRoute(
+          page: SearchRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
+        AutoRoute(
+          page: SharingRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
+        AutoRoute(
+          page: LibraryRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
     CustomRoute(
-      page: GalleryViewerPage,
-      guards: [AuthGuard, DuplicateGuard],
+      page: GalleryViewerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: CustomTransitionsBuilders.zoomedPage,
     ),
-    AutoRoute(page: VideoViewerPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(
-      page: BackupControllerPage,
-      guards: [AuthGuard, DuplicateGuard, BackupPermissionGuard],
-    ),
-    AutoRoute(page: SearchResultPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: CuratedLocationPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: CreateAlbumPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: FavoritesPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: AllVideosPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: AllMotionPhotosPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(
-      page: RecentlyAddedPage,
-      guards: [AuthGuard, DuplicateGuard],
-    ),
-    CustomRoute<AssetSelectionPageResult?>(
-      page: AssetSelectionPage,
-      guards: [AuthGuard, DuplicateGuard],
-      transitionsBuilder: TransitionsBuilders.slideBottom,
-    ),
-    CustomRoute<List<String>>(
-      page: SelectUserForSharingPage,
-      guards: [AuthGuard, DuplicateGuard],
-      transitionsBuilder: TransitionsBuilders.slideBottom,
-    ),
-    AutoRoute(page: AlbumViewerPage, guards: [AuthGuard, DuplicateGuard]),
-    CustomRoute<List<String>?>(
-      page: SelectAdditionalUserForSharingPage,
-      guards: [AuthGuard, DuplicateGuard],
-      transitionsBuilder: TransitionsBuilders.slideBottom,
+      page: VideoViewerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
-      page: BackupAlbumSelectionPage,
-      guards: [AuthGuard, DuplicateGuard],
+      page: BackupControllerRoute.page,
+      guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
     ),
-    AutoRoute(page: AlbumPreviewPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(
+      page: SearchResultRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: CuratedLocationRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: CreateAlbumRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(page: FavoritesRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: AllVideosRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(
+      page: AllMotionPhotosRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: RecentlyAddedRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
     CustomRoute(
-      page: FailedBackupStatusPage,
-      guards: [AuthGuard, DuplicateGuard],
+      page: AssetSelectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideBottom,
+    ),
+    CustomRoute(
+      page: SelectUserForSharingRoute.page,
+      guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
     AutoRoute(
-      page: SettingsPage,
-      guards: [
-        DuplicateGuard,
-      ],
+      page: AlbumViewerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
     ),
-    AutoRoute(page: AppLogPage, guards: [DuplicateGuard]),
-    AutoRoute(
-      page: AppLogDetailPage,
-    ),
-    AutoRoute(
-      page: ArchivePage,
-      guards: [
-        AuthGuard,
-        DuplicateGuard,
-      ],
-    ),
-    AutoRoute(page: PartnerPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: PartnerDetailPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(
-      page: PersonResultPage,
-      guards: [
-        AuthGuard,
-        DuplicateGuard,
-      ],
-    ),
-    AutoRoute(page: AllPeoplePage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: MemoryPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: MapPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: AlbumOptionsPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: TrashPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: SharedLinkPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: SharedLinkEditPage, guards: [AuthGuard, DuplicateGuard]),
     CustomRoute(
-      page: ActivitiesPage,
-      guards: [AuthGuard, DuplicateGuard],
+      page: SelectAdditionalUserForSharingRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideBottom,
+    ),
+    AutoRoute(
+      page: BackupAlbumSelectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: AlbumPreviewRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    CustomRoute(
+      page: FailedBackupStatusRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideBottom,
+    ),
+    AutoRoute(page: SettingsRoute.page, guards: [_duplicateGuard]),
+    AutoRoute(page: AppLogRoute.page, guards: [_duplicateGuard]),
+    AutoRoute(page: AppLogDetailRoute.page, guards: [_duplicateGuard]),
+    AutoRoute(page: ArchiveRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: PartnerRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(
+      page: PartnerDetailRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: PersonResultRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(page: AllPeopleRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: MemoryRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: MapRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(
+      page: AlbumOptionsRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(page: TrashRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(
+      page: SharedLinkRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: SharedLinkEditRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    CustomRoute(
+      page: ActivitiesRoute.page,
+      guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
       durationInMilliseconds: 200,
     ),
-    CustomRoute<LatLng?>(
-      page: MapLocationPickerPage,
-      guards: [AuthGuard, DuplicateGuard],
+    CustomRoute(
+      page: MapLocationPickerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
     ),
-    AutoRoute(page: BackupOptionsPage, guards: [AuthGuard, DuplicateGuard]),
-  ],
-)
-class AppRouter extends _$AppRouter {
-  // ignore: unused_field
-  final ApiService _apiService;
-
-  AppRouter(
-    this._apiService,
-    GalleryPermissionNotifier galleryPermissionNotifier,
-  ) : super(
-          authGuard: AuthGuard(_apiService),
-          duplicateGuard: DuplicateGuard(),
-          backupPermissionGuard:
-              BackupPermissionGuard(galleryPermissionNotifier),
-        );
+    AutoRoute(
+      page: BackupOptionsRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+  ];
 }
 
 final appRouterProvider = Provider(
