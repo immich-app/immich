@@ -101,16 +101,16 @@
           return;
         case 'Delete':
           if ($isMultiSelectState) {
+            let force = false;
             if (shiftKey || !isTrashEnabled) {
               if ($showDeleteModal) {
                 isShowDeleteConfirmation = true;
                 return;
               }
-              trashOrDelete(true);
-              return;
+              force = true;
             }
 
-            trashOrDelete();
+            trashOrDelete(force);
           }
           return;
       }
