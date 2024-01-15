@@ -363,16 +363,6 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(id: string, relations: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null> {
-    if (!relations) {
-      relations = {
-        faces: {
-          person: true,
-        },
-        library: true,
-        stack: true,
-      };
-    }
-
     return this.repository.findOne({
       where: { id },
       relations,
