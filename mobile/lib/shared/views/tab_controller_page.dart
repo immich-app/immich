@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
+import 'package:immich_mobile/modules/search/ui/immich_search_bar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/tab.provider.dart';
@@ -51,6 +52,11 @@ class TabControllerPage extends HookConsumerWidget {
             // Scroll to top
             scrollToTopNotifierProvider.scrollToTop();
           }
+          if (tabsRouter.activeIndex == 1 && index == 1) {
+            // Focus search
+            searchFocusNotifier.requestFocus();
+          }
+
           HapticFeedback.selectionClick();
           tabsRouter.setActiveIndex(index);
           ref.read(tabProvider.notifier).state = TabEnum.values[index];
@@ -103,6 +109,10 @@ class TabControllerPage extends HookConsumerWidget {
           if (tabsRouter.activeIndex == 0 && index == 0) {
             // Scroll to top
             scrollToTopNotifierProvider.scrollToTop();
+          }
+          if (tabsRouter.activeIndex == 1 && index == 1) {
+            // Focus search
+            searchFocusNotifier.requestFocus();
           }
           HapticFeedback.selectionClick();
           tabsRouter.setActiveIndex(index);
