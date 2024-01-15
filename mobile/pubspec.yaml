@@ -48,7 +48,7 @@ dependencies:
   easy_image_viewer: ^1.2.0
   isar: *isar_version
   isar_flutter_libs: *isar_version # contains Isar Core
-  permission_handler: ^10.2.0
+  permission_handler: ^11.0.0
   device_info_plus: ^8.1.0
   connectivity_plus: ^4.0.1
   wakelock_plus: ^1.1.1
