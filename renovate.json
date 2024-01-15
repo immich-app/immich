@@ -68,7 +68,6 @@
       "versioning": "node"
     },
     {
-      "managers": ["maven"],
       "packageNames": ["com.google.guava:guava"],
       "versionScheme": "docker"
     }
