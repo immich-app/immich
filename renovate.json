@@ -68,8 +68,9 @@
       "versioning": "node"
     },
     {
-      "matchPackageNames": ["com.google.guava:guava"],
-      "versionCompatibility": "^(?<version>[^-]+)-(?<compatibility>.*)?$"
+      "managers": ["maven"],
+      "packageNames": ["com.google.guava:guava"],
+      "versionScheme": "docker"
     }
   ],
   "ignorePaths": ["mobile/openapi/pubspec.yaml"],
