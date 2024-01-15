@@ -25,13 +25,12 @@ dependencies:
   video_player: ^2.2.18
   chewie: ^1.4.0
   socket_io_client: ^2.0.0-beta.4-nullsafety.0
-  flutter_map: ^4.0.0
-  flutter_map_heatmap: ^0.0.4
+  # Update it to tag once next stable release
+  maplibre_gl:
+      git:
+        url: https://github.com/maplibre/flutter-maplibre-gl.git
+        ref: acb428a005efd9832a0a8e7ef0945f899dfb3ca5
   geolocator: ^10.0.0 # used to move to current location in map view
-  vector_map_tiles:
-    git:
-      url: https://github.com/shenlong-tanwen/flutter-vector-map-tiles.git
-      ref: immich_above_4
   flutter_udid: ^2.0.0
   package_info_plus: ^4.1.0
   url_launcher: ^6.1.3
@@ -40,10 +39,9 @@ dependencies:
   easy_localization: ^3.0.1
   share_plus: ^7.1.0
   flutter_displaymode: ^0.4.0
-  scrollable_positioned_list: ^0.3.4
+  scrollable_positioned_list: ^0.3.8
   path: ^1.8.1
   path_provider: ^2.0.11
-  latlong2: ^0.8.1
   collection: ^1.16.0
   http_parser: ^4.0.1
   flutter_web_auth: ^0.5.0
@@ -79,7 +77,7 @@ dev_dependencies:
   flutter_lints: ^2.0.1
   build_runner: ^2.2.1
   auto_route_generator: ^5.0.2
-  flutter_launcher_icons: "^0.9.2"
+  flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.2.16
   isar_generator: *isar_version
   integration_test:
@@ -117,11 +115,12 @@ flutter:
       fonts:
         - asset: fonts/overpass/OverpassMono.ttf
 
-flutter_icons:
+flutter_launcher_icons:
   image_path_android: "assets/immich-logo-no-outline.png"
   image_path_ios: "assets/immich-logo-no-outline.png"
   android: true # can specify file name here e.g. "ic_launcher"
   ios: true # can specify file name here e.g. "My-Launcher-Icon
+  remove_alpha_ios: true
 
 analyzer:
   exclude:

@@ -9,7 +9,7 @@ import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
 import 'package:immich_mobile/modules/backup/views/backup_options_page.dart';
-import 'package:immich_mobile/modules/map/ui/map_location_picker.dart';
+import 'package:immich_mobile/modules/map/views/map_location_picker_page.dart';
 import 'package:immich_mobile/modules/map/views/map_page.dart';
 import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/views/memory_page.dart';
@@ -59,8 +59,8 @@ import 'package:immich_mobile/shared/views/app_log_page.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
 import 'package:isar/isar.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:photo_manager/photo_manager.dart' hide LatLng;
-import 'package:latlong2/latlong.dart';
 
 part 'router.gr.dart';
 

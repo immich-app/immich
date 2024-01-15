@@ -1,25 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'person.service.dart';
+part of 'map_state.provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$personServiceHash() => r'54e6df4b8eea744f6de009f8315c9fe6230f6798';
+String _$mapStateNotifierHash() => r'3b509b57b7400b09817e9caee9debf899172cd52';
 
-/// See also [personService].
-@ProviderFor(personService)
-final personServiceProvider = AutoDisposeProvider<PersonService>.internal(
-  personService,
-  name: r'personServiceProvider',
+/// See also [MapStateNotifier].
+@ProviderFor(MapStateNotifier)
+final mapStateNotifierProvider =
+    NotifierProvider<MapStateNotifier, MapState>.internal(
+  MapStateNotifier.new,
+  name: r'mapStateNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$personServiceHash,
+      : _$mapStateNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef PersonServiceRef = AutoDisposeProviderRef<PersonService>;
+typedef _$MapStateNotifier = Notifier<MapState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

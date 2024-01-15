@@ -1,25 +1,24 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'current_asset.provider.dart';
+part of 'map_marker.provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$currentAssetHash() => r'2def10ea594152c984ae2974d687ab6856d7bdd0';
+String _$mapMarkersHash() => r'90b00b7f85c54b19f56c7d55d3ad8575c09dab3c';
 
-/// See also [CurrentAsset].
-@ProviderFor(CurrentAsset)
-final currentAssetProvider =
-    AutoDisposeNotifierProvider<CurrentAsset, Asset?>.internal(
-  CurrentAsset.new,
-  name: r'currentAssetProvider',
+/// See also [mapMarkers].
+@ProviderFor(mapMarkers)
+final mapMarkersProvider = AutoDisposeFutureProvider<List<MapMarker>>.internal(
+  mapMarkers,
+  name: r'mapMarkersProvider',
   debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$currentAssetHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$mapMarkersHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$CurrentAsset = AutoDisposeNotifier<Asset?>;
+typedef MapMarkersRef = AutoDisposeFutureProviderRef<List<MapMarker>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -28,6 +28,10 @@ PODS:
     - Flutter
   - isar_flutter_libs (1.0.0):
     - Flutter
+  - MapLibre (5.14.0-pre3)
+  - maplibre_gl (0.0.1):
+    - Flutter
+    - MapLibre (= 5.14.0-pre3)
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -71,6 +75,7 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - isar_flutter_libs (from `.symlinks/plugins/isar_flutter_libs/ios`)
+  - maplibre_gl (from `.symlinks/plugins/maplibre_gl/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
@@ -86,6 +91,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - FMDB
+    - MapLibre
     - ReachabilitySwift
     - SAMKeychain
     - Toast
@@ -115,6 +121,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
   isar_flutter_libs:
     :path: ".symlinks/plugins/isar_flutter_libs/ios"
+  maplibre_gl:
+    :path: ".symlinks/plugins/maplibre_gl/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -152,6 +160,8 @@ SPEC CHECKSUMS:
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   integration_test: 13825b8a9334a850581300559b8839134b124670
   isar_flutter_libs: b69f437aeab9c521821c3f376198c4371fa21073
+  MapLibre: 620fc933c1d6029b33738c905c1490d024e5d4ef
+  maplibre_gl: a2efec727dd340e4c65e26d2b03b584f14881fd9
   package_info_plus: fd030dabf36271f146f1f3beacd48f564b0f17f7
   path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
   path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
