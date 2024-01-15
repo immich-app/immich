@@ -10,6 +10,7 @@ import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
+@RoutePage<List<String>?>()
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
   final Album album;
 

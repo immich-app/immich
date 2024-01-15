@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+@RoutePage()
 class AlbumPreviewPage extends HookConsumerWidget {
   final AssetPathEntity album;
   const AlbumPreviewPage({Key? key, required this.album}) : super(key: key);

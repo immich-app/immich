@@ -10,6 +10,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
+@RoutePage()
 class PersonResultPage extends HookConsumerWidget {
   final String personId;
   final String personName;
