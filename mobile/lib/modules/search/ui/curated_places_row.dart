@@ -1,13 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
+import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
 import 'package:immich_mobile/modules/search/ui/curated_row.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 class CuratedPlacesRow extends CuratedRow {
   final bool isMapEnabled;
@@ -38,14 +37,13 @@ class CuratedPlacesRow extends CuratedRow {
                 padding: const EdgeInsets.only(right: 10.0),
                 child: MapThumbnail(
                   zoom: 2,
-                  coords: LatLng(
+                  centre: const LatLng(
                     47,
                     5,
                   ),
                   height: imageSize,
                   width: imageSize,
                   showAttribution: false,
-                  isDarkTheme: context.isDarkTheme,
                 ),
               ),
               Padding(

@@ -66,6 +66,10 @@
       "matchPackageNames": ["node"],
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
       "versioning": "node"
+    },
+    {
+      "packageNames": ["com.google.guava:guava"],
+      "versionScheme": "docker"
     }
   ],
   "ignorePaths": ["mobile/openapi/pubspec.yaml"],

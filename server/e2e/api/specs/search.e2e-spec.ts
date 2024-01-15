@@ -212,4 +212,81 @@ describe(`${SearchController.name}`, () => {
       });
     });
   });
+
+  describe('GET /search (file name)', () => {
+    beforeEach(async () => {
+      const assetId = (await assetRepository.create(generateAsset(loginResponse.userId, libraries))).id;
+      await assetRepository.upsertExif({ assetId, ...searchStub.exif });
+
+      const assetWithMetadata = await assetRepository.getById(assetId, { exifInfo: true });
+      if (!assetWithMetadata) {
+        throw new Error('Asset not found');
+      }
+      asset1 = mapAsset(assetWithMetadata);
+    });
+
+    it('should return assets when searching by file name', async () => {
+      if (asset1?.originalFileName.length === 0) {
+        throw new Error('Asset 1 does not have an original file name');
+      }
+
+      const { status, body } = await request(server)
+        .get('/search')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ q: asset1.originalFileName });
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({
+        albums: {
+          total: 0,
+          count: 0,
+          items: [],
+          facets: [],
+        },
+        assets: {
+          total: 1,
+          count: 1,
+          items: [
+            {
+              id: asset1.id,
+              originalFileName: asset1.originalFileName,
+            },
+          ],
+          facets: [],
+        },
+      });
+    });
+
+    it('should return assets when searching by file name with extension', async () => {
+      if (asset1?.originalFileName.length === 0) {
+        throw new Error('Asset 1 does not have an original file name');
+      }
+
+      const { status, body } = await request(server)
+        .get('/search')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query({ q: asset1.originalFileName + '.jpg' });
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({
+        albums: {
+          total: 0,
+          count: 0,
+          items: [],
+          facets: [],
+        },
+        assets: {
+          total: 1,
+          count: 1,
+          items: [
+            {
+              id: asset1.id,
+              originalFileName: asset1.originalFileName,
+            },
+          ],
+          facets: [],
+        },
+      });
+    });
+  });
 });

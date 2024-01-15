@@ -39,6 +39,7 @@ describe(`Supported file formats (e2e)`, () => {
         make: 'SONY',
         model: 'DSLR-A550',
         orientation: null,
+        description: 'SONY DSC',
       },
     },
     {
@@ -64,6 +65,7 @@ describe(`Supported file formats (e2e)`, () => {
         make: 'SONY',
         model: 'DSLR-A550',
         orientation: null,
+        description: 'SONY DSC',
       },
     },
     {

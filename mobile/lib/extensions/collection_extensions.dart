@@ -96,3 +96,9 @@ extension AssetListExtension on Iterable<Asset> {
     return this;
   }
 }
+
+extension SortedByProperty<T> on Iterable<T> {
+  Iterable<T> sortedByField(Comparable Function(T e) key) {
+    return sorted((a, b) => key(a).compareTo(key(b)));
+  }
+}

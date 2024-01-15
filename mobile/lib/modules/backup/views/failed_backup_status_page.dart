@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/backup/providers/error_backup_list.provide
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+@RoutePage()
 class FailedBackupStatusPage extends HookConsumerWidget {
   const FailedBackupStatusPage({Key? key}) : super(key: key);
   @override

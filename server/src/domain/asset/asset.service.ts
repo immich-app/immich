@@ -465,7 +465,15 @@ export class AssetService {
   async handleAssetDeletion(job: IAssetDeletionJob) {
     const { id, fromExternal } = job;
 
-    const asset = await this.assetRepository.getById(id);
+    const asset = await this.assetRepository.getById(id, {
+      faces: {
+        person: true,
+      },
+      library: true,
+      stack: true,
+      exifInfo: true,
+    });
+
     if (!asset) {
       return false;
     }
@@ -554,7 +562,13 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, newParentId);
 
     const childIds: string[] = [];
-    const oldParent = await this.assetRepository.getById(oldParentId);
+    const oldParent = await this.assetRepository.getById(oldParentId, {
+      faces: {
+        person: true,
+      },
+      library: true,
+      stack: true,
+    });
     if (oldParent != null) {
       childIds.push(oldParent.id);
       // Get all children of old parent

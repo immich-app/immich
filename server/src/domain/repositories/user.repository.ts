@@ -34,5 +34,5 @@ export interface IUserRepository {
   delete(user: UserEntity, hard?: boolean): Promise<UserEntity>;
   restore(user: UserEntity): Promise<UserEntity>;
   updateUsage(id: string, delta: number): Promise<void>;
-  syncUsage(): Promise<void>;
+  syncUsage(id?: string): Promise<void>;
 }

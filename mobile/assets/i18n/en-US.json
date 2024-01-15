@@ -253,7 +253,7 @@
   "map_no_assets_in_bounds": "No photos in this area",
   "map_no_location_permission_content": "Location permission is needed to display assets from your current location. Do you want to allow it now?",
   "map_no_location_permission_title": "Location Permission denied",
-  "map_settings_dark_mode": "Dark mode",
+  "map_settings_theme_settings": "Map Theme",
   "map_settings_date_range_option_all": "All",
   "map_settings_date_range_option_day": "Past 24 hours",
   "map_settings_date_range_option_days": "Past {} days",

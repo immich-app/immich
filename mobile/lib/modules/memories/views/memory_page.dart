@@ -10,6 +10,7 @@ import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:intl/intl.dart';
 import 'package:openapi/api.dart' as api;
 
+@RoutePage()
 class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
   final int memoryIndex;
