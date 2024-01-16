@@ -38,6 +38,7 @@ export class AppService {
   async init() {
     await this.databaseService.init();
     await this.configService.init();
+    await this.libraryService.init();
     await this.jobService.init({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
@@ -83,7 +84,7 @@ export class AppService {
   }
 
   async postInit() {
-    await this.libraryService.init();
+    await this.libraryService.watchAll();
   }
 
   async stopWatcher() {

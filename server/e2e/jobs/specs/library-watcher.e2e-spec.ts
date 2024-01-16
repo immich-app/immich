@@ -1,16 +1,28 @@
-import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
+import { LibraryResponseDto, LibraryService, LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import * as fs from 'fs';
 
+import { INestApplication } from '@nestjs/common';
 import { api } from '../client';
-import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, jobMock, restoreTempFolder, testApp } from '../utils';
+import {
+  IMMICH_TEST_ASSET_PATH,
+  IMMICH_TEST_ASSET_TEMP_PATH,
+  jobMock,
+  restoreTempFolder,
+  testApp,
+  waitForEvent,
+} from '../utils';
 
 describe(`Library watcher (e2e)`, () => {
+  let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
+  let libraryService: LibraryService;
 
   beforeAll(async () => {
-    server = (await testApp.create({ jobs: true })).getHttpServer();
+    app = await testApp.create({ jobs: true });
+    server = app.getHttpServer();
+    libraryService = app.get(LibraryService);
   });
 
   beforeEach(async () => {
@@ -50,11 +62,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        function delay(ms: number) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        await delay(3000);
+        await waitForEvent(libraryService, 'add');
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(1);
@@ -66,26 +74,28 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.JPG`,
         );
 
+        await waitForEvent(libraryService, 'add');
+
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file3.Jpg`,
         );
+
+        await waitForEvent(libraryService, 'add');
 
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file4.jpG`,
         );
 
+        await waitForEvent(libraryService, 'add');
+
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file5.jPg`,
         );
 
-        function delay(ms: number) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        await delay(3000);
+        await waitForEvent(libraryService, 'add');
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(4);
@@ -99,21 +109,21 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.txt`,
         );
 
+        await waitForEvent(libraryService, 'add');
+
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file3.TXT`,
         );
+
+        await waitForEvent(libraryService, 'add');
 
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file4.TxT`,
         );
 
-        function delay(ms: number) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        await delay(3000);
+        await waitForEvent(libraryService, 'add');
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(0);
@@ -127,11 +137,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        function delay(ms: number) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        await delay(3000);
+        await waitForEvent(libraryService, 'add');
 
         const originalAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(originalAssets.length).toEqual(1);
@@ -141,7 +147,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
 
-        await delay(3000);
+        await waitForEvent(libraryService, 'change');
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets).toEqual([
@@ -189,11 +195,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
         );
 
-        function delay(ms: number) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        await delay(3000);
+        await waitForEvent(libraryService, 'add');
 
         expect(jobMock.queue).not.toHaveBeenCalled();
 
@@ -211,11 +213,7 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
         );
 
-        function delay(ms: number) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        await delay(3000);
+        await waitForEvent(libraryService, 'add');
 
         expect(jobMock.queue).not.toHaveBeenCalled();
 
@@ -239,34 +237,28 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3/file4.jpg`,
         );
 
-        function delay(ms: number) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
-        await delay(3000);
+        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, 'add');
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets.length).toEqual(3);
       });
 
       it('should offline a removed file', async () => {
-        function delay(ms: number) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`,
         );
 
-        await delay(3000);
+        await waitForEvent(libraryService, 'add');
 
         const addedAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(addedAssets.length).toEqual(1);
 
         await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`);
 
-        await delay(3000);
+        await waitForEvent(libraryService, 'unlink');
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(afterAssets[0].isOffline).toEqual(true);
@@ -296,45 +288,35 @@ describe(`Library watcher (e2e)`, () => {
       await api.libraryApi.watch(server, admin.accessToken, library.id);
     });
 
-    it('should use updated import paths', async () => {
+    it('should use an updated import paths', async () => {
       await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`, { recursive: true });
 
       await api.libraryApi.setImportPaths(server, admin.accessToken, library.id, [
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`,
       ]);
 
-      function delay(ms: number) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-      }
-
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4/file2.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4/file.jpg`,
       );
 
-      await delay(3000);
+      await waitForEvent(libraryService, 'add');
 
       const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(afterAssets.length).toEqual(1);
     });
 
-    // TODO: check what happens when importpaths are modified
-
-    it('should stop watching library when deleted', async () => {
+    it('should stop watching a library upon deletion', async () => {
       await api.libraryApi.deleteLibrary(server, admin.accessToken, library.id);
 
       jest.clearAllMocks();
 
       await fs.promises.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
+        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`,
       );
 
-      function delay(ms: number) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-      }
-
-      await delay(3000);
+      await waitForEvent(libraryService, 'add');
 
       expect(jobMock.queue).not.toHaveBeenCalled();
     });

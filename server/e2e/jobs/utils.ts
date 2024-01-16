@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
 import path from 'path';
+import { EventEmitter } from 'stream';
 import { Server } from 'tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../../src/microservices/app.service';
@@ -108,9 +109,6 @@ export const testApp = {
 
     return app;
   },
-  getJobMock: async () => {
-    return (await app.get(IJobRepository)) as jest.Mock<typeof IJobRepository>;
-  },
   reset: async (options?: ResetOptions) => {
     await app.get(AppService).init();
     await db.reset(options);
@@ -127,6 +125,16 @@ export const testApp = {
     await db.disconnect();
   },
 };
+
+export async function waitForEvent(emitter: EventEmitter, event: string, timeout = 3000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // resolve if no event is emitted within given timeout
+    setTimeout(() => resolve(), timeout);
+
+    emitter.once(event, resolve);
+    emitter.once('error', reject);
+  });
+}
 
 export const runAllTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
 

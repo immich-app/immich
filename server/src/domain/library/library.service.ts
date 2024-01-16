@@ -14,6 +14,7 @@ import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
 import { ImmichLogger } from '@app/infra/logger';
+import { EventEmitter } from 'events';
 import {
   IAccessRepository,
   IAssetRepository,
@@ -36,7 +37,7 @@ import {
 } from './library.dto';
 
 @Injectable()
-export class LibraryService {
+export class LibraryService extends EventEmitter {
   readonly logger = new ImmichLogger(LibraryService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
@@ -53,6 +54,7 @@ export class LibraryService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
+    super();
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
     this.configCore.addValidator((config) => {
@@ -76,7 +78,9 @@ export class LibraryService {
     this.configCore.config$.subscribe((config) => {
       this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
     });
+  }
 
+  async watchAll() {
     const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
 
     for (const library of libraries) {
@@ -107,7 +111,7 @@ export class LibraryService {
     }
   }
 
-  async watch(id: string) {
+  async watch(id: string): Promise<boolean> {
     if (!this.watchEnabled) {
       return false;
     }
@@ -124,11 +128,9 @@ export class LibraryService {
       throw new Error('Cannot watch library with no import paths');
     }
 
-    this.logger.debug(`Starting to watch library ${library.id} with import paths ${library.importPaths}`);
+    this.logger.log(`Starting to watch library ${library.id} with import paths ${library.importPaths}`);
 
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-
-    const matcher = picomatch(`**/${extensions}`, {
+    const matcher = picomatch(`**/*{${mimeTypes.getSupportedFileExtensions().join(',')}}`, {
       nocase: true,
       ignore: library.exclusionPatterns,
     });
@@ -151,10 +153,11 @@ export class LibraryService {
           },
         });
       }
+      this.emit('add', path);
     });
 
     this.watchers[library.id].on('change', async (path) => {
-      this.logger.error(`Detected file change: ${path}`);
+      this.logger.debug(`Detected file change: ${path}`);
 
       if (matcher(path)) {
         // Note: if the changed file was not previously imported, it will be imported now.
@@ -169,6 +172,7 @@ export class LibraryService {
           },
         });
       }
+      this.emit('change', path);
     });
 
     this.watchers[library.id].on('unlink', async (path) => {
@@ -178,11 +182,14 @@ export class LibraryService {
       if (existingAssetEntity && matcher(path)) {
         await this.assetRepository.save({ id: existingAssetEntity.id, isOffline: true });
       }
+
+      this.emit('unlink', path);
     });
 
     this.watchers[library.id].on('error', async (error) => {
       // TODO: should we log, or throw an exception?
       this.logger.error(`Library watcher encountered error: ${error}`);
+      this.emit('error', error);
     });
 
     // Wait for chokidar to initialize before returning
@@ -191,6 +198,8 @@ export class LibraryService {
         resolve();
       });
     });
+
+    return true;
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
