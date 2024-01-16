@@ -31,7 +31,6 @@
 .pub-cache/
 .pub/
 /build/
-.fvm/flutter_sdk
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -54,3 +53,6 @@ ios/fastlane/report.xml
 default.isar
 default.isar.lock
 libisar.so
+
+# FVM Version Cache
+.fvm/
