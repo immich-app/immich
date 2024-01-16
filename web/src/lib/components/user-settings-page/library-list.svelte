@@ -18,6 +18,8 @@
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import { mdiDatabase, mdiDotsVertical, mdiUpload } from '@mdi/js';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
+  import { showDeleteModal } from '$lib/stores/preferences.store';
 
   let libraries: LibraryResponseDto[] = [];
 
@@ -290,6 +292,13 @@
 
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
+    <div class="ml-4 mb-4">
+      <SettingSwitch
+        title="Permanent deletion warning"
+        subtitle="Enable/Disable warning modal when permanently deleting assets"
+        bind:checked={$showDeleteModal}
+      />
+    </div>
     {#if libraries.length > 0}
       <table class="w-full text-left">
         <thead
