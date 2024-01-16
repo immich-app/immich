@@ -26,7 +26,7 @@
     "classnames": "^2.3.2",
     "clsx": "^2.0.0",
     "docusaurus-lunr-search": "^2.3.2",
-    "docusaurus-preset-openapi": "^0.6.3",
+    "docusaurus-preset-openapi": "^0.7.0",
     "postcss": "^8.4.25",
     "prism-react-renderer": "^1.3.5",
     "raw-loader": "^4.0.2",
