@@ -125,7 +125,7 @@ export class Editor {
     let newHeight;
     let newWidth;
 
-    let originalAspect = image.naturalWidth / image.naturalHeight;
+    const originalAspect = image.naturalWidth / image.naturalHeight;
 
     const angleOffset = edit.angleOffset;
     const angle = edit.angle;
@@ -133,35 +133,33 @@ export class Editor {
     // Get crop element width and height
     const cropWidth = crop.offsetWidth;
     const cropHeight = crop.offsetHeight;
+    const cropDiagonal = Math.sqrt(cropWidth * cropWidth + cropHeight * cropHeight);
 
-    const x1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropWidth;
-    const x2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropHeight;
+    // Get img element width and height
+    const imgWidth = image.naturalWidth;
+    const imgHeight = image.naturalHeight;
 
-    const y1 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cropHeight;
-    const y2 = Math.cos(((90 - Math.abs(angle)) * Math.PI) / 180) * cropWidth;
+    let totalAngle = Math.abs(Math.abs(angle) - angleOffset);
 
-    if (angleOffset === 90 || angleOffset === 270) {
-      originalAspect = 1 / originalAspect;
+    if (angleOffset == 180) {
+      totalAngle *= -1;
     }
 
-    if ((x1 + x2) / (y1 + y2) > originalAspect) {
-      newWidth = `${x1 + x2}px`;
-      newHeight = `${(x1 + x2) / originalAspect}px`;
-    } else if ((x1 + x2) / (y1 + y2) < originalAspect) {
-      newHeight = `${y1 + y2}px`;
-      newWidth = `${(y1 + y2) / (1 / originalAspect)}px`;
+    const beta = 90 - (Math.asin(cropWidth / cropDiagonal) * 180) / Math.PI;
+
+    const nih = Math.abs(Math.sin(((Math.abs(beta) + totalAngle) * Math.PI) / 180) * cropDiagonal);
+    const niw = Math.abs(Math.cos(((Math.abs(beta) - totalAngle) * Math.PI) / 180) * cropDiagonal);
+
+    if (niw / imgWidth > nih / imgHeight) {
+      newWidth = `${niw}px`;
+      newHeight = `${niw / originalAspect}px`;
     } else {
-      newHeight = `${y1 + y2}px`;
-      newWidth = `${(y1 + y2) / (1 / originalAspect)}px`;
+      newHeight = `${nih}px`;
+      newWidth = `${nih * originalAspect}px`;
     }
 
-    if (angleOffset === 90 || angleOffset === 270) {
-      imageWrapper.style.height = newWidth;
-      imageWrapper.style.width = newHeight;
-    } else {
-      imageWrapper.style.height = newHeight;
-      imageWrapper.style.width = newWidth;
-    }
+    imageWrapper.style.height = newHeight;
+    imageWrapper.style.width = newWidth;
   };
 
   /**
@@ -220,6 +218,7 @@ export class Editor {
    */
   private async update() {
     console.log('update');
+    console.log(this.edit);
 
     const crop = this.cropElement;
     const cropWrapper = crop.parentElement;
@@ -238,8 +237,22 @@ export class Editor {
       throw new Error('No image');
     }
 
+    const ratio = this.getRatio(edit.aspectRatio, image.naturalWidth / image.naturalHeight);
+
+    const wrapperRatio = cropWrapper.offsetWidth / cropWrapper.offsetHeight;
+
+    this.setCropRatio(this.cropElement, ratio, wrapperRatio);
+
+    this.calcImage(this.image, this.imageWrapper, this.cropElement, edit);
+
     const [maxX, maxY] = this.maxXY();
+    console.log('maxX: ' + maxX);
+    console.log('maxY: ' + maxY);
+
     let [x, y] = [edit.translate.x, edit.translate.y];
+
+    console.log('x: ' + x);
+    console.log('y: ' + y);
 
     if (x > maxX) {
       x = maxX;
@@ -258,16 +271,10 @@ export class Editor {
       y: y,
     };
 
-    const ratio = this.getRatio(edit.aspectRatio, image.naturalWidth / image.naturalHeight);
-
-    const wrapperRatio = cropWrapper.offsetWidth / cropWrapper.offsetHeight;
-
-    this.setCropRatio(this.cropElement, ratio, wrapperRatio);
-
-    this.calcImage(this.image, this.imageWrapper, this.cropElement, edit);
-
     this.transformImage(imageWrapper, edit);
     this.imageWrapper.innerHTML = '';
+    image.style.width = '100%';
+    image.style.height = '100%';
     image.style.filter = `blur(${filter.blur * 10}px) brightness(${filter.brightness}) contrast(${
       filter.contrast
     }) grayscale(${filter.grayscale}) hue-rotate(${(filter.hueRotate - 1) * 180}deg) invert(${filter.invert}) opacity(${
@@ -669,33 +676,35 @@ export class Editor {
    * @returns An array containing the maximum X and Y coordinates.
    */
   private maxXY() {
-    console.log('maxY');
+    const imageWrapper = this.imageWrapper;
+    const crop = this.cropElement;
+    const edit = this.edit;
+    const angleOffset = edit.angleOffset;
+    const angle = edit.angle;
 
-    const angleOffset = this.edit.angleOffset;
-    const angle = this.edit.angle;
-    const zoom = this.edit.zoom;
-    const ih = this.imageWrapper.offsetHeight;
-    const iw = this.imageWrapper.offsetWidth;
+    // Get crop element width and height
+    const cropWidth = crop.offsetWidth;
+    const cropHeight = crop.offsetHeight;
+    const cropDiagonal = Math.sqrt(cropWidth * cropWidth + cropHeight * cropHeight);
 
-    let ch = this.cropElement.offsetHeight;
-    let cw = this.cropElement.offsetWidth;
+    // Get img element width and height
+    const imgWrapperWidth = imageWrapper.offsetWidth;
+    const imgWrapperHeight = imageWrapper.offsetHeight;
 
-    if (angleOffset === 90 || angleOffset === 270) {
-      const t = ch;
-      ch = cw;
-      cw = t;
+    let totalAngle = Math.abs(Math.abs(angle) - angleOffset);
+
+    if (angleOffset == 180) {
+      totalAngle *= -1;
     }
 
-    const h2 = cw * Math.tan((Math.abs(angle) * Math.PI) / 180);
-    const d = Math.cos((Math.abs(angle) * Math.PI) / 180) * (ch + h2);
+    const beta = 90 - (Math.asin(cropWidth / cropDiagonal) * 180) / Math.PI;
 
-    let maxY = (ih * zoom - d) / 2;
-    maxY = maxY / zoom;
+    const nih = Math.abs(Math.sin(((Math.abs(beta) + totalAngle) * Math.PI) / 180) * cropDiagonal);
+    const niw = Math.abs(Math.cos(((Math.abs(beta) - totalAngle) * Math.PI) / 180) * cropDiagonal);
 
-    const h3 = Math.sin((Math.abs(angle) * Math.PI) / 180) * ch;
-    const h4 = Math.cos((Math.abs(angle) * Math.PI) / 180) * cw;
-    let maxX = (iw * zoom - h3 - h4) / 2;
-    maxX = maxX / zoom;
+    const maxX = (imgWrapperWidth * edit.zoom - niw) / (2 * edit.zoom);
+    const maxY = (imgWrapperHeight * edit.zoom - nih) / (2 * edit.zoom);
+
     return [maxX, maxY];
   }
 

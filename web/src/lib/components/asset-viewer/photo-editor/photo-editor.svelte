@@ -236,6 +236,16 @@
         {#if isShowEditOptions}
           <ContextMenu {...contextMenuPosition} direction="left">
             <MenuOption on:click={() => editor.clear()} text="Clear History" />
+            <MenuOption on:click={() => editor.reset()} text="Reset" />
+            <MenuOption
+              on:click={async () => {
+                isRendering = true;
+                const blob = await editor.render();
+                editor.download(blob, asset.originalFileName);
+                isRendering = false;
+              }}
+              text="Download"
+            />
           </ContextMenu>
         {/if}
       </div>
@@ -268,7 +278,7 @@
               </span>
             {/if}
 
-            <div bind:this={imageWrapper} class="absolute min-w-full min-h-full"></div>
+            <div bind:this={imageWrapper} class="absolute"></div>
             <div
               class="h-full w-full absolute {mode === 'crop'
                 ? 'shadow-[0_0_5000px_5000px_rgba(0,0,0,0.8)]'
