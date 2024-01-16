@@ -25,7 +25,7 @@
       "matchFileNames": ["server/**"],
       "groupName": "server",
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackagePrefixes": ["exiftool"],
+      "excludePackagePrefixes": ["exiftool", "reflect-metadata"],
       "schedule": "on tuesday"
     },
     {
