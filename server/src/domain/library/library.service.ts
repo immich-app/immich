@@ -144,17 +144,35 @@ export class LibraryService {
 
     const matcher = picomatch(`**/${extensions}`, {
       nocase: true,
+      ignore: library.exclusionPatterns,
     });
 
     this.watchers[library.id] = chokidar.watch(library.importPaths, {
       ignoreInitial: true,
       usePolling: true,
-      ignored: library.exclusionPatterns,
     });
 
     this.watchers[library.id].on('add', async (path) => {
       this.logger.debug(`File add event received for ${path} and library id ${library.id}}`);
       if (matcher(path)) {
+        await this.jobRepository.queue({
+          name: JobName.LIBRARY_SCAN_ASSET,
+          data: {
+            id: library.id,
+            assetPath: path,
+            ownerId: library.ownerId,
+            force: false,
+          },
+        });
+      }
+    });
+
+    this.watchers[library.id].on('change', async (path) => {
+      this.logger.error(`Detected file change: ${path}`);
+
+      if (matcher(path)) {
+        // Note: if the changed file was not previously imported, it will be imported now.
+
         await this.jobRepository.queue({
           name: JobName.LIBRARY_SCAN_ASSET,
           data: {
@@ -176,7 +194,17 @@ export class LibraryService {
       }
     });
 
-    return true;
+    this.watchers[library.id].on('error', async (error) => {
+      // TODO: should we log, or throw an exception?
+      this.logger.error(`Library watcher encountered error: ${error}`);
+    });
+
+    // Wait for chokidar to initialize before returning
+    return await new Promise((resolve) => {
+      this.watchers[library.id].on('ready', async () => {
+        resolve(true);
+      });
+    });
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
