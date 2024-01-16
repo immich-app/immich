@@ -77,10 +77,13 @@ export class LibraryService {
       this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
     });
 
-    await this.jobRepository.queue({
-      name: JobName.LIBRARY_INITIALIZE_WATCHERS,
-      data: {},
-    });
+    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
+
+    for (const library of libraries) {
+      if (library.isWatched) {
+        await this.watch(library.id);
+      }
+    }
   }
 
   async unwatchAll() {
@@ -105,31 +108,14 @@ export class LibraryService {
   }
 
   async watch(id: string) {
-    // Stop any previous watchers of this library
-    await this.unwatch(id);
-
-    // Start a new watcher in the background
-    await this.jobRepository.queue({ name: JobName.LIBRARY_WATCH, data: { id } });
-  }
-
-  async handleInitializeWatchers(): Promise<boolean> {
-    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
-
-    for (const library of libraries) {
-      if (library.isWatched) {
-        await this.watch(library.id);
-      }
-    }
-
-    return true;
-  }
-
-  async handleWatchLibrary(job: IEntityJob): Promise<boolean> {
     if (!this.watchEnabled) {
       return false;
     }
 
-    const library = await this.repository.get(job.id);
+    // Stop any previous watchers of this library
+    await this.unwatch(id);
+
+    const library = await this.repository.get(id);
     if (!library || !library.isWatched) {
       return false;
     }
@@ -200,9 +186,9 @@ export class LibraryService {
     });
 
     // Wait for chokidar to initialize before returning
-    return await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       this.watchers[library.id].on('ready', async () => {
-        resolve(true);
+        resolve();
       });
     });
   }

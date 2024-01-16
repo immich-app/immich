@@ -73,12 +73,10 @@ export class AppService {
       [JobName.SIDECAR_WRITE]: (data) => this.metadataService.handleSidecarWrite(data),
       [JobName.LIBRARY_SCAN_ASSET]: (data) => this.libraryService.handleAssetRefresh(data),
       [JobName.LIBRARY_SCAN]: (data) => this.libraryService.handleQueueAssetRefresh(data),
-      [JobName.LIBRARY_WATCH]: (data) => this.libraryService.handleWatchLibrary(data),
       [JobName.LIBRARY_DELETE]: (data) => this.libraryService.handleDeleteLibrary(data),
       [JobName.LIBRARY_REMOVE_OFFLINE]: (data) => this.libraryService.handleOfflineRemoval(data),
       [JobName.LIBRARY_QUEUE_SCAN_ALL]: (data) => this.libraryService.handleQueueAllScan(data),
       [JobName.LIBRARY_QUEUE_CLEANUP]: () => this.libraryService.handleQueueCleanup(),
-      [JobName.LIBRARY_INITIALIZE_WATCHERS]: () => this.libraryService.handleInitializeWatchers(),
     });
 
     await this.metadataService.init();

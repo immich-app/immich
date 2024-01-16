@@ -90,9 +90,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_REMOVE_OFFLINE; data: IEntityJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data: IBaseJob }
-  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
-  | { name: JobName.LIBRARY_WATCH; data: IEntityJob }
-  | { name: JobName.LIBRARY_INITIALIZE_WATCHERS; data: IBaseJob };
+  | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob };
 
 export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
 export type JobItemHandler = (item: JobItem) => Promise<void>;
