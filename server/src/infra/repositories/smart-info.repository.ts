@@ -62,7 +62,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       .andWhere('a.isVisible = true')
       .andWhere('a.fileCreatedAt < NOW()')
       .leftJoinAndSelect('a.exifInfo', 'e')
-      // .orderBy('s.embedding <=> :embedding')
+      .orderBy('s.embedding <=> :embedding')
       .setParameters({ userIds, embedding: asVector(embedding) });
 
     if (!withArchived) {

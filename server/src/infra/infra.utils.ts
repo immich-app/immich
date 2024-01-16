@@ -59,8 +59,8 @@ export async function paginatedBuilder<Entity extends ObjectLiteral>(
   { take, skip }: PaginationOptions,
 ): Paginated<Entity> {
   const items = await qb
-    .take(take + 1)
-    .skip(skip)
+    .limit(take + 1)
+    .offset(skip)
     .getMany();
 
   const hasNextPage = items.length > take;
