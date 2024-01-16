@@ -1,10 +1,38 @@
-<script lang="ts">
+<script lang="ts" context="module">
+  type T = string;
+</script>
+
+<script lang="ts" generics="T extends string">
   import { slide } from 'svelte/transition';
+  import { page } from '$app/stores';
+  import { SearchParams } from '$lib/stores/search-params.store';
+  import { onMount } from 'svelte';
   export let title: string;
   export let subtitle = '';
-
+  export let key: T | Array<T> | undefined = undefined;
   export let isOpen = false;
-  const toggle = () => (isOpen = !isOpen);
+
+  let searchParams = SearchParams.get<T>('isOpen');
+
+  onMount(() => {
+    if (key) {
+      searchParams.set($page.url.searchParams.get('isOpen'));
+      searchParams.hasValue(key).subscribe((hasValue) => (isOpen = hasValue));
+    }
+  });
+
+  const toggle = () => {
+    if (!key) {
+      isOpen = !isOpen;
+      return;
+    }
+
+    if (isOpen) {
+      searchParams.removeValue(key);
+    } else {
+      searchParams.addValue(key);
+    }
+  };
 </script>
 
 <div class="border-b-[1px] border-gray-200 py-4 dark:border-gray-700">
