@@ -26,7 +26,9 @@
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import type { AssetResponseDto } from '@immich/sdk';
+  import type { AssetResponseDto, SearchResponseDto } from '@immich/sdk';
+  import { authenticate } from '$lib/utils/auth';
+  import { api } from '../../../api/api';
 
   export let data: PageData;
 
@@ -36,7 +38,7 @@
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
-  let curPage = 0;
+  $: curPage = data.results?.assets.nextPage;
   $: albums = data.results?.albums.items;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
@@ -108,6 +110,36 @@
   const handleSelectAll = () => {
     selectedAssets = new Set(searchResultAssets);
   };
+
+  export const loadNextPage = (async () => {
+    console.log('loadPage', curPage, term)
+    if (curPage == null || !term) {
+        return;
+    }
+
+    await authenticate();
+    let results: SearchResponseDto | null = null;
+      $page.url.searchParams.set('page', curPage.toString());
+      console.log('searchParams', $page.url.searchParams.toString());
+      const res = await api.searchApi.search({}, { params: $page.url.searchParams });
+      console.log('searchResultAssets', searchResultAssets);
+      if (searchResultAssets) {
+        searchResultAssets.push(...res.data.assets.items)
+      } else {
+        searchResultAssets = res.data.assets.items;
+      }
+
+      const assets = {
+        ...res.data.assets,
+        items: searchResultAssets
+      };
+      results = {
+        assets,
+        albums: res.data.albums
+      }
+
+    data.results = results;
+  });
 </script>
 
 <section>
@@ -165,7 +197,7 @@
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if searchResultAssets && searchResultAssets.length > 0}
         <div class="pl-4">
-          <GalleryViewer assets={searchResultAssets} bind:selectedAssets on:intersected={() => {console.log(curPage); $page.url.searchParams.set('page', String(++curPage))}} showArchiveIcon={true} />
+          <GalleryViewer assets={searchResultAssets} bind:selectedAssets on:intersected={loadNextPage} showArchiveIcon={true} />
         </div>
       {:else}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">

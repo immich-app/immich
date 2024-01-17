@@ -21,7 +21,6 @@ export const load = (async (data) => {
       assets,
       albums: res.data.albums
     }
-    // results = res.data;
   }
 
   return {

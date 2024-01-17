@@ -7,7 +7,7 @@
   import { flip } from 'svelte/animate';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
 
   export let assets: AssetResponseDto[];
   export let selectedAssets: Set<AssetResponseDto> = new Set();
@@ -18,15 +18,10 @@
 
   let selectedAsset: AssetResponseDto;
   let currentViewAssetIndex = 0;
-  let scrolledToBottomCount = 0;
   let viewWidth: number;
   $: thumbnailSize = getThumbnailSize(assets.length, viewWidth);
 
   $: isMultiSelectionMode = selectedAssets.size > 0;
-
-  const dispatch = createEventDispatcher<{
-    'onScrollBottom': { count: number };
-  }>();
 
   const viewAssetHandler = (event: CustomEvent) => {
     const { asset }: { asset: AssetResponseDto } = event.detail;
