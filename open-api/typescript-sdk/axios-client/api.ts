@@ -2889,6 +2889,12 @@ export interface SearchAssetResponseDto {
     'items': Array<AssetResponseDto>;
     /**
      * 
+     * @type {string}
+     * @memberof SearchAssetResponseDto
+     */
+    'nextPage': string | null;
+    /**
+     * 
      * @type {number}
      * @memberof SearchAssetResponseDto
      */

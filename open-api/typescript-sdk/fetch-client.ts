@@ -588,6 +588,7 @@ export type SearchAssetResponseDto = {
     count: number;
     facets: SearchFacetResponseDto[];
     items: AssetResponseDto[];
+    nextPage: string | null;
     total: number;
 };
 export type SearchResponseDto = {
