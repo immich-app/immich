@@ -1,4 +1,5 @@
-import { CrawlOptionsDto } from '@app/domain';
+import { CrawlOptionsDto, ISystemConfigRepository } from '@app/domain';
+import { newSystemConfigRepositoryMock } from '@test';
 import mockfs from 'mock-fs';
 import { FilesystemProvider } from './filesystem.provider';
 
@@ -180,7 +181,14 @@ const tests: Test[] = [
 ];
 
 describe(FilesystemProvider.name, () => {
-  const sut = new FilesystemProvider();
+  let sut: FilesystemProvider;
+
+  let configMock: jest.Mocked<ISystemConfigRepository>;
+
+  beforeEach(() => {
+    configMock = newSystemConfigRepositoryMock();
+    sut = new FilesystemProvider(configMock);
+  });
 
   afterEach(() => {
     mockfs.restore();
