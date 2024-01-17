@@ -15,6 +15,7 @@ The passwords and usernames used below match the ones specified in the example `
 - Make sure your firewall does not block access to port 5432.
   Note that exposing the database port increases the risk of getting attacked by hackers.  
   Make sure to remove the binding port after finishing the database's tasks.
+
 :::
 
 ## 1. Install pgAdmin
