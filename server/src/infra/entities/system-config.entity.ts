@@ -48,6 +48,11 @@ export enum SystemConfigKey {
   LIBRARY_SCAN_CRON_EXPRESSION = 'library.scan.cronExpression',
 
   LIBRARY_WATCH_ENABLED = 'library.watch.enabled',
+  LIBRARY_WATCH_USE_POLLING = 'library.watch.usePolling',
+  LIBRARY_WATCH_INTERVAL = 'library.watch.interval',
+  LIBRARY_WATCH_BINARY_INTERVAL = 'library.watch.binaryInterval',
+  LIBRARY_WATCH_WRITE_STABILITY_THRESHOLD = 'library.watch.awaitWriteFinish.stabilityThreshold',
+  LIBRARY_WATCH_WRITE_POLL_INTERVAL = 'library.watch.awaitWriteFinish.pollInterval',
 
   LOGGING_ENABLED = 'logging.enabled',
   LOGGING_LEVEL = 'logging.level',
@@ -250,6 +255,13 @@ export interface SystemConfig {
     };
     watch: {
       enabled: boolean;
+      usePolling: boolean;
+      interval: number;
+      binaryInterval: number;
+      awaitWriteFinish: {
+        stabilityThreshold: number;
+        pollInterval: number;
+      };
     };
   };
   server: {

@@ -40,7 +40,7 @@ export class LibraryService extends EventEmitter {
   readonly logger = new ImmichLogger(LibraryService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private watchEnabled = false;
+  private watchFeatureFlag = false;
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -71,7 +71,7 @@ export class LibraryService extends EventEmitter {
       config.library.scan.enabled,
     );
 
-    this.watchEnabled = config.library.watch.enabled;
+    this.watchFeatureFlag = config.library.watch.enabled;
 
     this.configCore.config$.subscribe((config) => {
       this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
@@ -246,7 +246,7 @@ export class LibraryService extends EventEmitter {
 
     if (dto.isWatched !== undefined) {
       if (dto.isWatched) {
-        if (!this.watchEnabled) {
+        if (!this.watchFeatureFlag) {
           throw new Error('Cannot watch library when the library watch feature flag is disabled');
         }
         await this.watch(id);

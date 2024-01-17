@@ -6,12 +6,17 @@
     "enabled": false
   },
   "logging": {
-    "enabled": true,
+    "enabled": false,
     "level": "debug"
   },
   "library": {
     "watch": {
-      "enabled": true
+      "enabled": true,
+      "usePolling": false,
+      "awaitWriteFinish": {
+        "stabilityThreshold": 200,
+        "pollInterval": 50
+      }
     }
   }
 }

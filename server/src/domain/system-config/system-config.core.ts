@@ -128,6 +128,13 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     watch: {
       enabled: false,
+      usePolling: true,
+      interval: 1000,
+      binaryInterval: 1000,
+      awaitWriteFinish: {
+        stabilityThreshold: 2000,
+        pollInterval: 100,
+      },
     },
   },
   server: {

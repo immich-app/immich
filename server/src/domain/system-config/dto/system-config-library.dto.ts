@@ -1,9 +1,12 @@
 import { validateCronExpression } from '@app/domain';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsInt,
   IsNotEmpty,
   IsObject,
+  IsPositive,
   IsString,
   Validate,
   ValidateIf,
@@ -32,9 +35,39 @@ export class SystemConfigLibraryScanDto {
   cronExpression!: string;
 }
 
+export class SystemConfigLibraryWatchAwaitWriteFinishDto {
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({ type: 'integer' })
+  stabilityThreshold!: number;
+
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({ type: 'integer' })
+  pollInterval!: number;
+}
+
 export class SystemConfigLibraryWatchDto {
   @IsBoolean()
   enabled!: boolean;
+
+  @IsBoolean()
+  usePolling!: boolean;
+
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({ type: 'integer' })
+  interval!: number;
+
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({ type: 'integer' })
+  binaryInterval!: number;
+
+  @Type(() => SystemConfigLibraryWatchAwaitWriteFinishDto)
+  @ValidateNested()
+  @IsObject()
+  awaitWriteFinish!: SystemConfigLibraryWatchAwaitWriteFinishDto;
 }
 
 export class SystemConfigLibraryDto {
