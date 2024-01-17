@@ -126,13 +126,18 @@ export const testApp = {
   },
 };
 
-export async function waitForEvent(emitter: EventEmitter, event: string, timeout = 3000): Promise<void> {
+export function waitForEvent<T>(emitter: EventEmitter, event: string): Promise<T> {
   return new Promise((resolve, reject) => {
-    // resolve if no event is emitted within given timeout
-    setTimeout(() => resolve(), timeout);
-
-    emitter.once(event, resolve);
-    emitter.once('error', reject);
+    const success = (val: T) => {
+      emitter.off('error', fail);
+      resolve(val);
+    };
+    const fail = (err: Error) => {
+      emitter.off(event, success);
+      reject(err);
+    };
+    emitter.once(event, success);
+    emitter.once('error', fail);
   });
 }
 

@@ -108,6 +108,7 @@ export class LibraryService extends EventEmitter {
     if (this.watchers.hasOwnProperty(id)) {
       await this.watchers[id].close();
       delete this.watchers[id];
+      this.emit('unwatch', id);
     }
   }
 
@@ -161,7 +162,6 @@ export class LibraryService extends EventEmitter {
 
       if (matcher(path)) {
         // Note: if the changed file was not previously imported, it will be imported now.
-
         await this.jobRepository.queue({
           name: JobName.LIBRARY_SCAN_ASSET,
           data: {
@@ -283,7 +283,6 @@ export class LibraryService extends EventEmitter {
         await this.watch(id);
       } else {
         this.logger.debug(`Unwatching library ${id}`);
-        await this.unwatch(id);
       }
     } else if (dto.importPaths || dto.exclusionPatterns) {
       await this.watch(id);

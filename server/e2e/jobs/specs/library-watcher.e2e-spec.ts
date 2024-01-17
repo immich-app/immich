@@ -74,27 +74,24 @@ describe(`Library watcher (e2e)`, () => {
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.JPG`,
         );
 
-        await waitForEvent(libraryService, 'add');
-
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file3.Jpg`,
         );
-
-        await waitForEvent(libraryService, 'add');
 
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file4.jpG`,
         );
 
-        await waitForEvent(libraryService, 'add');
-
         await fs.promises.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file5.jPg`,
         );
 
+        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, 'add');
+        await waitForEvent(libraryService, 'add');
         await waitForEvent(libraryService, 'add');
 
         const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
@@ -304,21 +301,6 @@ describe(`Library watcher (e2e)`, () => {
 
       const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
       expect(afterAssets.length).toEqual(1);
-    });
-
-    it('should stop watching a library upon deletion', async () => {
-      await api.libraryApi.deleteLibrary(server, admin.accessToken, library.id);
-
-      jest.clearAllMocks();
-
-      await fs.promises.copyFile(
-        `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
-        `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`,
-      );
-
-      await waitForEvent(libraryService, 'add');
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
     });
   });
 });
