@@ -687,7 +687,7 @@ export class AssetRepository implements IAssetRepository {
     const truncated = dateTrunc(options);
     return (
       this.getBuilder(options)
-        .andWhere(`${truncated} = :timeBucket`, { timeBucket })
+        .andWhere(`${truncated} = :timeBucket`, { timeBucket: timeBucket.replace(/^[+-]/, '') })
         // First sort by the day in localtime (put it in the right bucket)
         .orderBy(truncated, 'DESC')
         // and then sort by the actual time
@@ -757,10 +757,7 @@ export class AssetRepository implements IAssetRepository {
   private getBuilder(options: AssetBuilderOptions) {
     const { isArchived, isFavorite, isTrashed, albumId, personId, userIds, withStacked, exifInfo, assetType } = options;
 
-    let builder = this.repository
-      .createQueryBuilder('asset')
-      .where('asset.isVisible = true')
-      .andWhere('asset.fileCreatedAt < NOW()');
+    let builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
     if (assetType !== undefined) {
       builder = builder.andWhere('asset.type = :assetType', { assetType });
     }

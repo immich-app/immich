@@ -553,10 +553,7 @@ FROM
   LEFT JOIN "assets" "stack" ON "stack"."stackParentId" = "asset"."id"
   AND ("stack"."deletedAt" IS NULL)
 WHERE
-  (
-    "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
-  )
+  ("asset"."isVisible" = true)
   AND ("asset"."deletedAt" IS NULL)
 GROUP BY
   (
@@ -668,7 +665,6 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
     AND (
       date_trunc(
         'month',
@@ -708,7 +704,6 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
     AND "asset"."type" = $2
     AND "asset"."ownerId" IN ($3)
     AND "asset"."isArchived" = $4
@@ -739,7 +734,6 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
     AND "asset"."type" = $2
     AND "asset"."ownerId" IN ($3)
     AND "asset"."isArchived" = $4
@@ -761,7 +755,6 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
     AND "asset"."ownerId" IN ($1)
     AND "asset"."isArchived" = $2
     AND (
