@@ -32,6 +32,8 @@
     const parameters = new URLSearchParams({
       q: searchValue,
       smart: smartSearch,
+      take: '100',
+      page: '0'
     });
 
     showHistory = false;

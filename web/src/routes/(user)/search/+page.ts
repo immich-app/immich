@@ -1,5 +1,5 @@
 import { authenticate } from '$lib/utils/auth';
-import { type SearchResponseDto, api } from '@api';
+import { type AssetResponseDto, type SearchResponseDto, api } from '@api';
 import type { PageLoad } from './$types';
 import { QueryParameter } from '$lib/constants';
 
@@ -10,8 +10,18 @@ export const load = (async (data) => {
     url.searchParams.get(QueryParameter.SEARCH_TERM) || url.searchParams.get(QueryParameter.QUERY) || undefined;
   let results: SearchResponseDto | null = null;
   if (term) {
-    const { data } = await api.searchApi.search({}, { params: url.searchParams });
-    results = data;
+    const res = await api.searchApi.search({}, { params: data.url.searchParams });
+    const assetItems: Array<AssetResponseDto> = (data as any).results?.assets.items;
+    console.log('assetItems', assetItems);
+    const assets = {
+      ...res.data.assets,
+      items: assetItems ? assetItems.concat(res.data.assets.items) : res.data.assets.items
+    };
+    results = {
+      assets,
+      albums: res.data.albums
+    }
+    // results = res.data;
   }
 
   return {

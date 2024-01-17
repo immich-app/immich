@@ -14506,10 +14506,12 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {boolean} [smart] 
          * @param {SearchTypeEnum} [type] 
          * @param {boolean} [withArchived] 
+         * @param {number} [take] 
+         * @param {number} [page] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        search: async (clip?: boolean, motion?: boolean, q?: string, query?: string, recent?: boolean, smart?: boolean, type?: SearchTypeEnum, withArchived?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        search: async (clip?: boolean, motion?: boolean, q?: string, query?: string, recent?: boolean, smart?: boolean, type?: SearchTypeEnum, withArchived?: boolean, take?: number, page?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -14561,6 +14563,14 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (withArchived !== undefined) {
                 localVarQueryParameter['withArchived'] = withArchived;
+            }
+
+            if (take !== undefined) {
+                localVarQueryParameter['take'] = take;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
             }
 
 
@@ -14655,11 +14665,13 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {boolean} [smart] 
          * @param {SearchTypeEnum} [type] 
          * @param {boolean} [withArchived] 
+         * @param {number} [take] 
+         * @param {number} [page] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async search(clip?: boolean, motion?: boolean, q?: string, query?: string, recent?: boolean, smart?: boolean, type?: SearchTypeEnum, withArchived?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.search(clip, motion, q, query, recent, smart, type, withArchived, options);
+        async search(clip?: boolean, motion?: boolean, q?: string, query?: string, recent?: boolean, smart?: boolean, type?: SearchTypeEnum, withArchived?: boolean, take?: number, page?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.search(clip, motion, q, query, recent, smart, type, withArchived, take, page, options);
             const index = configuration?.serverIndex ?? 0;
             const operationBasePath = operationServerMap['SearchApi.search']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
@@ -14702,7 +14714,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @throws {RequiredError}
          */
         search(requestParameters: SearchApiSearchRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<SearchResponseDto> {
-            return localVarFp.search(requestParameters.clip, requestParameters.motion, requestParameters.q, requestParameters.query, requestParameters.recent, requestParameters.smart, requestParameters.type, requestParameters.withArchived, options).then((request) => request(axios, basePath));
+            return localVarFp.search(requestParameters.clip, requestParameters.motion, requestParameters.q, requestParameters.query, requestParameters.recent, requestParameters.smart, requestParameters.type, requestParameters.withArchived, requestParameters.take, requestParameters.page, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -14777,6 +14789,20 @@ export interface SearchApiSearchRequest {
      * @memberof SearchApiSearch
      */
     readonly withArchived?: boolean
+
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchApiSearch
+     */
+    readonly take?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchApiSearch
+     */
+    readonly page?: number
 }
 
 /**
@@ -14825,7 +14851,7 @@ export class SearchApi extends BaseAPI {
      * @memberof SearchApi
      */
     public search(requestParameters: SearchApiSearchRequest = {}, options?: RawAxiosRequestConfig) {
-        return SearchApiFp(this.configuration).search(requestParameters.clip, requestParameters.motion, requestParameters.q, requestParameters.query, requestParameters.recent, requestParameters.smart, requestParameters.type, requestParameters.withArchived, options).then((request) => request(this.axios, this.basePath));
+        return SearchApiFp(this.configuration).search(requestParameters.clip, requestParameters.motion, requestParameters.q, requestParameters.query, requestParameters.recent, requestParameters.smart, requestParameters.type, requestParameters.withArchived, requestParameters.take, requestParameters.page, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

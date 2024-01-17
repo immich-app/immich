@@ -14,7 +14,6 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-  import type { AssetResponseDto } from '@api';
   import type { PageData } from './$types';
   import Icon from '$lib/components/elements/icon.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
@@ -27,6 +26,7 @@
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import type { AssetResponseDto } from '@immich/sdk';
 
   export let data: PageData;
 
@@ -36,6 +36,7 @@
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = AppRoute.EXPLORE as string;
+  let curPage = 0;
   $: albums = data.results?.albums.items;
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
@@ -164,7 +165,7 @@
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if searchResultAssets && searchResultAssets.length > 0}
         <div class="pl-4">
-          <GalleryViewer assets={searchResultAssets} bind:selectedAssets showArchiveIcon={true} />
+          <GalleryViewer assets={searchResultAssets} bind:selectedAssets on:intersected={() => {console.log(curPage); $page.url.searchParams.set('page', String(++curPage))}} showArchiveIcon={true} />
         </div>
       {:else}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">

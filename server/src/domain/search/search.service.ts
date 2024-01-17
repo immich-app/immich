@@ -81,7 +81,9 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        const results = await this.smartInfoRepository.searchCLIP({ userIds, embedding, withArchived }, { take: dto.take || 100 });
+        const take = dto.take || 100;
+        const skip = dto.page ? (dto.page - 1) * take : 0;
+        const results = await this.smartInfoRepository.searchCLIP({ userIds, embedding }, { take, skip });
         assets = results.items;
         break;
       }

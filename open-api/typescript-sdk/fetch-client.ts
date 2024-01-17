@@ -2047,7 +2047,7 @@ export function getPersonThumbnail({ id }: {
         ...opts
     }));
 }
-export function search({ clip, motion, q, query, recent, smart, $type, withArchived }: {
+export function search({ clip, motion, q, query, recent, smart, $type, withArchived, take, page }: {
     clip?: boolean;
     motion?: boolean;
     q?: string;
@@ -2056,6 +2056,8 @@ export function search({ clip, motion, q, query, recent, smart, $type, withArchi
     smart?: boolean;
     $type?: "IMAGE" | "VIDEO" | "AUDIO" | "OTHER";
     withArchived?: boolean;
+    take?: number;
+    page?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2068,7 +2070,9 @@ export function search({ clip, motion, q, query, recent, smart, $type, withArchi
         recent,
         smart,
         "type": $type,
-        withArchived
+        withArchived,
+        take,
+        page
     }))}`, {
         ...opts
     }));
