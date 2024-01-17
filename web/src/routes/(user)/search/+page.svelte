@@ -111,35 +111,35 @@
     selectedAssets = new Set(searchResultAssets);
   };
 
-  export const loadNextPage = (async () => {
-    console.log('loadPage', curPage, term)
+  export const loadNextPage = async () => {
+    console.log('loadPage', curPage, term);
     if (curPage == null || !term) {
-        return;
+      return;
     }
 
     await authenticate();
     let results: SearchResponseDto | null = null;
-      $page.url.searchParams.set('page', curPage.toString());
-      console.log('searchParams', $page.url.searchParams.toString());
-      const res = await api.searchApi.search({}, { params: $page.url.searchParams });
-      console.log('searchResultAssets', searchResultAssets);
-      if (searchResultAssets) {
-        searchResultAssets.push(...res.data.assets.items)
-      } else {
-        searchResultAssets = res.data.assets.items;
-      }
+    $page.url.searchParams.set('page', curPage.toString());
+    console.log('searchParams', $page.url.searchParams.toString());
+    const res = await api.searchApi.search({}, { params: $page.url.searchParams });
+    console.log('searchResultAssets', searchResultAssets);
+    if (searchResultAssets) {
+      searchResultAssets.push(...res.data.assets.items);
+    } else {
+      searchResultAssets = res.data.assets.items;
+    }
 
-      const assets = {
-        ...res.data.assets,
-        items: searchResultAssets
-      };
-      results = {
-        assets,
-        albums: res.data.albums
-      }
+    const assets = {
+      ...res.data.assets,
+      items: searchResultAssets,
+    };
+    results = {
+      assets,
+      albums: res.data.albums,
+    };
 
     data.results = results;
-  });
+  };
 </script>
 
 <section>
@@ -197,7 +197,12 @@
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if searchResultAssets && searchResultAssets.length > 0}
         <div class="pl-4">
-          <GalleryViewer assets={searchResultAssets} bind:selectedAssets on:intersected={loadNextPage} showArchiveIcon={true} />
+          <GalleryViewer
+            assets={searchResultAssets}
+            bind:selectedAssets
+            on:intersected={loadNextPage}
+            showArchiveIcon={true}
+          />
         </div>
       {:else}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">

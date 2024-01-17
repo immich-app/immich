@@ -84,7 +84,7 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        
+
         this.logger.log(`Take: ${take}, skip: ${skip}`);
         const results = await this.smartInfoRepository.searchCLIP({ userIds, embedding }, { take, skip });
         // this.logger.log(JSON.stringify(results, null, 2));

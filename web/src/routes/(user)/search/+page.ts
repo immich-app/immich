@@ -15,12 +15,12 @@ export const load = (async (data) => {
     console.log('assetItems', assetItems);
     const assets = {
       ...res.data.assets,
-      items: assetItems ? assetItems.concat(res.data.assets.items) : res.data.assets.items
+      items: assetItems ? assetItems.concat(res.data.assets.items) : res.data.assets.items,
     };
     results = {
       assets,
-      albums: res.data.albums
-    }
+      albums: res.data.albums,
+    };
   }
 
   return {
