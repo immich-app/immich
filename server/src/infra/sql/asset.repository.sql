@@ -555,7 +555,7 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."fileCreatedAt" BETWEEN '4713-01-01 BC' AND '9999-12-31 AD'
   )
   AND ("asset"."deletedAt" IS NULL)
 GROUP BY
@@ -668,7 +668,7 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."fileCreatedAt" BETWEEN '4713-01-01 BC' AND '9999-12-31 AD'
     AND (
       date_trunc(
         'month',
@@ -708,7 +708,7 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."fileCreatedAt" BETWEEN '4713-01-01 BC' AND '9999-12-31 AD'
     AND "asset"."type" = $2
     AND "asset"."ownerId" IN ($3)
     AND "asset"."isArchived" = $4
@@ -739,7 +739,7 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."fileCreatedAt" BETWEEN '4713-01-01 BC' AND '9999-12-31 AD'
     AND "asset"."type" = $2
     AND "asset"."ownerId" IN ($3)
     AND "asset"."isArchived" = $4
@@ -761,7 +761,7 @@ FROM
 WHERE
   (
     "asset"."isVisible" = true
-    AND "asset"."fileCreatedAt" < NOW()
+    AND "asset"."fileCreatedAt" BETWEEN '4713-01-01 BC' AND '9999-12-31 AD'
     AND "asset"."ownerId" IN ($1)
     AND "asset"."isArchived" = $2
     AND (
