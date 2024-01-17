@@ -1,12 +1,16 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
 
   export let size: number;
 
   let checked = false;
+
+  const dispatch = createEventDispatcher<{
+    confirm: void;
+    cancel: void;
+  }>();
 
   const onToggle = () => {
     checked = !checked;
@@ -18,11 +22,6 @@
     }
     dispatch('confirm');
   };
-
-  const dispatch = createEventDispatcher<{
-    confirm: void;
-    cancel: void;
-  }>();
 </script>
 
 <ConfirmDialogue
@@ -44,8 +43,15 @@
     <p><b>You cannot undo this action!</b></p>
 
     <div class="flex gap-2 items-center justify-center pt-4">
-      <p>Do not show this dialog again</p>
-      <input class="disabled::cursor-not-allowed h-3 w-3 opacity-1" type="checkbox" bind:checked on:click={onToggle} />
+      <label id="confirm-label" for="confirm-input">Do not show this message again</label>
+      <input
+        id="confirm-input"
+        aria-labelledby="confirm-input"
+        class="disabled::cursor-not-allowed h-3 w-3 opacity-1"
+        type="checkbox"
+        bind:checked
+        on:click={onToggle}
+      />
     </div>
   </svelte:fragment>
 </ConfirmDialogue>
