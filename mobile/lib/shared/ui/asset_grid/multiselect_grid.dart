@@ -22,7 +22,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -115,10 +114,10 @@ class MultiselectGrid extends HookConsumerWidget {
     }) {
       final assets = selection.value;
       return assets
-          .remoteOnly(errorCallback: errorBuilder(ownerErrorMessage))
+          .remoteOnly(errorCallback: errorBuilder(localErrorMessage))
           .ownedOnly(
             currentUser,
-            errorCallback: errorBuilder(localErrorMessage),
+            errorCallback: errorBuilder(ownerErrorMessage),
           );
     }
 
@@ -176,11 +175,9 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
-    void onDelete() async {
+    void onDelete([bool force = false]) async {
       processing.value = true;
       try {
-        final trashEnabled =
-            ref.read(serverInfoProvider.select((v) => v.serverFeatures.trash));
         final toDelete = selection.value
             .ownedOnly(
               currentUser,
@@ -192,23 +189,77 @@ class MultiselectGrid extends HookConsumerWidget {
                   errorBuilder('asset_action_delete_err_read_only'.tr()),
             )
             .toList();
-        await ref
+        final isDeleted = await ref
             .read(assetProvider.notifier)
-            .deleteAssets(toDelete, force: !trashEnabled);
+            .deleteAssets(toDelete, force: force);
 
-        final hasRemote = toDelete.any((a) => a.isRemote);
-        final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
-        final trashOrRemoved =
-            !trashEnabled ? 'deleted permanently' : 'trashed';
-        if (hasRemote) {
+        if (isDeleted) {
+          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
+          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
           ImmichToast.show(
             context: context,
             msg: '${selection.value.length} $assetOrAssets $trashOrRemoved',
             gravity: ToastGravity.BOTTOM,
           );
         }
-        selectionEnabledHook.value = false;
       } finally {
+        selectionEnabledHook.value = false;
+        processing.value = false;
+      }
+    }
+
+    void onDeleteLocal(bool onlyBackedUp) async {
+      processing.value = true;
+      try {
+        final localIds = selection.value.where((a) => a.isLocal).toList();
+
+        final isDeleted = await ref
+            .read(assetProvider.notifier)
+            .deleteLocalOnlyAssets(localIds, onlyBackedUp: onlyBackedUp);
+        if (isDeleted) {
+          final assetOrAssets = localIds.length > 1 ? 'assets' : 'asset';
+          ImmichToast.show(
+            context: context,
+            msg:
+                '${localIds.length} $assetOrAssets removed permanently from your device',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+      } finally {
+        selectionEnabledHook.value = false;
+        processing.value = false;
+      }
+    }
+
+    void onDeleteRemote([bool force = false]) async {
+      processing.value = true;
+      try {
+        final toDelete = ownedRemoteSelection(
+          localErrorMessage: 'home_page_delete_remote_err_local'.tr(),
+          ownerErrorMessage: 'home_page_delete_err_partner'.tr(),
+        )
+            // Cannot delete readOnly / external assets. They are handled through library offline jobs
+            .writableOnly(
+              errorCallback:
+                  errorBuilder('asset_action_delete_err_read_only'.tr()),
+            )
+            .toList();
+
+        final isDeleted = await ref
+            .read(assetProvider.notifier)
+            .deleteRemoteOnlyAssets(toDelete, force: force);
+        if (isDeleted) {
+          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
+          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
+          ImmichToast.show(
+            context: context,
+            msg:
+                '${toDelete.length} $assetOrAssets $trashOrRemoved from the Immich server',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+      } finally {
+        selectionEnabledHook.value = false;
         processing.value = false;
       }
     }
@@ -401,6 +452,11 @@ class MultiselectGrid extends HookConsumerWidget {
               onFavorite: favoriteEnabled ? onFavoriteAssets : null,
               onArchive: archiveEnabled ? onArchiveAsset : null,
               onDelete: deleteEnabled ? onDelete : null,
+              onDeleteServer: deleteEnabled ? onDeleteRemote : null,
+
+              /// local file deletion is allowed irrespective of [deleteEnabled] since it has
+              /// nothing to do with the state of the asset in the Immich server
+              onDeleteLocal: onDeleteLocal,
               onAddToAlbum: onAddToAlbum,
               onCreateNewAlbum: onCreateNewAlbum,
               onUpload: onUpload,

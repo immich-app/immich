@@ -91,6 +91,90 @@ class AssetNotifier extends StateNotifier<bool> {
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
+  Future<bool> deleteLocalOnlyAssets(
+    Iterable<Asset> deleteAssets, {
+    bool onlyBackedUp = false,
+  }) async {
+    _deleteInProgress = true;
+    state = true;
+    try {
+      final assets = onlyBackedUp
+          ? deleteAssets.where((e) => e.storage == AssetState.merged)
+          : deleteAssets;
+      final localDeleted = await _deleteLocalAssets(assets);
+      if (localDeleted.isNotEmpty) {
+        final localOnlyIds = deleteAssets
+            .where((e) => e.storage == AssetState.local)
+            .map((e) => e.id)
+            .toList();
+        // Update merged assets to remote only
+        final mergedAssets =
+            deleteAssets.where((e) => e.storage == AssetState.merged).map((e) {
+          e.localId = null;
+          return e;
+        }).toList();
+        await _db.writeTxn(() async {
+          if (mergedAssets.isNotEmpty) {
+            await _db.assets.putAll(mergedAssets);
+          }
+          await _db.exifInfos.deleteAll(localOnlyIds);
+          await _db.assets.deleteAll(localOnlyIds);
+        });
+        return true;
+      }
+    } finally {
+      _deleteInProgress = false;
+      state = false;
+    }
+    return false;
+  }
+
+  Future<bool> deleteRemoteOnlyAssets(
+    Iterable<Asset> deleteAssets, {
+    bool force = false,
+  }) async {
+    _deleteInProgress = true;
+    state = true;
+    try {
+      final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
+      if (remoteDeleted.isNotEmpty) {
+        final assetsToUpdate = force
+
+            /// If force, only update merged only assets and remove remote assets
+            ? remoteDeleted
+                .where((e) => e.storage == AssetState.merged)
+                .map((e) {
+                e.remoteId = null;
+                return e;
+              })
+            // If not force, trash everything
+            : remoteDeleted.where((e) => e.isRemote).map((e) {
+                e.isTrashed = true;
+                return e;
+              });
+
+        await _db.writeTxn(() async {
+          if (assetsToUpdate.isNotEmpty) {
+            await _db.assets.putAll(assetsToUpdate.toList());
+          }
+          if (force) {
+            final remoteOnly = remoteDeleted
+                .where((e) => e.storage == AssetState.remote)
+                .map((e) => e.id)
+                .toList();
+            await _db.exifInfos.deleteAll(remoteOnly);
+            await _db.assets.deleteAll(remoteOnly);
+          }
+        });
+        return true;
+      }
+    } finally {
+      _deleteInProgress = false;
+      state = false;
+    }
+    return false;
+  }
+
   Future<bool> deleteAssets(
     Iterable<Asset> deleteAssets, {
     bool force = false,
@@ -98,8 +182,11 @@ class AssetNotifier extends StateNotifier<bool> {
     _deleteInProgress = true;
     state = true;
     try {
+      final hasLocal = deleteAssets.any((a) => a.storage != AssetState.remote);
       final localDeleted = await _deleteLocalAssets(deleteAssets);
-      final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
+      final remoteDeleted = (hasLocal && localDeleted.isNotEmpty) || !hasLocal
+          ? await _deleteRemoteAssets(deleteAssets, force)
+          : [];
       if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
         final dbIds = <int>[];
         final dbUpdates = <Asset>[];
@@ -192,14 +279,14 @@ class AssetNotifier extends StateNotifier<bool> {
     return [];
   }
 
-  Future<Iterable<Asset>> _deleteRemoteAssets(
+  Future<List<Asset>> _deleteRemoteAssets(
     Iterable<Asset> assetsToDelete,
     bool? force,
   ) async {
     final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
 
     final isSuccess = await _assetService.deleteAssets(remote, force: force);
-    return isSuccess ? remote : [];
+    return isSuccess ? remote.toList() : [];
   }
 
   Future<void> toggleFavorite(List<Asset> assets, [bool? status]) async {

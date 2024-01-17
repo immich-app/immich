@@ -37,14 +37,16 @@ class ControlBoxButton extends StatelessWidget {
       onPressed: onPressed,
       minWidth: 75.0,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(iconData, size: 24),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             label,
             style: const TextStyle(fontSize: 12.0),
+            maxLines: 2,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
