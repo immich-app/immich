@@ -131,13 +131,6 @@ export class SystemConfigService {
   }
 
   private async validateConfig(newConfig: SystemConfig, oldConfig: SystemConfig) {
-    console.log('instanceToPlain(newConfig.logging)', instanceToPlain(newConfig.logging));
-    console.log('oldConfig.logging', oldConfig.logging);
-    console.log(
-      '!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging)',
-      !_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging),
-    );
-    console.log('this.getEnvLogLevel()', this.getEnvLogLevel());
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && this.getEnvLogLevel()) {
       throw new Error('Logging cannot be changed while the environment variable LOG_LEVEL is set.');
     }
