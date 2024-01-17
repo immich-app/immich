@@ -61,7 +61,7 @@ class UserResponseDto {
 
   int? quotaSizeInBytes;
 
-  int quotaUsageInBytes;
+  int? quotaUsageInBytes;
 
   bool shouldChangePassword;
 
@@ -103,7 +103,7 @@ class UserResponseDto {
     (oauthId.hashCode) +
     (profileImagePath.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (quotaUsageInBytes.hashCode) +
+    (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
     (shouldChangePassword.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (updatedAt.hashCode);
@@ -141,7 +141,11 @@ class UserResponseDto {
     } else {
     //  json[r'quotaSizeInBytes'] = null;
     }
+    if (this.quotaUsageInBytes != null) {
       json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
+    } else {
+    //  json[r'quotaUsageInBytes'] = null;
+    }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
@@ -172,7 +176,7 @@ class UserResponseDto {
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
-        quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes')!,
+        quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         updatedAt: mapDateTime(json, r'updatedAt', '')!,
