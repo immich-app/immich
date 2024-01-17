@@ -105,7 +105,7 @@ WITH
     WHERE
       "asset"."ownerId" IN ($2)
     ORDER BY
-      1 + ("faces"."embedding" <= > $3) ASC
+      1 + ("faces"."embedding" <= > $1) ASC
     LIMIT
       100
   )
@@ -114,5 +114,5 @@ SELECT
 FROM
   "cte" "res"
 WHERE
-  res.distance <= $4
+  res.distance <= $3
 COMMIT
