@@ -206,7 +206,6 @@ export class LibraryService extends EventEmitter {
         if (!dto.name) {
           dto.name = 'New External Library';
         }
-
         break;
       case LibraryType.UPLOAD:
         if (!dto.name) {
@@ -218,7 +217,6 @@ export class LibraryService extends EventEmitter {
         if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
           throw new BadRequestException('Upload libraries cannot have exclusion patterns');
         }
-
         break;
     }
 

@@ -28,10 +28,6 @@ describe(`${AssetController.name} (e2e)`, () => {
     admin = await api.authApi.adminLogin(server);
   });
 
-  afterEach(async () => {
-    await testApp.stopWatcher();
-  });
-
   afterAll(async () => {
     await testApp.teardown();
     await restoreTempFolder();

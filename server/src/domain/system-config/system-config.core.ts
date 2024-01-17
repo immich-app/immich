@@ -198,7 +198,7 @@ export class SystemConfigCore {
         case FeatureFlag.OAUTH:
           throw new BadRequestException('OAuth is not enabled');
         case FeatureFlag.LIBRARY_WATCH:
-          throw new BadRequestException('Library watching is not set');
+          throw new BadRequestException('Library watching is not enabled');
         case FeatureFlag.PASSWORD_LOGIN:
           throw new BadRequestException('Password login is not enabled');
         case FeatureFlag.CONFIG_FILE:
