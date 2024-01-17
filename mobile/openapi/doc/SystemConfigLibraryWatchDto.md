@@ -8,7 +8,11 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**awaitWriteFinish** | [**SystemConfigLibraryWatchAwaitWriteFinishDto**](SystemConfigLibraryWatchAwaitWriteFinishDto.md) |  | 
+**binaryInterval** | **int** |  | 
 **enabled** | **bool** |  | 
+**interval** | **int** |  | 
+**usePolling** | **bool** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
