@@ -1,6 +1,5 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import chokidar from 'chokidar';
 import picomatch from 'picomatch';
 
 import { R_OK } from 'node:constants';
@@ -42,7 +41,6 @@ export class LibraryService extends EventEmitter {
   private access: AccessCore;
   private configCore: SystemConfigCore;
   private watchEnabled = false;
-  private watchers: Record<string, chokidar.FSWatcher> = {};
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -90,38 +88,9 @@ export class LibraryService extends EventEmitter {
     }
   }
 
-  async unwatchAll() {
-    if (!this.watchEnabled) {
-      return;
-    }
-
-    for (const id in this.watchers) {
-      await this.unwatch(id);
-    }
-  }
-
-  async unwatch(id: string) {
-    if (!this.watchEnabled) {
-      return;
-    }
-
-    if (this.watchers.hasOwnProperty(id)) {
-      await this.watchers[id].close();
-      delete this.watchers[id];
-      this.emit('unwatch', id);
-    }
-  }
-
   async watch(id: string): Promise<boolean> {
-    if (!this.watchEnabled) {
-      return false;
-    }
-
-    // Stop any previous watchers of this library
-    await this.unwatch(id);
-
-    const library = await this.repository.get(id);
-    if (!library || !library.isWatched) {
+    const library = await this.findOrFail(id);
+    if (!library.isWatched) {
       return false;
     }
 
@@ -136,12 +105,12 @@ export class LibraryService extends EventEmitter {
       ignore: library.exclusionPatterns,
     });
 
-    this.watchers[library.id] = chokidar.watch(library.importPaths, {
+    const watcher = await this.storageRepository.watch(library.id, library.importPaths, {
       ignoreInitial: true,
       usePolling: true,
     });
 
-    this.watchers[library.id].on('add', async (path) => {
+    watcher.on('add', async (path) => {
       this.logger.debug(`File add event received for ${path} and library id ${library.id}}`);
       if (matcher(path)) {
         await this.jobRepository.queue({
@@ -157,7 +126,7 @@ export class LibraryService extends EventEmitter {
       this.emit('add', path);
     });
 
-    this.watchers[library.id].on('change', async (path) => {
+    watcher.on('change', async (path) => {
       this.logger.debug(`Detected file change: ${path}`);
 
       if (matcher(path)) {
@@ -175,7 +144,7 @@ export class LibraryService extends EventEmitter {
       this.emit('change', path);
     });
 
-    this.watchers[library.id].on('unlink', async (path) => {
+    watcher.on('unlink', async (path) => {
       this.logger.debug(`Detected removed file: ${path}`);
       const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
 
@@ -186,7 +155,7 @@ export class LibraryService extends EventEmitter {
       this.emit('unlink', path);
     });
 
-    this.watchers[library.id].on('error', async (error) => {
+    watcher.on('error', async (error) => {
       // TODO: should we log, or throw an exception?
       this.logger.error(`Library watcher encountered error: ${error}`);
       this.emit('error', error);
@@ -194,7 +163,7 @@ export class LibraryService extends EventEmitter {
 
     // Wait for chokidar to initialize before returning
     await new Promise<void>((resolve) => {
-      this.watchers[library.id].on('ready', async () => {
+      watcher.on('ready', async () => {
         resolve();
       });
     });
@@ -301,7 +270,7 @@ export class LibraryService extends EventEmitter {
     }
 
     if (library.isWatched) {
-      await this.unwatch(id);
+      await this.storageRepository.unwatch(id);
     }
 
     await this.repository.softDelete(id);

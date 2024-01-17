@@ -1,6 +1,8 @@
+import { FSWatcher, WatchOptions } from 'chokidar';
 import { Stats } from 'fs';
 import { FileReadOptions } from 'fs/promises';
 import { Readable } from 'stream';
+
 import { CrawlOptionsDto } from '../library';
 
 export interface ImmichReadStream {
@@ -36,6 +38,9 @@ export interface IStorageRepository {
   readdir(folder: string): Promise<string[]>;
   stat(filepath: string): Promise<Stats>;
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
+  watch(id: string, paths: string | ReadonlyArray<string>, options?: WatchOptions): Promise<FSWatcher>;
+  unwatchAll(): Promise<void>;
+  unwatch(id: string): Promise<void>;
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
 }

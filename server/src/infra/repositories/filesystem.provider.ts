@@ -8,6 +8,7 @@ import {
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
+import chokidar, { FSWatcher, WatchOptions } from 'chokidar';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs, { copyFile, readdir, rename, writeFile } from 'fs/promises';
 import { glob } from 'glob';
@@ -15,6 +16,7 @@ import path from 'path';
 
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
+  private watchers: Record<string, chokidar.FSWatcher> = {};
 
   createZipStream(): ImmichZipStream {
     const archive = archiver('zip', { store: true });
@@ -122,6 +124,30 @@ export class FilesystemProvider implements IStorageRepository {
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
+  }
+
+  async watch(id: string, paths: string | ReadonlyArray<string>, options?: WatchOptions): Promise<chokidar.FSWatcher> {
+    // Stop any previous watchers of this library
+    await this.unwatch(id);
+
+    const watcher = chokidar.watch(paths, options);
+
+    this.watchers[id] = watcher;
+
+    return watcher;
+  }
+
+  async unwatchAll() {
+    for (const id in this.watchers) {
+      await this.unwatch(id);
+    }
+  }
+
+  async unwatch(id: string) {
+    if (this.watchers.hasOwnProperty(id)) {
+      await this.watchers[id].close();
+      delete this.watchers[id];
+    }
   }
 
   readdir = readdir;
