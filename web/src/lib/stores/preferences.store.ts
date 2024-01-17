@@ -96,3 +96,5 @@ export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settin
   sortDesc: true,
   view: AlbumViewMode.Cover,
 });
+
+export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true, {});

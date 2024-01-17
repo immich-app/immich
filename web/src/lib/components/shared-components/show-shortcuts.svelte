@@ -2,9 +2,21 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { createEventDispatcher } from 'svelte';
   import FullScreenModal from './full-screen-modal.svelte';
-  import { mdiClose } from '@mdi/js';
+  import { mdiClose, mdiInformationOutline } from '@mdi/js';
+  import Icon from '../elements/icon.svelte';
 
-  const shortcuts = {
+  interface Shortcuts {
+    general: ExplainedShortcut[];
+    actions: ExplainedShortcut[];
+  }
+
+  interface ExplainedShortcut {
+    key: string[];
+    action: string;
+    info?: string;
+  }
+
+  const shortcuts: Shortcuts = {
     general: [
       { key: ['←', '→'], action: 'Previous or next photo' },
       { key: ['Esc'], action: 'Back, close, or deselect' },
@@ -16,7 +28,7 @@
       { key: ['⇧', 'a'], action: 'Archive or unarchive photo' },
       { key: ['⇧', 'd'], action: 'Download' },
       { key: ['Space'], action: 'Play or pause video' },
-      { key: ['Del'], action: 'Delete Asset' },
+      { key: ['Del'], action: 'Trash/Delete Asset', info: 'press ⇧ to permanently delete asset' },
     ],
   };
   const dispatch = createEventDispatcher<{
@@ -71,7 +83,12 @@
                     </p>
                   {/each}
                 </div>
-                <p class="mb-1 mt-1 flex">{shortcut.action}</p>
+                <div class="flex items-center gap-2">
+                  <p class="mb-1 mt-1 flex">{shortcut.action}</p>
+                  {#if shortcut.info}
+                    <Icon path={mdiInformationOutline} title={shortcut.info} />
+                  {/if}
+                </div>
               </div>
             {/each}
           </div>

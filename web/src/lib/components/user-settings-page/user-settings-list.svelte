@@ -15,6 +15,7 @@
   import UserProfileSettings from './user-profile-settings.svelte';
   import { user } from '$lib/stores/user.store';
   import AppearanceSettings from './appearance-settings.svelte';
+  import TrashSettings from './trash-settings.svelte';
 
   export let keys: APIKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
@@ -69,4 +70,8 @@
 
 <SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
   <SidebarSettings />
+</SettingAccordion>
+
+<SettingAccordion title="Trash" subtitle="Manage trash settings">
+  <TrashSettings />
 </SettingAccordion>

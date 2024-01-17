@@ -1,12 +1,6 @@
 <script lang="ts" context="module">
   import { createContext } from '$lib/utils/context';
 
-  export type OnAssetDelete = (assetId: string) => void;
-  export type OnRestore = (ids: string[]) => void;
-  export type OnArchive = (ids: string[], isArchived: boolean) => void;
-  export type OnFavorite = (ids: string[], favorite: boolean) => void;
-  export type OnStack = (ids: string[]) => void;
-
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
     getAssets: () => Set<AssetResponseDto>; // All assets includes partners' assets
