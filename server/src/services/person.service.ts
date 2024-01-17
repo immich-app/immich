@@ -22,7 +22,7 @@ import {
   mapFaces,
   mapPerson,
 } from 'src/dtos/person.dto';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFaceEntity, SourceType } from 'src/entities/asset-face.entity';
 import { AssetEntity, AssetType } from 'src/entities/asset.entity';
 import { PersonPathType } from 'src/entities/move.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -291,8 +291,8 @@ export class PersonService {
     }
 
     if (force) {
-      await this.deleteAllPeople();
-      await this.repository.deleteAllFaces();
+      await this.repository.deleteAllFaces(SourceType.MACHINE_LEARNING);
+      await this.handlePersonCleanup();
     }
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
@@ -328,12 +328,13 @@ export class PersonService {
       },
     };
     const [asset] = await this.assetRepository.getByIds([id], relations);
-    if (!asset || !asset.previewPath || asset.faces?.length > 0) {
+    if (!asset || !asset.previewPath) {
       return JobStatus.FAILED;
     }
 
-    if (!asset.isVisible) {
-      return JobStatus.SKIPPED;
+    const ml_faces = asset.faces?.filter((face) => { face.sourceType == SourceType.MACHINE_LEARNING });
+    if (ml_faces?.length > 0) {
+      return JobStatus.FAILED;
     }
 
     if (!asset.isVisible) {
@@ -362,6 +363,7 @@ export class PersonService {
           boundingBoxY1: face.boundingBox.y1,
           boundingBoxX2: face.boundingBox.x2,
           boundingBoxY2: face.boundingBox.y2,
+          sourceType: SourceType.MACHINE_LEARNING,
           faceSearch: { faceId, embedding: face.embedding },
         });
       }
@@ -401,7 +403,8 @@ export class PersonService {
     const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
-      await this.deleteAllPeople();
+      await this.repository.deleteAllFaces(SourceType.MACHINE_LEARNING);
+      await this.handlePersonCleanup();
     } else if (waiting) {
       this.logger.debug(
         `Skipping facial recognition queueing because ${waiting} job${waiting > 1 ? 's are' : ' is'} already queued`,
@@ -411,7 +414,7 @@ export class PersonService {
 
     const lastRun = new Date().toISOString();
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
+      this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull(), sourceType: SourceType.MACHINE_LEARNING } }),
     );
 
     for await (const page of facePagination) {
@@ -434,11 +437,16 @@ export class PersonService {
     const face = await this.repository.getFaceByIdWithAssets(
       id,
       { person: true, asset: true, faceSearch: true },
-      { id: true, personId: true, faceSearch: { embedding: true } },
+      { id: true, personId: true, sourceType: true, faceSearch: { embedding: true } },
     );
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return JobStatus.FAILED;
+    }
+
+    if (face.sourceType != SourceType.MACHINE_LEARNING) {
+      this.logger.warn(`Face ${id} skippable source type ${face.sourceType}`);
+      return JobStatus.SKIPPED;
     }
 
     if (!face.faceSearch?.embedding) {

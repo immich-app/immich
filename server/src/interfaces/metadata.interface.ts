@@ -7,7 +7,7 @@ export interface ExifDuration {
   Scale?: number;
 }
 
-export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
+export interface ImmichTagsBase extends Omit<Tags, 'FocalLength' | 'Duration'> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
@@ -19,6 +19,34 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration'> {
   EmbeddedVideoType?: string;
   EmbeddedVideoFile?: BinaryField;
   MotionPhotoVideo?: BinaryField;
+}
+
+// Extends properties not defined by exiftools tag
+export interface ImmichTags extends Omit<ImmichTagsBase, 'RegionInfo'> {
+  /** ☆☆☆☆ ✔ Example: {"AppliedToDimensions":{"H":3552,"W":2000},"RegionList":[…ace"}]} */
+  RegionInfo?: {
+    /** ☆☆☆☆ ✔ Example: {"H": 640, "Unit": "pixel", "W": 800} */
+    AppliedToDimensions: {
+      W: number;
+      H: number;
+      Unit: string;
+    },
+    /** ☆☆☆☆ ✔ Example: [{"Area":{},"Name":"John Doe","Type":"Face"}] */
+    RegionList: {
+      Area: {
+        // (X,Y) // center of the rectancle
+        // W & H: rectangle width and height
+        X: number;
+        Y: number;
+        W: number;
+        H: number;
+        Unit: string;
+      },
+      Rotation?: number;
+      Type?: string;
+      Name?: string;
+    }[],
+  };
 }
 
 export interface IMetadataRepository {

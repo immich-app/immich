@@ -370,6 +370,11 @@ class SystemConfigReverseGeocodingDto {
   enabled!: boolean;
 }
 
+class SystemConfigImportFacesDto {
+  @ValidateBoolean()
+  enabled!: boolean;
+}
+
 class SystemConfigServerDto {
   @IsString()
   externalDomain!: string;
@@ -548,6 +553,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   reverseGeocoding!: SystemConfigReverseGeocodingDto;
+
+  @Type(() => SystemConfigImportFacesDto)
+  @ValidateNested()
+  @IsObject()
+  importFaces!: SystemConfigImportFacesDto;
 
   @Type(() => SystemConfigStorageTemplateDto)
   @ValidateNested()

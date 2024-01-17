@@ -7621,6 +7621,9 @@
               }
             ],
             "nullable": true
+          },
+          "sourceType": {
+            "type": "string"
           }
         },
         "required": [
@@ -7631,7 +7634,8 @@
           "id",
           "imageHeight",
           "imageWidth",
-          "person"
+          "person",
+          "sourceType"
         ],
         "type": "object"
       },
@@ -7689,6 +7693,9 @@
           },
           "imageWidth": {
             "type": "integer"
+          },
+          "sourceType": {
+            "type": "string"
           }
         },
         "required": [
@@ -7698,7 +7705,8 @@
           "boundingBoxY2",
           "id",
           "imageHeight",
-          "imageWidth"
+          "imageWidth",
+          "sourceType"
         ],
         "type": "object"
       },
@@ -10066,6 +10074,9 @@
           "facialRecognition": {
             "type": "boolean"
           },
+          "importFaces": {
+            "type": "boolean"
+          },
           "map": {
             "type": "boolean"
           },
@@ -10099,6 +10110,7 @@
           "duplicateDetection",
           "email",
           "facialRecognition",
+          "importFaces",
           "map",
           "oauth",
           "oauthAutoLaunch",
@@ -10610,6 +10622,9 @@
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
           },
+          "importFaces": {
+            "$ref": "#/components/schemas/SystemConfigImportFacesDto"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -10659,6 +10674,7 @@
         "required": [
           "ffmpeg",
           "image",
+          "importFaces",
           "job",
           "library",
           "logging",
@@ -10819,6 +10835,17 @@
           "quality",
           "thumbnailFormat",
           "thumbnailSize"
+        ],
+        "type": "object"
+      },
+      "SystemConfigImportFacesDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },

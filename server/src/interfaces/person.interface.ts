@@ -48,7 +48,8 @@ export interface IPersonRepository {
   createFaces(entities: Partial<AssetFaceEntity>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
   deleteAll(): Promise<void>;
-  deleteAllFaces(): Promise<void>;
+  deleteAllFaces(sourceType?: string): Promise<void>;
+  deleteFaceFromAsset(assetId: string, sourceType?: string): Promise<void>;
   getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
   getFaceById(id: string): Promise<AssetFaceEntity>;
   getFaceByIdWithAssets(

@@ -1,7 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
+import { IsEnum } from 'class-validator';
 import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+
+export enum SourceType {
+  MACHINE_LEARNING = 'machine-learning',
+  EXIF = 'exif',
+}
 
 @Entity('asset_faces', { synchronize: false })
 @Index('IDX_asset_faces_assetId_personId', ['assetId', 'personId'])
@@ -36,6 +43,9 @@ export class AssetFaceEntity {
 
   @Column({ default: 0, type: 'int' })
   boundingBoxY2!: number;
+
+  @Column({ type: 'varchar', default: SourceType.MACHINE_LEARNING })
+  sourceType!: SourceType;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;

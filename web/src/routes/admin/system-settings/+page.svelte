@@ -4,6 +4,7 @@
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import ImageSettings from '$lib/components/admin-page/settings/image/image-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
+  import MetadataSettings from '$lib/components/admin-page/settings/metadata-settings/metadata-settings.svelte';
   import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
   import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import MachineLearningSettings from '$lib/components/admin-page/settings/machine-learning-settings/machine-learning-settings.svelte';
@@ -85,6 +86,12 @@
       title: $t('admin.job_settings'),
       subtitle: $t('admin.job_settings_description'),
       key: 'job',
+    },
+    {
+      component: MetadataSettings,
+      title: $t('admin.metadata_settings'),
+      subtitle: $t('admin.metadata_settings_description'),
+      key: 'metadata',
     },
     {
       component: LibrarySettings,

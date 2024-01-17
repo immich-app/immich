@@ -21,6 +21,7 @@ class AssetFaceResponseDto {
     required this.imageHeight,
     required this.imageWidth,
     required this.person,
+    required this.sourceType,
   });
 
   int boundingBoxX1;
@@ -39,6 +40,8 @@ class AssetFaceResponseDto {
 
   PersonResponseDto? person;
 
+  String sourceType;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceResponseDto &&
     other.boundingBoxX1 == boundingBoxX1 &&
@@ -48,7 +51,8 @@ class AssetFaceResponseDto {
     other.id == id &&
     other.imageHeight == imageHeight &&
     other.imageWidth == imageWidth &&
-    other.person == person;
+    other.person == person &&
+    other.sourceType == sourceType;
 
   @override
   int get hashCode =>
@@ -60,10 +64,11 @@ class AssetFaceResponseDto {
     (id.hashCode) +
     (imageHeight.hashCode) +
     (imageWidth.hashCode) +
-    (person == null ? 0 : person!.hashCode);
+    (person == null ? 0 : person!.hashCode) +
+    (sourceType.hashCode);
 
   @override
-  String toString() => 'AssetFaceResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, person=$person]';
+  String toString() => 'AssetFaceResponseDto[boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, person=$person, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -79,6 +84,7 @@ class AssetFaceResponseDto {
     } else {
     //  json[r'person'] = null;
     }
+      json[r'sourceType'] = this.sourceType;
     return json;
   }
 
@@ -98,6 +104,7 @@ class AssetFaceResponseDto {
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         person: PersonResponseDto.fromJson(json[r'person']),
+        sourceType: mapValueOfType<String>(json, r'sourceType')!,
       );
     }
     return null;
@@ -153,6 +160,7 @@ class AssetFaceResponseDto {
     'imageHeight',
     'imageWidth',
     'person',
+    'sourceType',
   };
 }
 

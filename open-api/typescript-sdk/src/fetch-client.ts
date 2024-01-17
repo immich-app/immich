@@ -156,6 +156,7 @@ export type AssetFaceWithoutPersonResponseDto = {
     id: string;
     imageHeight: number;
     imageWidth: number;
+    sourceType: string;
 };
 export type PersonWithFacesResponseDto = {
     birthDate: string | null;
@@ -452,6 +453,7 @@ export type AssetFaceResponseDto = {
     imageHeight: number;
     imageWidth: number;
     person: (PersonResponseDto) | null;
+    sourceType: string;
 };
 export type FaceDto = {
     id: string;
@@ -830,6 +832,7 @@ export type ServerFeaturesDto = {
     duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
+    importFaces: boolean;
     map: boolean;
     oauth: boolean;
     oauthAutoLaunch: boolean;
@@ -988,6 +991,9 @@ export type SystemConfigImageDto = {
     thumbnailFormat: ImageFormat;
     thumbnailSize: number;
 };
+export type SystemConfigImportFacesDto = {
+    enabled: boolean;
+};
 export type JobSettingsDto = {
     concurrency: number;
 };
@@ -1075,10 +1081,6 @@ export type SystemConfigPasswordLoginDto = {
 export type SystemConfigReverseGeocodingDto = {
     enabled: boolean;
 };
-export type SystemConfigServerDto = {
-    externalDomain: string;
-    loginPageMessage: string;
-};
 export type SystemConfigStorageTemplateDto = {
     enabled: boolean;
     hashVerificationEnabled: boolean;
@@ -1091,12 +1093,10 @@ export type SystemConfigTrashDto = {
     days: number;
     enabled: boolean;
 };
-export type SystemConfigUserDto = {
-    deleteDelay: number;
-};
 export type SystemConfigDto = {
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
+    importFaces: SystemConfigImportFacesDto;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -1107,11 +1107,10 @@ export type SystemConfigDto = {
     oauth: SystemConfigOAuthDto;
     passwordLogin: SystemConfigPasswordLoginDto;
     reverseGeocoding: SystemConfigReverseGeocodingDto;
-    server: SystemConfigServerDto;
+    server: object;
     storageTemplate: SystemConfigStorageTemplateDto;
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
-    user: SystemConfigUserDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     dayOptions: string[];
