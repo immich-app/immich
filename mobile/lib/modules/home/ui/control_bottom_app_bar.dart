@@ -16,7 +16,9 @@ class ControlBottomAppBar extends ConsumerWidget {
   final void Function(bool shareLocal) onShare;
   final void Function()? onFavorite;
   final void Function()? onArchive;
-  final void Function()? onDelete;
+  final void Function([bool force])? onDelete;
+  final void Function([bool force])? onDeleteServer;
+  final void Function(bool onlyBackedUp)? onDeleteLocal;
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
   final void Function() onUpload;
@@ -36,6 +38,8 @@ class ControlBottomAppBar extends ConsumerWidget {
     this.onFavorite,
     this.onArchive,
     this.onDelete,
+    this.onDeleteServer,
+    this.onDeleteLocal,
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.onUpload,
@@ -51,13 +55,34 @@ class ControlBottomAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var hasRemote =
+    final hasRemote =
         selectionAssetState.hasRemote || selectionAssetState.hasMerged;
-    var hasLocal = selectionAssetState.hasLocal;
+    final hasLocal =
+        selectionAssetState.hasLocal || selectionAssetState.hasMerged;
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
+
+    void handleRemoteDelete(
+      bool force,
+      Function(bool) deleteCb, {
+      String? alertMsg,
+    }) {
+      if (!force) {
+        deleteCb(force);
+        return;
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return DeleteDialog(
+            alert: alertMsg,
+            onDelete: () => deleteCb(force),
+          );
+        },
+      );
+    }
 
     List<Widget> renderActionButtons() {
       return [
@@ -92,26 +117,55 @@ class ControlBottomAppBar extends ConsumerWidget {
                 .tr(),
             onPressed: enabled ? onFavorite : null,
           ),
-        if (onDelete != null)
-          ControlBoxButton(
-            iconData: Icons.delete_outline_rounded,
-            label: "control_bottom_app_bar_delete".tr(),
-            onPressed: enabled
-                ? () {
-                    if (!trashEnabled) {
+        if (hasRemote && onDeleteServer != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 85),
+            child: ControlBoxButton(
+              iconData: Icons.cloud_off_outlined,
+              label: "control_bottom_app_bar_delete_from_immich".tr(),
+              onPressed: enabled
+                  ? () => handleRemoteDelete(
+                        !trashEnabled,
+                        onDeleteServer!,
+                        alertMsg: "delete_dialog_alert_remote",
+                      )
+                  : null,
+            ),
+          ),
+        if (hasLocal && onDeleteLocal != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 85),
+            child: ControlBoxButton(
+              iconData: Icons.no_cell_rounded,
+              label: "control_bottom_app_bar_delete_from_local".tr(),
+              onPressed: enabled
+                  ? () {
+                      if (!selectionAssetState.hasLocal) {
+                        return onDeleteLocal?.call(true);
+                      }
+
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          return DeleteDialog(
-                            onDelete: onDelete!,
+                          return DeleteLocalOnlyDialog(
+                            onDeleteLocal: onDeleteLocal!,
                           );
                         },
                       );
-                    } else {
-                      onDelete!();
                     }
-                  }
-                : null,
+                  : null,
+            ),
+          ),
+        if (hasLocal && hasRemote && onDelete != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.delete_sweep_outlined,
+              label: "control_bottom_app_bar_delete".tr(),
+              onPressed: enabled
+                  ? () => handleRemoteDelete(!trashEnabled, onDelete!)
+                  : null,
+            ),
           ),
         if (hasRemote && onEditTime != null)
           ControlBoxButton(
@@ -185,9 +239,9 @@ class ControlBottomAppBar extends ConsumerWidget {
                   children: <Widget>[
                     const SizedBox(height: 12),
                     const CustomDraggingHandle(),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 24),
                     SizedBox(
-                      height: 70,
+                      height: 90,
                       child: ListView(
                         shrinkWrap: true,
                         scrollDirection: Axis.horizontal,
@@ -201,7 +255,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                         thickness: 1,
                       ),
                     if (hasRemote)
-                      AddToAlbumTitleRow(
+                      _AddToAlbumTitleRow(
                         onCreateNewAlbum: enabled ? onCreateNewAlbum : null,
                       ),
                   ],
@@ -225,9 +279,8 @@ class ControlBottomAppBar extends ConsumerWidget {
   }
 }
 
-class AddToAlbumTitleRow extends StatelessWidget {
-  const AddToAlbumTitleRow({
-    super.key,
+class _AddToAlbumTitleRow extends StatelessWidget {
+  const _AddToAlbumTitleRow({
     required this.onCreateNewAlbum,
   });
 

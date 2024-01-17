@@ -8208,6 +8208,7 @@
           },
           "quotaUsageInBytes": {
             "format": "int64",
+            "nullable": true,
             "type": "integer"
           },
           "shouldChangePassword": {
@@ -9938,6 +9939,7 @@
           },
           "quotaUsageInBytes": {
             "format": "int64",
+            "nullable": true,
             "type": "integer"
           },
           "shouldChangePassword": {

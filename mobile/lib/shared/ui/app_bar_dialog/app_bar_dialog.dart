@@ -15,6 +15,7 @@ import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/shared/ui/app_bar_dialog/app_bar_server_info.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImmichAppBarDialog extends HookConsumerWidget {
@@ -31,6 +32,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     useEffect(
       () {
         ref.read(backupProvider.notifier).updateServerInfo();
+        ref.read(currentUserProvider.notifier).refresh();
         return null;
       },
       [user],
@@ -132,6 +134,16 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }
 
     Widget buildStorageInformation() {
+      var percentage = backupState.serverInfo.diskUsagePercentage / 100;
+      var usedDiskSpace = backupState.serverInfo.diskUse;
+      var totalDiskSpace = backupState.serverInfo.diskSize;
+
+      if (user != null && user.hasQuota) {
+        usedDiskSpace = formatBytes(user.quotaUsageInBytes);
+        totalDiskSpace = formatBytes(user.quotaSizeInBytes);
+        percentage = user.quotaUsageInBytes / user.quotaSizeInBytes;
+      }
+
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3),
         child: Container(
@@ -163,7 +175,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     padding: const EdgeInsets.only(top: 8.0),
                     child: LinearProgressIndicator(
                       minHeight: 5.0,
-                      value: backupState.serverInfo.diskUsagePercentage / 100.0,
+                      value: percentage,
                       backgroundColor: Colors.grey,
                       color: theme.primaryColor,
                     ),
@@ -173,8 +185,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     child:
                         const Text('backup_controller_page_storage_format').tr(
                       args: [
-                        backupState.serverInfo.diskUse,
-                        backupState.serverInfo.diskSize,
+                        usedDiskSpace,
+                        totalDiskSpace,
                       ],
                     ),
                   ),

@@ -28,48 +28,63 @@ const UserSchema = CollectionSchema(
       name: r'email',
       type: IsarType.string,
     ),
-    r'id': PropertySchema(
+    r'hasQuota': PropertySchema(
       id: 2,
+      name: r'hasQuota',
+      type: IsarType.bool,
+    ),
+    r'id': PropertySchema(
+      id: 3,
       name: r'id',
       type: IsarType.string,
     ),
     r'inTimeline': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'inTimeline',
       type: IsarType.bool,
     ),
     r'isAdmin': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'isAdmin',
       type: IsarType.bool,
     ),
     r'isPartnerSharedBy': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'isPartnerSharedBy',
       type: IsarType.bool,
     ),
     r'isPartnerSharedWith': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'isPartnerSharedWith',
       type: IsarType.bool,
     ),
     r'memoryEnabled': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'memoryEnabled',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'name',
       type: IsarType.string,
     ),
     r'profileImagePath': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'profileImagePath',
       type: IsarType.string,
     ),
+    r'quotaSizeInBytes': PropertySchema(
+      id: 11,
+      name: r'quotaSizeInBytes',
+      type: IsarType.long,
+    ),
+    r'quotaUsageInBytes': PropertySchema(
+      id: 12,
+      name: r'quotaUsageInBytes',
+      type: IsarType.long,
+    ),
     r'updatedAt': PropertySchema(
-      id: 10,
+      id: 13,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -138,15 +153,18 @@ void _userSerialize(
 ) {
   writer.writeByte(offsets[0], object.avatarColor.index);
   writer.writeString(offsets[1], object.email);
-  writer.writeString(offsets[2], object.id);
-  writer.writeBool(offsets[3], object.inTimeline);
-  writer.writeBool(offsets[4], object.isAdmin);
-  writer.writeBool(offsets[5], object.isPartnerSharedBy);
-  writer.writeBool(offsets[6], object.isPartnerSharedWith);
-  writer.writeBool(offsets[7], object.memoryEnabled);
-  writer.writeString(offsets[8], object.name);
-  writer.writeString(offsets[9], object.profileImagePath);
-  writer.writeDateTime(offsets[10], object.updatedAt);
+  writer.writeBool(offsets[2], object.hasQuota);
+  writer.writeString(offsets[3], object.id);
+  writer.writeBool(offsets[4], object.inTimeline);
+  writer.writeBool(offsets[5], object.isAdmin);
+  writer.writeBool(offsets[6], object.isPartnerSharedBy);
+  writer.writeBool(offsets[7], object.isPartnerSharedWith);
+  writer.writeBool(offsets[8], object.memoryEnabled);
+  writer.writeString(offsets[9], object.name);
+  writer.writeString(offsets[10], object.profileImagePath);
+  writer.writeLong(offsets[11], object.quotaSizeInBytes);
+  writer.writeLong(offsets[12], object.quotaUsageInBytes);
+  writer.writeDateTime(offsets[13], object.updatedAt);
 }
 
 User _userDeserialize(
@@ -160,15 +178,17 @@ User _userDeserialize(
         _UseravatarColorValueEnumMap[reader.readByteOrNull(offsets[0])] ??
             AvatarColorEnum.primary,
     email: reader.readString(offsets[1]),
-    id: reader.readString(offsets[2]),
-    inTimeline: reader.readBoolOrNull(offsets[3]) ?? false,
-    isAdmin: reader.readBool(offsets[4]),
-    isPartnerSharedBy: reader.readBoolOrNull(offsets[5]) ?? false,
-    isPartnerSharedWith: reader.readBoolOrNull(offsets[6]) ?? false,
-    memoryEnabled: reader.readBoolOrNull(offsets[7]) ?? true,
-    name: reader.readString(offsets[8]),
-    profileImagePath: reader.readStringOrNull(offsets[9]) ?? '',
-    updatedAt: reader.readDateTime(offsets[10]),
+    id: reader.readString(offsets[3]),
+    inTimeline: reader.readBoolOrNull(offsets[4]) ?? false,
+    isAdmin: reader.readBool(offsets[5]),
+    isPartnerSharedBy: reader.readBoolOrNull(offsets[6]) ?? false,
+    isPartnerSharedWith: reader.readBoolOrNull(offsets[7]) ?? false,
+    memoryEnabled: reader.readBoolOrNull(offsets[8]) ?? true,
+    name: reader.readString(offsets[9]),
+    profileImagePath: reader.readStringOrNull(offsets[10]) ?? '',
+    quotaSizeInBytes: reader.readLongOrNull(offsets[11]) ?? 0,
+    quotaUsageInBytes: reader.readLongOrNull(offsets[12]) ?? 0,
+    updatedAt: reader.readDateTime(offsets[13]),
   );
   return object;
 }
@@ -186,22 +206,28 @@ P _userDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
-    case 3:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
-    case 4:
       return (reader.readBool(offset)) as P;
-    case 5:
+    case 3:
+      return (reader.readString(offset)) as P;
+    case 4:
       return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 5:
+      return (reader.readBool(offset)) as P;
     case 6:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 7:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 9:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readString(offset)) as P;
     case 10:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 11:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 12:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 13:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -597,6 +623,15 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'email',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> hasQuotaEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'hasQuota',
+        value: value,
       ));
     });
   }
@@ -1088,6 +1123,112 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
+  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'quotaSizeInBytes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'quotaSizeInBytes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'quotaSizeInBytes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaSizeInBytesBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'quotaSizeInBytes',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'quotaUsageInBytes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'quotaUsageInBytes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'quotaUsageInBytes',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> quotaUsageInBytesBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'quotaUsageInBytes',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> updatedAtEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -1282,6 +1423,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> sortByHasQuota() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasQuota', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByHasQuotaDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasQuota', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1378,6 +1531,30 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> sortByQuotaSizeInBytes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quotaSizeInBytes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByQuotaSizeInBytesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quotaSizeInBytes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByQuotaUsageInBytes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quotaUsageInBytes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByQuotaUsageInBytesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quotaUsageInBytes', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
@@ -1413,6 +1590,18 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
   QueryBuilder<User, User, QAfterSortBy> thenByEmailDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'email', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByHasQuota() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasQuota', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByHasQuotaDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasQuota', Sort.desc);
     });
   }
 
@@ -1524,6 +1713,30 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> thenByQuotaSizeInBytes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quotaSizeInBytes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByQuotaSizeInBytesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quotaSizeInBytes', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByQuotaUsageInBytes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quotaUsageInBytes', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByQuotaUsageInBytesDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'quotaUsageInBytes', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> thenByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
@@ -1548,6 +1761,12 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'email', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<User, User, QDistinct> distinctByHasQuota() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'hasQuota');
     });
   }
 
@@ -1603,6 +1822,18 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
+  QueryBuilder<User, User, QDistinct> distinctByQuotaSizeInBytes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'quotaSizeInBytes');
+    });
+  }
+
+  QueryBuilder<User, User, QDistinct> distinctByQuotaUsageInBytes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'quotaUsageInBytes');
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'updatedAt');
@@ -1626,6 +1857,12 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, String, QQueryOperations> emailProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'email');
+    });
+  }
+
+  QueryBuilder<User, bool, QQueryOperations> hasQuotaProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'hasQuota');
     });
   }
 
@@ -1674,6 +1911,18 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, String, QQueryOperations> profileImagePathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'profileImagePath');
+    });
+  }
+
+  QueryBuilder<User, int, QQueryOperations> quotaSizeInBytesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'quotaSizeInBytes');
+    });
+  }
+
+  QueryBuilder<User, int, QQueryOperations> quotaUsageInBytesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'quotaUsageInBytes');
     });
   }
 

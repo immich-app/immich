@@ -2502,7 +2502,7 @@ export interface PartnerResponseDto {
      * @type {number}
      * @memberof PartnerResponseDto
      */
-    'quotaUsageInBytes': number;
+    'quotaUsageInBytes': number | null;
     /**
      * 
      * @type {boolean}
@@ -4807,7 +4807,7 @@ export interface UserResponseDto {
      * @type {number}
      * @memberof UserResponseDto
      */
-    'quotaUsageInBytes': number;
+    'quotaUsageInBytes': number | null;
     /**
      * 
      * @type {boolean}
