@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "Node16",
+    "module": "commonjs",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -9,7 +9,6 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "target": "es2021",
-    "moduleResolution": "node16",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,

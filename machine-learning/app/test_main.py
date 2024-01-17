@@ -13,7 +13,7 @@ from PIL import Image
 from pytest_mock import MockerFixture
 
 from .config import settings
-from .models.base import PicklableSessionOptions
+from .models.base import InferenceModel, PicklableSessionOptions
 from .models.cache import ModelCache
 from .models.clip import OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
@@ -36,9 +36,10 @@ class TestCLIP:
         mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
         mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+
+        mocked = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        mocked.run.return_value = [[self.embedding]]
         mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
-        mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
-        mocked.return_value.run.return_value = [[self.embedding]]
 
         clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
         embedding = clip_encoder.predict(pil_image)
@@ -47,7 +48,7 @@ class TestCLIP:
         assert isinstance(embedding, np.ndarray)
         assert embedding.shape[0] == clip_model_cfg["embed_dim"]
         assert embedding.dtype == np.float32
-        clip_encoder.vision_model.run.assert_called_once()
+        mocked.run.assert_called_once()
 
     def test_basic_text(
         self,
@@ -60,9 +61,10 @@ class TestCLIP:
         mocker.patch.object(OpenCLIPEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenCLIPEncoder, "preprocess_cfg", clip_preprocess_cfg)
         mocker.patch.object(OpenCLIPEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+
+        mocked = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        mocked.run.return_value = [[self.embedding]]
         mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
-        mocked = mocker.patch("app.models.clip.ort.InferenceSession", autospec=True)
-        mocked.return_value.run.return_value = [[self.embedding]]
 
         clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
         embedding = clip_encoder.predict("test search query")
@@ -71,7 +73,7 @@ class TestCLIP:
         assert isinstance(embedding, np.ndarray)
         assert embedding.shape[0] == clip_model_cfg["embed_dim"]
         assert embedding.dtype == np.float32
-        clip_encoder.text_model.run.assert_called_once()
+        mocked.run.assert_called_once()
 
 
 class TestFaceRecognition:

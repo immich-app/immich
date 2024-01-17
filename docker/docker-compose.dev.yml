@@ -15,6 +15,7 @@ x-server-build: &server-common
   restart: always
   volumes:
     - ../server:/usr/src/app
+    - ../open-api:/usr/src/open-api
     - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
     - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
     - /usr/src/app/node_modules
@@ -65,6 +66,7 @@ services:
       - 24678:24678
     volumes:
       - ../web:/usr/src/app
+      - ../open-api/:/usr/src/open-api/
       - /usr/src/app/node_modules
     ulimits:
       nofile:

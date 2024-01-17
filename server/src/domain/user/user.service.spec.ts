@@ -512,4 +512,11 @@ describe(UserService.name, () => {
       expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/library/admin', options);
     });
   });
+
+  describe('handleUserSyncUsage', () => {
+    it('should sync usage', async () => {
+      await sut.handleUserSyncUsage();
+      expect(userMock.syncUsage).toHaveBeenCalledTimes(1);
+    });
+  });
 });

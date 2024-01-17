@@ -5,17 +5,21 @@
   import StorageTemplateSettings from '../admin-page/settings/storage-template/storage-template-settings.svelte';
   import { SystemConfigDto, api } from '@api';
   import { user } from '$lib/stores/user.store';
+  import AdminSettings from '../admin-page/settings/admin-settings.svelte';
+  import { mdiArrowLeft, mdiCheck } from '@mdi/js';
+  import Button from '../elements/buttons/button.svelte';
+  import Icon from '../elements/icon.svelte';
 
   const dispatch = createEventDispatcher<{
     done: void;
     previous: void;
   }>();
 
-  let configs: SystemConfigDto | null = null;
+  let config: SystemConfigDto | null = null;
 
   onMount(async () => {
     const { data } = await api.systemConfigApi.getConfig();
-    configs = data;
+    config = data;
   });
 </script>
 
@@ -27,13 +31,39 @@
     variables to customize the template to your liking.
   </p>
 
-  {#if configs && $user}
-    <StorageTemplateSettings
-      minified
-      disabled={$featureFlags.configFile}
-      storageConfig={configs.storageTemplate}
-      on:save={() => dispatch('done')}
-      on:previous={() => dispatch('previous')}
-    />
+  {#if config && $user}
+    <AdminSettings bind:config let:defaultConfig let:savedConfig let:handleSave let:handleReset>
+      <StorageTemplateSettings
+        minified
+        disabled={$featureFlags.configFile}
+        {config}
+        {defaultConfig}
+        {savedConfig}
+        on:save={({ detail }) => handleSave(detail)}
+        on:reset={({ detail }) => handleReset(detail)}
+      >
+        <div class="flex pt-4">
+          <div class="w-full flex place-content-start">
+            <Button class="flex gap-2 place-content-center" on:click={() => dispatch('previous')}>
+              <Icon path={mdiArrowLeft} size="18" />
+              <p>Theme</p>
+            </Button>
+          </div>
+          <div class="flex w-full place-content-end">
+            <Button
+              on:click={() => {
+                handleSave({ storageTemplate: config?.storageTemplate });
+                dispatch('done');
+              }}
+            >
+              <span class="flex place-content-center place-items-center gap-2">
+                Done
+                <Icon path={mdiCheck} size="18" />
+              </span>
+            </Button>
+          </div>
+        </div>
+      </StorageTemplateSettings>
+    </AdminSettings>
   {/if}
 </OnboardingCard>

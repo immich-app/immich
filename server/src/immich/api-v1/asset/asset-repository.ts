@@ -1,5 +1,5 @@
 import { AssetCreate } from '@app/domain';
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { OptionalBetween } from '@app/infra/infra.utils';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +23,7 @@ export interface AssetOwnerCheck extends AssetCheck {
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(asset: AssetCreate): Promise<AssetEntity>;
+  upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -38,7 +39,10 @@ export const IAssetRepository = 'IAssetRepository';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
-  constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
+  constructor(
+    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
+  ) {}
 
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
     return this.assetRepository
@@ -160,6 +164,10 @@ export class AssetRepository implements IAssetRepository {
 
   create(asset: AssetCreate): Promise<AssetEntity> {
     return this.assetRepository.save(asset);
+  }
+
+  async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
+    await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
   }
 
   /**
