@@ -392,13 +392,13 @@ export class MetadataService {
       const position = stat.size - length - padding;
       let video: Buffer;
       // Samsung MotionPhoto video extraction
-      // JPEG-encoded
-      if (tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideo) {
-        video = await this.repository.extractBinaryTag(asset.originalPath, 'EmbeddedVideo');
-      }
       // HEIC-encoded
-      else if (tags.MotionPhotoVideo) {
+      if (tags.MotionPhotoVideo) {
         video = await this.repository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
+      }
+      // JPEG-encoded; HEIC also contains these tags, so this conditional must come second
+      else if (tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideoFile) {
+        video = await this.repository.extractBinaryTag(asset.originalPath, 'EmbeddedVideoFile');
       }
       // Default video extraction
       else {
