@@ -28,43 +28,31 @@ jobs:
           - image: immich-machine-learning
             context: machine-learning
             file: machine-learning/Dockerfile
-            platform: linux/amd64
+            platforms: linux/amd64,linux/arm64
             device: cpu
 
           - image: immich-machine-learning
             context: machine-learning
             file: machine-learning/Dockerfile
-            platform: linux/arm64
-            device: cpu
-          
-          - image: immich-machine-learning
-            context: machine-learning
-            file: machine-learning/Dockerfile
-            platform: linux/amd64
+            platforms: linux/amd64
             device: cuda
 
           - image: immich-machine-learning
             context: machine-learning
             file: machine-learning/Dockerfile
-            platform: linux/amd64
+            platforms: linux/amd64
             device: openvino
           
           - image: immich-machine-learning
             context: machine-learning
             file: machine-learning/Dockerfile
-            platform: linux/arm64
+            platforms: linux/arm64
             device: armnn
 
           - image: immich-server
             context: .
             file: server/Dockerfile
-            platform: linux/amd64
-            device: cpu
-
-          - image: immich-server
-            context: .
-            file: server/Dockerfile
-            platform: linux/arm64
+            platforms: linux/amd64,linux/arm64
             device: cpu
             
     steps:
@@ -134,7 +122,7 @@ jobs:
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ matrix.platforms }}
           # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{matrix.image}}
