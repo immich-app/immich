@@ -36,25 +36,27 @@ jobs:
             file: machine-learning/Dockerfile
             platforms: linux/amd64
             device: cuda
+            suffix: -cuda
 
           - image: immich-machine-learning
             context: machine-learning
             file: machine-learning/Dockerfile
             platforms: linux/amd64
             device: openvino
+            suffix: -openvino
           
           - image: immich-machine-learning
             context: machine-learning
             file: machine-learning/Dockerfile
             platforms: linux/arm64
             device: armnn
+            suffix: -armnn
 
           - image: immich-server
             context: .
             file: server/Dockerfile
             platforms: linux/amd64,linux/arm64
             device: cpu
-            
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -100,12 +102,12 @@ jobs:
             name=altran1502/${{matrix.image}},enable=${{ github.event_name == 'release' }}
           tags: |
             # Tag with branch name
-            type=ref,event=branch,suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
+            type=ref,event=branch,suffix=${{ matrix.suffix }}
             # Tag with pr-number
-            type=ref,event=pr,suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
+            type=ref,event=pr,suffix=${{ matrix.suffix }}
             # Tag with git tag on release
-            type=ref,event=tag,suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
-            type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ matrix.device != 'cpu' && '-' || '' }}${{ matrix.device != 'cpu' && matrix.device || '' }}
+            type=ref,event=tag,suffix=${{ matrix.suffix }}
+            type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ matrix.suffix }}
 
       - name: Determine build cache output
         id: cache-target
