@@ -201,9 +201,9 @@ class MultiselectGrid extends HookConsumerWidget {
             msg: '${selection.value.length} $assetOrAssets $trashOrRemoved',
             gravity: ToastGravity.BOTTOM,
           );
+          selectionEnabledHook.value = false;
         }
       } finally {
-        selectionEnabledHook.value = false;
         processing.value = false;
       }
     }
@@ -224,9 +224,9 @@ class MultiselectGrid extends HookConsumerWidget {
                 '${localIds.length} $assetOrAssets removed permanently from your device',
             gravity: ToastGravity.BOTTOM,
           );
+          selectionEnabledHook.value = false;
         }
       } finally {
-        selectionEnabledHook.value = false;
         processing.value = false;
       }
     }
