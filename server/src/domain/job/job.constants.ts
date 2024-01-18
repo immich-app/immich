@@ -2,7 +2,8 @@ export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',
   METADATA_EXTRACTION = 'metadataExtraction',
   VIDEO_CONVERSION = 'videoConversion',
-  RECOGNIZE_FACES = 'recognizeFaces',
+  FACE_DETECTION = 'faceDetection',
+  FACIAL_RECOGNITION = 'facialRecognition',
   SMART_SEARCH = 'smartSearch',
   BACKGROUND_TASK = 'backgroundTask',
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
@@ -11,6 +12,11 @@ export enum QueueName {
   SIDECAR = 'sidecar',
   LIBRARY = 'library',
 }
+
+export type ConcurrentQueueName = Exclude<
+  QueueName,
+  QueueName.STORAGE_TEMPLATE_MIGRATION | QueueName.FACIAL_RECOGNITION
+>;
 
 export enum JobCommand {
   START = 'start',
@@ -57,9 +63,10 @@ export enum JobName {
 
   // facial recognition
   PERSON_CLEANUP = 'person-cleanup',
-  PERSON_DELETE = 'person-delete',
-  QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
-  RECOGNIZE_FACES = 'recognize-faces',
+  QUEUE_FACE_DETECTION = 'queue-face-detection',
+  FACE_DETECTION = 'face-detection',
+  QUEUE_FACIAL_RECOGNITION = 'queue-facial-recognition',
+  FACIAL_RECOGNITION = 'facial-recognition',
 
   // library managment
   LIBRARY_SCAN = 'library-refresh',
@@ -95,7 +102,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
   [JobName.CLEAN_OLD_AUDIT_LOGS]: QueueName.BACKGROUND_TASK,
   [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
-  [JobName.PERSON_DELETE]: QueueName.BACKGROUND_TASK,
   [JobName.USER_SYNC_USAGE]: QueueName.BACKGROUND_TASK,
 
   // conversion
@@ -124,8 +130,10 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.MIGRATE_PERSON]: QueueName.MIGRATION,
 
   // facial recognition
-  [JobName.QUEUE_RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
-  [JobName.RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
+  [JobName.QUEUE_FACE_DETECTION]: QueueName.FACE_DETECTION,
+  [JobName.FACE_DETECTION]: QueueName.FACE_DETECTION,
+  [JobName.QUEUE_FACIAL_RECOGNITION]: QueueName.FACIAL_RECOGNITION,
+  [JobName.FACIAL_RECOGNITION]: QueueName.FACIAL_RECOGNITION,
 
   // clip
   [JobName.QUEUE_ENCODE_CLIP]: QueueName.SMART_SEARCH,

@@ -2,12 +2,13 @@ import { PersonEntity } from '@app/infra/entities';
 import { PersonPathType } from '@app/infra/entities/move.entity';
 import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { IsNull } from 'typeorm';
 import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { CacheControl, ImmichFileResponse, usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
+import { IBaseJob, IDeferrableJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import { FACE_THUMBNAIL_SIZE } from '../media';
 import {
   CropOptions,
@@ -249,64 +250,63 @@ export class PersonService {
     return results;
   }
 
-  async handlePersonDelete({ id }: IEntityJob) {
-    const person = await this.repository.getById(id);
-    if (!person) {
-      return false;
-    }
+  private async delete(people: PersonEntity[]) {
+    await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
+    await this.repository.delete(people);
+    this.logger.debug(`Deleted ${people.length} people`);
+  }
 
-    try {
-      await this.repository.delete(person);
-      await this.storageRepository.unlink(person.thumbnailPath);
-    } catch (error: Error | any) {
-      this.logger.error(`Unable to delete person: ${error}`, error?.stack);
-    }
+  private async deleteAllPeople() {
+    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.repository.getAll(pagination),
+    );
 
-    return true;
+    for await (const people of personPagination) {
+      await this.delete(people); // deletes thumbnails too
+    }
   }
 
   async handlePersonCleanup() {
     const people = await this.repository.getAllWithoutFaces();
-    for (const person of people) {
-      this.logger.debug(`Person ${person.name || person.id} no longer has any faces, deleting.`);
-    }
-    await this.jobRepository.queueAll(
-      people.map((person) => ({ name: JobName.PERSON_DELETE, data: { id: person.id } })),
-    );
-
+    await this.delete(people);
     return true;
   }
 
-  async handleQueueRecognizeFaces({ force }: IBaseJob) {
+  async handleQueueDetectFaces({ force }: IBaseJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
     }
 
+    if (force) {
+      await this.deleteAllPeople();
+      await this.repository.deleteAllFaces();
+    }
+
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
-        ? this.assetRepository.getAll(pagination, { order: 'DESC' })
+        ? this.assetRepository.getAll(pagination, {
+            order: 'DESC',
+            withFaces: true,
+            withPeople: false,
+            withSmartInfo: false,
+            withSmartSearch: false,
+            withExif: false,
+            withStacked: false,
+          })
         : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
-    if (force) {
-      const people = await this.repository.getAll();
-      await this.jobRepository.queueAll(
-        people.map((person) => ({ name: JobName.PERSON_DELETE, data: { id: person.id } })),
-      );
-      this.logger.debug(`Deleted ${people.length} people`);
-    }
-
     for await (const assets of assetPagination) {
       await this.jobRepository.queueAll(
-        assets.map((asset) => ({ name: JobName.RECOGNIZE_FACES, data: { id: asset.id } })),
+        assets.map((asset) => ({ name: JobName.FACE_DETECTION, data: { id: asset.id } })),
       );
     }
 
     return true;
   }
 
-  async handleRecognizeFaces({ id }: IEntityJob) {
+  async handleDetectFaces({ id }: IEntityJob) {
     const { machineLearning } = await this.configCore.getConfig();
     if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
       return true;
@@ -315,7 +315,7 @@ export class PersonService {
     const relations = {
       exifInfo: true,
       faces: {
-        person: true,
+        person: false,
       },
     };
     const [asset] = await this.assetRepository.getByIds([id], relations);
@@ -332,44 +332,117 @@ export class PersonService {
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
-    for (const { embedding, ...rest } of faces) {
-      const matches = await this.smartInfoRepository.searchFaces({
-        userIds: [asset.ownerId],
-        embedding,
-        numResults: 1,
-        maxDistance: machineLearning.facialRecognition.maxDistance,
-      });
-
-      let personId = matches[0]?.personId || null;
-      let newPerson: PersonEntity | null = null;
-      if (!personId) {
-        this.logger.debug('No matches, creating a new person.');
-        newPerson = await this.repository.create({ ownerId: asset.ownerId });
-        personId = newPerson.id;
-      }
-
-      const face = await this.repository.createFace({
+    for (const face of faces) {
+      const mappedFace = {
         assetId: asset.id,
-        personId,
-        embedding,
-        imageHeight: rest.imageHeight,
-        imageWidth: rest.imageWidth,
-        boundingBoxX1: rest.boundingBox.x1,
-        boundingBoxX2: rest.boundingBox.x2,
-        boundingBoxY1: rest.boundingBox.y1,
-        boundingBoxY2: rest.boundingBox.y2,
-      });
+        embedding: face.embedding,
+        imageHeight: face.imageHeight,
+        imageWidth: face.imageWidth,
+        boundingBoxX1: face.boundingBox.x1,
+        boundingBoxX2: face.boundingBox.x2,
+        boundingBoxY1: face.boundingBox.y1,
+        boundingBoxY2: face.boundingBox.y2,
+      };
 
-      if (newPerson) {
-        await this.repository.update({ id: personId, faceAssetId: face.id });
-        await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
-      }
+      await this.repository.createFace(mappedFace);
     }
 
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
       facesRecognizedAt: new Date(),
     });
+
+    return true;
+  }
+
+  async handleQueueRecognizeFaces({ force }: IBaseJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    await this.jobRepository.waitForQueueCompletion(QueueName.THUMBNAIL_GENERATION, QueueName.FACE_DETECTION);
+
+    if (force) {
+      await this.deleteAllPeople();
+    }
+
+    const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.repository.getAllFaces(pagination, { where: force ? undefined : { personId: IsNull() } }),
+    );
+
+    for await (const page of facePagination) {
+      await this.jobRepository.queueAll(
+        page.map((face) => ({ name: JobName.FACIAL_RECOGNITION, data: { id: face.id, deferred: false } })),
+      );
+    }
+
+    return true;
+  }
+
+  async handleRecognizeFaces({ id, deferred }: IDeferrableJob) {
+    const { machineLearning } = await this.configCore.getConfig();
+    if (!machineLearning.enabled || !machineLearning.facialRecognition.enabled) {
+      return true;
+    }
+
+    const face = await this.repository.getFaceByIdWithAssets(
+      id,
+      { person: true, asset: true },
+      { id: true, personId: true, embedding: true },
+    );
+    if (!face) {
+      this.logger.warn(`Face ${id} not found`);
+      return false;
+    }
+
+    if (face.personId) {
+      this.logger.debug(`Face ${id} already has a person assigned`);
+      return true;
+    }
+
+    const matches = await this.smartInfoRepository.searchFaces({
+      userIds: [face.asset.ownerId],
+      embedding: face.embedding,
+      maxDistance: machineLearning.facialRecognition.maxDistance,
+      numResults: machineLearning.facialRecognition.minFaces,
+    });
+
+    this.logger.debug(`Face ${id} has ${matches.length} match${matches.length != 1 ? 'es' : ''}`);
+
+    const isCore = matches.length >= machineLearning.facialRecognition.minFaces;
+    if (!isCore && !deferred) {
+      this.logger.debug(`Deferring non-core face ${id} for later processing`);
+      await this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id, deferred: true } });
+      return true;
+    }
+
+    let personId = matches.find((match) => match.face.personId)?.face.personId; // `matches` also includes the face itself
+    if (!personId) {
+      const matchWithPerson = await this.smartInfoRepository.searchFaces({
+        userIds: [face.asset.ownerId],
+        embedding: face.embedding,
+        maxDistance: machineLearning.facialRecognition.maxDistance,
+        numResults: 1,
+        hasPerson: true,
+      });
+
+      if (matchWithPerson.length > 0) {
+        personId = matchWithPerson[0].face.personId;
+      }
+    }
+
+    if (isCore && !personId) {
+      this.logger.log(`Creating new person for face ${id}`);
+      const newPerson = await this.repository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: newPerson.id } });
+      personId = newPerson.id;
+    }
+
+    if (personId) {
+      this.logger.debug(`Assigning face ${id} to person ${personId}`);
+      await this.repository.reassignFaces({ faceIds: [id], newPersonId: personId });
+    }
 
     return true;
   }
@@ -499,7 +572,7 @@ export class PersonService {
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
 
         await this.repository.reassignFaces(mergeData);
-        await this.jobRepository.queue({ name: JobName.PERSON_DELETE, data: { id: mergePerson.id } });
+        await this.delete([mergePerson]);
 
         this.logger.log(`Merged ${mergeName} into ${primaryName}`);
         results.push({ id: mergeId, success: true });

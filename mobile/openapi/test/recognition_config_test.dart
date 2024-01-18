@@ -21,7 +21,7 @@ void main() {
       // TODO
     });
 
-    // int maxDistance
+    // double maxDistance
     test('to test the property `maxDistance`', () async {
       // TODO
     });
@@ -31,7 +31,7 @@ void main() {
       // TODO
     });
 
-    // int minScore
+    // double minScore
     test('to test the property `minScore`', () async {
       // TODO
     });

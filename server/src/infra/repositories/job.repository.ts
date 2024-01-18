@@ -15,6 +15,7 @@ import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
+import { setTimeout } from 'timers/promises';
 import { bullConfig } from '../infra.config';
 
 @Injectable()
@@ -121,26 +122,47 @@ export class JobRepository implements IJobRepository {
       return;
     }
 
-    const itemsByQueue = items.reduce<Record<string, JobItem[]>>((acc, item) => {
+    const promises = [];
+    const itemsByQueue = {} as Record<string, (JobItem & { data: any; options: JobsOptions | undefined })[]>;
+    for (const item of items) {
       const queueName = JOBS_TO_QUEUE[item.name];
-      acc[queueName] = acc[queueName] || [];
-      acc[queueName].push(item);
-      return acc;
-    }, {});
-
-    for (const [queueName, items] of Object.entries(itemsByQueue)) {
-      const queue = this.getQueue(queueName as QueueName);
-      const jobs = items.map((item) => ({
+      const job = {
         name: item.name,
-        data: (item as { data?: any })?.data || {},
+        data: item.data || {},
         options: this.getJobOptions(item) || undefined,
-      }));
-      await queue.addBulk(jobs);
+      } as JobItem & { data: any; options: JobsOptions | undefined };
+
+      if (job.options?.jobId) {
+        // need to use add() instead of addBulk() for jobId deduplication
+        promises.push(this.getQueue(queueName).add(item.name, item.data, job.options));
+      } else {
+        itemsByQueue[queueName] = itemsByQueue[queueName] || [];
+        itemsByQueue[queueName].push(job);
+      }
     }
+
+    for (const [queueName, jobs] of Object.entries(itemsByQueue)) {
+      const queue = this.getQueue(queueName as QueueName);
+      promises.push(queue.addBulk(jobs));
+    }
+
+    await Promise.all(promises);
   }
 
   async queue(item: JobItem): Promise<void> {
-    await this.queueAll([item]);
+    return this.queueAll([item]);
+  }
+
+  async waitForQueueCompletion(...queues: QueueName[]): Promise<void> {
+    let activeQueue: QueueStatus | undefined;
+    do {
+      const statuses = await Promise.all(queues.map((name) => this.getQueueStatus(name)));
+      activeQueue = statuses.find((status) => status.isActive);
+    } while (activeQueue);
+    {
+      this.logger.verbose(`Waiting for ${activeQueue} queue to stop...`);
+      await setTimeout(1000);
+    }
   }
 
   private getJobOptions(item: JobItem): JobsOptions | null {
@@ -149,6 +171,8 @@ export class JobRepository implements IJobRepository {
         return { jobId: item.data.id };
       case JobName.GENERATE_PERSON_THUMBNAIL:
         return { priority: 1 };
+      case JobName.QUEUE_FACIAL_RECOGNITION:
+        return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
 
       default:
         return null;

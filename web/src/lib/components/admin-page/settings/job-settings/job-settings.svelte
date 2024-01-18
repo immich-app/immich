@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, JobName, SystemConfigDto } from '@api';
+  import { api, JobName, SystemConfigDto, SystemConfigJobDto } from '@api';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
@@ -20,10 +20,16 @@
     JobName.Library,
     JobName.Sidecar,
     JobName.SmartSearch,
-    JobName.RecognizeFaces,
+    JobName.FaceDetection,
+    JobName.FacialRecognition,
     JobName.VideoConversion,
+    JobName.StorageTemplateMigration,
     JobName.Migration,
   ];
+
+  function isSystemConfigJobDto(jobName: JobName): jobName is keyof SystemConfigJobDto {
+    return jobName in config.job;
+  }
 </script>
 
 <div>
@@ -31,15 +37,26 @@
     <form autocomplete="off" on:submit|preventDefault>
       {#each jobNames as jobName}
         <div class="ml-4 mt-4 flex flex-col gap-4">
-          <SettingInputField
-            inputType={SettingInputFieldType.NUMBER}
-            {disabled}
-            label="{api.getJobName(jobName)} Concurrency"
-            desc=""
-            bind:value={config.job[jobName].concurrency}
-            required={true}
-            isEdited={!(config.job[jobName].concurrency == savedConfig.job[jobName].concurrency)}
-          />
+          {#if isSystemConfigJobDto(jobName)}
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              {disabled}
+              label="{api.getJobName(jobName)} Concurrency"
+              desc=""
+              bind:value={config.job[jobName].concurrency}
+              required={true}
+              isEdited={!(config.job[jobName].concurrency == savedConfig.job[jobName].concurrency)}
+            />
+          {:else}
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label="{api.getJobName(jobName)} Concurrency"
+              desc=""
+              value="1"
+              disabled={true}
+              title="This job is not concurrency-safe."
+            />
+          {/if}
         </div>
       {/each}
 

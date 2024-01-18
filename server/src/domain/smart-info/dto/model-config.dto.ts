@@ -30,14 +30,14 @@ export class RecognitionConfig extends ModelConfig {
   @Min(0)
   @Max(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'float' })
   minScore!: number;
 
   @IsNumber()
   @Min(0)
   @Max(2)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'float' })
   maxDistance!: number;
 
   @IsNumber()

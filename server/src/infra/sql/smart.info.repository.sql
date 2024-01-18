@@ -3,9 +3,9 @@
 -- SmartInfoRepository.searchCLIP
 START TRANSACTION
 SET
-  LOCAL vectors.k = '100'
-SET
   LOCAL vectors.enable_prefilter = on
+SET
+  LOCAL vectors.k = '100'
 SELECT
   "a"."id" AS "a_id",
   "a"."deviceAssetId" AS "a_deviceAssetId",
@@ -70,8 +70,8 @@ FROM
 WHERE
   (
     "a"."ownerId" IN ($1)
-    AND "a"."isVisible" = true
     AND "a"."isArchived" = false
+    AND "a"."isVisible" = true
     AND "a"."fileCreatedAt" < NOW()
   )
   AND ("a"."deletedAt" IS NULL)
@@ -83,6 +83,8 @@ COMMIT
 
 -- SmartInfoRepository.searchFaces
 START TRANSACTION
+SET
+  LOCAL vectors.enable_prefilter = on
 SET
   LOCAL vectors.k = '100'
 WITH

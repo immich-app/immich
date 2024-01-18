@@ -14,10 +14,11 @@ class AllJobStatusResponseDto {
   /// Returns a new [AllJobStatusResponseDto] instance.
   AllJobStatusResponseDto({
     required this.backgroundTask,
+    required this.faceDetection,
+    required this.facialRecognition,
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
-    required this.recognizeFaces,
     required this.search,
     required this.sidecar,
     required this.smartSearch,
@@ -28,13 +29,15 @@ class AllJobStatusResponseDto {
 
   JobStatusDto backgroundTask;
 
+  JobStatusDto faceDetection;
+
+  JobStatusDto facialRecognition;
+
   JobStatusDto library_;
 
   JobStatusDto metadataExtraction;
 
   JobStatusDto migration;
-
-  JobStatusDto recognizeFaces;
 
   JobStatusDto search;
 
@@ -51,10 +54,11 @@ class AllJobStatusResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
      other.backgroundTask == backgroundTask &&
+     other.faceDetection == faceDetection &&
+     other.facialRecognition == facialRecognition &&
      other.library_ == library_ &&
      other.metadataExtraction == metadataExtraction &&
      other.migration == migration &&
-     other.recognizeFaces == recognizeFaces &&
      other.search == search &&
      other.sidecar == sidecar &&
      other.smartSearch == smartSearch &&
@@ -66,10 +70,11 @@ class AllJobStatusResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
+    (faceDetection.hashCode) +
+    (facialRecognition.hashCode) +
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
-    (recognizeFaces.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
@@ -78,15 +83,16 @@ class AllJobStatusResponseDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, recognizeFaces=$recognizeFaces, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
+      json[r'faceDetection'] = this.faceDetection;
+      json[r'facialRecognition'] = this.facialRecognition;
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
-      json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
@@ -105,10 +111,11 @@ class AllJobStatusResponseDto {
 
       return AllJobStatusResponseDto(
         backgroundTask: JobStatusDto.fromJson(json[r'backgroundTask'])!,
+        faceDetection: JobStatusDto.fromJson(json[r'faceDetection'])!,
+        facialRecognition: JobStatusDto.fromJson(json[r'facialRecognition'])!,
         library_: JobStatusDto.fromJson(json[r'library'])!,
         metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobStatusDto.fromJson(json[r'migration'])!,
-        recognizeFaces: JobStatusDto.fromJson(json[r'recognizeFaces'])!,
         search: JobStatusDto.fromJson(json[r'search'])!,
         sidecar: JobStatusDto.fromJson(json[r'sidecar'])!,
         smartSearch: JobStatusDto.fromJson(json[r'smartSearch'])!,
@@ -163,10 +170,11 @@ class AllJobStatusResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'backgroundTask',
+    'faceDetection',
+    'facialRecognition',
     'library',
     'metadataExtraction',
     'migration',
-    'recognizeFaces',
     'search',
     'sidecar',
     'smartSearch',

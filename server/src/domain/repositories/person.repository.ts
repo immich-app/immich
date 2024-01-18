@@ -1,4 +1,6 @@
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { FindManyOptions, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
+import { Paginated, PaginationOptions } from '../domain.util';
 
 export const IPersonRepository = 'IPersonRepository';
 
@@ -17,7 +19,8 @@ export interface AssetFaceId {
 }
 
 export interface UpdateFacesData {
-  oldPersonId: string;
+  oldPersonId?: string;
+  faceIds?: string[];
   newPersonId: string;
 }
 
@@ -26,8 +29,7 @@ export interface PersonStatistics {
 }
 
 export interface IPersonRepository {
-  getAll(): Promise<PersonEntity[]>;
-  getAllWithoutThumbnail(): Promise<PersonEntity[]>;
+  getAll(pagination: PaginationOptions, options?: FindManyOptions<PersonEntity>): Paginated<PersonEntity>;
   getAllForUser(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(personId: string): Promise<PersonEntity | null>;
@@ -35,19 +37,23 @@ export interface IPersonRepository {
 
   getAssets(personId: string): Promise<AssetEntity[]>;
 
-  reassignFaces(data: UpdateFacesData): Promise<number>;
-
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
-  update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
-  delete(entity: PersonEntity): Promise<PersonEntity | null>;
-  deleteAll(): Promise<number>;
-  getStatistics(personId: string): Promise<PersonStatistics>;
-  getAllFaces(): Promise<AssetFaceEntity[]>;
+  createFace(entity: Partial<AssetFaceEntity>): Promise<void>;
+  delete(entities: PersonEntity[]): Promise<void>;
+  deleteAll(): Promise<void>;
+  deleteAllFaces(): Promise<void>;
+  getAllFaces(pagination: PaginationOptions, options?: FindManyOptions<AssetFaceEntity>): Paginated<AssetFaceEntity>;
+  getFaceById(id: string): Promise<AssetFaceEntity>;
+  getFaceByIdWithAssets(
+    id: string,
+    relations?: FindOptionsRelations<AssetFaceEntity>,
+    select?: FindOptionsSelect<AssetFaceEntity>,
+  ): Promise<AssetFaceEntity | null>;
+  getFaces(assetId: string): Promise<AssetFaceEntity[]>;
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
-  createFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity>;
-  getFaces(assetId: string): Promise<AssetFaceEntity[]>;
+  getStatistics(personId: string): Promise<PersonStatistics>;
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
-  getFaceById(id: string): Promise<AssetFaceEntity>;
-  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null>;
+  reassignFaces(data: UpdateFacesData): Promise<number>;
+  update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
 }
