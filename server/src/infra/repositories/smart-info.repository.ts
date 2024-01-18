@@ -51,18 +51,16 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       let query = manager
         .createQueryBuilder(AssetEntity, 'a')
         .innerJoin('a.smartSearch', 's')
+        .leftJoinAndSelect('a.exifInfo', 'e')
         .where('a.ownerId IN (:...userIds )')
-        .andWhere('a.isVisible = true');
+        .andWhere('a.isVisible = true')
+        .andWhere('a.fileCreatedAt < NOW()')
+        .orderBy('s.embedding <=> :embedding')
+        .setParameters({ userIds, embedding: asVector(embedding) });
 
       if (!withArchived) {
         query.andWhere('a.isArchived = false');
       }
-
-      results = await query
-        .andWhere('a.fileCreatedAt < NOW()')
-        .leftJoinAndSelect('a.exifInfo', 'e')
-        .orderBy('s.embedding <=> :embedding')
-        .setParameters({ userIds, embedding: asVector(embedding) });
 
       if (numResults) {
         if (!isValidInteger(numResults, { min: 1 })) {
