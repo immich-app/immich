@@ -63,6 +63,7 @@ class ControlBottomAppBar extends ConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
+    const bottomPadding = 0.20;
 
     void showForceDeleteDialog(
       Function(bool) deleteCb, {
@@ -227,9 +228,9 @@ class ControlBottomAppBar extends ConsumerWidget {
     }
 
     return DraggableScrollableSheet(
-      initialChildSize: hasRemote ? 0.30 : 0.18,
-      minChildSize: 0.18,
-      maxChildSize: hasRemote ? 0.60 : 0.18,
+      initialChildSize: hasRemote ? 0.30 : bottomPadding,
+      minChildSize: bottomPadding,
+      maxChildSize: hasRemote ? 0.60 : bottomPadding,
       snap: true,
       builder: (
         BuildContext context,
