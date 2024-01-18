@@ -363,7 +363,7 @@
   <DeleteAssetDialog
     size={idsSelectedAssets.length}
     on:cancel={() => (isShowDeleteConfirmation = false)}
-    on:confirm={() => trashOrDelete()}
+    on:confirm={() => trashOrDelete(true)}
   />
 {/if}
 
