@@ -1,5 +1,5 @@
 import { authenticate } from '$lib/utils/auth';
-import { SearchResponseDto, api } from '@api';
+import { type SearchResponseDto, api } from '@api';
 import type { PageLoad } from './$types';
 
 export const load = (async (data) => {

@@ -1,4 +1,4 @@
-import { api, ServerConfigDto, ServerFeaturesDto } from '@api';
+import { api, type ServerConfigDto, type ServerFeaturesDto } from '@api';
 import { writable } from 'svelte/store';
 
 export type FeatureFlags = ServerFeaturesDto & { loaded: boolean };

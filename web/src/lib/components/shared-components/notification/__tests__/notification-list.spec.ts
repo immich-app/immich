@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, RenderResult, waitFor } from '@testing-library/svelte';
+import { render, type RenderResult, waitFor } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import { notificationController, NotificationType } from '../notification';
 import NotificationList from '../notification-list.svelte';

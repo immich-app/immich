@@ -7,7 +7,6 @@ import {
   AssetJobName,
   AuditApi,
   AuthenticationApi,
-  ConfigurationParameters,
   FaceApi,
   JobApi,
   JobName,
@@ -53,7 +52,7 @@ class ImmichApi {
     return !!this.key;
   }
 
-  constructor(params: ConfigurationParameters) {
+  constructor(params: configuration.ConfigurationParameters) {
     this.config = new configuration.Configuration(params);
 
     this.activityApi = new ActivityApi(this.config);

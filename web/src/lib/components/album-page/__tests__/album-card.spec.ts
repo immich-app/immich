@@ -2,7 +2,7 @@ import { createObjectURLMock } from '$lib/__mocks__/jsdom-url.mock';
 import { api, ThumbnailFormat } from '@api';
 import { albumFactory } from '@test-data';
 import '@testing-library/jest-dom';
-import { fireEvent, render, RenderResult, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, type RenderResult, waitFor } from '@testing-library/svelte';
 import AlbumCard from '../album-card.svelte';
 import type { MockedObject } from 'vitest';
 
