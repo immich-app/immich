@@ -91,7 +91,7 @@
       icon: mdiFaceRecognition,
       title: api.getJobName(JobName.FaceDetection),
       subtitle:
-        'Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. "All" (re-)processes all assets. "Missing" queues assets that haven\'t been processed yet. Detected faces will be queued after face detection is complete, grouping them into existing or new people.',
+        'Detect the faces in assets using machine learning. For videos, only the thumbnail is considered. "All" (re-)processes all assets. "Missing" queues assets that haven\'t been processed yet. Detected faces will be queued for Facial Recognition after Face Detection is complete, grouping them into existing or new people.',
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
@@ -99,7 +99,7 @@
       icon: mdiTagFaces,
       title: api.getJobName(JobName.FacialRecognition),
       subtitle:
-        'Group detected faces into people. This step runs after face detection is complete. "All" (re-)clusters all faces. "Missing" queues faces that don\'t have a person assigned.',
+        'Group detected faces into people. This step runs after Face Detection is complete. "All" (re-)clusters all faces. "Missing" queues faces that don\'t have a person assigned.',
       handleCommand: handleConfirmCommand,
       disabled: !$featureFlags.facialRecognition,
     },
