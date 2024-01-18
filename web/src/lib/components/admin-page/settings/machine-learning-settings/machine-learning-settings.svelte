@@ -82,7 +82,7 @@
 
           <SettingSelect
             label="FACIAL RECOGNITION MODEL"
-            desc="Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Recognize Faces job for all images upon changing a model."
+            desc="Models are listed in descending order of size. Larger models are slower and use more memory, but produce better results. Note that you must re-run the Face Detection job for all images upon changing a model."
             name="facial-recognition-model"
             bind:value={config.machineLearning.facialRecognition.modelName}
             options={[
@@ -124,8 +124,8 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label="MIN FACES DETECTED"
-            desc="The minimum number of faces of a person that must be detected for them to appear in the People tab. Setting this to a value greater than 1 can prevent strangers or blurry faces that are not the main subject of the image from being displayed."
+            label="MIN RECOGNIZED FACES"
+            desc="The minimum number of recognized faces for a person to be created. Increasing this makes Facial Recognition more precise at the cost of increasing the chance that a face is not assigned to a person."
             bind:value={config.machineLearning.facialRecognition.minFaces}
             step="1"
             min="1"

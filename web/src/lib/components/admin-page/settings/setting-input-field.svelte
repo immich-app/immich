@@ -18,6 +18,7 @@
   export let step = '1';
   export let label = '';
   export let desc = '';
+  export let title = '';
   export let required = false;
   export let disabled = false;
   export let isEdited = false;
@@ -69,5 +70,6 @@
     {value}
     on:input={handleInput}
     {disabled}
+    {title}
   />
 </div>

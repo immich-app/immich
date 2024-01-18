@@ -122,15 +122,24 @@ class BaseConfig implements VideoCodecSWConfig {
   }
 
   getTargetResolution(videoStream: VideoStreamInfo) {
+    let target;
     if (this.config.targetResolution === 'original') {
-      return Math.min(videoStream.height, videoStream.width);
+      target = Math.min(videoStream.height, videoStream.width);
+    } else {
+      target = Number.parseInt(this.config.targetResolution);
     }
 
-    return Number.parseInt(this.config.targetResolution);
+    if (target % 2 !== 0) {
+      target -= 1;
+    }
+
+    return target;
   }
 
   shouldScale(videoStream: VideoStreamInfo) {
-    return Math.min(videoStream.height, videoStream.width) > this.getTargetResolution(videoStream);
+    const oddDimensions = videoStream.height % 2 !== 0 || videoStream.width % 2 !== 0;
+    const largerThanTarget = Math.min(videoStream.height, videoStream.width) > this.getTargetResolution(videoStream);
+    return oddDimensions || largerThanTarget;
   }
 
   shouldToneMap(videoStream: VideoStreamInfo) {
@@ -146,7 +155,10 @@ class BaseConfig implements VideoCodecSWConfig {
   getSize(videoStream: VideoStreamInfo) {
     const smaller = this.getTargetResolution(videoStream);
     const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
-    const larger = Math.round(smaller * factor);
+    let larger = Math.round(smaller * factor);
+    if (larger % 2 !== 0) {
+      larger -= 1;
+    }
     return this.isVideoVertical(videoStream) ? { width: smaller, height: larger } : { width: larger, height: smaller };
   }
 

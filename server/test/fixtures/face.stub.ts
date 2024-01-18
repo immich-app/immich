@@ -2,9 +2,11 @@ import { AssetFaceEntity } from '@app/infra/entities';
 import { assetStub } from './asset.stub';
 import { personStub } from './person.stub';
 
+type NonNullableProperty<T> = { [P in keyof T]: NonNullable<T[P]> };
+
 export const faceStub = {
-  face1: Object.freeze<AssetFaceEntity>({
-    id: 'assetFaceId',
+  face1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
+    id: 'assetFaceId1',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.withName.id,
@@ -17,8 +19,8 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
   }),
-  primaryFace1: Object.freeze<AssetFaceEntity>({
-    id: 'assetFaceId',
+  primaryFace1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
+    id: 'assetFaceId2',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.primaryPerson.id,
@@ -31,8 +33,8 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
   }),
-  mergeFace1: Object.freeze<AssetFaceEntity>({
-    id: 'assetFaceId',
+  mergeFace1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
+    id: 'assetFaceId3',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.mergePerson.id,
@@ -45,8 +47,8 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
   }),
-  mergeFace2: Object.freeze<AssetFaceEntity>({
-    id: 'assetFaceId',
+  mergeFace2: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
+    id: 'assetFaceId4',
     assetId: assetStub.image1.id,
     asset: assetStub.image1,
     personId: personStub.mergePerson.id,
@@ -59,8 +61,8 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
   }),
-  start: Object.freeze<AssetFaceEntity>({
-    id: 'assetFaceId',
+  start: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
+    id: 'assetFaceId5',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.newThumbnail.id,
@@ -73,8 +75,8 @@ export const faceStub = {
     imageHeight: 1000,
     imageWidth: 1000,
   }),
-  middle: Object.freeze<AssetFaceEntity>({
-    id: 'assetFaceId',
+  middle: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
+    id: 'assetFaceId6',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.newThumbnail.id,
@@ -87,8 +89,8 @@ export const faceStub = {
     imageHeight: 500,
     imageWidth: 400,
   }),
-  end: Object.freeze<AssetFaceEntity>({
-    id: 'assetFaceId',
+  end: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
+    id: 'assetFaceId7',
     assetId: assetStub.image.id,
     asset: assetStub.image,
     personId: personStub.newThumbnail.id,
@@ -100,5 +102,33 @@ export const faceStub = {
     boundingBoxY2: 495,
     imageHeight: 500,
     imageWidth: 500,
+  }),
+  noPerson1: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId8',
+    assetId: assetStub.image.id,
+    asset: assetStub.image,
+    personId: null,
+    person: null,
+    embedding: [1, 2, 3, 4],
+    boundingBoxX1: 0,
+    boundingBoxY1: 0,
+    boundingBoxX2: 1,
+    boundingBoxY2: 1,
+    imageHeight: 1024,
+    imageWidth: 1024,
+  }),
+  noPerson2: Object.freeze<AssetFaceEntity>({
+    id: 'assetFaceId9',
+    assetId: assetStub.image.id,
+    asset: assetStub.image,
+    personId: null,
+    person: null,
+    embedding: [1, 2, 3, 4],
+    boundingBoxX1: 0,
+    boundingBoxY1: 0,
+    boundingBoxX2: 1,
+    boundingBoxY2: 1,
+    imageHeight: 1024,
+    imageWidth: 1024,
   }),
 };

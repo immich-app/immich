@@ -9,9 +9,9 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **enabled** | **bool** |  | 
-**maxDistance** | **int** |  | 
+**maxDistance** | **double** |  | 
 **minFaces** | **int** |  | 
-**minScore** | **int** |  | 
+**minScore** | **double** |  | 
 **modelName** | **String** |  | 
 **modelType** | [**ModelType**](ModelType.md) |  | [optional] 
 

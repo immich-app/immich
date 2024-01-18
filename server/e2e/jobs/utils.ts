@@ -90,6 +90,7 @@ export const testApp = {
       getJobCounts: jest.fn(),
       pause: jest.fn(),
       clear: jest.fn(),
+      waitForQueueCompletion: jest.fn(),
     } as IJobRepository;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
