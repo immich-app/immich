@@ -185,8 +185,13 @@
     }
   };
 
-  const handleMerge = () => {
+  const handleMerge = async (person: PersonResponseDto) => {
+    const { data: statistics } = await api.personApi.getPersonStatistics({ id: person.id });
+    numberOfAssets = statistics.assets;
     handleGoBack();
+
+    data.person = person;
+
     refreshAssetGrid = !refreshAssetGrid;
   };
 
@@ -374,7 +379,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={handleMerge} />
+  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={({ detail }) => handleMerge(detail)} />
 {/if}
 
 <header>
