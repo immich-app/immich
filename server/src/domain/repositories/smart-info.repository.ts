@@ -9,6 +9,7 @@ export interface EmbeddingSearch {
   embedding: Embedding;
   numResults: number;
   maxDistance?: number;
+  withArchived?: boolean;
 }
 
 export interface ISmartInfoRepository {

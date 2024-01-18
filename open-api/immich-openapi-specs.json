@@ -4576,6 +4576,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "withArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
