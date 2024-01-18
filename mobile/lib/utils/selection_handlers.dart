@@ -12,7 +12,7 @@ import 'package:immich_mobile/shared/ui/date_time_picker.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/location_picker.dart';
 import 'package:immich_mobile/shared/ui/share_dialog.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 void handleShareAssets(
   WidgetRef ref,

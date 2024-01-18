@@ -25,7 +25,7 @@
       "matchFileNames": ["server/**"],
       "groupName": "server",
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackagePrefixes": ["exiftool"],
+      "excludePackagePrefixes": ["exiftool", "reflect-metadata"],
       "schedule": "on tuesday"
     },
     {
@@ -66,6 +66,10 @@
       "matchPackageNames": ["node"],
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
       "versioning": "node"
+    },
+    {
+      "packageNames": ["com.google.guava:guava"],
+      "versionScheme": "docker"
     }
   ],
   "ignorePaths": ["mobile/openapi/pubspec.yaml"],

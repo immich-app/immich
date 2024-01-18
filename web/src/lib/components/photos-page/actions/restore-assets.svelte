@@ -7,8 +7,9 @@
   import { api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import Button from '../../elements/buttons/button.svelte';
-  import { OnRestore, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiHistory } from '@mdi/js';
+  import type { OnRestore } from '$lib/utils/actions';
 
   export let onRestore: OnRestore | undefined = undefined;
 

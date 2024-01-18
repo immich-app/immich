@@ -1,12 +1,13 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { api } from '@api';
-  import { OnStack, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
+  import type { OnStack } from '$lib/utils/actions';
 
   export let onStack: OnStack | undefined = undefined;
 

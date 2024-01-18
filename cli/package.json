@@ -12,6 +12,7 @@
     "cli"
   ],
   "dependencies": {
+    "@immich/sdk": "file:../open-api/typescript-sdk",
     "axios": "^1.6.2",
     "byte-size": "^8.1.1",
     "cli-progress": "^3.12.0",
@@ -57,7 +58,7 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "check": "tsc --noEmit",
-    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules' jest --config test/e2e/jest-e2e.json --runInBand"
+    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand"
   },
   "jest": {
     "clearMocks": true,

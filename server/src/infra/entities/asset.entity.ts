@@ -127,6 +127,7 @@ export class AssetEntity {
   livePhotoVideoId!: string | null;
 
   @Column({ type: 'varchar' })
+  @Index()
   originalFileName!: string;
 
   @Column({ type: 'varchar', nullable: true })

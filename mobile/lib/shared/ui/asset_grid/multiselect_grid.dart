@@ -258,8 +258,64 @@ class MultiselectGrid extends HookConsumerWidget {
             gravity: ToastGravity.BOTTOM,
           );
         }
-        selectionEnabledHook.value = false;
       } finally {
+        selectionEnabledHook.value = false;
+        processing.value = false;
+      }
+    }
+
+    void onDeleteLocal(bool onlyBackedUp) async {
+      processing.value = true;
+      try {
+        final localIds = selection.value.where((a) => a.isLocal).toList();
+
+        final isDeleted = await ref
+            .read(assetProvider.notifier)
+            .deleteLocalOnlyAssets(localIds, onlyBackedUp: onlyBackedUp);
+        if (isDeleted) {
+          final assetOrAssets = localIds.length > 1 ? 'assets' : 'asset';
+          ImmichToast.show(
+            context: context,
+            msg:
+                '${localIds.length} $assetOrAssets removed permanently from your device',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+      } finally {
+        selectionEnabledHook.value = false;
+        processing.value = false;
+      }
+    }
+
+    void onDeleteRemote([bool force = false]) async {
+      processing.value = true;
+      try {
+        final toDelete = ownedRemoteSelection(
+          localErrorMessage: 'home_page_delete_remote_err_local'.tr(),
+          ownerErrorMessage: 'home_page_delete_err_partner'.tr(),
+        )
+            // Cannot delete readOnly / external assets. They are handled through library offline jobs
+            .writableOnly(
+              errorCallback:
+                  errorBuilder('asset_action_delete_err_read_only'.tr()),
+            )
+            .toList();
+
+        final isDeleted = await ref
+            .read(assetProvider.notifier)
+            .deleteRemoteOnlyAssets(toDelete, force: force);
+        if (isDeleted) {
+          final assetOrAssets = toDelete.length > 1 ? 'assets' : 'asset';
+          final trashOrRemoved = force ? 'deleted permanently' : 'trashed';
+          ImmichToast.show(
+            context: context,
+            msg:
+                '${toDelete.length} $assetOrAssets $trashOrRemoved from the Immich server',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+      } finally {
+        selectionEnabledHook.value = false;
         processing.value = false;
       }
     }

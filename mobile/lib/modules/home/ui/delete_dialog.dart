@@ -18,12 +18,10 @@ class DeleteDialog extends ConfirmDialog {
 }
 
 class DeleteLocalOnlyDialog extends StatelessWidget {
-  final bool showWarning;
   final void Function(bool onlyMerged) onDeleteLocal;
 
   const DeleteLocalOnlyDialog({
     super.key,
-    this.showWarning = false,
     required this.onDeleteLocal,
   });
 
@@ -44,11 +42,7 @@ class DeleteLocalOnlyDialog extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
       title: const Text("delete_dialog_title").tr(),
-      content: Text(
-        showWarning
-            ? "delete_dialog_alert_local_non_backed_up"
-            : "delete_dialog_alert_local",
-      ).tr(),
+      content: const Text("delete_dialog_alert_local_non_backed_up").tr(),
       actions: [
         TextButton(
           onPressed: () => context.pop(),
@@ -60,21 +54,20 @@ class DeleteLocalOnlyDialog extends StatelessWidget {
             ),
           ).tr(),
         ),
-        if (showWarning)
-          TextButton(
-            onPressed: onDeleteBackedUpOnly,
-            child: Text(
-              "delete_local_dialog_ok_backed_up_only",
-              style: TextStyle(
-                color: showWarning ? null : Colors.red[400],
-                fontWeight: FontWeight.bold,
-              ),
-            ).tr(),
-          ),
+        TextButton(
+          onPressed: onDeleteBackedUpOnly,
+          child: Text(
+            "delete_local_dialog_ok_backed_up_only",
+            style: TextStyle(
+              color: context.colorScheme.tertiary,
+              fontWeight: FontWeight.bold,
+            ),
+          ).tr(),
+        ),
         TextButton(
           onPressed: onForceDelete,
           child: Text(
-            showWarning ? "delete_local_dialog_ok_force" : "delete_dialog_ok",
+            "delete_local_dialog_ok_force",
             style: TextStyle(
               color: Colors.red[400],
               fontWeight: FontWeight.bold,

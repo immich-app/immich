@@ -2,7 +2,7 @@ import { ImmichApi } from '../api/client';
 import { SessionService } from '../services/session.service';
 import { LoginError } from '../cores/errors/login-error';
 import { exit } from 'node:process';
-import { ServerVersionResponseDto, UserResponseDto } from 'src/api/open-api';
+import { ServerVersionResponseDto, UserResponseDto } from '@immich/sdk';
 import { BaseOptionsDto } from 'src/cores/dto/base-options-dto';
 
 export abstract class BaseCommand {

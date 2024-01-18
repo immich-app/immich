@@ -6,7 +6,7 @@ import {
 } from '../lib/components/shared-components/notification/notification';
 import { handleError } from '../lib/utils/handle-error';
 import { api } from './api';
-import type { UserResponseDto } from './open-api';
+import type { UserResponseDto } from '@immich/sdk';
 
 export type ApiError = AxiosError<{ message: string }>;
 
@@ -20,7 +20,11 @@ export const copyToClipboard = async (secret: string) => {
 };
 
 export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  return `${externalDomain || window.location.origin}/share/${key}`;
+  let url = externalDomain || window.location.origin;
+  if (!url.endsWith('/')) {
+    url += '/';
+  }
+  return `${url}share/${key}`;
 };
 
 export const oauth = {

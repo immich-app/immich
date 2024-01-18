@@ -1,9 +1,9 @@
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { api, AssetFileUploadResponseDto } from '@api';
-import { notificationController, NotificationType } from './../components/shared-components/notification/notification';
 import { UploadState } from '$lib/models/upload-asset';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
+import { getServerErrorMessage, handleError } from './handle-error';
 
 let _extensions: string[];
 
@@ -115,26 +115,10 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
         return res.id;
       }
     })
-    .catch((reason) => {
-      console.log('error uploading file ', reason);
+    .catch(async (error) => {
+      await handleError(error, 'Unable to upload file');
+      const reason = (await getServerErrorMessage(error)) || error;
       uploadAssetsStore.updateAsset(deviceAssetId, { state: UploadState.ERROR, error: reason });
-      handleUploadError(asset, JSON.stringify(reason));
       return undefined;
     });
-}
-
-function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) {
-  try {
-    const res = JSON.parse(respBody);
-    const extraMsg = res ? ' ' + res?.message : '';
-    const messageSuffix = extraMessage !== undefined ? ` ${extraMessage}` : '';
-
-    notificationController.show({
-      type: NotificationType.Error,
-      message: `Cannot upload file ${asset.name} ${extraMsg}${messageSuffix}`,
-      timeout: 5000,
-    });
-  } catch (e) {
-    console.error('ERROR parsing data JSON in handleUploadError');
-  }
 }

@@ -19,6 +19,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
 
+@RoutePage()
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
   SearchPage({Key? key}) : super(key: key);

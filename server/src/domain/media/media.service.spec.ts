@@ -600,6 +600,66 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should always scale video if height is uneven', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamOddHeight);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.ALL },
+        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: 'original' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v h264',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            `-vf scale=-2:354,format=yuv420p`,
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should always scale video if width is uneven', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamOddWidth);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.ALL },
+        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: 'original' },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v h264',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            `-vf scale=354:-2,format=yuv420p`,
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
+      );
+    });
+
     it('should transcode when audio doesnt match target', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.audioStreamMp3);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: TranscodePolicy.OPTIMAL }]);

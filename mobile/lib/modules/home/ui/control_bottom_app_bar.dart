@@ -64,21 +64,6 @@ class ControlBottomAppBar extends ConsumerWidget {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
 
-    void showForceDeleteDialog(
-      Function(bool) deleteCb, {
-      String? alertMsg,
-    }) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return DeleteDialog(
-            alert: alertMsg,
-            onDelete: () => deleteCb(true),
-          );
-        },
-      );
-    }
-
     void handleRemoteDelete(
       bool force,
       Function(bool) deleteCb, {
@@ -88,7 +73,15 @@ class ControlBottomAppBar extends ConsumerWidget {
         deleteCb(force);
         return;
       }
-      showForceDeleteDialog(deleteCb, alertMsg: alertMsg);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return DeleteDialog(
+            alert: alertMsg,
+            onDelete: () => deleteCb(force),
+          );
+        },
+      );
     }
 
     List<Widget> renderActionButtons() {
@@ -137,12 +130,6 @@ class ControlBottomAppBar extends ConsumerWidget {
                         alertMsg: "delete_dialog_alert_remote",
                       )
                   : null,
-              onLongPressed: enabled
-                  ? () => showForceDeleteDialog(
-                        onDeleteServer!,
-                        alertMsg: "delete_dialog_alert_remote",
-                      )
-                  : null,
             ),
           ),
         if (hasLocal && onDeleteLocal != null)
@@ -153,15 +140,15 @@ class ControlBottomAppBar extends ConsumerWidget {
               label: "control_bottom_app_bar_delete_from_local".tr(),
               onPressed: enabled
                   ? () {
+                      if (!selectionAssetState.hasLocal) {
+                        return onDeleteLocal?.call(true);
+                      }
+
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return DeleteLocalOnlyDialog(
                             onDeleteLocal: onDeleteLocal!,
-
-                            /// selectionAssetState.hasLocal has to be used instead of hasLocal since hasLocal is set
-                            /// to true even if merged assets are part of the selection
-                            showWarning: selectionAssetState.hasLocal,
                           );
                         },
                       );
@@ -178,8 +165,6 @@ class ControlBottomAppBar extends ConsumerWidget {
               onPressed: enabled
                   ? () => handleRemoteDelete(!trashEnabled, onDelete!)
                   : null,
-              onLongPressed:
-                  enabled ? () => showForceDeleteDialog(onDeleteServer!) : null,
             ),
           ),
         if (hasRemote && onEditTime != null)

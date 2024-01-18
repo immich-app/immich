@@ -5,10 +5,10 @@ from unittest import mock
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+from numpy.typing import NDArray
 from PIL import Image
 
 from .main import app
-from .schemas import ndarray_f32
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def pil_image() -> Image.Image:
 
 
 @pytest.fixture
-def cv_image(pil_image: Image.Image) -> ndarray_f32:
+def cv_image(pil_image: Image.Image) -> NDArray[np.float32]:
     return np.asarray(pil_image)[:, :, ::-1]  # PIL uses RGB while cv2 uses BGR
 
 

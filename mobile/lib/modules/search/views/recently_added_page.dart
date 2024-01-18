@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/recently_added.provider.dart';
 
+@RoutePage()
 class RecentlyAddedPage extends HookConsumerWidget {
   const RecentlyAddedPage({super.key});
 

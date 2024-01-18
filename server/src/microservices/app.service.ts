@@ -45,6 +45,7 @@ export class AppService {
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
       [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
+      [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),
       [JobName.QUEUE_ENCODE_CLIP]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
       [JobName.ENCODE_CLIP]: (data) => this.smartInfoService.handleEncodeClip(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),

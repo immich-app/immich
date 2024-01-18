@@ -16,6 +16,7 @@ import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
+@RoutePage()
 class TrashPage extends HookConsumerWidget {
   const TrashPage({super.key});
 

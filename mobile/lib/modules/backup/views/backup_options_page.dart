@@ -23,6 +23,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+@RoutePage()
 class BackupOptionsPage extends HookConsumerWidget {
   const BackupOptionsPage({Key? key}) : super(key: key);
   @override
