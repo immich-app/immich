@@ -67,7 +67,7 @@ export class SearchService {
     }
     const strategy = dto.clip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
     const userIds = await this.getUserIdsToSearch(auth);
-    const searchArchived = dto.searchArchived || false;
+    const withArchived = dto.withArchived || false;
 
     let assets: AssetEntity[] = [];
 
@@ -82,7 +82,7 @@ export class SearchService {
           userIds: userIds,
           embedding,
           numResults: 100,
-          searchArchived,
+          withArchived,
         });
         break;
       case SearchStrategy.TEXT:

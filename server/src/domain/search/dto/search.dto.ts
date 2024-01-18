@@ -36,7 +36,7 @@ export class SearchDto {
   @IsBoolean()
   @Optional()
   @Transform(toBoolean)
-  searchArchived?: boolean;
+  withArchived?: boolean;
 }
 
 export class SearchPeopleDto {

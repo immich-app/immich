@@ -114,8 +114,8 @@ describe(SearchService.name, () => {
       expect(smartInfoMock.searchCLIP).not.toHaveBeenCalled();
     });
 
-    it('should search archived photos if `searchArchived` option is true', async () => {
-      const dto: SearchDto = { q: 'test query', clip: true, searchArchived: true };
+    it('should search archived photos if `withArchived` option is true', async () => {
+      const dto: SearchDto = { q: 'test query', clip: true, withArchived: true };
       const embedding = [1, 2, 3];
       smartInfoMock.searchCLIP.mockResolvedValueOnce([assetStub.image]);
       machineMock.encodeText.mockResolvedValueOnce(embedding);
@@ -142,7 +142,7 @@ describe(SearchService.name, () => {
         userIds: [authStub.user1.user.id],
         embedding,
         numResults: 100,
-        searchArchived: true,
+        withArchived: true,
       });
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });
@@ -175,7 +175,7 @@ describe(SearchService.name, () => {
         userIds: [authStub.user1.user.id],
         embedding,
         numResults: 100,
-        searchArchived: false,
+        withArchived: false,
       });
       expect(assetMock.searchMetadata).not.toHaveBeenCalled();
     });

@@ -43,7 +43,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   @GenerateSql({
     params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
   })
-  async searchCLIP({ userIds, embedding, numResults, searchArchived }: EmbeddingSearch): Promise<AssetEntity[]> {
+  async searchCLIP({ userIds, embedding, numResults, withArchived }: EmbeddingSearch): Promise<AssetEntity[]> {
     if (!isValidInteger(numResults, { min: 1 })) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -52,14 +52,15 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     await this.assetRepository.manager.transaction(async (manager) => {
       await manager.query(`SET LOCAL vectors.k = '${numResults}'`);
       await manager.query(`SET LOCAL vectors.enable_prefilter = on`);
-      let query = manager
+
+      const query = manager
         .createQueryBuilder(AssetEntity, 'a')
         .innerJoin('a.smartSearch', 's')
         .where('a.ownerId IN (:...userIds )')
         .andWhere('a.isVisible = true');
 
-      if (!searchArchived) {
-        query = query.andWhere('a.isArchived = false');
+      if (!withArchived) {
+        query.andWhere('a.isArchived = false');
       }
 
       results = await query

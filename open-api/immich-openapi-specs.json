@@ -4578,7 +4578,7 @@
             }
           },
           {
-            "name": "searchArchived",
+            "name": "withArchived",
             "required": false,
             "in": "query",
             "schema": {
