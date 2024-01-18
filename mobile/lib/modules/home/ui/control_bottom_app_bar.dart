@@ -122,7 +122,9 @@ class ControlBottomAppBar extends ConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 85),
             child: ControlBoxButton(
               iconData: Icons.cloud_off_outlined,
-              label: "control_bottom_app_bar_delete_from_immich".tr(),
+              label: trashEnabled
+                  ? "control_bottom_app_bar_trash_from_immich".tr()
+                  : "control_bottom_app_bar_delete_from_immich".tr(),
               onPressed: enabled
                   ? () => handleRemoteDelete(
                         !trashEnabled,
