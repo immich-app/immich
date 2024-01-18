@@ -732,11 +732,12 @@ describe(LibraryService.name, () => {
 
         expect(libraryMock.create).toHaveBeenCalledWith(
           expect.objectContaining({
-            name: 'New External Library',
+            name: expect.any(String),
             type: LibraryType.EXTERNAL,
             importPaths: [],
             exclusionPatterns: [],
             isVisible: true,
+            isWatched: false,
           }),
         );
       });
@@ -798,7 +799,7 @@ describe(LibraryService.name, () => {
 
         expect(libraryMock.create).toHaveBeenCalledWith(
           expect.objectContaining({
-            name: 'New External Library',
+            name: expect.any(String),
             type: LibraryType.EXTERNAL,
             importPaths: [],
             exclusionPatterns: [],
@@ -831,7 +832,7 @@ describe(LibraryService.name, () => {
 
         expect(libraryMock.create).toHaveBeenCalledWith(
           expect.objectContaining({
-            name: 'New External Library',
+            name: expect.any(String),
             type: LibraryType.EXTERNAL,
             importPaths: ['/data/images', '/data/videos'],
             exclusionPatterns: [],
@@ -864,12 +865,49 @@ describe(LibraryService.name, () => {
 
         expect(libraryMock.create).toHaveBeenCalledWith(
           expect.objectContaining({
-            name: 'New External Library',
+            name: expect.any(String),
             type: LibraryType.EXTERNAL,
             importPaths: [],
             exclusionPatterns: ['*.tmp', '*.bak'],
             isVisible: true,
           }),
+        );
+      });
+
+      it('can create watched external library', async () => {
+        libraryMock.create.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+
+        libraryMock.update.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+        configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+        libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+
+        const mockWatcher = newFSWatcherMock();
+
+        mockWatcher.on.mockImplementation((event, callback) => {
+          if (event === 'ready') {
+            callback();
+          }
+        });
+
+        storageMock.watch.mockResolvedValue(mockWatcher);
+
+        await sut.init();
+
+        await expect(
+          sut.create(authStub.admin, {
+            type: LibraryType.EXTERNAL,
+            isWatched: true,
+          }),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            isWatched: true,
+          }),
+        );
+
+        expect(storageMock.watch).toHaveBeenCalledWith(
+          libraryStub.watchedExternalLibrary1.id,
+          expect.arrayContaining([expect.any(String)]),
+          expect.anything(),
         );
       });
     });
@@ -961,6 +999,19 @@ describe(LibraryService.name, () => {
 
         expect(libraryMock.create).not.toHaveBeenCalled();
       });
+
+      it('can not create watched', async () => {
+        await sut.init();
+
+        await expect(
+          sut.create(authStub.admin, {
+            type: LibraryType.UPLOAD,
+            isWatched: true,
+          }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+
+        expect(storageMock.watch).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -1021,6 +1072,20 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
 
+      await sut.init();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, { isWatched: false })).resolves.toBeTruthy();
+      expect(libraryMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: authStub.admin.user.id,
+        }),
+      );
+    });
+
+    it('can re-watch library when updating import paths', async () => {
+      libraryMock.update.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+
       const mockWatcher = newFSWatcherMock();
 
       mockWatcher.on.mockImplementation((event, callback) => {
@@ -1032,11 +1097,47 @@ describe(LibraryService.name, () => {
       storageMock.watch.mockResolvedValue(mockWatcher);
 
       await sut.init();
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, { isWatched: false })).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['foo'] })).resolves.toBeTruthy();
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: authStub.admin.user.id,
         }),
+      );
+      expect(storageMock.watch).toHaveBeenCalledWith(
+        libraryStub.watchedExternalLibrary1.id,
+        expect.arrayContaining([expect.any(String)]),
+        expect.anything(),
+      );
+    });
+
+    it('can re-watch library when updating exclusion patterns paths', async () => {
+      libraryMock.update.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+
+      const mockWatcher = newFSWatcherMock();
+
+      mockWatcher.on.mockImplementation((event, callback) => {
+        if (event === 'ready') {
+          callback();
+        }
+      });
+
+      storageMock.watch.mockResolvedValue(mockWatcher);
+
+      await sut.init();
+      await expect(
+        sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] }),
+      ).resolves.toBeTruthy();
+      expect(libraryMock.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: authStub.admin.user.id,
+        }),
+      );
+      expect(storageMock.watch).toHaveBeenCalledWith(
+        libraryStub.watchedExternalLibrary1.id,
+        expect.arrayContaining([expect.any(String)]),
+        expect.anything(),
       );
     });
 

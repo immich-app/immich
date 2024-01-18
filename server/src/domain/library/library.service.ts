@@ -216,6 +216,9 @@ export class LibraryService extends EventEmitter {
         if (dto.exclusionPatterns && dto.exclusionPatterns.length > 0) {
           throw new BadRequestException('Upload libraries cannot have exclusion patterns');
         }
+        if (dto.isWatched) {
+          throw new BadRequestException('Upload libraries cannot be watched');
+        }
         break;
     }
 
@@ -226,6 +229,7 @@ export class LibraryService extends EventEmitter {
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? [],
       isVisible: dto.isVisible ?? true,
+      isWatched: dto.isWatched ?? false,
     });
 
     this.logger.log(`Creating ${dto.type} library for user ${auth.user.name}`);

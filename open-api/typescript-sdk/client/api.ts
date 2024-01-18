@@ -1389,6 +1389,12 @@ export interface CreateLibraryDto {
     'isVisible'?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof CreateLibraryDto
+     */
+    'isWatched'?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof CreateLibraryDto
      */
