@@ -249,7 +249,7 @@ export class LibraryService extends EventEmitter {
         await this.watch(id);
       } else {
         this.logger.debug(`Unwatching library ${id}`);
-        await  this.storageRepository.unwatch(id);
+        await this.storageRepository.unwatch(id);
       }
     } else if (dto.importPaths || dto.exclusionPatterns) {
       await this.watch(id);
