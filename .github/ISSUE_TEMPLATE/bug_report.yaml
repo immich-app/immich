@@ -1,6 +1,5 @@
 name: Report an issue with Immich
 description: Report an issue with Immich
-title: ""
 body:
   - type: markdown
     attributes:
