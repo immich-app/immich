@@ -63,6 +63,22 @@ class ControlBottomAppBar extends ConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
+    const bottomPadding = 0.20;
+
+    void showForceDeleteDialog(
+      Function(bool) deleteCb, {
+      String? alertMsg,
+    }) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return DeleteDialog(
+            alert: alertMsg,
+            onDelete: () => deleteCb(true),
+          );
+        },
+      );
+    }
 
     void handleRemoteDelete(
       bool force,
@@ -73,15 +89,7 @@ class ControlBottomAppBar extends ConsumerWidget {
         deleteCb(force);
         return;
       }
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return DeleteDialog(
-            alert: alertMsg,
-            onDelete: () => deleteCb(force),
-          );
-        },
-      );
+      return showForceDeleteDialog(deleteCb, alertMsg: alertMsg);
     }
 
     List<Widget> renderActionButtons() {
@@ -122,10 +130,18 @@ class ControlBottomAppBar extends ConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 85),
             child: ControlBoxButton(
               iconData: Icons.cloud_off_outlined,
-              label: "control_bottom_app_bar_delete_from_immich".tr(),
+              label: trashEnabled
+                  ? "control_bottom_app_bar_trash_from_immich".tr()
+                  : "control_bottom_app_bar_delete_from_immich".tr(),
               onPressed: enabled
                   ? () => handleRemoteDelete(
                         !trashEnabled,
+                        onDeleteServer!,
+                        alertMsg: "delete_dialog_alert_remote",
+                      )
+                  : null,
+              onLongPressed: enabled
+                  ? () => showForceDeleteDialog(
                         onDeleteServer!,
                         alertMsg: "delete_dialog_alert_remote",
                       )
@@ -165,6 +181,8 @@ class ControlBottomAppBar extends ConsumerWidget {
               onPressed: enabled
                   ? () => handleRemoteDelete(!trashEnabled, onDelete!)
                   : null,
+              onLongPressed:
+                  enabled ? () => showForceDeleteDialog(onDelete!) : null,
             ),
           ),
         if (hasRemote && onEditTime != null)
@@ -212,9 +230,9 @@ class ControlBottomAppBar extends ConsumerWidget {
     }
 
     return DraggableScrollableSheet(
-      initialChildSize: hasRemote ? 0.30 : 0.18,
-      minChildSize: 0.18,
-      maxChildSize: hasRemote ? 0.60 : 0.18,
+      initialChildSize: hasRemote ? 0.30 : bottomPadding,
+      minChildSize: bottomPadding,
+      maxChildSize: hasRemote ? 0.60 : bottomPadding,
       snap: true,
       builder: (
         BuildContext context,
