@@ -107,7 +107,6 @@ export class LibraryService extends EventEmitter {
 
     const watcher = await this.storageRepository.watch(library.id, library.importPaths, {
       ignoreInitial: true,
-      usePolling: true,
     });
 
     watcher.on('add', async (path) => {
@@ -243,13 +242,14 @@ export class LibraryService extends EventEmitter {
     const library = await this.repository.update({ id, ...dto });
 
     if (dto.isWatched !== undefined) {
+      if (!this.watchFeatureFlag) {
+        throw new Error('Cannot set isWatched on library when the library watch feature flag is disabled');
+      }
       if (dto.isWatched) {
-        if (!this.watchFeatureFlag) {
-          throw new Error('Cannot watch library when the library watch feature flag is disabled');
-        }
         await this.watch(id);
       } else {
         this.logger.debug(`Unwatching library ${id}`);
+        await  this.storageRepository.unwatch(id);
       }
     } else if (dto.importPaths || dto.exclusionPatterns) {
       await this.watch(id);

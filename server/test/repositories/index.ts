@@ -6,6 +6,7 @@ export * from './audit.repository.mock';
 export * from './communication.repository.mock';
 export * from './crypto.repository.mock';
 export * from './database.repository.mock';
+export * from './fs-watcher.mock';
 export * from './job.repository.mock';
 export * from './library.repository.mock';
 export * from './machine-learning.repository.mock';
