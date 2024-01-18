@@ -58,10 +58,6 @@ jobs:
         run: npm run format
         if: ${{ !cancelled() }}
 
-      - name: Run tsc
-        run: npm run check
-        if: ${{ !cancelled() }}
-
       - name: Run build
         run: npm run build
         if: ${{ !cancelled() }}

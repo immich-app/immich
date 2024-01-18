@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart'
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/trash/providers/trashed_asset.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -67,18 +66,21 @@ class TrashPage extends HookConsumerWidget {
       processing.value = true;
       try {
         if (selection.value.isNotEmpty) {
-          await ref
-              .read(assetProvider.notifier)
-              .deleteAssets(selection.value, force: true);
+          final isRemoved = await ref
+              .read(trashProvider.notifier)
+              .removeAssets(selection.value);
 
-          final assetOrAssets = selection.value.length > 1 ? 'assets' : 'asset';
-          if (context.mounted) {
-            ImmichToast.show(
-              context: context,
-              msg:
-                  '${selection.value.length} $assetOrAssets deleted permanently',
-              gravity: ToastGravity.BOTTOM,
-            );
+          if (isRemoved) {
+            final assetOrAssets =
+                selection.value.length > 1 ? 'assets' : 'asset';
+            if (context.mounted) {
+              ImmichToast.show(
+                context: context,
+                msg:
+                    '${selection.value.length} $assetOrAssets deleted permanently',
+                gravity: ToastGravity.BOTTOM,
+              );
+            }
           }
         }
       } finally {

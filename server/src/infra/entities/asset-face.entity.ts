@@ -15,7 +15,7 @@ export class AssetFaceEntity {
   personId!: string | null;
 
   @Index('face_index', { synchronize: false })
-  @Column({ type: 'float4', array: true, select: false })
+  @Column({ type: 'float4', array: true, select: false, transformer: { from: (v) => JSON.parse(v), to: (v) => v } })
   embedding!: number[];
 
   @Column({ default: 0, type: 'int' })
@@ -39,6 +39,10 @@ export class AssetFaceEntity {
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;
 
-  @ManyToOne(() => PersonEntity, (person) => person.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
+  @ManyToOne(() => PersonEntity, (person) => person.faces, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+    nullable: true,
+  })
   person!: PersonEntity | null;
 }

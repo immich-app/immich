@@ -21,6 +21,16 @@ void main() {
       // TODO
     });
 
+    // JobStatusDto faceDetection
+    test('to test the property `faceDetection`', () async {
+      // TODO
+    });
+
+    // JobStatusDto facialRecognition
+    test('to test the property `facialRecognition`', () async {
+      // TODO
+    });
+
     // JobStatusDto library_
     test('to test the property `library_`', () async {
       // TODO
@@ -33,11 +43,6 @@ void main() {
 
     // JobStatusDto migration
     test('to test the property `migration`', () async {
-      // TODO
-    });
-
-    // JobStatusDto recognizeFaces
-    test('to test the property `recognizeFaces`', () async {
       // TODO
     });
 

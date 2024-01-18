@@ -6503,6 +6503,12 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "faceDetection": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "facialRecognition": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "library": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -6510,9 +6516,6 @@
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "migration": {
-            "$ref": "#/components/schemas/JobStatusDto"
-          },
-          "recognizeFaces": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "search": {
@@ -6543,7 +6546,8 @@
           "migration",
           "backgroundTask",
           "search",
-          "recognizeFaces",
+          "faceDetection",
+          "facialRecognition",
           "sidecar",
           "library"
         ],
@@ -7831,7 +7835,8 @@
           "thumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
-          "recognizeFaces",
+          "faceDetection",
+          "facialRecognition",
           "smartSearch",
           "backgroundTask",
           "storageTemplateMigration",
@@ -8466,13 +8471,15 @@
             "type": "boolean"
           },
           "maxDistance": {
-            "type": "integer"
+            "format": "float",
+            "type": "number"
           },
           "minFaces": {
             "type": "integer"
           },
           "minScore": {
-            "type": "integer"
+            "format": "float",
+            "type": "number"
           },
           "modelName": {
             "type": "string"
@@ -9212,6 +9219,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "faceDetection": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "library": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -9219,9 +9229,6 @@
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "migration": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "recognizeFaces": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "search": {
@@ -9248,7 +9255,7 @@
           "migration",
           "backgroundTask",
           "search",
-          "recognizeFaces",
+          "faceDetection",
           "sidecar",
           "library"
         ],
