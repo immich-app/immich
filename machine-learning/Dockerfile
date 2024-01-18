@@ -41,7 +41,7 @@ USER root
 
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 as prod-cuda
 
-COPY --from=builder-cuda /usr/local/bin/python /usr/local/bin/python
+COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
