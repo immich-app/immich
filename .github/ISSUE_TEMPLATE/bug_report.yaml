@@ -1,7 +1,6 @@
 name: Report an issue with Immich
 description: Report an issue with Immich
-labels: ["bug", "need triage"]
-title: "[BUG] <title>"
+title: ""
 body:
   - type: markdown
     attributes:
