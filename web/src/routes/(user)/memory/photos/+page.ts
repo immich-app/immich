@@ -5,5 +5,5 @@ import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
-  throw redirect(302, AppRoute.MEMORY);
+  redirect(302, AppRoute.MEMORY);
 }) satisfies PageLoad;
