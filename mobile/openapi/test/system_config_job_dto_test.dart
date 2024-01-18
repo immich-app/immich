@@ -56,11 +56,6 @@ void main() {
       // TODO
     });
 
-    // JobSettingsDto storageTemplateMigration
-    test('to test the property `storageTemplateMigration`', () async {
-      // TODO
-    });
-
     // JobSettingsDto thumbnailGeneration
     test('to test the property `thumbnailGeneration`', () async {
       // TODO

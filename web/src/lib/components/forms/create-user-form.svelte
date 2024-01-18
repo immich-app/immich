@@ -4,6 +4,7 @@
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
+  import { convertToBytes } from '$lib/utils/byte-converter';
 
   let error: string;
   let success: string;
@@ -42,6 +43,7 @@
       const email = form.get('email');
       const password = form.get('password');
       const name = form.get('name');
+      const quotaSize = form.get('quotaSize');
 
       try {
         const { status } = await api.userApi.createUser({
@@ -49,6 +51,7 @@
             email: String(email),
             password: String(password),
             name: String(name),
+            quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
           },
         });
 
@@ -115,6 +118,11 @@
     <div class="m-4 flex flex-col gap-2">
       <label class="immich-form-label" for="name">Name</label>
       <input class="immich-form-input" id="name" name="name" type="text" required />
+    </div>
+
+    <div class="m-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="quotaSize">Quota Size (GB)</label>
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" />
     </div>
 
     {#if error}

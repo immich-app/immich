@@ -36,6 +36,7 @@ export enum AppRoute {
   AUTH_LOGOUT = '/auth/logout',
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
+  AUTH_ONBOARDING = '/auth/onboarding',
 }
 
 export enum ProjectionType {
@@ -82,3 +83,8 @@ export enum ActionQueryParameterValue {
 export const maximumLengthSearchPeople: number = 20;
 
 export const timeBeforeShowLoadingSpinner: number = 100;
+// should be the same values as the ones in the app.html
+export enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+}

@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **oauth** | [**SystemConfigOAuthDto**](SystemConfigOAuthDto.md) |  | 
 **passwordLogin** | [**SystemConfigPasswordLoginDto**](SystemConfigPasswordLoginDto.md) |  | 
 **reverseGeocoding** | [**SystemConfigReverseGeocodingDto**](SystemConfigReverseGeocodingDto.md) |  | 
+**server** | [**SystemConfigServerDto**](SystemConfigServerDto.md) |  | 
 **storageTemplate** | [**SystemConfigStorageTemplateDto**](SystemConfigStorageTemplateDto.md) |  | 
 **theme** | [**SystemConfigThemeDto**](SystemConfigThemeDto.md) |  | 
 **thumbnail** | [**SystemConfigThumbnailDto**](SystemConfigThumbnailDto.md) |  | 

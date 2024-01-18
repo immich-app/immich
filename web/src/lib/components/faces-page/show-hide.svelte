@@ -16,10 +16,11 @@
 
   export let showLoadingSpinner: boolean;
   export let toggleVisibility: boolean;
+  export let screenHeight: number;
 </script>
 
 <section
-  transition:fly={{ y: 500, duration: 100, easing: quintOut }}
+  transition:fly={{ y: screenHeight, duration: 150, easing: quintOut, opacity: 1 }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <div

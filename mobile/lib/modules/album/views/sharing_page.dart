@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -13,6 +14,7 @@ import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
+@RoutePage()
 class SharingPage extends HookConsumerWidget {
   const SharingPage({Key? key}) : super(key: key);
 
@@ -48,11 +50,9 @@ class SharingPage extends HookConsumerWidget {
               return AlbumThumbnailCard(
                 album: sharedAlbums[index],
                 showOwner: true,
-                onTap: () {
-                  context.autoPush(
-                    AlbumViewerRoute(albumId: sharedAlbums[index].id),
-                  );
-                },
+                onTap: () => context.pushRoute(
+                  AlbumViewerRoute(albumId: sharedAlbums[index].id),
+                ),
               );
             },
             childCount: sharedAlbums.length,
@@ -99,11 +99,8 @@ class SharingPage extends HookConsumerWidget {
                           style: context.textTheme.bodyMedium,
                         )
                       : null,
-              onTap: () {
-                context.autoPush(
-                  AlbumViewerRoute(albumId: sharedAlbums[index].id),
-                );
-              },
+              onTap: () => context
+                  .pushRoute(AlbumViewerRoute(albumId: sharedAlbums[index].id)),
             );
           },
           childCount: sharedAlbums.length,
@@ -124,9 +121,8 @@ class SharingPage extends HookConsumerWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {
-                  context.autoPush(CreateAlbumRoute(isSharedAlbum: true));
-                },
+                onPressed: () =>
+                    context.pushRoute(CreateAlbumRoute(isSharedAlbum: true)),
                 icon: const Icon(
                   Icons.photo_album_outlined,
                   size: 20,
@@ -144,7 +140,7 @@ class SharingPage extends HookConsumerWidget {
             const SizedBox(width: 12.0),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () => context.autoPush(const SharedLinkRoute()),
+                onPressed: () => context.pushRoute(const SharedLinkRoute()),
                 icon: const Icon(
                   Icons.link,
                   size: 20,
@@ -214,7 +210,7 @@ class SharingPage extends HookConsumerWidget {
 
     Widget sharePartnerButton() {
       return InkWell(
-        onTap: () => context.autoPush(const PartnerRoute()),
+        onTap: () => context.pushRoute(const PartnerRoute()),
         borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: const Icon(
           Icons.swap_horizontal_circle_rounded,

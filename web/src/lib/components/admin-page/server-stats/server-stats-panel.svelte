@@ -3,7 +3,7 @@
   import type { ServerStatsResponseDto } from '@api';
   import { asByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import StatsCard from './stats-card.svelte';
-  import { mdiCameraIris, mdiMemory, mdiPlayCircle } from '@mdi/js';
+  import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let stats: ServerStatsResponseDto = {
@@ -32,7 +32,7 @@
     <div class="mt-5 hidden justify-between lg:flex">
       <StatsCard icon={mdiCameraIris} title="PHOTOS" value={stats.photos} />
       <StatsCard icon={mdiPlayCircle} title="VIDEOS" value={stats.videos} />
-      <StatsCard icon={mdiMemory} title="STORAGE" value={statsUsage} unit={statsUsageUnit} />
+      <StatsCard icon={mdiChartPie} title="STORAGE" value={statsUsage} unit={statsUsageUnit} />
     </div>
     <div class="mt-5 flex lg:hidden">
       <div class="flex flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">
@@ -62,7 +62,7 @@
         </div>
         <div class="flex flex-wrap gap-x-7">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
-            <Icon path={mdiMemory} size="25" />
+            <Icon path={mdiChartPie} size="25" />
             <p>STORAGE</p>
           </div>
 
@@ -87,7 +87,7 @@
           <th class="w-1/4 text-center text-sm font-medium">User</th>
           <th class="w-1/4 text-center text-sm font-medium">Photos</th>
           <th class="w-1/4 text-center text-sm font-medium">Videos</th>
-          <th class="w-1/4 text-center text-sm font-medium">Size</th>
+          <th class="w-1/4 text-center text-sm font-medium">Usage</th>
         </tr>
       </thead>
       <tbody
@@ -100,7 +100,16 @@
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userName}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.photos.toLocaleString($locale)}</td>
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.videos.toLocaleString($locale)}</td>
-            <td class="w-1/4 text-ellipsis px-2 text-sm">{asByteUnitString(user.usage, $locale)}</td>
+            <td class="w-1/4 text-ellipsis px-2 text-sm">
+              {asByteUnitString(user.usage, $locale, 0)}
+              <span class="text-immich-primary dark:text-immich-dark-primary">
+                {#if user.quotaSizeInBytes}
+                  ({((user.usage / user.quotaSizeInBytes) * 100).toFixed(0)}%)
+                {:else}
+                  (Unlimited)
+                {/if}
+              </span>
+            </td>
           </tr>
         {/each}
       </tbody>

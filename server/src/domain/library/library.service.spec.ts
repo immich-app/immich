@@ -135,18 +135,16 @@ describe(LibraryService.name, () => {
 
       await sut.handleQueueAssetRefresh(mockLibraryJob);
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.LIBRARY_SCAN_ASSET,
-            data: {
-              id: libraryStub.externalLibrary1.id,
-              ownerId: libraryStub.externalLibrary1.owner.id,
-              assetPath: '/data/user1/photo.jpg',
-              force: false,
-            },
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.LIBRARY_SCAN_ASSET,
+          data: {
+            id: libraryStub.externalLibrary1.id,
+            ownerId: libraryStub.externalLibrary1.owner.id,
+            assetPath: '/data/user1/photo.jpg',
+            force: false,
           },
-        ],
+        },
       ]);
     });
 
@@ -420,6 +418,7 @@ describe(LibraryService.name, () => {
       await expect(sut.handleAssetRefresh(mockLibraryJob)).resolves.toBe(true);
 
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
     it('should import an asset when mtime differs from db asset', async () => {
@@ -468,6 +467,7 @@ describe(LibraryService.name, () => {
 
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.image.id, isOffline: true });
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
     it('should online a previously-offline asset', async () => {
@@ -607,6 +607,7 @@ describe(LibraryService.name, () => {
       );
 
       expect(jobMock.queue).not.toHaveBeenCalled();
+      expect(jobMock.queueAll).not.toHaveBeenCalled();
       expect(libraryMock.softDelete).not.toHaveBeenCalled();
     });
 
@@ -953,9 +954,9 @@ describe(LibraryService.name, () => {
       libraryMock.getAllDeleted.mockResolvedValue([libraryStub.uploadLibrary1, libraryStub.externalLibrary1]);
       await expect(sut.handleQueueCleanup()).resolves.toBe(true);
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.LIBRARY_DELETE, data: { id: libraryStub.uploadLibrary1.id } }],
-        [{ name: JobName.LIBRARY_DELETE, data: { id: libraryStub.externalLibrary1.id } }],
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        { name: JobName.LIBRARY_DELETE, data: { id: libraryStub.uploadLibrary1.id } },
+        { name: JobName.LIBRARY_DELETE, data: { id: libraryStub.externalLibrary1.id } },
       ]);
     });
   });
@@ -1101,16 +1102,16 @@ describe(LibraryService.name, () => {
             data: {},
           },
         ],
-        [
-          {
-            name: JobName.LIBRARY_SCAN,
-            data: {
-              id: libraryStub.externalLibrary1.id,
-              refreshModifiedFiles: true,
-              refreshAllFiles: false,
-            },
+      ]);
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.LIBRARY_SCAN,
+          data: {
+            id: libraryStub.externalLibrary1.id,
+            refreshModifiedFiles: true,
+            refreshAllFiles: false,
           },
-        ],
+        },
       ]);
     });
 
@@ -1126,16 +1127,16 @@ describe(LibraryService.name, () => {
             data: {},
           },
         ],
-        [
-          {
-            name: JobName.LIBRARY_SCAN,
-            data: {
-              id: libraryStub.externalLibrary1.id,
-              refreshModifiedFiles: false,
-              refreshAllFiles: true,
-            },
+      ]);
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.LIBRARY_SCAN,
+          data: {
+            id: libraryStub.externalLibrary1.id,
+            refreshModifiedFiles: false,
+            refreshAllFiles: true,
           },
-        ],
+        },
       ]);
     });
   });
@@ -1147,13 +1148,11 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleOfflineRemoval({ id: libraryStub.externalLibrary1.id })).resolves.toBe(true);
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.ASSET_DELETION,
-            data: { id: assetStub.image1.id, fromExternal: true },
-          },
-        ],
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.ASSET_DELETION,
+          data: { id: assetStub.image1.id, fromExternal: true },
+        },
       ]);
     });
   });

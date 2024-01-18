@@ -1,15 +1,17 @@
 import {
-  AlbumApi,
-  LibraryApi,
   APIKeyApi,
+  ActivityApi,
+  AlbumApi,
   AssetApi,
   AssetApiFp,
   AssetJobName,
+  AuditApi,
   AuthenticationApi,
-  Configuration,
   ConfigurationParameters,
+  FaceApi,
   JobApi,
   JobName,
+  LibraryApi,
   OAuthApi,
   PartnerApi,
   PersonApi,
@@ -19,12 +21,10 @@ import {
   SystemConfigApi,
   UserApi,
   UserApiFp,
-  AuditApi,
-  ActivityApi,
-  FaceApi,
-} from './open-api';
-import { BASE_PATH } from './open-api/base';
-import { DUMMY_BASE_URL, toPathString } from './open-api/common';
+  base,
+  common,
+  configuration,
+} from '@immich/sdk';
 import type { ApiParams } from './types';
 
 class ImmichApi {
@@ -46,7 +46,7 @@ class ImmichApi {
   public systemConfigApi: SystemConfigApi;
   public userApi: UserApi;
 
-  private config: Configuration;
+  private config: configuration.Configuration;
   private key?: string;
 
   get isSharedLink() {
@@ -54,7 +54,7 @@ class ImmichApi {
   }
 
   constructor(params: ConfigurationParameters) {
-    this.config = new Configuration(params);
+    this.config = new configuration.Configuration(params);
 
     this.activityApi = new ActivityApi(this.config);
     this.albumApi = new AlbumApi(this.config);
@@ -84,10 +84,10 @@ class ImmichApi {
       }
     }
 
-    const url = new URL(path, DUMMY_BASE_URL);
+    const url = new URL(path, common.DUMMY_BASE_URL);
     url.search = searchParams.toString();
 
-    return (this.config.basePath || BASE_PATH) + toPathString(url);
+    return (this.config.basePath || base.BASE_PATH) + common.toPathString(url);
   }
 
   public setKey(key: string) {

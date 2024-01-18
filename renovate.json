@@ -25,12 +25,18 @@
       "matchFileNames": ["server/**"],
       "groupName": "server",
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackagePrefixes": ["exiftool"],
+      "excludePackagePrefixes": ["exiftool", "reflect-metadata"],
       "schedule": "on tuesday"
     },
     {
       "groupName": "exiftool",
       "matchPackagePrefixes": ["exiftool"],
+      "schedule": "on tuesday"
+    },
+    {
+      "groupName": "svelte",
+      "matchUpdateTypes": ["major"],
+      "matchPackagePrefixes": ["@sveltejs"],
       "schedule": "on tuesday"
     },
     {
@@ -60,11 +66,13 @@
       "matchPackageNames": ["node"],
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
       "versioning": "node"
+    },
+    {
+      "packageNames": ["com.google.guava:guava"],
+      "versionScheme": "docker"
     }
   ],
-  "ignorePaths": [
-    "mobile/openapi/pubspec.yaml"
-  ],
+  "ignorePaths": ["mobile/openapi/pubspec.yaml"],
   "ignoreDeps": [
     "http",
     "latlong2",
@@ -72,5 +80,5 @@
     "flutter_map",
     "flutter_map_heatmap"
   ],
-  "labels": ["renovate"]
+  "labels": ["dependencies", "renovate"]
 }

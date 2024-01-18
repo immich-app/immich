@@ -18,11 +18,37 @@
       /**
        * Prevent FOUC on page load.
        */
-      const theme = localStorage.getItem('color-theme') || 'dark';
-      if (theme === 'light') {
+      const colorThemeKeyName = 'color-theme';
+      let theme;
+      const fallbackTheme = { value: 'dark', system: false };
+      let item = localStorage.getItem(colorThemeKeyName);
+      if (item === 'dark' || item === 'light') {
+        fallbackTheme.value = item;
+        item = JSON.stringify(fallbackTheme);
+        localStorage.setItem(colorThemeKeyName, item);
+      }
+
+      theme = JSON.parse(localStorage.getItem(colorThemeKeyName));
+
+      if (theme) {
+        if (theme.system) {
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            theme.value = 'dark';
+          } else {
+            theme.value = 'light';
+          }
+        }
+      } else {
+        theme = fallbackTheme;
+      }
+
+      if (theme.value === 'light') {
         document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
       }
     </script>
+
     <link rel="stylesheet" href="/custom.css" />
   </head>
 

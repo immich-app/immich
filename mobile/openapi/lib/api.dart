@@ -177,6 +177,7 @@ part 'model/system_config_new_version_check_dto.dart';
 part 'model/system_config_o_auth_dto.dart';
 part 'model/system_config_password_login_dto.dart';
 part 'model/system_config_reverse_geocoding_dto.dart';
+part 'model/system_config_server_dto.dart';
 part 'model/system_config_storage_template_dto.dart';
 part 'model/system_config_template_storage_option_dto.dart';
 part 'model/system_config_theme_dto.dart';

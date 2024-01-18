@@ -13,12 +13,13 @@ export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepo
     unlink: jest.fn(),
     unlinkDir: jest.fn().mockResolvedValue(true),
     removeEmptyDirs: jest.fn(),
-    moveFile: jest.fn(),
     checkFileExists: jest.fn(),
     mkdirSync: jest.fn(),
     checkDiskUsage: jest.fn(),
     readdir: jest.fn(),
     stat: jest.fn(),
     crawl: jest.fn(),
+    rename: jest.fn(),
+    copyFile: jest.fn(),
   };
 };

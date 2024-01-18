@@ -14,6 +14,7 @@ class UsageByUserDto {
   /// Returns a new [UsageByUserDto] instance.
   UsageByUserDto({
     required this.photos,
+    required this.quotaSizeInBytes,
     required this.usage,
     required this.userId,
     required this.userName,
@@ -21,6 +22,8 @@ class UsageByUserDto {
   });
 
   int photos;
+
+  int? quotaSizeInBytes;
 
   int usage;
 
@@ -33,6 +36,7 @@ class UsageByUserDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
      other.photos == photos &&
+     other.quotaSizeInBytes == quotaSizeInBytes &&
      other.usage == usage &&
      other.userId == userId &&
      other.userName == userName &&
@@ -42,17 +46,23 @@ class UsageByUserDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (photos.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (usage.hashCode) +
     (userId.hashCode) +
     (userName.hashCode) +
     (videos.hashCode);
 
   @override
-  String toString() => 'UsageByUserDto[photos=$photos, usage=$usage, userId=$userId, userName=$userName, videos=$videos]';
+  String toString() => 'UsageByUserDto[photos=$photos, quotaSizeInBytes=$quotaSizeInBytes, usage=$usage, userId=$userId, userName=$userName, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
+    if (this.quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
+    } else {
+    //  json[r'quotaSizeInBytes'] = null;
+    }
       json[r'usage'] = this.usage;
       json[r'userId'] = this.userId;
       json[r'userName'] = this.userName;
@@ -69,6 +79,7 @@ class UsageByUserDto {
 
       return UsageByUserDto(
         photos: mapValueOfType<int>(json, r'photos')!,
+        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         usage: mapValueOfType<int>(json, r'usage')!,
         userId: mapValueOfType<String>(json, r'userId')!,
         userName: mapValueOfType<String>(json, r'userName')!,
@@ -121,6 +132,7 @@ class UsageByUserDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'photos',
+    'quotaSizeInBytes',
     'usage',
     'userId',
     'userName',

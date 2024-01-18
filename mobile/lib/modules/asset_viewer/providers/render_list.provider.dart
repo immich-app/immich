@@ -16,6 +16,15 @@ final renderListProvider =
   );
 });
 
+final renderListProviderWithGrouping =
+    FutureProvider.family<RenderList, (List<Asset>, GroupAssetsBy?)>(
+        (ref, args) {
+  final settings = ref.watch(appSettingsServiceProvider);
+  final grouping = args.$2 ??
+      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
+  return RenderList.fromAssets(args.$1, grouping);
+});
+
 final renderListQueryProvider = StreamProvider.family<RenderList,
     QueryBuilder<Asset, Asset, QAfterSortBy>?>(
   (ref, query) =>

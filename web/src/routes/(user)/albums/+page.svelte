@@ -181,7 +181,7 @@
     }
   }
 
-  const test = (searched: string): Sort => {
+  const searchSort = (searched: string): Sort => {
     for (const key in sortByOptions) {
       if (sortByOptions[key].title === searched) {
         return sortByOptions[key];
@@ -256,7 +256,7 @@
 
     <Dropdown
       options={Object.values(sortByOptions)}
-      selectedOption={test($albumViewSettings.sortBy)}
+      selectedOption={searchSort($albumViewSettings.sortBy)}
       render={(option) => {
         return {
           title: option.title,

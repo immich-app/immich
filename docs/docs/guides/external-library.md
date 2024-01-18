@@ -1,6 +1,6 @@
 # External Library
 
-This guide walks you through adding an [External Library](../features/libraries#external-libraries).
+This guide walks you through adding an [External Library](/docs/features/libraries#external-libraries).
 This guide assumes you are running Immich in Docker and that the files you wish to access are stored
 in a directory on the same machine.
 
@@ -78,7 +78,7 @@ In the Immich web UI:
 - Click \*_Add path_
   <img src={require('./img/add-path-button.png').default} width="50%" title="Add Path button" />
 
-- Enter **.** as the path and click Add
+- Enter **/usr/src/app/external** as the path and click Add
   <img src={require('./img/add-path-field.png').default} width="50%" title="Add Path field" />
 
 - Save the new path

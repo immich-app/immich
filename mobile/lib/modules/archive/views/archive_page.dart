@@ -1,11 +1,12 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/archive/providers/archive_asset_provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 
+@RoutePage()
 class ArchivePage extends HookConsumerWidget {
   const ArchivePage({super.key});
 
@@ -16,7 +17,7 @@ class ArchivePage extends HookConsumerWidget {
       final count = archivedAssets.value?.totalAssets.toString() ?? "?";
       return AppBar(
         leading: IconButton(
-          onPressed: () => context.autoPop(),
+          onPressed: () => context.popRoute(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         centerTitle: true,

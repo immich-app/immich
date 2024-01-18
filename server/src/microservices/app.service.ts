@@ -38,13 +38,14 @@ export class AppService {
   async init() {
     await this.databaseService.init();
     await this.configService.init();
-    await this.jobService.registerHandlers({
+    await this.jobService.init({
       [JobName.ASSET_DELETION]: (data) => this.assetService.handleAssetDeletion(data),
       [JobName.ASSET_DELETION_CHECK]: () => this.assetService.handleAssetDeletionCheck(),
       [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
       [JobName.CLEAN_OLD_AUDIT_LOGS]: () => this.auditService.handleCleanup(),
       [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
       [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
+      [JobName.USER_SYNC_USAGE]: () => this.userService.handleUserSyncUsage(),
       [JobName.QUEUE_ENCODE_CLIP]: (data) => this.smartInfoService.handleQueueEncodeClip(data),
       [JobName.ENCODE_CLIP]: (data) => this.smartInfoService.handleEncodeClip(data),
       [JobName.STORAGE_TEMPLATE_MIGRATION]: () => this.storageTemplateService.handleMigration(),

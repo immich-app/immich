@@ -75,4 +75,10 @@ export class UserEntity {
 
   @OneToMany(() => AssetEntity, (asset) => asset.owner)
   assets!: AssetEntity[];
+
+  @Column({ type: 'bigint', nullable: true })
+  quotaSizeInBytes!: number | null;
+
+  @Column({ type: 'bigint', default: 0 })
+  quotaUsageInBytes!: number;
 }

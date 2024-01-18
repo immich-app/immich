@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,9 +9,11 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/shared_link/models/shared_link.dart';
 import 'package:immich_mobile/modules/shared_link/providers/shared_link.provider.dart';
 import 'package:immich_mobile/modules/shared_link/services/shared_link.service.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 
+@RoutePage()
 class SharedLinkEditPage extends HookConsumerWidget {
   final SharedLink? existingLink;
   final List<String>? assetsList;
@@ -265,15 +268,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     }
 
     void copyLinkToClipboard() {
-      Clipboard.setData(
-        ClipboardData(
-          text: passwordController.text.isEmpty
-              ? newShareLink.value
-              : "shared_link_clipboard_text".tr(
-                  args: [newShareLink.value, passwordController.text],
-                ),
-        ),
-      ).then((_) {
+      Clipboard.setData(ClipboardData(text: newShareLink.value)).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -316,7 +311,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
               alignment: Alignment.bottomRight,
               child: ElevatedButton(
                 onPressed: () {
-                  context.autoPop();
+                  context.popRoute();
                 },
                 child: const Text(
                   "share_done",
@@ -353,9 +348,16 @@ class SharedLinkEditPage extends HookConsumerWidget {
                 expiresAt: expiryAfter.value == 0 ? null : calculateExpiry(),
               );
       ref.invalidate(sharedLinksStateProvider);
-      final serverUrl = getServerUrl();
+      final externalDomain = ref.read(
+        serverInfoProvider.select((s) => s.serverConfig.externalDomain),
+      );
+      var serverUrl =
+          externalDomain.isNotEmpty ? externalDomain : getServerUrl();
+      if (serverUrl != null && !serverUrl.endsWith('/')) {
+        serverUrl += '/';
+      }
       if (newLink != null && serverUrl != null) {
-        newShareLink.value = "$serverUrl/share/${newLink.key}";
+        newShareLink.value = "${serverUrl}share/${newLink.key}";
         copyLinkToClipboard();
       } else if (newLink == null) {
         ImmichToast.show(
@@ -412,7 +414,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             changeExpiry: changeExpiry,
           );
       ref.invalidate(sharedLinksStateProvider);
-      context.autoPop();
+      context.popRoute();
     }
 
     return Scaffold(

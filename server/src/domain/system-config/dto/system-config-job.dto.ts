@@ -10,7 +10,9 @@ export class JobSettingsDto {
   concurrency!: number;
 }
 
-export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
+export class SystemConfigJobDto
+  implements Record<Exclude<QueueName, QueueName.STORAGE_TEMPLATE_MIGRATION>, JobSettingsDto>
+{
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
@@ -34,12 +36,6 @@ export class SystemConfigJobDto implements Record<QueueName, JobSettingsDto> {
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.SMART_SEARCH]!: JobSettingsDto;
-
-  @ApiProperty({ type: JobSettingsDto })
-  @ValidateNested()
-  @IsObject()
-  @Type(() => JobSettingsDto)
-  [QueueName.STORAGE_TEMPLATE_MIGRATION]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()

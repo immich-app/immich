@@ -76,6 +76,9 @@
             </button>
           {/key}
         {/each}
+        <div class="flex place-content-end mr-0 ml-auto p-5">
+          <Button size="sm" rounded="lg" on:click={() => dispatch('select', selectedUsers)}>Add</Button>
+        </div>
       </div>
     {/if}
 
@@ -112,12 +115,6 @@
       <p class="p-5 text-sm">
         Looks like you have shared this album with all users or you don't have any user to share with.
       </p>
-    {/if}
-
-    {#if selectedUsers.length > 0}
-      <div class="flex place-content-end p-5">
-        <Button size="sm" rounded="lg" on:click={() => dispatch('select', selectedUsers)}>Add</Button>
-      </div>
     {/if}
   </div>
 

@@ -46,7 +46,7 @@ enum AppSettingsEnum<T> {
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   logLevel<int>(StoreKey.logLevel, null, 5), // Level.INFO = 5
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
-  mapThemeMode<bool>(StoreKey.mapThemeMode, null, false),
+  mapThemeMode<int>(StoreKey.mapThemeMode, null, 0),
   mapShowFavoriteOnly<bool>(StoreKey.mapShowFavoriteOnly, null, false),
   mapIncludeArchived<bool>(StoreKey.mapIncludeArchived, null, false),
   mapRelativeDate<int>(StoreKey.mapRelativeDate, null, 0),

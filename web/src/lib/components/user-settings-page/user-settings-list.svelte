@@ -15,6 +15,8 @@
   import UserProfileSettings from './user-profile-settings.svelte';
   import { user } from '$lib/stores/user.store';
   import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
+  import AppearanceSettings from './appearance-settings.svelte';
+  import TrashSettings from './trash-settings.svelte';
 
   export let keys: APIKeyResponseDto[] = [];
   export let devices: AuthDeviceResponseDto[] = [];
@@ -24,6 +26,10 @@
     oauthOpen = oauth.isCallback(window.location);
   }
 </script>
+
+<SettingAccordion title="Appearance" subtitle="Manage your Immich appearance">
+  <AppearanceSettings />
+</SettingAccordion>
 
 <SettingAccordion title="Account" subtitle="Manage your account">
   <UserProfileSettings user={$user} />
@@ -66,4 +72,8 @@
 
 <SettingAccordion title="Sidebar" subtitle="Manage sidebar settings">
   <SidebarSettings />
+</SettingAccordion>
+
+<SettingAccordion title="Trash" subtitle="Manage trash settings">
+  <TrashSettings />
 </SettingAccordion>
