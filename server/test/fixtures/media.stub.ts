@@ -117,6 +117,36 @@ export const probeStub = {
       },
     ],
   }),
+  videoStreamOddHeight: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 355,
+        width: 1586,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: false,
+      },
+    ],
+  }),
+  videoStreamOddWidth: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 1586,
+        width: 355,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: false,
+      },
+    ],
+  }),
   audioStreamMp3: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [{ index: 1, codecType: 'audio', codecName: 'aac', frameCount: 100 }],
