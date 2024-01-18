@@ -26,7 +26,8 @@ import _ from 'lodash';
 import { DateTime } from 'luxon';
 import path from 'path';
 import {
-  And, Brackets,
+  And,
+  Brackets,
   FindOptionsRelations,
   FindOptionsSelect,
   FindOptionsWhere,

@@ -71,8 +71,8 @@ WHERE
   (
     "a"."ownerId" IN ($1)
     AND "a"."isVisible" = true
-    AND "a"."isArchived" = false
     AND "a"."fileCreatedAt" < NOW()
+    AND "a"."isArchived" = false
   )
   AND ("a"."deletedAt" IS NULL)
 ORDER BY
