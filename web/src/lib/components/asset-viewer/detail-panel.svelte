@@ -2,7 +2,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getAssetFilename } from '$lib/utils/asset-utils';
-  import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
+  import { type AlbumResponseDto, type AssetResponseDto, ThumbnailFormat, api } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy } from 'svelte';
   import { slide } from 'svelte/transition';

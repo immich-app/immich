@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, APIKeyResponseDto } from '@api';
+  import { api, type APIKeyResponseDto } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';

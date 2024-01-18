@@ -1,7 +1,7 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';
-  import { AssetResponseDto, ThumbnailFormat } from '@api';
+  import { type AssetResponseDto, ThumbnailFormat } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { flip } from 'svelte/animate';
 

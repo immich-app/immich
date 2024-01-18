@@ -3,7 +3,7 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { SearchExploreResponseDto, api } from '@api';
+  import { type SearchExploreResponseDto, api } from '@api';
   import type { PageData } from './$types';
 
   export let data: PageData;

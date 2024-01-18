@@ -3,7 +3,14 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { mdiClose, mdiHeart, mdiSend, mdiDotsVertical } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { ActivityResponseDto, api, AssetTypeEnum, ReactionType, ThumbnailFormat, type UserResponseDto } from '@api';
+  import {
+    type ActivityResponseDto,
+    api,
+    AssetTypeEnum,
+    ReactionType,
+    ThumbnailFormat,
+    type UserResponseDto,
+  } from '@api';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { clickOutside } from '$lib/utils/click-outside';

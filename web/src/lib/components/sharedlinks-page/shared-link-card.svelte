@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
+  import { api, type AssetResponseDto, type SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import * as luxon from 'luxon';

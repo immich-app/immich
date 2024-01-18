@@ -1,14 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import {
-    ActivityResponseDto,
-    AlbumResponseDto,
+    type ActivityResponseDto,
+    type AlbumResponseDto,
     api,
     AssetJobName,
-    AssetResponseDto,
+    type AssetResponseDto,
     AssetTypeEnum,
     ReactionType,
-    SharedLinkResponseDto,
+    type SharedLinkResponseDto,
   } from '@api';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import { fly } from 'svelte/transition';

@@ -7,7 +7,7 @@
     ControlButton,
     Control,
     ControlGroup,
-    Map,
+    type Map,
     FullscreenControl,
     GeolocateControl,
     NavigationControl,
@@ -15,7 +15,7 @@
     Popup,
   } from 'svelte-maplibre';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { MapMarkerResponseDto, api } from '@api';
+  import { type MapMarkerResponseDto, api } from '@api';
   import maplibregl from 'maplibre-gl';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';

@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { downloadArchive } from '$lib/utils/asset-utils';
-  import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
+  import { api, type AssetResponseDto, type SharedLinkResponseDto } from '@api';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';

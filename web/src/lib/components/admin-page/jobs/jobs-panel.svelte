@@ -5,7 +5,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
+  import { type AllJobStatusResponseDto, api, JobCommand, type JobCommandDto, JobName } from '@api';
   import type { ComponentType } from 'svelte';
   import {
     mdiFaceRecognition,

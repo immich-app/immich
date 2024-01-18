@@ -3,7 +3,7 @@
   import FaceThumbnail from './face-thumbnail.svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { api, AssetFaceUpdateItem, type PersonResponseDto } from '@api';
+  import { api, type AssetFaceUpdateItem, type PersonResponseDto } from '@api';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { mdiPlus, mdiMerge } from '@mdi/js';

@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import { locale, sidebarSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { AssetApiGetAssetStatisticsRequest, api } from '@api';
+  import { type AssetApiGetAssetStatisticsRequest, api } from '@api';
   import {
     mdiAccount,
     mdiAccountMultiple,

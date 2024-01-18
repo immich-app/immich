@@ -11,7 +11,7 @@
   import { downloadManager } from '$lib/stores/download';
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { FileReportItemDto, api, copyToClipboard } from '@api';
+  import { type FileReportItemDto, api, copyToClipboard } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { mdiWrench, mdiCheckAll, mdiDownload, mdiRefresh, mdiContentCopy } from '@mdi/js';

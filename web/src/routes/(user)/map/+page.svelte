@@ -8,7 +8,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { MapMarkerResponseDto, api } from '@api';
+  import { type MapMarkerResponseDto, api } from '@api';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { onDestroy, onMount } from 'svelte';

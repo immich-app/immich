@@ -1,7 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { createEventDispatcher } from 'svelte';
-  import { JobCommand, JobCommandDto, JobCountsDto, QueueStatusDto } from '@api';
+  import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@api';
   import Badge from '$lib/components/elements/badge.svelte';
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';

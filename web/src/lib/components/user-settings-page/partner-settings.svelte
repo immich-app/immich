@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PartnerResponseDto, UserResponseDto, api } from '@api';
+  import { type PartnerResponseDto, type UserResponseDto, api } from '@api';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import Button from '../elements/buttons/button.svelte';
   import PartnerSelectionModal from './partner-selection-modal.svelte';

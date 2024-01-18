@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PersonResponseDto, api } from '@api';
+  import { type PersonResponseDto, api } from '@api';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';

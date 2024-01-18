@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AlbumResponseDto, api } from '@api';
+  import { type AlbumResponseDto, api } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import BaseModal from './base-modal.svelte';

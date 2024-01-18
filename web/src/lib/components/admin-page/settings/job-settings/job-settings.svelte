@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { api, JobName, SystemConfigDto, SystemConfigJobDto } from '@api';
+  import { api, JobName, type SystemConfigDto, type SystemConfigJobDto } from '@api';
   import { isEqual } from 'lodash-es';
+  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
+  import type { SettingsEventType } from '../admin-settings';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import type { SettingsEventType } from '../admin-settings';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;

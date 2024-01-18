@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { SystemConfigDto } from '@api';
   import { isEqual } from 'lodash-es';
+  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
+  import type { SettingsEventType } from '../admin-settings';
   import ConfirmDisableLogin from '../confirm-disable-login.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import type { SettingsEventType } from '../admin-settings';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;

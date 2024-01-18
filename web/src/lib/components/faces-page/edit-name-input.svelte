@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PersonResponseDto, api } from '@api';
+  import { type PersonResponseDto, api } from '@api';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';

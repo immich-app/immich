@@ -5,7 +5,7 @@
   import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { api, copyToClipboard, makeSharedLinkUrl, SharedLinkResponseDto, SharedLinkType } from '@api';
+  import { api, copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto, SharedLinkType } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import BaseModal from '../base-modal.svelte';

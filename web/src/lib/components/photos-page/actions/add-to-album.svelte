@@ -7,7 +7,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-  import { AlbumResponseDto, api } from '@api';
+  import { type AlbumResponseDto, api } from '@api';
   import { getMenuContext } from '../asset-select-context-menu.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { AppRoute } from '$lib/constants';

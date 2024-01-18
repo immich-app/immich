@@ -2,7 +2,7 @@
   import { fade } from 'svelte/transition';
   import { onDestroy, onMount } from 'svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, AssetResponseDto } from '@api';
+  import { api, type AssetResponseDto } from '@api';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { useZoomImageWheel } from '@zoom-image/svelte';
   import { photoZoomState } from '$lib/stores/zoom-image.store';

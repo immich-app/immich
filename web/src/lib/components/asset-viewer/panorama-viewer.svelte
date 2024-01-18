@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { api, AssetResponseDto } from '@api';
+  import { api, type AssetResponseDto } from '@api';
   import View360, { EquirectProjection } from '@egjs/svelte-view360';
   import './panorama-viewer.css';
 

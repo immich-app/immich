@@ -30,7 +30,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, PersonResponseDto, api } from '@api';
+  import { type AssetResponseDto, type PersonResponseDto, api } from '@api';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
