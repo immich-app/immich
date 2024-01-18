@@ -53,14 +53,14 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .innerJoin('a.smartSearch', 's')
         .leftJoinAndSelect('a.exifInfo', 'e')
         .where('a.ownerId IN (:...userIds )')
-        .andWhere('a.isVisible = true')
-        .andWhere('a.fileCreatedAt < NOW()')
+
         .orderBy('s.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
       if (!withArchived) {
         query.andWhere('a.isArchived = false');
       }
+      query.andWhere('a.isVisible = true').andWhere('a.fileCreatedAt < NOW()');
 
       if (numResults) {
         if (!isValidInteger(numResults, { min: 1 })) {

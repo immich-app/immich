@@ -70,9 +70,9 @@ FROM
 WHERE
   (
     "a"."ownerId" IN ($1)
+    AND "a"."isArchived" = false
     AND "a"."isVisible" = true
     AND "a"."fileCreatedAt" < NOW()
-    AND "a"."isArchived" = false
   )
   AND ("a"."deletedAt" IS NULL)
 ORDER BY
