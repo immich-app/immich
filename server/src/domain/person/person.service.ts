@@ -459,9 +459,6 @@ export class PersonService {
 
   async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
     const mergeIds = dto.ids;
-    if (!(mergeIds instanceof Array)) {
-      throw new BadRequestException('ids is not an array');
-    }
     await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
     let primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
@@ -484,12 +481,17 @@ export class PersonService {
           continue;
         }
 
-        if ((!primaryPerson.name && mergePerson.name) || (!primaryPerson.birthDate && mergePerson.birthDate)) {
-          primaryPerson = await this.repository.update({
-            id: primaryPerson.id,
-            name: mergePerson.name || undefined,
-            birthDate: mergePerson.birthDate || undefined,
-          });
+        const update: Partial<PersonEntity> = {};
+        if (!primaryPerson.name && mergePerson.name) {
+          update.name = mergePerson.name;
+        }
+
+        if (!primaryPerson.birthDate && mergePerson.birthDate) {
+          update.birthDate = mergePerson.birthDate;
+        }
+
+        if (Object.keys(update).length > 0) {
+          primaryPerson = await this.repository.update({ id: primaryPerson.id, ...update });
         }
 
         const mergeName = mergePerson.name || mergePerson.id;
