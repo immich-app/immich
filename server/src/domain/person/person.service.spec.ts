@@ -999,7 +999,7 @@ describe(PersonService.name, () => {
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
-    it('should merge two people without smart merge', async () => {
+    it('should merge two people', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
       personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
@@ -1014,33 +1014,6 @@ describe(PersonService.name, () => {
         oldPersonId: personStub.mergePerson.id,
       });
 
-      expect(personMock.update).not.toHaveBeenCalled();
-
-      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
-    });
-
-    it('should merge two people with smart merge', async () => {
-      personMock.getById.mockResolvedValueOnce(personStub.randomPerson);
-      personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      personMock.update.mockResolvedValue({ ...personStub.randomPerson, name: personStub.primaryPerson.name });
-      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-3']));
-      accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
-
-      await expect(sut.mergePerson(authStub.admin, 'person-3', { ids: ['person-1'] })).resolves.toEqual([
-        { id: 'person-1', success: true },
-      ]);
-
-      expect(personMock.reassignFaces).toHaveBeenCalledWith({
-        newPersonId: personStub.randomPerson.id,
-        oldPersonId: personStub.primaryPerson.id,
-      });
-
-      expect(personMock.update).toHaveBeenCalledWith({
-        id: personStub.randomPerson.id,
-        name: personStub.primaryPerson.name,
-      });
-
-      expect(personMock.delete).toHaveBeenCalledWith([personStub.primaryPerson]);
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
@@ -1072,8 +1045,8 @@ describe(PersonService.name, () => {
     });
 
     it('should handle an error reassigning faces', async () => {
-      personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      personMock.getById.mockResolvedValue(personStub.mergePerson);
       personMock.reassignFaces.mockRejectedValue(new Error('update failed'));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
