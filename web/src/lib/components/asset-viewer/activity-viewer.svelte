@@ -10,8 +10,9 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { autoGrowHeight, getAssetType } from '$lib/utils/asset-utils';
+  import { getAssetType } from '$lib/utils/asset-utils';
   import * as luxon from 'luxon';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 

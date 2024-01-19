@@ -34,7 +34,7 @@
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { autoGrowHeight, downloadArchive } from '$lib/utils/asset-utils';
+  import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { ActivityResponseDto, ReactionLevel, ReactionType, UserResponseDto, api } from '@api';
@@ -60,6 +60,7 @@
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
 
   export let data: PageData;
 
