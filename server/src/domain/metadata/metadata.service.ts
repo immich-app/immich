@@ -434,10 +434,6 @@ export class MetadataService {
           deviceId: 'NONE',
         });
 
-        await this.storageRepository.writeFile(motionAsset.originalPath, video);
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
-        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
-
         // If the asset already had an associated livePhotoVideo, delete it, because
         // its checksum doesn't match the checksum of the motionAsset we just extracted
         // (if it did, getByChecksum() would've returned non-null)
@@ -445,6 +441,11 @@ export class MetadataService {
           await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }
+
+        await this.storageRepository.writeFile(motionAsset.originalPath, video);
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
+        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+
       } else {
         this.logger.debug(
           `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString('base64')} already exists in the repository`,
