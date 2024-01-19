@@ -4364,7 +4364,7 @@ export type TranscodeHWAccel = typeof TranscodeHWAccel[keyof typeof TranscodeHWA
 export const TranscodePolicy = {
     All: 'all',
     Optimal: 'optimal',
-    ByBitrate: 'by_bitrate',
+    ByBitrate: 'byBitrate',
     Required: 'required',
     Disabled: 'disabled'
 } as const;
