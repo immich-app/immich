@@ -5,7 +5,10 @@
   export let disabled = false;
 
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
-  const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
+  const onToggle = (event: Event) => {
+    checked = (event.target as HTMLInputElement).checked;
+    dispatch('toggle', checked);
+  };
 </script>
 
 <label class="relative inline-block h-[10px] w-[36px] flex-none">

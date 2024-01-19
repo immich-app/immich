@@ -158,7 +158,7 @@
               title="Show in timeline"
               subtitle="Show photos and videos from this user in your timeline"
               bind:checked={partner.inTimeline}
-              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
+              on:toggle={() => handleShowOnTimelineChanged(partner, partner.inTimeline)}
             />
           {/if}
         </div>
