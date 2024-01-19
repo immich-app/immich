@@ -642,7 +642,7 @@
                       class="w-full bg-transparent resize-none overflow-hidden outline-none"
                       bind:this={textarea}
                       bind:value={album.description}
-                      use:autoGrowHeight={"5px"}
+                      use:autoGrowHeight={'5px'}
                       placeholder="Add description"
                     />
                   {/key}
