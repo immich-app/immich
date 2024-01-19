@@ -412,13 +412,15 @@ export class MetadataService {
       }
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      const motionPath = StorageCore.getAndroidMotionPath(asset);
-      this.storageCore.ensureFolders(motionPath);
-
+      
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
+        // We 
+        const motionAssetId = this.cryptoRepository.randomUUID()
+        const motionPath = StorageCore.getAndroidMotionPath(asset, motionAssetId);
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
         motionAsset = await this.assetRepository.create({
+          id: motionAssetId,
           libraryId: asset.libraryId,
           type: AssetType.VIDEO,
           fileCreatedAt: createdAt,
@@ -433,6 +435,11 @@ export class MetadataService {
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
+        
+        this.storageCore.ensureFolders(motionPath);
+        await this.storageRepository.writeFile(motionAsset.originalPath, video);
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
+        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
 
         // If the asset already had an associated livePhotoVideo, delete it, because
         // its checksum doesn't match the checksum of the motionAsset we just extracted
@@ -441,10 +448,6 @@ export class MetadataService {
           await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }
-
-        await this.storageRepository.writeFile(motionAsset.originalPath, video);
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
-        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
 
       } else {
         this.logger.debug(
