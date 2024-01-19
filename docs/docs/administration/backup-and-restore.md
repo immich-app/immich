@@ -124,16 +124,16 @@ Immich stores two types of content in the filesystem: (1) original, unmodified c
   <TabItem value="storage template engine ON" label="storage template engine ON">
 
 :::note
-If you choose to activate the storage template engine, it will move all assets to `/library/library/<userID>`.
+If you choose to activate the storage template engine, it will move all assets to `UPLOAD_LOCATION/library<userID>`.
 
-When you turn off the storage template engine, it will leave the assets in `/library/library/<userID>` and will not return them to `/library/upload`.  
+When you turn off the storage template engine, it will leave the assets in `UPLOAD_LOCATION/library<userID>` and will not return them to `/library/upload`.  
 **New assets** will be saved to `/library/upload`.
 :::
 
 **1. User-Specific Folders:**
 
 - Each user has a unique string representing them.
-  - The main user is "Admin" (but only for `/library/library/`)
+  - The main user is "Admin" (but only for `UPLOAD_LOCATION/library`)
   - Other users have different string identifiers.
 - You can find your user ID in Account Account Settings -> Account -> User ID.
 
@@ -141,7 +141,7 @@ When you turn off the storage template engine, it will leave the assets in `/lib
 
 - **Source Assets:**
   - Original assets uploaded through the browser interface & mobile & CLI.
-  - Stored in `/library/library/<userID>`.
+  - Stored in `UPLOAD_LOCATION/library<userID>`.
 - **Avatar Images:**
   - User profile images.
   - Stored in `/library/profile/<userID>`.
@@ -154,7 +154,7 @@ When you turn off the storage template engine, it will leave the assets in `/lib
 - **Files in Upload Queue (Mobile):**
   - Files uploaded through mobile apps.
   - Temporarily located in `/library/upload/<userID>`.
-  - Transferred to `/library/library/<userID>` upon successful upload.
+  - Transferred to `UPLOAD_LOCATION/library<userID>` upon successful upload.
 
 </TabItem>
 </Tabs>
