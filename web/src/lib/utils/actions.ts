@@ -78,7 +78,7 @@ export const archiveAssets = async (
     onArchive?.(ids, isArchived);
 
     notificationController.show({
-      message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length}`,
+      message: `${isArchived ? 'Archived' : 'Unarchived'} ${ids.length} asset${ids.length > 1 ? 's' : ''}`,
       type: NotificationType.Info,
     });
 
