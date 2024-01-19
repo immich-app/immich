@@ -1020,7 +1020,6 @@ describe(PersonService.name, () => {
     it('should merge two people with smart merge', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.randomPerson);
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
-      personMock.delete.mockResolvedValue(personStub.primaryPerson);
       personMock.update.mockResolvedValue({ ...personStub.randomPerson, name: personStub.primaryPerson.name });
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-3']));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
@@ -1039,10 +1038,6 @@ describe(PersonService.name, () => {
         name: personStub.primaryPerson.name,
       });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.PERSON_DELETE,
-        data: { id: personStub.primaryPerson.id },
-      });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
