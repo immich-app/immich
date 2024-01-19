@@ -13,20 +13,23 @@
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
 </script>
 
-<Slider bind:checked {disabled} on:toggle={() => dispatch('toggle', checked)}>
-  <div class="flex h-[26px] place-items-center gap-1">
-    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={title}>
-      {title}
-    </label>
-    {#if isEdited}
-      <div
-        transition:fly={{ x: 10, duration: 200, easing: quintOut }}
-        class="rounded-full bg-orange-100 px-2 text-[10px] text-orange-900"
-      >
-        Unsaved change
-      </div>
-    {/if}
-  </div>
+<div class="flex place-items-center justify-between">
+  <div>
+    <div class="flex h-[26px] place-items-center gap-1">
+      <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={title}>
+        {title}
+      </label>
+      {#if isEdited}
+        <div
+          transition:fly={{ x: 10, duration: 200, easing: quintOut }}
+          class="rounded-full bg-orange-100 px-2 text-[10px] text-orange-900"
+        >
+          Unsaved change
+        </div>
+      {/if}
+    </div>
 
-  <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
-</Slider>
+    <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+  </div>
+  <Slider bind:checked {disabled} on:toggle={() => dispatch('toggle', checked)} />
+</div>
