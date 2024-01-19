@@ -6,7 +6,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Iterator
+from typing import Any, AsyncGenerator, Callable, Iterator
 from zipfile import BadZipFile
 
 import orjson
@@ -105,14 +105,14 @@ async def predict(
 
     model = await load(await model_cache.get(model_name, model_type, **kwargs))
     model.configure(**kwargs)
-    outputs = await run(model, inputs)
+    outputs = await run(model.predict, inputs)
     return ORJSONResponse(outputs)
 
 
-async def run(model: InferenceModel, inputs: Any) -> Any:
+async def run(func: Callable[..., Any], inputs: Any) -> Any:
     if thread_pool is None:
-        return model.predict(inputs)
-    return await asyncio.get_running_loop().run_in_executor(thread_pool, model.predict, inputs)
+        return func(inputs)
+    return await asyncio.get_running_loop().run_in_executor(thread_pool, func, inputs)
 
 
 async def load(model: InferenceModel) -> InferenceModel:

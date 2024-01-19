@@ -154,7 +154,7 @@ describe('AssetService', () => {
         size: 0,
       };
       const dto = _getCreateAssetDto();
-      const error = new QueryFailedError('', [], '');
+      const error = new QueryFailedError('', [], new Error('unique key violation'));
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetRepositoryMock.create.mockRejectedValue(error);
@@ -172,7 +172,7 @@ describe('AssetService', () => {
 
     it('should handle a live photo', async () => {
       const dto = _getCreateAssetDto();
-      const error = new QueryFailedError('', [], '');
+      const error = new QueryFailedError('', [], new Error('unique key violation'));
       (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
 
       assetRepositoryMock.create.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);

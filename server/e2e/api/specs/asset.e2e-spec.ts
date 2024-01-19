@@ -1073,6 +1073,16 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(body).toEqual(errorStub.unauthorized);
     });
 
+    it('should handle 5 digit years', async () => {
+      const { status, body } = await request(server)
+        .get('/asset/time-bucket')
+        .query({ size: TimeBucketSize.MONTH, timeBucket: '+012345-01-01T00:00:00.000Z' })
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual([]);
+    });
+
     // it('should fail if time bucket is invalid', async () => {
     //   const { status, body } = await request(server)
     //     .get('/asset/time-bucket')

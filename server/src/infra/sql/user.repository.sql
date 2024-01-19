@@ -150,3 +150,19 @@ GROUP BY
   "users"."id"
 ORDER BY
   "users"."createdAt" ASC
+
+-- UserRepository.syncUsage
+UPDATE "users"
+SET
+  "quotaUsageInBytes" = (
+    SELECT
+      COALESCE(SUM(exif."fileSizeInByte"), 0)
+    FROM
+      "assets" "assets"
+      LEFT JOIN "exif" "exif" ON "exif"."assetId" = "assets"."id"
+    WHERE
+      "assets"."ownerId" = users.id
+  ),
+  "updatedAt" = CURRENT_TIMESTAMP
+WHERE
+  users.id = $1

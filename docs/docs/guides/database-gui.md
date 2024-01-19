@@ -1,6 +1,6 @@
 # Database GUI
 
-A short guide on connecting [pgAdmin][pgAdmin] to Immich.
+A short guide on connecting [pgAdmin](https://www.pgadmin.org/) to Immich.
 
 :::note
 
@@ -9,9 +9,9 @@ A short guide on connecting [pgAdmin][pgAdmin] to Immich.
 
 :::
 
-## 1. Install [pgAdmin][pgAdmin]
+## 1. Install pgAdmin
 
-Download and install [pgAdmin][pgAdmin] following the official documentation.
+Download and install [pgAdmin](https://www.pgadmin.org/download/) following the official documentation.
 
 ## 2. Add a Server
 

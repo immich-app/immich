@@ -12,6 +12,7 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart'
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:isar/isar.dart';
 
+@RoutePage<AssetSelectionPageResult?>()
 class AssetSelectionPage extends HookConsumerWidget {
   const AssetSelectionPage({
     Key? key,

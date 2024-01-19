@@ -845,7 +845,16 @@ describe(AssetService.name, () => {
     it('should remove faces', async () => {
       const assetWithFace = { ...assetStub.image, faces: [faceStub.face1, faceStub.mergeFace1] };
 
-      when(assetMock.getById).calledWith(assetWithFace.id).mockResolvedValue(assetWithFace);
+      when(assetMock.getById)
+        .calledWith(assetWithFace.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetWithFace);
 
       await sut.handleAssetDeletion({ id: assetWithFace.id });
 
@@ -870,7 +879,16 @@ describe(AssetService.name, () => {
     });
 
     it('should update stack parent if asset has stack children', async () => {
-      when(assetMock.getById).calledWith(assetStub.primaryImage.id).mockResolvedValue(assetStub.primaryImage);
+      when(assetMock.getById)
+        .calledWith(assetStub.primaryImage.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.primaryImage);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id });
 
@@ -883,7 +901,16 @@ describe(AssetService.name, () => {
     });
 
     it('should not schedule delete-files job for readonly assets', async () => {
-      when(assetMock.getById).calledWith(assetStub.readOnly.id).mockResolvedValue(assetStub.readOnly);
+      when(assetMock.getById)
+        .calledWith(assetStub.readOnly.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.readOnly);
 
       await sut.handleAssetDeletion({ id: assetStub.readOnly.id });
 
@@ -903,7 +930,16 @@ describe(AssetService.name, () => {
     });
 
     it('should process assets from external library with fromExternal flag', async () => {
-      when(assetMock.getById).calledWith(assetStub.external.id).mockResolvedValue(assetStub.external);
+      when(assetMock.getById)
+        .calledWith(assetStub.external.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.external);
 
       await sut.handleAssetDeletion({ id: assetStub.external.id, fromExternal: true });
 
@@ -926,6 +962,27 @@ describe(AssetService.name, () => {
     });
 
     it('should delete a live photo', async () => {
+      when(assetMock.getById)
+        .calledWith(assetStub.livePhotoStillAsset.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.livePhotoStillAsset);
+      when(assetMock.getById)
+        .calledWith(assetStub.livePhotoMotionAsset.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.livePhotoMotionAsset);
+
       await sut.handleAssetDeletion({ id: assetStub.livePhotoStillAsset.id });
 
       expect(jobMock.queue.mock.calls).toEqual([
@@ -950,7 +1007,16 @@ describe(AssetService.name, () => {
     });
 
     it('should update usage', async () => {
-      when(assetMock.getById).calledWith(assetStub.image.id).mockResolvedValue(assetStub.image);
+      when(assetMock.getById)
+        .calledWith(assetStub.image.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+          exifInfo: true,
+        })
+        .mockResolvedValue(assetStub.image);
       await sut.handleAssetDeletion({ id: assetStub.image.id });
 
       expect(userMock.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
@@ -1005,7 +1071,13 @@ describe(AssetService.name, () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['new']));
 
       when(assetMock.getById)
-        .calledWith(assetStub.image.id)
+        .calledWith(assetStub.image.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+        })
         .mockResolvedValue(assetStub.image as AssetEntity);
 
       await sut.updateStackParent(authStub.user1, {
@@ -1032,7 +1104,13 @@ describe(AssetService.name, () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set([assetStub.primaryImage.id]));
       accessMock.asset.checkOwnerAccess.mockResolvedValueOnce(new Set(['new']));
       when(assetMock.getById)
-        .calledWith(assetStub.primaryImage.id)
+        .calledWith(assetStub.primaryImage.id, {
+          faces: {
+            person: true,
+          },
+          library: true,
+          stack: true,
+        })
         .mockResolvedValue(assetStub.primaryImage as AssetEntity);
 
       await sut.updateStackParent(authStub.user1, {
@@ -1042,7 +1120,9 @@ describe(AssetService.name, () => {
 
       expect(assetMock.updateAll).toBeCalledWith(
         [assetStub.primaryImage.id, 'stack-child-asset-1', 'stack-child-asset-2'],
-        { stackParentId: 'new' },
+        {
+          stackParentId: 'new',
+        },
       );
     });
   });

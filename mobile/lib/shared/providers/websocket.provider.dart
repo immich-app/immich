@@ -94,7 +94,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   final _log = Logger('WebsocketNotifier');
   final Ref _ref;
-  final Debounce _debounce = Debounce(const Duration(milliseconds: 500));
+  final Debouncer _debounce =
+      Debouncer(interval: const Duration(milliseconds: 500));
 
   /// Connects websocket to server unless already connected
   void connect() {
@@ -194,7 +195,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         PendingChange(now.millisecondsSinceEpoch.toString(), action, value),
       ],
     );
-    _debounce(handlePendingChanges);
+    _debounce.run(handlePendingChanges);
   }
 
   Future<void> _handlePendingDeletes() async {

@@ -14,6 +14,7 @@
   import type { PageData } from './$types';
   import { mdiCheck, mdiClose, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { user } from '$lib/stores/user.store';
+  import { asByteUnitString } from '$lib/utils/byte-units';
 
   export let data: PageData;
 
@@ -171,6 +172,7 @@
           <tr class="flex w-full place-items-center">
             <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium">Email</th>
             <th class="hidden sm:block w-3/12 text-center text-sm font-medium">Name</th>
+            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Has quota</th>
             <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Can import</th>
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">Action</th>
           </tr>
@@ -193,6 +195,15 @@
                 <td class="hidden sm:block w-3/12 text-ellipsis break-all px-2 text-sm">{immichUser.name}</td>
                 <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
                   <div class="container mx-auto flex flex-wrap justify-center">
+                    {#if immichUser.quotaSizeInBytes && immichUser.quotaSizeInBytes > 0}
+                      {asByteUnitString(immichUser.quotaSizeInBytes, $locale)}
+                    {:else}
+                      <Icon path={mdiClose} size="16" />
+                    {/if}
+                  </div>
+                </td>
+                <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
+                  <div class="container mx-auto flex flex-wrap justify-center">
                     {#if immichUser.externalPath}
                       <Icon path={mdiCheck} size="16" />
                     {:else}
@@ -200,6 +211,7 @@
                     {/if}
                   </div>
                 </td>
+
                 <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all px-4 text-sm">
                   {#if !isDeleted(immichUser)}
                     <button

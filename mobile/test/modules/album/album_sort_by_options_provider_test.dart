@@ -203,7 +203,7 @@ void main() {
     late ProviderContainer container;
 
     setUp(() async {
-      settingsMock = AppSettingsServiceMock();
+      settingsMock = MockAppSettingsService();
       container = TestUtils.createContainer(
         overrides: [
           appSettingsServiceProvider.overrideWith((ref) => settingsMock),
@@ -283,7 +283,7 @@ void main() {
     late ProviderContainer container;
 
     setUp(() async {
-      settingsMock = AppSettingsServiceMock();
+      settingsMock = MockAppSettingsService();
       container = TestUtils.createContainer(
         overrides: [
           appSettingsServiceProvider.overrideWith((ref) => settingsMock),

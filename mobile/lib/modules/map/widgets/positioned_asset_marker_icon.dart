@@ -1,17 +1,57 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
-class AssetMarkerIcon extends StatelessWidget {
-  const AssetMarkerIcon({
+class PositionedAssetMarkerIcon extends StatelessWidget {
+  final Point<num> point;
+  final String assetRemoteId;
+  final double size;
+  final int durationInMilliseconds;
+
+  final Function()? onTap;
+
+  const PositionedAssetMarkerIcon({
+    required this.point,
+    required this.assetRemoteId,
+    this.size = 100,
+    this.durationInMilliseconds = 100,
+    this.onTap,
     super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = Platform.isIOS ? 1.0 : MediaQuery.devicePixelRatioOf(context);
+    return AnimatedPositioned(
+      left: point.x / ratio - size / 2,
+      top: point.y / ratio - size,
+      duration: Duration(milliseconds: durationInMilliseconds),
+      child: GestureDetector(
+        onTap: () => onTap?.call(),
+        child: SizedBox.square(
+          dimension: size,
+          child: _AssetMarkerIcon(
+            id: assetRemoteId,
+            key: Key(assetRemoteId),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AssetMarkerIcon extends StatelessWidget {
+  const _AssetMarkerIcon({
     required this.id,
-    this.isDarkTheme = false,
+    super.key,
   });
 
   final String id;
-  final bool isDarkTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +66,8 @@ class AssetMarkerIcon extends StatelessWidget {
               left: constraints.maxWidth * 0.5,
               child: CustomPaint(
                 painter: _PinPainter(
-                  primaryColor: isDarkTheme ? Colors.white : Colors.black,
-                  secondaryColor: isDarkTheme ? Colors.black : Colors.white,
+                  primaryColor: context.colorScheme.onSurface,
+                  secondaryColor: context.colorScheme.surface,
                   primaryRadius: constraints.maxHeight * 0.06,
                   secondaryRadius: constraints.maxHeight * 0.038,
                 ),
@@ -42,7 +82,7 @@ class AssetMarkerIcon extends StatelessWidget {
               left: constraints.maxWidth * 0.17,
               child: CircleAvatar(
                 radius: constraints.maxHeight * 0.40,
-                backgroundColor: isDarkTheme ? Colors.white : Colors.black,
+                backgroundColor: context.colorScheme.onSurface,
                 child: CircleAvatar(
                   radius: constraints.maxHeight * 0.37,
                   backgroundImage: CachedNetworkImageProvider(
@@ -72,8 +112,8 @@ class _PinPainter extends CustomPainter {
   final double secondaryRadius;
 
   _PinPainter({
-    this.primaryColor = Colors.black,
-    this.secondaryColor = Colors.white,
+    required this.primaryColor,
+    required this.secondaryColor,
     required this.primaryRadius,
     required this.secondaryRadius,
   });

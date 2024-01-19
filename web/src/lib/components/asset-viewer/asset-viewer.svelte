@@ -20,10 +20,9 @@
   import VideoViewer from './video-viewer.svelte';
   import PanoramaViewer from './panorama-viewer.svelte';
   import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import ProfileImageCropper from '../shared-components/profile-image-cropper.svelte';
-  import { isShowDetail } from '$lib/stores/preferences.store';
-  import { addAssetsToAlbum, downloadFile, getAssetType } from '$lib/utils/asset-utils';
+  import { isShowDetail, showDeleteModal } from '$lib/stores/preferences.store';
+  import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
   import NavigationArea from './navigation-area.svelte';
   import { browser } from '$app/environment';
   import { handleError } from '$lib/utils/handle-error';
@@ -42,13 +41,13 @@
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import SlideshowBar from './slideshow-bar.svelte';
   import { user } from '$lib/stores/user.store';
+  import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
 
   export let assetStore: AssetStore | null = null;
   export let asset: AssetResponseDto;
   export let showNavigation = true;
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
   $: isTrashEnabled = $featureFlags.trash;
-  export let force = false;
   export let withStacked = false;
   export let isShared = false;
   export let album: AlbumResponseDto | null = null;
@@ -279,7 +278,7 @@
         }
         return;
       case 'Delete':
-        trashOrDelete();
+        trashOrDelete(shiftKey);
         return;
       case 'Escape':
         if (isShowDeleteConfirmation) {
@@ -360,11 +359,19 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  $: trashOrDelete = !(force || !isTrashEnabled)
-    ? trashAsset
-    : () => {
+  const trashOrDelete = (force: boolean = false) => {
+    if (force || !isTrashEnabled) {
+      if ($showDeleteModal) {
         isShowDeleteConfirmation = true;
-      };
+        return;
+      }
+      deleteAsset();
+      return;
+    }
+
+    trashAsset();
+    return;
+  };
 
   const trashAsset = async () => {
     try {
@@ -576,7 +583,7 @@
         on:back={closeViewer}
         on:showDetail={showDetailInfoHandler}
         on:download={() => downloadFile(asset)}
-        on:delete={trashOrDelete}
+        on:delete={() => trashOrDelete()}
         on:favorite={toggleFavorite}
         on:addToAlbum={() => openAlbumPicker(false)}
         on:addToSharedAlbum={() => openAlbumPicker(true)}
@@ -764,20 +771,12 @@
   {/if}
 
   {#if isShowDeleteConfirmation}
-    <ConfirmDialogue
-      title="Delete {getAssetType(asset.type)}"
-      confirmText="Delete"
-      on:confirm={deleteAsset}
+    <DeleteAssetDialog
+      size={1}
       on:cancel={() => (isShowDeleteConfirmation = false)}
-    >
-      <svelte:fragment slot="prompt">
-        <p>
-          Are you sure you want to delete this {getAssetType(asset.type).toLowerCase()}? This will also remove it from
-          its album(s).
-        </p>
-        <p><b>You cannot undo this action!</b></p>
-      </svelte:fragment>
-    </ConfirmDialogue>
+      on:escape={() => (isShowDeleteConfirmation = false)}
+      on:confirm={() => deleteAsset()}
+    />
   {/if}
 
   {#if isShowProfileImageCrop}

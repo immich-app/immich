@@ -46,6 +46,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart' show ThumbnailFormat;
 
+@RoutePage()
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
   final Asset Function(int index) loadAsset;
@@ -632,6 +633,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    // TODO: Migrate to a custom bottom bar and handle long press to delete
     Widget buildBottomBar() {
       // !!!! itemsList and actionlist should always be in sync
       final itemsList = [

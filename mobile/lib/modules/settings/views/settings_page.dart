@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,6 +10,7 @@ import 'package:immich_mobile/modules/settings/ui/image_viewer_quality_setting/i
 import 'package:immich_mobile/modules/settings/ui/notification_setting/notification_setting.dart';
 import 'package:immich_mobile/modules/settings/ui/theme_setting/theme_setting.dart';
 
+@RoutePage()
 class SettingsPage extends HookConsumerWidget {
   const SettingsPage({Key? key}) : super(key: key);
 

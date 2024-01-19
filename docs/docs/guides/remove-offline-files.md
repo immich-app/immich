@@ -23,11 +23,15 @@ awk -F\" '/entityId/ {print $4}' orphans.json | while read line; do curl --locat
 
 ```
 Get-Content orphans.json | Select-String -Pattern 'entityId' | ForEach-Object {
-$line = line=$_ -split '"' | Select-Object -Index 3
-Invoke-RestMethod -Uri 'http://YOUR_IP_HERE:2283/api/asset' -Method Delete -Headers @{
-'Content-Type' = 'application/json'
-'x-api-key' = 'YOUR_API_KEY_HERE'
-} -Body "{"force": true, "ids": ["$line"]}"
+  $line = $_ -split '"' | Select-Object -Index 3
+  $body = [pscustomobject]@{
+    'ids' = @($line)
+    'force' = (' true ' | ConvertFrom-Json)
+  } | ConvertTo-Json -Depth 3
+  Invoke-RestMethod -Uri 'http://YOUR_IP_HERE:2283/api/asset' -Method Delete -Headers @{
+    'Content-Type' = 'application/json'
+    'x-api-key' = 'YOUR_API_KEY_HERE'
+  } -Body $body
 }
 ```
 

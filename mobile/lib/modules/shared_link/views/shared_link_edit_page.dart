@@ -13,6 +13,7 @@ import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 
+@RoutePage()
 class SharedLinkEditPage extends HookConsumerWidget {
   final SharedLink? existingLink;
   final List<String>? assetsList;
