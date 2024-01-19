@@ -197,7 +197,7 @@ class ControlBottomAppBar extends ConsumerWidget {
             label: "control_bottom_app_bar_edit_location".tr(),
             onPressed: enabled ? onEditLocation : null,
           ),
-        if (!hasLocal &&
+        if (!selectionAssetState.hasLocal &&
             selectionAssetState.selectedCount > 1 &&
             onStack != null)
           ControlBoxButton(
@@ -211,7 +211,7 @@ class ControlBottomAppBar extends ConsumerWidget {
             label: 'album_viewer_appbar_share_remove'.tr(),
             onPressed: enabled ? onRemoveFromAlbum : null,
           ),
-        if (hasLocal)
+        if (selectionAssetState.hasLocal)
           ControlBoxButton(
             iconData: Icons.backup_outlined,
             label: "Upload",
