@@ -55,7 +55,7 @@
   $: idsSelectedAssets = Array.from($selectedAssets)
     .filter((a) => !a.isExternal)
     .map((a) => a.id);
-  $: $isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === $user.id);
+  $: $isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === $user?.id);
   $: $isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
   $: $isAllArchived = Array.from($selectedAssets).every((asset) => asset.isArchived);
 
