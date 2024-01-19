@@ -34,7 +34,7 @@
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { downloadArchive } from '$lib/utils/asset-utils';
+  import { autoGrowHeight, downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { ActivityResponseDto, ReactionLevel, ReactionType, UserResponseDto, api } from '@api';
@@ -123,12 +123,6 @@
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  $: {
-    if (textarea) {
-      textarea.value = album.description;
-      autoGrowHeight();
-    }
-  }
   $: afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
 
@@ -148,13 +142,6 @@
       isCreatingSharedAlbum = true;
     }
   });
-
-  const autoGrowHeight = () => {
-    // little hack so that the height of the text area is correctly initialized
-    textarea.scrollHeight;
-    textarea.style.height = '5px';
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  };
 
   const handleToggleEnableActivity = async () => {
     try {
@@ -436,6 +423,7 @@
       });
 
       album.description = description;
+      autoGrowHeight(textarea);
       isEditingDescription = false;
     } catch (error) {
       handleError(error, 'Error updating album description');
@@ -650,12 +638,15 @@
                   disabled={!isOwned}
                   title="Edit description"
                 >
-                  <textarea
-                    class="w-full bg-transparent resize-none overflow-hidden outline-none"
-                    bind:this={textarea}
-                    bind:value={album.description}
-                    placeholder="Add description"
-                  />
+                  {#key album.description}
+                    <textarea
+                      class="w-full bg-transparent resize-none overflow-hidden outline-none"
+                      bind:this={textarea}
+                      bind:value={album.description}
+                      use:autoGrowHeight
+                      placeholder="Add description"
+                    />
+                  {/key}
                 </button>
               {/if}
             </section>

@@ -10,7 +10,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { getAssetType } from '$lib/utils/asset-utils';
+  import { autoGrowHeight, getAssetType } from '$lib/utils/asset-utils';
   import * as luxon from 'luxon';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -89,11 +89,6 @@
       handleSendComment();
       return;
     }
-  };
-
-  const autoGrow = () => {
-    textArea.style.height = '5px';
-    textArea.style.height = textArea.scrollHeight + 'px';
   };
 
   const timeOptions = {
@@ -286,7 +281,7 @@
               bind:this={textArea}
               bind:value={message}
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
-              on:input={autoGrow}
+              on:input={() => autoGrowHeight(textArea, '5px')}
               on:keypress={handleEnter}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'

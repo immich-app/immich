@@ -1,7 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { getAssetFilename } from '$lib/utils/asset-utils';
+  import { autoGrowHeight, getAssetFilename } from '$lib/utils/asset-utils';
   import { AlbumResponseDto, AssetResponseDto, ThumbnailFormat, api } from '@api';
   import { DateTime } from 'luxon';
   import { createEventDispatcher, onDestroy } from 'svelte';
@@ -63,7 +63,6 @@
       people = data?.people || [];
       description = data.exifInfo?.description || '';
       textarea.value = description;
-      autoGrowHeight();
     }
   };
 
@@ -115,11 +114,6 @@
       textarea.value = res.data?.exifInfo?.description || '';
     });
     showEditFaces = false;
-  };
-
-  const autoGrowHeight = () => {
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
   const handleFocusIn = () => {
@@ -207,8 +201,9 @@
         placeholder={!isOwner ? '' : 'Add a description'}
         on:focusin={handleFocusIn}
         on:focusout={handleFocusOut}
-        on:input={autoGrowHeight}
+        on:input={() => autoGrowHeight(textarea)}
         bind:value={description}
+        use:autoGrowHeight
       />
     {/if}
   </section>
