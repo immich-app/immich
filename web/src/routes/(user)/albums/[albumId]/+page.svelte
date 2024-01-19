@@ -100,6 +100,7 @@
   let reactions: ActivityResponseDto[] = [];
   let globalWidth: number;
   let assetGridWidth: number;
+  let textarea: HTMLTextAreaElement;
 
   const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
@@ -122,7 +123,13 @@
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  afterNavigate(({ from }) => {
+  $: {
+    if (textarea) {
+      textarea.value = album.description;
+      autoGrowHeight();
+    }
+  }
+  $: afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
 
     let url: string | undefined = from?.url?.pathname;
@@ -141,6 +148,13 @@
       isCreatingSharedAlbum = true;
     }
   });
+
+  const autoGrowHeight = () => {
+    // little hack so that the height of the text area is correctly initialized
+    textarea.scrollHeight;
+    textarea.style.height = '5px';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
 
   const handleToggleEnableActivity = async () => {
     try {
@@ -636,7 +650,12 @@
                   disabled={!isOwned}
                   title="Edit description"
                 >
-                  {album.description || 'Add description'}
+                  <textarea
+                    class="w-full bg-transparent resize-none overflow-hidden outline-none"
+                    bind:this={textarea}
+                    bind:value={album.description}
+                    placeholder="Add description"
+                  />
                 </button>
               {/if}
             </section>
@@ -680,7 +699,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
         <ActivityViewer
@@ -753,3 +772,15 @@
 {/if}
 
 <UpdatePanel {assetStore} />
+
+<style>
+  ::placeholder {
+    color: rgb(60, 60, 60);
+    opacity: 0.6;
+  }
+
+  ::-ms-input-placeholder {
+    /* Edge 12 -18 */
+    color: white;
+  }
+</style>

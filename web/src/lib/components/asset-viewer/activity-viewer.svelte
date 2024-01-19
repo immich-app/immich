@@ -172,12 +172,12 @@
     </div>
     {#if innerHeight}
       <div
-        class="overflow-y-auto immich-scrollbar relative w-full"
+        class="overflow-y-auto immich-scrollbar relative w-full px-2"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
         {#each reactions as reaction, index (reaction.id)}
           {#if reaction.type === 'comment'}
-            <div class="flex dark:bg-gray-800 bg-gray-200 p-3 mx-2 mt-3 rounded-lg gap-4 justify-start">
+            <div class="flex dark:bg-gray-800 bg-gray-200 py-3 pl-3 mt-3 rounded-lg gap-4 justify-start">
               <div class="flex items-center">
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
@@ -215,7 +215,7 @@
 
             {#if (index != reactions.length - 1 && !shouldGroup(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
               <div
-                class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
               >
                 {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
@@ -223,7 +223,7 @@
             {/if}
           {:else if reaction.type === 'like'}
             <div class="relative">
-              <div class="flex p-3 mx-2 mt-3 rounded-full gap-4 items-center text-sm">
+              <div class="flex py-3 pl-3 mt-3 gap-4 items-center text-sm">
                 <div class="text-red-600"><Icon path={mdiHeart} size={20} /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
@@ -260,7 +260,7 @@
               </div>
               {#if (index != reactions.length - 1 && isTenMinutesApart(reactions[index].createdAt, reactions[index + 1].createdAt)) || index === reactions.length - 1}
                 <div
-                  class=" px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                  class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
                   title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
                 >
                   {timeSince(luxon.DateTime.fromISO(reaction.createdAt))}
@@ -274,7 +274,7 @@
   </div>
 
   <div class="absolute w-full bottom-0">
-    <div class="flex items-center justify-center p-2 mr-2" bind:clientHeight={chatHeight}>
+    <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
       <div class="flex p-2 gap-4 h-fit bg-gray-200 text-immich-dark-gray rounded-3xl w-full">
         <div>
           <UserAvatar {user} size="md" showTitle={false} />

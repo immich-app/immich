@@ -741,7 +741,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
-      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
       <ActivityViewer
