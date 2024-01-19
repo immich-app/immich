@@ -128,18 +128,4 @@ export const personStub = {
     faceAsset: null,
     isHidden: false,
   }),
-  randomPerson: Object.freeze<PersonEntity>({
-    id: 'person-3',
-    createdAt: new Date('2021-01-01'),
-    updatedAt: new Date('2021-01-01'),
-    ownerId: userStub.admin.id,
-    owner: userStub.admin,
-    name: '',
-    birthDate: null,
-    thumbnailPath: '/path/to/thumbnail',
-    faces: [],
-    faceAssetId: null,
-    faceAsset: null,
-    isHidden: false,
-  }),
 };
