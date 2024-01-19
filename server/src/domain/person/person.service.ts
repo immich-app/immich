@@ -533,7 +533,7 @@ export class PersonService {
   async mergePerson(auth: AuthDto, id: string, dto: MergePersonDto): Promise<BulkIdResponseDto[]> {
     const mergeIds = dto.ids;
     await this.access.requirePermission(auth, Permission.PERSON_WRITE, id);
-    let primaryPerson = await this.findOrFail(id);
+    const primaryPerson = await this.findOrFail(id);
     const primaryName = primaryPerson.name || primaryPerson.id;
 
     const results: BulkIdResponseDto[] = [];
@@ -554,19 +554,6 @@ export class PersonService {
           continue;
         }
 
-        const update: Partial<PersonEntity> = {};
-        if (!primaryPerson.name && mergePerson.name) {
-          update.name = mergePerson.name;
-        }
-
-        if (!primaryPerson.birthDate && mergePerson.birthDate) {
-          update.birthDate = mergePerson.birthDate;
-        }
-
-        if (Object.keys(update).length > 0) {
-          primaryPerson = await this.repository.update({ id: primaryPerson.id, ...update });
-        }
-
         const mergeName = mergePerson.name || mergePerson.id;
         const mergeData: UpdateFacesData = { oldPersonId: mergeId, newPersonId: id };
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
@@ -581,6 +568,7 @@ export class PersonService {
         results.push({ id: mergeId, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
+
     return results;
   }
 

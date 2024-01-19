@@ -26,7 +26,7 @@
 
   let dispatch = createEventDispatcher<{
     back: void;
-    merge: PersonResponseDto;
+    merge: void;
   }>();
 
   $: hasSelection = selectedPeople.length > 0;
@@ -68,17 +68,16 @@
 
   const handleMerge = async () => {
     try {
-      let { data: results } = await api.personApi.mergePerson({
+      const { data: results } = await api.personApi.mergePerson({
         id: person.id,
         mergePersonDto: { ids: selectedPeople.map(({ id }) => id) },
       });
-      const { data: mergedPerson } = await api.personApi.getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
         message: `Merged ${count} ${count === 1 ? 'person' : 'people'}`,
         type: NotificationType.Info,
       });
-      dispatch('merge', mergedPerson);
+      dispatch('merge');
     } catch (error) {
       handleError(error, 'Cannot merge people');
     } finally {
