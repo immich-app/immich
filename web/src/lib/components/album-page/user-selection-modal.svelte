@@ -7,7 +7,7 @@
   import ImmichLogo from '../shared-components/immich-logo.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { AppRoute } from '$lib/constants';
-  import { mdiLink, mdiShareCircle } from '@mdi/js';
+  import { mdiCheck, mdiLink, mdiShareCircle } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
 
   export let album: AlbumResponseDto;
@@ -92,7 +92,7 @@
               <div
                 class="flex h-10 w-10 items-center justify-center rounded-full border bg-immich-primary text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-primary dark:text-immich-dark-bg"
               >
-                <p>✓</p>
+                <Icon path={mdiCheck} size={24} />
               </div>
             {:else}
               <UserAvatar {user} size="md" />
