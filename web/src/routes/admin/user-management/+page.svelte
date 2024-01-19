@@ -212,7 +212,7 @@
                   </div>
                 </td>
 
-                <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all px-4 text-sm">
+                <td class="w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm">
                   {#if !isDeleted(immichUser)}
                     <button
                       on:click={() => editUserHandler(immichUser)}
