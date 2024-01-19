@@ -54,7 +54,10 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   @GenerateSql({
     params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
   })
-  async searchCLIP({ userIds, embedding, withArchived }: EmbeddingSearch, pagination: PaginationOptions): Paginated<AssetEntity> {
+  async searchCLIP(
+    { userIds, embedding, withArchived }: EmbeddingSearch,
+    pagination: PaginationOptions,
+  ): Paginated<AssetEntity> {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
 
     await this.assetRepository.manager.transaction(async (manager) => {
@@ -63,17 +66,17 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .innerJoin('a.smartSearch', 's')
         .where('a.ownerId IN (:...userIds )')
         .andWhere('a.isVisible = true')
-          .andWhere('a.fileCreatedAt < NOW()')
+        .andWhere('a.fileCreatedAt < NOW()')
         .leftJoinAndSelect('a.exifInfo', 'e')
         .orderBy('s.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
       if (!withArchived) {
-      query.andWhere('a.isArchived = false');
-    }
+        query.andWhere('a.isArchived = false');
+      }
 
-    await manager.query(this.getRuntimeConfig(pagination.take));
-    results = await paginatedBuilder<AssetEntity>(query, pagination);
+      await manager.query(this.getRuntimeConfig(pagination.take));
+      results = await paginatedBuilder<AssetEntity>(query, pagination);
     });
 
     return results;
