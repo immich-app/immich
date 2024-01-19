@@ -92,10 +92,11 @@
             class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             {#if selectedUsers.includes(user)}
-              <span
-                class="flex h-12 w-12 place-content-center place-items-center rounded-full border bg-immich-primary text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-primary dark:text-immich-dark-bg"
-                >✓</span
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-full border bg-immich-primary text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-primary dark:text-immich-dark-bg"
               >
+                <p>✓</p>
+              </div>
             {:else}
               <UserAvatar {user} size="md" />
             {/if}
