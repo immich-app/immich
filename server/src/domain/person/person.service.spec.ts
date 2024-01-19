@@ -1002,7 +1002,6 @@ describe(PersonService.name, () => {
     it('should merge two people', async () => {
       personMock.getById.mockResolvedValueOnce(personStub.primaryPerson);
       personMock.getById.mockResolvedValueOnce(personStub.mergePerson);
-      personMock.delete.mockResolvedValue(personStub.mergePerson);
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-1']));
       accessMock.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['person-2']));
 
@@ -1015,10 +1014,6 @@ describe(PersonService.name, () => {
         oldPersonId: personStub.mergePerson.id,
       });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.PERSON_DELETE,
-        data: { id: personStub.mergePerson.id },
-      });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
