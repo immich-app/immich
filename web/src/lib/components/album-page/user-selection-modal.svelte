@@ -60,28 +60,25 @@
     </span>
   </svelte:fragment>
 
-  <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
-    {#if selectedUsers.length > 0}
-      <div class="mb-2 flex place-items-center gap-4 overflow-x-auto px-5 py-2">
-        <p class="font-medium">To</p>
+  {#if selectedUsers.length > 0}
+    <div class="mb-2 flex flex-wrap place-items-center gap-4 overflow-x-auto px-5 py-2 sticky">
+      <p class="font-medium">To</p>
 
-        {#each selectedUsers as user}
-          {#key user.id}
-            <button
-              on:click={() => handleUnselect(user)}
-              class="flex place-items-center gap-1 rounded-full border border-gray-400 p-1 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
-            >
-              <UserAvatar {user} size="sm" />
-              <p class="text-xs font-medium">{user.name}</p>
-            </button>
-          {/key}
-        {/each}
-        <div class="flex place-content-end mr-0 ml-auto p-5">
-          <Button size="sm" rounded="lg" on:click={() => dispatch('select', selectedUsers)}>Add</Button>
-        </div>
-      </div>
-    {/if}
+      {#each selectedUsers as user}
+        {#key user.id}
+          <button
+            on:click={() => handleUnselect(user)}
+            class="flex place-items-center gap-1 rounded-full border border-gray-400 p-1 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+          >
+            <UserAvatar {user} size="sm" />
+            <p class="text-xs font-medium">{user.name}</p>
+          </button>
+        {/key}
+      {/each}
+    </div>
+  {/if}
 
+  <div class="immich-scrollbar max-h-[500px] overflow-y-auto">
     {#if users.length > 0}
       <p class="px-5 text-xs font-medium">SUGGESTIONS</p>
 
@@ -119,7 +116,20 @@
     {/if}
   </div>
 
+  {#if users.length > 0}
+    <div class="p-3">
+      <Button
+        size="sm"
+        fullwidth
+        rounded="lg"
+        disabled={!selectedUsers.length}
+        on:click={() => dispatch('select', selectedUsers)}>Add</Button
+      >
+    </div>
+  {/if}
+
   <hr />
+
   <div id="shared-buttons" class="my-4 flex place-content-center place-items-center justify-around">
     <button
       class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
