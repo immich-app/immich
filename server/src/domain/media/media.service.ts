@@ -350,9 +350,8 @@ export class MediaService {
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
-    const maxBitrate = Number.parseInt(ffmpegConfig.maxBitrate);
     const isLargerThanTargetRes = scalingEnabled && Math.min(videoStream.height, videoStream.width) > targetRes;
-    const isLargerThanTargetBitrate = bitrate >= maxBitrate;
+    const isLargerThanTargetBitrate = bitrate > this.parseBitrateToBps(ffmpegConfig.maxBitrate);
 
     switch (ffmpegConfig.transcode) {
       case TranscodePolicy.DISABLED:
@@ -436,6 +435,22 @@ export class MediaService {
     } else {
       // assume sRGB for images with no relevant metadata
       return true;
+    }
+  }
+
+  parseBitrateToBps(bitrateString: string) {
+    const bitrateValue = Number.parseInt(bitrateString);
+
+    if (isNaN(bitrateValue)) {
+      return 0;
+    }
+
+    if (bitrateString.toLowerCase().endsWith('k')) {
+      return bitrateValue * 1000; // Kilobits per second to bits per second
+    } else if (bitrateString.toLowerCase().endsWith('m')) {
+      return bitrateValue * 1000000; // Megabits per second to bits per second
+    } else {
+      return bitrateValue;
     }
   }
 }
