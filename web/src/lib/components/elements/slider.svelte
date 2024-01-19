@@ -8,24 +8,21 @@
   const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
 </script>
 
-<div class="flex place-items-center justify-between">
-  <slot name="leading" />
-  <label class="relative inline-block h-[10px] w-[36px] flex-none">
-    <input
-      class="disabled::cursor-not-allowed h-0 w-0 opacity-0"
-      type="checkbox"
-      bind:checked
-      on:click={onToggle}
-      {disabled}
-    />
+<label class="relative inline-block h-[10px] w-[36px] flex-none">
+  <input
+    class="disabled::cursor-not-allowed h-0 w-0 opacity-0"
+    type="checkbox"
+    bind:checked
+    on:click={onToggle}
+    {disabled}
+  />
 
-    {#if disabled}
-      <span class="slider slider-disabled cursor-not-allowed" />
-    {:else}
-      <span class="slider slider-enabled cursor-pointer" />
-    {/if}
-  </label>
-</div>
+  {#if disabled}
+    <span class="slider slider-disabled cursor-not-allowed" />
+  {:else}
+    <span class="slider slider-enabled cursor-pointer" />
+  {/if}
+</label>
 
 <style>
   .slider {
