@@ -68,7 +68,7 @@
         {#key user.id}
           <button
             on:click={() => handleUnselect(user)}
-            class="flex place-items-center gap-1 rounded-full border border-gray-400 p-1 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+            class="flex place-items-center gap-1 rounded-full border border-gray-500 p-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             <UserAvatar {user} size="sm" />
             <p class="text-xs font-medium">{user.name}</p>
