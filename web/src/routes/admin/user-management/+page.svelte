@@ -130,7 +130,7 @@
       {#if shouldShowDeleteConfirmDialog}
         <DeleteConfirmDialog
           user={selectedUser}
-          on:succes={onUserDeleteSuccess}
+          on:success={onUserDeleteSuccess}
           on:fail={onUserDeleteFail}
           on:cancel={() => (shouldShowDeleteConfirmDialog = false)}
         />
