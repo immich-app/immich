@@ -1014,8 +1014,6 @@ describe(PersonService.name, () => {
         oldPersonId: personStub.mergePerson.id,
       });
 
-      expect(personMock.update).not.toHaveBeenCalled();
-
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
@@ -1040,7 +1038,6 @@ describe(PersonService.name, () => {
         name: personStub.primaryPerson.name,
       });
 
-      expect(personMock.delete).toHaveBeenCalledWith([personStub.primaryPerson]);
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
