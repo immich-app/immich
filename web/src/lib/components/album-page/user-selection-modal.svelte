@@ -121,7 +121,7 @@
       <Button
         size="sm"
         fullwidth
-        rounded="lg"
+        rounded="full"
         disabled={!selectedUsers.length}
         on:click={() => dispatch('select', selectedUsers)}>Add</Button
       >
