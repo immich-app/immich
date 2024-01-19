@@ -47,6 +47,7 @@ export class MediaRepository implements IMediaRepository {
         formatName: results.format.format_name,
         formatLongName: results.format.format_long_name,
         duration: results.format.duration || 0,
+        bitrate: results.format.bit_rate ?? 0,
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video')

@@ -264,6 +264,7 @@ export class MediaService {
     const mainVideoStream = this.getMainStream(videoStreams);
     const mainAudioStream = this.getMainStream(audioStreams);
     const containerExtension = format.formatName;
+    const bitrate = format.bitrate;
     if (!mainVideoStream || !containerExtension) {
       return false;
     }
@@ -275,7 +276,14 @@ export class MediaService {
 
     const { ffmpeg: config } = await this.configCore.getConfig();
 
-    const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
+    const required = this.isTranscodeRequired(
+      asset,
+      mainVideoStream,
+      mainAudioStream,
+      containerExtension,
+      config,
+      bitrate,
+    );
     if (!required) {
       if (asset.encodedVideoPath) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
@@ -326,6 +334,7 @@ export class MediaService {
     audioStream: AudioStreamInfo | null,
     containerExtension: string,
     ffmpegConfig: SystemConfigFFmpegDto,
+    bitrate: number,
   ): boolean {
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(videoStream.codecName as VideoCodec);
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
@@ -341,7 +350,9 @@ export class MediaService {
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
+    const maxBitrate = Number.parseInt(ffmpegConfig.maxBitrate);
     const isLargerThanTargetRes = scalingEnabled && Math.min(videoStream.height, videoStream.width) > targetRes;
+    const isLargerThanTargetBitrate = bitrate >= maxBitrate;
 
     switch (ffmpegConfig.transcode) {
       case TranscodePolicy.DISABLED:
@@ -355,6 +366,9 @@ export class MediaService {
 
       case TranscodePolicy.OPTIMAL:
         return !allTargetsMatching || isLargerThanTargetRes || videoStream.isHDR;
+
+      case TranscodePolicy.BY_BITRATE:
+        return !allTargetsMatching || isLargerThanTargetBitrate || videoStream.isHDR;
 
       default:
         return false;

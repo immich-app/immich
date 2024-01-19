@@ -9919,6 +9919,7 @@
         "enum": [
           "all",
           "optimal",
+          "by_bitrate",
           "required",
           "disabled"
         ],

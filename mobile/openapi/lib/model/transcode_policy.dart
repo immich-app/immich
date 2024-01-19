@@ -25,6 +25,7 @@ class TranscodePolicy {
 
   static const all = TranscodePolicy._(r'all');
   static const optimal = TranscodePolicy._(r'optimal');
+  static const byBitrate = TranscodePolicy._(r'by_bitrate');
   static const required_ = TranscodePolicy._(r'required');
   static const disabled = TranscodePolicy._(r'disabled');
 
@@ -32,6 +33,7 @@ class TranscodePolicy {
   static const values = <TranscodePolicy>[
     all,
     optimal,
+    byBitrate,
     required_,
     disabled,
   ];
@@ -74,6 +76,7 @@ class TranscodePolicyTypeTransformer {
       switch (data) {
         case r'all': return TranscodePolicy.all;
         case r'optimal': return TranscodePolicy.optimal;
+        case r'by_bitrate': return TranscodePolicy.byBitrate;
         case r'required': return TranscodePolicy.required_;
         case r'disabled': return TranscodePolicy.disabled;
         default:
