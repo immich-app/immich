@@ -1,10 +1,11 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { BucketPosition, type AssetStore, isSelectAllCancelled } from '$lib/stores/assets.store';
-  import { handleError } from '$lib/utils/handle-error';
+
   import { get } from 'svelte/store';
   import { mdiTimerSand, mdiSelectAll } from '@mdi/js';
+  import { selectAll } from '$lib/utils/actions';
+  import type { AssetStore } from '$lib/stores/assets.store';
 
   export let assetStore: AssetStore;
   export let assetInteractionStore: AssetInteractionStore;
@@ -12,25 +13,11 @@
   let selecting = false;
 
   const handleSelectAll = async () => {
-    try {
-      $isSelectAllCancelled = false;
-      selecting = true;
+    selecting = true;
 
-      const assetGridState = get(assetStore);
-      for (const bucket of assetGridState.buckets) {
-        if ($isSelectAllCancelled) {
-          break;
-        }
-        await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
-        for (const asset of bucket.assets) {
-          assetInteractionStore.selectAsset(asset);
-        }
-      }
+    selectAll(get(assetStore), assetStore, assetInteractionStore);
 
-      selecting = false;
-    } catch (e) {
-      handleError(e, 'Error selecting all assets');
-    }
+    selecting = false;
   };
 </script>
 

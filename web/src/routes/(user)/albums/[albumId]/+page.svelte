@@ -29,7 +29,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import { createAssetInteractionStore, isAllUserOwned } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -110,8 +110,6 @@
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
 
   $: isOwned = $user.id == album.ownerId;
-  $: isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === $user.id);
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
   $: {
     if (isShowActivity) {
       assetGridWidth = globalWidth - (globalWidth < 768 ? 360 : 460);
@@ -440,15 +438,15 @@
           <AddToAlbum shared />
         </AssetSelectContextMenu>
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Menu">
-          {#if isAllUserOwned}
-            <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+          {#if $isAllUserOwned}
+            <FavoriteAction menuItem />
+            <ArchiveAction menuItem />
           {/if}
-          <ArchiveAction menuItem />
           <DownloadAction menuItem filename="{album.albumName}.zip" />
-          {#if isOwned || isAllUserOwned}
+          {#if isOwned || $isAllUserOwned}
             <RemoveFromAlbum menuItem bind:album onRemove={(assetIds) => handleRemoveAssets(assetIds)} />
           {/if}
-          {#if isAllUserOwned}
+          {#if $isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
             <ChangeDate menuItem />
             <ChangeLocation menuItem />

@@ -108,8 +108,6 @@
     isSearchingPeople = false;
   };
 
-  $: isAllArchive = Array.from($selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
   $: $onPersonThumbnail === data.person.id &&
     (thumbnailData = api.getPeopleThumbnailUrl(data.person.id) + `?now=${Date.now()}`);
 
@@ -394,8 +392,8 @@
       <DeleteAssets onAssetDelete={(assetId) => $assetStore.removeAsset(assetId)} />
       <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
         <DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
-        <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(ids) => $assetStore.removeAssets(ids)} />
+        <FavoriteAction menuItem />
+        <ArchiveAction menuItem onArchive={(ids) => $assetStore.removeAssets(ids)} />
         <MenuOption text="Fix incorrect match" on:click={handleReassignAssets} />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />

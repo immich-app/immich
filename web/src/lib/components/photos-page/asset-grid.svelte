@@ -2,7 +2,12 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+  import {
+    isAllUserOwned,
+    type AssetInteractionStore,
+    isAllFavorite,
+    isAllArchived,
+  } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { BucketPosition, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
@@ -19,8 +24,11 @@
   import AssetDateGroup from './asset-date-group.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
-  import { deleteAssets } from '$lib/utils/actions';
+  import { archiveAssets, deleteAssets, favoriteAssets, selectAll } from '$lib/utils/actions';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
+  import { downloadArchive, downloadFile } from '$lib/utils/asset-utils';
+  import { user } from '$lib/stores/user.store';
+  import { get } from 'svelte/store';
 
   export let isSelectionMode = false;
   export let singleSelect = false;
@@ -47,6 +55,9 @@
   $: idsSelectedAssets = Array.from($selectedAssets)
     .filter((a) => !a.isExternal)
     .map((a) => a.id);
+  $: $isAllUserOwned = Array.from($selectedAssets).every((asset) => asset.ownerId === $user.id);
+  $: $isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
+  $: $isAllArchived = Array.from($selectedAssets).every((asset) => asset.isArchived);
 
   const onKeyboardPress = (event: KeyboardEvent) => handleKeyboardPress(event);
   const dispatch = createEventDispatcher<{ select: AssetResponseDto; escape: void }>();
@@ -70,24 +81,30 @@
     assetStore.disconnect();
   });
 
-  const trashOrDelete = (force: boolean = false) => {
+  const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets);
-    assetInteractionStore.clearMultiselect();
+    if (
+      await deleteAssets(!(isTrashEnabled && !force), (assetId) => assetStore.removeAsset(assetId), idsSelectedAssets)
+    ) {
+      assetInteractionStore.clearMultiselect();
+    }
   };
 
-  const handleKeyboardPress = (event: KeyboardEvent) => {
+  const handleKeyboardPress = async (event: KeyboardEvent) => {
     if ($isSearchEnabled || shouldIgnoreShortcut(event)) {
       return;
     }
 
     const key = event.key;
     const shiftKey = event.shiftKey;
+    const ctrlKey = event.ctrlKey;
+    const assets = Array.from($selectedAssets);
 
     if (!$showAssetViewer) {
       switch (key) {
-        case 'Escape':
-          dispatch('escape');
+        case '/':
+          event.preventDefault();
+          goto(AppRoute.EXPLORE);
           return;
         case '?':
           if (event.shiftKey) {
@@ -95,9 +112,43 @@
             showShortcuts = !showShortcuts;
           }
           return;
-        case '/':
-          event.preventDefault();
-          goto(AppRoute.EXPLORE);
+        case 'a':
+        case 'A':
+          if ($isMultiSelectState) {
+            if (ctrlKey) {
+              event.preventDefault();
+              selectAll(get(assetStore), assetStore, assetInteractionStore);
+              return;
+            }
+
+            if ($isAllUserOwned) {
+              if (
+                await archiveAssets(
+                  !$isAllArchived,
+                  (assetIds) => {
+                    for (const assetId of assetIds) {
+                      assetStore.removeAsset(assetId);
+                    }
+                  },
+                  assets,
+                )
+              ) {
+                assetInteractionStore.clearMultiselect();
+              }
+            }
+          }
+          return;
+        case 'd':
+        case 'D':
+          if ($isMultiSelectState) {
+            assetInteractionStore.clearMultiselect();
+            if (assets.length === 1) {
+              await downloadFile(assets[0]);
+              return;
+            }
+
+            await downloadArchive('immich.zip', { assetIds: assets.map((asset) => asset.id) });
+          }
           return;
         case 'Delete':
           if ($isMultiSelectState) {
@@ -111,6 +162,16 @@
             }
 
             trashOrDelete(force);
+          }
+          return;
+        case 'Escape':
+          dispatch('escape');
+          return;
+        case 'f':
+          if ($isMultiSelectState && $isAllUserOwned) {
+            if (await favoriteAssets(!$isAllFavorite, undefined, assets)) {
+              assetInteractionStore.clearMultiselect();
+            }
           }
           return;
       }

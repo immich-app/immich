@@ -23,13 +23,11 @@
   const assetStore = new AssetStore({ isArchived: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
-
-  $: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
 </script>
 
 {#if $isMultiSelectState}
   <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <ArchiveAction unarchive onArchive={(ids) => assetStore.removeAssets(ids)} />
+    <ArchiveAction onArchive={(ids) => assetStore.removeAssets(ids)} />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteractionStore} />
     <AssetSelectContextMenu icon={mdiPlus} title="Add">
@@ -39,7 +37,7 @@
     <DeleteAssets onAssetDelete={(assetId) => assetStore.removeAsset(assetId)} />
     <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
       <DownloadAction menuItem />
-      <FavoriteAction menuItem removeFavorite={isAllFavorite} />
+      <FavoriteAction menuItem />
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {/if}

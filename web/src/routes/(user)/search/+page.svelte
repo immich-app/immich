@@ -96,8 +96,6 @@
 
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
-  $: isAllArchived = Array.from(selectedAssets).every((asset) => asset.isArchived);
-  $: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
   $: searchResultAssets = data.results?.assets.items;
 
   const onAssetDelete = (assetId: string) => {
@@ -122,8 +120,8 @@
 
         <AssetSelectContextMenu icon={mdiDotsVertical} title="Add">
           <DownloadAction menuItem />
-          <FavoriteAction menuItem removeFavorite={isAllFavorite} />
-          <ArchiveAction menuItem unarchive={isAllArchived} />
+          <FavoriteAction menuItem />
+          <ArchiveAction menuItem />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
         </AssetSelectContextMenu>

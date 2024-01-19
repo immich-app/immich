@@ -147,3 +147,7 @@ export function createAssetInteractionStore(): AssetInteractionStore {
     },
   };
 }
+
+export const isAllUserOwned = writable<boolean>();
+export const isAllFavorite = writable<boolean>();
+export const isAllArchived = writable<boolean>();
