@@ -19,6 +19,18 @@ export const copyToClipboard = async (secret: string) => {
   }
 };
 
+function* increment(start = 1) {
+  for (let i = start; ; i++) {
+    yield i;
+  }
+}
+
+const _labelId = increment();
+/**
+ * @returns a unique id for an element
+ */
+export const elementId = () => 'element-' + _labelId.next().value;
+
 export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
   let url = externalDomain || window.location.origin;
   if (!url.endsWith('/')) {

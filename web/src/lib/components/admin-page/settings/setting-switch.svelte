@@ -3,6 +3,7 @@
   import { fly } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
   import Slider from '$lib/components/elements/slider.svelte';
+  import { elementId } from '@api';
 
   export let title: string;
   export let subtitle = '';
@@ -10,13 +11,17 @@
   export let disabled = false;
   export let isEdited = false;
 
+  let sliderId = elementId();
+  let labelId = elementId();
+  let subtitleId = elementId();
+
   const dispatch = createEventDispatcher<{ toggle: boolean }>();
 </script>
 
 <div class="flex place-items-center justify-between">
   <div>
     <div class="flex h-[26px] place-items-center gap-1">
-      <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={title}>
+      <label id={labelId} for={sliderId} class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm">
         {title}
       </label>
       {#if isEdited}
@@ -28,8 +33,14 @@
         </div>
       {/if}
     </div>
-
-    <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+    <p id={subtitleId} class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
   </div>
-  <Slider bind:checked {disabled} on:toggle={() => dispatch('toggle', checked)} />
+  <Slider
+    id={sliderId}
+    ariaLabelledBy={labelId}
+    ariaDescribedBy={subtitleId}
+    bind:checked
+    {disabled}
+    on:toggle={() => dispatch('toggle', checked)}
+  />
 </div>
