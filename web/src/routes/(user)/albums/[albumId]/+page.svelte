@@ -423,7 +423,6 @@
       });
 
       album.description = description;
-      autoGrowHeight(textarea);
       isEditingDescription = false;
     } catch (error) {
       handleError(error, 'Error updating album description');
