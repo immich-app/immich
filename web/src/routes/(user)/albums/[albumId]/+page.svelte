@@ -1,6 +1,5 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
-  import EditDescriptionModal from '$lib/components/album-page/edit-description-modal.svelte';
   import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -68,6 +67,7 @@
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
   let album = data.album;
+  let description = album.description;
 
   $: album = data.album;
 
@@ -92,7 +92,6 @@
   let backUrl: string = AppRoute.ALBUMS;
   let viewMode = ViewMode.VIEW;
   let titleInput: HTMLInputElement;
-  let isEditingDescription = false;
   let isCreatingSharedAlbum = false;
   let currentAlbumName = album.albumName;
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
@@ -238,6 +237,14 @@
     }
     if (viewMode === ViewMode.SELECT_ASSETS) {
       handleCloseSelectAssets();
+      return;
+    }
+    if (viewMode === ViewMode.LINK_SHARING) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+    if (viewMode === ViewMode.OPTIONS) {
+      viewMode = ViewMode.VIEW;
       return;
     }
     if ($showAssetViewer) {
@@ -414,7 +421,10 @@
     }
   };
 
-  const handleUpdateDescription = async (description: string) => {
+  const handleUpdateDescription = async () => {
+    if (album.description === description) {
+      return;
+    }
     try {
       await api.albumApi.updateAlbumInfo({
         id: album.id,
@@ -424,7 +434,10 @@
       });
 
       album.description = description;
-      isEditingDescription = false;
+      notificationController.show({
+        message: `Description updated`,
+        type: NotificationType.Info,
+      });
     } catch (error) {
       handleError(error, 'Error updating album description');
     }
@@ -628,27 +641,17 @@
                   {/if}
                 </div>
               {/if}
-
               <!-- ALBUM DESCRIPTION -->
-              {#if isOwned || album.description}
-                <button
-                  class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
-                  on:click={() => (isEditingDescription = true)}
-                  class:hover:border-gray-400={isOwned}
-                  disabled={!isOwned}
-                  title="Edit description"
-                >
-                  {#key album.description}
-                    <textarea
-                      class="w-full bg-transparent resize-none overflow-hidden outline-none"
-                      bind:this={textarea}
-                      bind:value={album.description}
-                      use:autoGrowHeight={'5px'}
-                      placeholder="Add description"
-                    />
-                  {/key}
-                </button>
-              {/if}
+              <textarea
+                class="w-full resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
+                bind:this={textarea}
+                bind:value={description}
+                disabled={!isOwned}
+                on:input={() => autoGrowHeight(textarea)}
+                on:focusout={handleUpdateDescription}
+                use:autoGrowHeight
+                placeholder="Add description"
+              />
             </section>
           {/if}
 
@@ -751,14 +754,6 @@
     on:close={() => (viewMode = ViewMode.VIEW)}
     on:toggleEnableActivity={handleToggleEnableActivity}
     on:showSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
-  />
-{/if}
-
-{#if isEditingDescription}
-  <EditDescriptionModal
-    {album}
-    on:close={() => (isEditingDescription = false)}
-    on:save={({ detail: description }) => handleUpdateDescription(description)}
   />
 {/if}
 

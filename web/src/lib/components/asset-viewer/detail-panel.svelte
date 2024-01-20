@@ -32,6 +32,7 @@
   import { handleError } from '../../utils/handle-error';
   import { user } from '$lib/stores/user.store';
   import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { clickOutside } from '$lib/utils/click-outside';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
@@ -122,6 +123,7 @@
   };
 
   const handleFocusOut = async () => {
+    textarea.blur();
     dispatch('descriptionFocusOut');
     try {
       await api.assetApi.updateAsset({
@@ -205,6 +207,8 @@
         on:input={() => autoGrowHeight(textarea)}
         bind:value={description}
         use:autoGrowHeight
+        use:clickOutside
+        on:outclick={handleFocusOut}
       />
     {/if}
   </section>

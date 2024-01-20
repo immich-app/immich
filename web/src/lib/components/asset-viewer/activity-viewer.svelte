@@ -282,7 +282,7 @@
               bind:this={textArea}
               bind:value={message}
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
-              on:input={() => autoGrowHeight(textArea, '5px')}
+              on:input={() => autoGrowHeight(textArea)}
               on:keypress={handleEnter}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
