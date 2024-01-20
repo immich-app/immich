@@ -200,20 +200,22 @@
   {/if}
 
   <section class="mx-4 mt-10" style:display={!isOwner && description === '' ? 'none' : 'block'}>
-    <textarea
-      disabled={!isOwner || api.isSharedLink}
-      bind:this={textarea}
-      class="max-h-[500px]
+    {#key asset.id}
+      <textarea
+        disabled={!isOwner || api.isSharedLink}
+        bind:this={textarea}
+        class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-      placeholder={!isOwner ? '' : 'Add a description'}
-      on:focusin={handleFocusIn}
-      on:focusout={handleFocusOut}
-      on:input={() => autoGrowHeight(textarea)}
-      bind:value={description}
-      use:autoGrowHeight
-      use:clickOutside
-      on:outclick={handleFocusOut}
-    />
+        placeholder={!isOwner ? '' : 'Add a description'}
+        on:focusin={handleFocusIn}
+        on:focusout={handleFocusOut}
+        on:input={() => autoGrowHeight(textarea)}
+        bind:value={description}
+        use:autoGrowHeight
+        use:clickOutside
+        on:outclick={handleFocusOut}
+      />
+    {/key}
   </section>
 
   {#if !api.isSharedLink && people.length > 0}
