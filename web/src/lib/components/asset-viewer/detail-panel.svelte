@@ -199,7 +199,7 @@
     </section>
   {/if}
 
-  <section class="mx-4 mt-10">
+  <section class="mx-4 mt-10" style:display={!isOwner && description === '' ? 'none' : 'block'}>
     <textarea
       disabled={!isOwner || api.isSharedLink}
       bind:this={textarea}
