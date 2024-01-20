@@ -888,6 +888,39 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should transcode by crf in two passes for vp9 when two pass mode is enabled and max bitrate is disabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '0' },
+        { key: SystemConfigKey.FFMPEG_TWO_PASS, value: true },
+        { key: SystemConfigKey.FFMPEG_TARGET_VIDEO_CODEC, value: VideoCodec.VP9 },
+      ]);
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        {
+          inputOptions: [],
+          outputOptions: [
+            '-c:v vp9',
+            '-c:a aac',
+            '-movflags faststart',
+            '-fps_mode passthrough',
+            '-map 0:0',
+            '-map 0:1',
+            '-v verbose',
+            '-vf scale=-2:720,format=yuv420p',
+            '-cpu-used 5',
+            '-row-mt 1',
+            '-crf 23',
+            '-b:v 0',
+          ],
+          twoPass: true,
+        },
+      );
+    });
+
     it('should configure preset for vp9', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([

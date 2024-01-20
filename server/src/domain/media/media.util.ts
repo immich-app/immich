@@ -356,7 +356,7 @@ export class VP9Config extends BaseConfig {
 
   getBitrateOptions() {
     const bitrates = this.getBitrateDistribution();
-    if (this.eligibleForTwoPass()) {
+    if (bitrates.max > 0 && this.eligibleForTwoPass()) {
       return [
         `-b:v ${bitrates.target}${bitrates.unit}`,
         `-minrate ${bitrates.min}${bitrates.unit}`,
