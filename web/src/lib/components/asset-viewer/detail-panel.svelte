@@ -58,16 +58,16 @@
   $: isOwner = $user?.id === asset.ownerId;
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
-    originalDescription = newAsset?.exifInfo?.description || '';
     description = newAsset?.exifInfo?.description || '';
 
     // Get latest description from server
     if (newAsset.id && !api.isSharedLink) {
       const { data } = await api.assetApi.getAssetById({ id: asset.id });
       people = data?.people || [];
-      originalDescription = data.exifInfo?.description || '';
+
       description = data.exifInfo?.description || '';
     }
+    originalDescription = description;
   };
 
   $: handleNewAsset(asset);
@@ -129,13 +129,13 @@
     if (description === originalDescription) {
       return;
     }
+    originalDescription = description;
     dispatch('descriptionFocusOut');
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
         updateAssetDto: { description },
       });
-      originalDescription = description;
     } catch (error) {
       console.error(error);
     }
