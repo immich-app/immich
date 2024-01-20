@@ -41,6 +41,7 @@
   let showAssetPath = false;
   let textarea: HTMLTextAreaElement;
   let description: string;
+  let originalDescription: string;
   let showEditFaces = false;
   let previousId: string;
 
@@ -57,14 +58,15 @@
   $: isOwner = $user?.id === asset.ownerId;
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
+    originalDescription = newAsset?.exifInfo?.description || '';
     description = newAsset?.exifInfo?.description || '';
 
     // Get latest description from server
     if (newAsset.id && !api.isSharedLink) {
       const { data } = await api.assetApi.getAssetById({ id: asset.id });
       people = data?.people || [];
+      originalDescription = data.exifInfo?.description || '';
       description = data.exifInfo?.description || '';
-      textarea.value = description;
     }
   };
 
@@ -124,12 +126,16 @@
 
   const handleFocusOut = async () => {
     textarea.blur();
+    if (description === originalDescription) {
+      return;
+    }
     dispatch('descriptionFocusOut');
     try {
       await api.assetApi.updateAsset({
         id: asset.id,
         updateAssetDto: { description },
       });
+      originalDescription = description;
     } catch (error) {
       console.error(error);
     }
@@ -193,24 +199,21 @@
     </section>
   {/if}
 
-  <section class="mx-4 mt-10" style:display={!isOwner && description === '' ? 'none' : 'block'}>
-    {#if !isOwner || api.isSharedLink}
-      <span class="break-words">{description}</span>
-    {:else}
-      <textarea
-        bind:this={textarea}
-        class="max-h-[500px]
+  <section class="mx-4 mt-10">
+    <textarea
+      disabled={!isOwner || api.isSharedLink}
+      bind:this={textarea}
+      class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-        placeholder={!isOwner ? '' : 'Add a description'}
-        on:focusin={handleFocusIn}
-        on:focusout={handleFocusOut}
-        on:input={() => autoGrowHeight(textarea)}
-        bind:value={description}
-        use:autoGrowHeight
-        use:clickOutside
-        on:outclick={handleFocusOut}
-      />
-    {/if}
+      placeholder={!isOwner ? '' : 'Add a description'}
+      on:focusin={handleFocusIn}
+      on:focusout={handleFocusOut}
+      on:input={() => autoGrowHeight(textarea)}
+      bind:value={description}
+      use:autoGrowHeight
+      use:clickOutside
+      on:outclick={handleFocusOut}
+    />
   </section>
 
   {#if !api.isSharedLink && people.length > 0}
