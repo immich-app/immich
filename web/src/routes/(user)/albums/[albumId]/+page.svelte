@@ -218,6 +218,19 @@
     }
   });
 
+  const handleKeypress = async (event: KeyboardEvent) => {
+    if (event.target !== textarea) {
+      return;
+    }
+    const ctrl = event.ctrlKey;
+    switch (event.key) {
+      case 'Enter':
+        if (ctrl && event.target === textarea) {
+          textarea.blur();
+        }
+    }
+  };
+
   const handleStartSlideshow = async () => {
     const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
@@ -434,15 +447,13 @@
       });
 
       album.description = description;
-      notificationController.show({
-        message: `Description updated`,
-        type: NotificationType.Info,
-      });
     } catch (error) {
       handleError(error, 'Error updating album description');
     }
   };
 </script>
+
+<svelte:window on:keydown={handleKeypress} />
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
   <div class="relative w-full shrink">

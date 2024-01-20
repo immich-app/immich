@@ -102,6 +102,19 @@
     closeViewer: void;
   }>();
 
+  const handleKeypress = async (event: KeyboardEvent) => {
+    if (event.target !== textarea) {
+      return;
+    }
+    const ctrl = event.ctrlKey;
+    switch (event.key) {
+      case 'Enter':
+        if (ctrl && event.target === textarea) {
+          handleFocusOut();
+        }
+    }
+  };
+
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
 
@@ -137,7 +150,7 @@
         updateAssetDto: { description },
       });
     } catch (error) {
-      console.error(error);
+      handleError(error, 'Cannot update the description');
     }
   };
 
@@ -172,6 +185,8 @@
     }
   }
 </script>
+
+<svelte:window on:keydown={handleKeypress} />
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
