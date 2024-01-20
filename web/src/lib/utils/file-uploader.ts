@@ -1,6 +1,6 @@
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-import { api, AssetFileUploadResponseDto } from '@api';
+import { api, type AssetFileUploadResponseDto } from '@api';
 import { UploadState } from '$lib/models/upload-asset';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { getServerErrorMessage, handleError } from './handle-error';

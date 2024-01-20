@@ -37,7 +37,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { ActivityResponseDto, ReactionLevel, ReactionType, UserResponseDto, api } from '@api';
+  import { type ActivityResponseDto, ReactionLevel, ReactionType, type UserResponseDto, api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';

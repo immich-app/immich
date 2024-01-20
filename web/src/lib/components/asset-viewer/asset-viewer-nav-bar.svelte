@@ -3,7 +3,7 @@
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { clickOutside } from '$lib/utils/click-outside';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
-  import { AssetJobName, AssetResponseDto, AssetTypeEnum, api } from '@api';
+  import { AssetJobName, type AssetResponseDto, AssetTypeEnum, api } from '@api';
   import {
     mdiAlertOutline,
     mdiArrowLeft,

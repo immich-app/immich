@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';

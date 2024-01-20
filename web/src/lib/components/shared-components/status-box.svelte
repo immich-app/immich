@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { UserResponseDto, api } from '@api';
+  import { type UserResponseDto, api } from '@api';
   import { onMount } from 'svelte';
   import { asByteUnitString } from '../../utils/byte-units';
   import LoadingSpinner from './loading-spinner.svelte';

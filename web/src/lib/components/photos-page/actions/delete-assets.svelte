@@ -5,7 +5,7 @@
   import { createEventDispatcher } from 'svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiTimerSand, mdiDeleteOutline } from '@mdi/js';
-  import { OnDelete, deleteAssets } from '$lib/utils/actions';
+  import { type OnDelete, deleteAssets } from '$lib/utils/actions';
   import DeleteAssetDialog from '../delete-asset-dialog.svelte';
 
   export let onAssetDelete: OnDelete;
