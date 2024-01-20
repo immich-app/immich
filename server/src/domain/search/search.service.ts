@@ -9,7 +9,7 @@ import {
   IMachineLearningRepository,
   IPartnerRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
   SearchExploreItem,
   SearchStrategy,
@@ -27,7 +27,7 @@ export class SearchService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(ISmartInfoRepository) private smartInfoRepository: ISmartInfoRepository,
+    @Inject(ISearchRepository) private smartInfoRepository: ISearchRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
@@ -70,10 +70,8 @@ export class SearchService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
-    const withArchived = dto.withArchived || false;
     const page = dto.page ?? 0;
-    const take = dto.take || 100;
-    const skip = page * take;
+    const size = dto.take || 100;
 
     let nextPage: string | null = null;
     let assets: AssetEntity[] = [];
@@ -85,10 +83,13 @@ export class SearchService {
           machineLearning.clip,
         );
 
-        this.logger.debug(`Take: ${take}, skip: ${skip}`);
         const { hasNextPage, items } = await this.smartInfoRepository.searchCLIP(
-          { userIds, embedding, withArchived },
-          { take, skip },
+          { page, size },
+          {
+            userIds,
+            embedding,
+            status: { withArchived: !!dto.withArchived },
+          },
         );
         if (hasNextPage) {
           nextPage = (page + 1).toString();

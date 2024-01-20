@@ -16,7 +16,7 @@ import {
   IMachineLearningRepository,
   IPartnerRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
 } from '../repositories';
 import { SearchDto } from './dto';
@@ -30,7 +30,7 @@ describe(SearchService.name, () => {
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
-  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
+  let smartInfoMock: jest.Mocked<ISearchRepository>;
   let partnerMock: jest.Mocked<IPartnerRepository>;
 
   beforeEach(() => {

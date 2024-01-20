@@ -14,7 +14,7 @@ import {
   IDatabaseRepository,
   IJobRepository,
   IMachineLearningRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   ISystemConfigRepository,
   WithoutProperty,
 } from '../repositories';
@@ -31,7 +31,7 @@ describe(SmartInfoService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
-  let smartMock: jest.Mocked<ISmartInfoRepository>;
+  let smartMock: jest.Mocked<ISearchRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
   let databaseMock: jest.Mocked<IDatabaseRepository>;
 

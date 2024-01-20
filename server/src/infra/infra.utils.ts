@@ -1,16 +1,20 @@
-import { Paginated, PaginationOptions } from '@app/domain';
+import { AssetSearchBuilderOptions, Paginated, PaginationOptions } from '@app/domain';
 import _ from 'lodash';
 import {
   Between,
+  Brackets,
   FindManyOptions,
+  IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
+  Not,
   ObjectLiteral,
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { chunks, setUnion } from '../domain/domain.util';
+import { PaginatedBuilderOptions, PaginationMode, PaginationResult, chunks, setUnion } from '../domain/domain.util';
 import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';
+import { AssetEntity } from './entities';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -31,6 +35,13 @@ export const isValidInteger = (value: number, options: { min?: number; max?: num
   return Number.isInteger(value) && value >= min && value <= max;
 };
 
+function paginationHelper<Entity extends ObjectLiteral>(items: Entity[], take: number): PaginationResult<Entity> {
+  const hasNextPage = items.length > take;
+  items.splice(take);
+
+  return { items, hasNextPage };
+}
+
 export async function paginate<Entity extends ObjectLiteral>(
   repository: Repository<Entity>,
   { take, skip }: PaginationOptions,
@@ -48,25 +59,21 @@ export async function paginate<Entity extends ObjectLiteral>(
     ),
   );
 
-  const hasNextPage = items.length > take;
-  items.splice(take);
-
-  return { items, hasNextPage };
+  return paginationHelper(items, take);
 }
 
 export async function paginatedBuilder<Entity extends ObjectLiteral>(
   qb: SelectQueryBuilder<Entity>,
-  { take, skip }: PaginationOptions,
+  { take, skip, mode }: PaginatedBuilderOptions,
 ): Paginated<Entity> {
-  const items = await qb
-    .limit(take + 1)
-    .offset(skip)
-    .getMany();
+  if (mode === PaginationMode.LIMIT_OFFSET) {
+    qb.limit(take + 1).offset(skip);
+  } else {
+    qb.skip(take + 1).take(skip);
+  }
 
-  const hasNextPage = items.length > take;
-  items.splice(take);
-
-  return { items, hasNextPage };
+  const items = await qb.getMany();
+  return paginationHelper(items, take);
 }
 
 export const asVector = (embedding: number[], quote = false) =>
@@ -113,4 +120,88 @@ export function ChunkedArray(options?: { paramIndex?: number }): MethodDecorator
 
 export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
   return Chunked({ ...options, mergeFn: setUnion });
+}
+
+export function searchAssetBuilder(
+  builder: SelectQueryBuilder<AssetEntity>,
+  options: AssetSearchBuilderOptions,
+): SelectQueryBuilder<AssetEntity> {
+  const { date, id, exif, path, relation, status } = options;
+
+  if (date) {
+    builder.andWhere(
+      _.omitBy(
+        {
+          createdAt: OptionalBetween(date.createdAfter, date.createdBefore),
+          updatedAt: OptionalBetween(date.updatedAfter, date.updatedBefore),
+          deletedAt: OptionalBetween(date.trashedAfter, date.trashedBefore),
+          fileCreatedAt: OptionalBetween(date.takenAfter, date.takenBefore),
+        },
+        _.isUndefined,
+      ),
+    );
+  }
+
+  if (exif) {
+    const exifWhere = _.omitBy(exif, _.isUndefined);
+    builder.andWhere(exifWhere);
+    if (Object.keys(exifWhere).length > 0) {
+      builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
+    }
+  }
+
+  if (id) {
+    builder.andWhere(_.omitBy(id, _.isUndefined));
+  }
+
+  if (path) {
+    builder.andWhere(_.omitBy(path, _.isUndefined));
+  }
+
+  if (status) {
+    const { isEncoded, isMotion, ...otherStatuses } = status;
+    builder.andWhere(_.omitBy(otherStatuses, _.isUndefined));
+
+    if (isEncoded && !path?.encodedVideoPath) {
+      builder.andWhere({ encodedVideoPath: Not(IsNull()) });
+    }
+
+    if (isMotion) {
+      builder.andWhere({ livePhotoVideoId: Not(IsNull()) });
+    }
+  }
+
+  if (relation) {
+    const { withExif, withFaces, withPeople, withSmartInfo, withStacked } = relation;
+
+    if (withExif) {
+      builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
+    }
+
+    if (withFaces || withPeople) {
+      builder.leftJoinAndSelect(`${builder.alias}.faces`, 'faces');
+    }
+
+    if (withPeople) {
+      builder.leftJoinAndSelect(`${builder.alias}.person`, 'person');
+    }
+
+    if (withSmartInfo) {
+      builder.leftJoinAndSelect(`${builder.alias}.smartInfo`, 'smartInfo');
+    }
+
+    if (withStacked) {
+      builder
+        .leftJoinAndSelect(`${builder.alias}.stack`, 'stack')
+        .leftJoinAndSelect('stack.assets', 'stackedAssets')
+        .andWhere(new Brackets((qb) => qb.where(`stack.primaryAssetId = ${builder.alias}.id`).orWhere('asset.stackId IS NULL')));
+    }
+  }
+
+  const withDeleted = status?.withDeleted ?? (date?.trashedAfter !== undefined || date?.trashedBefore !== undefined);
+  if (withDeleted) {
+    builder.withDeleted();
+  }
+
+  return builder;
 }

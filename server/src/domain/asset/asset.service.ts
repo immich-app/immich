@@ -18,6 +18,7 @@ import {
   ICommunicationRepository,
   IJobRepository,
   IPartnerRepository,
+  ISearchRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
@@ -87,6 +88,7 @@ export class AssetService {
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
     @Inject(IAssetStackRepository) private assetStackRepository: IAssetStackRepository,
+    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
   ) {
     this.access = AccessCore.create(accessRepository);
     this.configCore = SystemConfigCore.create(configRepository);
@@ -101,17 +103,18 @@ export class AssetService {
     }
 
     const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
-    const order = dto.order ? enumToOrder[dto.order] : undefined;
+    const order = dto.order ? { direction: enumToOrder[dto.order] } : undefined;
 
-    return this.assetRepository
-      .search({
-        ...dto,
-        order,
-        checksum,
-        ownerId: auth.user.id,
-      })
-      .then((assets) =>
-        assets.map((asset) =>
+    return this.searchRepository
+      .searchAssets(
+        { page: 0, size: 250 },
+        {
+          id: { checksum, ownerId: auth.user.id },
+          order,
+        },
+      )
+      .then(({ items }) =>
+        items.map((asset) =>
           mapAsset(asset, {
             stripMetadata: false,
             withStack: true,
@@ -275,6 +278,111 @@ export class AssetService {
 
     return { ...options, userIds };
   }
+  async downloadFile(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
+    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, id);
+
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (asset.isOffline) {
+      throw new BadRequestException('Asset is offline');
+    }
+
+    return new ImmichFileResponse({
+      path: asset.originalPath,
+      contentType: mimeTypes.lookup(asset.originalPath),
+      cacheControl: CacheControl.NONE,
+    });
+  }
+
+  async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
+    const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
+    const archives: DownloadArchiveInfo[] = [];
+    let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
+
+    const assetPagination = await this.getDownloadAssets(auth, dto);
+    for await (const assets of assetPagination) {
+      // motion part of live photos
+      const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
+      if (motionIds.length > 0) {
+        assets.push(...(await this.assetRepository.getByIds(motionIds)));
+      }
+
+      for (const asset of assets) {
+        archive.size += Number(asset.exifInfo?.fileSizeInByte || 0);
+        archive.assetIds.push(asset.id);
+
+        if (archive.size > targetSize) {
+          archives.push(archive);
+          archive = { size: 0, assetIds: [] };
+        }
+      }
+
+      if (archive.assetIds.length > 0) {
+        archives.push(archive);
+      }
+    }
+
+    return {
+      totalSize: archives.reduce((total, item) => (total += item.size), 0),
+      archives,
+    };
+  }
+
+  async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
+    await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, dto.assetIds);
+
+    const zip = this.storageRepository.createZipStream();
+    const assets = await this.assetRepository.getByIds(dto.assetIds);
+    const paths: Record<string, number> = {};
+
+    for (const { originalPath, originalFileName } of assets) {
+      const ext = extname(originalPath);
+      let filename = `${originalFileName}${ext}`;
+      const count = paths[filename] || 0;
+      paths[filename] = count + 1;
+      if (count !== 0) {
+        filename = `${originalFileName}+${count}${ext}`;
+      }
+
+      zip.addFile(originalPath, filename);
+    }
+
+    void zip.finalize();
+
+    return { stream: zip.stream };
+  }
+
+  private async getDownloadAssets(auth: AuthDto, dto: DownloadInfoDto): Promise<AsyncGenerator<AssetEntity[]>> {
+    const PAGINATION_SIZE = 2500;
+
+    if (dto.assetIds) {
+      const assetIds = dto.assetIds;
+      await this.access.requirePermission(auth, Permission.ASSET_DOWNLOAD, assetIds);
+      const assets = await this.assetRepository.getByIds(assetIds);
+      return (async function* () {
+        yield assets;
+      })();
+    }
+
+    if (dto.albumId) {
+      const albumId = dto.albumId;
+      await this.access.requirePermission(auth, Permission.ALBUM_DOWNLOAD, albumId);
+      return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByAlbumId(pagination, albumId));
+    }
+
+    if (dto.userId) {
+      const userId = dto.userId;
+      await this.access.requirePermission(auth, Permission.TIMELINE_DOWNLOAD, userId);
+      return usePagination(PAGINATION_SIZE, (pagination) =>
+        this.assetRepository.getByUserId(pagination, userId, { status: { isVisible: true } }),
+      );
+    }
+
+    throw new BadRequestException('assetIds, albumId, or userId is required');
+  }
 
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
@@ -413,7 +521,7 @@ export class AssetService {
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { trashedBefore }),
+      this.assetRepository.getAll(pagination, { date: { trashedBefore } }),
     );
 
     for await (const assets of assetPagination) {
@@ -492,6 +600,39 @@ export class AssetService {
       await this.assetRepository.softDeleteAll(ids);
       this.communicationRepository.send(ClientEvent.ASSET_TRASH, auth.user.id, ids);
     }
+  }
+
+  async handleTrashAction(auth: AuthDto, action: TrashAction): Promise<void> {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getByUserId(pagination, auth.user.id, {
+        date: { trashedBefore: DateTime.now().toJSDate() },
+      }),
+    );
+
+    if (action == TrashAction.RESTORE_ALL) {
+      for await (const assets of assetPagination) {
+        const ids = assets.map((a) => a.id);
+        await this.assetRepository.restoreAll(ids);
+        this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
+      }
+      return;
+    }
+
+    if (action == TrashAction.EMPTY_ALL) {
+      for await (const assets of assetPagination) {
+        await this.jobRepository.queueAll(
+          assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+        );
+      }
+      return;
+    }
+  }
+
+  async restoreAll(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
+    const { ids } = dto;
+    await this.access.requirePermission(auth, Permission.ASSET_RESTORE, ids);
+    await this.assetRepository.restoreAll(ids);
+    this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
   }
 
   async updateStackParent(auth: AuthDto, dto: UpdateStackParentDto): Promise<void> {

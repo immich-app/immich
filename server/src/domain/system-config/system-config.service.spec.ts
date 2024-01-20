@@ -15,7 +15,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException } from '@nestjs/common';
 import { newCommunicationRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { QueueName } from '../job';
-import { ICommunicationRepository, ISmartInfoRepository, ISystemConfigRepository, ServerEvent } from '../repositories';
+import { ICommunicationRepository, ISearchRepository, ISystemConfigRepository, ServerEvent } from '../repositories';
 import { defaults, SystemConfigValidator } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
@@ -146,7 +146,7 @@ describe(SystemConfigService.name, () => {
   let sut: SystemConfigService;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
-  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
+  let smartInfoMock: jest.Mocked<ISearchRepository>;
 
   beforeEach(async () => {
     delete process.env.IMMICH_CONFIG_FILE;

@@ -31,7 +31,7 @@ import {
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
-  ISmartInfoRepository,
+  ISearchRepository,
   IStorageRepository,
   ISystemConfigRepository,
   WithoutProperty,
@@ -76,7 +76,7 @@ describe(PersonService.name, () => {
   let moveMock: jest.Mocked<IMoveRepository>;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
-  let smartInfoMock: jest.Mocked<ISmartInfoRepository>;
+  let smartInfoMock: jest.Mocked<ISearchRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let sut: PersonService;
 
