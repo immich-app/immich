@@ -39,7 +39,7 @@
   export let albumId: string | null = null;
 
   let showAssetPath = false;
-  let textarea: HTMLTextAreaElement;
+  let textArea: HTMLTextAreaElement;
   let description: string;
   let originalDescription: string;
   let showEditFaces = false;
@@ -103,13 +103,13 @@
   }>();
 
   const handleKeypress = async (event: KeyboardEvent) => {
-    if (event.target !== textarea) {
+    if (event.target !== textArea) {
       return;
     }
     const ctrl = event.ctrlKey;
     switch (event.key) {
       case 'Enter':
-        if (ctrl && event.target === textarea) {
+        if (ctrl && event.target === textArea) {
           handleFocusOut();
         }
     }
@@ -128,7 +128,7 @@
   const handleRefreshPeople = async () => {
     await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
       people = res.data?.people || [];
-      textarea.value = res.data?.exifInfo?.description || '';
+      textArea.value = res.data?.exifInfo?.description || '';
     });
     showEditFaces = false;
   };
@@ -138,7 +138,7 @@
   };
 
   const handleFocusOut = async () => {
-    textarea.blur();
+    textArea.blur();
     if (description === originalDescription) {
       return;
     }
@@ -218,13 +218,13 @@
     {#key asset.id}
       <textarea
         disabled={!isOwner || api.isSharedLink}
-        bind:this={textarea}
+        bind:this={textArea}
         class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
         placeholder={!isOwner ? '' : 'Add a description'}
         on:focusin={handleFocusIn}
         on:focusout={handleFocusOut}
-        on:input={() => autoGrowHeight(textarea)}
+        on:input={() => autoGrowHeight(textArea)}
         bind:value={description}
         use:autoGrowHeight
         use:clickOutside

@@ -100,7 +100,7 @@
   let reactions: ActivityResponseDto[] = [];
   let globalWidth: number;
   let assetGridWidth: number;
-  let textarea: HTMLTextAreaElement;
+  let textArea: HTMLTextAreaElement;
 
   const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
@@ -219,14 +219,14 @@
   });
 
   const handleKeypress = async (event: KeyboardEvent) => {
-    if (event.target !== textarea) {
+    if (event.target !== textArea) {
       return;
     }
     const ctrl = event.ctrlKey;
     switch (event.key) {
       case 'Enter':
-        if (ctrl && event.target === textarea) {
-          textarea.blur();
+        if (ctrl && event.target === textArea) {
+          textArea.blur();
         }
     }
   };
@@ -655,10 +655,10 @@
               <!-- ALBUM DESCRIPTION -->
               <textarea
                 class="w-full resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
-                bind:this={textarea}
+                bind:this={textArea}
                 bind:value={description}
                 disabled={!isOwned}
-                on:input={() => autoGrowHeight(textarea)}
+                on:input={() => autoGrowHeight(textArea)}
                 on:focusout={handleUpdateDescription}
                 use:autoGrowHeight
                 placeholder="Add description"
