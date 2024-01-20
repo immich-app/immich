@@ -54,15 +54,10 @@ As this is a new feature, it is still experimental and may not work on all syste
 
 ##### NVENC - NVIDIA GPUs
 
-:::note
-As of v1.92.0, steps 1 and 2 are no longer necessary. If your version of Immich is below that, please follow these steps. Otherwise, skip to step 3.
-:::
-
-1. Confirm that you have the Nvidia Driver Plugin installed on your Unraid server. In the Nvidia Driver Plugin screen, copy the GPU ID that appears as GPU-LONG_STRING_OF_CHARACTERS.
-2. In the container app, add this environmental variable: Key=`NVIDIA_VISIBLE_DEVICES` Value=`GPU-LONG_STRING_OF_CHARACTERS`
-3. While still in the container app, change the container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`
-4. Restart the container app.
-5. Continue to step 4 of "Basic Setup".
+1. In the container app, add this environmental variable: Key=`NVIDIA_VISIBLE_DEVICES` Value=`all`
+2. While still in the container app, change the container from Basic Mode to Advanced Mode and add the following parameter to the Extra Parameters field: `--runtime=nvidia`
+3. Restart the container app.
+4. Continue to step 4 of "Basic Setup".
 
 ##### Other APIs
 
