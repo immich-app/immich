@@ -156,7 +156,7 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 - **Files in Upload Queue (Mobile):**
   - Files uploaded through mobile apps.
   - Temporarily located in `/library/upload/<userID>`.
-  - Transferred to `UPLOAD_LOCATION/library<userID>` upon successful upload.
+  - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
 
 </TabItem>
 </Tabs>
