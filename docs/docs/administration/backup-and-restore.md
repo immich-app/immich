@@ -143,7 +143,7 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 
 - **Source Assets:**
   - Original assets uploaded through the browser interface & mobile & CLI.
-  - Stored in `UPLOAD_LOCATION/library<userID>`.
+  - Stored in `UPLOAD_LOCATION/library/<userID>`.
 - **Avatar Images:**
   - User profile images.
   - Stored in `/library/profile/<userID>`.
