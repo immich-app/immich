@@ -217,10 +217,9 @@ class MapPage extends HookConsumerWidget {
     }
 
     void onZoomToLocation() async {
-      final location = await MapUtils.checkPermAndGetLocation(context);
-      if (location.$2 != null) {
-        if (location.$2 == LocationPermission.unableToDetermine &&
-            context.mounted) {
+      final (location, error) = await MapUtils.checkPermAndGetLocation(context);
+      if (error != null) {
+        if (error == LocationPermission.unableToDetermine && context.mounted) {
           ImmichToast.show(
             context: context,
             gravity: ToastGravity.BOTTOM,
@@ -231,10 +230,10 @@ class MapPage extends HookConsumerWidget {
         return;
       }
 
-      if (mapController.value != null && location.$1 != null) {
+      if (mapController.value != null && location != null) {
         mapController.value!.animateCamera(
           CameraUpdate.newLatLngZoom(
-            LatLng(location.$1!.latitude, location.$1!.longitude),
+            LatLng(location.latitude, location.longitude),
             mapZoomToAssetLevel,
           ),
           duration: const Duration(milliseconds: 800),
