@@ -52,6 +52,7 @@ Sometimes, an external library will not scan correctly. This can happen if the i
 - In the docker-compose file, are the volumes mounted correctly?
 - Are the volumes identical between the `server` and `microservices` container?
 - Are the import paths set correctly, and do they match the path set in docker-compose file?
+- Are you using symbolic link in your import library?
 - Are the permissions set correctly?
 - Are you using forward slashes everywhere? (`/`)
 
