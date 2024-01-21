@@ -1,16 +1,19 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { vectorExtension } from '../database.config';
+import { DatabaseExtension } from '@app/domain/repositories/database.repository';
 
 export class AddFaceEmbeddingIndex1700714033632 implements MigrationInterface {
   name = 'AddFaceEmbeddingIndex1700714033632';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (vectorExtension === DatabaseExtension.VECTORS) {
+      await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
+    }
+
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS face_index ON asset_faces
-      USING vectors (embedding vector_cos_ops) WITH (options = $$
-      [indexing.hnsw]
-      m = 16
-      ef_construction = 300
-      $$);`);
+      USING hnsw (embedding vector_cosine_ops)
+      WITH (ef_construction = 300, m = 16)`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

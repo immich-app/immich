@@ -3,6 +3,7 @@ import { Version } from '../domain.constant';
 export enum DatabaseExtension {
   CUBE = 'cube',
   EARTH_DISTANCE = 'earthdistance',
+  VECTOR = 'vector',
   VECTORS = 'vectors',
 }
 

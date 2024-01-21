@@ -7,7 +7,7 @@ export type Embedding = number[];
 export interface EmbeddingSearch {
   userIds: string[];
   embedding: Embedding;
-  numResults?: number;
+  numResults: number;
   withArchived?: boolean;
 }
 

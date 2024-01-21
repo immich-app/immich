@@ -47,7 +47,7 @@ export class Version implements IVersion {
     }
   }
 
-   // if type is specified, only considers changes of that type or greater
+  // if type is specified, only considers changes of that type or greater
   compare(version: Version, type?: VersionType): number {
     const types = type ? this.types.slice(0, type + 1) : this.types;
     for (const key of types) {
@@ -60,12 +60,12 @@ export class Version implements IVersion {
     return 0;
   }
 
-  isOlderThan(version: Version, type?: VersionType): boolean {
-    return this.compare(version, type) < 0;
+  isOlderThan(version: Version): boolean {
+    return this.compare(version) < 0;
   }
 
-  isEqual(version: Version, type?: VersionType): boolean {
-    return this.compare(version, type) === 0;
+  isEqual(version: Version): boolean {
+    return this.compare(version) === 0;
   }
 
   isNewerThan(version: Version, type?: VersionType): boolean {

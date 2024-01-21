@@ -1,10 +1,18 @@
-import { Embedding, EmbeddingSearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from '@app/domain';
+import {
+  DatabaseExtension,
+  Embedding,
+  EmbeddingSearch,
+  FaceEmbeddingSearch,
+  FaceSearchResult,
+  ISmartInfoRepository,
+} from '@app/domain';
 import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
 import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { vectorExtension } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { asVector, isValidInteger } from '../infra.utils';
 
@@ -44,15 +52,20 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     params: [{ userIds: [DummyValue.UUID], embedding: Array.from({ length: 512 }, Math.random), numResults: 100 }],
   })
   async searchCLIP({ userIds, embedding, numResults, withArchived }: EmbeddingSearch): Promise<AssetEntity[]> {
+    if (!isValidInteger(numResults, { min: 1 })) {
+      throw new Error(`Invalid value for 'numResults': ${numResults}`);
+    }
+
+    // setting this too low messes with prefilter recall
+    numResults = Math.max(numResults, 64);
+
     let results: AssetEntity[] = [];
     await this.assetRepository.manager.transaction(async (manager) => {
-
       let query = manager
         .createQueryBuilder(AssetEntity, 'a')
         .innerJoin('a.smartSearch', 's')
         .leftJoinAndSelect('a.exifInfo', 'e')
         .where('a.ownerId IN (:...userIds )')
-
         .orderBy('s.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
@@ -60,17 +73,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         query.andWhere('a.isArchived = false');
       }
       query.andWhere('a.isVisible = true').andWhere('a.fileCreatedAt < NOW()');
+      query.limit(numResults);
 
-      let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
-      if (numResults) {
-        if (!isValidInteger(numResults, { min: 1 })) {
-          throw new Error(`Invalid value for 'numResults': ${numResults}`);
-        }
-        query = query.limit(numResults);
-        runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults}`;
-      }
-
-      await manager.query(runtimeConfig);
+      await manager.query(this.getRuntimeConfig(numResults));
       results = await query.getMany();
     });
 
@@ -94,6 +99,13 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     maxDistance,
     hasPerson,
   }: FaceEmbeddingSearch): Promise<FaceSearchResult[]> {
+    if (!isValidInteger(numResults, { min: 1 })) {
+      throw new Error(`Invalid value for 'numResults': ${numResults}`);
+    }
+
+    // setting this too low messes with prefilter recall
+    numResults = Math.max(numResults, 64);
+
     let results: Array<AssetFaceEntity & { distance: number }> = [];
     await this.assetRepository.manager.transaction(async (manager) => {
       let cte = manager
@@ -104,26 +116,17 @@ export class SmartInfoRepository implements ISmartInfoRepository {
         .orderBy('faces.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
-      let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
-      if (numResults) {
-        if (!isValidInteger(numResults, { min: 1 })) {
-          throw new Error(`Invalid value for 'numResults': ${numResults}`);
-        }
-        const limit = Math.max(numResults, 64);
-        cte = cte.limit(limit);
-        // setting this too low messes with prefilter recall
-        runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${limit}`;
-      }
+      cte.limit(numResults);
 
       if (hasPerson) {
-        cte = cte.andWhere('faces."personId" IS NOT NULL');
+        cte.andWhere('faces."personId" IS NOT NULL');
       }
 
       for (const col of this.faceColumns) {
         cte.addSelect(`faces.${col}`, col);
       }
-      
-      await manager.query(runtimeConfig);
+
+      await manager.query(this.getRuntimeConfig(numResults));
       results = await manager
         .createQueryBuilder()
         .select('res.*')
@@ -168,6 +171,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
 
     await this.smartSearchRepository.manager.transaction(async (manager) => {
+      if (vectorExtension === DatabaseExtension.VECTORS) {
+        await manager.query(`SET vectors.pgvector_compatibility=on`);
+      }
       await manager.query(`DROP TABLE smart_search`);
 
       await manager.query(`
@@ -176,12 +182,9 @@ export class SmartInfoRepository implements ISmartInfoRepository {
           embedding  vector(${dimSize}) NOT NULL )`);
 
       await manager.query(`
-        CREATE INDEX clip_index ON smart_search
-          USING vectors (embedding vector_cos_ops) WITH (options = $$
-          [indexing.hnsw]
-          m = 16
-          ef_construction = 300
-          $$)`);
+        CREATE INDEX IF NOT EXISTS clip_index ON smart_search
+        USING hnsw (embedding vector_cosine_ops)
+        WITH (ef_construction = 300, m = 16)`);
     });
 
     this.logger.log(`Successfully updated database CLIP dimension size from ${currentDimSize} to ${dimSize}.`);
@@ -202,5 +205,19 @@ export class SmartInfoRepository implements ISmartInfoRepository {
       throw new Error(`Could not retrieve CLIP dimension size`);
     }
     return dimSize;
+  }
+
+  private getRuntimeConfig(numResults?: number): string {
+    let runtimeConfig = '';
+    if (vectorExtension === DatabaseExtension.VECTORS) {
+      runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
+      if (numResults) {
+        runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults}`;
+      }
+    } else if (vectorExtension === DatabaseExtension.VECTOR) {
+      runtimeConfig = 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
+    }
+
+    return runtimeConfig;
   }
 }
