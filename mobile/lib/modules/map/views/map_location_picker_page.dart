@@ -140,38 +140,42 @@ class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 150,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.public, size: 18),
-              const SizedBox(width: 15),
-              ValueListenableBuilder(
-                valueListenable: selectedLatLng,
-                builder: (_, value, __) => Text(
-                  "${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}",
+      height: 150 + context.padding.bottom,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: context.padding.bottom),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.public, size: 18),
+                const SizedBox(width: 15),
+                ValueListenableBuilder(
+                  valueListenable: selectedLatLng,
+                  builder: (_, value, __) => Text(
+                    "${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}",
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: onUseLocation,
-                child: const Text("map_location_picker_page_use_location").tr(),
-              ),
-              ElevatedButton(
-                onPressed: onGetCurrentLocation,
-                child: const Icon(Icons.my_location),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: onUseLocation,
+                  child:
+                      const Text("map_location_picker_page_use_location").tr(),
+                ),
+                ElevatedButton(
+                  onPressed: onGetCurrentLocation,
+                  child: const Icon(Icons.my_location),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
