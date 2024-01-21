@@ -5,11 +5,8 @@
     "checkJs": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": [
-      "es2020",
-      "DOM"
-    ],
-    "moduleResolution": "node",
+    "lib": ["es2020", "DOM"],
+    "moduleResolution": "bundler",
     "module": "es2020",
     "resolveJsonModule": true,
     "skipLibCheck": true,
@@ -17,20 +14,5 @@
     "strict": true,
     "target": "es2020",
     "types": ["vitest/globals"],
-    "preserveValueImports": false,
-    "paths": {
-      "$lib": [
-        "./src/lib"
-      ],
-      "$lib/*": [
-        "./src/lib/*"
-      ],
-      "@api": [
-        "./src/api"
-      ],
-      "@test-data": [
-        "./src/test-data"
-      ]
-    }
   }
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
@@ -102,7 +102,7 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="quotaSize">Quota Size (GB)</label>
+      <label class="immich-form-label" for="quotaSize">Quota Size (GiB)</label>
       <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
       <p>Note: Enter 0 for unlimited quota</p>
     </div>

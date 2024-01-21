@@ -1,7 +1,7 @@
 <script lang="ts">
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
   import { locale } from '$lib/stores/preferences.store';
-  import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
+  import { type AlbumResponseDto, api, ThumbnailFormat, type UserResponseDto } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';

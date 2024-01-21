@@ -2,7 +2,7 @@
   import { ProjectionType } from '$lib/constants';
   import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
-  import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
+  import { api, type AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';

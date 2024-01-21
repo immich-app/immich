@@ -1,6 +1,6 @@
 import type { OnShowContextMenuDetail } from '$lib/components/album-page/album-card';
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
-import { AlbumResponseDto, api } from '@api';
+import { type AlbumResponseDto, api } from '@api';
 import { derived, get, writable } from 'svelte/store';
 
 type AlbumsProps = { albums: AlbumResponseDto[] };

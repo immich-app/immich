@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import { AlbumResponseDto, api, SharedLinkResponseDto, UserResponseDto } from '@api';
+  import { type AlbumResponseDto, api, type SharedLinkResponseDto, type UserResponseDto } from '@api';
   import BaseModal from '../shared-components/base-modal.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { goto } from '$app/navigation';
