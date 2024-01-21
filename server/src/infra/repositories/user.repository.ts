@@ -121,7 +121,7 @@ export class UserRepository implements IUserRepository {
       .createQueryBuilder('assets')
       .select('COALESCE(SUM(exif."fileSizeInByte"), 0)')
       .leftJoin('assets.exifInfo', 'exif')
-      .where('assets.ownerId = users.id')
+      .where('assets.ownerId = users.id AND NOT assets.isExternal')
       .withDeleted();
 
     const query = this.userRepository
