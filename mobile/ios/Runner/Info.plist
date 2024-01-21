@@ -48,6 +48,7 @@
       <string>hu</string>
       <string>lv</string>
       <string>th</string>
+      <string>sl</string>
     </array>
     <key>CFBundleName</key>
     <string>immich_mobile</string>
