@@ -16,6 +16,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onLongPressStart,
     this.child,
     this.onTapUp,
     this.onTapDown,
@@ -35,6 +36,8 @@ class PhotoViewGestureDetector extends StatelessWidget {
 
   final GestureTapUpCallback? onTapUp;
   final GestureTapDownCallback? onTapDown;
+
+  final GestureLongPressStartCallback? onLongPressStart;
 
   final Widget? child;
 
@@ -98,6 +101,13 @@ class PhotoViewGestureDetector extends StatelessWidget {
           ..onEnd = onScaleEnd;
       },
     );
+
+    gestures[LongPressGestureRecognizer] =
+        GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+            () => LongPressGestureRecognizer(debugOwner: this),
+            (LongPressGestureRecognizer instance) {
+      instance.onLongPressStart = onLongPressStart;
+    });
 
     return RawGestureDetector(
       behavior: behavior,

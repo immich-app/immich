@@ -12,6 +12,7 @@ import 'package:immich_mobile/shared/ui/photo_view/photo_view.dart'
         PhotoViewImageDragEndCallback,
         PhotoViewImageDragUpdateCallback,
         PhotoViewImageScaleEndCallback,
+        PhotoViewImageLongPressStartCallback,
         ScaleStateCycle;
 
 import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller.dart';
@@ -269,6 +270,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             onDragEnd: pageOption.onDragEnd,
             onDragUpdate: pageOption.onDragUpdate,
             onScaleEnd: pageOption.onScaleEnd,
+            onLongPressStart: pageOption.onLongPressStart,
             gestureDetectorBehavior: pageOption.gestureDetectorBehavior,
             tightMode: pageOption.tightMode,
             filterQuality: pageOption.filterQuality,
@@ -300,6 +302,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             onDragEnd: pageOption.onDragEnd,
             onDragUpdate: pageOption.onDragUpdate,
             onScaleEnd: pageOption.onScaleEnd,
+            onLongPressStart: pageOption.onLongPressStart,
             gestureDetectorBehavior: pageOption.gestureDetectorBehavior,
             tightMode: pageOption.tightMode,
             filterQuality: pageOption.filterQuality,
@@ -347,6 +350,7 @@ class PhotoViewGalleryPageOptions {
     this.onDragEnd,
     this.onDragUpdate,
     this.onScaleEnd,
+    this.onLongPressStart,
     this.gestureDetectorBehavior,
     this.tightMode,
     this.filterQuality,
@@ -373,6 +377,7 @@ class PhotoViewGalleryPageOptions {
     this.onDragEnd,
     this.onDragUpdate,
     this.onScaleEnd,
+    this.onLongPressStart,
     this.gestureDetectorBehavior,
     this.tightMode,
     this.filterQuality,
@@ -430,6 +435,9 @@ class PhotoViewGalleryPageOptions {
 
   /// Mirror to [PhotoView.onScaleEnd]
   final PhotoViewImageScaleEndCallback? onScaleEnd;
+
+  /// Mirror to [PhotoView.onLongPressStart]
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
 
   /// Mirror to [PhotoView.gestureDetectorBehavior]
   final HitTestBehavior? gestureDetectorBehavior;

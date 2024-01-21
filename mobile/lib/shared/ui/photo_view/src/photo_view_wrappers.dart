@@ -28,6 +28,7 @@ class ImageWrapper extends StatefulWidget {
     required this.onDragEnd,
     required this.onDragUpdate,
     required this.onScaleEnd,
+    required this.onLongPressStart,
     required this.outerSize,
     required this.gestureDetectorBehavior,
     required this.tightMode,
@@ -59,6 +60,7 @@ class ImageWrapper extends StatefulWidget {
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
   final Size outerSize;
   final HitTestBehavior? gestureDetectorBehavior;
   final bool? tightMode;
@@ -205,6 +207,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
       onDragEnd: widget.onDragEnd,
       onDragUpdate: widget.onDragUpdate,
       onScaleEnd: widget.onScaleEnd,
+      onLongPressStart: widget.onLongPressStart,
       gestureDetectorBehavior: widget.gestureDetectorBehavior,
       tightMode: widget.tightMode ?? false,
       filterQuality: widget.filterQuality ?? FilterQuality.none,
@@ -257,6 +260,7 @@ class CustomChildWrapper extends StatelessWidget {
     this.onDragEnd,
     this.onDragUpdate,
     this.onScaleEnd,
+    this.onLongPressStart,
     required this.outerSize,
     this.gestureDetectorBehavior,
     required this.tightMode,
@@ -287,6 +291,7 @@ class CustomChildWrapper extends StatelessWidget {
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
   final Size outerSize;
   final HitTestBehavior? gestureDetectorBehavior;
   final bool? tightMode;
@@ -320,6 +325,7 @@ class CustomChildWrapper extends StatelessWidget {
       onDragEnd: onDragEnd,
       onDragUpdate: onDragUpdate,
       onScaleEnd: onScaleEnd,
+      onLongPressStart: onLongPressStart,
       gestureDetectorBehavior: gestureDetectorBehavior,
       tightMode: tightMode ?? false,
       filterQuality: filterQuality ?? FilterQuality.none,
