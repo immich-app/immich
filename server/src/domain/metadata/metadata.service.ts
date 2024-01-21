@@ -412,11 +412,11 @@ export class MetadataService {
       }
       const checksum = this.cryptoRepository.hashSha1(video);
 
-      
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
-        // We 
-        const motionAssetId = this.cryptoRepository.randomUUID()
+        // We create a UUID in advance so that each extracted video can have a unique filename
+        // (allowing us to delete old ones if necessary)
+        const motionAssetId = this.cryptoRepository.randomUUID();
         const motionPath = StorageCore.getAndroidMotionPath(asset, motionAssetId);
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
         motionAsset = await this.assetRepository.create({
@@ -435,7 +435,7 @@ export class MetadataService {
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
         });
-        
+
         this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
@@ -448,10 +448,11 @@ export class MetadataService {
           await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
         }
-
       } else {
         this.logger.debug(
-          `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString('base64')} already exists in the repository`,
+          `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
+            'base64',
+          )} already exists in the repository`,
         );
       }
 
