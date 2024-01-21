@@ -55,6 +55,7 @@ Sometimes, an external library will not scan correctly. This can happen if the i
 - Are you using symbolic link in your import library?
 - Are the permissions set correctly?
 - Are you using forward slashes everywhere? (`/`)
+- Are you using [spaces in the internal path](/docs/features/libraries#:~:text=can%20be%20accessed.-,NOTE,-Spaces%20in%20the)?
 
 If all else fails, you can always start a shell inside the container and check if the path is accessible. For example, `docker exec -it immich_microservices /bin/bash` will start a bash shell. If your import path, for instance, is `/data/import/photos`, you can check if the files are accessible by running `ls /data/import/photos`. Also check the `immich_server` container in the same way.
 
@@ -122,7 +123,9 @@ First, we need to plan how we want to organize the libraries. The christmas trip
 The `ro` flag at the end only gives read-only access to the volumes. While Immich does not modify files, it's a good practice to mount read-only.
 :::
 
-_Remember to bring the container down/up to register the changes. Make sure you can see the mounted path in the container._
+:::info
+_Remember to bring the container `docker compose down/up` to register the changes. Make sure you can see the mounted path in the container._
+:::
 
 ### Set External Path
 
