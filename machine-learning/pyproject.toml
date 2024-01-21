@@ -8,7 +8,6 @@ packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-onnxruntime = "^1.15.0"
 insightface = ">=0.7.3,<1.0"
 opencv-python-headless = ">=4.7.0.72,<5.0"
 pillow = ">=9.5.0,<11.0"
@@ -35,6 +34,30 @@ pytest-asyncio = ">=0.21.0"
 pytest-cov = ">=4.1.0"
 ruff = ">=0.0.272"
 pytest-mock = ">=3.11.1"
+
+[tool.poetry.group.cpu]
+optional = true
+
+[tool.poetry.group.cpu.dependencies]
+onnxruntime = "^1.15.0"
+
+[tool.poetry.group.cuda]
+optional = true
+
+[tool.poetry.group.cuda.dependencies]
+onnxruntime-gpu = "^1.15.0"
+
+[tool.poetry.group.openvino]
+optional = true
+
+[tool.poetry.group.openvino.dependencies]
+onnxruntime-openvino = ">=1.15.0,<1.16.0"
+
+[tool.poetry.group.armnn]
+optional = true
+
+[tool.poetry.group.armnn.dependencies]
+onnxruntime = "^1.15.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -67,3 +90,6 @@ select = ["E", "F", "I"]
 [tool.black]
 line-length = 120
 target-version = ['py311']
+
+[tool.pytest.ini_options]
+markers = ["providers"]
