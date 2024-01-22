@@ -8,4 +8,3 @@ COPY --chown=node:node . .
 ENV CHOKIDAR_USEPOLLING=true
 EXPOSE 24678
 EXPOSE 3000
-CMD ["npm", "run", "dev"]
