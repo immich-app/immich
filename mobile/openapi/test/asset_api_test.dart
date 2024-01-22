@@ -127,13 +127,6 @@ void main() {
       // TODO
     });
 
-    // Use /asset/device/:deviceId instead - Remove in 1.92 release
-    //
-    //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
-    test('test getUserAssetsByDeviceId', () async {
-      // TODO
-    });
-
     //Future restoreAssets(BulkIdsDto bulkIdsDto) async
     test('test restoreAssets', () async {
       // TODO
