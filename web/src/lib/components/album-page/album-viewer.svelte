@@ -21,7 +21,6 @@
   import { shouldIgnoreShortcut } from '$lib/utils/shortcut';
   import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import UpdatePanel from '../shared-components/update-panel.svelte';
-  import { autoGrowHeight } from '$lib/utils/autogrow';
 
   export let sharedLink: SharedLinkResponseDto;
   export let user: UserResponseDto | undefined = undefined;
@@ -29,7 +28,6 @@
   const album = sharedLink.album as AlbumResponseDto;
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  let textArea: HTMLTextAreaElement;
 
   const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
