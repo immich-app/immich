@@ -110,12 +110,12 @@ class ActivityApi {
   ///
   /// * [String] assetId:
   ///
-  /// * [ReactionType] type:
-  ///
   /// * [ReactionLevel] level:
   ///
+  /// * [ReactionType] type:
+  ///
   /// * [String] userId:
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionType? type, ReactionLevel? level, String? userId, }) async {
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/activity';
 
@@ -130,11 +130,11 @@ class ActivityApi {
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
-    if (type != null) {
-      queryParams.addAll(_queryParams('', 'type', type));
-    }
     if (level != null) {
       queryParams.addAll(_queryParams('', 'level', level));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
     }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
@@ -160,13 +160,13 @@ class ActivityApi {
   ///
   /// * [String] assetId:
   ///
-  /// * [ReactionType] type:
-  ///
   /// * [ReactionLevel] level:
   ///
+  /// * [ReactionType] type:
+  ///
   /// * [String] userId:
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionType? type, ReactionLevel? level, String? userId, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, type: type, level: level, userId: userId, );
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, level: level, type: type, userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

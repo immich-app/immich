@@ -5387,13 +5387,13 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
          * 
          * @param {string} albumId 
          * @param {string} [assetId] 
-         * @param {ReactionType} [type] 
          * @param {ReactionLevel} [level] 
+         * @param {ReactionType} [type] 
          * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActivities: async (albumId: string, assetId?: string, type?: ReactionType, level?: ReactionLevel, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getActivities: async (albumId: string, assetId?: string, level?: ReactionLevel, type?: ReactionType, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'albumId' is not null or undefined
             assertParamExists('getActivities', 'albumId', albumId)
             const localVarPath = `/activity`;
@@ -5425,12 +5425,12 @@ export const ActivityApiAxiosParamCreator = function (configuration?: Configurat
                 localVarQueryParameter['assetId'] = assetId;
             }
 
-            if (type !== undefined) {
-                localVarQueryParameter['type'] = type;
-            }
-
             if (level !== undefined) {
                 localVarQueryParameter['level'] = level;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
             }
 
             if (userId !== undefined) {
@@ -5532,14 +5532,14 @@ export const ActivityApiFp = function(configuration?: Configuration) {
          * 
          * @param {string} albumId 
          * @param {string} [assetId] 
-         * @param {ReactionType} [type] 
          * @param {ReactionLevel} [level] 
+         * @param {ReactionType} [type] 
          * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActivities(albumId: string, assetId?: string, type?: ReactionType, level?: ReactionLevel, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, type, level, userId, options);
+        async getActivities(albumId: string, assetId?: string, level?: ReactionLevel, type?: ReactionType, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ActivityResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getActivities(albumId, assetId, level, type, userId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5588,7 +5588,7 @@ export const ActivityApiFactory = function (configuration?: Configuration, baseP
          * @throws {RequiredError}
          */
         getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig): AxiosPromise<Array<ActivityResponseDto>> {
-            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.level, requestParameters.userId, options).then((request) => request(axios, basePath));
+            return localVarFp.getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.level, requestParameters.type, requestParameters.userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5652,17 +5652,17 @@ export interface ActivityApiGetActivitiesRequest {
 
     /**
      * 
-     * @type {ReactionType}
-     * @memberof ActivityApiGetActivities
-     */
-    readonly type?: ReactionType
-
-    /**
-     * 
      * @type {ReactionLevel}
      * @memberof ActivityApiGetActivities
      */
     readonly level?: ReactionLevel
+
+    /**
+     * 
+     * @type {ReactionType}
+     * @memberof ActivityApiGetActivities
+     */
+    readonly type?: ReactionType
 
     /**
      * 
@@ -5730,7 +5730,7 @@ export class ActivityApi extends BaseAPI {
      * @memberof ActivityApi
      */
     public getActivities(requestParameters: ActivityApiGetActivitiesRequest, options?: AxiosRequestConfig) {
-        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.type, requestParameters.level, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
+        return ActivityApiFp(this.configuration).getActivities(requestParameters.albumId, requestParameters.assetId, requestParameters.level, requestParameters.type, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5980,12 +5980,12 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {string} id 
-         * @param {boolean} [withoutAssets] 
          * @param {string} [key] 
+         * @param {boolean} [withoutAssets] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAlbumInfo: async (id: string, withoutAssets?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAlbumInfo: async (id: string, key?: string, withoutAssets?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getAlbumInfo', 'id', id)
             const localVarPath = `/album/{id}`
@@ -6010,12 +6010,12 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (withoutAssets !== undefined) {
-                localVarQueryParameter['withoutAssets'] = withoutAssets;
-            }
-
             if (key !== undefined) {
                 localVarQueryParameter['key'] = key;
+            }
+
+            if (withoutAssets !== undefined) {
+                localVarQueryParameter['withoutAssets'] = withoutAssets;
             }
 
 
@@ -6031,12 +6031,12 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {boolean} [shared] 
          * @param {string} [assetId] Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+         * @param {boolean} [shared] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAlbums: async (shared?: boolean, assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAlbums: async (assetId?: string, shared?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/album`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6058,12 +6058,12 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (shared !== undefined) {
-                localVarQueryParameter['shared'] = shared;
-            }
-
             if (assetId !== undefined) {
                 localVarQueryParameter['assetId'] = assetId;
+            }
+
+            if (shared !== undefined) {
+                localVarQueryParameter['shared'] = shared;
             }
 
 
@@ -6284,24 +6284,24 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
-         * @param {boolean} [withoutAssets] 
          * @param {string} [key] 
+         * @param {boolean} [withoutAssets] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAlbumInfo(id: string, withoutAssets?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumInfo(id, withoutAssets, key, options);
+        async getAlbumInfo(id: string, key?: string, withoutAssets?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumInfo(id, key, withoutAssets, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {boolean} [shared] 
          * @param {string} [assetId] Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+         * @param {boolean} [shared] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAlbums(shared?: boolean, assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AlbumResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAlbums(shared, assetId, options);
+        async getAllAlbums(assetId?: string, shared?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AlbumResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAlbums(assetId, shared, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6398,7 +6398,7 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAlbumInfo(requestParameters: AlbumApiGetAlbumInfoRequest, options?: AxiosRequestConfig): AxiosPromise<AlbumResponseDto> {
-            return localVarFp.getAlbumInfo(requestParameters.id, requestParameters.withoutAssets, requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getAlbumInfo(requestParameters.id, requestParameters.key, requestParameters.withoutAssets, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6407,7 +6407,7 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAllAlbums(requestParameters: AlbumApiGetAllAlbumsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AlbumResponseDto>> {
-            return localVarFp.getAllAlbums(requestParameters.shared, requestParameters.assetId, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllAlbums(requestParameters.assetId, requestParameters.shared, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6531,17 +6531,17 @@ export interface AlbumApiGetAlbumInfoRequest {
 
     /**
      * 
-     * @type {boolean}
-     * @memberof AlbumApiGetAlbumInfo
-     */
-    readonly withoutAssets?: boolean
-
-    /**
-     * 
      * @type {string}
      * @memberof AlbumApiGetAlbumInfo
      */
     readonly key?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AlbumApiGetAlbumInfo
+     */
+    readonly withoutAssets?: boolean
 }
 
 /**
@@ -6551,18 +6551,18 @@ export interface AlbumApiGetAlbumInfoRequest {
  */
 export interface AlbumApiGetAllAlbumsRequest {
     /**
-     * 
-     * @type {boolean}
-     * @memberof AlbumApiGetAllAlbums
-     */
-    readonly shared?: boolean
-
-    /**
      * Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
      * @type {string}
      * @memberof AlbumApiGetAllAlbums
      */
     readonly assetId?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AlbumApiGetAllAlbums
+     */
+    readonly shared?: boolean
 }
 
 /**
@@ -6697,7 +6697,7 @@ export class AlbumApi extends BaseAPI {
      * @memberof AlbumApi
      */
     public getAlbumInfo(requestParameters: AlbumApiGetAlbumInfoRequest, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).getAlbumInfo(requestParameters.id, requestParameters.withoutAssets, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AlbumApiFp(this.configuration).getAlbumInfo(requestParameters.id, requestParameters.key, requestParameters.withoutAssets, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6708,7 +6708,7 @@ export class AlbumApi extends BaseAPI {
      * @memberof AlbumApi
      */
     public getAllAlbums(requestParameters: AlbumApiGetAllAlbumsRequest = {}, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).getAllAlbums(requestParameters.shared, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
+        return AlbumApiFp(this.configuration).getAllAlbums(requestParameters.assetId, requestParameters.shared, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7020,18 +7020,18 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {string} [ifNoneMatch] ETag of data already cached on the client
+         * @param {boolean} [isArchived] 
+         * @param {boolean} [isFavorite] 
          * @param {number} [skip] 
          * @param {number} [take] 
-         * @param {string} [userId] 
-         * @param {boolean} [isFavorite] 
-         * @param {boolean} [isArchived] 
          * @param {string} [updatedAfter] 
          * @param {string} [updatedBefore] 
-         * @param {string} [ifNoneMatch] ETag of data already cached on the client
+         * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (skip?: number, take?: number, userId?: string, isFavorite?: boolean, isArchived?: boolean, updatedAfter?: string, updatedBefore?: string, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (ifNoneMatch?: string, isArchived?: boolean, isFavorite?: boolean, skip?: number, take?: number, updatedAfter?: string, updatedBefore?: string, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7053,24 +7053,20 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (skip !== undefined) {
-                localVarQueryParameter['skip'] = skip;
-            }
-
-            if (take !== undefined) {
-                localVarQueryParameter['take'] = take;
-            }
-
-            if (userId !== undefined) {
-                localVarQueryParameter['userId'] = userId;
+            if (isArchived !== undefined) {
+                localVarQueryParameter['isArchived'] = isArchived;
             }
 
             if (isFavorite !== undefined) {
                 localVarQueryParameter['isFavorite'] = isFavorite;
             }
 
-            if (isArchived !== undefined) {
-                localVarQueryParameter['isArchived'] = isArchived;
+            if (skip !== undefined) {
+                localVarQueryParameter['skip'] = skip;
+            }
+
+            if (take !== undefined) {
+                localVarQueryParameter['take'] = take;
             }
 
             if (updatedAfter !== undefined) {
@@ -7083,6 +7079,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['updatedBefore'] = (updatedBefore as any instanceof Date) ?
                     (updatedBefore as any).toISOString() :
                     updatedBefore;
+            }
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
             }
 
             if (ifNoneMatch != null) {
@@ -7459,14 +7459,14 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {boolean} [isArchived] 
-         * @param {boolean} [isFavorite] 
          * @param {string} [fileCreatedAfter] 
          * @param {string} [fileCreatedBefore] 
+         * @param {boolean} [isArchived] 
+         * @param {boolean} [isFavorite] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMapMarkers: async (isArchived?: boolean, isFavorite?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getMapMarkers: async (fileCreatedAfter?: string, fileCreatedBefore?: string, isArchived?: boolean, isFavorite?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset/map-marker`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7488,14 +7488,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (isArchived !== undefined) {
-                localVarQueryParameter['isArchived'] = isArchived;
-            }
-
-            if (isFavorite !== undefined) {
-                localVarQueryParameter['isFavorite'] = isFavorite;
-            }
-
             if (fileCreatedAfter !== undefined) {
                 localVarQueryParameter['fileCreatedAfter'] = (fileCreatedAfter as any instanceof Date) ?
                     (fileCreatedAfter as any).toISOString() :
@@ -7506,6 +7498,14 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['fileCreatedBefore'] = (fileCreatedBefore as any instanceof Date) ?
                     (fileCreatedBefore as any).toISOString() :
                     fileCreatedBefore;
+            }
+
+            if (isArchived !== undefined) {
+                localVarQueryParameter['isArchived'] = isArchived;
+            }
+
+            if (isFavorite !== undefined) {
+                localVarQueryParameter['isFavorite'] = isFavorite;
             }
 
 
@@ -7618,19 +7618,19 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * 
          * @param {TimeBucketSize} size 
          * @param {string} timeBucket 
-         * @param {string} [userId] 
          * @param {string} [albumId] 
-         * @param {string} [personId] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
-         * @param {boolean} [withStacked] 
-         * @param {boolean} [withPartners] 
          * @param {string} [key] 
+         * @param {string} [personId] 
+         * @param {string} [userId] 
+         * @param {boolean} [withPartners] 
+         * @param {boolean} [withStacked] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTimeBucket: async (size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, withPartners?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getTimeBucket: async (size: TimeBucketSize, timeBucket: string, albumId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, key?: string, personId?: string, userId?: string, withPartners?: boolean, withStacked?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'size' is not null or undefined
             assertParamExists('getTimeBucket', 'size', size)
             // verify required parameter 'timeBucket' is not null or undefined
@@ -7656,20 +7656,8 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (size !== undefined) {
-                localVarQueryParameter['size'] = size;
-            }
-
-            if (userId !== undefined) {
-                localVarQueryParameter['userId'] = userId;
-            }
-
             if (albumId !== undefined) {
                 localVarQueryParameter['albumId'] = albumId;
-            }
-
-            if (personId !== undefined) {
-                localVarQueryParameter['personId'] = personId;
             }
 
             if (isArchived !== undefined) {
@@ -7684,20 +7672,32 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['isTrashed'] = isTrashed;
             }
 
-            if (withStacked !== undefined) {
-                localVarQueryParameter['withStacked'] = withStacked;
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
             }
 
-            if (withPartners !== undefined) {
-                localVarQueryParameter['withPartners'] = withPartners;
+            if (personId !== undefined) {
+                localVarQueryParameter['personId'] = personId;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
             }
 
             if (timeBucket !== undefined) {
                 localVarQueryParameter['timeBucket'] = timeBucket;
             }
 
-            if (key !== undefined) {
-                localVarQueryParameter['key'] = key;
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+            if (withPartners !== undefined) {
+                localVarQueryParameter['withPartners'] = withPartners;
+            }
+
+            if (withStacked !== undefined) {
+                localVarQueryParameter['withStacked'] = withStacked;
             }
 
 
@@ -7714,19 +7714,19 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {TimeBucketSize} size 
-         * @param {string} [userId] 
          * @param {string} [albumId] 
-         * @param {string} [personId] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
-         * @param {boolean} [withStacked] 
-         * @param {boolean} [withPartners] 
          * @param {string} [key] 
+         * @param {string} [personId] 
+         * @param {string} [userId] 
+         * @param {boolean} [withPartners] 
+         * @param {boolean} [withStacked] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTimeBuckets: async (size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, withPartners?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getTimeBuckets: async (size: TimeBucketSize, albumId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, key?: string, personId?: string, userId?: string, withPartners?: boolean, withStacked?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'size' is not null or undefined
             assertParamExists('getTimeBuckets', 'size', size)
             const localVarPath = `/asset/time-buckets`;
@@ -7750,20 +7750,8 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (size !== undefined) {
-                localVarQueryParameter['size'] = size;
-            }
-
-            if (userId !== undefined) {
-                localVarQueryParameter['userId'] = userId;
-            }
-
             if (albumId !== undefined) {
                 localVarQueryParameter['albumId'] = albumId;
-            }
-
-            if (personId !== undefined) {
-                localVarQueryParameter['personId'] = personId;
             }
 
             if (isArchived !== undefined) {
@@ -7778,16 +7766,28 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['isTrashed'] = isTrashed;
             }
 
-            if (withStacked !== undefined) {
-                localVarQueryParameter['withStacked'] = withStacked;
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
+            }
+
+            if (personId !== undefined) {
+                localVarQueryParameter['personId'] = personId;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
             }
 
             if (withPartners !== undefined) {
                 localVarQueryParameter['withPartners'] = withPartners;
             }
 
-            if (key !== undefined) {
-                localVarQueryParameter['key'] = key;
+            if (withStacked !== undefined) {
+                localVarQueryParameter['withStacked'] = withStacked;
             }
 
 
@@ -7973,13 +7973,15 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} [id] 
-         * @param {string} [libraryId] 
-         * @param {AssetTypeEnum} [type] 
-         * @param {AssetOrder} [order] 
+         * @param {string} [checksum] 
+         * @param {string} [city] 
+         * @param {string} [country] 
+         * @param {string} [createdAfter] 
+         * @param {string} [createdBefore] 
          * @param {string} [deviceAssetId] 
          * @param {string} [deviceId] 
-         * @param {string} [checksum] 
+         * @param {string} [encodedVideoPath] 
+         * @param {string} [id] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isEncoded] 
          * @param {boolean} [isExternal] 
@@ -7988,35 +7990,33 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {boolean} [isOffline] 
          * @param {boolean} [isReadOnly] 
          * @param {boolean} [isVisible] 
-         * @param {boolean} [withDeleted] 
-         * @param {boolean} [withStacked] 
-         * @param {boolean} [withExif] 
-         * @param {boolean} [withPeople] 
-         * @param {string} [createdBefore] 
-         * @param {string} [createdAfter] 
-         * @param {string} [updatedBefore] 
-         * @param {string} [updatedAfter] 
-         * @param {string} [trashedBefore] 
-         * @param {string} [trashedAfter] 
-         * @param {string} [takenBefore] 
-         * @param {string} [takenAfter] 
-         * @param {string} [originalFileName] 
-         * @param {string} [originalPath] 
-         * @param {string} [resizePath] 
-         * @param {string} [webpPath] 
-         * @param {string} [encodedVideoPath] 
-         * @param {string} [city] 
-         * @param {string} [state] 
-         * @param {string} [country] 
+         * @param {string} [lensModel] 
+         * @param {string} [libraryId] 
          * @param {string} [make] 
          * @param {string} [model] 
-         * @param {string} [lensModel] 
+         * @param {AssetOrder} [order] 
+         * @param {string} [originalFileName] 
+         * @param {string} [originalPath] 
          * @param {number} [page] 
+         * @param {string} [resizePath] 
          * @param {number} [size] 
+         * @param {string} [state] 
+         * @param {string} [takenAfter] 
+         * @param {string} [takenBefore] 
+         * @param {string} [trashedAfter] 
+         * @param {string} [trashedBefore] 
+         * @param {AssetTypeEnum} [type] 
+         * @param {string} [updatedAfter] 
+         * @param {string} [updatedBefore] 
+         * @param {string} [webpPath] 
+         * @param {boolean} [withDeleted] 
+         * @param {boolean} [withExif] 
+         * @param {boolean} [withPeople] 
+         * @param {boolean} [withStacked] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchAssets: async (id?: string, libraryId?: string, type?: AssetTypeEnum, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, originalFileName?: string, originalPath?: string, resizePath?: string, webpPath?: string, encodedVideoPath?: string, city?: string, state?: string, country?: string, make?: string, model?: string, lensModel?: string, page?: number, size?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        searchAssets: async (checksum?: string, city?: string, country?: string, createdAfter?: string, createdBefore?: string, deviceAssetId?: string, deviceId?: string, encodedVideoPath?: string, id?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, lensModel?: string, libraryId?: string, make?: string, model?: string, order?: AssetOrder, originalFileName?: string, originalPath?: string, page?: number, resizePath?: string, size?: number, state?: string, takenAfter?: string, takenBefore?: string, trashedAfter?: string, trashedBefore?: string, type?: AssetTypeEnum, updatedAfter?: string, updatedBefore?: string, webpPath?: string, withDeleted?: boolean, withExif?: boolean, withPeople?: boolean, withStacked?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/assets`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -8038,20 +8038,28 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (id !== undefined) {
-                localVarQueryParameter['id'] = id;
+            if (checksum !== undefined) {
+                localVarQueryParameter['checksum'] = checksum;
             }
 
-            if (libraryId !== undefined) {
-                localVarQueryParameter['libraryId'] = libraryId;
+            if (city !== undefined) {
+                localVarQueryParameter['city'] = city;
             }
 
-            if (type !== undefined) {
-                localVarQueryParameter['type'] = type;
+            if (country !== undefined) {
+                localVarQueryParameter['country'] = country;
             }
 
-            if (order !== undefined) {
-                localVarQueryParameter['order'] = order;
+            if (createdAfter !== undefined) {
+                localVarQueryParameter['createdAfter'] = (createdAfter as any instanceof Date) ?
+                    (createdAfter as any).toISOString() :
+                    createdAfter;
+            }
+
+            if (createdBefore !== undefined) {
+                localVarQueryParameter['createdBefore'] = (createdBefore as any instanceof Date) ?
+                    (createdBefore as any).toISOString() :
+                    createdBefore;
             }
 
             if (deviceAssetId !== undefined) {
@@ -8062,8 +8070,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['deviceId'] = deviceId;
             }
 
-            if (checksum !== undefined) {
-                localVarQueryParameter['checksum'] = checksum;
+            if (encodedVideoPath !== undefined) {
+                localVarQueryParameter['encodedVideoPath'] = encodedVideoPath;
+            }
+
+            if (id !== undefined) {
+                localVarQueryParameter['id'] = id;
             }
 
             if (isArchived !== undefined) {
@@ -8098,100 +8110,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['isVisible'] = isVisible;
             }
 
-            if (withDeleted !== undefined) {
-                localVarQueryParameter['withDeleted'] = withDeleted;
+            if (lensModel !== undefined) {
+                localVarQueryParameter['lensModel'] = lensModel;
             }
 
-            if (withStacked !== undefined) {
-                localVarQueryParameter['withStacked'] = withStacked;
-            }
-
-            if (withExif !== undefined) {
-                localVarQueryParameter['withExif'] = withExif;
-            }
-
-            if (withPeople !== undefined) {
-                localVarQueryParameter['withPeople'] = withPeople;
-            }
-
-            if (createdBefore !== undefined) {
-                localVarQueryParameter['createdBefore'] = (createdBefore as any instanceof Date) ?
-                    (createdBefore as any).toISOString() :
-                    createdBefore;
-            }
-
-            if (createdAfter !== undefined) {
-                localVarQueryParameter['createdAfter'] = (createdAfter as any instanceof Date) ?
-                    (createdAfter as any).toISOString() :
-                    createdAfter;
-            }
-
-            if (updatedBefore !== undefined) {
-                localVarQueryParameter['updatedBefore'] = (updatedBefore as any instanceof Date) ?
-                    (updatedBefore as any).toISOString() :
-                    updatedBefore;
-            }
-
-            if (updatedAfter !== undefined) {
-                localVarQueryParameter['updatedAfter'] = (updatedAfter as any instanceof Date) ?
-                    (updatedAfter as any).toISOString() :
-                    updatedAfter;
-            }
-
-            if (trashedBefore !== undefined) {
-                localVarQueryParameter['trashedBefore'] = (trashedBefore as any instanceof Date) ?
-                    (trashedBefore as any).toISOString() :
-                    trashedBefore;
-            }
-
-            if (trashedAfter !== undefined) {
-                localVarQueryParameter['trashedAfter'] = (trashedAfter as any instanceof Date) ?
-                    (trashedAfter as any).toISOString() :
-                    trashedAfter;
-            }
-
-            if (takenBefore !== undefined) {
-                localVarQueryParameter['takenBefore'] = (takenBefore as any instanceof Date) ?
-                    (takenBefore as any).toISOString() :
-                    takenBefore;
-            }
-
-            if (takenAfter !== undefined) {
-                localVarQueryParameter['takenAfter'] = (takenAfter as any instanceof Date) ?
-                    (takenAfter as any).toISOString() :
-                    takenAfter;
-            }
-
-            if (originalFileName !== undefined) {
-                localVarQueryParameter['originalFileName'] = originalFileName;
-            }
-
-            if (originalPath !== undefined) {
-                localVarQueryParameter['originalPath'] = originalPath;
-            }
-
-            if (resizePath !== undefined) {
-                localVarQueryParameter['resizePath'] = resizePath;
-            }
-
-            if (webpPath !== undefined) {
-                localVarQueryParameter['webpPath'] = webpPath;
-            }
-
-            if (encodedVideoPath !== undefined) {
-                localVarQueryParameter['encodedVideoPath'] = encodedVideoPath;
-            }
-
-            if (city !== undefined) {
-                localVarQueryParameter['city'] = city;
-            }
-
-            if (state !== undefined) {
-                localVarQueryParameter['state'] = state;
-            }
-
-            if (country !== undefined) {
-                localVarQueryParameter['country'] = country;
+            if (libraryId !== undefined) {
+                localVarQueryParameter['libraryId'] = libraryId;
             }
 
             if (make !== undefined) {
@@ -8202,16 +8126,92 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['model'] = model;
             }
 
-            if (lensModel !== undefined) {
-                localVarQueryParameter['lensModel'] = lensModel;
+            if (order !== undefined) {
+                localVarQueryParameter['order'] = order;
+            }
+
+            if (originalFileName !== undefined) {
+                localVarQueryParameter['originalFileName'] = originalFileName;
+            }
+
+            if (originalPath !== undefined) {
+                localVarQueryParameter['originalPath'] = originalPath;
             }
 
             if (page !== undefined) {
                 localVarQueryParameter['page'] = page;
             }
 
+            if (resizePath !== undefined) {
+                localVarQueryParameter['resizePath'] = resizePath;
+            }
+
             if (size !== undefined) {
                 localVarQueryParameter['size'] = size;
+            }
+
+            if (state !== undefined) {
+                localVarQueryParameter['state'] = state;
+            }
+
+            if (takenAfter !== undefined) {
+                localVarQueryParameter['takenAfter'] = (takenAfter as any instanceof Date) ?
+                    (takenAfter as any).toISOString() :
+                    takenAfter;
+            }
+
+            if (takenBefore !== undefined) {
+                localVarQueryParameter['takenBefore'] = (takenBefore as any instanceof Date) ?
+                    (takenBefore as any).toISOString() :
+                    takenBefore;
+            }
+
+            if (trashedAfter !== undefined) {
+                localVarQueryParameter['trashedAfter'] = (trashedAfter as any instanceof Date) ?
+                    (trashedAfter as any).toISOString() :
+                    trashedAfter;
+            }
+
+            if (trashedBefore !== undefined) {
+                localVarQueryParameter['trashedBefore'] = (trashedBefore as any instanceof Date) ?
+                    (trashedBefore as any).toISOString() :
+                    trashedBefore;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (updatedAfter !== undefined) {
+                localVarQueryParameter['updatedAfter'] = (updatedAfter as any instanceof Date) ?
+                    (updatedAfter as any).toISOString() :
+                    updatedAfter;
+            }
+
+            if (updatedBefore !== undefined) {
+                localVarQueryParameter['updatedBefore'] = (updatedBefore as any instanceof Date) ?
+                    (updatedBefore as any).toISOString() :
+                    updatedBefore;
+            }
+
+            if (webpPath !== undefined) {
+                localVarQueryParameter['webpPath'] = webpPath;
+            }
+
+            if (withDeleted !== undefined) {
+                localVarQueryParameter['withDeleted'] = withDeleted;
+            }
+
+            if (withExif !== undefined) {
+                localVarQueryParameter['withExif'] = withExif;
+            }
+
+            if (withPeople !== undefined) {
+                localVarQueryParameter['withPeople'] = withPeople;
+            }
+
+            if (withStacked !== undefined) {
+                localVarQueryParameter['withStacked'] = withStacked;
             }
 
 
@@ -8623,19 +8623,19 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {string} [ifNoneMatch] ETag of data already cached on the client
+         * @param {boolean} [isArchived] 
+         * @param {boolean} [isFavorite] 
          * @param {number} [skip] 
          * @param {number} [take] 
-         * @param {string} [userId] 
-         * @param {boolean} [isFavorite] 
-         * @param {boolean} [isArchived] 
          * @param {string} [updatedAfter] 
          * @param {string} [updatedBefore] 
-         * @param {string} [ifNoneMatch] ETag of data already cached on the client
+         * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(skip?: number, take?: number, userId?: string, isFavorite?: boolean, isArchived?: boolean, updatedAfter?: string, updatedBefore?: string, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(skip, take, userId, isFavorite, isArchived, updatedAfter, updatedBefore, ifNoneMatch, options);
+        async getAllAssets(ifNoneMatch?: string, isArchived?: boolean, isFavorite?: boolean, skip?: number, take?: number, updatedAfter?: string, updatedBefore?: string, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(ifNoneMatch, isArchived, isFavorite, skip, take, updatedAfter, updatedBefore, userId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8723,15 +8723,15 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {boolean} [isArchived] 
-         * @param {boolean} [isFavorite] 
          * @param {string} [fileCreatedAfter] 
          * @param {string} [fileCreatedBefore] 
+         * @param {boolean} [isArchived] 
+         * @param {boolean} [isFavorite] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMapMarkers(isArchived?: boolean, isFavorite?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapMarkers(isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore, options);
+        async getMapMarkers(fileCreatedAfter?: string, fileCreatedBefore?: string, isArchived?: boolean, isFavorite?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapMarkers(fileCreatedAfter, fileCreatedBefore, isArchived, isFavorite, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8759,39 +8759,39 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * 
          * @param {TimeBucketSize} size 
          * @param {string} timeBucket 
-         * @param {string} [userId] 
          * @param {string} [albumId] 
-         * @param {string} [personId] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
-         * @param {boolean} [withStacked] 
-         * @param {boolean} [withPartners] 
          * @param {string} [key] 
+         * @param {string} [personId] 
+         * @param {string} [userId] 
+         * @param {boolean} [withPartners] 
+         * @param {boolean} [withStacked] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTimeBucket(size: TimeBucketSize, timeBucket: string, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, withPartners?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBucket(size, timeBucket, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key, options);
+        async getTimeBucket(size: TimeBucketSize, timeBucket: string, albumId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, key?: string, personId?: string, userId?: string, withPartners?: boolean, withStacked?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBucket(size, timeBucket, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
          * @param {TimeBucketSize} size 
-         * @param {string} [userId] 
          * @param {string} [albumId] 
-         * @param {string} [personId] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isTrashed] 
-         * @param {boolean} [withStacked] 
-         * @param {boolean} [withPartners] 
          * @param {string} [key] 
+         * @param {string} [personId] 
+         * @param {string} [userId] 
+         * @param {boolean} [withPartners] 
+         * @param {boolean} [withStacked] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTimeBuckets(size: TimeBucketSize, userId?: string, albumId?: string, personId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, withStacked?: boolean, withPartners?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TimeBucketResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBuckets(size, userId, albumId, personId, isArchived, isFavorite, isTrashed, withStacked, withPartners, key, options);
+        async getTimeBuckets(size: TimeBucketSize, albumId?: string, isArchived?: boolean, isFavorite?: boolean, isTrashed?: boolean, key?: string, personId?: string, userId?: string, withPartners?: boolean, withStacked?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TimeBucketResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeBuckets(size, albumId, isArchived, isFavorite, isTrashed, key, personId, userId, withPartners, withStacked, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8837,13 +8837,15 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} [id] 
-         * @param {string} [libraryId] 
-         * @param {AssetTypeEnum} [type] 
-         * @param {AssetOrder} [order] 
+         * @param {string} [checksum] 
+         * @param {string} [city] 
+         * @param {string} [country] 
+         * @param {string} [createdAfter] 
+         * @param {string} [createdBefore] 
          * @param {string} [deviceAssetId] 
          * @param {string} [deviceId] 
-         * @param {string} [checksum] 
+         * @param {string} [encodedVideoPath] 
+         * @param {string} [id] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isEncoded] 
          * @param {boolean} [isExternal] 
@@ -8852,36 +8854,34 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {boolean} [isOffline] 
          * @param {boolean} [isReadOnly] 
          * @param {boolean} [isVisible] 
-         * @param {boolean} [withDeleted] 
-         * @param {boolean} [withStacked] 
-         * @param {boolean} [withExif] 
-         * @param {boolean} [withPeople] 
-         * @param {string} [createdBefore] 
-         * @param {string} [createdAfter] 
-         * @param {string} [updatedBefore] 
-         * @param {string} [updatedAfter] 
-         * @param {string} [trashedBefore] 
-         * @param {string} [trashedAfter] 
-         * @param {string} [takenBefore] 
-         * @param {string} [takenAfter] 
-         * @param {string} [originalFileName] 
-         * @param {string} [originalPath] 
-         * @param {string} [resizePath] 
-         * @param {string} [webpPath] 
-         * @param {string} [encodedVideoPath] 
-         * @param {string} [city] 
-         * @param {string} [state] 
-         * @param {string} [country] 
+         * @param {string} [lensModel] 
+         * @param {string} [libraryId] 
          * @param {string} [make] 
          * @param {string} [model] 
-         * @param {string} [lensModel] 
+         * @param {AssetOrder} [order] 
+         * @param {string} [originalFileName] 
+         * @param {string} [originalPath] 
          * @param {number} [page] 
+         * @param {string} [resizePath] 
          * @param {number} [size] 
+         * @param {string} [state] 
+         * @param {string} [takenAfter] 
+         * @param {string} [takenBefore] 
+         * @param {string} [trashedAfter] 
+         * @param {string} [trashedBefore] 
+         * @param {AssetTypeEnum} [type] 
+         * @param {string} [updatedAfter] 
+         * @param {string} [updatedBefore] 
+         * @param {string} [webpPath] 
+         * @param {boolean} [withDeleted] 
+         * @param {boolean} [withExif] 
+         * @param {boolean} [withPeople] 
+         * @param {boolean} [withStacked] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async searchAssets(id?: string, libraryId?: string, type?: AssetTypeEnum, order?: AssetOrder, deviceAssetId?: string, deviceId?: string, checksum?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, withDeleted?: boolean, withStacked?: boolean, withExif?: boolean, withPeople?: boolean, createdBefore?: string, createdAfter?: string, updatedBefore?: string, updatedAfter?: string, trashedBefore?: string, trashedAfter?: string, takenBefore?: string, takenAfter?: string, originalFileName?: string, originalPath?: string, resizePath?: string, webpPath?: string, encodedVideoPath?: string, city?: string, state?: string, country?: string, make?: string, model?: string, lensModel?: string, page?: number, size?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.searchAssets(id, libraryId, type, order, deviceAssetId, deviceId, checksum, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, withDeleted, withStacked, withExif, withPeople, createdBefore, createdAfter, updatedBefore, updatedAfter, trashedBefore, trashedAfter, takenBefore, takenAfter, originalFileName, originalPath, resizePath, webpPath, encodedVideoPath, city, state, country, make, model, lensModel, page, size, options);
+        async searchAssets(checksum?: string, city?: string, country?: string, createdAfter?: string, createdBefore?: string, deviceAssetId?: string, deviceId?: string, encodedVideoPath?: string, id?: string, isArchived?: boolean, isEncoded?: boolean, isExternal?: boolean, isFavorite?: boolean, isMotion?: boolean, isOffline?: boolean, isReadOnly?: boolean, isVisible?: boolean, lensModel?: string, libraryId?: string, make?: string, model?: string, order?: AssetOrder, originalFileName?: string, originalPath?: string, page?: number, resizePath?: string, size?: number, state?: string, takenAfter?: string, takenBefore?: string, trashedAfter?: string, trashedBefore?: string, type?: AssetTypeEnum, updatedAfter?: string, updatedBefore?: string, webpPath?: string, withDeleted?: boolean, withExif?: boolean, withPeople?: boolean, withStacked?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchAssets(checksum, city, country, createdAfter, createdBefore, deviceAssetId, deviceId, encodedVideoPath, id, isArchived, isEncoded, isExternal, isFavorite, isMotion, isOffline, isReadOnly, isVisible, lensModel, libraryId, make, model, order, originalFileName, originalPath, page, resizePath, size, state, takenAfter, takenBefore, trashedAfter, trashedBefore, type, updatedAfter, updatedBefore, webpPath, withDeleted, withExif, withPeople, withStacked, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -9023,7 +9023,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(requestParameters.skip, requestParameters.take, requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.ifNoneMatch, options).then((request) => request(axios, basePath));
+            return localVarFp.getAllAssets(requestParameters.ifNoneMatch, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.skip, requestParameters.take, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.userId, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all asset of a device that are in the database, ID only.
@@ -9101,7 +9101,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getMapMarkers(requestParameters: AssetApiGetMapMarkersRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<MapMarkerResponseDto>> {
-            return localVarFp.getMapMarkers(requestParameters.isArchived, requestParameters.isFavorite, requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, options).then((request) => request(axios, basePath));
+            return localVarFp.getMapMarkers(requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, requestParameters.isArchived, requestParameters.isFavorite, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9128,7 +9128,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getTimeBucket(requestParameters: AssetApiGetTimeBucketRequest, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.albumId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, requestParameters.personId, requestParameters.userId, requestParameters.withPartners, requestParameters.withStacked, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9137,7 +9137,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getTimeBuckets(requestParameters: AssetApiGetTimeBucketsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<TimeBucketResponseDto>> {
-            return localVarFp.getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getTimeBuckets(requestParameters.size, requestParameters.albumId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, requestParameters.personId, requestParameters.userId, requestParameters.withPartners, requestParameters.withStacked, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9183,7 +9183,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         searchAssets(requestParameters: AssetApiSearchAssetsRequest = {}, options?: AxiosRequestConfig): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.searchAssets(requestParameters.id, requestParameters.libraryId, requestParameters.type, requestParameters.order, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.checksum, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.withDeleted, requestParameters.withStacked, requestParameters.withExif, requestParameters.withPeople, requestParameters.createdBefore, requestParameters.createdAfter, requestParameters.updatedBefore, requestParameters.updatedAfter, requestParameters.trashedBefore, requestParameters.trashedAfter, requestParameters.takenBefore, requestParameters.takenAfter, requestParameters.originalFileName, requestParameters.originalPath, requestParameters.resizePath, requestParameters.webpPath, requestParameters.encodedVideoPath, requestParameters.city, requestParameters.state, requestParameters.country, requestParameters.make, requestParameters.model, requestParameters.lensModel, requestParameters.page, requestParameters.size, options).then((request) => request(axios, basePath));
+            return localVarFp.searchAssets(requestParameters.checksum, requestParameters.city, requestParameters.country, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.encodedVideoPath, requestParameters.id, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.lensModel, requestParameters.libraryId, requestParameters.make, requestParameters.model, requestParameters.order, requestParameters.originalFileName, requestParameters.originalPath, requestParameters.page, requestParameters.resizePath, requestParameters.size, requestParameters.state, requestParameters.takenAfter, requestParameters.takenBefore, requestParameters.trashedAfter, requestParameters.trashedBefore, requestParameters.type, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.webpPath, requestParameters.withDeleted, requestParameters.withExif, requestParameters.withPeople, requestParameters.withStacked, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9324,6 +9324,27 @@ export interface AssetApiDownloadFileRequest {
  */
 export interface AssetApiGetAllAssetsRequest {
     /**
+     * ETag of data already cached on the client
+     * @type {string}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly ifNoneMatch?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly isArchived?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly isFavorite?: boolean
+
+    /**
      * 
      * @type {number}
      * @memberof AssetApiGetAllAssets
@@ -9342,27 +9363,6 @@ export interface AssetApiGetAllAssetsRequest {
      * @type {string}
      * @memberof AssetApiGetAllAssets
      */
-    readonly userId?: string
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiGetAllAssets
-     */
-    readonly isFavorite?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiGetAllAssets
-     */
-    readonly isArchived?: boolean
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiGetAllAssets
-     */
     readonly updatedAfter?: string
 
     /**
@@ -9373,11 +9373,11 @@ export interface AssetApiGetAllAssetsRequest {
     readonly updatedBefore?: string
 
     /**
-     * ETag of data already cached on the client
+     * 
      * @type {string}
      * @memberof AssetApiGetAllAssets
      */
-    readonly ifNoneMatch?: string
+    readonly userId?: string
 }
 
 /**
@@ -9500,20 +9500,6 @@ export interface AssetApiGetDownloadInfoRequest {
 export interface AssetApiGetMapMarkersRequest {
     /**
      * 
-     * @type {boolean}
-     * @memberof AssetApiGetMapMarkers
-     */
-    readonly isArchived?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiGetMapMarkers
-     */
-    readonly isFavorite?: boolean
-
-    /**
-     * 
      * @type {string}
      * @memberof AssetApiGetMapMarkers
      */
@@ -9525,6 +9511,20 @@ export interface AssetApiGetMapMarkersRequest {
      * @memberof AssetApiGetMapMarkers
      */
     readonly fileCreatedBefore?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiGetMapMarkers
+     */
+    readonly isArchived?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiGetMapMarkers
+     */
+    readonly isFavorite?: boolean
 }
 
 /**
@@ -9587,21 +9587,7 @@ export interface AssetApiGetTimeBucketRequest {
      * @type {string}
      * @memberof AssetApiGetTimeBucket
      */
-    readonly userId?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiGetTimeBucket
-     */
     readonly albumId?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiGetTimeBucket
-     */
-    readonly personId?: string
 
     /**
      * 
@@ -9626,10 +9612,24 @@ export interface AssetApiGetTimeBucketRequest {
 
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof AssetApiGetTimeBucket
      */
-    readonly withStacked?: boolean
+    readonly key?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetTimeBucket
+     */
+    readonly personId?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetTimeBucket
+     */
+    readonly userId?: string
 
     /**
      * 
@@ -9640,10 +9640,10 @@ export interface AssetApiGetTimeBucketRequest {
 
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof AssetApiGetTimeBucket
      */
-    readonly key?: string
+    readonly withStacked?: boolean
 }
 
 /**
@@ -9664,21 +9664,7 @@ export interface AssetApiGetTimeBucketsRequest {
      * @type {string}
      * @memberof AssetApiGetTimeBuckets
      */
-    readonly userId?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiGetTimeBuckets
-     */
     readonly albumId?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiGetTimeBuckets
-     */
-    readonly personId?: string
 
     /**
      * 
@@ -9703,10 +9689,24 @@ export interface AssetApiGetTimeBucketsRequest {
 
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof AssetApiGetTimeBuckets
      */
-    readonly withStacked?: boolean
+    readonly key?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetTimeBuckets
+     */
+    readonly personId?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetTimeBuckets
+     */
+    readonly userId?: string
 
     /**
      * 
@@ -9717,10 +9717,10 @@ export interface AssetApiGetTimeBucketsRequest {
 
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof AssetApiGetTimeBuckets
      */
-    readonly key?: string
+    readonly withStacked?: boolean
 }
 
 /**
@@ -9776,28 +9776,35 @@ export interface AssetApiSearchAssetsRequest {
      * @type {string}
      * @memberof AssetApiSearchAssets
      */
-    readonly id?: string
+    readonly checksum?: string
 
     /**
      * 
      * @type {string}
      * @memberof AssetApiSearchAssets
      */
-    readonly libraryId?: string
+    readonly city?: string
 
     /**
      * 
-     * @type {AssetTypeEnum}
+     * @type {string}
      * @memberof AssetApiSearchAssets
      */
-    readonly type?: AssetTypeEnum
+    readonly country?: string
 
     /**
      * 
-     * @type {AssetOrder}
+     * @type {string}
      * @memberof AssetApiSearchAssets
      */
-    readonly order?: AssetOrder
+    readonly createdAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly createdBefore?: string
 
     /**
      * 
@@ -9818,7 +9825,14 @@ export interface AssetApiSearchAssetsRequest {
      * @type {string}
      * @memberof AssetApiSearchAssets
      */
-    readonly checksum?: string
+    readonly encodedVideoPath?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly id?: string
 
     /**
      * 
@@ -9878,143 +9892,17 @@ export interface AssetApiSearchAssetsRequest {
 
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof AssetApiSearchAssets
      */
-    readonly withDeleted?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly withStacked?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly withExif?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly withPeople?: boolean
+    readonly lensModel?: string
 
     /**
      * 
      * @type {string}
      * @memberof AssetApiSearchAssets
      */
-    readonly createdBefore?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly createdAfter?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly updatedBefore?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly updatedAfter?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly trashedBefore?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly trashedAfter?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly takenBefore?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly takenAfter?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly originalFileName?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly originalPath?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly resizePath?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly webpPath?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly encodedVideoPath?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly city?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly state?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiSearchAssets
-     */
-    readonly country?: string
+    readonly libraryId?: string
 
     /**
      * 
@@ -10032,10 +9920,24 @@ export interface AssetApiSearchAssetsRequest {
 
     /**
      * 
+     * @type {AssetOrder}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly order?: AssetOrder
+
+    /**
+     * 
      * @type {string}
      * @memberof AssetApiSearchAssets
      */
-    readonly lensModel?: string
+    readonly originalFileName?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly originalPath?: string
 
     /**
      * 
@@ -10046,10 +9948,108 @@ export interface AssetApiSearchAssetsRequest {
 
     /**
      * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly resizePath?: string
+
+    /**
+     * 
      * @type {number}
      * @memberof AssetApiSearchAssets
      */
     readonly size?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly state?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly takenAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly takenBefore?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly trashedAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly trashedBefore?: string
+
+    /**
+     * 
+     * @type {AssetTypeEnum}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly type?: AssetTypeEnum
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly updatedAfter?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly updatedBefore?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly webpPath?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly withDeleted?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly withExif?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly withPeople?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiSearchAssets
+     */
+    readonly withStacked?: boolean
 }
 
 /**
@@ -10335,7 +10335,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(requestParameters.skip, requestParameters.take, requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAllAssets(requestParameters.ifNoneMatch, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.skip, requestParameters.take, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10431,7 +10431,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getMapMarkers(requestParameters: AssetApiGetMapMarkersRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getMapMarkers(requestParameters.isArchived, requestParameters.isFavorite, requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getMapMarkers(requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, requestParameters.isArchived, requestParameters.isFavorite, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10464,7 +10464,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getTimeBucket(requestParameters: AssetApiGetTimeBucketRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getTimeBucket(requestParameters.size, requestParameters.timeBucket, requestParameters.albumId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, requestParameters.personId, requestParameters.userId, requestParameters.withPartners, requestParameters.withStacked, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10475,7 +10475,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getTimeBuckets(requestParameters: AssetApiGetTimeBucketsRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getTimeBuckets(requestParameters.size, requestParameters.userId, requestParameters.albumId, requestParameters.personId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.withStacked, requestParameters.withPartners, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getTimeBuckets(requestParameters.size, requestParameters.albumId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, requestParameters.personId, requestParameters.userId, requestParameters.withPartners, requestParameters.withStacked, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10531,7 +10531,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public searchAssets(requestParameters: AssetApiSearchAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).searchAssets(requestParameters.id, requestParameters.libraryId, requestParameters.type, requestParameters.order, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.checksum, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.withDeleted, requestParameters.withStacked, requestParameters.withExif, requestParameters.withPeople, requestParameters.createdBefore, requestParameters.createdAfter, requestParameters.updatedBefore, requestParameters.updatedAfter, requestParameters.trashedBefore, requestParameters.trashedAfter, requestParameters.takenBefore, requestParameters.takenAfter, requestParameters.originalFileName, requestParameters.originalPath, requestParameters.resizePath, requestParameters.webpPath, requestParameters.encodedVideoPath, requestParameters.city, requestParameters.state, requestParameters.country, requestParameters.make, requestParameters.model, requestParameters.lensModel, requestParameters.page, requestParameters.size, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).searchAssets(requestParameters.checksum, requestParameters.city, requestParameters.country, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.encodedVideoPath, requestParameters.id, requestParameters.isArchived, requestParameters.isEncoded, requestParameters.isExternal, requestParameters.isFavorite, requestParameters.isMotion, requestParameters.isOffline, requestParameters.isReadOnly, requestParameters.isVisible, requestParameters.lensModel, requestParameters.libraryId, requestParameters.make, requestParameters.model, requestParameters.order, requestParameters.originalFileName, requestParameters.originalPath, requestParameters.page, requestParameters.resizePath, requestParameters.size, requestParameters.state, requestParameters.takenAfter, requestParameters.takenBefore, requestParameters.trashedAfter, requestParameters.trashedBefore, requestParameters.type, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.webpPath, requestParameters.withDeleted, requestParameters.withExif, requestParameters.withPeople, requestParameters.withStacked, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10643,17 +10643,17 @@ export const AuditApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {EntityType} entityType 
          * @param {string} after 
+         * @param {EntityType} entityType 
          * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAuditDeletes: async (entityType: EntityType, after: string, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'entityType' is not null or undefined
-            assertParamExists('getAuditDeletes', 'entityType', entityType)
+        getAuditDeletes: async (after: string, entityType: EntityType, userId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'after' is not null or undefined
             assertParamExists('getAuditDeletes', 'after', after)
+            // verify required parameter 'entityType' is not null or undefined
+            assertParamExists('getAuditDeletes', 'entityType', entityType)
             const localVarPath = `/audit/deletes`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -10675,18 +10675,18 @@ export const AuditApiAxiosParamCreator = function (configuration?: Configuration
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
+            if (after !== undefined) {
+                localVarQueryParameter['after'] = (after as any instanceof Date) ?
+                    (after as any).toISOString() :
+                    after;
+            }
+
             if (entityType !== undefined) {
                 localVarQueryParameter['entityType'] = entityType;
             }
 
             if (userId !== undefined) {
                 localVarQueryParameter['userId'] = userId;
-            }
-
-            if (after !== undefined) {
-                localVarQueryParameter['after'] = (after as any instanceof Date) ?
-                    (after as any).toISOString() :
-                    after;
             }
 
 
@@ -10804,14 +10804,14 @@ export const AuditApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {EntityType} entityType 
          * @param {string} after 
+         * @param {EntityType} entityType 
          * @param {string} [userId] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAuditDeletes(entityType: EntityType, after: string, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuditDeletesResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAuditDeletes(entityType, after, userId, options);
+        async getAuditDeletes(after: string, entityType: EntityType, userId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuditDeletesResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAuditDeletes(after, entityType, userId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -10859,7 +10859,7 @@ export const AuditApiFactory = function (configuration?: Configuration, basePath
          * @throws {RequiredError}
          */
         getAuditDeletes(requestParameters: AuditApiGetAuditDeletesRequest, options?: AxiosRequestConfig): AxiosPromise<AuditDeletesResponseDto> {
-            return localVarFp.getAuditDeletes(requestParameters.entityType, requestParameters.after, requestParameters.userId, options).then((request) => request(axios, basePath));
+            return localVarFp.getAuditDeletes(requestParameters.after, requestParameters.entityType, requestParameters.userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -10903,17 +10903,17 @@ export interface AuditApiFixAuditFilesRequest {
 export interface AuditApiGetAuditDeletesRequest {
     /**
      * 
-     * @type {EntityType}
-     * @memberof AuditApiGetAuditDeletes
-     */
-    readonly entityType: EntityType
-
-    /**
-     * 
      * @type {string}
      * @memberof AuditApiGetAuditDeletes
      */
     readonly after: string
+
+    /**
+     * 
+     * @type {EntityType}
+     * @memberof AuditApiGetAuditDeletes
+     */
+    readonly entityType: EntityType
 
     /**
      * 
@@ -10963,7 +10963,7 @@ export class AuditApi extends BaseAPI {
      * @memberof AuditApi
      */
     public getAuditDeletes(requestParameters: AuditApiGetAuditDeletesRequest, options?: AxiosRequestConfig) {
-        return AuditApiFp(this.configuration).getAuditDeletes(requestParameters.entityType, requestParameters.after, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
+        return AuditApiFp(this.configuration).getAuditDeletes(requestParameters.after, requestParameters.entityType, requestParameters.userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -14639,17 +14639,17 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {boolean} [clip] 
+         * @param {boolean} [motion] 
          * @param {string} [q] 
          * @param {string} [query] 
-         * @param {boolean} [clip] 
-         * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
          * @param {boolean} [recent] 
-         * @param {boolean} [motion] 
+         * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
          * @param {boolean} [withArchived] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        search: async (q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', recent?: boolean, motion?: boolean, withArchived?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        search: async (clip?: boolean, motion?: boolean, q?: string, query?: string, recent?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', withArchived?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -14671,6 +14671,14 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
+            if (clip !== undefined) {
+                localVarQueryParameter['clip'] = clip;
+            }
+
+            if (motion !== undefined) {
+                localVarQueryParameter['motion'] = motion;
+            }
+
             if (q !== undefined) {
                 localVarQueryParameter['q'] = q;
             }
@@ -14679,20 +14687,12 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
                 localVarQueryParameter['query'] = query;
             }
 
-            if (clip !== undefined) {
-                localVarQueryParameter['clip'] = clip;
-            }
-
-            if (type !== undefined) {
-                localVarQueryParameter['type'] = type;
-            }
-
             if (recent !== undefined) {
                 localVarQueryParameter['recent'] = recent;
             }
 
-            if (motion !== undefined) {
-                localVarQueryParameter['motion'] = motion;
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
             }
 
             if (withArchived !== undefined) {
@@ -14781,18 +14781,18 @@ export const SearchApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {boolean} [clip] 
+         * @param {boolean} [motion] 
          * @param {string} [q] 
          * @param {string} [query] 
-         * @param {boolean} [clip] 
-         * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
          * @param {boolean} [recent] 
-         * @param {boolean} [motion] 
+         * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
          * @param {boolean} [withArchived] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async search(q?: string, query?: string, clip?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', recent?: boolean, motion?: boolean, withArchived?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.search(q, query, clip, type, recent, motion, withArchived, options);
+        async search(clip?: boolean, motion?: boolean, q?: string, query?: string, recent?: boolean, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', withArchived?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.search(clip, motion, q, query, recent, type, withArchived, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -14831,7 +14831,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @throws {RequiredError}
          */
         search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig): AxiosPromise<SearchResponseDto> {
-            return localVarFp.search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.recent, requestParameters.motion, requestParameters.withArchived, options).then((request) => request(axios, basePath));
+            return localVarFp.search(requestParameters.clip, requestParameters.motion, requestParameters.q, requestParameters.query, requestParameters.recent, requestParameters.type, requestParameters.withArchived, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -14853,6 +14853,20 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
 export interface SearchApiSearchRequest {
     /**
      * 
+     * @type {boolean}
+     * @memberof SearchApiSearch
+     */
+    readonly clip?: boolean
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchApiSearch
+     */
+    readonly motion?: boolean
+
+    /**
+     * 
      * @type {string}
      * @memberof SearchApiSearch
      */
@@ -14870,7 +14884,7 @@ export interface SearchApiSearchRequest {
      * @type {boolean}
      * @memberof SearchApiSearch
      */
-    readonly clip?: boolean
+    readonly recent?: boolean
 
     /**
      * 
@@ -14878,20 +14892,6 @@ export interface SearchApiSearchRequest {
      * @memberof SearchApiSearch
      */
     readonly type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SearchApiSearch
-     */
-    readonly recent?: boolean
-
-    /**
-     * 
-     * @type {boolean}
-     * @memberof SearchApiSearch
-     */
-    readonly motion?: boolean
 
     /**
      * 
@@ -14947,7 +14947,7 @@ export class SearchApi extends BaseAPI {
      * @memberof SearchApi
      */
     public search(requestParameters: SearchApiSearchRequest = {}, options?: AxiosRequestConfig) {
-        return SearchApiFp(this.configuration).search(requestParameters.q, requestParameters.query, requestParameters.clip, requestParameters.type, requestParameters.recent, requestParameters.motion, requestParameters.withArchived, options).then((request) => request(this.axios, this.basePath));
+        return SearchApiFp(this.configuration).search(requestParameters.clip, requestParameters.motion, requestParameters.q, requestParameters.query, requestParameters.recent, requestParameters.type, requestParameters.withArchived, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -15675,13 +15675,13 @@ export const SharedLinkApiAxiosParamCreator = function (configuration?: Configur
         },
         /**
          * 
+         * @param {string} [key] 
          * @param {string} [password] 
          * @param {string} [token] 
-         * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMySharedLink: async (password?: string, token?: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getMySharedLink: async (key?: string, password?: string, token?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/shared-link/me`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -15703,16 +15703,16 @@ export const SharedLinkApiAxiosParamCreator = function (configuration?: Configur
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
+            }
+
             if (password !== undefined) {
                 localVarQueryParameter['password'] = password;
             }
 
             if (token !== undefined) {
                 localVarQueryParameter['token'] = token;
-            }
-
-            if (key !== undefined) {
-                localVarQueryParameter['key'] = key;
             }
 
 
@@ -15954,14 +15954,14 @@ export const SharedLinkApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} [key] 
          * @param {string} [password] 
          * @param {string} [token] 
-         * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMySharedLink(password?: string, token?: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMySharedLink(password, token, key, options);
+        async getMySharedLink(key?: string, password?: string, token?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMySharedLink(key, password, token, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -16050,7 +16050,7 @@ export const SharedLinkApiFactory = function (configuration?: Configuration, bas
          * @throws {RequiredError}
          */
         getMySharedLink(requestParameters: SharedLinkApiGetMySharedLinkRequest = {}, options?: AxiosRequestConfig): AxiosPromise<SharedLinkResponseDto> {
-            return localVarFp.getMySharedLink(requestParameters.password, requestParameters.token, requestParameters.key, options).then((request) => request(axios, basePath));
+            return localVarFp.getMySharedLink(requestParameters.key, requestParameters.password, requestParameters.token, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -16144,6 +16144,13 @@ export interface SharedLinkApiGetMySharedLinkRequest {
      * @type {string}
      * @memberof SharedLinkApiGetMySharedLink
      */
+    readonly key?: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof SharedLinkApiGetMySharedLink
+     */
     readonly password?: string
 
     /**
@@ -16152,13 +16159,6 @@ export interface SharedLinkApiGetMySharedLinkRequest {
      * @memberof SharedLinkApiGetMySharedLink
      */
     readonly token?: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof SharedLinkApiGetMySharedLink
-     */
-    readonly key?: string
 }
 
 /**
@@ -16285,7 +16285,7 @@ export class SharedLinkApi extends BaseAPI {
      * @memberof SharedLinkApi
      */
     public getMySharedLink(requestParameters: SharedLinkApiGetMySharedLinkRequest = {}, options?: AxiosRequestConfig) {
-        return SharedLinkApiFp(this.configuration).getMySharedLink(requestParameters.password, requestParameters.token, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return SharedLinkApiFp(this.configuration).getMySharedLink(requestParameters.key, requestParameters.password, requestParameters.token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -309,23 +309,23 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [int] skip:
+  /// * [String] ifNoneMatch:
+  ///   ETag of data already cached on the client
   ///
-  /// * [int] take:
-  ///
-  /// * [String] userId:
+  /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
-  /// * [bool] isArchived:
+  /// * [int] skip:
+  ///
+  /// * [int] take:
   ///
   /// * [DateTime] updatedAfter:
   ///
   /// * [DateTime] updatedBefore:
   ///
-  /// * [String] ifNoneMatch:
-  ///   ETag of data already cached on the client
-  Future<Response> getAllAssetsWithHttpInfo({ int? skip, int? take, String? userId, bool? isFavorite, bool? isArchived, DateTime? updatedAfter, DateTime? updatedBefore, String? ifNoneMatch, }) async {
+  /// * [String] userId:
+  Future<Response> getAllAssetsWithHttpInfo({ String? ifNoneMatch, bool? isArchived, bool? isFavorite, int? skip, int? take, DateTime? updatedAfter, DateTime? updatedBefore, String? userId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -336,26 +336,26 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
+    }
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
     if (skip != null) {
       queryParams.addAll(_queryParams('', 'skip', skip));
     }
     if (take != null) {
       queryParams.addAll(_queryParams('', 'take', take));
     }
-    if (userId != null) {
-      queryParams.addAll(_queryParams('', 'userId', userId));
-    }
-    if (isFavorite != null) {
-      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
-    }
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
     if (updatedAfter != null) {
       queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
     }
     if (updatedBefore != null) {
       queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
+    }
+    if (userId != null) {
+      queryParams.addAll(_queryParams('', 'userId', userId));
     }
 
     if (ifNoneMatch != null) {
@@ -380,24 +380,24 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [int] skip:
+  /// * [String] ifNoneMatch:
+  ///   ETag of data already cached on the client
   ///
-  /// * [int] take:
-  ///
-  /// * [String] userId:
+  /// * [bool] isArchived:
   ///
   /// * [bool] isFavorite:
   ///
-  /// * [bool] isArchived:
+  /// * [int] skip:
+  ///
+  /// * [int] take:
   ///
   /// * [DateTime] updatedAfter:
   ///
   /// * [DateTime] updatedBefore:
   ///
-  /// * [String] ifNoneMatch:
-  ///   ETag of data already cached on the client
-  Future<List<AssetResponseDto>?> getAllAssets({ int? skip, int? take, String? userId, bool? isFavorite, bool? isArchived, DateTime? updatedAfter, DateTime? updatedBefore, String? ifNoneMatch, }) async {
-    final response = await getAllAssetsWithHttpInfo( skip: skip, take: take, userId: userId, isFavorite: isFavorite, isArchived: isArchived, updatedAfter: updatedAfter, updatedBefore: updatedBefore, ifNoneMatch: ifNoneMatch, );
+  /// * [String] userId:
+  Future<List<AssetResponseDto>?> getAllAssets({ String? ifNoneMatch, bool? isArchived, bool? isFavorite, int? skip, int? take, DateTime? updatedAfter, DateTime? updatedBefore, String? userId, }) async {
+    final response = await getAllAssetsWithHttpInfo( ifNoneMatch: ifNoneMatch, isArchived: isArchived, isFavorite: isFavorite, skip: skip, take: take, updatedAfter: updatedAfter, updatedBefore: updatedBefore, userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -849,14 +849,14 @@ class AssetApi {
   /// Performs an HTTP 'GET /asset/map-marker' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [bool] isArchived:
-  ///
-  /// * [bool] isFavorite:
-  ///
   /// * [DateTime] fileCreatedAfter:
   ///
   /// * [DateTime] fileCreatedBefore:
-  Future<Response> getMapMarkersWithHttpInfo({ bool? isArchived, bool? isFavorite, DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, }) async {
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [bool] isFavorite:
+  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/map-marker';
 
@@ -867,17 +867,17 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
-    if (isFavorite != null) {
-      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
-    }
     if (fileCreatedAfter != null) {
       queryParams.addAll(_queryParams('', 'fileCreatedAfter', fileCreatedAfter));
     }
     if (fileCreatedBefore != null) {
       queryParams.addAll(_queryParams('', 'fileCreatedBefore', fileCreatedBefore));
+    }
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
+    }
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
     }
 
     const contentTypes = <String>[];
@@ -896,15 +896,15 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [bool] isArchived:
-  ///
-  /// * [bool] isFavorite:
-  ///
   /// * [DateTime] fileCreatedAfter:
   ///
   /// * [DateTime] fileCreatedBefore:
-  Future<List<MapMarkerResponseDto>?> getMapMarkers({ bool? isArchived, bool? isFavorite, DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, }) async {
-    final response = await getMapMarkersWithHttpInfo( isArchived: isArchived, isFavorite: isFavorite, fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, );
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [bool] isFavorite:
+  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, }) async {
+    final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1039,11 +1039,7 @@ class AssetApi {
   ///
   /// * [String] timeBucket (required):
   ///
-  /// * [String] userId:
-  ///
   /// * [String] albumId:
-  ///
-  /// * [String] personId:
   ///
   /// * [bool] isArchived:
   ///
@@ -1051,12 +1047,16 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
-  /// * [bool] withStacked:
+  /// * [String] key:
+  ///
+  /// * [String] personId:
+  ///
+  /// * [String] userId:
   ///
   /// * [bool] withPartners:
   ///
-  /// * [String] key:
-  Future<Response> getTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, bool? withPartners, String? key, }) async {
+  /// * [bool] withStacked:
+  Future<Response> getTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, String? personId, String? userId, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-bucket';
 
@@ -1067,15 +1067,8 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'size', size));
-    if (userId != null) {
-      queryParams.addAll(_queryParams('', 'userId', userId));
-    }
     if (albumId != null) {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
-    }
-    if (personId != null) {
-      queryParams.addAll(_queryParams('', 'personId', personId));
     }
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
@@ -1086,15 +1079,22 @@ class AssetApi {
     if (isTrashed != null) {
       queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
     }
-    if (withStacked != null) {
-      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (personId != null) {
+      queryParams.addAll(_queryParams('', 'personId', personId));
+    }
+      queryParams.addAll(_queryParams('', 'size', size));
+      queryParams.addAll(_queryParams('', 'timeBucket', timeBucket));
+    if (userId != null) {
+      queryParams.addAll(_queryParams('', 'userId', userId));
     }
     if (withPartners != null) {
       queryParams.addAll(_queryParams('', 'withPartners', withPartners));
     }
-      queryParams.addAll(_queryParams('', 'timeBucket', timeBucket));
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
+    if (withStacked != null) {
+      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
     }
 
     const contentTypes = <String>[];
@@ -1117,11 +1117,7 @@ class AssetApi {
   ///
   /// * [String] timeBucket (required):
   ///
-  /// * [String] userId:
-  ///
   /// * [String] albumId:
-  ///
-  /// * [String] personId:
   ///
   /// * [bool] isArchived:
   ///
@@ -1129,13 +1125,17 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
-  /// * [bool] withStacked:
+  /// * [String] key:
+  ///
+  /// * [String] personId:
+  ///
+  /// * [String] userId:
   ///
   /// * [bool] withPartners:
   ///
-  /// * [String] key:
-  Future<List<AssetResponseDto>?> getTimeBucket(TimeBucketSize size, String timeBucket, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, bool? withPartners, String? key, }) async {
-    final response = await getTimeBucketWithHttpInfo(size, timeBucket,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, withStacked: withStacked, withPartners: withPartners, key: key, );
+  /// * [bool] withStacked:
+  Future<List<AssetResponseDto>?> getTimeBucket(TimeBucketSize size, String timeBucket, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, String? personId, String? userId, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketWithHttpInfo(size, timeBucket,  albumId: albumId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, personId: personId, userId: userId, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1157,11 +1157,7 @@ class AssetApi {
   ///
   /// * [TimeBucketSize] size (required):
   ///
-  /// * [String] userId:
-  ///
   /// * [String] albumId:
-  ///
-  /// * [String] personId:
   ///
   /// * [bool] isArchived:
   ///
@@ -1169,12 +1165,16 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
-  /// * [bool] withStacked:
+  /// * [String] key:
+  ///
+  /// * [String] personId:
+  ///
+  /// * [String] userId:
   ///
   /// * [bool] withPartners:
   ///
-  /// * [String] key:
-  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, bool? withPartners, String? key, }) async {
+  /// * [bool] withStacked:
+  Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, String? personId, String? userId, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/time-buckets';
 
@@ -1185,15 +1185,8 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'size', size));
-    if (userId != null) {
-      queryParams.addAll(_queryParams('', 'userId', userId));
-    }
     if (albumId != null) {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
-    }
-    if (personId != null) {
-      queryParams.addAll(_queryParams('', 'personId', personId));
     }
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
@@ -1204,14 +1197,21 @@ class AssetApi {
     if (isTrashed != null) {
       queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
     }
-    if (withStacked != null) {
-      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (personId != null) {
+      queryParams.addAll(_queryParams('', 'personId', personId));
+    }
+      queryParams.addAll(_queryParams('', 'size', size));
+    if (userId != null) {
+      queryParams.addAll(_queryParams('', 'userId', userId));
     }
     if (withPartners != null) {
       queryParams.addAll(_queryParams('', 'withPartners', withPartners));
     }
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
+    if (withStacked != null) {
+      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
     }
 
     const contentTypes = <String>[];
@@ -1232,11 +1232,7 @@ class AssetApi {
   ///
   /// * [TimeBucketSize] size (required):
   ///
-  /// * [String] userId:
-  ///
   /// * [String] albumId:
-  ///
-  /// * [String] personId:
   ///
   /// * [bool] isArchived:
   ///
@@ -1244,13 +1240,17 @@ class AssetApi {
   ///
   /// * [bool] isTrashed:
   ///
-  /// * [bool] withStacked:
+  /// * [String] key:
+  ///
+  /// * [String] personId:
+  ///
+  /// * [String] userId:
   ///
   /// * [bool] withPartners:
   ///
-  /// * [String] key:
-  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? userId, String? albumId, String? personId, bool? isArchived, bool? isFavorite, bool? isTrashed, bool? withStacked, bool? withPartners, String? key, }) async {
-    final response = await getTimeBucketsWithHttpInfo(size,  userId: userId, albumId: albumId, personId: personId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, withStacked: withStacked, withPartners: withPartners, key: key, );
+  /// * [bool] withStacked:
+  Future<List<TimeBucketResponseDto>?> getTimeBuckets(TimeBucketSize size, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, String? personId, String? userId, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketsWithHttpInfo(size,  albumId: albumId, isArchived: isArchived, isFavorite: isFavorite, isTrashed: isTrashed, key: key, personId: personId, userId: userId, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1437,19 +1437,23 @@ class AssetApi {
   /// Performs an HTTP 'GET /assets' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] id:
+  /// * [String] checksum:
   ///
-  /// * [String] libraryId:
+  /// * [String] city:
   ///
-  /// * [AssetTypeEnum] type:
+  /// * [String] country:
   ///
-  /// * [AssetOrder] order:
+  /// * [DateTime] createdAfter:
+  ///
+  /// * [DateTime] createdBefore:
   ///
   /// * [String] deviceAssetId:
   ///
   /// * [String] deviceId:
   ///
-  /// * [String] checksum:
+  /// * [String] encodedVideoPath:
+  ///
+  /// * [String] id:
   ///
   /// * [bool] isArchived:
   ///
@@ -1467,56 +1471,52 @@ class AssetApi {
   ///
   /// * [bool] isVisible:
   ///
-  /// * [bool] withDeleted:
+  /// * [String] lensModel:
   ///
-  /// * [bool] withStacked:
-  ///
-  /// * [bool] withExif:
-  ///
-  /// * [bool] withPeople:
-  ///
-  /// * [DateTime] createdBefore:
-  ///
-  /// * [DateTime] createdAfter:
-  ///
-  /// * [DateTime] updatedBefore:
-  ///
-  /// * [DateTime] updatedAfter:
-  ///
-  /// * [DateTime] trashedBefore:
-  ///
-  /// * [DateTime] trashedAfter:
-  ///
-  /// * [DateTime] takenBefore:
-  ///
-  /// * [DateTime] takenAfter:
-  ///
-  /// * [String] originalFileName:
-  ///
-  /// * [String] originalPath:
-  ///
-  /// * [String] resizePath:
-  ///
-  /// * [String] webpPath:
-  ///
-  /// * [String] encodedVideoPath:
-  ///
-  /// * [String] city:
-  ///
-  /// * [String] state:
-  ///
-  /// * [String] country:
+  /// * [String] libraryId:
   ///
   /// * [String] make:
   ///
   /// * [String] model:
   ///
-  /// * [String] lensModel:
+  /// * [AssetOrder] order:
+  ///
+  /// * [String] originalFileName:
+  ///
+  /// * [String] originalPath:
   ///
   /// * [num] page:
   ///
+  /// * [String] resizePath:
+  ///
   /// * [num] size:
-  Future<Response> searchAssetsWithHttpInfo({ String? id, String? libraryId, AssetTypeEnum? type, AssetOrder? order, String? deviceAssetId, String? deviceId, String? checksum, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, bool? withDeleted, bool? withStacked, bool? withExif, bool? withPeople, DateTime? createdBefore, DateTime? createdAfter, DateTime? updatedBefore, DateTime? updatedAfter, DateTime? trashedBefore, DateTime? trashedAfter, DateTime? takenBefore, DateTime? takenAfter, String? originalFileName, String? originalPath, String? resizePath, String? webpPath, String? encodedVideoPath, String? city, String? state, String? country, String? make, String? model, String? lensModel, num? page, num? size, }) async {
+  ///
+  /// * [String] state:
+  ///
+  /// * [DateTime] takenAfter:
+  ///
+  /// * [DateTime] takenBefore:
+  ///
+  /// * [DateTime] trashedAfter:
+  ///
+  /// * [DateTime] trashedBefore:
+  ///
+  /// * [AssetTypeEnum] type:
+  ///
+  /// * [DateTime] updatedAfter:
+  ///
+  /// * [DateTime] updatedBefore:
+  ///
+  /// * [String] webpPath:
+  ///
+  /// * [bool] withDeleted:
+  ///
+  /// * [bool] withExif:
+  ///
+  /// * [bool] withPeople:
+  ///
+  /// * [bool] withStacked:
+  Future<Response> searchAssetsWithHttpInfo({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, String? resizePath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, String? webpPath, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final path = r'/assets';
 
@@ -1527,17 +1527,20 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (id != null) {
-      queryParams.addAll(_queryParams('', 'id', id));
+    if (checksum != null) {
+      queryParams.addAll(_queryParams('', 'checksum', checksum));
     }
-    if (libraryId != null) {
-      queryParams.addAll(_queryParams('', 'libraryId', libraryId));
+    if (city != null) {
+      queryParams.addAll(_queryParams('', 'city', city));
     }
-    if (type != null) {
-      queryParams.addAll(_queryParams('', 'type', type));
+    if (country != null) {
+      queryParams.addAll(_queryParams('', 'country', country));
     }
-    if (order != null) {
-      queryParams.addAll(_queryParams('', 'order', order));
+    if (createdAfter != null) {
+      queryParams.addAll(_queryParams('', 'createdAfter', createdAfter));
+    }
+    if (createdBefore != null) {
+      queryParams.addAll(_queryParams('', 'createdBefore', createdBefore));
     }
     if (deviceAssetId != null) {
       queryParams.addAll(_queryParams('', 'deviceAssetId', deviceAssetId));
@@ -1545,8 +1548,11 @@ class AssetApi {
     if (deviceId != null) {
       queryParams.addAll(_queryParams('', 'deviceId', deviceId));
     }
-    if (checksum != null) {
-      queryParams.addAll(_queryParams('', 'checksum', checksum));
+    if (encodedVideoPath != null) {
+      queryParams.addAll(_queryParams('', 'encodedVideoPath', encodedVideoPath));
+    }
+    if (id != null) {
+      queryParams.addAll(_queryParams('', 'id', id));
     }
     if (isArchived != null) {
       queryParams.addAll(_queryParams('', 'isArchived', isArchived));
@@ -1572,65 +1578,11 @@ class AssetApi {
     if (isVisible != null) {
       queryParams.addAll(_queryParams('', 'isVisible', isVisible));
     }
-    if (withDeleted != null) {
-      queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
+    if (lensModel != null) {
+      queryParams.addAll(_queryParams('', 'lensModel', lensModel));
     }
-    if (withStacked != null) {
-      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
-    }
-    if (withExif != null) {
-      queryParams.addAll(_queryParams('', 'withExif', withExif));
-    }
-    if (withPeople != null) {
-      queryParams.addAll(_queryParams('', 'withPeople', withPeople));
-    }
-    if (createdBefore != null) {
-      queryParams.addAll(_queryParams('', 'createdBefore', createdBefore));
-    }
-    if (createdAfter != null) {
-      queryParams.addAll(_queryParams('', 'createdAfter', createdAfter));
-    }
-    if (updatedBefore != null) {
-      queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
-    }
-    if (updatedAfter != null) {
-      queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
-    }
-    if (trashedBefore != null) {
-      queryParams.addAll(_queryParams('', 'trashedBefore', trashedBefore));
-    }
-    if (trashedAfter != null) {
-      queryParams.addAll(_queryParams('', 'trashedAfter', trashedAfter));
-    }
-    if (takenBefore != null) {
-      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
-    }
-    if (takenAfter != null) {
-      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
-    }
-    if (originalFileName != null) {
-      queryParams.addAll(_queryParams('', 'originalFileName', originalFileName));
-    }
-    if (originalPath != null) {
-      queryParams.addAll(_queryParams('', 'originalPath', originalPath));
-    }
-    if (resizePath != null) {
-      queryParams.addAll(_queryParams('', 'resizePath', resizePath));
-    }
-    if (webpPath != null) {
-      queryParams.addAll(_queryParams('', 'webpPath', webpPath));
-    }
-    if (encodedVideoPath != null) {
-      queryParams.addAll(_queryParams('', 'encodedVideoPath', encodedVideoPath));
-    }
-    if (city != null) {
-      queryParams.addAll(_queryParams('', 'city', city));
-    }
-    if (state != null) {
-      queryParams.addAll(_queryParams('', 'state', state));
-    }
-    if (country != null) {
-      queryParams.addAll(_queryParams('', 'country', country));
+    if (libraryId != null) {
+      queryParams.addAll(_queryParams('', 'libraryId', libraryId));
     }
     if (make != null) {
       queryParams.addAll(_queryParams('', 'make', make));
@@ -1638,14 +1590,62 @@ class AssetApi {
     if (model != null) {
       queryParams.addAll(_queryParams('', 'model', model));
     }
-    if (lensModel != null) {
-      queryParams.addAll(_queryParams('', 'lensModel', lensModel));
+    if (order != null) {
+      queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (originalFileName != null) {
+      queryParams.addAll(_queryParams('', 'originalFileName', originalFileName));
+    }
+    if (originalPath != null) {
+      queryParams.addAll(_queryParams('', 'originalPath', originalPath));
     }
     if (page != null) {
       queryParams.addAll(_queryParams('', 'page', page));
     }
+    if (resizePath != null) {
+      queryParams.addAll(_queryParams('', 'resizePath', resizePath));
+    }
     if (size != null) {
       queryParams.addAll(_queryParams('', 'size', size));
+    }
+    if (state != null) {
+      queryParams.addAll(_queryParams('', 'state', state));
+    }
+    if (takenAfter != null) {
+      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
+    }
+    if (takenBefore != null) {
+      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
+    }
+    if (trashedAfter != null) {
+      queryParams.addAll(_queryParams('', 'trashedAfter', trashedAfter));
+    }
+    if (trashedBefore != null) {
+      queryParams.addAll(_queryParams('', 'trashedBefore', trashedBefore));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
+    if (updatedAfter != null) {
+      queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
+    }
+    if (updatedBefore != null) {
+      queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
+    }
+    if (webpPath != null) {
+      queryParams.addAll(_queryParams('', 'webpPath', webpPath));
+    }
+    if (withDeleted != null) {
+      queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
+    }
+    if (withExif != null) {
+      queryParams.addAll(_queryParams('', 'withExif', withExif));
+    }
+    if (withPeople != null) {
+      queryParams.addAll(_queryParams('', 'withPeople', withPeople));
+    }
+    if (withStacked != null) {
+      queryParams.addAll(_queryParams('', 'withStacked', withStacked));
     }
 
     const contentTypes = <String>[];
@@ -1664,19 +1664,23 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [String] id:
+  /// * [String] checksum:
   ///
-  /// * [String] libraryId:
+  /// * [String] city:
   ///
-  /// * [AssetTypeEnum] type:
+  /// * [String] country:
   ///
-  /// * [AssetOrder] order:
+  /// * [DateTime] createdAfter:
+  ///
+  /// * [DateTime] createdBefore:
   ///
   /// * [String] deviceAssetId:
   ///
   /// * [String] deviceId:
   ///
-  /// * [String] checksum:
+  /// * [String] encodedVideoPath:
+  ///
+  /// * [String] id:
   ///
   /// * [bool] isArchived:
   ///
@@ -1694,57 +1698,53 @@ class AssetApi {
   ///
   /// * [bool] isVisible:
   ///
-  /// * [bool] withDeleted:
+  /// * [String] lensModel:
   ///
-  /// * [bool] withStacked:
-  ///
-  /// * [bool] withExif:
-  ///
-  /// * [bool] withPeople:
-  ///
-  /// * [DateTime] createdBefore:
-  ///
-  /// * [DateTime] createdAfter:
-  ///
-  /// * [DateTime] updatedBefore:
-  ///
-  /// * [DateTime] updatedAfter:
-  ///
-  /// * [DateTime] trashedBefore:
-  ///
-  /// * [DateTime] trashedAfter:
-  ///
-  /// * [DateTime] takenBefore:
-  ///
-  /// * [DateTime] takenAfter:
-  ///
-  /// * [String] originalFileName:
-  ///
-  /// * [String] originalPath:
-  ///
-  /// * [String] resizePath:
-  ///
-  /// * [String] webpPath:
-  ///
-  /// * [String] encodedVideoPath:
-  ///
-  /// * [String] city:
-  ///
-  /// * [String] state:
-  ///
-  /// * [String] country:
+  /// * [String] libraryId:
   ///
   /// * [String] make:
   ///
   /// * [String] model:
   ///
-  /// * [String] lensModel:
+  /// * [AssetOrder] order:
+  ///
+  /// * [String] originalFileName:
+  ///
+  /// * [String] originalPath:
   ///
   /// * [num] page:
   ///
+  /// * [String] resizePath:
+  ///
   /// * [num] size:
-  Future<List<AssetResponseDto>?> searchAssets({ String? id, String? libraryId, AssetTypeEnum? type, AssetOrder? order, String? deviceAssetId, String? deviceId, String? checksum, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, bool? withDeleted, bool? withStacked, bool? withExif, bool? withPeople, DateTime? createdBefore, DateTime? createdAfter, DateTime? updatedBefore, DateTime? updatedAfter, DateTime? trashedBefore, DateTime? trashedAfter, DateTime? takenBefore, DateTime? takenAfter, String? originalFileName, String? originalPath, String? resizePath, String? webpPath, String? encodedVideoPath, String? city, String? state, String? country, String? make, String? model, String? lensModel, num? page, num? size, }) async {
-    final response = await searchAssetsWithHttpInfo( id: id, libraryId: libraryId, type: type, order: order, deviceAssetId: deviceAssetId, deviceId: deviceId, checksum: checksum, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, withDeleted: withDeleted, withStacked: withStacked, withExif: withExif, withPeople: withPeople, createdBefore: createdBefore, createdAfter: createdAfter, updatedBefore: updatedBefore, updatedAfter: updatedAfter, trashedBefore: trashedBefore, trashedAfter: trashedAfter, takenBefore: takenBefore, takenAfter: takenAfter, originalFileName: originalFileName, originalPath: originalPath, resizePath: resizePath, webpPath: webpPath, encodedVideoPath: encodedVideoPath, city: city, state: state, country: country, make: make, model: model, lensModel: lensModel, page: page, size: size, );
+  ///
+  /// * [String] state:
+  ///
+  /// * [DateTime] takenAfter:
+  ///
+  /// * [DateTime] takenBefore:
+  ///
+  /// * [DateTime] trashedAfter:
+  ///
+  /// * [DateTime] trashedBefore:
+  ///
+  /// * [AssetTypeEnum] type:
+  ///
+  /// * [DateTime] updatedAfter:
+  ///
+  /// * [DateTime] updatedBefore:
+  ///
+  /// * [String] webpPath:
+  ///
+  /// * [bool] withDeleted:
+  ///
+  /// * [bool] withExif:
+  ///
+  /// * [bool] withPeople:
+  ///
+  /// * [bool] withStacked:
+  Future<List<AssetResponseDto>?> searchAssets({ String? checksum, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceAssetId, String? deviceId, String? encodedVideoPath, String? id, bool? isArchived, bool? isEncoded, bool? isExternal, bool? isFavorite, bool? isMotion, bool? isOffline, bool? isReadOnly, bool? isVisible, String? lensModel, String? libraryId, String? make, String? model, AssetOrder? order, String? originalFileName, String? originalPath, num? page, String? resizePath, num? size, String? state, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, String? webpPath, bool? withDeleted, bool? withExif, bool? withPeople, bool? withStacked, }) async {
+    final response = await searchAssetsWithHttpInfo( checksum: checksum, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceAssetId: deviceAssetId, deviceId: deviceId, encodedVideoPath: encodedVideoPath, id: id, isArchived: isArchived, isEncoded: isEncoded, isExternal: isExternal, isFavorite: isFavorite, isMotion: isMotion, isOffline: isOffline, isReadOnly: isReadOnly, isVisible: isVisible, lensModel: lensModel, libraryId: libraryId, make: make, model: model, order: order, originalFileName: originalFileName, originalPath: originalPath, page: page, resizePath: resizePath, size: size, state: state, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, webpPath: webpPath, withDeleted: withDeleted, withExif: withExif, withPeople: withPeople, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

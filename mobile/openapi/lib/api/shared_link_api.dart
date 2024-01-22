@@ -173,12 +173,12 @@ class SharedLinkApi {
   /// Performs an HTTP 'GET /shared-link/me' operation and returns the [Response].
   /// Parameters:
   ///
+  /// * [String] key:
+  ///
   /// * [String] password:
   ///
   /// * [String] token:
-  ///
-  /// * [String] key:
-  Future<Response> getMySharedLinkWithHttpInfo({ String? password, String? token, String? key, }) async {
+  Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? token, }) async {
     // ignore: prefer_const_declarations
     final path = r'/shared-link/me';
 
@@ -189,14 +189,14 @@ class SharedLinkApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
     if (password != null) {
       queryParams.addAll(_queryParams('', 'password', password));
     }
     if (token != null) {
       queryParams.addAll(_queryParams('', 'token', token));
-    }
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -215,13 +215,13 @@ class SharedLinkApi {
 
   /// Parameters:
   ///
+  /// * [String] key:
+  ///
   /// * [String] password:
   ///
   /// * [String] token:
-  ///
-  /// * [String] key:
-  Future<SharedLinkResponseDto?> getMySharedLink({ String? password, String? token, String? key, }) async {
-    final response = await getMySharedLinkWithHttpInfo( password: password, token: token, key: key, );
+  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? password, String? token, }) async {
+    final response = await getMySharedLinkWithHttpInfo( key: key, password: password, token: token, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
