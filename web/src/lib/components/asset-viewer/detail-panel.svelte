@@ -31,14 +31,17 @@
   import ChangeLocation from '../shared-components/change-location.svelte';
   import { handleError } from '../../utils/handle-error';
   import { user } from '$lib/stores/user.store';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
+  import { clickOutside } from '$lib/utils/click-outside';
 
   export let asset: AssetResponseDto;
   export let albums: AlbumResponseDto[] = [];
   export let albumId: string | null = null;
 
   let showAssetPath = false;
-  let textarea: HTMLTextAreaElement;
+  let textArea: HTMLTextAreaElement;
   let description: string;
+  let originalDescription: string;
   let showEditFaces = false;
   let previousId: string;
 
@@ -61,10 +64,10 @@
     if (newAsset.id && !api.isSharedLink) {
       const { data } = await api.assetApi.getAssetById({ id: asset.id });
       people = data?.people || [];
+
       description = data.exifInfo?.description || '';
-      textarea.value = description;
-      autoGrowHeight();
     }
+    originalDescription = description;
   };
 
   $: handleNewAsset(asset);
@@ -99,6 +102,19 @@
     closeViewer: void;
   }>();
 
+  const handleKeypress = async (event: KeyboardEvent) => {
+    if (event.target !== textArea) {
+      return;
+    }
+    const ctrl = event.ctrlKey;
+    switch (event.key) {
+      case 'Enter':
+        if (ctrl && event.target === textArea) {
+          handleFocusOut();
+        }
+    }
+  };
+
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
 
@@ -112,14 +128,9 @@
   const handleRefreshPeople = async () => {
     await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
       people = res.data?.people || [];
-      textarea.value = res.data?.exifInfo?.description || '';
+      textArea.value = res.data?.exifInfo?.description || '';
     });
     showEditFaces = false;
-  };
-
-  const autoGrowHeight = () => {
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
   const handleFocusIn = () => {
@@ -127,6 +138,11 @@
   };
 
   const handleFocusOut = async () => {
+    textArea.blur();
+    if (description === originalDescription) {
+      return;
+    }
+    originalDescription = description;
     dispatch('descriptionFocusOut');
     try {
       await api.assetApi.updateAsset({
@@ -134,7 +150,7 @@
         updateAssetDto: { description },
       });
     } catch (error) {
-      console.error(error);
+      handleError(error, 'Cannot update the description');
     }
   };
 
@@ -170,6 +186,8 @@
   }
 </script>
 
+<svelte:window on:keydown={handleKeypress} />
+
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
     <button
@@ -196,22 +214,26 @@
     </section>
   {/if}
 
-  <section class="mx-4 mt-10" style:display={!isOwner && description === '' ? 'none' : 'block'}>
-    {#if !isOwner || api.isSharedLink}
-      <span class="break-words">{description}</span>
-    {:else}
-      <textarea
-        bind:this={textarea}
-        class="max-h-[500px]
+  {#if isOwner || description !== ''}
+    <section class="px-4 mt-10">
+      {#key asset.id}
+        <textarea
+          disabled={!isOwner || api.isSharedLink}
+          bind:this={textArea}
+          class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-        placeholder={!isOwner ? '' : 'Add a description'}
-        on:focusin={handleFocusIn}
-        on:focusout={handleFocusOut}
-        on:input={autoGrowHeight}
-        bind:value={description}
-      />
-    {/if}
-  </section>
+          placeholder={!isOwner ? '' : 'Add a description'}
+          on:focusin={handleFocusIn}
+          on:focusout={handleFocusOut}
+          on:input={() => autoGrowHeight(textArea)}
+          bind:value={description}
+          use:autoGrowHeight
+          use:clickOutside
+          on:outclick={handleFocusOut}
+        />
+      {/key}
+    </section>
+  {/if}
 
   {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
@@ -315,7 +337,9 @@
         </div>
       </div>
     {:else}
-      <p class="text-sm">DETAILS</p>
+      <div class="flex h-10 w-full items-center justify-between text-sm">
+        <h2>DETAILS</h2>
+      </div>
     {/if}
 
     {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}

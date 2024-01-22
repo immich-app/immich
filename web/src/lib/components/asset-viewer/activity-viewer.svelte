@@ -19,6 +19,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { getAssetType } from '$lib/utils/asset-utils';
   import * as luxon from 'luxon';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
@@ -96,11 +97,6 @@
       handleSendComment();
       return;
     }
-  };
-
-  const autoGrow = () => {
-    textArea.style.height = '5px';
-    textArea.style.height = textArea.scrollHeight + 'px';
   };
 
   const timeOptions = {
@@ -293,7 +289,7 @@
               bind:this={textArea}
               bind:value={message}
               placeholder={disabled ? 'Comments are disabled' : 'Say something'}
-              on:input={autoGrow}
+              on:input={() => autoGrowHeight(textArea)}
               on:keypress={handleEnter}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
