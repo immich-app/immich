@@ -161,16 +161,9 @@
       {/if}
 
       <!-- ALBUM DESCRIPTION -->
-      {#if album.description}
-        <textarea
-          class="w-full resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
-          bind:this={textArea}
-          bind:value={album.description}
-          disabled={true}
-          on:input={() => autoGrowHeight(textArea)}
-          use:autoGrowHeight
-        />
-      {/if}
+      <p class="mb-12 mt-6 w-full pb-2 text-left text-lg font-medium dark:text-gray-300">
+        {album.description}
+      </p>
     </section>
   </AssetGrid>
   <UpdatePanel {assetStore} />
