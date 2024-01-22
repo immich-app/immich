@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { LibraryResponseDto, LibraryType } from '@api';
+  import { type LibraryResponseDto, LibraryType } from '@api';
 
   import Button from '../elements/buttons/button.svelte';
   import { handleError } from '../../utils/handle-error';

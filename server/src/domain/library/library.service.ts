@@ -80,15 +80,13 @@ export class LibraryService extends EventEmitter {
   async watch(id: string): Promise<boolean> {
     await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
 
-    const config = await this.configCore.getConfig();
-
     const library = await this.findOrFail(id);
-    if (!library.isWatched) {
-      return false;
-    }
 
-    if (library.importPaths.length === 0) {
-      throw new Error('Cannot watch library with no import paths');
+    if (library.type !== LibraryType.EXTERNAL) {
+      throw new BadRequestException('Can only watch external libraries');
+    } else if (library.importPaths.length === 0) {
+      return false;    } else if (!library.isWatched) {
+      return false;
     }
 
     await this.unwatch(id);
@@ -99,6 +97,8 @@ export class LibraryService extends EventEmitter {
       nocase: true,
       ignore: library.exclusionPatterns,
     });
+
+    const config = await this.configCore.getConfig();
 
     const watcher = await this.storageRepository.watch(library.importPaths, {
       usePolling: config.library.watch.usePolling,
