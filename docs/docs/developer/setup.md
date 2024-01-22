@@ -26,7 +26,6 @@ This environment includes the following services:
 - Web app - `/web`
 - Redis
 - PostgreSQL development database with exposed port `5432` so you can use any database client to acess it
-- NGINX Proxy - `nginx/nginx.conf`
 
 All the services are packaged to run as with single Docker Compose command.
 
