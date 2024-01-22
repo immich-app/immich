@@ -112,7 +112,9 @@ export class LibraryService extends EventEmitter {
       ignoreInitial: true,
     });
 
-    this.watchers[id] = watcher.close;
+    this.watchers[id] = async () => {
+      await watcher.close();
+    };
 
     watcher.on('add', async (path) => {
       this.logger.debug(`File add event received for ${path} and library id ${library.id}}`);
@@ -192,7 +194,7 @@ export class LibraryService extends EventEmitter {
   async unwatch(id: string) {
     await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
 
-    if (this.watchers.hasOwnProperty(id) && typeof this.watchers[id] === 'function') {
+    if (this.watchers.hasOwnProperty(id)) {
       await this.watchers[id]();
       delete this.watchers[id];
     }
