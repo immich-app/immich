@@ -48,10 +48,6 @@
         const { data } = await api.serverInfoApi.getServerInfo();
         $serverInfoStore = data;
       }
-      if (!$user) {
-        const { data } = await api.userApi.getMyUserInfo();
-        $user = data;
-      }
     } catch (e) {
       console.log('Error [StatusBox] [onMount]');
     }
