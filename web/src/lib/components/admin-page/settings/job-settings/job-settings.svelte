@@ -97,14 +97,29 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               {disabled}
-              label="{api.getJobName(jobName)} Concurrency"
+              label="{api.getJobName(jobName)} Concurrence"
               desc=""
               bind:value={jobConfig[jobName].concurrency}
               required={true}
               isEdited={!(jobConfig[jobName].concurrency == savedConfig[jobName].concurrency)}
             />
+<<<<<<< Updated upstream
           </div>
         {/each}
+=======
+          {:else}
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label="{api.getJobName(jobName)} Concurrence"
+              desc=""
+              value="1"
+              disabled={true}
+              title="Cette tâche n'a pas de concurrence fiable."
+            />
+          {/if}
+        </div>
+      {/each}
+>>>>>>> Stashed changes
 
         <div class="ml-4">
           <SettingButtonsRow

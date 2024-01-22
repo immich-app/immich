@@ -27,7 +27,7 @@
 
 <div class="flex flex-col gap-5">
   <div>
-    <p class="text-sm dark:text-immich-dark-fg">TOTAL USAGE</p>
+    <p class="text-sm dark:text-immich-dark-fg">USAGE TOTAL</p>
 
     <div class="mt-5 hidden justify-between lg:flex">
       <StatsCard icon={mdiCameraIris} title="PHOTOS" value={stats.photos} />
@@ -62,8 +62,13 @@
         </div>
         <div class="flex flex-wrap gap-x-7">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
+<<<<<<< Updated upstream
             <Icon path={mdiMemory} size="25" />
             <p>STORAGE</p>
+=======
+            <Icon path={mdiChartPie} size="25" />
+            <p>STOCKAGE</p>
+>>>>>>> Stashed changes
           </div>
 
           <div class="relative flex text-center font-mono text-2xl font-semibold">
@@ -78,13 +83,13 @@
   </div>
 
   <div>
-    <p class="text-sm dark:text-immich-dark-fg">USER USAGE DETAIL</p>
+    <p class="text-sm dark:text-immich-dark-fg">USAGE UTILISATEUR</p>
     <table class="mt-5 w-full text-left">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
         <tr class="flex w-full place-items-center">
-          <th class="w-1/4 text-center text-sm font-medium">User</th>
+          <th class="w-1/4 text-center text-sm font-medium">Utilisateurs</th>
           <th class="w-1/4 text-center text-sm font-medium">Photos</th>
           <th class="w-1/4 text-center text-sm font-medium">Videos</th>
           <th class="w-1/4 text-center text-sm font-medium">Size</th>

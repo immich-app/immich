@@ -147,18 +147,18 @@
       {#if shouldShowInfoPanel}
         <FullScreenModal on:clickOutside={() => (shouldShowInfoPanel = false)}>
           <div class="w-[500px] max-w-[95vw] rounded-3xl border bg-white p-8 text-sm shadow-sm">
-            <h1 class="mb-4 text-lg font-medium text-immich-primary">Password reset success</h1>
+            <h1 class="mb-4 text-lg font-medium text-immich-primary">Mot de passe changé</h1>
 
             <p>
-              The user's password has been reset to the default <code
-                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary">password</code
+              Le mot de passe de l'utilisateur a été réinitialisé <code
+                class="rounded-md bg-gray-200 px-2 py-1 font-bold text-immich-primary">Mot de passe</code
               >
               <br />
               Please inform the user, and they will need to change the password at the next log-on.
             </p>
 
             <div class="mt-6 flex w-full">
-              <Button fullwidth on:click={() => (shouldShowInfoPanel = false)}>Done</Button>
+              <Button fullwidth on:click={() => (shouldShowInfoPanel = false)}>Terminer</Button>
             </div>
           </div>
         </FullScreenModal>
@@ -170,8 +170,14 @@
         >
           <tr class="flex w-full place-items-center">
             <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium">Email</th>
+<<<<<<< Updated upstream
             <th class="hidden sm:block w-3/12 text-center text-sm font-medium">Name</th>
             <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Can import</th>
+=======
+            <th class="hidden sm:block w-3/12 text-center text-sm font-medium">Nom</th>
+            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Quota</th>
+            <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">Peut importer</th>
+>>>>>>> Stashed changes
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">Action</th>
           </tr>
         </thead>
@@ -233,7 +239,7 @@
         </tbody>
       </table>
 
-      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>Create user</Button>
+      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>Créer un nouvel utilisateur</Button>
     </section>
   </section>
 </UserPageLayout>

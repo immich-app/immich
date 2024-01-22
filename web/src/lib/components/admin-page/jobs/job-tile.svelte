@@ -92,7 +92,7 @@
         <div
           class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-l-lg sm:rounded-r-none"
         >
-          <p>Active</p>
+          <p>Actif</p>
           <p class="text-2xl">
             {jobCounts.active.toLocaleString($locale)}
           </p>
@@ -104,7 +104,7 @@
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}
           </p>
-          <p>Waiting</p>
+          <p>En attente</p>
         </div>
       </div>
     </div>

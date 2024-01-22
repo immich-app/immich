@@ -20,8 +20,8 @@
   };
 </script>
 
-<ConfirmDialogue title="Restore User" confirmText="Continue" confirmColor="green" on:confirm={restoreUser} on:cancel>
+<ConfirmDialogue title="Restorer l'utilisateur" confirmText="Continuer" confirmColor="green" on:confirm={restoreUser} on:cancel>
   <svelte:fragment slot="prompt">
-    <p><b>{user.name}</b>'s account will be restored.</p>
+    <p><b>{user.name}</b> sera restauré</p>
   </svelte:fragment>
 </ConfirmDialogue>

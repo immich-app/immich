@@ -30,9 +30,9 @@
   <svelte:fragment slot="prompt">
     <div class="flex flex-col gap-4">
       <p>
-        <b>{user.name}</b>'s account and assets will be permanently deleted after 7 days.
+        <b>{user.name}</b> : le compte et les actifs seront définitivement supprimés après 7 jours.
       </p>
-      <p>Are you sure you want to continue?</p>
-    </div>
+      <p>Êtes-vous sûr de vouloir continuer ?</p>
+      </div>      
   </svelte:fragment>
 </ConfirmDialogue>

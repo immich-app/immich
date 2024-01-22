@@ -102,6 +102,7 @@
               bind:checked={libraryConfig.scan.enabled}
             />
 
+<<<<<<< Updated upstream
             <div class="flex flex-col my-2 dark:text-immich-dark-fg">
               <label class="text-sm" for="expression-select">Cron Expression Presets</label>
               <select
@@ -124,6 +125,16 @@
               label="Cron Expression"
               bind:value={libraryConfig.scan.cronExpression}
               isEdited={libraryConfig.scan.cronExpression !== savedConfig.scan.cronExpression}
+=======
+          <div class="flex flex-col my-2 dark:text-immich-dark-fg">
+            <label class="text-sm" for="expression-select">Modèle d'expression de Cron</label>
+            <select
+              class="p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
+              disabled={disabled || !config.library.scan.enabled}
+              name="expression"
+              id="expression-select"
+              bind:value={config.library.scan.cronExpression}
+>>>>>>> Stashed changes
             >
               <svelte:fragment slot="desc">
                 <p class="text-sm dark:text-immich-dark-fg">
@@ -138,6 +149,7 @@
             </SettingInputField>
           </div>
 
+<<<<<<< Updated upstream
           <div class="ml-4">
             <SettingButtonsRow
               on:reset={({ detail }) => handleReset(detail)}
@@ -150,4 +162,38 @@
       </SettingAccordion>
     </div>
   {/await}
+=======
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            required={true}
+            disabled={disabled || !config.library.scan.enabled}
+            label="Cron Expression"
+            bind:value={config.library.scan.cronExpression}
+            isEdited={config.library.scan.cronExpression !== savedConfig.library.scan.cronExpression}
+          >
+            <svelte:fragment slot="desc">
+              <p class="text-sm dark:text-immich-dark-fg">
+                Choissisez une intervalle grâce au format Cron. Pour plus d'informations veuillez-vous réferer à e.g. <a
+                  href="https://crontab.guru"
+                  class="underline"
+                  target="_blank"
+                  rel="noreferrer">Crontab Guru</a
+                >
+              </p>
+            </svelte:fragment>
+          </SettingInputField>
+        </div>
+
+        <div class="ml-4">
+          <SettingButtonsRow
+            on:reset={({ detail }) => dispatch('reset', { ...detail, configKeys: ['library'] })}
+            on:save={() => dispatch('save', { library: config.library })}
+            showResetToDefault={!isEqual(savedConfig.library, defaultConfig.library)}
+            {disabled}
+          />
+        </div>
+      </form>
+    </SettingAccordion>
+  </div>
+>>>>>>> Stashed changes
 </div>
