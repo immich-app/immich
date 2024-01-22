@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, AuthDeviceResponseDto } from '@api';
+  import { api, type AuthDeviceResponseDto } from '@api';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';

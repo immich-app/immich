@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
 

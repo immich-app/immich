@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/archive/providers/archive_asset_provider.d
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/shared/ui/asset_grid/multiselect_grid.dart';
 
+@RoutePage()
 class ArchivePage extends HookConsumerWidget {
   const ArchivePage({super.key});
 

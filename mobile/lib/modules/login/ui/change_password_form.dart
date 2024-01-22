@@ -90,7 +90,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                                 .clearAllAsset();
                             ref.read(websocketProvider.notifier).disconnect();
 
-                            AutoRouter.of(context).navigateBack();
+                            AutoRouter.of(context).back();
 
                             ImmichToast.show(
                               context: context,
@@ -111,7 +111,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                     ),
                     TextButton.icon(
                       icon: const Icon(Icons.arrow_back),
-                      onPressed: () => AutoRouter.of(context).navigateBack(),
+                      onPressed: () => AutoRouter.of(context).back(),
                       label: const Text('Back'),
                     ),
                   ],

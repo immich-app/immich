@@ -1,7 +1,7 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import type { AuthDeviceResponseDto } from '@api';
-  import { DateTime, ToRelativeCalendarOptions } from 'luxon';
+  import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
   import { createEventDispatcher } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import {

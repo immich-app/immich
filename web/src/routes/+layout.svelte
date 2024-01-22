@@ -18,7 +18,7 @@
   import { api } from '@api';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { user } from '$lib/stores/user.store';
-  import { ThemeSetting, colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
+  import { type ThemeSetting, colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
   import { Theme } from '$lib/constants';
 
   let showNavigationLoadingBar = false;

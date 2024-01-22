@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { api, UserResponseDto } from '@api';
+  import { api, type UserResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import Button from '../elements/buttons/button.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import { handleError } from '../../utils/handle-error';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAccountEditOutline, mdiClose } from '@mdi/js';
   import { AppRoute } from '$lib/constants';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { handleError } from '$lib/utils/handle-error';
+  import { convertFromBytes, convertToBytes } from '$lib/utils/byte-converter';
 
   export let user: UserResponseDto;
   export let canResetPassword = true;
@@ -24,6 +25,8 @@
     editSuccess: void;
   }>();
 
+  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, 'GiB') : null;
+
   const editUser = async () => {
     try {
       const { id, email, name, storageLabel, externalPath } = user;
@@ -34,6 +37,7 @@
           name,
           storageLabel: storageLabel || '',
           externalPath: externalPath || '',
+          quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), 'GiB') : null,
         },
       });
 
@@ -98,7 +102,13 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="storage-label">Structure de sauvegarde</label>
+      <label class="immich-form-label" for="quotaSize">Taille du Quota (Go)</label>
+      <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
+      <p>Note: Entrer 0 pour un quota illimité</p>
+    </div>
+
+    <div class="m-4 flex flex-col gap-2">
+      <label class="immich-form-label" for="storage-label">Nom du stockage</label>
       <input
         class="immich-form-input"
         id="storage-label"

@@ -14,6 +14,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
+@RoutePage()
 // ignore: must_be_immutable
 class CreateAlbumPage extends HookConsumerWidget {
   final bool isSharedAlbum;

@@ -1,5 +1,5 @@
 import { ImmichLogger } from '@app/infra/logger';
-import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
+import { Global, Module, Provider } from '@nestjs/common';
 import { ActivityService } from './activity';
 import { AlbumService } from './album';
 import { APIKeyService } from './api-key';
@@ -31,10 +31,11 @@ const providers: Provider[] = [
   AuditService,
   AuthService,
   DatabaseService,
+  ImmichLogger,
   JobService,
+  LibraryService,
   MediaService,
   MetadataService,
-  LibraryService,
   PersonService,
   PartnerService,
   SearchService,
@@ -46,18 +47,12 @@ const providers: Provider[] = [
   SystemConfigService,
   TagService,
   UserService,
-  ImmichLogger,
 ];
 
 @Global()
-@Module({})
-export class DomainModule {
-  static register(options: Pick<ModuleMetadata, 'imports'>): DynamicModule {
-    return {
-      module: DomainModule,
-      imports: options.imports,
-      providers: [...providers],
-      exports: [...providers],
-    };
-  }
-}
+@Module({
+  imports: [],
+  providers: [...providers],
+  exports: [...providers],
+})
+export class DomainModule {}

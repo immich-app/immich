@@ -2,19 +2,18 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
-import 'package:immich_mobile/modules/map/ui/map_thumbnail.dart';
+import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ExifBottomSheet extends HookConsumerWidget {
@@ -92,26 +91,14 @@ class ExifBottomSheet extends HookConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return MapThumbnail(
-              showAttribution: false,
-              coords: LatLng(
+              centre: LatLng(
                 exifInfo?.latitude ?? 0,
                 exifInfo?.longitude ?? 0,
               ),
               height: 150,
               width: constraints.maxWidth,
               zoom: 12.0,
-              markers: [
-                Marker(
-                  anchorPos: AnchorPos.align(AnchorAlign.top),
-                  point: LatLng(
-                    exifInfo?.latitude ?? 0,
-                    exifInfo?.longitude ?? 0,
-                  ),
-                  builder: (ctx) => const Image(
-                    image: AssetImage('assets/location-pin.png'),
-                  ),
-                ),
-              ],
+              assetMarkerRemoteId: asset.remoteId,
               onTap: (tapPosition, latLong) async {
                 Uri? uri = await createCoordinatesUri();
 

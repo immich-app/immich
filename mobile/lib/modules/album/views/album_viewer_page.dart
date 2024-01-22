@@ -27,6 +27,7 @@ import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
+@RoutePage()
 class AlbumViewerPage extends HookConsumerWidget {
   final int albumId;
 

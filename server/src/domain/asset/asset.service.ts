@@ -20,6 +20,7 @@ import {
   IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  IUserRepository,
   ImmichReadStream,
   JobItem,
   TimeBucketOptions,
@@ -75,6 +76,7 @@ export interface UploadFile {
   checksum: Buffer;
   originalPath: string;
   originalName: string;
+  size: number;
 }
 
 export class AssetService {
@@ -89,6 +91,7 @@ export class AssetService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
@@ -462,7 +465,15 @@ export class AssetService {
   async handleAssetDeletion(job: IAssetDeletionJob) {
     const { id, fromExternal } = job;
 
-    const asset = await this.assetRepository.getById(id);
+    const asset = await this.assetRepository.getById(id, {
+      faces: {
+        person: true,
+      },
+      library: true,
+      stack: true,
+      exifInfo: true,
+    });
+
     if (!asset) {
       return false;
     }
@@ -481,6 +492,7 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
+    await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     this.communicationRepository.send(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
@@ -550,7 +562,13 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, newParentId);
 
     const childIds: string[] = [];
-    const oldParent = await this.assetRepository.getById(oldParentId);
+    const oldParent = await this.assetRepository.getById(oldParentId, {
+      faces: {
+        person: true,
+      },
+      library: true,
+      stack: true,
+    });
     if (oldParent != null) {
       childIds.push(oldParent.id);
       // Get all children of old parent

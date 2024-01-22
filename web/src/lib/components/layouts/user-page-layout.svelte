@@ -42,7 +42,7 @@
       </div>
     {/if}
 
-    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto">
+    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto">
       <slot />
     </div>
   </section>

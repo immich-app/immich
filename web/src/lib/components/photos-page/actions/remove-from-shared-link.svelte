@@ -1,6 +1,6 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { SharedLinkResponseDto, api } from '@api';
+  import { type SharedLinkResponseDto, api } from '@api';
   import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';

@@ -6,10 +6,10 @@ import fs from 'node:fs';
 import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import FormData from 'form-data';
 
-export default class Upload extends BaseCommand {
+export class Upload extends BaseCommand {
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
@@ -107,6 +107,8 @@ export default class Upload extends BaseCommand {
               const formData = asset.getUploadFormData();
               const res = await this.uploadAsset(formData);
               existingAssetId = res.data.id;
+              uploadCounter++;
+              totalSizeUploaded += asset.fileSize;
             }
 
             if ((options.album || options.albumName) && asset.albumName !== undefined) {
@@ -127,9 +129,6 @@ export default class Upload extends BaseCommand {
               }
             }
           }
-
-          totalSizeUploaded += asset.fileSize;
-          uploadCounter++;
         }
 
         sizeSoFar += asset.fileSize;
@@ -172,7 +171,7 @@ export default class Upload extends BaseCommand {
     }
   }
 
-  private async uploadAsset(data: FormData): Promise<axios.AxiosResponse> {
+  private async uploadAsset(data: FormData): Promise<AxiosResponse> {
     const url = this.immichApi.apiConfiguration.instanceUrl + '/asset/upload';
 
     const config: AxiosRequestConfig = {

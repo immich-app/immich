@@ -21,7 +21,9 @@ const responseDto = {
     externalPath: null,
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
+    quotaSizeInBytes: null,
     inTimeline: true,
+    quotaUsageInBytes: 0,
   },
   user1: <PartnerResponseDto>{
     email: 'immich@test.com',
@@ -39,6 +41,8 @@ const responseDto = {
     memoriesEnabled: true,
     avatarColor: UserAvatarColor.PRIMARY,
     inTimeline: true,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   },
 };
 

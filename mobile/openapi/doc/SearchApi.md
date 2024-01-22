@@ -66,7 +66,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **search**
-> SearchResponseDto search(q, query, clip, type, recent, motion)
+> SearchResponseDto search(q, query, clip, type, recent, motion, withArchived)
 
 
 
@@ -95,9 +95,10 @@ final clip = true; // bool |
 final type = type_example; // String | 
 final recent = true; // bool | 
 final motion = true; // bool | 
+final withArchived = true; // bool | 
 
 try {
-    final result = api_instance.search(q, query, clip, type, recent, motion);
+    final result = api_instance.search(q, query, clip, type, recent, motion, withArchived);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->search: $e\n');
@@ -114,6 +115,7 @@ Name | Type | Description  | Notes
  **type** | **String**|  | [optional] 
  **recent** | **bool**|  | [optional] 
  **motion** | **bool**|  | [optional] 
+ **withArchived** | **bool**|  | [optional] 
 
 ### Return type
 

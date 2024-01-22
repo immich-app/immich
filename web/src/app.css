@@ -132,4 +132,8 @@ input:focus-visible {
     display: none;
     scrollbar-width: none;
   }
+
+  .scrollbar-stable {
+    scrollbar-gutter: stable both-edges;
+  }
 }

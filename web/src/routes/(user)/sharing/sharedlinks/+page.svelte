@@ -1,6 +1,6 @@
 <script lang="ts">
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import { api, copyToClipboard, makeSharedLinkUrl, SharedLinkResponseDto } from '@api';
+  import { api, copyToClipboard, makeSharedLinkUrl, type SharedLinkResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import {

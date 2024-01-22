@@ -94,26 +94,30 @@ const providers: Provider[] = [
   SchedulerRegistry,
 ];
 
-const imports = [
-  ConfigModule.forRoot(immichAppConfig),
-  TypeOrmModule.forRoot(databaseConfig),
-  TypeOrmModule.forFeature(databaseEntities),
-  ScheduleModule,
-];
-
-const moduleExports = [...providers];
-
-if (process.env.IMMICH_TEST_ENV !== 'true') {
-  // Currently not running e2e tests, set up redis and bull queues
-  imports.push(BullModule.forRoot(bullConfig));
-  imports.push(BullModule.registerQueue(...bullQueues));
-  moduleExports.push(BullModule);
-}
+@Global()
+@Module({
+  imports: [
+    ConfigModule.forRoot(immichAppConfig),
+    TypeOrmModule.forRoot(databaseConfig),
+    TypeOrmModule.forFeature(databaseEntities),
+    ScheduleModule,
+    BullModule.forRoot(bullConfig),
+    BullModule.registerQueue(...bullQueues),
+  ],
+  providers: [...providers],
+  exports: [...providers, BullModule],
+})
+export class InfraModule {}
 
 @Global()
 @Module({
-  imports,
+  imports: [
+    ConfigModule.forRoot(immichAppConfig),
+    TypeOrmModule.forRoot(databaseConfig),
+    TypeOrmModule.forFeature(databaseEntities),
+    ScheduleModule,
+  ],
   providers: [...providers],
-  exports: moduleExports,
+  exports: [...providers],
 })
-export class InfraModule {}
+export class InfraTestModule {}

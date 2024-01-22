@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { oauth, UserResponseDto } from '@api';
+  import { oauth, type UserResponseDto } from '@api';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';

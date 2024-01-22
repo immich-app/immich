@@ -8,6 +8,7 @@ import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:intl/intl.dart';
 
+@RoutePage()
 class AppLogPage extends HookConsumerWidget {
   const AppLogPage({
     Key? key,

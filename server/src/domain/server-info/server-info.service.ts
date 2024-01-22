@@ -118,6 +118,7 @@ export class ServerInfoService {
       usage.photos = user.photos;
       usage.videos = user.videos;
       usage.usage = user.usage;
+      usage.quotaSizeInBytes = user.quotaSizeInBytes;
 
       serverStats.photos += usage.photos;
       serverStats.videos += usage.videos;

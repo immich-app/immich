@@ -7,7 +7,7 @@
   "testRegex": ".e2e-spec.ts$",
   "testTimeout": 6000000,
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.ts$": "ts-jest"
   },
   "collectCoverageFrom": [
     "<rootDir>/src/**/*.(t|j)s",

@@ -22,7 +22,9 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."createdAt" AS "APIKeyEntity__APIKeyEntity_user_createdAt",
       "APIKeyEntity__APIKeyEntity_user"."deletedAt" AS "APIKeyEntity__APIKeyEntity_user_deletedAt",
       "APIKeyEntity__APIKeyEntity_user"."updatedAt" AS "APIKeyEntity__APIKeyEntity_user_updatedAt",
-      "APIKeyEntity__APIKeyEntity_user"."memoriesEnabled" AS "APIKeyEntity__APIKeyEntity_user_memoriesEnabled"
+      "APIKeyEntity__APIKeyEntity_user"."memoriesEnabled" AS "APIKeyEntity__APIKeyEntity_user_memoriesEnabled",
+      "APIKeyEntity__APIKeyEntity_user"."quotaSizeInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaSizeInBytes",
+      "APIKeyEntity__APIKeyEntity_user"."quotaUsageInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaUsageInBytes"
     FROM
       "api_keys" "APIKeyEntity"
       LEFT JOIN "users" "APIKeyEntity__APIKeyEntity_user" ON "APIKeyEntity__APIKeyEntity_user"."id" = "APIKeyEntity"."userId"

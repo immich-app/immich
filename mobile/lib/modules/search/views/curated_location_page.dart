@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
 import 'package:openapi/api.dart';
 
+@RoutePage()
 class CuratedLocationPage extends HookConsumerWidget {
   const CuratedLocationPage({super.key});
 

@@ -1,10 +1,10 @@
 #! /usr/bin/env node
 
 import { Option, Command } from 'commander';
-import Upload from './commands/upload';
-import ServerInfo from './commands/server-info';
-import LoginKey from './commands/login/key';
-import Logout from './commands/logout';
+import { Upload } from './commands/upload';
+import { ServerInfo } from './commands/server-info';
+import { LoginKey } from './commands/login/key';
+import { Logout } from './commands/logout';
 import { version } from '../package.json';
 
 import path from 'node:path';

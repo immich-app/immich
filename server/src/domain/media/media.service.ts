@@ -93,20 +93,24 @@ export class MediaService {
       await this.jobRepository.queueAll(jobs);
     }
 
-    const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
-
     const jobs: JobItem[] = [];
-    for (const person of people) {
-      if (!person.faceAssetId) {
-        const face = await this.personRepository.getRandomFace(person.id);
-        if (!face) {
-          continue;
+    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.personRepository.getAll(pagination, { where: force ? undefined : { thumbnailPath: '' } }),
+    );
+
+    for await (const people of personPagination) {
+      for (const person of people) {
+        if (!person.faceAssetId) {
+          const face = await this.personRepository.getRandomFace(person.id);
+          if (!face) {
+            continue;
+          }
+
+          await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
         }
 
-        await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
+        jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
       }
-
-      jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
     }
 
     await this.jobRepository.queueAll(jobs);
@@ -131,10 +135,15 @@ export class MediaService {
       );
     }
 
-    const people = await this.personRepository.getAll();
-    await this.jobRepository.queueAll(
-      people.map((person) => ({ name: JobName.MIGRATE_PERSON, data: { id: person.id } })),
+    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.personRepository.getAll(pagination),
     );
+
+    for await (const people of personPagination) {
+      await this.jobRepository.queueAll(
+        people.map((person) => ({ name: JobName.MIGRATE_PERSON, data: { id: person.id } })),
+      );
+    }
 
     return true;
   }

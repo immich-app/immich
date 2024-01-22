@@ -21,6 +21,25 @@ class ImmichSearchBar extends HookConsumerWidget
     final searchTermController = useTextEditingController(text: "");
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
 
+    focusSearch() {
+      searchTermController.clear();
+      ref.watch(searchPageStateProvider.notifier).getSuggestedSearchTerms();
+      ref.watch(searchPageStateProvider.notifier).enableSearch();
+      ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
+
+      searchFocusNode.requestFocus();
+    }
+
+    useEffect(
+      () {
+        searchFocusNotifier.addListener(focusSearch);
+        return () {
+          searchFocusNotifier.removeListener(focusSearch);
+        };
+      },
+      [],
+    );
+
     return AppBar(
       automaticallyImplyLeading: false,
       leading: isSearchEnabled
@@ -40,14 +59,7 @@ class ImmichSearchBar extends HookConsumerWidget
         controller: searchTermController,
         focusNode: searchFocusNode,
         autofocus: false,
-        onTap: () {
-          searchTermController.clear();
-          ref.watch(searchPageStateProvider.notifier).getSuggestedSearchTerms();
-          ref.watch(searchPageStateProvider.notifier).enableSearch();
-          ref.watch(searchPageStateProvider.notifier).setSearchTerm("");
-
-          searchFocusNode.requestFocus();
-        },
+        onTap: focusSearch,
         onSubmitted: (searchTerm) {
           onSubmitted(searchTerm);
           searchTermController.clear();
@@ -74,4 +86,14 @@ class ImmichSearchBar extends HookConsumerWidget
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+// Used to focus search from outside this widget.
+// For example when double pressing the search nav icon.
+final searchFocusNotifier = SearchFocusNotifier();
+
+class SearchFocusNotifier with ChangeNotifier {
+  void requestFocus() {
+    notifyListeners();
+  }
 }

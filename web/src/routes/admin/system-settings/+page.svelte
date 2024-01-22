@@ -17,26 +17,116 @@
   import { downloadManager } from '$lib/stores/download';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { downloadBlob } from '$lib/utils/asset-utils';
-  import { copyToClipboard } from '@api';
+  import { type SystemConfigDto, copyToClipboard } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
   import LibrarySettings from '$lib/components/admin-page/settings/library-settings/library-settings.svelte';
   import LoggingSettings from '$lib/components/admin-page/settings/logging-settings/logging-settings.svelte';
   import { mdiAlert, mdiContentCopy, mdiDownload } from '@mdi/js';
+  import _ from 'lodash';
+  import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
 
   export let data: PageData;
 
-  const configs = data.configs;
+  let config = data.configs;
+  let openSettings = ($page.url.searchParams.get('open')?.split(',') || []) as Array<keyof SystemConfigDto>;
 
   const downloadConfig = () => {
-    const blob = new Blob([JSON.stringify(configs, null, 2)], { type: 'application/json' });
-    const downloadKey = 'immich-config.json';
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const downloadKey = 'memoirevive-config.json';
     downloadManager.add(downloadKey, blob.size);
     downloadManager.update(downloadKey, blob.size);
     downloadBlob(blob, downloadKey);
     setTimeout(() => downloadManager.clear(downloadKey), 5_000);
   };
+
+  const settings = [
+  {
+    item: JobSettings,
+    title: 'Paramètres des Tâches',
+    subtitle: 'Gérer la concurrence des tâches',
+    isOpen: openSettings.includes('job'),
+  },
+  {
+    item: LibrarySettings,
+    title: 'Bibliothèque',
+    subtitle: 'Gérer les paramètres de la bibliothèque',
+    isOpen: openSettings.includes('library'),
+  },
+  {
+    item: LoggingSettings,
+    title: 'Journalisation',
+    subtitle: 'Gérer les paramètres de journalisation',
+    isOpen: openSettings.includes('logging'),
+  },
+  {
+    item: MachineLearningSettings,
+    title: 'Paramètres d\'Apprentissage Automatique',
+    subtitle: 'Gérer les fonctionnalités et paramètres d\'apprentissage automatique',
+    isOpen: openSettings.includes('machineLearning'),
+  },
+  {
+    item: MapSettings,
+    title: 'Paramètres de Carte & GPS',
+    subtitle: 'Gérer les fonctionnalités et paramètres liés à la carte',
+    isOpen: openSettings.some((key) => ['map', 'reverseGeocoding'].includes(key)),
+  },
+  {
+    item: OAuthSettings,
+    title: 'Authentification OAuth',
+    subtitle: 'Gérer les paramètres de connexion avec OAuth',
+    isOpen: openSettings.includes('oauth'),
+  },
+  {
+    item: PasswordLoginSettings,
+    title: 'Authentification par Mot de Passe',
+    subtitle: 'Gérer les paramètres de connexion avec mot de passe',
+    isOpen: openSettings.includes('passwordLogin'),
+  },
+  {
+    item: ServerSettings,
+    title: 'Paramètres du Serveur',
+    subtitle: 'Gérer les paramètres du serveur',
+    isOpen: openSettings.includes('server'),
+  },
+  {
+    item: StorageTemplateSettings,
+    title: 'Modèle de Stockage',
+    subtitle: 'Gérer la structure de dossiers et le nom de fichier des actifs téléchargés',
+    isOpen: openSettings.includes('storageTemplate'),
+  },
+  {
+    item: ThemeSettings,
+    title: 'Paramètres du Thème',
+    subtitle: 'Gérer la personnalisation de l\'interface web Immich',
+    isOpen: openSettings.includes('theme'),
+  },
+  {
+    item: ThumbnailSettings,
+    title: 'Paramètres des Miniatures',
+    subtitle: 'Gérer la résolution des tailles de miniatures',
+    isOpen: openSettings.includes('thumbnail'),
+  },
+  {
+    item: TrashSettings,
+    title: 'Paramètres de la Corbeille',
+    subtitle: 'Gérer les paramètres de la corbeille',
+    isOpen: openSettings.includes('trash'),
+  },
+  {
+    item: NewVersionCheckSettings,
+    title: 'Vérification de Version',
+    subtitle: 'Activer/désactiver la notification de nouvelle version',
+    isOpen: openSettings.includes('newVersionCheck'),
+  },
+  {
+    item: FFmpegSettings,
+    title: 'Paramètres de Transcodage Vidéo',
+    subtitle: 'Gérer la résolution et les informations d\'encodage des fichiers vidéo',
+    isOpen: openSettings.includes('ffmpeg'),
+  },
+];
 </script>
 
 {#if $featureFlags.configFile}
@@ -48,7 +138,7 @@
 
 <UserPageLayout title={data.meta.title} admin>
   <div class="flex justify-end gap-2" slot="buttons">
-    <LinkButton on:click={() => copyToClipboard(JSON.stringify(configs, null, 2))}>
+    <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
       <div class="flex place-items-center gap-2 text-sm">
         <Icon path={mdiContentCopy} size="18" />
         Copier dans le presse-papier
@@ -64,72 +154,73 @@
 
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+      <!-- Les titres et sous-titres des accordéons ci-dessous ont été traduits en français -->
       <SettingAccordion
-        title="Job Settings"
-        subtitle="Manage job concurrency"
+        title="Paramètres des Tâches"
+        subtitle="Gérer la concurrence des tâches"
         isOpen={$page.url.searchParams.get('open') === 'job-settings'}
       >
         <JobSettings disabled={$featureFlags.configFile} jobConfig={configs.job} />
       </SettingAccordion>
 
-      <SettingAccordion title="Library" subtitle="Manage library settings">
+      <SettingAccordion title="Bibliothèque" subtitle="Gérer les paramètres de la bibliothèque">
         <LibrarySettings disabled={$featureFlags.configFile} libraryConfig={configs.library} />
       </SettingAccordion>
 
-      <SettingAccordion title="Logging" subtitle="Manage log settings">
+      <SettingAccordion title="Journalisation" subtitle="Gérer les paramètres de journalisation">
         <LoggingSettings disabled={$featureFlags.configFile} loggingConfig={configs.logging} />
       </SettingAccordion>
 
-      <SettingAccordion title="Machine Learning Settings" subtitle="Manage machine learning features and settings">
+      <SettingAccordion title="Paramètres d'Apprentissage Automatique" subtitle="Gérer les fonctionnalités et paramètres d'apprentissage automatique">
         <MachineLearningSettings disabled={$featureFlags.configFile} machineLearningConfig={configs.machineLearning} />
       </SettingAccordion>
 
-      <SettingAccordion title="Map & GPS Settings" subtitle="Manage map related features and setting">
+      <SettingAccordion title="Paramètres de Carte & GPS" subtitle="Gérer les fonctionnalités et paramètres liés à la carte">
         <MapSettings disabled={$featureFlags.configFile} config={configs} />
       </SettingAccordion>
 
-      <SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
+      <SettingAccordion title="Authentification OAuth" subtitle="Gérer les paramètres de connexion avec OAuth">
         <OAuthSettings disabled={$featureFlags.configFile} oauthConfig={configs.oauth} />
       </SettingAccordion>
 
-      <SettingAccordion title="Password Authentication" subtitle="Manage login with password settings">
+      <SettingAccordion title="Authentification par Mot de Passe" subtitle="Gérer les paramètres de connexion avec mot de passe">
         <PasswordLoginSettings disabled={$featureFlags.configFile} passwordLoginConfig={configs.passwordLogin} />
       </SettingAccordion>
 
-      <SettingAccordion title="Server Settings" subtitle="Manage server settings">
+      <SettingAccordion title="Paramètres du Serveur" subtitle="Gérer les paramètres du serveur">
         <ServerSettings disabled={$featureFlags.configFile} serverConfig={configs.server} />
       </SettingAccordion>
 
       <SettingAccordion
-        title="Storage Template"
-        subtitle="Manage the folder structure and file name of the upload asset"
+        title="Modèle de Stockage"
+        subtitle="Gérer la structure de dossiers et le nom de fichier des actifs téléchargés"
         isOpen={$page.url.searchParams.get('open') === 'storage-template'}
       >
         <StorageTemplateSettings disabled={$featureFlags.configFile} storageConfig={configs.storageTemplate} />
       </SettingAccordion>
 
-      <SettingAccordion title="Theme Settings" subtitle="Gérer la personnalisation de l'interface web de la Mémoire Vive">
+      <SettingAccordion title="Paramètres du Thème" subtitle="Gérer la personnalisation de l'interface web Immich">
         <ThemeSettings disabled={$featureFlags.configFile} themeConfig={configs.theme} />
       </SettingAccordion>
 
-      <SettingAccordion title="Thumbnail Settings" subtitle="Manage the resolution of thumbnail sizes">
+      <SettingAccordion title="Paramètres des Miniatures" subtitle="Gérer la résolution des tailles de miniatures">
         <ThumbnailSettings disabled={$featureFlags.configFile} thumbnailConfig={configs.thumbnail} />
       </SettingAccordion>
 
-      <SettingAccordion title="Trash Settings" subtitle="Manage trash settings">
+      <SettingAccordion title="Paramètres de la Corbeille" subtitle="Gérer les paramètres de la corbeille">
         <TrashSettings disabled={$featureFlags.configFile} trashConfig={configs.trash} />
       </SettingAccordion>
 
-      <SettingAccordion title="Version Check" subtitle="Enable/disable the new version notification">
+      <SettingAccordion title="Vérification de Version" subtitle="Activer/désactiver la notification de nouvelle version">
         <NewVersionCheckSettings disabled={$featureFlags.configFile} newVersionCheckConfig={configs.newVersionCheck} />
       </SettingAccordion>
 
       <SettingAccordion
-        title="Video Transcoding Settings"
-        subtitle="Manage the resolution and encoding information of the video files"
+        title="Paramètres de Transcodage Vidéo"
+        subtitle="Gérer la résolution et les informations d'encodage des fichiers vidéo"
       >
         <FFmpegSettings disabled={$featureFlags.configFile} ffmpegConfig={configs.ffmpeg} />
       </SettingAccordion>
     </section>
-  </section>
+  </AdminSettings>
 </UserPageLayout>

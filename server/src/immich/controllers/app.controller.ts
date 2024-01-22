@@ -1,5 +1,5 @@
 import { SystemConfigService } from '@app/domain';
-import { Controller, Get, Header, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Controller, Get, Header } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { PublicRoute } from '../app.guard';
 
@@ -23,12 +23,5 @@ export class AppController {
   @Header('Content-Type', 'text/css')
   getCustomCss() {
     return this.service.getCustomCss();
-  }
-
-  @ApiExcludeEndpoint()
-  @Post('refresh-config')
-  @HttpCode(HttpStatus.OK)
-  public reloadConfig() {
-    return this.service.refreshConfig();
   }
 }
