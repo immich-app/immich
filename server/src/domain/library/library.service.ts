@@ -85,7 +85,8 @@ export class LibraryService extends EventEmitter {
     if (library.type !== LibraryType.EXTERNAL) {
       throw new BadRequestException('Can only watch external libraries');
     } else if (library.importPaths.length === 0) {
-      return false;    } else if (!library.isWatched) {
+      return false;
+    } else if (!library.isWatched) {
       return false;
     }
 
