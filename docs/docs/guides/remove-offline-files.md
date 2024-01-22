@@ -53,7 +53,7 @@ def filter_entities(response_json, entity_type):
     ]
 
 def main():
-    args = parse_arguments()    
+    args = parse_arguments()
     try:
         if args.apikey:
             api_key = args.apikey
@@ -83,15 +83,15 @@ def main():
 
         person_assets = filter_entities(response.json(), 'person')
         orphan_media_assets = filter_entities(response.json(), 'asset')
-        
+
         num_entries = len(orphan_media_assets)
 
         if num_entries == 0:
             print('No orphaned media assets found; exiting.')
             return
-        
+
         else:
-            if not args.no_prompt:        
+            if not args.no_prompt:
                 table_data = []
                 for asset in orphan_media_assets:
                     table_data.append([asset['pathValue'], asset['entityId']])
@@ -106,7 +106,7 @@ def main():
                     summary = f'There {"is" if num_entries == 1 else "are"} {num_entries} orphaned media asset{"s" if num_entries != 1 else ""}. Would you like to delete {"them" if num_entries != 1 else "it"} from Immich? (yes/no): '
                     user_input = input(summary).lower()
                     print()
-                    
+
                     if user_input not in ('y', 'yes'):
                         print('Exiting without making any changes.')
                         return
