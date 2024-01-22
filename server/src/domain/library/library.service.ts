@@ -25,7 +25,7 @@ import {
   IUserRepository,
   WithProperty,
 } from '../repositories';
-import { SystemConfigCore } from '../system-config';
+import { FeatureFlag, SystemConfigCore } from '../system-config';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -40,7 +40,8 @@ export class LibraryService extends EventEmitter {
   readonly logger = new ImmichLogger(LibraryService.name);
   private access: AccessCore;
   private configCore: SystemConfigCore;
-  private watchFeatureFlag = false;
+
+  private watchers: Record<string, () => Promise<void>> = {};
 
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
@@ -71,24 +72,16 @@ export class LibraryService extends EventEmitter {
       config.library.scan.enabled,
     );
 
-    this.watchFeatureFlag = config.library.watch.enabled;
-
     this.configCore.config$.subscribe((config) => {
       this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
     });
   }
 
-  async watchAll() {
-    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
-
-    for (const library of libraries) {
-      if (library.isWatched) {
-        await this.watch(library.id);
-      }
-    }
-  }
-
   async watch(id: string): Promise<boolean> {
+    await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
+
+    const config = await this.configCore.getConfig();
+
     const library = await this.findOrFail(id);
     if (!library.isWatched) {
       return false;
@@ -98,6 +91,8 @@ export class LibraryService extends EventEmitter {
       throw new Error('Cannot watch library with no import paths');
     }
 
+    await this.unwatch(id);
+
     this.logger.log(`Starting to watch library ${library.id} with import paths ${library.importPaths}`);
 
     const matcher = picomatch(`**/*{${mimeTypes.getSupportedFileExtensions().join(',')}}`, {
@@ -105,9 +100,18 @@ export class LibraryService extends EventEmitter {
       ignore: library.exclusionPatterns,
     });
 
-    const watcher = await this.storageRepository.watch(library.id, library.importPaths, {
+    const watcher = await this.storageRepository.watch(library.importPaths, {
+      usePolling: config.library.watch.usePolling,
+      interval: config.library.watch.interval,
+      binaryInterval: config.library.watch.interval,
+      awaitWriteFinish: {
+        stabilityThreshold: config.library.watch.awaitWriteFinish.stabilityThreshold,
+        pollInterval: config.library.watch.awaitWriteFinish.pollInterval,
+      },
       ignoreInitial: true,
     });
+
+    this.watchers[id] = watcher.close;
 
     watcher.on('add', async (path) => {
       this.logger.debug(`File add event received for ${path} and library id ${library.id}}`);
@@ -168,6 +172,37 @@ export class LibraryService extends EventEmitter {
     });
 
     return true;
+  }
+
+  async watchAll(): Promise<boolean> {
+    await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
+
+    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
+
+    for (const library of libraries) {
+      if (library.isWatched) {
+        await this.watch(library.id);
+      }
+    }
+
+    return true;
+  }
+
+  async unwatch(id: string) {
+    await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
+
+    if (this.watchers.hasOwnProperty(id)) {
+      await this.watchers[id]();
+      delete this.watchers[id];
+    }
+  }
+
+  async unwatchAll() {
+    await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
+
+    for (const id in this.watchers) {
+      await this.unwatch(id);
+    }
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<LibraryStatsResponseDto> {
@@ -246,14 +281,13 @@ export class LibraryService extends EventEmitter {
     const library = await this.repository.update({ id, ...dto });
 
     if (dto.isWatched !== undefined) {
-      if (!this.watchFeatureFlag) {
-        throw new Error('Cannot set isWatched on library when the library watch feature flag is disabled');
-      }
+      await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
+
       if (dto.isWatched) {
         await this.watch(id);
       } else {
         this.logger.debug(`Unwatching library ${id}`);
-        await this.storageRepository.unwatch(id);
+        await this.unwatch(id);
       }
     } else if (dto.importPaths || dto.exclusionPatterns) {
       await this.watch(id);
@@ -272,7 +306,7 @@ export class LibraryService extends EventEmitter {
     }
 
     if (library.isWatched) {
-      await this.storageRepository.unwatch(id);
+      await this.unwatch(id);
     }
 
     await this.repository.softDelete(id);

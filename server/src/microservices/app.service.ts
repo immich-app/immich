@@ -90,7 +90,7 @@ export class AppService {
   }
 
   async stopWatcher() {
-    await this.storageRepository.unwatchAll();
+    await this.libraryService.unwatchAll();
   }
 
   async teardown() {

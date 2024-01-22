@@ -4,12 +4,9 @@ import {
   ImmichReadStream,
   ImmichZipStream,
   IStorageRepository,
-  ISystemConfigRepository,
   mimeTypes,
-  SystemConfigCore,
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
-import { Inject } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { FSWatcher, WatchOptions } from 'chokidar';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
@@ -19,14 +16,6 @@ import path from 'path';
 
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);
-  private configCore: SystemConfigCore;
-
-  private watchers: Record<string, chokidar.FSWatcher> = {};
-  private watchFeatureFlag = false;
-
-  constructor(@Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository) {
-    this.configCore = SystemConfigCore.create(configRepository);
-  }
 
   createZipStream(): ImmichZipStream {
     const archive = archiver('zip', { store: true });
@@ -144,43 +133,12 @@ export class FilesystemProvider implements IStorageRepository {
     });
   }
 
-  async watch(id: string, paths: string | ReadonlyArray<string>, options?: WatchOptions): Promise<FSWatcher> {
-    const config = await this.configCore.getConfig();
-
-    if (!config.library.watch.enabled) {
-      throw new Error("Library watch feature is disabled, can't watch library");
-    }
-
+  async watch(paths: string | ReadonlyArray<string>, options?: WatchOptions): Promise<FSWatcher> {
     // Stop any previous watchers of this library
-    await this.unwatch(id);
 
-    const watcher = chokidar.watch(paths, {
-      usePolling: config.library.watch.usePolling,
-      interval: config.library.watch.interval,
-      binaryInterval: config.library.watch.interval,
-      awaitWriteFinish: {
-        stabilityThreshold: config.library.watch.awaitWriteFinish.stabilityThreshold,
-        pollInterval: config.library.watch.awaitWriteFinish.pollInterval,
-      },
-      ...options,
-    });
-
-    this.watchers[id] = watcher;
+    const watcher = chokidar.watch(paths, options);
 
     return watcher;
-  }
-
-  async unwatchAll() {
-    for (const id in this.watchers) {
-      await this.unwatch(id);
-    }
-  }
-
-  async unwatch(id: string) {
-    if (this.watchers.hasOwnProperty(id)) {
-      await this.watchers[id].close();
-      delete this.watchers[id];
-    }
   }
 
   readdir = readdir;

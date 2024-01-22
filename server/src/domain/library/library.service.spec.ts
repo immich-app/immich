@@ -9,7 +9,6 @@ import {
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
-  newFSWatcherMock,
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newStorageRepositoryMock,
@@ -19,7 +18,6 @@ import {
   userStub,
 } from '@test';
 
-import {} from '@test/repositories/fs-watcher.mock';
 import { Stats } from 'fs';
 import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
@@ -33,6 +31,31 @@ import {
 } from '../repositories';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { LibraryService } from './library.service';
+
+const newFSWatcherMock = () => {
+  return {
+    options: {},
+    on: jest.fn(),
+    add: jest.fn(),
+    unwatch: jest.fn(),
+    getWatched: jest.fn(),
+    close: jest.fn(),
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    removeAllListeners: jest.fn(),
+    eventNames: jest.fn(),
+    rawListeners: jest.fn(),
+    listeners: jest.fn(),
+    emit: jest.fn(),
+    listenerCount: jest.fn(),
+    off: jest.fn(),
+    once: jest.fn(),
+    prependListener: jest.fn(),
+    prependOnceListener: jest.fn(),
+    setMaxListeners: jest.fn(),
+    getMaxListeners: jest.fn(),
+  };
+};
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
@@ -631,13 +654,15 @@ describe(LibraryService.name, () => {
     });
 
     it('should unwatch an external library when deleted', async () => {
+      // TODO: refactor
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       libraryMock.getUploadLibraryCount.mockResolvedValue(1);
       libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
 
       await sut.delete(authStub.admin, libraryStub.watchedExternalLibrary1.id);
 
-      expect(storageMock.unwatch).toHaveBeenCalledWith(libraryStub.watchedExternalLibrary1.id);
       expect(libraryMock.softDelete).toHaveBeenCalledWith(libraryStub.watchedExternalLibrary1.id);
     });
   });
@@ -904,11 +929,7 @@ describe(LibraryService.name, () => {
           }),
         );
 
-        expect(storageMock.watch).toHaveBeenCalledWith(
-          libraryStub.watchedExternalLibrary1.id,
-          expect.arrayContaining([expect.any(String)]),
-          expect.anything(),
-        );
+        expect(storageMock.watch).toHaveBeenCalledWith(expect.arrayContaining([expect.any(String)]), expect.anything());
       });
     });
 
@@ -1060,11 +1081,7 @@ describe(LibraryService.name, () => {
           id: authStub.admin.user.id,
         }),
       );
-      expect(storageMock.watch).toHaveBeenCalledWith(
-        libraryStub.watchedExternalLibrary1.id,
-        expect.arrayContaining([expect.any(String)]),
-        expect.anything(),
-      );
+      expect(storageMock.watch).toHaveBeenCalledWith(expect.arrayContaining([expect.any(String)]), expect.anything());
     });
 
     it('can unwatch library when setting isWatched to false', async () => {
@@ -1103,11 +1120,7 @@ describe(LibraryService.name, () => {
           id: authStub.admin.user.id,
         }),
       );
-      expect(storageMock.watch).toHaveBeenCalledWith(
-        libraryStub.watchedExternalLibrary1.id,
-        expect.arrayContaining([expect.any(String)]),
-        expect.anything(),
-      );
+      expect(storageMock.watch).toHaveBeenCalledWith(expect.arrayContaining([expect.any(String)]), expect.anything());
     });
 
     it('can re-watch library when updating exclusion patterns paths', async () => {
@@ -1134,11 +1147,7 @@ describe(LibraryService.name, () => {
           id: authStub.admin.user.id,
         }),
       );
-      expect(storageMock.watch).toHaveBeenCalledWith(
-        libraryStub.watchedExternalLibrary1.id,
-        expect.arrayContaining([expect.any(String)]),
-        expect.anything(),
-      );
+      expect(storageMock.watch).toHaveBeenCalledWith(expect.arrayContaining([expect.any(String)]), expect.anything());
     });
 
     it('can throw error when trying to watch library when watcher feature flag is disabled', async () => {
@@ -1148,7 +1157,46 @@ describe(LibraryService.name, () => {
 
       await sut.init();
       await expect(sut.update(authStub.admin, authStub.admin.user.id, { isWatched: true })).rejects.toThrow(
-        'Cannot set isWatched on library when the library watch feature flag is disabled',
+        'Library watching is not enabled',
+      );
+    });
+  });
+
+  describe('watchAll', () => {
+    it('can initialize watcher for all watched external libraries', async () => {
+      libraryMock.getAll.mockResolvedValue([
+        libraryStub.externalLibrary1,
+        libraryStub.externalLibrary2,
+        libraryStub.watchedExternalLibrary1,
+        libraryStub.watchedExternalLibrary2,
+      ]);
+
+      libraryMock.update.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+
+      const mockWatcher = newFSWatcherMock();
+
+      mockWatcher.on.mockImplementation((event, callback) => {
+        if (event === 'ready') {
+          callback();
+        }
+      });
+
+      storageMock.watch.mockResolvedValue(mockWatcher);
+
+      await sut.init();
+      await expect(sut.watchAll()).resolves.toBeTruthy();
+
+      expect(storageMock.watch).toHaveBeenNthCalledWith(
+        1,
+        expect.arrayContaining([expect.any(String)]),
+        expect.anything(),
+      );
+      expect(storageMock.watch).toHaveBeenNthCalledWith(
+        2,
+        expect.arrayContaining([expect.any(String)]),
+        expect.anything(),
       );
     });
   });
