@@ -214,24 +214,26 @@
     </section>
   {/if}
 
-  <section class="mx-4 mt-10" style:display={!isOwner && description === '' ? 'none' : 'block'}>
-    {#key asset.id}
-      <textarea
-        disabled={!isOwner || api.isSharedLink}
-        bind:this={textArea}
-        class="max-h-[500px]
+  {#if isOwner || description !== ''}
+    <section class="px-4 mt-10">
+      {#key asset.id}
+        <textarea
+          disabled={!isOwner || api.isSharedLink}
+          bind:this={textArea}
+          class="max-h-[500px]
       w-full resize-none overflow-hidden border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary"
-        placeholder={!isOwner ? '' : 'Add a description'}
-        on:focusin={handleFocusIn}
-        on:focusout={handleFocusOut}
-        on:input={() => autoGrowHeight(textArea)}
-        bind:value={description}
-        use:autoGrowHeight
-        use:clickOutside
-        on:outclick={handleFocusOut}
-      />
-    {/key}
-  </section>
+          placeholder={!isOwner ? '' : 'Add a description'}
+          on:focusin={handleFocusIn}
+          on:focusout={handleFocusOut}
+          on:input={() => autoGrowHeight(textArea)}
+          bind:value={description}
+          use:autoGrowHeight
+          use:clickOutside
+          on:outclick={handleFocusOut}
+        />
+      {/key}
+    </section>
+  {/if}
 
   {#if !api.isSharedLink && people.length > 0}
     <section class="px-4 py-4 text-sm">
@@ -335,7 +337,9 @@
         </div>
       </div>
     {:else}
-      <p class="text-sm">DETAILS</p>
+      <div class="flex h-10 w-full items-center justify-between text-sm">
+        <h2>DETAILS</h2>
+      </div>
     {/if}
 
     {#if asset.exifInfo?.dateTimeOriginal && !asset.isReadOnly}
