@@ -165,7 +165,7 @@ export class LibraryService extends EventEmitter {
       this.emit('error', error);
     });
 
-    // Wait for chokidar to initialize before returning
+    // Wait for the watcher to initialize before returning
     await new Promise<void>((resolve) => {
       watcher.on('ready', async () => {
         resolve();
@@ -192,7 +192,7 @@ export class LibraryService extends EventEmitter {
   async unwatch(id: string) {
     await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
 
-    if (this.watchers.hasOwnProperty(id)) {
+    if (this.watchers.hasOwnProperty(id) && typeof this.watchers[id] === 'function') {
       await this.watchers[id]();
       delete this.watchers[id];
     }

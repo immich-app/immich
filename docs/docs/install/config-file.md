@@ -129,6 +129,16 @@ The default configuration looks like this:
     "scan": {
       "enabled": true,
       "cronExpression": "0 0 * * *"
+    },
+    "watch": {
+      "enabled": false,
+      "usePolling": true,
+      "interval": 10000,
+      "binaryInterval": 10000,
+      "awaitWriteFinish": {
+        "stabilityThreshold": 2000,
+        "pollInterval": 100
+      }
     }
   }
 }
