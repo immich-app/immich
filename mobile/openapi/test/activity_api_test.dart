@@ -27,7 +27,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<ActivityResponseDto>> getActivities(String albumId, { String assetId, ReactionType type, ReactionLevel level, String userId }) async
+    //Future<List<ActivityResponseDto>> getActivities(String albumId, { String assetId, ReactionLevel level, ReactionType type, String userId }) async
     test('test getActivities', () async {
       // TODO
     });

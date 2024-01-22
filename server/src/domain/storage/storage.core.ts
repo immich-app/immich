@@ -103,8 +103,8 @@ export class StorageCore {
     return StorageCore.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}.mp4`);
   }
 
-  static getAndroidMotionPath(asset: AssetEntity) {
-    return StorageCore.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${asset.id}-MP.mp4`);
+  static getAndroidMotionPath(asset: AssetEntity, uuid: string) {
+    return StorageCore.getNestedPath(StorageFolder.ENCODED_VIDEO, asset.ownerId, `${uuid}-MP.mp4`);
   }
 
   static isAndroidMotionPath(originalPath: string) {

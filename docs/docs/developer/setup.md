@@ -34,15 +34,13 @@ All the services are packaged to run as with single Docker Compose command.
 1. Clone the project repo.
 2. Run `cp docker/example.env docker/.env`.
 3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.
-4. Install the required dependencies (nodejs >20, a modern java version e.g. OpenJDK 17)
-5. From the root directory, run:
+4. From the root directory, run:
 
 ```bash title="Start development server"
-make open-api # this is the only step that requires the above dependencies
 make dev # required Makefile installed on the system.
 ```
 
-6. Access the dev instance in your browser at http://localhost:2283, or connect via the mobile app.
+5. Access the dev instance in your browser at http://localhost:2283, or connect via the mobile app.
 
 All the services will be started with hot-reloading enabled for a quick feedback loop.
 

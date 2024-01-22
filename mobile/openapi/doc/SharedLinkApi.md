@@ -185,7 +185,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMySharedLink**
-> SharedLinkResponseDto getMySharedLink(password, token, key)
+> SharedLinkResponseDto getMySharedLink(key, password, token)
 
 
 
@@ -208,12 +208,12 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = SharedLinkApi();
+final key = key_example; // String | 
 final password = password; // String | 
 final token = token_example; // String | 
-final key = key_example; // String | 
 
 try {
-    final result = api_instance.getMySharedLink(password, token, key);
+    final result = api_instance.getMySharedLink(key, password, token);
     print(result);
 } catch (e) {
     print('Exception when calling SharedLinkApi->getMySharedLink: $e\n');
@@ -224,9 +224,9 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **key** | **String**|  | [optional] 
  **password** | **String**|  | [optional] 
  **token** | **String**|  | [optional] 
- **key** | **String**|  | [optional] 
 
 ### Return type
 
