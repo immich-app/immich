@@ -149,9 +149,9 @@ export class StorageTemplateService {
       const oldPath = originalPath;
       const newPath = await this.getTemplatePath(asset, metadata);
 
-      if (!exifInfo || !exifInfo.fileSizeInByte) {
-        this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);
-        return;
+      let fileSizeInByte = (await this.storageRepository.stat(oldPath)).size;
+      if (exifInfo && exifInfo.fileSizeInByte) {
+        fileSizeInByte = exifInfo.fileSizeInByte;
       }
 
       try {
@@ -160,7 +160,7 @@ export class StorageTemplateService {
           pathType: AssetPathType.ORIGINAL,
           oldPath,
           newPath,
-          assetInfo: { sizeInBytes: exifInfo.fileSizeInByte, checksum: asset.checksum },
+          assetInfo: { sizeInBytes: fileSizeInByte, checksum: asset.checksum },
         });
         if (sidecarPath) {
           await this.storageCore.moveFile({
