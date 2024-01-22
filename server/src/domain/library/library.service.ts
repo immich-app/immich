@@ -192,8 +192,6 @@ export class LibraryService extends EventEmitter {
   }
 
   async unwatch(id: string) {
-    await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
-
     if (this.watchers.hasOwnProperty(id)) {
       await this.watchers[id]();
       delete this.watchers[id];
@@ -201,8 +199,6 @@ export class LibraryService extends EventEmitter {
   }
 
   async unwatchAll() {
-    await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
-
     for (const id in this.watchers) {
       await this.unwatch(id);
     }
