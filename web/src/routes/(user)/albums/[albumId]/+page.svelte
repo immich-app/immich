@@ -653,16 +653,19 @@
                 </div>
               {/if}
               <!-- ALBUM DESCRIPTION -->
-              <textarea
-                class="w-full resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
-                bind:this={textArea}
-                bind:value={description}
-                disabled={!isOwned}
-                on:input={() => autoGrowHeight(textArea)}
-                on:focusout={handleUpdateDescription}
-                use:autoGrowHeight
-                placeholder="Add description"
-              />
+              {#if isOwned}
+                <textarea
+                  class="w-full resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
+                  bind:this={textArea}
+                  bind:value={description}
+                  on:input={() => autoGrowHeight(textArea)}
+                  on:focusout={handleUpdateDescription}
+                  use:autoGrowHeight
+                  placeholder="Add description"
+                />
+              {:else if description}
+                <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+              {/if}
             </section>
           {/if}
 
