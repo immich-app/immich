@@ -401,7 +401,7 @@ export const assetStub = {
   }),
 
   livePhotoMotionAsset: Object.freeze({
-    id: 'live-photo-motion-asset',
+    id: fileStub.livePhotoMotion.uuid,
     originalPath: fileStub.livePhotoMotion.originalPath,
     ownerId: authStub.user1.user.id,
     type: AssetType.VIDEO,
