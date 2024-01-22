@@ -225,7 +225,7 @@ jobs:
           cache: "poetry"
       - name: Install dependencies
         run: |
-          poetry install --with dev
+          poetry install --with dev --with cpu
       - name: Lint with ruff
         run: |
           poetry run ruff check --output-format=github app export

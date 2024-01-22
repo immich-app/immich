@@ -1,0 +1,59 @@
+version: "3.8"
+
+# Configurations for hardware-accelerated transcoding 
+
+# If using Unraid or another platform that doesn't allow multiple Compose files,
+# you can inline the config for a backend by copying its contents 
+# into the immich-microservices service in the docker-compose.yml file.
+
+# See https://immich.app/docs/features/hardware-transcoding for more info on using hardware transcoding.
+
+services:
+  cpu:
+
+  nvenc:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - compute
+                - video
+
+  quicksync:
+    devices:
+      - /dev/dri:/dev/dri
+
+  rkmpp:
+    security_opt: # enables full access to /sys and /proc, still far better than privileged: true
+      - systempaths=unconfined
+      - apparmor=unconfined
+    group_add:
+      - video
+    devices:
+      - /dev/rga:/dev/rga
+      - /dev/dri:/dev/dri
+      - /dev/dma_heap:/dev/dma_heap
+      - /dev/mpp_service:/dev/mpp_service
+    volumes:
+      - /usr/bin/ffmpeg:/usr/bin/ffmpeg_mpp:ro
+      - /lib/aarch64-linux-gnu:/lib/ffmpeg-mpp:ro
+      - /lib/aarch64-linux-gnu/libblas.so.3:/lib/ffmpeg-mpp/libblas.so.3:ro # symlink is resolved by mounting
+      - /lib/aarch64-linux-gnu/liblapack.so.3:/lib/ffmpeg-mpp/liblapack.so.3:ro # symlink is resolved by mounting
+      - /lib/aarch64-linux-gnu/pulseaudio/libpulsecommon-15.99.so:/lib/ffmpeg-mpp/libpulsecommon-15.99.so:ro
+
+  vaapi:
+    devices:
+      - /dev/dri:/dev/dri
+
+  vaapi-wsl: # use this for VAAPI if you're running Immich in WSL2
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /usr/lib/wsl:/usr/lib/wsl
+    environment:
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib
+      - LIBVA_DRIVER_NAME=d3d12

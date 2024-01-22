@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, LibraryResponseDto, LibraryType, LibraryStatsResponseDto } from '@api';
+  import { api, type LibraryResponseDto, LibraryType, type LibraryStatsResponseDto } from '@api';
   import { onMount } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
-  import EditDescriptionModal from '$lib/components/album-page/edit-description-modal.svelte';
   import ShareInfoModal from '$lib/components/album-page/share-info-modal.svelte';
   import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -37,7 +36,7 @@
   import { downloadArchive } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { ActivityResponseDto, ReactionLevel, ReactionType, UserResponseDto, api } from '@api';
+  import { type ActivityResponseDto, ReactionLevel, ReactionType, type UserResponseDto, api } from '@api';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -60,6 +59,7 @@
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import UpdatePanel from '$lib/components/shared-components/update-panel.svelte';
   import { user } from '$lib/stores/user.store';
+  import { autoGrowHeight } from '$lib/utils/autogrow';
 
   export let data: PageData;
 
@@ -67,6 +67,7 @@
   let { slideshowState, slideshowShuffle } = slideshowStore;
 
   let album = data.album;
+  let description = album.description;
 
   $: album = data.album;
 
@@ -91,7 +92,6 @@
   let backUrl: string = AppRoute.ALBUMS;
   let viewMode = ViewMode.VIEW;
   let titleInput: HTMLInputElement;
-  let isEditingDescription = false;
   let isCreatingSharedAlbum = false;
   let currentAlbumName = album.albumName;
   let contextMenuPosition: { x: number; y: number } = { x: 0, y: 0 };
@@ -100,6 +100,7 @@
   let reactions: ActivityResponseDto[] = [];
   let globalWidth: number;
   let assetGridWidth: number;
+  let textArea: HTMLTextAreaElement;
 
   const assetStore = new AssetStore({ albumId: album.id });
   const assetInteractionStore = createAssetInteractionStore();
@@ -122,7 +123,7 @@
   $: showActivityStatus =
     album.sharedUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
-  afterNavigate(({ from }) => {
+  $: afterNavigate(({ from }) => {
     assetViewingStore.showAssetViewer(false);
 
     let url: string | undefined = from?.url?.pathname;
@@ -217,6 +218,19 @@
     }
   });
 
+  const handleKeypress = async (event: KeyboardEvent) => {
+    if (event.target !== textArea) {
+      return;
+    }
+    const ctrl = event.ctrlKey;
+    switch (event.key) {
+      case 'Enter':
+        if (ctrl && event.target === textArea) {
+          textArea.blur();
+        }
+    }
+  };
+
   const handleStartSlideshow = async () => {
     const asset = $slideshowShuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
     if (asset) {
@@ -236,6 +250,14 @@
     }
     if (viewMode === ViewMode.SELECT_ASSETS) {
       handleCloseSelectAssets();
+      return;
+    }
+    if (viewMode === ViewMode.LINK_SHARING) {
+      viewMode = ViewMode.VIEW;
+      return;
+    }
+    if (viewMode === ViewMode.OPTIONS) {
+      viewMode = ViewMode.VIEW;
       return;
     }
     if ($showAssetViewer) {
@@ -412,7 +434,10 @@
     }
   };
 
-  const handleUpdateDescription = async (description: string) => {
+  const handleUpdateDescription = async () => {
+    if (album.description === description) {
+      return;
+    }
     try {
       await api.albumApi.updateAlbumInfo({
         id: album.id,
@@ -422,12 +447,13 @@
       });
 
       album.description = description;
-      isEditingDescription = false;
     } catch (error) {
       handleError(error, 'Error updating album description');
     }
   };
 </script>
+
+<svelte:window on:keydown={handleKeypress} />
 
 <div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
   <div class="relative w-full shrink">
@@ -626,19 +652,17 @@
                   {/if}
                 </div>
               {/if}
-
               <!-- ALBUM DESCRIPTION -->
-              {#if isOwned || album.description}
-                <button
-                  class="mb-12 mt-6 w-full border-b-2 border-transparent pb-2 text-left text-lg font-medium transition-colors hover:border-b-2 dark:text-gray-300"
-                  on:click={() => (isEditingDescription = true)}
-                  class:hover:border-gray-400={isOwned}
-                  disabled={!isOwned}
-                  title="Edit description"
-                >
-                  {album.description || 'Add description'}
-                </button>
-              {/if}
+              <textarea
+                class="w-full resize-none overflow-hidden text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
+                bind:this={textArea}
+                bind:value={description}
+                disabled={!isOwned}
+                on:input={() => autoGrowHeight(textArea)}
+                on:focusout={handleUpdateDescription}
+                use:autoGrowHeight
+                placeholder="Add description"
+              />
             </section>
           {/if}
 
@@ -680,7 +704,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg pl-4"
+        class="z-[2] w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
         translate="yes"
       >
         <ActivityViewer
@@ -744,12 +768,16 @@
   />
 {/if}
 
-{#if isEditingDescription}
-  <EditDescriptionModal
-    {album}
-    on:close={() => (isEditingDescription = false)}
-    on:save={({ detail: description }) => handleUpdateDescription(description)}
-  />
-{/if}
-
 <UpdatePanel {assetStore} />
+
+<style>
+  ::placeholder {
+    color: rgb(60, 60, 60);
+    opacity: 0.6;
+  }
+
+  ::-ms-input-placeholder {
+    /* Edge 12 -18 */
+    color: white;
+  }
+</style>

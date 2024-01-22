@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { cleanup, render, RenderResult } from '@testing-library/svelte';
+import { cleanup, render, type RenderResult } from '@testing-library/svelte';
 import { NotificationType } from '../notification';
 import NotificationCard from '../notification-card.svelte';
 

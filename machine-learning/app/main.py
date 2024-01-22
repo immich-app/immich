@@ -131,7 +131,7 @@ async def load(model: InferenceModel) -> InferenceModel:
             await loop.run_in_executor(thread_pool, _load)
         return model
     except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
-        log.warn(
+        log.warning(
             (
                 f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'."
                 "Clearing cache and retrying."
