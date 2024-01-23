@@ -111,7 +111,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
 *AssetApi* | [**getTimeBucket**](doc//AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-*AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | Use /asset/device/:deviceId instead - Remove in 1.92 release
 *AssetApi* | [**restoreAssets**](doc//AssetApi.md#restoreassets) | **POST** /asset/restore | 
 *AssetApi* | [**restoreTrash**](doc//AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 

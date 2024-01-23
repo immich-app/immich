@@ -2318,52 +2318,6 @@
         ]
       }
     },
-    "/asset/{deviceId}": {
-      "get": {
-        "deprecated": true,
-        "operationId": "getUserAssetsByDeviceId",
-        "parameters": [
-          {
-            "name": "deviceId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Use /asset/device/:deviceId instead - Remove in 1.92 release",
-        "tags": [
-          "Asset"
-        ]
-      }
-    },
     "/asset/{id}": {
       "put": {
         "operationId": "updateAsset",

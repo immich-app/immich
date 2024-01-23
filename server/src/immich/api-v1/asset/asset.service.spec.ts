@@ -56,32 +56,6 @@ const _getAsset_1 = () => {
   return asset_1;
 };
 
-const _getAsset_2 = () => {
-  const asset_2 = new AssetEntity();
-
-  asset_2.id = 'id_2';
-  asset_2.ownerId = 'user_id_1';
-  asset_2.deviceAssetId = 'device_asset_id_2';
-  asset_2.deviceId = 'device_id_1';
-  asset_2.type = AssetType.VIDEO;
-  asset_2.originalPath = 'fake_path/asset_2.jpeg';
-  asset_2.resizePath = '';
-  asset_2.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
-  asset_2.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
-  asset_2.updatedAt = new Date('2022-06-19T23:41:36.910Z');
-  asset_2.isFavorite = false;
-  asset_2.isArchived = false;
-  asset_2.webpPath = '';
-  asset_2.encodedVideoPath = '';
-  asset_2.duration = '0:00:00.000000';
-
-  return asset_2;
-};
-
-const _getAssets = () => {
-  return [_getAsset_1(), _getAsset_2()];
-};
-
 describe('AssetService', () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
@@ -97,7 +71,6 @@ describe('AssetService', () => {
       upsertExif: jest.fn(),
 
       getAllByUserId: jest.fn(),
-      getAllByDeviceId: jest.fn(),
       getById: jest.fn(),
       getDetectedObjectsByUserId: jest.fn(),
       getLocationsByUserId: jest.fn(),
@@ -197,20 +170,6 @@ describe('AssetService', () => {
       ]);
       expect(userMock.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, 111);
     });
-  });
-
-  it('get assets by device id', async () => {
-    const assets = _getAssets();
-
-    assetRepositoryMock.getAllByDeviceId.mockImplementation(() =>
-      Promise.resolve<string[]>(Array.from(assets.map((asset) => asset.deviceAssetId))),
-    );
-
-    const deviceId = 'device_id_1';
-    const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
-
-    expect(result.length).toEqual(2);
-    expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
   });
 
   describe('bulkUploadCheck', () => {

@@ -15,7 +15,7 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
 import { sendFile } from '../../app.utils';
@@ -27,7 +27,6 @@ import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { DeviceIdDto } from './dto/device-id.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
@@ -139,15 +138,6 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
   ): Promise<AssetResponseDto[]> {
     return this.assetService.getAllAssets(auth, dto);
-  }
-
-  /**
-   * @deprecated Use /asset/device/:deviceId instead - Remove at 1.92 release
-   */
-  @Get('/:deviceId')
-  @ApiOperation({ deprecated: true, summary: 'Use /asset/device/:deviceId instead - Remove in 1.92 release' })
-  getUserAssetsByDeviceId(@Auth() auth: AuthDto, @Param() { deviceId }: DeviceIdDto) {
-    return this.assetService.getUserAssetsByDeviceId(auth, deviceId);
   }
 
   /**
