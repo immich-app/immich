@@ -1019,7 +1019,7 @@ describe(LibraryService.name, () => {
         expect(libraryMock.create).not.toHaveBeenCalled();
       });
 
-      it('should not create watched upload library', async () => {
+      it('should not create watched', async () => {
         await expect(
           sut.create(authStub.admin, {
             type: LibraryType.UPLOAD,
