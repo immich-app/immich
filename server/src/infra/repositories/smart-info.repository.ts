@@ -214,7 +214,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
     let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
     if (numResults) {
-      runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults}`;
+      runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults};`;
     }
 
     return runtimeConfig;

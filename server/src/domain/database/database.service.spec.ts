@@ -72,7 +72,7 @@ describe(DatabaseService.name, () => {
       expect(fatalLog).not.toHaveBeenCalled();
     });
 
-    it(`should throw an error if ${extName} version is not installed even after createVectors`, async () => {
+    it(`should throw an error if ${extName} version is not installed even after createVectorExtension`, async () => {
       databaseMock.getExtensionVersion.mockResolvedValue(null);
 
       await expect(sut.init()).rejects.toThrow(`Unexpected: The ${extName} extension is not installed.`);
