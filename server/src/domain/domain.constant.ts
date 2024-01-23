@@ -13,18 +13,18 @@ export interface IVersion {
 }
 
 export enum VersionType {
-  PATCH,
-  MINOR,
-  MAJOR,
+  PATCH = 1,
+  MINOR = 2,
+  MAJOR = 3,
 }
 
 export class Version implements IVersion {
   public readonly types = ['major', 'minor', 'patch'] as const;
 
   constructor(
-    public readonly major: number,
-    public readonly minor: number = 0,
-    public readonly patch: number = 0,
+    public major: number,
+    public minor: number = 0,
+    public patch: number = 0,
   ) {}
 
   toString() {
@@ -51,7 +51,7 @@ export class Version implements IVersion {
     for (const [i, key] of this.types.entries()) {
       const diff = this[key] - version[key];
       if (diff !== 0) {
-        return [diff > 0 ? 1 : -1, 2 - i as VersionType];
+        return [diff > 0 ? 1 : -1, (3 - i) as VersionType];
       }
     }
 
@@ -59,17 +59,17 @@ export class Version implements IVersion {
   }
 
   isOlderThan(version: Version): VersionType | null {
-    const [ bool, type ] = this.compare(version);
+    const [bool, type] = this.compare(version);
     return bool < 0 ? type : null;
   }
 
   isEqual(version: Version): boolean {
-    const [ bool, ] = this.compare(version);
+    const [bool] = this.compare(version);
     return bool === 0;
   }
 
   isNewerThan(version: Version): VersionType | null {
-    const [ bool, type ] = this.compare(version);
+    const [bool, type] = this.compare(version);
     return bool > 0 ? type : null;
   }
 }

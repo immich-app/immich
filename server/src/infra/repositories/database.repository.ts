@@ -1,4 +1,5 @@
 import { DatabaseExtension, DatabaseLock, IDatabaseRepository, Version } from '@app/domain';
+import { vectorExt } from '@app/infra/database.config';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
@@ -26,6 +27,10 @@ export class DatabaseRepository implements IDatabaseRepository {
     );
     const version = res[0]?.['version'];
     return version == null ? null : Version.fromString(version);
+  }
+
+  getPreferredVectorExtension(): DatabaseExtension {
+    return vectorExt;
   }
 
   async getPostgresVersion(): Promise<Version> {

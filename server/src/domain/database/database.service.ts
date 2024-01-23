@@ -1,4 +1,3 @@
-import { vectorExt } from '@app/infra/database.config';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
@@ -8,13 +7,16 @@ import { DatabaseExtension, IDatabaseRepository, extName } from '../repositories
 @Injectable()
 export class DatabaseService {
   private logger = new ImmichLogger(DatabaseService.name);
+  private vectorExt: DatabaseExtension;
   minPostgresVersion = 14;
   minVectorsVersion = new Version(0, 0, 0);
-  maxVectorsVersion: Version | VersionType = VersionType.MINOR;
+  vectorsVersionPin = VersionType.MINOR;
   minVectorVersion = new Version(0, 5, 0);
-  maxVectorVersion: Version | VersionType = VersionType.MAJOR;
+  vectorVersionPin = VersionType.MAJOR;
 
-  constructor(@Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository) {}
+  constructor(@Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository) {
+    this.vectorExt = this.databaseRepository.getPreferredVectorExtension();
+  }
 
   async init() {
     await this.assertPostgresql();
@@ -34,15 +36,19 @@ export class DatabaseService {
   }
 
   private async createVectorExtension() {
-    await this.databaseRepository.createExtension(vectorExt).catch(async (err: QueryFailedError) => {
-      const otherExt = vectorExt === DatabaseExtension.VECTORS ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;
+    await this.databaseRepository.createExtension(this.vectorExt).catch(async (err: QueryFailedError) => {
+      const otherExt =
+        this.vectorExt === DatabaseExtension.VECTORS ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;
       this.logger.fatal(`
-        Failed to activate the ${extName[vectorExt]} extension.
-        Please ensure the Postgres instance has ${extName[vectorExt]} installed.
-        If the Postgres instance already has ${extName[vectorExt]} installed, Immich may not have the necessary permissions to activate it.
-        In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${vectorExt}' manually as a superuser.
+        Failed to activate the ${extName[this.vectorExt]} extension.
+        Please ensure the Postgres instance has ${extName[this.vectorExt]} installed.
+        If the Postgres instance already has ${extName[this.vectorExt]} installed, Immich may not have the necessary permissions to activate it.
+        In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${this.vectorExt}' manually as a superuser.
 
-        Alternatively, if your Postgres instance has ${extName[otherExt]}, you may switch to this by setting the environment variable IMMICH_VECTOR_EXTENSION=${otherExt}
+        Alternatively, if your Postgres instance has ${extName[otherExt]}, you may use this instead by setting the environment variable 'IMMICH_VECTOR_EXTENSION=${otherExt}'.
+        Note that switching between the two extensions after a successful startup is not supported.
+        The exception is if your version of Immich prior to upgrading was 1.90.2 or earlier.
+        In this case, you may set either extension now, but you will not be able to switch to the other extension following a successful startup.
       `);
       throw err;
     });
@@ -50,60 +56,59 @@ export class DatabaseService {
 
   private async updateVectorExtension() {
     const [version, availableVersion] = await Promise.all([
-      this.databaseRepository.getExtensionVersion(vectorExt),
-      this.databaseRepository.getAvailableExtensionVersion(vectorExt),
+      this.databaseRepository.getExtensionVersion(this.vectorExt),
+      this.databaseRepository.getAvailableExtensionVersion(this.vectorExt),
     ]);
     if (version == null) {
-      throw new Error(`Unexpected: The ${extName[vectorExt]} extension is not installed.`);
+      throw new Error(`Unexpected: The ${extName[this.vectorExt]} extension is not installed.`);
     }
 
-    if (availableVersion?.isNewerThan(version)) {
+    if (availableVersion == null) {
+      return;
+    }
+
+    const maxVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.vectorVersionPin : this.vectorsVersionPin;
+    const isNewer = availableVersion.isNewerThan(version);
+    if (isNewer != null && isNewer < maxVersion) {
       try {
-        this.databaseRepository.updateExtension(vectorExt, availableVersion);
+        await this.databaseRepository.updateExtension(this.vectorExt, availableVersion);
       } catch (err) {
         this.logger.warn(`
-          The ${extName[vectorExt]} extension version is ${version}, but ${availableVersion} is available.
+          The ${extName[this.vectorExt]} extension version is ${version}, but ${availableVersion} is available.
           Immich attempted to update the extension, but failed to do so.
           This may be because Immich does not have the necessary permissions to update the extension.
-          Please run 'ALTER EXTENSION ${vectorExt} UPDATE' manually as a superuser.`);
+          Please run 'ALTER EXTENSION ${this.vectorExt} UPDATE' manually as a superuser.`);
       }
     }
   }
 
   private async assertVectorExtension() {
-    const version = await this.databaseRepository.getExtensionVersion(vectorExt);
+    const version = await this.databaseRepository.getExtensionVersion(this.vectorExt);
     if (version == null) {
-      throw new Error(`Unexpected: The ${extName[vectorExt]} extension is not installed.`);
+      throw new Error(`Unexpected: The ${extName[this.vectorExt]} extension is not installed.`);
     }
 
-    // if (version.isEqual(new Version(0, 0, 0))) {
-    //   throw new Error(
-    //     `The pgvecto.rs extension version is ${version}, which means it is a nightly release.` +
-    //       `Please run 'DROP EXTENSION IF EXISTS vectors' and switch to a release version.`,
-    //   );
-    // }
+    if (version.isEqual(new Version(0, 0, 0))) {
+      this.logger.fatal(`
+        The ${extName[this.vectorExt]} extension version is ${version}, which means it is a nightly release.
+        Please run 'DROP EXTENSION IF EXISTS ${this.vectorExt}' and switch to a release version.`);
+      throw new Error();
+    }
 
-    const minVersion = vectorExt === DatabaseExtension.VECTOR ? this.minVectorVersion : this.minVectorsVersion;
-    const maxVersion = vectorExt === DatabaseExtension.VECTOR ? this.maxVectorVersion : this.maxVectorsVersion;
+    const minVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.minVectorVersion : this.minVectorsVersion;
+    const maxVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.vectorVersionPin : this.vectorsVersionPin;
 
-    if (maxVersion instanceof Version) {
-      if (version.isNewerThan(maxVersion)) {
-        this.logger.fatal(`
-        The ${extName[vectorExt]} extension version is ${version}. This is newer than ${maxVersion}, the current maximum supported version.
-        Please run 'DROP EXTENSION IF EXISTS ${vectorExt}' and switch to ${maxVersion}.`);
-        throw new Error();
-      }
-    } else if (version.isOlderThan(minVersion) || ((version.isNewerThan(minVersion) ?? 0) > maxVersion)) {
+    if (version.isOlderThan(minVersion) || (version.isNewerThan(minVersion) ?? 0) >= maxVersion) {
       const releases =
         maxVersion !== VersionType.PATCH
           ? `${minVersion} and later ${VersionType[maxVersion - 1].toLowerCase()} releases`
           : minVersion.toString();
 
       this.logger.fatal(`
-        The ${extName[vectorExt]} extension version is ${version}, but Immich only supports ${releases}.
+        The ${extName[this.vectorExt]} extension version is ${version}, but Immich only supports ${releases}.
         If the Postgres instance already has a compatible version installed, Immich may not have the necessary permissions to activate it.
-        In this case, please run 'ALTER EXTENSION UPDATE ${vectorExt}' manually as a superuser.
-        Otherwise, please update the version of ${extName[vectorExt]} in the Postgres instance to a compatible version.`);
+        In this case, please run 'ALTER EXTENSION UPDATE ${this.vectorExt}' manually as a superuser.
+        Otherwise, please update the version of ${extName[this.vectorExt]} in the Postgres instance to a compatible version.`);
       throw new Error();
     }
   }

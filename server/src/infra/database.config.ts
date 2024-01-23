@@ -29,9 +29,5 @@ export const databaseConfig: PostgresConnectionOptions = {
 // this export is used by TypeORM commands in package.json#scripts
 export const dataSource = new DataSource(databaseConfig);
 
-const vectorEnv = process.env.IMMICH_VECTOR_EXTENSION?.trim().toLowerCase();
-if (vectorEnv && !['pgvector', 'pgvecto.rs'].includes(vectorEnv)) {
-  throw new Error(`IMMICH_VECTOR_EXTENSION must be one of ${Object.values(extName).join(', ')}`);
-}
-
-export const vectorExt = vectorEnv === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;
+export const vectorExt =
+  process.env.VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;

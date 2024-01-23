@@ -25,6 +25,7 @@ export const IDatabaseRepository = 'IDatabaseRepository';
 export interface IDatabaseRepository {
   getExtensionVersion(extensionName: string): Promise<Version | null>;
   getAvailableExtensionVersion(extension: DatabaseExtension): Promise<Version | null>;
+  getPreferredVectorExtension(): DatabaseExtension;
   getPostgresVersion(): Promise<Version>;
   createExtension(extension: DatabaseExtension): Promise<void>;
   updateExtension(extension: DatabaseExtension, version?: Version): Promise<void>;
