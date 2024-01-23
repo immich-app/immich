@@ -1,4 +1,4 @@
-import { DatabaseExtension } from '@app/domain/repositories/database.repository';
+import { DatabaseExtension, extName } from '@app/domain/repositories/database.repository';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
@@ -29,7 +29,9 @@ export const databaseConfig: PostgresConnectionOptions = {
 // this export is used by TypeORM commands in package.json#scripts
 export const dataSource = new DataSource(databaseConfig);
 
-export const vectorExt =
-  process.env.IMMICH_VECTOR_EXTENSION?.toLowerCase() === 'vector'
-    ? DatabaseExtension.VECTOR
-    : DatabaseExtension.VECTORS;
+const vectorEnv = process.env.IMMICH_VECTOR_EXTENSION?.trim().toLowerCase();
+if (vectorEnv && !['pgvector', 'pgvecto.rs'].includes(vectorEnv)) {
+  throw new Error(`IMMICH_VECTOR_EXTENSION must be one of ${Object.values(extName).join(', ')}`);
+}
+
+export const vectorExt = vectorEnv === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;

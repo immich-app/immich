@@ -13,9 +13,9 @@ export interface IVersion {
 }
 
 export enum VersionType {
-  MAJOR,
-  MINOR,
   PATCH,
+  MINOR,
+  MAJOR,
 }
 
 export class Version implements IVersion {
@@ -47,29 +47,30 @@ export class Version implements IVersion {
     }
   }
 
-  // if type is specified, only considers changes of that type or greater
-  compare(version: Version, type?: VersionType): number {
-    const types = type ? this.types.slice(0, type + 1) : this.types;
-    for (const key of types) {
+  private compare(version: Version): [number, VersionType | null] {
+    for (const [i, key] of this.types.entries()) {
       const diff = this[key] - version[key];
       if (diff !== 0) {
-        return diff > 0 ? 1 : -1;
+        return [diff > 0 ? 1 : -1, 2 - i as VersionType];
       }
     }
 
-    return 0;
+    return [0, null];
   }
 
-  isOlderThan(version: Version): boolean {
-    return this.compare(version) < 0;
+  isOlderThan(version: Version): VersionType | null {
+    const [ bool, type ] = this.compare(version);
+    return bool < 0 ? type : null;
   }
 
   isEqual(version: Version): boolean {
-    return this.compare(version) === 0;
+    const [ bool, ] = this.compare(version);
+    return bool === 0;
   }
 
-  isNewerThan(version: Version, type?: VersionType): boolean {
-    return this.compare(version, type) > 0;
+  isNewerThan(version: Version): VersionType | null {
+    const [ bool, type ] = this.compare(version);
+    return bool > 0 ? type : null;
   }
 }
 

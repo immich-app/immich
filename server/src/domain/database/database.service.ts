@@ -53,11 +53,11 @@ export class DatabaseService {
       this.databaseRepository.getExtensionVersion(vectorExt),
       this.databaseRepository.getAvailableExtensionVersion(vectorExt),
     ]);
-    if (version == null || availableVersion == null) {
+    if (version == null) {
       throw new Error(`Unexpected: The ${extName[vectorExt]} extension is not installed.`);
     }
 
-    if (availableVersion.isNewerThan(version)) {
+    if (availableVersion?.isNewerThan(version)) {
       try {
         this.databaseRepository.updateExtension(vectorExt, availableVersion);
       } catch (err) {
@@ -93,10 +93,10 @@ export class DatabaseService {
         Please run 'DROP EXTENSION IF EXISTS ${vectorExt}' and switch to ${maxVersion}.`);
         throw new Error();
       }
-    } else if (version.isOlderThan(minVersion) || version.isNewerThan(minVersion, maxVersion)) {
+    } else if (version.isOlderThan(minVersion) || ((version.isNewerThan(minVersion) ?? 0) > maxVersion)) {
       const releases =
         maxVersion !== VersionType.PATCH
-          ? `${minVersion} and later ${VersionType[maxVersion + 1].toLowerCase()} releases`
+          ? `${minVersion} and later ${VersionType[maxVersion - 1].toLowerCase()} releases`
           : minVersion.toString();
 
       this.logger.fatal(`
