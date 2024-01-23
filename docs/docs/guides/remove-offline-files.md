@@ -15,13 +15,13 @@ This way works by downloading a JSON file that contains a list of all the files 
 
 ## Script for Linux based systems:
 
-```
+```bash
 awk -F\" '/entityId/ {print $4}' orphans.json | while read line; do curl --location --request DELETE 'http://YOUR_IP_HERE:2283/api/asset' --header 'Content- Type: application/json' --header 'x-api-key: YOUR_API_KEY_HERE' --data '{ "force": true, "ids": ["'"$line"'"]}';done
 ```
 
 ## Script for the Windows system (run through PowerShell):
 
-```
+```powershell
 Get-Content orphans.json | Select-String -Pattern 'entityId' | ForEach-Object {
   $line = $_ -split '"' | Select-Object -Index 3
   $body = [pscustomobject]@{
