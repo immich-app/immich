@@ -42,7 +42,6 @@ export const db = {
           deleteUsers = true;
           continue;
         }
-
         await em.query(`DELETE FROM ${tableName} CASCADE;`);
       }
       if (deleteUsers) {

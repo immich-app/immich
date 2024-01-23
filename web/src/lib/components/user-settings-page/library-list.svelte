@@ -122,8 +122,6 @@
       return;
     }
 
-    console.log(event.isWatched);
-
     try {
       const libraryId = libraries[updateLibraryIndex].id;
       await api.libraryApi.updateLibrary({ id: libraryId, updateLibraryDto: { ...event } });

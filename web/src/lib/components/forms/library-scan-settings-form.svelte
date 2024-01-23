@@ -38,7 +38,7 @@
     dispatch('cancel');
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     dispatch('submit', { library, type: LibraryType.External });
   };
 
