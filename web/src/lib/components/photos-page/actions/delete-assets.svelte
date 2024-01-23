@@ -12,7 +12,7 @@
   export let menuItem = false;
   export let force = !$featureFlags.trash;
 
-  const { getOwnedAssets } = getAssetControlContext();
+  const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const dispatch = createEventDispatcher<{
     escape: void;
@@ -36,6 +36,7 @@
       .filter((a) => !a.isExternal)
       .map((a) => a.id);
     await deleteAssets(force, onAssetDelete, ids);
+    clearSelect();
     isShowConfirmation = false;
     loading = false;
   };
