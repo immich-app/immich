@@ -1,12 +1,12 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { vectorExtension } from '../database.config';
+import { vectorExt } from '../database.config';
 import { DatabaseExtension } from '@app/domain/repositories/database.repository';
 
 export class AddFaceEmbeddingIndex1700714033632 implements MigrationInterface {
   name = 'AddFaceEmbeddingIndex1700714033632';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (vectorExtension === DatabaseExtension.VECTORS) {
+    if (vectorExt === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
     }
 

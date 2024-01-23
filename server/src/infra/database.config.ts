@@ -29,7 +29,7 @@ export const databaseConfig: PostgresConnectionOptions = {
 // this export is used by TypeORM commands in package.json#scripts
 export const dataSource = new DataSource(databaseConfig);
 
-export const vectorExtension =
+export const vectorExt =
   process.env.IMMICH_VECTOR_EXTENSION?.toLowerCase() === 'vector'
     ? DatabaseExtension.VECTOR
     : DatabaseExtension.VECTORS;

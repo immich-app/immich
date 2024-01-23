@@ -12,7 +12,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { vectorExtension } from '../database.config';
+import { vectorExt } from '../database.config';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { asVector, isValidInteger } from '../infra.utils';
 
@@ -171,7 +171,7 @@ export class SmartInfoRepository implements ISmartInfoRepository {
     this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
 
     await this.smartSearchRepository.manager.transaction(async (manager) => {
-      if (vectorExtension === DatabaseExtension.VECTORS) {
+      if (vectorExt === DatabaseExtension.VECTORS) {
         await manager.query(`SET vectors.pgvector_compatibility=on`);
       }
       await manager.query(`DROP TABLE smart_search`);
@@ -209,12 +209,12 @@ export class SmartInfoRepository implements ISmartInfoRepository {
 
   private getRuntimeConfig(numResults?: number): string {
     let runtimeConfig = '';
-    if (vectorExtension === DatabaseExtension.VECTORS) {
+    if (vectorExt === DatabaseExtension.VECTORS) {
       runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
       if (numResults) {
         runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults}`;
       }
-    } else if (vectorExtension === DatabaseExtension.VECTOR) {
+    } else if (vectorExt === DatabaseExtension.VECTOR) {
       runtimeConfig = 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 
