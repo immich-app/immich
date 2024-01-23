@@ -82,7 +82,6 @@
     "@nestjs/cli": "^10.1.16",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.2.2",
-    "@openapitools/openapi-generator-cli": "2.7.0",
     "@testcontainers/postgresql": "^10.2.1",
     "@types/archiver": "^6.0.0",
     "@types/async-lock": "^1.4.2",
