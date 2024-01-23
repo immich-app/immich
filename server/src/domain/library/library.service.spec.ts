@@ -1113,14 +1113,14 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockResolvedValue(mockWatcher);
 
-      await sut.init();
-      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['foo'] })).resolves.toBeTruthy();
+      await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toBeTruthy();
+
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
           id: authStub.admin.user.id,
         }),
       );
-      expect(storageMock.watch).toHaveBeenCalledWith(expect.arrayContaining([expect.any(String)]), expect.anything());
+      expect(storageMock.watch).toHaveBeenCalledWith(expect.arrayContaining(['/foo']), expect.anything());
     });
 
     it('should re-watch library when updating exclusion patterns paths', async () => {
@@ -1138,7 +1138,6 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockResolvedValue(mockWatcher);
 
-      await sut.init();
       await expect(
         sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] }),
       ).resolves.toBeTruthy();
@@ -1155,7 +1154,6 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
       libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
 
-      await sut.init();
       await expect(sut.update(authStub.admin, authStub.admin.user.id, { isWatched: true })).rejects.toThrow(
         'Library watching is not enabled',
       );
@@ -1332,7 +1330,6 @@ describe(LibraryService.name, () => {
 
       storageMock.watch.mockResolvedValue(mockWatcher);
 
-      await sut.init();
       await expect(sut.watchAll()).resolves.toBeTruthy();
 
       expect(storageMock.watch.mock.calls).toEqual(

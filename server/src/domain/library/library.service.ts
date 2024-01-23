@@ -279,16 +279,24 @@ export class LibraryService extends EventEmitter {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update({ id, ...dto });
 
-    if (dto.isWatched !== undefined) {
+    let watch = false;
+
+    if (dto.isWatched) {
+      // Throw error if watching is requested but not enabled in config
       await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
 
-      if (dto.isWatched) {
-        await this.watch(id);
-      } else {
-        this.logger.debug(`Unwatching library ${id}`);
-        await this.unwatch(id);
-      }
-    } else if (dto.importPaths || dto.exclusionPatterns) {
+      watch = true;
+    } else {
+      this.logger.debug(`Unwatching library ${id}`);
+      await this.unwatch(id);
+    }
+
+    if (dto.importPaths || dto.exclusionPatterns) {
+      // If the watch feature flag is enabled, make sure to re-watch the new paths and exclusion patterns
+      watch = await this.configCore.hasFeature(FeatureFlag.LIBRARY_WATCH);
+    }
+
+    if (watch) {
       await this.watch(id);
     }
 
