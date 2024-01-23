@@ -8,6 +8,7 @@
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
   import SearchHistoryBox from './search-history-box.svelte';
+  import SearchFilterBox from './search-filter-box.svelte';
   export let value = '';
   export let grayTheme: boolean;
 
@@ -94,7 +95,7 @@
         name="q"
         class="w-full {grayTheme
           ? 'dark:bg-immich-dark-gray'
-          : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {showHistory
+          : 'dark:bg-immich-dark-bg'} px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg {showHistory || showFilter
           ? 'rounded-t-3xl border  border-gray-200 bg-white dark:border-gray-800'
           : 'rounded-3xl border border-transparent bg-gray-200'}"
         placeholder="Search your photos"
@@ -107,7 +108,7 @@
 
       <div class="absolute inset-y-0 right-5 flex items-center pl-6">
         <div class="dark:text-immich-dark-fg/75">
-          <IconButton on:click={() => (showFilter = true)}>
+          <IconButton on:click={() => (showFilter = true)} title="Show search options">
             <Icon path={mdiTune} size="1.5em" />
           </IconButton>
         </div>
@@ -134,6 +135,10 @@
           onSearch();
         }}
       />
+    {/if}
+
+    {#if showFilter}
+      <SearchFilterBox />
     {/if}
   </form>
 </div>
