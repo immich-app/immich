@@ -103,7 +103,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: tensorchord/pgvecto-rs:pg14-v0.1.11@sha256:0335a1a22f8c5dd1b697f14f079934f5152eaaa216c09b61e293be285491f8ee
+    image: tensorchord/pgvecto-rs:pg14-v0.0.0-nightly.20240123
     env_file:
       - .env
     environment:
@@ -111,7 +111,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      - ${UPLOAD_LOCATION}/postgres-vectors-v0.0.0-nightly-20240123:/var/lib/postgresql/data
     ports:
       - 5432:5432
 
