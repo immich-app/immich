@@ -29,7 +29,6 @@ Method | HTTP request | Description
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
 [**getTimeBucket**](AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | Use /asset/device/:deviceId instead - Remove in 1.92 release
 [**restoreAssets**](AssetApi.md#restoreassets) | **POST** /asset/restore | 
 [**restoreTrash**](AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
 [**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
@@ -1197,61 +1196,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**List<TimeBucketResponseDto>**](TimeBucketResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getUserAssetsByDeviceId**
-> List<String> getUserAssetsByDeviceId(deviceId)
-
-Use /asset/device/:deviceId instead - Remove in 1.92 release
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final deviceId = deviceId_example; // String | 
-
-try {
-    final result = api_instance.getUserAssetsByDeviceId(deviceId);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getUserAssetsByDeviceId: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **deviceId** | **String**|  | 
-
-### Return type
-
-**List<String>**
 
 ### Authorization
 

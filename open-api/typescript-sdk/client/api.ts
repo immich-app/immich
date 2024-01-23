@@ -7803,50 +7803,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @summary Use /asset/device/:deviceId instead - Remove in 1.92 release
-         * @param {string} deviceId 
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        getUserAssetsByDeviceId: async (deviceId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'deviceId' is not null or undefined
-            assertParamExists('getUserAssetsByDeviceId', 'deviceId', deviceId)
-            const localVarPath = `/asset/{deviceId}`
-                .replace(`{${"deviceId"}}`, encodeURIComponent(String(deviceId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {BulkIdsDto} bulkIdsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8796,18 +8752,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Use /asset/device/:deviceId instead - Remove in 1.92 release
-         * @param {string} deviceId 
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        async getUserAssetsByDeviceId(deviceId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserAssetsByDeviceId(deviceId, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {BulkIdsDto} bulkIdsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9138,17 +9082,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getTimeBuckets(requestParameters: AssetApiGetTimeBucketsRequest, options?: AxiosRequestConfig): AxiosPromise<Array<TimeBucketResponseDto>> {
             return localVarFp.getTimeBuckets(requestParameters.size, requestParameters.albumId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, requestParameters.personId, requestParameters.userId, requestParameters.withPartners, requestParameters.withStacked, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Use /asset/device/:deviceId instead - Remove in 1.92 release
-         * @param {AssetApiGetUserAssetsByDeviceIdRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        getUserAssetsByDeviceId(requestParameters: AssetApiGetUserAssetsByDeviceIdRequest, options?: AxiosRequestConfig): AxiosPromise<Array<string>> {
-            return localVarFp.getUserAssetsByDeviceId(requestParameters.deviceId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9721,20 +9654,6 @@ export interface AssetApiGetTimeBucketsRequest {
      * @memberof AssetApiGetTimeBuckets
      */
     readonly withStacked?: boolean
-}
-
-/**
- * Request parameters for getUserAssetsByDeviceId operation in AssetApi.
- * @export
- * @interface AssetApiGetUserAssetsByDeviceIdRequest
- */
-export interface AssetApiGetUserAssetsByDeviceIdRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetApiGetUserAssetsByDeviceId
-     */
-    readonly deviceId: string
 }
 
 /**
@@ -10476,19 +10395,6 @@ export class AssetApi extends BaseAPI {
      */
     public getTimeBuckets(requestParameters: AssetApiGetTimeBucketsRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getTimeBuckets(requestParameters.size, requestParameters.albumId, requestParameters.isArchived, requestParameters.isFavorite, requestParameters.isTrashed, requestParameters.key, requestParameters.personId, requestParameters.userId, requestParameters.withPartners, requestParameters.withStacked, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Use /asset/device/:deviceId instead - Remove in 1.92 release
-     * @param {AssetApiGetUserAssetsByDeviceIdRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @deprecated
-     * @throws {RequiredError}
-     * @memberof AssetApi
-     */
-    public getUserAssetsByDeviceId(requestParameters: AssetApiGetUserAssetsByDeviceIdRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getUserAssetsByDeviceId(requestParameters.deviceId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
