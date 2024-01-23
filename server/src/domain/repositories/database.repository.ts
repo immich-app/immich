@@ -17,8 +17,10 @@ export const IDatabaseRepository = 'IDatabaseRepository';
 
 export interface IDatabaseRepository {
   getExtensionVersion(extensionName: string): Promise<Version | null>;
+  getAvailableExtensionVersion(extension: DatabaseExtension): Promise<Version | null>;
   getPostgresVersion(): Promise<Version>;
   createExtension(extension: DatabaseExtension): Promise<void>;
+  updateExtension(extension: DatabaseExtension, version?: Version): Promise<void>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
   isBusy(lock: DatabaseLock): boolean;

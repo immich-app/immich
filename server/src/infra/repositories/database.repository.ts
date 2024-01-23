@@ -16,6 +16,18 @@ export class DatabaseRepository implements IDatabaseRepository {
     return version == null ? null : Version.fromString(version);
   }
 
+  async getAvailableExtensionVersion(extension: DatabaseExtension): Promise<Version | null> {
+    const res = await this.dataSource.query(
+      `
+    SELECT version FROM pg_available_extension_versions
+    WHERE name = $1 AND installed = false 
+    ORDER BY version DESC`,
+      [extension],
+    );
+    const version = res[0]?.['version'];
+    return version == null ? null : Version.fromString(version);
+  }
+
   async getPostgresVersion(): Promise<Version> {
     const res = await this.dataSource.query(`SHOW server_version`);
     return Version.fromString(res[0]['server_version']);
@@ -23,6 +35,10 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
+  }
+
+  async updateExtension(extension: DatabaseExtension, version?: Version): Promise<void> {
+    await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO ${version}` : ''}'`);
   }
 
   async runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void> {
