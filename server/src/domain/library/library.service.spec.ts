@@ -916,8 +916,6 @@ describe(LibraryService.name, () => {
 
         storageMock.watch.mockResolvedValue(mockWatcher);
 
-        await sut.init();
-
         await expect(
           sut.create(authStub.admin, {
             type: LibraryType.EXTERNAL,
@@ -1021,9 +1019,7 @@ describe(LibraryService.name, () => {
         expect(libraryMock.create).not.toHaveBeenCalled();
       });
 
-      it('should not create watched', async () => {
-        await sut.init();
-
+      it('should not create watched upload library', async () => {
         await expect(
           sut.create(authStub.admin, {
             type: LibraryType.UPLOAD,
@@ -1089,7 +1085,6 @@ describe(LibraryService.name, () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
 
-      await sut.init();
       await expect(sut.update(authStub.admin, authStub.admin.user.id, { isWatched: false })).resolves.toBeTruthy();
       expect(libraryMock.update).toHaveBeenCalledWith(
         expect.objectContaining({
