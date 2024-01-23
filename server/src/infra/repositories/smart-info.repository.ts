@@ -208,14 +208,13 @@ export class SmartInfoRepository implements ISmartInfoRepository {
   }
 
   private getRuntimeConfig(numResults?: number): string {
-    let runtimeConfig = '';
-    if (vectorExt === DatabaseExtension.VECTORS) {
-      runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
-      if (numResults) {
-        runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults}`;
-      }
-    } else if (vectorExt === DatabaseExtension.VECTOR) {
-      runtimeConfig = 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
+    if (vectorExt === DatabaseExtension.VECTOR) {
+      return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
+    }
+
+    let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=basic;';
+    if (numResults) {
+      runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults}`;
     }
 
     return runtimeConfig;
