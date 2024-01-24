@@ -7,7 +7,6 @@ import { api } from '../client';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
-  jobMock,
   restoreTempFolder,
   testApp,
   waitForEvent,
@@ -98,36 +97,6 @@ describe(`Library watcher (e2e)`, () => {
         expect(afterAssets.length).toEqual(4);
       });
 
-      it('should ignore files with wrong extensions', async () => {
-        jest.clearAllMocks();
-
-        await fs.copyFile(
-          `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-          `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.txt`,
-        );
-
-        await waitForEvent(libraryService, 'add');
-
-        await fs.copyFile(
-          `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-          `${IMMICH_TEST_ASSET_TEMP_PATH}/file3.TXT`,
-        );
-
-        await waitForEvent(libraryService, 'add');
-
-        await fs.copyFile(
-          `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
-          `${IMMICH_TEST_ASSET_TEMP_PATH}/file4.TxT`,
-        );
-
-        await waitForEvent(libraryService, 'add');
-
-        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-        expect(afterAssets.length).toEqual(0);
-
-        expect(jobMock.queue).not.toHaveBeenCalled();
-      });
-
       it('should update a changed file', async () => {
         await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
@@ -180,42 +149,6 @@ describe(`Library watcher (e2e)`, () => {
         await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
 
         await api.libraryApi.update(server, admin.accessToken, library.id, { isWatched: true });
-      });
-
-      it('should ignore excluded paths', async () => {
-        await api.libraryApi.update(server, admin.accessToken, library.id, { exclusionPatterns: ['**/dir2/**'] });
-
-        jest.clearAllMocks();
-
-        await fs.copyFile(
-          `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
-          `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
-        );
-
-        await waitForEvent(libraryService, 'add');
-
-        expect(jobMock.queue).not.toHaveBeenCalled();
-
-        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-        expect(afterAssets.length).toEqual(0);
-      });
-
-      it('should ignore excluded paths without case sensitivity', async () => {
-        await api.libraryApi.update(server, admin.accessToken, library.id, { exclusionPatterns: ['**/DIR2/**'] });
-
-        jest.clearAllMocks();
-
-        await fs.copyFile(
-          `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
-          `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
-        );
-
-        await waitForEvent(libraryService, 'add');
-
-        expect(jobMock.queue).not.toHaveBeenCalled();
-
-        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-        expect(afterAssets.length).toEqual(0);
       });
 
       it('should add new files in multiple import paths', async () => {

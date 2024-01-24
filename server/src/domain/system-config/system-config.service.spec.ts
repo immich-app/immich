@@ -135,10 +135,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
       usePolling: false,
       interval: 10000,
       binaryInterval: 10000,
-      awaitWriteFinish: {
-        stabilityThreshold: 2000,
-        pollInterval: 100,
-      },
     },
   },
 });

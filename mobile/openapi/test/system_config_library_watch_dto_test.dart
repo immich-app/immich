@@ -16,11 +16,6 @@ void main() {
   // final instance = SystemConfigLibraryWatchDto();
 
   group('test SystemConfigLibraryWatchDto', () {
-    // SystemConfigLibraryWatchAwaitWriteFinishDto awaitWriteFinish
-    test('to test the property `awaitWriteFinish`', () async {
-      // TODO
-    });
-
     // int binaryInterval
     test('to test the property `binaryInterval`', () async {
       // TODO

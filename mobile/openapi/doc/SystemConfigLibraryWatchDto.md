@@ -8,7 +8,6 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**awaitWriteFinish** | [**SystemConfigLibraryWatchAwaitWriteFinishDto**](SystemConfigLibraryWatchAwaitWriteFinishDto.md) |  | 
 **binaryInterval** | **int** |  | 
 **enabled** | **bool** |  | 
 **interval** | **int** |  | 

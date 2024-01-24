@@ -13,14 +13,11 @@ part of openapi.api;
 class SystemConfigLibraryWatchDto {
   /// Returns a new [SystemConfigLibraryWatchDto] instance.
   SystemConfigLibraryWatchDto({
-    required this.awaitWriteFinish,
     required this.binaryInterval,
     required this.enabled,
     required this.interval,
     required this.usePolling,
   });
-
-  SystemConfigLibraryWatchAwaitWriteFinishDto awaitWriteFinish;
 
   int binaryInterval;
 
@@ -32,7 +29,6 @@ class SystemConfigLibraryWatchDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigLibraryWatchDto &&
-     other.awaitWriteFinish == awaitWriteFinish &&
      other.binaryInterval == binaryInterval &&
      other.enabled == enabled &&
      other.interval == interval &&
@@ -41,18 +37,16 @@ class SystemConfigLibraryWatchDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (awaitWriteFinish.hashCode) +
     (binaryInterval.hashCode) +
     (enabled.hashCode) +
     (interval.hashCode) +
     (usePolling.hashCode);
 
   @override
-  String toString() => 'SystemConfigLibraryWatchDto[awaitWriteFinish=$awaitWriteFinish, binaryInterval=$binaryInterval, enabled=$enabled, interval=$interval, usePolling=$usePolling]';
+  String toString() => 'SystemConfigLibraryWatchDto[binaryInterval=$binaryInterval, enabled=$enabled, interval=$interval, usePolling=$usePolling]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'awaitWriteFinish'] = this.awaitWriteFinish;
       json[r'binaryInterval'] = this.binaryInterval;
       json[r'enabled'] = this.enabled;
       json[r'interval'] = this.interval;
@@ -68,7 +62,6 @@ class SystemConfigLibraryWatchDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigLibraryWatchDto(
-        awaitWriteFinish: SystemConfigLibraryWatchAwaitWriteFinishDto.fromJson(json[r'awaitWriteFinish'])!,
         binaryInterval: mapValueOfType<int>(json, r'binaryInterval')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         interval: mapValueOfType<int>(json, r'interval')!,
@@ -120,7 +113,6 @@ class SystemConfigLibraryWatchDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'awaitWriteFinish',
     'binaryInterval',
     'enabled',
     'interval',

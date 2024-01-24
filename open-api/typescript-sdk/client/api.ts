@@ -3895,34 +3895,9 @@ export interface SystemConfigLibraryScanDto {
 /**
  * 
  * @export
- * @interface SystemConfigLibraryWatchAwaitWriteFinishDto
- */
-export interface SystemConfigLibraryWatchAwaitWriteFinishDto {
-    /**
-     * 
-     * @type {number}
-     * @memberof SystemConfigLibraryWatchAwaitWriteFinishDto
-     */
-    'pollInterval': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof SystemConfigLibraryWatchAwaitWriteFinishDto
-     */
-    'stabilityThreshold': number;
-}
-/**
- * 
- * @export
  * @interface SystemConfigLibraryWatchDto
  */
 export interface SystemConfigLibraryWatchDto {
-    /**
-     * 
-     * @type {SystemConfigLibraryWatchAwaitWriteFinishDto}
-     * @memberof SystemConfigLibraryWatchDto
-     */
-    'awaitWriteFinish': SystemConfigLibraryWatchAwaitWriteFinishDto;
     /**
      * 
      * @type {number}

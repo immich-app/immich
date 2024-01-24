@@ -62,6 +62,7 @@ export const libraryStub = {
     exclusionPatterns: [],
     isWatched: false,
   }),
+
   watchedExternalLibrary1: Object.freeze<LibraryEntity>({
     id: 'watched-id',
     name: 'watched_library',
@@ -90,6 +91,21 @@ export const libraryStub = {
     refreshedAt: null,
     isVisible: true,
     exclusionPatterns: [],
+    isWatched: true,
+  }),
+  watchedExternalLibraryWithExclusionPattern: Object.freeze<LibraryEntity>({
+    id: 'library-id-with-paths',
+    name: 'watched-library-with-exclusion-pattern',
+    assets: [],
+    owner: userStub.externalPath1,
+    ownerId: 'user-id',
+    type: LibraryType.EXTERNAL,
+    importPaths: ['/foo', '/bar'],
+    createdAt: new Date('2023-01-01'),
+    updatedAt: new Date('2023-01-01'),
+    refreshedAt: null,
+    isVisible: true,
+    exclusionPatterns: ['**/dir2/**'],
     isWatched: true,
   }),
 };

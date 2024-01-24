@@ -2,6 +2,7 @@ import {
   CrawlOptionsDto,
   DiskUsage,
   ImmichReadStream,
+  ImmichWatcher,
   ImmichZipStream,
   IStorageRepository,
   mimeTypes,
@@ -131,6 +132,10 @@ export class FilesystemProvider implements IStorageRepository {
       dot: includeHidden,
       ignore: exclusionPatterns,
     });
+  }
+
+  watch(paths: string[], options: WatchOptions): FSWatcher {
+    return chokidar.watch(paths, options);
   }
 
   readdir = readdir;

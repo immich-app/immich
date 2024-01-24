@@ -142,7 +142,6 @@ doc/SystemConfigFFmpegDto.md
 doc/SystemConfigJobDto.md
 doc/SystemConfigLibraryDto.md
 doc/SystemConfigLibraryScanDto.md
-doc/SystemConfigLibraryWatchAwaitWriteFinishDto.md
 doc/SystemConfigLibraryWatchDto.md
 doc/SystemConfigLoggingDto.md
 doc/SystemConfigMachineLearningDto.md
@@ -331,7 +330,6 @@ lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_job_dto.dart
 lib/model/system_config_library_dto.dart
 lib/model/system_config_library_scan_dto.dart
-lib/model/system_config_library_watch_await_write_finish_dto.dart
 lib/model/system_config_library_watch_dto.dart
 lib/model/system_config_logging_dto.dart
 lib/model/system_config_machine_learning_dto.dart
@@ -507,7 +505,6 @@ test/system_config_f_fmpeg_dto_test.dart
 test/system_config_job_dto_test.dart
 test/system_config_library_dto_test.dart
 test/system_config_library_scan_dto_test.dart
-test/system_config_library_watch_await_write_finish_dto_test.dart
 test/system_config_library_watch_dto_test.dart
 test/system_config_logging_dto_test.dart
 test/system_config_machine_learning_dto_test.dart

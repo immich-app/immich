@@ -63,40 +63,32 @@ interface TestAppOptions {
 }
 
 let app: INestApplication;
-export let jobMock: IJobRepository;
 
 export const testApp = {
-  jobMock: IJobRepository,
   create: async (options?: TestAppOptions): Promise<INestApplication> => {
     const { jobs } = options || { jobs: false };
-
-    jobMock = {
-      addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
-      addCronJob: jest.fn(),
-      updateCronJob: jest.fn(),
-      deleteCronJob: jest.fn(),
-      validateCronExpression: jest.fn(),
-      queue: jest.fn().mockImplementation((item: JobItem) => jobs && _handler(item)),
-      queueAll: jest
-        .fn()
-        .mockImplementation(
-          (items: JobItem[]) => jobs && Promise.all(items.map(_handler)).then(() => Promise.resolve()),
-        ),
-      resume: jest.fn(),
-      empty: jest.fn(),
-      setConcurrency: jest.fn(),
-      getQueueStatus: jest.fn(),
-      getJobCounts: jest.fn(),
-      pause: jest.fn(),
-      clear: jest.fn(),
-      waitForQueueCompletion: jest.fn(),
-    } as IJobRepository;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
       .overrideModule(InfraModule)
       .useModule(InfraTestModule)
       .overrideProvider(IJobRepository)
-      .useValue(jobMock)
+      .useValue({
+        addHandler: (_queueName: QueueName, _concurrency: number, handler: JobItemHandler) => (_handler = handler),
+        addCronJob: jest.fn(),
+        updateCronJob: jest.fn(),
+        deleteCronJob: jest.fn(),
+        validateCronExpression: jest.fn(),
+        queue: (item: JobItem) => jobs && _handler(item),
+        queueAll: (items: JobItem[]) => jobs && Promise.all(items.map(_handler)).then(() => Promise.resolve()),
+        resume: jest.fn(),
+        empty: jest.fn(),
+        setConcurrency: jest.fn(),
+        getQueueStatus: jest.fn(),
+        getJobCounts: jest.fn(),
+        pause: jest.fn(),
+        clear: jest.fn(),
+        waitForQueueCompletion: jest.fn(),
+      } as IJobRepository)
       .compile();
 
     app = await moduleFixture.createNestApplication().init();

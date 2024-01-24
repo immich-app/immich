@@ -9256,26 +9256,8 @@
         ],
         "type": "object"
       },
-      "SystemConfigLibraryWatchAwaitWriteFinishDto": {
-        "properties": {
-          "pollInterval": {
-            "type": "integer"
-          },
-          "stabilityThreshold": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "pollInterval",
-          "stabilityThreshold"
-        ],
-        "type": "object"
-      },
       "SystemConfigLibraryWatchDto": {
         "properties": {
-          "awaitWriteFinish": {
-            "$ref": "#/components/schemas/SystemConfigLibraryWatchAwaitWriteFinishDto"
-          },
           "binaryInterval": {
             "type": "integer"
           },
@@ -9290,7 +9272,6 @@
           }
         },
         "required": [
-          "awaitWriteFinish",
           "binaryInterval",
           "enabled",
           "interval",

@@ -427,8 +427,6 @@ class ApiClient {
           return SystemConfigLibraryDto.fromJson(value);
         case 'SystemConfigLibraryScanDto':
           return SystemConfigLibraryScanDto.fromJson(value);
-        case 'SystemConfigLibraryWatchAwaitWriteFinishDto':
-          return SystemConfigLibraryWatchAwaitWriteFinishDto.fromJson(value);
         case 'SystemConfigLibraryWatchDto':
           return SystemConfigLibraryWatchDto.fromJson(value);
         case 'SystemConfigLoggingDto':

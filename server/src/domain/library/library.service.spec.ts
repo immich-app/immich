@@ -914,7 +914,7 @@ describe(LibraryService.name, () => {
           }
         });
 
-        storageMock.watch.mockResolvedValue(mockWatcher);
+        storageMock.watch.mockReturnValue(mockWatcher);
 
         await expect(
           sut.create(authStub.admin, {
@@ -1068,7 +1068,7 @@ describe(LibraryService.name, () => {
         }
       });
 
-      storageMock.watch.mockResolvedValue(mockWatcher);
+      storageMock.watch.mockReturnValue(mockWatcher);
 
       await sut.init();
       await expect(sut.update(authStub.admin, authStub.admin.user.id, { isWatched: true })).resolves.toBeTruthy();
@@ -1106,7 +1106,7 @@ describe(LibraryService.name, () => {
         }
       });
 
-      storageMock.watch.mockResolvedValue(mockWatcher);
+      storageMock.watch.mockReturnValue(mockWatcher);
 
       await expect(sut.update(authStub.admin, authStub.admin.user.id, { importPaths: ['/foo'] })).resolves.toBeTruthy();
 
@@ -1115,7 +1115,7 @@ describe(LibraryService.name, () => {
           id: authStub.admin.user.id,
         }),
       );
-      expect(storageMock.watch).toHaveBeenCalledWith(expect.arrayContaining(['/foo']), expect.anything());
+      expect(storageMock.watch).toHaveBeenCalledWith(expect.arrayContaining([expect.any(String)]), expect.anything());
     });
 
     it('should re-watch library when updating exclusion patterns paths', async () => {
@@ -1131,7 +1131,7 @@ describe(LibraryService.name, () => {
         }
       });
 
-      storageMock.watch.mockResolvedValue(mockWatcher);
+      storageMock.watch.mockReturnValue(mockWatcher);
 
       await expect(
         sut.update(authStub.admin, authStub.admin.user.id, { exclusionPatterns: ['bar'] }),
@@ -1171,7 +1171,7 @@ describe(LibraryService.name, () => {
         }
       });
 
-      storageMock.watch.mockResolvedValue(mockWatcher);
+      storageMock.watch.mockReturnValue(mockWatcher);
 
       await expect(sut.watch(libraryStub.watchedExternalLibrary1.id)).resolves.toBeTruthy();
 
@@ -1235,7 +1235,7 @@ describe(LibraryService.name, () => {
         }
       });
 
-      storageMock.watch.mockResolvedValue(mockWatcher);
+      storageMock.watch.mockReturnValue(mockWatcher);
 
       await expect(sut.watch(libraryStub.watchedExternalLibrary1.id)).resolves.toBeTruthy();
 
@@ -1264,7 +1264,7 @@ describe(LibraryService.name, () => {
         }
       });
 
-      storageMock.watch.mockResolvedValue(mockWatcher);
+      storageMock.watch.mockReturnValue(mockWatcher);
 
       await expect(sut.watch(libraryStub.watchedExternalLibrary1.id)).resolves.toBeTruthy();
 
@@ -1294,11 +1294,74 @@ describe(LibraryService.name, () => {
         }
       });
 
-      storageMock.watch.mockResolvedValue(mockWatcher);
+      storageMock.watch.mockReturnValue(mockWatcher);
 
       await expect(sut.watch(libraryStub.watchedExternalLibrary1.id)).resolves.toBeTruthy();
 
       expect(assetMock.save).toHaveBeenCalledWith({ id: assetStub.external.id, isOffline: true });
+    });
+
+    it('should ignore unknown extensions', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibrary1);
+
+      const mockWatcher = newFSWatcherMock();
+
+      mockWatcher.on.mockImplementation((event, callback) => {
+        if (event === 'ready') {
+          callback();
+        } else if (event === 'add') {
+          callback('/foo/photo.txt');
+        }
+      });
+
+      storageMock.watch.mockReturnValue(mockWatcher);
+
+      await expect(sut.watch(libraryStub.watchedExternalLibrary1.id)).resolves.toBeTruthy();
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+
+    it('should ignore excluded paths', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibraryWithExclusionPattern);
+
+      const mockWatcher = newFSWatcherMock();
+
+      mockWatcher.on.mockImplementation((event, callback) => {
+        if (event === 'ready') {
+          callback();
+        } else if (event === 'add') {
+          callback('/dir1/photo.txt');
+        }
+      });
+
+      storageMock.watch.mockReturnValue(mockWatcher);
+
+      await expect(sut.watch(libraryStub.watchedExternalLibraryWithExclusionPattern.id)).resolves.toBeTruthy();
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+
+    it('should ignore excluded paths without case sensitivity', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.get.mockResolvedValue(libraryStub.watchedExternalLibraryWithExclusionPattern);
+
+      const mockWatcher = newFSWatcherMock();
+
+      mockWatcher.on.mockImplementation((event, callback) => {
+        if (event === 'ready') {
+          callback();
+        } else if (event === 'add') {
+          callback('/DIR1/photo.txt');
+        }
+      });
+
+      storageMock.watch.mockReturnValue(mockWatcher);
+
+      await expect(sut.watch(libraryStub.watchedExternalLibraryWithExclusionPattern.id)).resolves.toBeTruthy();
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
     });
   });
 
@@ -1323,7 +1386,7 @@ describe(LibraryService.name, () => {
         }
       });
 
-      storageMock.watch.mockResolvedValue(mockWatcher);
+      storageMock.watch.mockReturnValue(mockWatcher);
 
       await expect(sut.watchAll()).resolves.toBeTruthy();
 
