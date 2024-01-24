@@ -10,7 +10,7 @@ import { SearchController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { errorStub, searchStub } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { generateAsset, testApp } from '../utils';
 
 describe(`${SearchController.name}`, () => {

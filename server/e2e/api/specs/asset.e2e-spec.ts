@@ -16,7 +16,7 @@ import { INestApplication } from '@nestjs/common';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import { randomBytes } from 'crypto';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { generateAsset, testApp, today, yesterday } from '../utils';
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
