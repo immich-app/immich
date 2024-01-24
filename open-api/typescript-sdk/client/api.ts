@@ -3672,6 +3672,18 @@ export interface SystemConfigFFmpegDto {
     'accel': TranscodeHWAccel;
     /**
      * 
+     * @type {Array<AudioCodec>}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'acceptedAudioCodecs': Array<AudioCodec>;
+    /**
+     * 
+     * @type {Array<VideoCodec>}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'acceptedVideoCodecs': Array<VideoCodec>;
+    /**
+     * 
      * @type {number}
      * @memberof SystemConfigFFmpegDto
      */
