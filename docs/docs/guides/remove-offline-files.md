@@ -1,4 +1,4 @@
-# Remove Offline Files
+# Remove Offline Files [Community]
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -152,7 +152,7 @@ awk -F\" '/entityId/ {print $4}' orphans.json | while read line; do curl --locat
 
 ## Script for the Windows system (run through PowerShell):
 
-```bash title='PowerShell'
+```powershell title='PowerShell'
 Get-Content orphans.json | Select-String -Pattern 'entityId' | ForEach-Object {
   $line = $_ -split '"' | Select-Object -Index 3
   $body = [pscustomobject]@{
