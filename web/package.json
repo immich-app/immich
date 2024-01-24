@@ -58,6 +58,7 @@
     "@egjs/svelte-view360": "^4.0.0-beta.7",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@mdi/js": "^7.3.67",
+    "@types/node": "^20.11.6",
     "@zoom-image/svelte": "^0.2.0",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",
