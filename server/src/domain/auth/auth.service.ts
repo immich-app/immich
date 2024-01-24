@@ -50,7 +50,7 @@ import {
 
 export interface LoginDetails {
   isSecure: boolean;
-  clientIp: string;
+  clientIp: string | undefined;
   deviceType: string;
   deviceOS: string;
 }
