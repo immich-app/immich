@@ -7,6 +7,10 @@ import TabItem from '@theme/TabItem';
 **Before running the script**, please make sure you have a [backup](/docs/administration/backup-and-restore) of your assets and database.
 :::
 
+:::info
+**None** of the scripts can delete orphaned files from the external library.
+:::
+
 This page is a guide to get rid of offline files from the repair page.
 
 <Tabs>
