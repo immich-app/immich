@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:immich_mobile/shared/models/store.dart';
 
 String sanitizeUrl(String url) {
@@ -19,4 +20,22 @@ String? getServerUrl() {
   return serverUri.hasPort
       ? "${serverUri.scheme}://${serverUri.host}:${serverUri.port}"
       : "${serverUri.scheme}://${serverUri.host}";
+}
+
+Map<String, String> getAuthHeaders(String url, String? accessToken) {
+  final uri = Uri.parse(url);
+  Map<String, String> headers = {};
+
+  if(uri.userInfo.contains(":")) { //need BasicAuth, use custom header for Bearer Auth
+    headers['Authorization'] = "Basic ${base64.encode(utf8.encode(uri.userInfo))}";
+
+    if(accessToken != null) {
+      headers['x-immich-user-token'] = accessToken;
+    }
+
+  } else if(accessToken != null) {
+    headers['Authorization'] = 'Bearer $accessToken';
+  }
+
+  return headers;
 }

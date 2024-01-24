@@ -35,9 +35,13 @@ class ApiService {
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint);
+
+    getAuthHeaders(endpoint, null).forEach((k, v) => _apiClient.addDefaultHeader(k, v));
+    
     if (_authToken != null) {
       setAccessToken(_authToken!);
     }
+
     userApi = UserApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
     oAuthApi = OAuthApi(_apiClient);
@@ -95,9 +99,7 @@ class ApiService {
     // we do not care if the endpoints hits an HTTP error
     try {
       await client
-          .get(
-            Uri.parse(serverUrl),
-          )
+          .get(Uri.parse(serverUrl), headers: getAuthHeaders(serverUrl, null))
           .timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;
@@ -111,10 +113,12 @@ class ApiService {
     final Client client = Client();
 
     try {
-      final res = await client.get(
-        Uri.parse("$baseUrl/.well-known/immich"),
-        headers: {"Accept": "application/json"},
-      );
+      String url = "$baseUrl/.well-known/immich";
+
+      Map<String, String> headers = getAuthHeaders(url, null);
+      headers["Accept"] = "application/json";
+
+      final res = await client.get(Uri.parse(url), headers: headers);
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -135,7 +139,7 @@ class ApiService {
 
   setAccessToken(String accessToken) {
     _authToken = accessToken;
-    _apiClient.addDefaultHeader('Authorization', 'Bearer $accessToken');
+    getAuthHeaders(_apiClient.basePath, accessToken).forEach((k, v) => _apiClient.addDefaultHeader(k, v));
   }
 
   ApiClient get apiClient => _apiClient;

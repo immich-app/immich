@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:openapi/api.dart' as api;
 
@@ -96,7 +97,7 @@ class ImmichImage extends StatelessWidget {
     final String thumbnailRequestUrl = getThumbnailUrl(asset, type: type);
     return CachedNetworkImage(
       imageUrl: thumbnailRequestUrl,
-      httpHeaders: {"Authorization": "Bearer $token"},
+      httpHeaders: getAuthHeaders(thumbnailRequestUrl, token),
       cacheKey: getThumbnailCacheKey(asset, type: type),
       width: width,
       height: height,
