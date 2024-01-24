@@ -1,0 +1,58 @@
+{
+  "name": "documentation",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "start": "docusaurus start --port 3005",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.1.0",
+    "@docusaurus/preset-classic": "^3.1.0",
+    "@mdi/js": "^7.3.67",
+    "@mdi/react": "^1.6.1",
+    "@mdx-js/react": "^3.0.0",
+    "autoprefixer": "^10.4.17",
+    "classnames": "^2.3.2",
+    "clsx": "^2.0.0",
+    "docusaurus-lunr-search": "^3.3.2",
+    "docusaurus-preset-openapi": "^0.7.3",
+    "postcss": "^8.4.25",
+    "prism-react-renderer": "^2.3.1",
+    "raw-loader": "^4.0.2",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "tailwindcss": "^3.2.4",
+    "url": "^0.11.0"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "^3.1.0",
+    "@tsconfig/docusaurus": "^2.0.2",
+    "prettier": "^3.2.4",
+    "typescript": "^5.1.6"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=16.14"
+  }
+}

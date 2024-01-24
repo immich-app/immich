@@ -201,6 +201,10 @@ export class MetadataRepository implements IMetadataRepository {
       }) as Promise<ImmichTags | null>;
   }
 
+  extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
+    return exiftool.extractBinaryTagToBuffer(tagName, path);
+  }
+
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
       await exiftool.write(path, tags, ['-overwrite_original']);

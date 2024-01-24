@@ -35,9 +35,9 @@
     <p>
       Êtes-vous sûr de vouloir supprimer définitivement
       {#if size > 1}
-        ces <b>{size}</b> actifs ? Cela les supprimera également de leurs albums.
+      ces <b>{size}</b> actifs ?  Cela les supprimera également de leurs albums.
       {:else}
-        cet actif ? Cela le supprimera également de ses albums.
+      cet actif ? Cela le supprimera également de ses albums.
       {/if}
     </p>
     <p><b>Vous ne pouvez pas annuler cette action !</b></p>

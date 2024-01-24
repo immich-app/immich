@@ -214,7 +214,7 @@
     </section>
   {/if}
 
-  {#if isOwner || description !== ''}
+  {#if isOwner}
     <section class="px-4 mt-10">
       {#key asset.id}
         <textarea
@@ -233,6 +233,8 @@
         />
       {/key}
     </section>
+  {:else if description}
+    <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
   {/if}
 
   {#if !api.isSharedLink && people.length > 0}

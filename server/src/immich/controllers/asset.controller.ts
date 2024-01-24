@@ -10,6 +10,7 @@ import {
   AssetStatsResponseDto,
   AuthDto,
   BulkIdsDto,
+  DeviceIdDto,
   DownloadInfoDto,
   DownloadResponseDto,
   MapMarkerDto,
@@ -41,7 +42,6 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { DeviceIdDto } from '../api-v1/asset/dto/device-id.dto';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
 import { Route } from '../interceptors';

@@ -2,22 +2,22 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketStore } from '$lib/stores/websocket';
-  import { type UserResponseDto, api } from '@api';
+  import { api } from '@api';
   import { onMount } from 'svelte';
   import { asByteUnitString } from '../../utils/byte-units';
   import LoadingSpinner from './loading-spinner.svelte';
   import { mdiChartPie, mdiDns } from '@mdi/js';
   import { serverInfoStore } from '$lib/stores/server-info.store';
+  import { user } from '$lib/stores/user.store';
 
   const { serverVersion, connected } = websocketStore;
 
-  let userInfo: UserResponseDto;
   let usageClasses = '';
 
   $: version = $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null;
-  $: hasQuota = userInfo?.quotaSizeInBytes !== null;
-  $: availableBytes = (hasQuota ? userInfo?.quotaSizeInBytes : $serverInfoStore.diskSizeRaw) || 0;
-  $: usedBytes = (hasQuota ? userInfo?.quotaUsageInBytes : $serverInfoStore.diskUseRaw) || 0;
+  $: hasQuota = $user?.quotaSizeInBytes !== null;
+  $: availableBytes = (hasQuota ? $user?.quotaSizeInBytes : $serverInfoStore?.diskSizeRaw) || 0;
+  $: usedBytes = (hasQuota ? $user?.quotaUsageInBytes : $serverInfoStore?.diskUseRaw) || 0;
   $: usedPercentage = Math.round((usedBytes / availableBytes) * 100);
 
   const onUpdate = () => {
@@ -36,7 +36,7 @@
     return 'bg-immich-primary dark:bg-immich-dark-primary';
   };
 
-  $: userInfo && onUpdate();
+  $: $user && onUpdate();
 
   onMount(async () => {
     await refresh();
@@ -44,10 +44,10 @@
 
   const refresh = async () => {
     try {
-      [$serverInfoStore, userInfo] = await Promise.all([
-        api.serverInfoApi.getServerInfo().then(({ data }) => data),
-        api.userApi.getMyUserInfo().then(({ data }) => data),
-      ]);
+      if (!$serverInfoStore) {
+        const { data } = await api.serverInfoApi.getServerInfo();
+        $serverInfoStore = data;
+      }
     } catch (e) {
       console.log('Error [StatusBox] [onMount]');
     }

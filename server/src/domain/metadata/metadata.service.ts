@@ -354,7 +354,7 @@ export class MetadataService {
   }
 
   private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {
-    if (asset.type !== AssetType.IMAGE || asset.livePhotoVideoId) {
+    if (asset.type !== AssetType.IMAGE) {
       return;
     }
 
@@ -362,6 +362,8 @@ export class MetadataService {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
+    const hasMotionPhotoVideo = tags.MotionPhotoVideo;
+    const hasEmbeddedVideoFile = tags.EmbeddedVideoType === 'MotionPhoto_Data' && tags.EmbeddedVideoFile;
     const directory = Array.isArray(rawDirectory) ? (rawDirectory as DirectoryEntry[]) : null;
 
     let length = 0;
@@ -381,7 +383,7 @@ export class MetadataService {
       length = videoOffset;
     }
 
-    if (!length) {
+    if (!length && !hasEmbeddedVideoFile && !hasMotionPhotoVideo) {
       return;
     }
 
@@ -390,20 +392,35 @@ export class MetadataService {
     try {
       const stat = await this.storageRepository.stat(asset.originalPath);
       const position = stat.size - length - padding;
-      const video = await this.storageRepository.readFile(asset.originalPath, {
-        buffer: Buffer.alloc(length),
-        position,
-        length,
-      });
+      let video: Buffer;
+      // Samsung MotionPhoto video extraction
+      //     HEIC-encoded
+      if (hasMotionPhotoVideo) {
+        video = await this.repository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
+      }
+      //     JPEG-encoded; HEIC also contains these tags, so this conditional must come second
+      else if (hasEmbeddedVideoFile) {
+        video = await this.repository.extractBinaryTag(asset.originalPath, 'EmbeddedVideoFile');
+      }
+      // Default video extraction
+      else {
+        video = await this.storageRepository.readFile(asset.originalPath, {
+          buffer: Buffer.alloc(length),
+          position,
+          length,
+        });
+      }
       const checksum = this.cryptoRepository.hashSha1(video);
-
-      const motionPath = StorageCore.getAndroidMotionPath(asset);
-      this.storageCore.ensureFolders(motionPath);
 
       let motionAsset = await this.assetRepository.getByChecksum(asset.ownerId, checksum);
       if (!motionAsset) {
+        // We create a UUID in advance so that each extracted video can have a unique filename
+        // (allowing us to delete old ones if necessary)
+        const motionAssetId = this.cryptoRepository.randomUUID();
+        const motionPath = StorageCore.getAndroidMotionPath(asset, motionAssetId);
         const createdAt = asset.fileCreatedAt ?? asset.createdAt;
         motionAsset = await this.assetRepository.create({
+          id: motionAssetId,
           libraryId: asset.libraryId,
           type: AssetType.VIDEO,
           fileCreatedAt: createdAt,
@@ -419,11 +436,25 @@ export class MetadataService {
           deviceId: 'NONE',
         });
 
+        this.storageCore.ensureFolders(motionPath);
         await this.storageRepository.writeFile(motionAsset.originalPath, video);
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
-      }
+        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
 
-      await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+        // If the asset already had an associated livePhotoVideo, delete it, because
+        // its checksum doesn't match the checksum of the motionAsset we just extracted
+        // (if it did, getByChecksum() would've returned non-null)
+        if (asset.livePhotoVideoId) {
+          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.livePhotoVideoId } });
+          this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
+        }
+      } else {
+        this.logger.debug(
+          `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
+            'base64',
+          )} already exists in the repository`,
+        );
+      }
 
       this.logger.debug(`Finished motion photo video extraction (${asset.id})`);
     } catch (error: Error | any) {

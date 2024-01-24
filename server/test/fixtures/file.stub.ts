@@ -7,7 +7,7 @@ export const fileStub = {
     size: 42,
   }),
   livePhotoMotion: Object.freeze({
-    uuid: 'random-uuid',
+    uuid: 'live-photo-motion-asset',
     originalPath: 'fake_path/asset_1.mp4',
     checksum: Buffer.from('live photo file hash', 'utf8'),
     originalName: 'asset_1.mp4',

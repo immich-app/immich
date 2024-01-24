@@ -54,11 +54,10 @@ services:
 
   immich-web:
     container_name: immich_web
-    image: immich-web-dev:1.9.0
+    image: immich-web-dev:latest
     build:
       context: ../web
-      dockerfile: Dockerfile
-    command: "node ./node_modules/.bin/vite dev --host 0.0.0.0 --port 3000"
+    command: "/usr/src/app/bin/immich-web"
     env_file:
       - .env
     ports:

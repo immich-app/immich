@@ -36,6 +36,7 @@
       .filter((a) => !a.isExternal)
       .map((a) => a.id);
     await deleteAssets(force, onAssetDelete, ids);
+    clearSelect();
     isShowConfirmation = false;
     loading = false;
   };
