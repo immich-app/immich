@@ -258,10 +258,6 @@ export interface SystemConfig {
       usePolling: boolean;
       interval: number;
       binaryInterval: number;
-      awaitWriteFinish: {
-        stabilityThreshold: number;
-        pollInterval: number;
-      };
     };
   };
   server: {

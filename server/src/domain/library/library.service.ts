@@ -106,10 +106,6 @@ export class LibraryService extends EventEmitter {
       usePolling: config.library.watch.usePolling,
       interval: config.library.watch.interval,
       binaryInterval: config.library.watch.interval,
-      awaitWriteFinish: {
-        stabilityThreshold: config.library.watch.awaitWriteFinish.stabilityThreshold,
-        pollInterval: config.library.watch.awaitWriteFinish.pollInterval,
-      },
       ignoreInitial: true,
     });
 
