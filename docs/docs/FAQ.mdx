@@ -290,13 +290,17 @@ The non-root user/group needs read/write access to the volume mounts, including 
 Data for Immich comes in two forms:
 
 1. **Metadata** stored in a postgres database, persisted via the `pg_data` volume
-2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder.
+2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder, more [info](/docs/administration/backup-and-restore#asset-types-and-storage-locations).
 
 To remove the **Metadata** you can stop Immich and delete the volume.
 
 ```bash title="Remove Immich (containers and volumes)"
 docker compose down -v
 ```
+:::note Portainer
+If you use portainer, bring down the stack in portainer. Go into the volumes section  
+and remove all the volumes related to immcih then restart the stack.
+:::
 
 After removing the containers and volumes, the **Files** can be cleaned up (if necessary) from the `UPLOAD_LOCATION` by simply deleting any unwanted files or folders.
 
