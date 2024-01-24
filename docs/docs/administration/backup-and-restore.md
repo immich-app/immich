@@ -95,8 +95,10 @@ Immich stores two types of content in the filesystem: (1) original, unmodified c
 
 ### Asset Types and Storage Locations
 
+Some storage locations are impacted by the Storage Template. See below for more details.
+
 <Tabs>
-  <TabItem value="storage template engine OFF (Default)." label="storage template engine OFF (Default)." default>
+  <TabItem value="Storage Template Off (Default)." label="Storage Template Off (Default)." default>
 
 :::note
 `UPLOAD_LOCATION/library` folder is not used by default on new machines running version 1.92.0. These are if the system administrator activated the storage template engine, for [more info](https://github.com/immich-app/immich/releases#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template,-We%20have%20further).
@@ -123,7 +125,7 @@ Immich stores two types of content in the filesystem: (1) original, unmodified c
   - Stored in `/library/encoded-video/<userID>`.
 
 </TabItem>
-  <TabItem value="storage template engine ON" label="storage template engine ON">
+  <TabItem value="Storage Template On" label="Storage Template On">
 
 :::note
 If you choose to activate the storage template engine, it will move all assets to `UPLOAD_LOCATION/library/<userID>`.
