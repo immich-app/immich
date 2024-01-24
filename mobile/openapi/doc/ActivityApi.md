@@ -125,7 +125,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getActivities**
-> List<ActivityResponseDto> getActivities(albumId, assetId, type, level, userId)
+> List<ActivityResponseDto> getActivities(albumId, assetId, level, type, userId)
 
 
 
@@ -150,12 +150,12 @@ import 'package:openapi/api.dart';
 final api_instance = ActivityApi();
 final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final type = ; // ReactionType | 
 final level = ; // ReactionLevel | 
+final type = ; // ReactionType | 
 final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getActivities(albumId, assetId, type, level, userId);
+    final result = api_instance.getActivities(albumId, assetId, level, type, userId);
     print(result);
 } catch (e) {
     print('Exception when calling ActivityApi->getActivities: $e\n');
@@ -168,8 +168,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albumId** | **String**|  | 
  **assetId** | **String**|  | [optional] 
- **type** | [**ReactionType**](.md)|  | [optional] 
  **level** | [**ReactionLevel**](.md)|  | [optional] 
+ **type** | [**ReactionType**](.md)|  | [optional] 
  **userId** | **String**|  | [optional] 
 
 ### Return type

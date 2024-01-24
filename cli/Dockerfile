@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:20240111@sha256:5acf773796f93c7a3216ffdbdb3604dc812f2b2317b84a1b57b65674826b746a as test
+FROM ghcr.io/immich-app/base-server-dev:20240118@sha256:92de0ebf1bc2ccc6b7d11023e31b010dc79dd7e16df04146820d2d2cc2e5bf9f as test
 
 WORKDIR /usr/src/app/server
 COPY server/package.json server/package-lock.json ./
@@ -10,7 +10,7 @@ COPY cli/package.json cli/package-lock.json ./
 RUN npm ci
 COPY ./cli/ .
 
-FROM ghcr.io/immich-app/base-server-prod:20240111@sha256:e917605008977f68dc3b6f7879c264cae4bff6c4186b119a6e114a60f8f5a354
+FROM ghcr.io/immich-app/base-server-prod:20240118@sha256:5b78cefcc3c3dda2a48fd22c7b0fd6453cfc5ae61258ff5a082cc9563c4e3c25
 
 VOLUME /usr/src/app/upload
 

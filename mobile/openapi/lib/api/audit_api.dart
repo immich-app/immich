@@ -58,12 +58,12 @@ class AuditApi {
   /// Performs an HTTP 'GET /audit/deletes' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [EntityType] entityType (required):
-  ///
   /// * [DateTime] after (required):
   ///
+  /// * [EntityType] entityType (required):
+  ///
   /// * [String] userId:
-  Future<Response> getAuditDeletesWithHttpInfo(EntityType entityType, DateTime after, { String? userId, }) async {
+  Future<Response> getAuditDeletesWithHttpInfo(DateTime after, EntityType entityType, { String? userId, }) async {
     // ignore: prefer_const_declarations
     final path = r'/audit/deletes';
 
@@ -74,11 +74,11 @@ class AuditApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+      queryParams.addAll(_queryParams('', 'after', after));
       queryParams.addAll(_queryParams('', 'entityType', entityType));
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
     }
-      queryParams.addAll(_queryParams('', 'after', after));
 
     const contentTypes = <String>[];
 
@@ -96,13 +96,13 @@ class AuditApi {
 
   /// Parameters:
   ///
-  /// * [EntityType] entityType (required):
-  ///
   /// * [DateTime] after (required):
   ///
+  /// * [EntityType] entityType (required):
+  ///
   /// * [String] userId:
-  Future<AuditDeletesResponseDto?> getAuditDeletes(EntityType entityType, DateTime after, { String? userId, }) async {
-    final response = await getAuditDeletesWithHttpInfo(entityType, after,  userId: userId, );
+  Future<AuditDeletesResponseDto?> getAuditDeletes(DateTime after, EntityType entityType, { String? userId, }) async {
+    final response = await getAuditDeletesWithHttpInfo(after, entityType,  userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

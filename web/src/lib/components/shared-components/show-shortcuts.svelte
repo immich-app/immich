@@ -23,12 +23,12 @@
       { key: ['/'], action: 'Rechercher' },
     ],
     actions: [
-      { key: ['f'], action: 'Marquer ou démarquer la photo comme favorite' },
+      { key: ['f'], action: 'Marquer ou démarquer la photo comme favoris' },
       { key: ['i'], action: 'Afficher ou masquer les infos' },
       { key: ['⇧', 'a'], action: 'Marquer ou démarquer la photo comme archive' },
       { key: ['⇧', 'd'], action: 'Télécharger' },
       { key: ['Space'], action: "Play ou pause d'une vidéo" },
-      { key: ['Del'], action: 'Supprimer une ressource' },
+      { key: ['Del'], action: 'Supprimer une ressource', info: 'Utiliser ⇧ pour supprimer définitivement une ressource' },
     ],
   };
   const dispatch = createEventDispatcher<{
