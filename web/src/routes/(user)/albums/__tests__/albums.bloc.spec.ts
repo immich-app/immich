@@ -1,5 +1,5 @@
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
-import { api, CreateAlbumDto } from '@api';
+import { api, type CreateAlbumDto } from '@api';
 import { albumFactory } from '@test-data';
 import { get } from 'svelte/store';
 import { useAlbums } from '../albums.bloc';

@@ -1,7 +1,7 @@
 <svelte:options accessors />
 
 <script lang="ts">
-  import { SystemConfigDto, api } from '@api';
+  import { type SystemConfigDto, api } from '@api';
   import {
     notificationController,
     NotificationType,

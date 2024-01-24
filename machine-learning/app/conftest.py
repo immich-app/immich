@@ -93,3 +93,15 @@ def clip_tokenizer_cfg() -> dict[str, Any]:
         "tokenizer_class": "CLIPTokenizer",
         "unk_token": "<|endoftext|>",
     }
+
+
+@pytest.fixture(scope="function")
+def providers(request: pytest.FixtureRequest) -> Iterator[dict[str, Any]]:
+    marker = request.node.get_closest_marker("providers")
+    if marker is None:
+        raise ValueError("Missing marker 'providers'")
+
+    providers = marker.args[0]
+    with mock.patch("app.models.base.ort.get_available_providers") as mocked:
+        mocked.return_value = providers
+        yield providers

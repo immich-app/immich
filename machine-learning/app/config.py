@@ -24,8 +24,8 @@ class Settings(BaseSettings):
     workers: int = 1
     test_full: bool = False
     request_threads: int = os.cpu_count() or 4
-    model_inter_op_threads: int = 1
-    model_intra_op_threads: int = 2
+    model_inter_op_threads: int = 0
+    model_intra_op_threads: int = 0
     ann: bool = True
 
     class Config:

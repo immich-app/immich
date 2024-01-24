@@ -633,6 +633,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    // TODO: Migrate to a custom bottom bar and handle long press to delete
     Widget buildBottomBar() {
       // !!!! itemsList and actionlist should always be in sync
       final itemsList = [

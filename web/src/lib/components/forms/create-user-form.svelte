@@ -121,7 +121,7 @@
     </div>
 
     <div class="m-4 flex flex-col gap-2">
-      <label class="immich-form-label" for="quotaSize">Quota Size (GB)</label>
+      <label class="immich-form-label" for="quotaSize">Quota Size (GiB)</label>
       <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" />
     </div>
 

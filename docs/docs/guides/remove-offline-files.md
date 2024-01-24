@@ -146,7 +146,7 @@ This way works by downloading a JSON file that contains a list of all the files 
 
 ## Script for Linux based systems:
 
-```bash title='Bash'
+```bash
 awk -F\" '/entityId/ {print $4}' orphans.json | while read line; do curl --location --request DELETE 'http://YOUR_IP_HERE:2283/api/asset' --header 'Content- Type: application/json' --header 'x-api-key: YOUR_API_KEY_HERE' --data '{ "force": true, "ids": ["'"$line"'"]}';done
 ```
 
@@ -154,11 +154,15 @@ awk -F\" '/entityId/ {print $4}' orphans.json | while read line; do curl --locat
 
 ```bash title='PowerShell'
 Get-Content orphans.json | Select-String -Pattern 'entityId' | ForEach-Object {
-$line = line=$_ -split '"' | Select-Object -Index 3
-Invoke-RestMethod -Uri 'http://YOUR_IP_HERE:2283/api/asset' -Method Delete -Headers @{
-'Content-Type' = 'application/json'
-'x-api-key' = 'YOUR_API_KEY_HERE'
-} -Body "{"force": true, "ids": ["$line"]}"
+  $line = $_ -split '"' | Select-Object -Index 3
+  $body = [pscustomobject]@{
+    'ids' = @($line)
+    'force' = (' true ' | ConvertFrom-Json)
+  } | ConvertTo-Json -Depth 3
+  Invoke-RestMethod -Uri 'http://YOUR_IP_HERE:2283/api/asset' -Method Delete -Headers @{
+    'Content-Type' = 'application/json'
+    'x-api-key' = 'YOUR_API_KEY_HERE'
+  } -Body $body
 }
 ```
 

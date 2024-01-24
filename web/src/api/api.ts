@@ -7,7 +7,6 @@ import {
   AssetJobName,
   AuditApi,
   AuthenticationApi,
-  ConfigurationParameters,
   FaceApi,
   JobApi,
   JobName,
@@ -53,7 +52,7 @@ class ImmichApi {
     return !!this.key;
   }
 
-  constructor(params: ConfigurationParameters) {
+  constructor(params: configuration.ConfigurationParameters) {
     this.config = new configuration.Configuration(params);
 
     this.activityApi = new ActivityApi(this.config);
@@ -136,7 +135,8 @@ class ImmichApi {
       [JobName.MetadataExtraction]: 'Extract Metadata',
       [JobName.Sidecar]: 'Sidecar Metadata',
       [JobName.SmartSearch]: 'Smart Search',
-      [JobName.RecognizeFaces]: 'Recognize Faces',
+      [JobName.FaceDetection]: 'Face Detection',
+      [JobName.FacialRecognition]: 'Facial Recognition',
       [JobName.VideoConversion]: 'Transcode Videos',
       [JobName.StorageTemplateMigration]: 'Storage Template Migration',
       [JobName.Migration]: 'Migration',

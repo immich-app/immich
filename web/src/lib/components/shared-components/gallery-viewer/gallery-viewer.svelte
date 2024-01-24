@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, ThumbnailFormat } from '@api';
+  import { type AssetResponseDto, ThumbnailFormat } from '@api';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import { flip } from 'svelte/animate';
   import { getThumbnailSize } from '$lib/utils/thumbnail-util';

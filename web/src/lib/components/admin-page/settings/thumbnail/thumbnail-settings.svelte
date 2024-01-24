@@ -1,13 +1,13 @@
 <script lang="ts">
-  import SettingSelect from '$lib/components/admin-page/settings/setting-select.svelte';
-  import { Colorspace, SystemConfigDto } from '@api';
-  import { fade } from 'svelte/transition';
-  import { isEqual } from 'lodash-es';
   import SettingButtonsRow from '$lib/components/admin-page/settings/setting-buttons-row.svelte';
+  import SettingSelect from '$lib/components/admin-page/settings/setting-select.svelte';
+  import { Colorspace, type SystemConfigDto } from '@api';
+  import { isEqual } from 'lodash-es';
+  import { createEventDispatcher } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import type { SettingsEventType } from '../admin-settings';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import type { SettingsEventType } from '../admin-settings';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;

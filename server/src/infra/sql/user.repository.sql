@@ -162,6 +162,7 @@ SET
       LEFT JOIN "exif" "exif" ON "exif"."assetId" = "assets"."id"
     WHERE
       "assets"."ownerId" = users.id
+      AND NOT "assets"."isExternal"
   ),
   "updatedAt" = CURRENT_TIMESTAMP
 WHERE

@@ -10,7 +10,8 @@
     ".": {
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js",
-      "default": "./build/cjs/index.js"
+      "default": "./build/cjs/index.js",
+      "types": "./build/types/index.d.ts"
     }
   },
   "scripts": {

@@ -29,6 +29,12 @@
       "schedule": "on tuesday"
     },
     {
+      "matchFileNames": ["open-api/**"],
+      "groupName": "open-api",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": "on tuesday"
+    },
+    {
       "groupName": "exiftool",
       "matchPackagePrefixes": ["exiftool"],
       "schedule": "on tuesday"
@@ -65,11 +71,13 @@
       "matchDatasources": ["docker"],
       "matchPackageNames": ["node"],
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
-      "versioning": "node"
+      "versioning": "node",
+      "schedule": "on tuesday"
     },
     {
       "packageNames": ["com.google.guava:guava"],
-      "versionScheme": "docker"
+      "versionScheme": "docker",
+      "schedule": "on tuesday"
     }
   ],
   "ignorePaths": ["mobile/openapi/pubspec.yaml"],

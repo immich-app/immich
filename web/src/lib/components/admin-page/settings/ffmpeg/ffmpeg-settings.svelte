@@ -2,7 +2,7 @@
   import {
     AudioCodec,
     CQMode,
-    SystemConfigDto,
+    type SystemConfigDto,
     ToneMapping,
     TranscodeHWAccel,
     TranscodePolicy,

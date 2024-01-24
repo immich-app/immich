@@ -36,7 +36,7 @@ export class UserResponseDto extends UserDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes!: number | null;
   @ApiProperty({ type: 'integer', format: 'int64' })
-  quotaUsageInBytes!: number;
+  quotaUsageInBytes!: number | null;
 }
 
 export const mapSimpleUser = (entity: UserEntity): UserDto => {

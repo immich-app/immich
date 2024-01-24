@@ -4,7 +4,7 @@
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { api, PeopleUpdateItem, type PersonResponseDto } from '@api';
+  import { api, type PeopleUpdateItem, type PersonResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -162,11 +162,15 @@
     }
     try {
       await api.personApi.mergePerson({
-        id: personMerge2.id,
+        id: personToBeMergedIn.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
+
+      const { data: mergedPerson } = await api.personApi.getPerson({ id: personToBeMergedIn.id });
+
       countVisiblePeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
+      people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
 
       notificationController.show({
         message: 'Merge people succesfully',

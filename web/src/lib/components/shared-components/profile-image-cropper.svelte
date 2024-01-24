@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AssetResponseDto, api } from '@api';
+  import { type AssetResponseDto, api } from '@api';
   import { createEventDispatcher, onMount } from 'svelte';
   import { notificationController, NotificationType } from './notification/notification';
   import { handleError } from '$lib/utils/handle-error';

@@ -298,7 +298,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAlbumInfo**
-> AlbumResponseDto getAlbumInfo(id, withoutAssets, key)
+> AlbumResponseDto getAlbumInfo(id, key, withoutAssets)
 
 
 
@@ -322,11 +322,11 @@ import 'package:openapi/api.dart';
 
 final api_instance = AlbumApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
-final withoutAssets = true; // bool | 
 final key = key_example; // String | 
+final withoutAssets = true; // bool | 
 
 try {
-    final result = api_instance.getAlbumInfo(id, withoutAssets, key);
+    final result = api_instance.getAlbumInfo(id, key, withoutAssets);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->getAlbumInfo: $e\n');
@@ -338,8 +338,8 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
- **withoutAssets** | **bool**|  | [optional] 
  **key** | **String**|  | [optional] 
+ **withoutAssets** | **bool**|  | [optional] 
 
 ### Return type
 
@@ -357,7 +357,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllAlbums**
-> List<AlbumResponseDto> getAllAlbums(shared, assetId)
+> List<AlbumResponseDto> getAllAlbums(assetId, shared)
 
 
 
@@ -380,11 +380,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final shared = true; // bool | 
 final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+final shared = true; // bool | 
 
 try {
-    final result = api_instance.getAllAlbums(shared, assetId);
+    final result = api_instance.getAllAlbums(assetId, shared);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->getAllAlbums: $e\n');
@@ -395,8 +395,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **shared** | **bool**|  | [optional] 
  **assetId** | **String**| Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums | [optional] 
+ **shared** | **bool**|  | [optional] 
 
 ### Return type
 

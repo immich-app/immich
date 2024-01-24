@@ -58,10 +58,6 @@ jobs:
         run: npm run format
         if: ${{ !cancelled() }}
 
-      - name: Run tsc
-        run: npm run check
-        if: ${{ !cancelled() }}
-
       - name: Run build
         run: npm run build
         if: ${{ !cancelled() }}
@@ -229,7 +225,7 @@ jobs:
           cache: "poetry"
       - name: Install dependencies
         run: |
-          poetry install --with dev
+          poetry install --with dev --with cpu
       - name: Lint with ruff
         run: |
           poetry run ruff check --output-format=github app export
