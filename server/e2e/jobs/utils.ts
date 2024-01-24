@@ -103,6 +103,7 @@ export const testApp = {
   stopWatcher: async () => {
     await app.get(AppService).stopWatcher();
   },
+  get: (member: any) => app.get(member),
   teardown: async () => {
     if (app) {
       await app.get(AppService).teardown();

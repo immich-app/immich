@@ -20,7 +20,7 @@ describe(`Library watcher (e2e)`, () => {
 
   beforeAll(async () => {
     server = (await testApp.create()).getHttpServer();
-    libraryService = app.get(LibraryService);
+    libraryService = testApp.get(LibraryService);
   });
 
   beforeEach(async () => {
