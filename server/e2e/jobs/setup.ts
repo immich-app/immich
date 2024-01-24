@@ -3,16 +3,6 @@ import { access } from 'fs/promises';
 import path from 'path';
 
 export default async () => {
-  const allTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
-
-  if (!allTests) {
-    console.warn(
-      `\n\n
-      *** Not running all server e2e tests. Run 'make test-e2e' to run all tests inside Docker (recommended)\n
-      *** or set 'IMMICH_RUN_ALL_TESTS=true' to run all tests (requires dependencies to be installed)\n`,
-    );
-  }
-
   let IMMICH_TEST_ASSET_PATH: string = '';
 
   if (process.env.IMMICH_TEST_ASSET_PATH === undefined) {

@@ -2,7 +2,7 @@ import { LoginResponseDto, PartnerDirection } from '@app/domain';
 import { PartnerController } from '@app/immich';
 import { errorStub, userDto } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${PartnerController.name} (e2e)`, () => {

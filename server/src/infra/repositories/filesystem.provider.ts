@@ -9,7 +9,7 @@ import {
 } from '@app/domain';
 import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
-import chokidar, { FSWatcher, WatchOptions } from 'chokidar';
+import chokidar, { WatchOptions } from 'chokidar';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs, { copyFile, readdir, rename, writeFile } from 'fs/promises';
 import { glob } from 'glob';
@@ -134,7 +134,7 @@ export class FilesystemProvider implements IStorageRepository {
     });
   }
 
-  watch(paths: string[], options: WatchOptions): FSWatcher {
+  watch(paths: string[], options: WatchOptions): ImmichWatcher {
     return chokidar.watch(paths, options);
   }
 

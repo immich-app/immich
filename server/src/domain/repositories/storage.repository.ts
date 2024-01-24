@@ -41,5 +41,5 @@ export interface IStorageRepository {
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
-  watch(paths: string[], options: WatchOptions): FSWatcher;
+  watch(paths: string[], options: WatchOptions): ImmichWatcher;
 }

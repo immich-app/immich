@@ -3,7 +3,7 @@ import { LibraryController } from '@app/immich';
 import { LibraryType } from '@app/infra/entities';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${LibraryController.name} (e2e)`, () => {

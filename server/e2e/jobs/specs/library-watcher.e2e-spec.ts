@@ -1,9 +1,9 @@
 import { LibraryResponseDto, LibraryService, LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
 import * as fs from 'fs/promises';
+import { api } from '../../client';
 
 import { INestApplication } from '@nestjs/common';
-import { api } from '../client';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
@@ -19,8 +19,7 @@ describe(`Library watcher (e2e)`, () => {
   let libraryService: LibraryService;
 
   beforeAll(async () => {
-    app = await testApp.create({ jobs: true });
-    server = app.getHttpServer();
+    server = (await testApp.create()).getHttpServer();
     libraryService = app.get(LibraryService);
   });
 

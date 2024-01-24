@@ -1,6 +1,5 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import chokidar from 'chokidar';
 import picomatch from 'picomatch';
 
 import { R_OK } from 'node:constants';

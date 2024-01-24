@@ -2,7 +2,7 @@ import { LoginResponseDto } from '@app/domain';
 import { ServerInfoController } from '@app/immich';
 import { errorStub, userDto } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${ServerInfoController.name} (e2e)`, () => {
