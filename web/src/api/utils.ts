@@ -53,7 +53,7 @@ export const oauth = {
   login: (location: Location) => {
     return api.oauthApi.finishOAuth({ oAuthCallbackDto: { url: location.href } });
   },
-  link: (location: Location): AxiosPromise<UserResponseDto> => {
+  link: (location: Location) => {
     return api.oauthApi.linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
   },
   unlink: () => {

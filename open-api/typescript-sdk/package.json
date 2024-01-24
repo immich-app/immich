@@ -19,7 +19,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.27.2"
+    "axios": "^1.6.5"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
