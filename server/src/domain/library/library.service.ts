@@ -1,5 +1,6 @@
 import { AssetType, LibraryType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import chokidar, { FSWatcher, WatchOptions } from 'chokidar';
 import picomatch from 'picomatch';
 
 import { R_OK } from 'node:constants';
@@ -101,7 +102,7 @@ export class LibraryService extends EventEmitter {
 
     const config = await this.configCore.getConfig();
 
-    const watcher = await this.storageRepository.watch(library.importPaths, {
+    const watcher = await chokidar.watch(library.importPaths, {
       usePolling: config.library.watch.usePolling,
       interval: config.library.watch.interval,
       binaryInterval: config.library.watch.interval,

@@ -1,4 +1,10 @@
-import { CreateLibraryDto, LibraryResponseDto, LibraryStatsResponseDto, ScanLibraryDto } from '@app/domain';
+import {
+  CreateLibraryDto,
+  LibraryResponseDto,
+  LibraryStatsResponseDto,
+  ScanLibraryDto,
+  UpdateLibraryDto,
+} from '@app/domain';
 import request from 'supertest';
 
 export const libraryApi = {
@@ -44,34 +50,11 @@ export const libraryApi = {
     expect(status).toBe(200);
     return body;
   },
-  setExclusionPatterns: async (server: any, accessToken: string, id: string, exclusionPatterns: string[]) => {
+  update: async (server: any, accessToken: string, id: string, data: UpdateLibraryDto) => {
     const { body, status } = await request(server)
       .put(`/library/${id}`)
       .set('Authorization', `Bearer ${accessToken}`)
-      .send({ exclusionPatterns });
-    expect(status).toBe(200);
-    return body as LibraryResponseDto;
-  },
-  watch: async (server: any, accessToken: string, id: string) => {
-    const { body, status } = await request(server)
-      .put(`/library/${id}`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ isWatched: true });
-    expect(status).toBe(200);
-    return body as LibraryResponseDto;
-  },
-  unwatch: async (server: any, accessToken: string, id: string) => {
-    const { body, status } = await request(server)
-      .put(`/library/${id}`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ isWatched: false });
-    expect(status).toBe(200);
-    return body as LibraryResponseDto;
-  },
-  deleteLibrary: async (server: any, accessToken: string, id: string) => {
-    const { body, status } = await request(server)
-      .delete(`/library/${id}`)
-      .set('Authorization', `Bearer ${accessToken}`);
+      .send(data);
     expect(status).toBe(200);
     return body as LibraryResponseDto;
   },

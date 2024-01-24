@@ -1,6 +1,6 @@
 import { LibraryResponseDto, LibraryService, LoginResponseDto } from '@app/domain';
 import { AssetType, LibraryType } from '@app/infra/entities';
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
 
 import { INestApplication } from '@nestjs/common';
 import { api } from '../client';
@@ -53,11 +53,11 @@ describe(`Library watcher (e2e)`, () => {
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
 
-        await api.libraryApi.watch(server, admin.accessToken, library.id);
+        await api.libraryApi.update(server, admin.accessToken, library.id, { isWatched: true });
       });
 
       it('should import a new file', async () => {
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
@@ -69,22 +69,22 @@ describe(`Library watcher (e2e)`, () => {
       });
 
       it('should import new files with case insensitive extensions', async () => {
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.JPG`,
         );
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file3.Jpg`,
         );
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file4.jpG`,
         );
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file5.jPg`,
         );
@@ -101,21 +101,21 @@ describe(`Library watcher (e2e)`, () => {
       it('should ignore files with wrong extensions', async () => {
         jest.clearAllMocks();
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file2.txt`,
         );
 
         await waitForEvent(libraryService, 'add');
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file3.TXT`,
         );
 
         await waitForEvent(libraryService, 'add');
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file4.TxT`,
         );
@@ -129,7 +129,7 @@ describe(`Library watcher (e2e)`, () => {
       });
 
       it('should update a changed file', async () => {
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
@@ -139,7 +139,7 @@ describe(`Library watcher (e2e)`, () => {
         const originalAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(originalAssets.length).toEqual(1);
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/prairie_falcon.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/file.jpg`,
         );
@@ -175,19 +175,19 @@ describe(`Library watcher (e2e)`, () => {
           ],
         });
 
-        await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
-        await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
-        await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
+        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
+        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
+        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
 
-        await api.libraryApi.watch(server, admin.accessToken, library.id);
+        await api.libraryApi.update(server, admin.accessToken, library.id, { isWatched: true });
       });
 
       it('should ignore excluded paths', async () => {
-        await api.libraryApi.setExclusionPatterns(server, admin.accessToken, library.id, ['**/dir2/**']);
+        await api.libraryApi.update(server, admin.accessToken, library.id, { exclusionPatterns: ['**/dir2/**'] });
 
         jest.clearAllMocks();
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
         );
@@ -201,11 +201,11 @@ describe(`Library watcher (e2e)`, () => {
       });
 
       it('should ignore excluded paths without case sensitivity', async () => {
-        await api.libraryApi.setExclusionPatterns(server, admin.accessToken, library.id, ['**/DIR2/**']);
+        await api.libraryApi.update(server, admin.accessToken, library.id, { exclusionPatterns: ['**/DIR2/**'] });
 
         jest.clearAllMocks();
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file2.jpg`,
         );
@@ -219,17 +219,17 @@ describe(`Library watcher (e2e)`, () => {
       });
 
       it('should add new files in multiple import paths', async () => {
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/el_torcal_rocks.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file2.jpg`,
         );
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir2/file3.jpg`,
         );
 
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/tanners_ridge.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3/file4.jpg`,
         );
@@ -243,7 +243,7 @@ describe(`Library watcher (e2e)`, () => {
       });
 
       it('should offline a removed file', async () => {
-        await fs.promises.copyFile(
+        await fs.copyFile(
           `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
           `${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`,
         );
@@ -253,7 +253,7 @@ describe(`Library watcher (e2e)`, () => {
         const addedAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
         expect(addedAssets.length).toEqual(1);
 
-        await fs.promises.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`);
+        await fs.unlink(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1/file.jpg`);
 
         await waitForEvent(libraryService, 'unlink');
 
@@ -278,21 +278,20 @@ describe(`Library watcher (e2e)`, () => {
 
       await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
 
-      await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
-      await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
-      await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
-
-      await api.libraryApi.watch(server, admin.accessToken, library.id);
+      await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
+      await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
+      await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
+      await api.libraryApi.update(server, admin.accessToken, library.id, { isWatched: true });
     });
 
     it('should use an updated import paths', async () => {
-      await fs.promises.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`, { recursive: true });
+      await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`, { recursive: true });
 
       await api.libraryApi.setImportPaths(server, admin.accessToken, library.id, [
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4`,
       ]);
 
-      await fs.promises.copyFile(
+      await fs.copyFile(
         `${IMMICH_TEST_ASSET_PATH}/albums/nature/polemonium_reptans.jpg`,
         `${IMMICH_TEST_ASSET_TEMP_PATH}/dir4/file.jpg`,
       );

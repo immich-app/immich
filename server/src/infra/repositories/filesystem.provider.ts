@@ -133,13 +133,5 @@ export class FilesystemProvider implements IStorageRepository {
     });
   }
 
-  async watch(paths: string | ReadonlyArray<string>, options?: WatchOptions): Promise<FSWatcher> {
-    // Stop any previous watchers of this library
-
-    const watcher = chokidar.watch(paths, options);
-
-    return watcher;
-  }
-
   readdir = readdir;
 }

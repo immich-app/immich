@@ -37,7 +37,6 @@ export interface IStorageRepository {
   readdir(folder: string): Promise<string[]>;
   stat(filepath: string): Promise<Stats>;
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
-  watch(paths: string | ReadonlyArray<string>, options?: WatchOptions): Promise<FSWatcher>;
   copyFile(source: string, target: string): Promise<void>;
   rename(source: string, target: string): Promise<void>;
 }
