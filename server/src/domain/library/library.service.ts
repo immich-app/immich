@@ -102,7 +102,7 @@ export class LibraryService extends EventEmitter {
 
     const config = await this.configCore.getConfig();
 
-    const watcher = await chokidar.watch(library.importPaths, {
+    const watcher = chokidar.watch(library.importPaths, {
       usePolling: config.library.watch.usePolling,
       interval: config.library.watch.interval,
       binaryInterval: config.library.watch.interval,

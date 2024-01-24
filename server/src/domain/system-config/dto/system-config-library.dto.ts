@@ -35,18 +35,6 @@ export class SystemConfigLibraryScanDto {
   cronExpression!: string;
 }
 
-export class SystemConfigLibraryWatchAwaitWriteFinishDto {
-  @IsInt()
-  @IsPositive()
-  @ApiProperty({ type: 'integer' })
-  stabilityThreshold!: number;
-
-  @IsInt()
-  @IsPositive()
-  @ApiProperty({ type: 'integer' })
-  pollInterval!: number;
-}
-
 export class SystemConfigLibraryWatchDto {
   @IsBoolean()
   enabled!: boolean;
@@ -63,11 +51,6 @@ export class SystemConfigLibraryWatchDto {
   @IsPositive()
   @ApiProperty({ type: 'integer' })
   binaryInterval!: number;
-
-  @Type(() => SystemConfigLibraryWatchAwaitWriteFinishDto)
-  @ValidateNested()
-  @IsObject()
-  awaitWriteFinish!: SystemConfigLibraryWatchAwaitWriteFinishDto;
 }
 
 export class SystemConfigLibraryDto {
