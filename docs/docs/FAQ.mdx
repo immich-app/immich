@@ -86,6 +86,10 @@ Also, there are additional jobs for person (face) thumbnails.
 
 There are no requirements for assets to be unique across users. If multiple users upload the same image they are processed as if they were distinct assets and jobs run and thumbnails are generated accordingly.
 
+### Why do HDR videos appear pale in Immich player but look normal after download?
+
+Immich uses a player with known HDR color display issues. We are experimenting with a different player that provides better color profiles for HDR content for future improvements.
+
 ### How can I delete transcoded videos without deleting the original?
 
 The transcode of an asset can be deleted by setting a transcode policy that makes it unnecessary, then running a transcoding job for that asset. This can be done on a per-asset basis by starting a transcoding job for an asset (with the _Refresh encoded videos_ button in the asset viewer options. Or, for all assets by running transcoding jobs for all assets.
