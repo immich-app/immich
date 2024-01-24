@@ -4,7 +4,7 @@ import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { errorStub, uuidStub } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${PersonController.name}`, () => {

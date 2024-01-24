@@ -1,84 +1,43 @@
 import { LoginResponseDto } from '@app/domain';
-import { AssetType, LibraryType } from '@app/infra/entities';
-import { api } from '../client';
-import { IMMICH_TEST_ASSET_PATH, runAllTests, testApp } from '../utils';
+import { AssetType } from '@app/infra/entities';
+import { readFile } from 'fs/promises';
+import { basename, join } from 'path';
+import { api } from '../../client';
+import { IMMICH_TEST_ASSET_PATH, testApp } from '../utils';
 
-describe(`Supported file formats (e2e)`, () => {
-  let server: any;
-  let admin: LoginResponseDto;
+const JPEG = {
+  type: AssetType.IMAGE,
+  originalFileName: 'el_torcal_rocks',
+  resized: true,
+  exifInfo: {
+    dateTimeOriginal: '2012-08-05T11:39:59.000Z',
+    exifImageWidth: 512,
+    exifImageHeight: 341,
+    latitude: null,
+    longitude: null,
+    focalLength: 75,
+    iso: 200,
+    fNumber: 11,
+    exposureTime: '1/160',
+    fileSizeInByte: 53493,
+    make: 'SONY',
+    model: 'DSLR-A550',
+    orientation: null,
+    description: 'SONY DSC',
+  },
+};
 
-  interface FormatTest {
-    format: string;
-    path: string;
-    runTest: boolean;
-    expectedAsset: any;
-    expectedExif: any;
-  }
-
-  const formatTests: FormatTest[] = [
-    {
-      format: 'jpg',
-      path: 'jpg',
-      runTest: true,
-      expectedAsset: {
-        type: AssetType.IMAGE,
-        originalFileName: 'el_torcal_rocks',
-        resized: true,
-      },
-      expectedExif: {
-        dateTimeOriginal: '2012-08-05T11:39:59.000Z',
-        exifImageWidth: 512,
-        exifImageHeight: 341,
-        latitude: null,
-        longitude: null,
-        focalLength: 75,
-        iso: 200,
-        fNumber: 11,
-        exposureTime: '1/160',
-        fileSizeInByte: 53493,
-        make: 'SONY',
-        model: 'DSLR-A550',
-        orientation: null,
-        description: 'SONY DSC',
-      },
-    },
-    {
-      format: 'jpeg',
-      path: 'jpeg',
-      runTest: true,
-      expectedAsset: {
-        type: AssetType.IMAGE,
-        originalFileName: 'el_torcal_rocks',
-        resized: true,
-      },
-      expectedExif: {
-        dateTimeOriginal: '2012-08-05T11:39:59.000Z',
-        exifImageWidth: 512,
-        exifImageHeight: 341,
-        latitude: null,
-        longitude: null,
-        focalLength: 75,
-        iso: 200,
-        fNumber: 11,
-        exposureTime: '1/160',
-        fileSizeInByte: 53493,
-        make: 'SONY',
-        model: 'DSLR-A550',
-        orientation: null,
-        description: 'SONY DSC',
-      },
-    },
-    {
-      format: 'heic',
-      path: 'heic',
-      runTest: runAllTests,
-      expectedAsset: {
-        type: AssetType.IMAGE,
-        originalFileName: 'IMG_2682',
-        resized: true,
-        fileCreatedAt: '2019-03-21T16:04:22.348Z',
-      },
-      expectedExif: {
+const tests = [
+  { input: 'formats/jpg/el_torcal_rocks.jpg', expected: JPEG },
+  { input: 'formats/jpeg/el_torcal_rocks.jpeg', expected: JPEG },
+  {
+    input: 'formats/heic/IMG_2682.heic',
+    expected: {
+      type: AssetType.IMAGE,
+      originalFileName: 'IMG_2682',
+      resized: true,
+      fileCreatedAt: '2019-03-21T16:04:22.348Z',
+      exifInfo: {
         dateTimeOriginal: '2019-03-21T16:04:22.348Z',
         exifImageWidth: 4032,
         exifImageHeight: 3024,
@@ -95,16 +54,14 @@ describe(`Supported file formats (e2e)`, () => {
         timeZone: 'America/Chicago',
       },
     },
-    {
-      format: 'png',
-      path: 'png',
-      runTest: true,
-      expectedAsset: {
-        type: AssetType.IMAGE,
-        originalFileName: 'density_plot',
-        resized: true,
-      },
-      expectedExif: {
+  },
+  {
+    input: 'formats/png/density_plot.png',
+    expected: {
+      type: AssetType.IMAGE,
+      originalFileName: 'density_plot',
+      resized: true,
+      exifInfo: {
         exifImageWidth: 800,
         exifImageHeight: 800,
         latitude: null,
@@ -112,17 +69,15 @@ describe(`Supported file formats (e2e)`, () => {
         fileSizeInByte: 25408,
       },
     },
-    {
-      format: 'nef (Nikon D80)',
-      path: 'raw/Nikon/D80',
-      runTest: true,
-      expectedAsset: {
-        type: AssetType.IMAGE,
-        originalFileName: 'glarus',
-        resized: true,
-        fileCreatedAt: '2010-07-20T17:27:12.000Z',
-      },
-      expectedExif: {
+  },
+  {
+    input: 'formats/raw/Nikon/D80/glarus.nef',
+    expected: {
+      type: AssetType.IMAGE,
+      originalFileName: 'glarus',
+      resized: true,
+      fileCreatedAt: '2010-07-20T17:27:12.000Z',
+      exifInfo: {
         make: 'NIKON CORPORATION',
         model: 'NIKON D80',
         exposureTime: '1/200',
@@ -136,17 +91,15 @@ describe(`Supported file formats (e2e)`, () => {
         orientation: '1',
       },
     },
-    {
-      format: 'nef (Nikon D700)',
-      path: 'raw/Nikon/D700',
-      runTest: true,
-      expectedAsset: {
-        type: AssetType.IMAGE,
-        originalFileName: 'philadelphia',
-        resized: true,
-        fileCreatedAt: '2016-09-22T22:10:29.060Z',
-      },
-      expectedExif: {
+  },
+  {
+    input: 'formats/raw/Nikon/D700/philadelphia.nef',
+    expected: {
+      type: AssetType.IMAGE,
+      originalFileName: 'philadelphia',
+      resized: true,
+      fileCreatedAt: '2016-09-22T22:10:29.060Z',
+      exifInfo: {
         make: 'NIKON CORPORATION',
         model: 'NIKON D700',
         exposureTime: '1/400',
@@ -161,41 +114,45 @@ describe(`Supported file formats (e2e)`, () => {
         timeZone: 'UTC-5',
       },
     },
-  ];
+  },
+];
 
-  // Only run tests with runTest = true
-  const testsToRun = formatTests.filter((formatTest) => formatTest.runTest);
+describe(`Format (e2e)`, () => {
+  let server: any;
+  let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    server = (await testApp.create({ jobs: true })).getHttpServer();
-  });
-
-  afterAll(async () => {
-    await testApp.teardown();
+    const app = await testApp.create();
+    server = app.getHttpServer();
   });
 
   beforeEach(async () => {
     await testApp.reset();
     await api.authApi.adminSignUp(server);
     admin = await api.authApi.adminLogin(server);
-    await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
   });
 
-  it.each(testsToRun)('should import file of format $format', async (testedFormat) => {
-    const library = await api.libraryApi.create(server, admin.accessToken, {
-      type: LibraryType.EXTERNAL,
-      importPaths: [`${IMMICH_TEST_ASSET_PATH}/formats/${testedFormat.path}`],
+  afterAll(async () => {
+    await testApp.teardown();
+  });
+
+  for (const { input, expected } of tests) {
+    it(`should generate a thumbnail for ${input}`, async () => {
+      const filepath = join(IMMICH_TEST_ASSET_PATH, input);
+      const content = await readFile(filepath);
+      await api.assetApi.upload(server, admin.accessToken, 'test-device-id', {
+        content,
+        filename: basename(filepath),
+      });
+      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+
+      expect(assets).toHaveLength(1);
+
+      const asset = assets[0];
+
+      expect(asset.exifInfo).toBeDefined();
+      expect(asset.exifInfo).toMatchObject(expected.exifInfo);
+      expect(asset).toMatchObject(expected);
     });
-
-    await api.libraryApi.scanLibrary(server, admin.accessToken, library.id, {});
-
-    const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-    expect(assets).toEqual([
-      expect.objectContaining({
-        ...testedFormat.expectedAsset,
-        exifInfo: expect.objectContaining(testedFormat.expectedExif),
-      }),
-    ]);
-  });
+  }
 });

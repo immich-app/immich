@@ -12,7 +12,7 @@ import { Server } from 'tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../../src/microservices/app.service';
 
-export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH;
+export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH as string;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
 
 export const today = DateTime.fromObject({ year: 2023, month: 11, day: 3 });
@@ -57,16 +57,10 @@ export const db = {
 
 let _handler: JobItemHandler = () => Promise.resolve();
 
-interface TestAppOptions {
-  jobs: boolean;
-}
-
 let app: INestApplication;
 
 export const testApp = {
-  create: async (options?: TestAppOptions): Promise<INestApplication> => {
-    const { jobs } = options || { jobs: false };
-
+  create: async (): Promise<INestApplication> => {
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
       .overrideModule(InfraModule)
       .useModule(InfraTestModule)
@@ -77,8 +71,8 @@ export const testApp = {
         updateCronJob: jest.fn(),
         deleteCronJob: jest.fn(),
         validateCronExpression: jest.fn(),
-        queue: (item: JobItem) => jobs && _handler(item),
-        queueAll: (items: JobItem[]) => jobs && Promise.all(items.map(_handler)).then(() => Promise.resolve()),
+        queue: (item: JobItem) => _handler(item),
+        queueAll: (items: JobItem[]) => Promise.all(items.map(_handler)).then(() => Promise.resolve()),
         resume: jest.fn(),
         empty: jest.fn(),
         setConcurrency: jest.fn(),
@@ -112,10 +106,6 @@ export const testApp = {
     await db.disconnect();
   },
 };
-
-export const runAllTests: boolean = process.env.IMMICH_RUN_ALL_TESTS === 'true';
-
-export const itif = (condition: boolean) => (condition ? it : it.skip);
 
 const directoryExists = async (dirPath: string) =>
   await fs.promises

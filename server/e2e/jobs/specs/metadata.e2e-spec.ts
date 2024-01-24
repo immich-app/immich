@@ -2,17 +2,9 @@ import { AssetResponseDto, LoginResponseDto } from '@app/domain';
 import { AssetController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
-import * as fs from 'fs';
-import { api } from '../client';
-import {
-  IMMICH_TEST_ASSET_PATH,
-  IMMICH_TEST_ASSET_TEMP_PATH,
-  db,
-  itif,
-  restoreTempFolder,
-  runAllTests,
-  testApp,
-} from '../utils';
+import { readFile, writeFile } from 'fs/promises';
+import { api } from '../../client';
+import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, db, restoreTempFolder, testApp } from '../utils';
 
 describe(`${AssetController.name} (e2e)`, () => {
   let app: INestApplication;
@@ -20,7 +12,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    app = await testApp.create({ jobs: true });
+    app = await testApp.create();
     server = app.getHttpServer();
   });
 
@@ -40,9 +32,7 @@ describe(`${AssetController.name} (e2e)`, () => {
     let assetWithLocation: AssetResponseDto;
 
     beforeEach(async () => {
-      const fileContent = await fs.promises.readFile(
-        `${IMMICH_TEST_ASSET_PATH}/metadata/gps-position/thompson-springs.jpg`,
-      );
+      const fileContent = await readFile(`${IMMICH_TEST_ASSET_PATH}/metadata/gps-position/thompson-springs.jpg`);
 
       await api.assetApi.upload(server, admin.accessToken, 'test-asset-id', { content: fileContent });
 
@@ -58,12 +48,12 @@ describe(`${AssetController.name} (e2e)`, () => {
       );
     });
 
-    itif(runAllTests)('small webp thumbnails', async () => {
+    it('small webp thumbnails', async () => {
       const assetId = assetWithLocation.id;
 
       const thumbnail = await api.assetApi.getWebpThumbnail(server, admin.accessToken, assetId);
 
-      await fs.promises.writeFile(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.webp`, thumbnail);
+      await writeFile(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.webp`, thumbnail);
 
       const exifData = await exiftool.read(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.webp`);
 
@@ -71,12 +61,12 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(exifData).not.toHaveProperty('GPSLatitude');
     });
 
-    itif(runAllTests)('large jpeg thumbnails', async () => {
+    it('large jpeg thumbnails', async () => {
       const assetId = assetWithLocation.id;
 
       const thumbnail = await api.assetApi.getJpegThumbnail(server, admin.accessToken, assetId);
 
-      await fs.promises.writeFile(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.jpg`, thumbnail);
+      await writeFile(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.jpg`, thumbnail);
 
       const exifData = await exiftool.read(`${IMMICH_TEST_ASSET_TEMP_PATH}/thumbnail.jpg`);
 
@@ -95,8 +85,8 @@ describe(`${AssetController.name} (e2e)`, () => {
     ['Samsung One UI 6.jpg', 'lT9Uviw/FFJYCjfIxAGPTjzAmmw='],
     ['Samsung One UI 6.heic', '/ejgzywvgvzvVhUYVfvkLzFBAF0='],
   ])('should extract motionphoto video', (file, checksum) => {
-    itif(runAllTests)(`with checksum ${checksum} from ${file}`, async () => {
-      const fileContent = await fs.promises.readFile(`${IMMICH_TEST_ASSET_PATH}/formats/motionphoto/${file}`);
+    it(`with checksum ${checksum} from ${file}`, async () => {
+      const fileContent = await readFile(`${IMMICH_TEST_ASSET_PATH}/formats/motionphoto/${file}`);
 
       const response = await api.assetApi.upload(server, admin.accessToken, 'test-asset-id', { content: fileContent });
       const asset = await api.assetApi.get(server, admin.accessToken, response.id);
