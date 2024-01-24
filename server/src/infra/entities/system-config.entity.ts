@@ -18,7 +18,9 @@ export enum SystemConfigKey {
   FFMPEG_THREADS = 'ffmpeg.threads',
   FFMPEG_PRESET = 'ffmpeg.preset',
   FFMPEG_TARGET_VIDEO_CODEC = 'ffmpeg.targetVideoCodec',
+  FFMPEG_ACCEPTED_VIDEO_CODECS = 'ffmpeg.acceptedVideoCodecs',
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg.targetAudioCodec',
+  FFMPEG_ACCEPTED_AUDIO_CODECS = 'ffmpeg.acceptedAudioCodecs',
   FFMPEG_TARGET_RESOLUTION = 'ffmpeg.targetResolution',
   FFMPEG_MAX_BITRATE = 'ffmpeg.maxBitrate',
   FFMPEG_BFRAMES = 'ffmpeg.bframes',
@@ -162,7 +164,9 @@ export interface SystemConfig {
     threads: number;
     preset: string;
     targetVideoCodec: VideoCodec;
+    acceptedVideoCodecs: VideoCodec[];
     targetAudioCodec: AudioCodec;
+    acceptedAudioCodecs: AudioCodec[];
     targetResolution: string;
     maxBitrate: string;
     bframes: number;

@@ -1,26 +1,22 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
 
-  export let value: string | number;
-  export let options: { value: string | number; text: string }[];
+  export let value: string[];
+  export let options: { value: string; text: string }[];
   export let label = '';
   export let desc = '';
   export let name = '';
   export let isEdited = false;
-  export let number = false;
   export let disabled = false;
 
-  const dispatch = createEventDispatcher<{ select: string | number }>();
-
-  const handleChange = (e: Event) => {
-    value = (e.target as HTMLInputElement).value;
-    if (number) {
-      value = parseInt(value);
+  function handleCheckboxChange(option: string) {
+    if (value.includes(option)) {
+      value = value.filter((item) => item !== option);
+    } else {
+      value = [...value, option];
     }
-    dispatch('select', value);
-  };
+  }
 </script>
 
 <div class="mb-4 w-full">
@@ -43,17 +39,16 @@
     </p>
   {/if}
 
-  <select
-    class="immich-form-input w-full pb-2"
-    {disabled}
-    aria-describedby={desc ? `${name}-desc` : undefined}
-    {name}
-    id="{name}-select"
-    bind:value
-    on:change={handleChange}
-  >
-    {#each options as option}
-      <option value={option.value}>{option.text}</option>
-    {/each}
-  </select>
+  {#each options as option}
+    <label class="flex items-center mb-2">
+      <input
+        type="checkbox"
+        class="form-checkbox h-5 w-5 color"
+        {disabled}
+        checked={value.includes(option.value)}
+        on:change={() => handleCheckboxChange(option.value)}
+      />
+      <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 pt-1">{option.text}</span>
+    </label>
+  {/each}
 </div>
