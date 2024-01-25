@@ -419,21 +419,21 @@ export class AssetService {
       throw new BadRequestException('Asset not found');
     }
 
-    if (!auth.sharedLink || auth.sharedLink?.showExif) {
-      const data = mapAsset(asset, { withStack: true });
-
-      if (data.ownerId !== auth.user.id) {
-        data.people = [];
-      }
-
-      if (auth.sharedLink) {
-        delete data.owner;
-      }
-
-      return data;
-    } else {
+    if (auth.sharedLink && !auth.sharedLink.showExif) {
       return mapAsset(asset, { stripMetadata: true, withStack: true });
     }
+
+    const data = mapAsset(asset, { withStack: true });
+
+    if (auth.sharedLink) {
+      delete data.owner;
+    }
+
+    if (data.ownerId !== auth.user.id) {
+      data.people = [];
+    }
+
+    return data;
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
