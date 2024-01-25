@@ -61,6 +61,7 @@ describe(JobService.name, () => {
         { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
         { name: JobName.CLEAN_OLD_AUDIT_LOGS },
         { name: JobName.USER_SYNC_USAGE },
+        { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
       ]);
     });
   });
@@ -318,7 +319,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.FACE_DETECTION, data: { id: 'asset-1' } },
-        jobs: [JobName.QUEUE_FACIAL_RECOGNITION],
+        jobs: [],
       },
       {
         item: { name: JobName.FACIAL_RECOGNITION, data: { id: 'asset-1' } },

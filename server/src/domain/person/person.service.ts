@@ -334,28 +334,26 @@ export class PersonService {
 
     if (faces.length) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
+
+      const createFaces = [];
+      for (const face of faces) {
+        const mappedFace = {
+          assetId: asset.id,
+          embedding: face.embedding,
+          imageHeight: face.imageHeight,
+          imageWidth: face.imageWidth,
+          boundingBoxX1: face.boundingBox.x1,
+          boundingBoxX2: face.boundingBox.x2,
+          boundingBoxY1: face.boundingBox.y1,
+          boundingBoxY2: face.boundingBox.y2,
+        };
+
+        createFaces.push(this.repository.createFace(mappedFace));
+      }
+
+      const faceIds = await Promise.all(createFaces);
+      await this.jobRepository.queueAll(faceIds.map((id) => ({ name: JobName.FACIAL_RECOGNITION, data: { id } })));
     }
-
-    const promises = [];
-    for (const face of faces) {
-      const mappedFace = {
-        assetId: asset.id,
-        embedding: face.embedding,
-        imageHeight: face.imageHeight,
-        imageWidth: face.imageWidth,
-        boundingBoxX1: face.boundingBox.x1,
-        boundingBoxX2: face.boundingBox.x2,
-        boundingBoxY1: face.boundingBox.y1,
-        boundingBoxY2: face.boundingBox.y2,
-      };
-
-      const promise = this.repository
-        .createFace(mappedFace)
-        .then((faceId) => this.jobRepository.queue({ name: JobName.FACIAL_RECOGNITION, data: { id: faceId } }));
-      promises.push(promise);
-    }
-
-    await Promise.all(promises);
 
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
