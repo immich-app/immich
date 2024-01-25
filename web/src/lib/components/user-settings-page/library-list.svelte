@@ -45,8 +45,6 @@
   let selectedLibraryIndex = 0;
   let selectedLibrary: LibraryResponseDto | null = null;
 
-  let hasWatchLibraryFeature = false;
-
   onMount(() => {
     readLibraryList();
   });
@@ -84,11 +82,8 @@
   };
 
   async function readLibraryList() {
-    const { data: featureData } = await api.serverInfoApi.getServerFeatures();
-    hasWatchLibraryFeature = featureData.libraryWatch;
-
-    const { data: libraryData } = await api.libraryApi.getLibraries();
-    libraries = libraryData;
+    const { data } = await api.libraryApi.getLibraries();
+    libraries = data;
 
     dropdownOpen.length = libraries.length;
 
@@ -398,7 +393,6 @@
               <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                 <LibraryScanSettingsForm
                   {library}
-                  {hasWatchLibraryFeature}
                   on:submit={({ detail }) => handleUpdate(detail.library)}
                   on:cancel={() => (editScanSettings = null)}
                 />

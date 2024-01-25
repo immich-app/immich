@@ -134,7 +134,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
       enabled: false,
       usePolling: false,
       interval: 10000,
-      binaryInterval: 10000,
     },
   },
 });

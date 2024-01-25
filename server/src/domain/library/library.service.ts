@@ -25,7 +25,7 @@ import {
   IUserRepository,
   WithProperty,
 } from '../repositories';
-import { FeatureFlag, SystemConfigCore } from '../system-config';
+import { SystemConfigCore } from '../system-config';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -90,7 +90,7 @@ export class LibraryService extends EventEmitter {
     if (library.type !== LibraryType.EXTERNAL) {
       throw new BadRequestException('Can only watch external libraries');
     } else if (library.importPaths.length === 0) {
-      return true;
+      return false;
     }
 
     await this.unwatch(id);
@@ -163,7 +163,6 @@ export class LibraryService extends EventEmitter {
     watcher.on('error', async (error) => {
       // TODO: should we log, or throw an exception?
       this.logger.error(`Library watcher encountered error: ${error}`);
-      this.emit('error', error);
     });
 
     // Wait for the watcher to initialize before returning

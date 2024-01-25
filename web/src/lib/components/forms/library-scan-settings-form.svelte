@@ -1,18 +1,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { type LibraryResponseDto, LibraryType } from '@api';
-
   import Button from '../elements/buttons/button.svelte';
+  import { LibraryType, type LibraryResponseDto } from '@api';
   import { handleError } from '../../utils/handle-error';
   import { onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import LibraryExclusionPatternForm from './library-exclusion-pattern-form.svelte';
   import { mdiPencilOutline } from '@mdi/js';
-  import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
 
   export let library: Partial<LibraryResponseDto>;
-
-  export let hasWatchLibraryFeature = false;
 
   let addExclusionPattern = false;
   let editExclusionPattern: number | null = null;
@@ -101,16 +97,6 @@
     }
   };
 </script>
-
-{#if hasWatchLibraryFeature}
-  <div class="m-4 flex flex-col gap-4">
-    <SettingSwitch
-      title="Watch Library"
-      subtitle="Automatically import changes when new files are detected (EXPERIMENTAL)"
-      bind:checked={library.isWatched}
-    />
-  </div>
-{/if}
 
 {#if addExclusionPattern}
   <LibraryExclusionPatternForm
