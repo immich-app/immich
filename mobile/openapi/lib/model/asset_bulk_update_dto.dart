@@ -19,6 +19,7 @@ class AssetBulkUpdateDto {
     this.isFavorite,
     this.latitude,
     this.longitude,
+    this.orientation,
     this.removeParent,
     this.stackParentId,
   });
@@ -71,6 +72,14 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  num? orientation;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? removeParent;
 
   ///
@@ -89,6 +98,7 @@ class AssetBulkUpdateDto {
      other.isFavorite == isFavorite &&
      other.latitude == latitude &&
      other.longitude == longitude &&
+     other.orientation == orientation &&
      other.removeParent == removeParent &&
      other.stackParentId == stackParentId;
 
@@ -101,11 +111,12 @@ class AssetBulkUpdateDto {
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
+    (orientation == null ? 0 : orientation!.hashCode) +
     (removeParent == null ? 0 : removeParent!.hashCode) +
     (stackParentId == null ? 0 : stackParentId!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, removeParent=$removeParent, stackParentId=$stackParentId]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, orientation=$orientation, removeParent=$removeParent, stackParentId=$stackParentId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -134,6 +145,11 @@ class AssetBulkUpdateDto {
       json[r'longitude'] = this.longitude;
     } else {
     //  json[r'longitude'] = null;
+    }
+    if (this.orientation != null) {
+      json[r'orientation'] = this.orientation;
+    } else {
+    //  json[r'orientation'] = null;
     }
     if (this.removeParent != null) {
       json[r'removeParent'] = this.removeParent;
@@ -168,6 +184,9 @@ class AssetBulkUpdateDto {
         longitude: json[r'longitude'] == null
             ? null
             : num.parse(json[r'longitude'].toString()),
+        orientation: json[r'orientation'] == null
+            ? null
+            : num.parse(json[r'orientation'].toString()),
         removeParent: mapValueOfType<bool>(json, r'removeParent'),
         stackParentId: mapValueOfType<String>(json, r'stackParentId'),
       );

@@ -485,6 +485,12 @@ export interface AssetBulkUpdateDto {
     'longitude'?: number;
     /**
      * 
+     * @type {number}
+     * @memberof AssetBulkUpdateDto
+     */
+    'orientation'?: number;
+    /**
+     * 
      * @type {boolean}
      * @memberof AssetBulkUpdateDto
      */
@@ -4438,6 +4444,12 @@ export interface UpdateAssetDto {
      * @memberof UpdateAssetDto
      */
     'longitude'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof UpdateAssetDto
+     */
+    'orientation'?: number;
 }
 /**
  * 

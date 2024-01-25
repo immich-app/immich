@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **isFavorite** | **bool** |  | [optional] 
 **latitude** | **num** |  | [optional] 
 **longitude** | **num** |  | [optional] 
+**orientation** | **num** |  | [optional] 
 **removeParent** | **bool** |  | [optional] 
 **stackParentId** | **String** |  | [optional] 
 

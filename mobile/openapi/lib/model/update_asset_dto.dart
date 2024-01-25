@@ -19,6 +19,7 @@ class UpdateAssetDto {
     this.isFavorite,
     this.latitude,
     this.longitude,
+    this.orientation,
   });
 
   ///
@@ -69,6 +70,14 @@ class UpdateAssetDto {
   ///
   num? longitude;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? orientation;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
      other.dateTimeOriginal == dateTimeOriginal &&
@@ -76,7 +85,8 @@ class UpdateAssetDto {
      other.isArchived == isArchived &&
      other.isFavorite == isFavorite &&
      other.latitude == latitude &&
-     other.longitude == longitude;
+     other.longitude == longitude &&
+     other.orientation == orientation;
 
   @override
   int get hashCode =>
@@ -86,10 +96,11 @@ class UpdateAssetDto {
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
-    (longitude == null ? 0 : longitude!.hashCode);
+    (longitude == null ? 0 : longitude!.hashCode) +
+    (orientation == null ? 0 : orientation!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude]';
+  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, orientation=$orientation]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -123,6 +134,11 @@ class UpdateAssetDto {
     } else {
     //  json[r'longitude'] = null;
     }
+    if (this.orientation != null) {
+      json[r'orientation'] = this.orientation;
+    } else {
+    //  json[r'orientation'] = null;
+    }
     return json;
   }
 
@@ -144,6 +160,9 @@ class UpdateAssetDto {
         longitude: json[r'longitude'] == null
             ? null
             : num.parse(json[r'longitude'].toString()),
+        orientation: json[r'orientation'] == null
+            ? null
+            : num.parse(json[r'orientation'].toString()),
       );
     }
     return null;
