@@ -41,7 +41,7 @@ docker compose up -d    # Start remainder of Immich apps
 docker exec -t immich_postgres pg_dumpall -c -U postgres > "\path\to\backup\dump.sql"
 ```
 
-```bash title='Restore'
+```powershell title='Restore'
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch.
 docker compose pull     # Update to latest version of Immich (if desired)
 docker compose create   # Create Docker containers for Immich apps without running them.
