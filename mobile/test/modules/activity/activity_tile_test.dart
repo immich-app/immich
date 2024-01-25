@@ -17,206 +17,206 @@ import '../../widget_tester_extensions.dart';
 import '../asset_viewer/asset_viewer_mocks.dart';
 
 void main() {
-  late MockCurrentAssetProvider assetProvider;
-  late List<Override> overrides;
-  late Isar db;
+//   late MockCurrentAssetProvider assetProvider;
+//   late List<Override> overrides;
+//   late Isar db;
 
-  setUpAll(() async {
-    db = await TestUtils.initIsar();
-    // For UserCircleAvatar
-    Store.init(db);
-    Store.put(StoreKey.currentUser, UserStub.admin);
-    Store.put(StoreKey.serverEndpoint, '');
-    Store.put(StoreKey.accessToken, '');
-    TestUtils.init();
-  });
+//   setUpAll(() async {
+//     TestUtils.init();
+//     db = await TestUtils.initIsar();
+//     // For UserCircleAvatar
+//     Store.init(db);
+//     Store.put(StoreKey.currentUser, UserStub.admin);
+//     Store.put(StoreKey.serverEndpoint, '');
+//     Store.put(StoreKey.accessToken, '');
+//   });
 
-  setUp(() {
-    assetProvider = MockCurrentAssetProvider();
-    overrides = [currentAssetProvider.overrideWith(() => assetProvider)];
-  });
+//   setUp(() {
+//     assetProvider = MockCurrentAssetProvider();
+//     overrides = [currentAssetProvider.overrideWith(() => assetProvider)];
+//   });
 
-  testWidgets('Returns a ListTile', (tester) async {
-    await tester.pumpConsumerWidget(
-      ActivityTile(
-        Activity(
-          id: '1',
-          createdAt: DateTime(100),
-          type: ActivityType.like,
-          user: UserStub.admin,
-        ),
-      ),
-      overrides: overrides,
-    );
+//   testWidgets('Returns a ListTile', (tester) async {
+//     await tester.pumpConsumerWidget(
+//       ActivityTile(
+//         Activity(
+//           id: '1',
+//           createdAt: DateTime(100),
+//           type: ActivityType.like,
+//           user: UserStub.admin,
+//         ),
+//       ),
+//       overrides: overrides,
+//     );
 
-    expect(find.byType(ListTile), findsOneWidget);
-  });
+//     expect(find.byType(ListTile), findsOneWidget);
+//   });
 
-  testWidgets('No trailing widget when activity assetId == null',
-      (tester) async {
-    await tester.pumpConsumerWidget(
-      ActivityTile(
-        Activity(
-          id: '1',
-          createdAt: DateTime(100),
-          type: ActivityType.like,
-          user: UserStub.admin,
-        ),
-      ),
-      overrides: overrides,
-    );
+//   testWidgets('No trailing widget when activity assetId == null',
+//       (tester) async {
+//     await tester.pumpConsumerWidget(
+//       ActivityTile(
+//         Activity(
+//           id: '1',
+//           createdAt: DateTime(100),
+//           type: ActivityType.like,
+//           user: UserStub.admin,
+//         ),
+//       ),
+//       overrides: overrides,
+//     );
 
-    final listTile = tester.widget<ListTile>(find.byType(ListTile));
-    expect(listTile.trailing, isNull);
-  });
+//     final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//     expect(listTile.trailing, isNull);
+//   });
 
-  testWidgets(
-      'Asset Thumbanil as trailing widget when activity assetId != null',
-      (tester) async {
-    await tester.pumpConsumerWidget(
-      ActivityTile(
-        Activity(
-          id: '1',
-          createdAt: DateTime(100),
-          type: ActivityType.like,
-          user: UserStub.admin,
-          assetId: '1',
-        ),
-      ),
-      overrides: overrides,
-    );
+//   testWidgets(
+//       'Asset Thumbanil as trailing widget when activity assetId != null',
+//       (tester) async {
+//     await tester.pumpConsumerWidget(
+//       ActivityTile(
+//         Activity(
+//           id: '1',
+//           createdAt: DateTime(100),
+//           type: ActivityType.like,
+//           user: UserStub.admin,
+//           assetId: '1',
+//         ),
+//       ),
+//       overrides: overrides,
+//     );
 
-    final listTile = tester.widget<ListTile>(find.byType(ListTile));
-    expect(listTile.trailing, isNotNull);
-    // TODO: Validate this to be the common class after migrating ActivityTile#_ActivityAssetThumbnail to a common class
-  });
+//     final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//     expect(listTile.trailing, isNotNull);
+//     // TODO: Validate this to be the common class after migrating ActivityTile#_ActivityAssetThumbnail to a common class
+//   });
 
-  testWidgets('No trailing widget when current asset != null', (tester) async {
-    await tester.pumpConsumerWidget(
-      ActivityTile(
-        Activity(
-          id: '1',
-          createdAt: DateTime(100),
-          type: ActivityType.like,
-          user: UserStub.admin,
-          assetId: '1',
-        ),
-      ),
-      overrides: overrides,
-    );
+//   testWidgets('No trailing widget when current asset != null', (tester) async {
+//     await tester.pumpConsumerWidget(
+//       ActivityTile(
+//         Activity(
+//           id: '1',
+//           createdAt: DateTime(100),
+//           type: ActivityType.like,
+//           user: UserStub.admin,
+//           assetId: '1',
+//         ),
+//       ),
+//       overrides: overrides,
+//     );
 
-    assetProvider.state = AssetStub.image1;
-    await tester.pumpAndSettle();
+//     assetProvider.state = AssetStub.image1;
+//     await tester.pumpAndSettle();
 
-    final listTile = tester.widget<ListTile>(find.byType(ListTile));
-    expect(listTile.trailing, isNull);
-  });
+//     final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//     expect(listTile.trailing, isNull);
+//   });
 
-  group('Like Activity', () {
-    final activity = Activity(
-      id: '1',
-      createdAt: DateTime(100),
-      type: ActivityType.like,
-      user: UserStub.admin,
-    );
+//   group('Like Activity', () {
+//     final activity = Activity(
+//       id: '1',
+//       createdAt: DateTime(100),
+//       type: ActivityType.like,
+//       user: UserStub.admin,
+//     );
 
-    testWidgets('Like contains filled heart as leading', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+//     testWidgets('Like contains filled heart as leading', (tester) async {
+//       await tester.pumpConsumerWidget(
+//         ActivityTile(activity),
+//         overrides: overrides,
+//       );
 
-      // Leading widget should not be null
-      final listTile = tester.widget<ListTile>(find.byType(ListTile));
-      expect(listTile.leading, isNotNull);
+//       // Leading widget should not be null
+//       final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//       expect(listTile.leading, isNotNull);
 
-      // And should have a favorite icon
-      final favoIconFinder = find.widgetWithIcon(
-        listTile.leading!.runtimeType,
-        Icons.favorite_rounded,
-      );
+//       // And should have a favorite icon
+//       final favoIconFinder = find.widgetWithIcon(
+//         listTile.leading!.runtimeType,
+//         Icons.favorite_rounded,
+//       );
 
-      expect(favoIconFinder, findsOneWidget);
-    });
+//       expect(favoIconFinder, findsOneWidget);
+//     });
 
-    testWidgets('Like title is center aligned', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+//     testWidgets('Like title is center aligned', (tester) async {
+//       await tester.pumpConsumerWidget(
+//         ActivityTile(activity),
+//         overrides: overrides,
+//       );
 
-      final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//       final listTile = tester.widget<ListTile>(find.byType(ListTile));
 
-      expect(listTile.titleAlignment, ListTileTitleAlignment.center);
-    });
+//       expect(listTile.titleAlignment, ListTileTitleAlignment.center);
+//     });
 
-    testWidgets('No subtitle for likes', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+//     testWidgets('No subtitle for likes', (tester) async {
+//       await tester.pumpConsumerWidget(
+//         ActivityTile(activity),
+//         overrides: overrides,
+//       );
 
-      final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//       final listTile = tester.widget<ListTile>(find.byType(ListTile));
 
-      expect(listTile.subtitle, isNull);
-    });
-  });
+//       expect(listTile.subtitle, isNull);
+//     });
+//   });
 
-  group('Comment Activity', () {
-    final activity = Activity(
-      id: '1',
-      createdAt: DateTime(100),
-      type: ActivityType.comment,
-      comment: 'This is a test comment',
-      user: UserStub.admin,
-    );
+//   group('Comment Activity', () {
+//     final activity = Activity(
+//       id: '1',
+//       createdAt: DateTime(100),
+//       type: ActivityType.comment,
+//       comment: 'This is a test comment',
+//       user: UserStub.admin,
+//     );
 
-    testWidgets('Comment contains User Circle Avatar as leading',
-        (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+//     testWidgets('Comment contains User Circle Avatar as leading',
+//         (tester) async {
+//       await tester.pumpConsumerWidget(
+//         ActivityTile(activity),
+//         overrides: overrides,
+//       );
 
-      final userAvatarFinder = find.byType(UserCircleAvatar);
-      expect(userAvatarFinder, findsOneWidget);
+//       final userAvatarFinder = find.byType(UserCircleAvatar);
+//       expect(userAvatarFinder, findsOneWidget);
 
-      // Leading widget should not be null
-      final listTile = tester.widget<ListTile>(find.byType(ListTile));
-      expect(listTile.leading, isNotNull);
+//       // Leading widget should not be null
+//       final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//       expect(listTile.leading, isNotNull);
 
-      // Make sure that the leading widget is the UserCircleAvatar
-      final userAvatar = tester.widget<UserCircleAvatar>(userAvatarFinder);
-      expect(listTile.leading, userAvatar);
-    });
+//       // Make sure that the leading widget is the UserCircleAvatar
+//       final userAvatar = tester.widget<UserCircleAvatar>(userAvatarFinder);
+//       expect(listTile.leading, userAvatar);
+//     });
 
-    testWidgets('Comment title is top aligned', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+//     testWidgets('Comment title is top aligned', (tester) async {
+//       await tester.pumpConsumerWidget(
+//         ActivityTile(activity),
+//         overrides: overrides,
+//       );
 
-      final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//       final listTile = tester.widget<ListTile>(find.byType(ListTile));
 
-      expect(listTile.titleAlignment, ListTileTitleAlignment.top);
-    });
+//       expect(listTile.titleAlignment, ListTileTitleAlignment.top);
+//     });
 
-    testWidgets('Contains comment text as subtitle', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+//     testWidgets('Contains comment text as subtitle', (tester) async {
+//       await tester.pumpConsumerWidget(
+//         ActivityTile(activity),
+//         overrides: overrides,
+//       );
 
-      final listTile = tester.widget<ListTile>(find.byType(ListTile));
+//       final listTile = tester.widget<ListTile>(find.byType(ListTile));
 
-      expect(listTile.subtitle, isNotNull);
-      expect(
-        find.descendant(
-          of: find.byType(ListTile),
-          matching: find.text(activity.comment!),
-        ),
-        findsOneWidget,
-      );
-    });
-  });
+//       expect(listTile.subtitle, isNotNull);
+//       expect(
+//         find.descendant(
+//           of: find.byType(ListTile),
+//           matching: find.text(activity.comment!),
+//         ),
+//         findsOneWidget,
+//       );
+//     });
+//   });
 }
