@@ -9,6 +9,7 @@ import { promisify } from 'util';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 sharp.concurrency(0);
+sharp.cache({ files: 0 });
 
 export class MediaRepository implements IMediaRepository {
   private logger = new ImmichLogger(MediaRepository.name);
@@ -26,13 +27,16 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
-    const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0'; // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
     await sharp(input, { failOn: 'none' })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
       .rotate()
-      .withMetadata({ icc: options.colorspace })
-      .toFormat(options.format, { quality: options.quality, chromaSubsampling })
+      .withIccProfile(options.colorspace)
+      .toFormat(options.format, {
+        quality: options.quality,
+        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+      })
       .toFile(output);
   }
 

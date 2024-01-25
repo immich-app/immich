@@ -14,7 +14,7 @@ import {
   QueueCleanType,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config/system-config.core';
-import { JobCommand, JobName, QueueName } from './job.constants';
+import { ConcurrentQueueName, JobCommand, JobName, QueueName } from './job.constants';
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from './job.dto';
 
 @Injectable()
@@ -94,10 +94,6 @@ export class JobService {
       case QueueName.MIGRATION:
         return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
 
-      case QueueName.OBJECT_TAGGING:
-        await this.configCore.requireFeature(FeatureFlag.TAG_IMAGE);
-        return this.jobRepository.queue({ name: JobName.QUEUE_OBJECT_TAGGING, data: { force } });
-
       case QueueName.SMART_SEARCH:
         await this.configCore.requireFeature(FeatureFlag.CLIP_ENCODE);
         return this.jobRepository.queue({ name: JobName.QUEUE_ENCODE_CLIP, data: { force } });
@@ -112,9 +108,13 @@ export class JobService {
       case QueueName.THUMBNAIL_GENERATION:
         return this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force } });
 
-      case QueueName.RECOGNIZE_FACES:
+      case QueueName.FACE_DETECTION:
         await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
-        return this.jobRepository.queue({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force } });
+        return this.jobRepository.queue({ name: JobName.QUEUE_FACE_DETECTION, data: { force } });
+
+      case QueueName.FACIAL_RECOGNITION:
+        await this.configCore.requireFeature(FeatureFlag.FACIAL_RECOGNITION);
+        return this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force } });
 
       case QueueName.LIBRARY:
         return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
@@ -124,10 +124,15 @@ export class JobService {
     }
   }
 
-  async registerHandlers(jobHandlers: Record<JobName, JobHandler>) {
+  async init(jobHandlers: Record<JobName, JobHandler>) {
     const config = await this.configCore.getConfig();
     for (const queueName of Object.values(QueueName)) {
-      const concurrency = config.job[queueName].concurrency;
+      let concurrency = 1;
+
+      if (this.isConcurrentQueue(queueName)) {
+        concurrency = config.job[queueName].concurrency;
+      }
+
       this.logger.debug(`Registering ${queueName} with a concurrency of ${concurrency}`);
       this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
         const { name, data } = item;
@@ -145,21 +150,32 @@ export class JobService {
     }
 
     this.configCore.config$.subscribe((config) => {
-      this.logger.log(`Updating queue concurrency settings`);
+      this.logger.debug(`Updating queue concurrency settings`);
       for (const queueName of Object.values(QueueName)) {
-        const concurrency = config.job[queueName].concurrency;
+        let concurrency = 1;
+        if (this.isConcurrentQueue(queueName)) {
+          concurrency = config.job[queueName].concurrency;
+        }
         this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
         this.jobRepository.setConcurrency(queueName, concurrency);
       }
     });
   }
 
+  private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
+    return ![QueueName.FACIAL_RECOGNITION, QueueName.STORAGE_TEMPLATE_MIGRATION].includes(name);
+  }
+
   async handleNightlyJobs() {
-    await this.jobRepository.queue({ name: JobName.ASSET_DELETION_CHECK });
-    await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
-    await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
-    await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
-    await this.jobRepository.queue({ name: JobName.CLEAN_OLD_AUDIT_LOGS });
+    await this.jobRepository.queueAll([
+      { name: JobName.ASSET_DELETION_CHECK },
+      { name: JobName.USER_DELETE_CHECK },
+      { name: JobName.PERSON_CLEANUP },
+      { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
+      { name: JobName.CLEAN_OLD_AUDIT_LOGS },
+      { name: JobName.USER_SYNC_USAGE },
+      { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
+    ]);
   }
 
   /**
@@ -207,20 +223,23 @@ export class JobService {
         break;
 
       case JobName.GENERATE_JPEG_THUMBNAIL: {
-        await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
-        await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data });
-        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
-        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
-        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
+        const jobs: JobItem[] = [
+          { name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data },
+          { name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data },
+          { name: JobName.ENCODE_CLIP, data: item.data },
+          { name: JobName.FACE_DETECTION, data: item.data },
+        ];
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
         if (asset) {
           if (asset.type === AssetType.VIDEO) {
-            await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: item.data });
+            jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
           } else if (asset.livePhotoVideoId) {
-            await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
+            jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id: asset.livePhotoVideoId } });
           }
         }
+
+        await this.jobRepository.queueAll(jobs);
         break;
       }
 
@@ -235,6 +254,7 @@ export class JobService {
         if (asset && asset.isVisible) {
           this.communicationRepository.send(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
+        break;
       }
     }
   }

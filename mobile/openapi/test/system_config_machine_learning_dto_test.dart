@@ -16,11 +16,6 @@ void main() {
   // final instance = SystemConfigMachineLearningDto();
 
   group('test SystemConfigMachineLearningDto', () {
-    // ClassificationConfig classification
-    test('to test the property `classification`', () async {
-      // TODO
-    });
-
     // CLIPConfig clip
     test('to test the property `clip`', () async {
       // TODO

@@ -23,13 +23,11 @@ class ModelType {
 
   String toJson() => value;
 
-  static const imageClassification = ModelType._(r'image-classification');
   static const facialRecognition = ModelType._(r'facial-recognition');
   static const clip = ModelType._(r'clip');
 
   /// List of all possible values in this [enum][ModelType].
   static const values = <ModelType>[
-    imageClassification,
     facialRecognition,
     clip,
   ];
@@ -70,7 +68,6 @@ class ModelTypeTypeTransformer {
   ModelType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'image-classification': return ModelType.imageClassification;
         case r'facial-recognition': return ModelType.facialRecognition;
         case r'clip': return ModelType.clip;
         default:

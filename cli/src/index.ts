@@ -1,10 +1,10 @@
 #! /usr/bin/env node
 
 import { Option, Command } from 'commander';
-import Upload from './commands/upload';
-import ServerInfo from './commands/server-info';
-import LoginKey from './commands/login/key';
-import Logout from './commands/logout';
+import { Upload } from './commands/upload';
+import { ServerInfo } from './commands/server-info';
+import { LoginKey } from './commands/login/key';
+import { Logout } from './commands/logout';
 import { version } from '../package.json';
 
 import path from 'node:path';
@@ -31,6 +31,11 @@ program
     new Option('-a, --album', 'Automatically create albums based on folder name')
       .env('IMMICH_AUTO_CREATE_ALBUM')
       .default(false),
+  )
+  .addOption(
+    new Option('-A, --album-name <name>', 'Add all assets to specified album')
+      .env('IMMICH_ALBUM_NAME')
+      .conflicts('album'),
   )
   .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")

@@ -162,6 +162,19 @@ class ImmichImage extends StatelessWidget {
         headers: authHeader,
       );
 
+  /// TODO: refactor image providers to separate class
+  static CachedNetworkImageProvider remoteThumbnailProviderForId(
+    String assetId, {
+    api.ThumbnailFormat type = api.ThumbnailFormat.WEBP,
+  }) =>
+      CachedNetworkImageProvider(
+        getThumbnailUrlForRemoteId(assetId, type: type),
+        cacheKey: getThumbnailCacheKeyForRemoteId(assetId, type: type),
+        headers: {
+          "Authorization": 'Bearer ${Store.get(StoreKey.accessToken)}',
+        },
+      );
+
   /// Precaches this asset for instant load the next time it is shown
   static Future<void> precacheAsset(
     Asset asset,

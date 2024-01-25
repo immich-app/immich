@@ -1,9 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/modules/activities/providers/activity.provider.dart';
+import 'package:immich_mobile/modules/activities/providers/activity_statistics.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
@@ -37,11 +38,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
     final isProcessing = useProcessingOverlay();
     final comments = album.shared
-        ? ref.watch(
-            activityStatisticsStateProvider(
-              (albumId: album.remoteId!, assetId: null),
-            ),
-          )
+        ? ref.watch(activityStatisticsProvider(album.remoteId!))
         : 0;
 
     deleteAlbum() async {
@@ -52,11 +49,11 @@ class AlbumViewerAppbar extends HookConsumerWidget
         success =
             await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(album);
         context
-            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
+            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
         context
-            .autoNavigate(const TabControllerRoute(children: [LibraryRoute()]));
+            .navigateTo(const TabControllerRoute(children: [LibraryRoute()]));
       }
       if (!success) {
         ImmichToast.show(
@@ -122,7 +119,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
 
       if (isSuccess) {
         context
-            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
+            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       } else {
         context.pop();
         ImmichToast.show(
@@ -175,7 +172,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ListTile(
           leading: const Icon(Icons.share_rounded),
           onTap: () {
-            context.autoPush(SharedLinkEditRoute(albumId: album.remoteId));
+            context.pushRoute(SharedLinkEditRoute(albumId: album.remoteId));
             context.pop();
           },
           title: const Text(
@@ -185,7 +182,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ),
         ListTile(
           leading: const Icon(Icons.settings_rounded),
-          onTap: () => context.autoNavigate(AlbumOptionsRoute(album: album)),
+          onTap: () => context.navigateTo(AlbumOptionsRoute(album: album)),
           title: const Text(
             "translated_text_options",
             style: TextStyle(fontWeight: FontWeight.w500),
@@ -280,7 +277,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         );
       } else {
         return IconButton(
-          onPressed: () async => await context.autoPop(),
+          onPressed: () async => await context.popRoute(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
           splashRadius: 25,
         );

@@ -24,10 +24,22 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
-import { And, FindOptionsRelations, FindOptionsWhere, In, IsNull, LessThan, Not, Repository } from 'typeorm';
+import path from 'path';
+import {
+  And,
+  Brackets,
+  FindOptionsRelations,
+  FindOptionsSelect,
+  FindOptionsWhere,
+  In,
+  IsNull,
+  LessThan,
+  Not,
+  Repository,
+} from 'typeorm';
 import { AssetEntity, AssetJobStatusEntity, AssetType, ExifEntity, SmartInfoEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';
-import { OptionalBetween, paginate } from '../infra.utils';
+import { Chunked, ChunkedArray, OptionalBetween, paginate } from '../infra.utils';
 
 const DEFAULT_SEARCH_SIZE = 250;
 
@@ -102,6 +114,7 @@ export class AssetRepository implements IAssetRepository {
       withExif: _withExif,
       withStacked,
       withPeople,
+      withSmartInfo,
 
       order,
     } = options;
@@ -171,6 +184,10 @@ export class AssetRepository implements IAssetRepository {
 
     if (withStacked) {
       builder.leftJoinAndSelect('asset.stack', 'stack');
+    }
+
+    if (withSmartInfo) {
+      builder.leftJoinAndSelect('asset.smartInfo', 'smartInfo');
     }
 
     if (withDeleted) {
@@ -248,7 +265,12 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  getByIds(ids: string[], relations?: FindOptionsRelations<AssetEntity>): Promise<AssetEntity[]> {
+  @ChunkedArray()
+  getByIds(
+    ids: string[],
+    relations?: FindOptionsRelations<AssetEntity>,
+    select?: FindOptionsSelect<AssetEntity>,
+  ): Promise<AssetEntity[]> {
     if (!relations) {
       relations = {
         exifInfo: true,
@@ -260,9 +282,11 @@ export class AssetRepository implements IAssetRepository {
         stack: true,
       };
     }
+
     return this.repository.find({
       where: { id: In(ids) },
       relations,
+      select,
       withDeleted: true,
     });
   }
@@ -301,6 +325,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
     return this.repository.find({
       where: { library: { id: In(libraryIds) } },
@@ -322,12 +347,11 @@ export class AssetRepository implements IAssetRepository {
         deletedAt: options.trashedBefore ? And(Not(IsNull()), LessThan(options.trashedBefore)) : undefined,
       },
       relations: {
-        exifInfo: true,
-        smartInfo: true,
-        tags: true,
-        faces: {
-          person: true,
-        },
+        exifInfo: options.withExif !== false,
+        smartInfo: options.withSmartInfo !== false,
+        tags: options.withSmartInfo !== false,
+        faces: options.withFaces !== false,
+        smartSearch: options.withSmartInfo === true,
       },
       withDeleted: options.withDeleted ?? !!options.trashedBefore,
       order: {
@@ -361,16 +385,6 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(id: string, relations: FindOptionsRelations<AssetEntity>): Promise<AssetEntity | null> {
-    if (!relations) {
-      relations = {
-        faces: {
-          person: true,
-        },
-        library: true,
-        stack: true,
-      };
-    }
-
     return this.repository.findOne({
       where: { id },
       relations,
@@ -380,14 +394,17 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
+  @Chunked()
   async updateAll(ids: string[], options: Partial<AssetEntity>): Promise<void> {
     await this.repository.update({ id: In(ids) }, options);
   }
 
+  @Chunked()
   async softDeleteAll(ids: string[]): Promise<void> {
     await this.repository.softDelete({ id: In(ids), isExternal: false });
   }
 
+  @Chunked()
   async restoreAll(ids: string[]): Promise<void> {
     await this.repository.restore({ id: In(ids) });
   }
@@ -469,11 +486,12 @@ export class AssetRepository implements IAssetRepository {
       case WithoutProperty.EXIF:
         relations = {
           exifInfo: true,
+          jobStatus: true,
         };
         where = {
           isVisible: true,
-          exifInfo: {
-            assetId: IsNull(),
+          jobStatus: {
+            metadataExtractedAt: IsNull(),
           },
         };
         break;
@@ -518,6 +536,20 @@ export class AssetRepository implements IAssetRepository {
           },
           jobStatus: {
             facesRecognizedAt: IsNull(),
+          },
+        };
+        break;
+
+      case WithoutProperty.PERSON:
+        relations = {
+          faces: true,
+        };
+        where = {
+          resizePath: Not(IsNull()),
+          isVisible: true,
+          faces: {
+            assetId: Not(IsNull()),
+            personId: IsNull(),
           },
         };
         break;
@@ -674,6 +706,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
+  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     const truncated = dateTrunc(options);
     return this.getBuilder(options)
@@ -684,11 +717,12 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
   }
 
+  @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH }] })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     const truncated = dateTrunc(options);
     return (
       this.getBuilder(options)
-        .andWhere(`${truncated} = :timeBucket`, { timeBucket })
+        .andWhere(`${truncated} = :timeBucket`, { timeBucket: timeBucket.replace(/^[+-]/, '') })
         // First sort by the day in localtime (put it in the right bucket)
         .orderBy(truncated, 'DESC')
         // and then sort by the actual time
@@ -758,10 +792,7 @@ export class AssetRepository implements IAssetRepository {
   private getBuilder(options: AssetBuilderOptions) {
     const { isArchived, isFavorite, isTrashed, albumId, personId, userIds, withStacked, exifInfo, assetType } = options;
 
-    let builder = this.repository
-      .createQueryBuilder('asset')
-      .where('asset.isVisible = true')
-      .andWhere('asset.fileCreatedAt < NOW()');
+    let builder = this.repository.createQueryBuilder('asset').where('asset.isVisible = true');
     if (assetType !== undefined) {
       builder = builder.andWhere('asset.type = :assetType', { assetType });
     }
@@ -804,10 +835,14 @@ export class AssetRepository implements IAssetRepository {
     return builder;
   }
 
-  @GenerateSql({ params: [DummyValue.STRING, DummyValue.UUID, { numResults: 250 }] })
-  async searchMetadata(query: string, ownerId: string, { numResults }: MetadataSearchOptions): Promise<AssetEntity[]> {
+  @GenerateSql({ params: [DummyValue.STRING, [DummyValue.UUID], { numResults: 250 }] })
+  async searchMetadata(
+    query: string,
+    userIds: string[],
+    { numResults }: MetadataSearchOptions,
+  ): Promise<AssetEntity[]> {
     const rows = await this.getBuilder({
-      userIds: [ownerId],
+      userIds: userIds,
       exifInfo: false,
       isArchived: false,
     })
@@ -818,10 +853,15 @@ export class AssetRepository implements IAssetRepository {
       .innerJoin('exif', 'e', 'asset."id" = e."assetId"')
       .leftJoin('smart_info', 'si', 'si."assetId" = asset."id"')
       .andWhere(
-        `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
-        @@ PLAINTO_TSQUERY('english', :query)`,
-        { query },
+        new Brackets((qb) => {
+          qb.where(
+            `(e."exifTextSearchableColumn" || COALESCE(si."smartInfoTextSearchableColumn", to_tsvector('english', '')))
+          @@ PLAINTO_TSQUERY('english', :query)`,
+            { query },
+          ).orWhere('asset."originalFileName" = :path', { path: path.parse(query).name });
+        }),
       )
+      .addOrderBy('asset.fileCreatedAt', 'DESC')
       .limit(numResults)
       .getRawMany();
 

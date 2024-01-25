@@ -20,7 +20,7 @@
   width={size}
   height={size}
   {viewBox}
-  class="{className} {flipped && '-scale-x-100'}"
+  class="{className} {flipped ? '-scale-x-100' : ''}"
   {role}
   aria-label={ariaLabel}
   aria-hidden={ariaHidden}

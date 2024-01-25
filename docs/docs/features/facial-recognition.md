@@ -25,6 +25,6 @@ Additional actions you can do with a detected person are:
 - Merge two or more detected faces into one person
 - Hide face
 
-It can be found from the app bar when you access the detial view of a person
+It can be found from the app bar when you access the detail view of a person.
 
 <img src={require('./img/facial-recognition-4.png').default} title='Facial Recognition 4' width="70%"/>

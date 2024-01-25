@@ -14,12 +14,14 @@ import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } 
 import {
   AudioStreamInfo,
   IAssetRepository,
+  ICryptoRepository,
   IJobRepository,
   IMediaRepository,
   IMoveRepository,
   IPersonRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  JobItem,
   VideoCodecHWConfig,
   VideoStreamInfo,
   WithoutProperty,
@@ -52,9 +54,17 @@ export class MediaService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IMoveRepository) moveRepository: IMoveRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.configCore = SystemConfigCore.create(configRepository);
-    this.storageCore = StorageCore.create(assetRepository, moveRepository, personRepository, storageRepository);
+    this.storageCore = StorageCore.create(
+      assetRepository,
+      moveRepository,
+      personRepository,
+      cryptoRepository,
+      configRepository,
+      storageRepository,
+    );
   }
 
   async handleQueueGenerateThumbnails({ force }: IBaseJob) {
@@ -65,34 +75,45 @@ export class MediaService {
     });
 
     for await (const assets of assetPagination) {
+      const jobs: JobItem[] = [];
+
       for (const asset of assets) {
         if (!asset.resizePath || force) {
-          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
           continue;
         }
         if (!asset.webpPath) {
-          await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { id: asset.id } });
         }
         if (!asset.thumbhash) {
-          await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
+          jobs.push({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
         }
+      }
+
+      await this.jobRepository.queueAll(jobs);
+    }
+
+    const jobs: JobItem[] = [];
+    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.personRepository.getAll(pagination, { where: force ? undefined : { thumbnailPath: '' } }),
+    );
+
+    for await (const people of personPagination) {
+      for (const person of people) {
+        if (!person.faceAssetId) {
+          const face = await this.personRepository.getRandomFace(person.id);
+          if (!face) {
+            continue;
+          }
+
+          await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
+        }
+
+        jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
       }
     }
 
-    const people = force ? await this.personRepository.getAll() : await this.personRepository.getAllWithoutThumbnail();
-
-    for (const person of people) {
-      if (!person.faceAssetId) {
-        const face = await this.personRepository.getRandomFace(person.id);
-        if (!face) {
-          continue;
-        }
-
-        await this.personRepository.update({ id: person.id, faceAssetId: face.assetId });
-      }
-
-      await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
-    }
+    await this.jobRepository.queueAll(jobs);
 
     return true;
   }
@@ -109,14 +130,19 @@ export class MediaService {
     }
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.MIGRATE_ASSET, data: { id: asset.id } })),
+      );
     }
 
-    const people = await this.personRepository.getAll();
-    for (const person of people) {
-      await this.jobRepository.queue({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
+    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.personRepository.getAll(pagination),
+    );
+
+    for await (const people of personPagination) {
+      await this.jobRepository.queueAll(
+        people.map((person) => ({ name: JobName.MIGRATE_PERSON, data: { id: person.id } })),
+      );
     }
 
     return true;
@@ -215,9 +241,9 @@ export class MediaService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } })),
+      );
     }
 
     return true;
@@ -241,11 +267,22 @@ export class MediaService {
       return false;
     }
 
+    if (!mainVideoStream.height || !mainVideoStream.width) {
+      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
+      return false;
+    }
+
     const { ffmpeg: config } = await this.configCore.getConfig();
 
     const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
     if (!required) {
-      return false;
+      if (asset.encodedVideoPath) {
+        this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
+        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [asset.encodedVideoPath] } });
+        await this.assetRepository.save({ id: asset.id, encodedVideoPath: null });
+      }
+
+      return true;
     }
 
     let transcodeOptions;
@@ -289,11 +326,6 @@ export class MediaService {
     containerExtension: string,
     ffmpegConfig: SystemConfigFFmpegDto,
   ): boolean {
-    if (!videoStream.height || !videoStream.width) {
-      this.logger.error('Skipping transcode, height or width undefined for video stream');
-      return false;
-    }
-
     const isTargetVideoCodec = videoStream.codecName === ffmpegConfig.targetVideoCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
     const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;

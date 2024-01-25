@@ -4,7 +4,7 @@
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import { api, PeopleUpdateItem, type PersonResponseDto } from '@api';
+  import { api, type PeopleUpdateItem, type PersonResponseDto } from '@api';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -44,6 +44,8 @@
   let personMerge2: PersonResponseDto;
   let potentialMergePeople: PersonResponseDto[] = [];
   let edittingPerson: PersonResponseDto | null = null;
+
+  let innerHeight: number;
 
   people.forEach((person: PersonResponseDto) => {
     initialHiddenValues[person.id] = person.isHidden;
@@ -160,11 +162,15 @@
     }
     try {
       await api.personApi.mergePerson({
-        id: personMerge2.id,
+        id: personToBeMergedIn.id,
         mergePersonDto: { ids: [personToMerge.id] },
       });
+
+      const { data: mergedPerson } = await api.personApi.getPerson({ id: personToBeMergedIn.id });
+
       countVisiblePeople--;
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
+      people = people.map((person: PersonResponseDto) => (person.id === personToBeMergedIn.id ? mergedPerson : person));
 
       notificationController.show({
         message: 'Merge people succesfully',
@@ -344,6 +350,8 @@
   };
 </script>
 
+<svelte:window bind:innerHeight />
+
 {#if showMergeModal}
   <FullScreenModal on:clickOutside={() => (showMergeModal = false)}>
     <MergeSuggestionModal
@@ -370,21 +378,19 @@
   </svelte:fragment>
 
   {#if countVisiblePeople > 0}
-    <div class="pl-4">
-      <div class="flex flex-row flex-wrap gap-1">
-        {#each people as person, idx (person.id)}
-          {#if !person.isHidden}
-            <PeopleCard
-              {person}
-              preload={idx < 20}
-              on:change-name={() => handleChangeName(person)}
-              on:set-birth-date={() => handleSetBirthDate(person)}
-              on:merge-people={() => handleMergePeople(person)}
-              on:hide-person={() => handleHidePerson(person)}
-            />
-          {/if}
-        {/each}
-      </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
+      {#each people as person, idx (person.id)}
+        {#if !person.isHidden}
+          <PeopleCard
+            {person}
+            preload={idx < 20}
+            on:change-name={() => handleChangeName(person)}
+            on:set-birth-date={() => handleSetBirthDate(person)}
+            on:merge-people={() => handleMergePeople(person)}
+            on:hide-person={() => handleHidePerson(person)}
+          />
+        {/if}
+      {/each}
     </div>
   {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
@@ -444,29 +450,32 @@
     on:change={handleToggleVisibility}
     bind:showLoadingSpinner
     bind:toggleVisibility
+    screenHeight={innerHeight}
   >
-    {#each people as person, idx (person.id)}
-      <button
-        class="relative h-36 w-36 md:h-48 md:w-48"
-        on:click={() => (person.isHidden = !person.isHidden)}
-        on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
-        on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
-      >
-        <ImageThumbnail
-          preload={idx < 20}
-          bind:hidden={person.isHidden}
-          shadow
-          url={api.getPeopleThumbnailUrl(person.id)}
-          altText={person.name}
-          widthStyle="100%"
-          bind:eyeColor={eyeColorMap[person.id]}
-        />
-        {#if person.name}
-          <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
-            {person.name}
-          </span>
-        {/if}
-      </button>
-    {/each}
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
+      {#each people as person, idx (person.id)}
+        <button
+          class="relative"
+          on:click={() => (person.isHidden = !person.isHidden)}
+          on:mouseenter={() => (eyeColorMap[person.id] = 'black')}
+          on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
+        >
+          <ImageThumbnail
+            preload={idx < 20}
+            bind:hidden={person.isHidden}
+            shadow
+            url={api.getPeopleThumbnailUrl(person.id)}
+            altText={person.name}
+            widthStyle="100%"
+            bind:eyeColor={eyeColorMap[person.id]}
+          />
+          {#if person.name}
+            <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+              {person.name}
+            </span>
+          {/if}
+        </button>
+      {/each}
+    </div>
   </ShowHide>
 {/if}

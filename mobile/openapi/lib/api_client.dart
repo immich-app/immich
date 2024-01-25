@@ -263,8 +263,6 @@ class ApiClient {
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':
           return CheckExistingAssetsResponseDto.fromJson(value);
-        case 'ClassificationConfig':
-          return ClassificationConfig.fromJson(value);
         case 'Colorspace':
           return ColorspaceTypeTransformer().decode(value);
         case 'CreateAlbumDto':
@@ -443,6 +441,8 @@ class ApiClient {
           return SystemConfigPasswordLoginDto.fromJson(value);
         case 'SystemConfigReverseGeocodingDto':
           return SystemConfigReverseGeocodingDto.fromJson(value);
+        case 'SystemConfigServerDto':
+          return SystemConfigServerDto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':

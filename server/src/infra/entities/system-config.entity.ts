@@ -1,4 +1,4 @@
-import { QueueName } from '@app/domain';
+import { ConcurrentQueueName } from '@app/domain';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
@@ -35,8 +35,7 @@ export enum SystemConfigKey {
   JOB_THUMBNAIL_GENERATION_CONCURRENCY = 'job.thumbnailGeneration.concurrency',
   JOB_METADATA_EXTRACTION_CONCURRENCY = 'job.metadataExtraction.concurrency',
   JOB_VIDEO_CONVERSION_CONCURRENCY = 'job.videoConversion.concurrency',
-  JOB_OBJECT_TAGGING_CONCURRENCY = 'job.objectTagging.concurrency',
-  JOB_RECOGNIZE_FACES_CONCURRENCY = 'job.recognizeFaces.concurrency',
+  JOB_FACE_DETECTION_CONCURRENCY = 'job.faceDetection.concurrency',
   JOB_CLIP_ENCODING_CONCURRENCY = 'job.smartSearch.concurrency',
   JOB_BACKGROUND_TASK_CONCURRENCY = 'job.backgroundTask.concurrency',
   JOB_STORAGE_TEMPLATE_MIGRATION_CONCURRENCY = 'job.storageTemplateMigration.concurrency',
@@ -53,10 +52,6 @@ export enum SystemConfigKey {
 
   MACHINE_LEARNING_ENABLED = 'machineLearning.enabled',
   MACHINE_LEARNING_URL = 'machineLearning.url',
-
-  MACHINE_LEARNING_CLASSIFICATION_ENABLED = 'machineLearning.classification.enabled',
-  MACHINE_LEARNING_CLASSIFICATION_MODEL_NAME = 'machineLearning.classification.modelName',
-  MACHINE_LEARNING_CLASSIFICATION_MIN_SCORE = 'machineLearning.classification.minScore',
 
   MACHINE_LEARNING_CLIP_ENABLED = 'machineLearning.clip.enabled',
   MACHINE_LEARNING_CLIP_MODEL_NAME = 'machineLearning.clip.modelName',
@@ -89,6 +84,11 @@ export enum SystemConfigKey {
 
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
 
+  SERVER_EXTERNAL_DOMAIN = 'server.externalDomain',
+  SERVER_LOGIN_PAGE_MESSAGE = 'server.loginPageMessage',
+
+  STORAGE_TEMPLATE_ENABLED = 'storageTemplate.enabled',
+  STORAGE_TEMPLATE_HASH_VERIFICATION_ENABLED = 'storageTemplate.hashVerificationEnabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
 
   THUMBNAIL_WEBP_SIZE = 'thumbnail.webpSize',
@@ -176,7 +176,7 @@ export interface SystemConfig {
     accel: TranscodeHWAccel;
     tonemap: ToneMapping;
   };
-  job: Record<QueueName, { concurrency: number }>;
+  job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
     enabled: boolean;
     level: LogLevel;
@@ -184,11 +184,6 @@ export interface SystemConfig {
   machineLearning: {
     enabled: boolean;
     url: string;
-    classification: {
-      enabled: boolean;
-      modelName: string;
-      minScore: number;
-    };
     clip: {
       enabled: boolean;
       modelName: string;
@@ -226,6 +221,8 @@ export interface SystemConfig {
     enabled: boolean;
   };
   storageTemplate: {
+    enabled: boolean;
+    hashVerificationEnabled: boolean;
     template: string;
   };
   thumbnail: {
@@ -249,5 +246,9 @@ export interface SystemConfig {
       enabled: boolean;
       cronExpression: string;
     };
+  };
+  server: {
+    externalDomain: string;
+    loginPageMessage: string;
   };
 }

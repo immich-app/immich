@@ -53,7 +53,7 @@
             {#if uploadAsset.message}
               {uploadAsset.message}
             {:else}
-              {uploadAsset.progress}/100 - {asByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
+              {uploadAsset.progress}% - {asByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
             {/if}
           </p>
         {:else if uploadAsset.state === UploadState.PENDING}

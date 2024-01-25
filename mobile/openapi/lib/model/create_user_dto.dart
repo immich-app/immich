@@ -18,6 +18,7 @@ class CreateUserDto {
     this.memoriesEnabled,
     required this.name,
     required this.password,
+    this.quotaSizeInBytes,
     this.storageLabel,
   });
 
@@ -37,6 +38,8 @@ class CreateUserDto {
 
   String password;
 
+  int? quotaSizeInBytes;
+
   String? storageLabel;
 
   @override
@@ -46,6 +49,7 @@ class CreateUserDto {
      other.memoriesEnabled == memoriesEnabled &&
      other.name == name &&
      other.password == password &&
+     other.quotaSizeInBytes == quotaSizeInBytes &&
      other.storageLabel == storageLabel;
 
   @override
@@ -56,10 +60,11 @@ class CreateUserDto {
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name.hashCode) +
     (password.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'CreateUserDto[email=$email, externalPath=$externalPath, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, storageLabel=$storageLabel]';
+  String toString() => 'CreateUserDto[email=$email, externalPath=$externalPath, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -76,6 +81,11 @@ class CreateUserDto {
     }
       json[r'name'] = this.name;
       json[r'password'] = this.password;
+    if (this.quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
+    } else {
+    //  json[r'quotaSizeInBytes'] = null;
+    }
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
@@ -97,6 +107,7 @@ class CreateUserDto {
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name')!,
         password: mapValueOfType<String>(json, r'password')!,
+        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
       );
     }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DownloadProgress, downloadAssets, downloadManager, isDownloading } from '$lib/stores/download';
+  import { type DownloadProgress, downloadAssets, downloadManager, isDownloading } from '$lib/stores/download';
   import { locale } from '$lib/stores/preferences.store';
   import { fly, slide } from 'svelte/transition';
   import { asByteUnitString } from '../../utils/byte-units';

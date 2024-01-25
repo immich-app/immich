@@ -87,7 +87,7 @@
       </LinkButton>
     </div>
 
-    <AssetGrid forceDelete {assetStore} {assetInteractionStore}>
+    <AssetGrid {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         Trashed items will be permanently deleted after {$serverConfig.trashDays} days.
       </p>

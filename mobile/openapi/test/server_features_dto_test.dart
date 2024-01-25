@@ -66,11 +66,6 @@ void main() {
       // TODO
     });
 
-    // bool tagImage
-    test('to test the property `tagImage`', () async {
-      // TODO
-    });
-
     // bool trash
     test('to test the property `trash`', () async {
       // TODO

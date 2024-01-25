@@ -30,7 +30,7 @@
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketStore } from '$lib/stores/websocket';
   import { handleError } from '$lib/utils/handle-error';
-  import { AssetResponseDto, PersonResponseDto, api } from '@api';
+  import { type AssetResponseDto, type PersonResponseDto, api } from '@api';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import { clickOutside } from '$lib/utils/click-outside';
@@ -185,8 +185,13 @@
     }
   };
 
-  const handleMerge = () => {
+  const handleMerge = async (person: PersonResponseDto) => {
+    const { data: statistics } = await api.personApi.getPersonStatistics({ id: person.id });
+    numberOfAssets = statistics.assets;
     handleGoBack();
+
+    data.person = person;
+
     refreshAssetGrid = !refreshAssetGrid;
   };
 
@@ -374,7 +379,7 @@
 {/if}
 
 {#if viewMode === ViewMode.MERGE_PEOPLE}
-  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={handleMerge} />
+  <MergeFaceSelector person={data.person} on:back={handleGoBack} on:merge={({ detail }) => handleMerge(detail)} />
 {/if}
 
 <header>

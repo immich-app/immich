@@ -5,8 +5,7 @@
   "handlers": {
     "console": {
       "class": "app.config.CustomRichHandler",
-      "formatter": "rich",
-      "level": "INFO"
+      "formatter": "rich"
     }
   },
   "loggers": {

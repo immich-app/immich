@@ -1,5 +1,5 @@
 import { envName, isDev, serverVersion } from '@app/domain';
-import { WebSocketAdapter, databaseChecks } from '@app/infra';
+import { WebSocketAdapter } from '@app/infra';
 import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -30,8 +30,6 @@ export async function bootstrap() {
   app.setGlobalPrefix('api', { exclude: excludePaths });
   app.useStaticAssets('www');
   app.use(app.get(AppService).ssr(excludePaths));
-
-  await databaseChecks();
 
   const server = await app.listen(port);
   server.requestTimeout = 30 * 60 * 1000;

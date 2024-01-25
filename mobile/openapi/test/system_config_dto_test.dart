@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigServerDto server
+    test('to test the property `server`', () async {
+      // TODO
+    });
+
     // SystemConfigStorageTemplateDto storageTemplate
     test('to test the property `storageTemplate`', () async {
       // TODO

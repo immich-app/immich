@@ -1,8 +1,7 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const prism = require('prism-react-renderer');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -56,7 +55,7 @@ const config = {
           editUrl: 'https://github.com/immich-app/immich/tree/main/docs/',
         },
         api: {
-          path: '../server/immich-openapi-specs.json',
+          path: '../open-api/immich-openapi-specs.json',
           routeBasePath: '/docs/api',
         },
         // blog: {
@@ -165,9 +164,9 @@ const config = {
         copyright: `Immich is available as open source under the terms of the MIT License.`,
       },
       prism: {
-        theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
-        additionalLanguages: ['sql'],
+        theme: prism.themes.github,
+        darkTheme: prism.themes.dracula,
+        additionalLanguages: ['sql', 'diff', 'bash', 'powershell', 'nginx'],
       },
       image: 'overview/img/feature-panel.png',
     }),

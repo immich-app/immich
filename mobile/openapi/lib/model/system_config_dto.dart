@@ -23,6 +23,7 @@ class SystemConfigDto {
     required this.oauth,
     required this.passwordLogin,
     required this.reverseGeocoding,
+    required this.server,
     required this.storageTemplate,
     required this.theme,
     required this.thumbnail,
@@ -49,6 +50,8 @@ class SystemConfigDto {
 
   SystemConfigReverseGeocodingDto reverseGeocoding;
 
+  SystemConfigServerDto server;
+
   SystemConfigStorageTemplateDto storageTemplate;
 
   SystemConfigThemeDto theme;
@@ -69,6 +72,7 @@ class SystemConfigDto {
      other.oauth == oauth &&
      other.passwordLogin == passwordLogin &&
      other.reverseGeocoding == reverseGeocoding &&
+     other.server == server &&
      other.storageTemplate == storageTemplate &&
      other.theme == theme &&
      other.thumbnail == thumbnail &&
@@ -87,13 +91,14 @@ class SystemConfigDto {
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
+    (server.hashCode) +
     (storageTemplate.hashCode) +
     (theme.hashCode) +
     (thumbnail.hashCode) +
     (trash.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
+  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, newVersionCheck=$newVersionCheck, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, thumbnail=$thumbnail, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -107,6 +112,7 @@ class SystemConfigDto {
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'reverseGeocoding'] = this.reverseGeocoding;
+      json[r'server'] = this.server;
       json[r'storageTemplate'] = this.storageTemplate;
       json[r'theme'] = this.theme;
       json[r'thumbnail'] = this.thumbnail;
@@ -132,6 +138,7 @@ class SystemConfigDto {
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
+        server: SystemConfigServerDto.fromJson(json[r'server'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
         theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
         thumbnail: SystemConfigThumbnailDto.fromJson(json[r'thumbnail'])!,
@@ -193,6 +200,7 @@ class SystemConfigDto {
     'oauth',
     'passwordLogin',
     'reverseGeocoding',
+    'server',
     'storageTemplate',
     'theme',
     'thumbnail',

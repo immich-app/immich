@@ -6,10 +6,10 @@ import fs from 'node:fs';
 import cliProgress from 'cli-progress';
 import byteSize from 'byte-size';
 import { BaseCommand } from '../cli/base-command';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import FormData from 'form-data';
 
-export default class Upload extends BaseCommand {
+export class Upload extends BaseCommand {
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
@@ -60,8 +60,12 @@ export default class Upload extends BaseCommand {
 
     for (const asset of assetsToUpload) {
       // Compute total size first
-      await asset.process();
+      await asset.prepare();
       totalSize += asset.fileSize;
+
+      if (options.albumName) {
+        asset.albumName = options.albumName;
+      }
     }
 
     const existingAlbums = (await this.immichApi.albumApi.getAllAlbums()).data;
@@ -76,6 +80,10 @@ export default class Upload extends BaseCommand {
         });
 
         let skipUpload = false;
+
+        let skipAsset = false;
+        let existingAssetId: string | undefined = undefined;
+
         if (!options.skipHash) {
           const assetBulkUploadCheckDto = { assets: [{ id: asset.path, checksum: await asset.hash() }] };
 
@@ -84,14 +92,26 @@ export default class Upload extends BaseCommand {
           });
 
           skipUpload = checkResponse.data.results[0].action === 'reject';
+
+          const isDuplicate = checkResponse.data.results[0].reason === 'duplicate';
+          if (isDuplicate) {
+            existingAssetId = checkResponse.data.results[0].assetId;
+          }
+
+          skipAsset = skipUpload && !isDuplicate;
         }
 
-        if (!skipUpload) {
+        if (!skipAsset) {
           if (!options.dryRun) {
-            const formData = asset.getUploadFormData();
-            const res = await this.uploadAsset(formData);
+            if (!skipUpload) {
+              const formData = asset.getUploadFormData();
+              const res = await this.uploadAsset(formData);
+              existingAssetId = res.data.id;
+              uploadCounter++;
+              totalSizeUploaded += asset.fileSize;
+            }
 
-            if (options.album && asset.albumName) {
+            if ((options.album || options.albumName) && asset.albumName !== undefined) {
               let album = existingAlbums.find((album) => album.albumName === asset.albumName);
               if (!album) {
                 const res = await this.immichApi.albumApi.createAlbum({
@@ -101,12 +121,14 @@ export default class Upload extends BaseCommand {
                 existingAlbums.push(album);
               }
 
-              await this.immichApi.albumApi.addAssetsToAlbum({ id: album.id, bulkIdsDto: { ids: [res.data.id] } });
+              if (existingAssetId) {
+                await this.immichApi.albumApi.addAssetsToAlbum({
+                  id: album.id,
+                  bulkIdsDto: { ids: [existingAssetId] },
+                });
+              }
             }
           }
-
-          totalSizeUploaded += asset.fileSize;
-          uploadCounter++;
         }
 
         sizeSoFar += asset.fileSize;
@@ -149,7 +171,7 @@ export default class Upload extends BaseCommand {
     }
   }
 
-  private async uploadAsset(data: FormData): Promise<axios.AxiosResponse> {
+  private async uploadAsset(data: FormData): Promise<AxiosResponse> {
     const url = this.immichApi.apiConfiguration.instanceUrl + '/asset/upload';
 
     const config: AxiosRequestConfig = {

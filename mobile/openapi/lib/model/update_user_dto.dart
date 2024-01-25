@@ -21,6 +21,7 @@ class UpdateUserDto {
     this.memoriesEnabled,
     this.name,
     this.password,
+    this.quotaSizeInBytes,
     this.shouldChangePassword,
     this.storageLabel,
   });
@@ -83,6 +84,8 @@ class UpdateUserDto {
   ///
   String? password;
 
+  int? quotaSizeInBytes;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -109,6 +112,7 @@ class UpdateUserDto {
      other.memoriesEnabled == memoriesEnabled &&
      other.name == name &&
      other.password == password &&
+     other.quotaSizeInBytes == quotaSizeInBytes &&
      other.shouldChangePassword == shouldChangePassword &&
      other.storageLabel == storageLabel;
 
@@ -123,11 +127,12 @@ class UpdateUserDto {
     (memoriesEnabled == null ? 0 : memoriesEnabled!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UpdateUserDto[avatarColor=$avatarColor, email=$email, externalPath=$externalPath, id=$id, isAdmin=$isAdmin, memoriesEnabled=$memoriesEnabled, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -167,6 +172,11 @@ class UpdateUserDto {
     } else {
     //  json[r'password'] = null;
     }
+    if (this.quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
+    } else {
+    //  json[r'quotaSizeInBytes'] = null;
+    }
     if (this.shouldChangePassword != null) {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
@@ -196,6 +206,7 @@ class UpdateUserDto {
         memoriesEnabled: mapValueOfType<bool>(json, r'memoriesEnabled'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
+        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
       );

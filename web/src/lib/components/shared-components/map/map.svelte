@@ -7,7 +7,7 @@
     ControlButton,
     Control,
     ControlGroup,
-    Map,
+    type Map,
     FullscreenControl,
     GeolocateControl,
     NavigationControl,
@@ -15,13 +15,14 @@
     Popup,
   } from 'svelte-maplibre';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
-  import { MapMarkerResponseDto, api } from '@api';
+  import { type MapMarkerResponseDto, api } from '@api';
   import maplibregl from 'maplibre-gl';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
   import type { Feature, Geometry, GeoJsonProperties, Point } from 'geojson';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiCog, mdiMapMarker } from '@mdi/js';
   import { createEventDispatcher } from 'svelte';
+  import { Theme } from '$lib/constants';
 
   export let mapMarkers: MapMarkerResponseDto[];
   export let showSettingsModal: boolean | undefined = undefined;
@@ -36,7 +37,7 @@
 
   $: style = (async () => {
     const { data } = await api.systemConfigApi.getMapStyle({
-      theme: $mapSettings.allowDarkMode ? $colorTheme : 'light',
+      theme: $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT,
     });
     return data as StyleSpecification;
   })();
@@ -167,7 +168,11 @@
         }}
       >
         {#if useLocationPin}
-          <Icon path={mdiMapMarker} size="60px" class="dark:text-immich-dark-primary text-immich-primary" />
+          <Icon
+            path={mdiMapMarker}
+            size="50px"
+            class="location-pin dark:text-immich-dark-primary text-immich-primary"
+          />
         {:else}
           <img
             src={api.getAssetThumbnailUrl(feature.properties?.id)}
@@ -175,13 +180,18 @@
             alt={`Image with id ${feature.properties?.id}`}
           />
         {/if}
-
         {#if $$slots.popup}
-          <Popup openOn="click" closeOnClickOutside>
+          <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
             <slot name="popup" marker={asMarker(feature)} />
           </Popup>
         {/if}
       </MarkerLayer>
     </GeoJSON>
   </MapLibre>
+  <style>
+    .location-pin {
+      transform: translate(0, -50%);
+      filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.3));
+    }
+  </style>
 {/await}

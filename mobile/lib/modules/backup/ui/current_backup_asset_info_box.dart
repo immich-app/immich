@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -56,9 +57,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           args: [ref.watch(errorBackupListProvider).length.toString()],
         ),
         backgroundColor: Colors.white,
-        onPressed: () {
-          context.autoPush(const FailedBackupStatusRoute());
-        },
+        onPressed: () => context.pushRoute(const FailedBackupStatusRoute()),
       );
     }
 

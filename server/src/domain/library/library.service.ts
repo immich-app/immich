@@ -94,9 +94,9 @@ export class LibraryService {
   async handleQueueCleanup(): Promise<boolean> {
     this.logger.debug('Cleaning up any pending library deletions');
     const pendingDeletion = await this.repository.getAllDeleted();
-    for (const libraryToDelete of pendingDeletion) {
-      await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } });
-    }
+    await this.jobRepository.queueAll(
+      pendingDeletion.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
+    );
     return true;
   }
 
@@ -160,9 +160,9 @@ export class LibraryService {
     // TODO use pagination
     const assetIds = await this.repository.getAssetIds(job.id, true);
     this.logger.debug(`Will delete ${assetIds.length} asset(s) in library ${job.id}`);
-    for (const assetId of assetIds) {
-      await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } });
-    }
+    await this.jobRepository.queueAll(
+      assetIds.map((assetId) => ({ name: JobName.ASSET_DELETION, data: { id: assetId, fromExternal: true } })),
+    );
 
     if (assetIds.length === 0) {
       this.logger.log(`Deleting library ${job.id}`);
@@ -333,16 +333,16 @@ export class LibraryService {
 
     // Queue all library refresh
     const libraries = await this.repository.getAll(true, LibraryType.EXTERNAL);
-    for (const library of libraries) {
-      await this.jobRepository.queue({
+    await this.jobRepository.queueAll(
+      libraries.map((library) => ({
         name: JobName.LIBRARY_SCAN,
         data: {
           id: library.id,
           refreshModifiedFiles: !job.force,
           refreshAllFiles: job.force ?? false,
         },
-      });
-    }
+      })),
+    );
     return true;
   }
 
@@ -353,9 +353,9 @@ export class LibraryService {
 
     for await (const assets of assetPagination) {
       this.logger.debug(`Removing ${assets.length} offline assets`);
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id, fromExternal: true } })),
+      );
     }
 
     return true;
@@ -411,16 +411,17 @@ export class LibraryService {
         this.logger.debug(`Will import ${filteredPaths.length} new asset(s)`);
       }
 
-      for (const assetPath of filteredPaths) {
-        const libraryJobData: ILibraryFileJob = {
-          id: job.id,
-          assetPath: path.normalize(assetPath),
-          ownerId: library.ownerId,
-          force: job.refreshAllFiles ?? false,
-        };
-
-        await this.jobRepository.queue({ name: JobName.LIBRARY_SCAN_ASSET, data: libraryJobData });
-      }
+      await this.jobRepository.queueAll(
+        filteredPaths.map((assetPath) => ({
+          name: JobName.LIBRARY_SCAN_ASSET,
+          data: {
+            id: job.id,
+            assetPath: path.normalize(assetPath),
+            ownerId: library.ownerId,
+            force: job.refreshAllFiles ?? false,
+          },
+        })),
+      );
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });

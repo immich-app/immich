@@ -76,6 +76,16 @@ void main() {
       // TODO
     });
 
+    // int quotaSizeInBytes
+    test('to test the property `quotaSizeInBytes`', () async {
+      // TODO
+    });
+
+    // int quotaUsageInBytes
+    test('to test the property `quotaUsageInBytes`', () async {
+      // TODO
+    });
+
     // bool shouldChangePassword
     test('to test the property `shouldChangePassword`', () async {
       // TODO

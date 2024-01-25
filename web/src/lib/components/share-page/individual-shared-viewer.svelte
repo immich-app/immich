@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { downloadArchive } from '$lib/utils/asset-utils';
-  import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
+  import { api, type AssetResponseDto, type SharedLinkResponseDto } from '@api';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -81,11 +81,7 @@
   {:else}
     <ControlAppBar on:close={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       <svelte:fragment slot="leading">
-        <a
-          data-sveltekit-preload-data="hover"
-          class="ml-6 flex place-items-center gap-2 hover:cursor-pointer"
-          href="https://immich.app"
-        >
+        <a data-sveltekit-preload-data="hover" class="ml-6 flex place-items-center gap-2 hover:cursor-pointer" href="/">
           <ImmichLogo height="30" width="30" />
           <h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">IMMICH</h1>
         </a>

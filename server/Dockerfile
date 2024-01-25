@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20231214@sha256:cd5be516b27c0c402bee3a6a93d8c83dfd5a827c18a2343cb97b55f3be98151b as dev
+FROM ghcr.io/immich-app/base-server-dev:20240118@sha256:92de0ebf1bc2ccc6b7d11023e31b010dc79dd7e16df04146820d2d2cc2e5bf9f as dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -10,7 +10,10 @@ RUN npm ci && \
     rm -rf node_modules/@img/sharp-libvips* && \
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 COPY server .
-ENV PATH="${PATH}:/usr/src/app/bin"
+ENV PATH="${PATH}:/usr/src/app/bin" \
+    NODE_ENV=development \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 
@@ -23,18 +26,26 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 # web build
 FROM node:iron-alpine3.18 as web
 
-WORKDIR /usr/src/app
-COPY web/package*.json web/svelte.config.js .
+WORKDIR /usr/src/open-api/typescript-sdk
+COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
 RUN npm ci
-COPY web .
+COPY open-api/typescript-sdk/ ./
+RUN npm run build
+
+WORKDIR /usr/src/app
+COPY web/package*.json web/svelte.config.js ./
+RUN npm ci
+COPY web ./
 RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20231214@sha256:b214f86683fde081b09beed2d7bfc28bec55c829751ccf2e02ad7dd18293f5e0
+FROM ghcr.io/immich-app/base-server-prod:20240118@sha256:5b78cefcc3c3dda2a48fd22c7b0fd6453cfc5ae61258ff5a082cc9563c4e3c25
 
 WORKDIR /usr/src/app
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    NVIDIA_VISIBLE_DEVICES=all
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin

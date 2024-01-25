@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -12,6 +13,7 @@ import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_logo.dart';
 import 'package:immich_mobile/shared/ui/immich_title_text.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -65,18 +67,18 @@ class LoginForm extends HookConsumerWidget {
         isLoadingServer.value = true;
         final endpoint = await apiService.resolveAndSetEndpoint(serverUrl);
 
-        final loginConfig = await apiService.oAuthApi.generateOAuthConfig(
-          OAuthConfigDto(redirectUri: serverUrl),
-        );
+        // Fetch and load server config and features
+        await ref.read(serverInfoProvider.notifier).getServerInfo();
 
-        if (loginConfig != null) {
-          isOauthEnable.value = loginConfig.enabled;
-          isPasswordLoginEnable.value = loginConfig.passwordLoginEnabled;
-          oAuthButtonLabel.value = loginConfig.buttonText ?? 'OAuth';
-        } else {
-          isOauthEnable.value = false;
-          isPasswordLoginEnable.value = true;
-        }
+        final serverInfo = ref.read(serverInfoProvider);
+        final features = serverInfo.serverFeatures;
+        final config = serverInfo.serverConfig;
+
+        isOauthEnable.value = features.oauthEnabled;
+        isPasswordLoginEnable.value = features.passwordLogin;
+        oAuthButtonLabel.value = config.oauthButtonText.isNotEmpty
+            ? config.oauthButtonText
+            : 'OAuth';
 
         serverEndpoint.value = endpoint;
       } on ApiException catch (e) {
@@ -156,7 +158,7 @@ class LoginForm extends HookConsumerWidget {
           // Resume backup (if enable) then navigate
           if (ref.read(authenticationProvider).shouldChangePassword &&
               !ref.read(authenticationProvider).isAdmin) {
-            context.autoPush(const ChangePasswordRoute());
+            context.pushRoute(const ChangePasswordRoute());
           } else {
             final hasPermission = await ref
                 .read(galleryPermissionNotifier.notifier)
@@ -165,7 +167,7 @@ class LoginForm extends HookConsumerWidget {
               // Don't resume the backup until we have gallery permission
               ref.read(backupProvider.notifier).resumeBackup();
             }
-            context.autoReplace(const TabControllerRoute());
+            context.replaceRoute(const TabControllerRoute());
           }
         } else {
           ImmichToast.show(
@@ -183,11 +185,11 @@ class LoginForm extends HookConsumerWidget {
     oAuthLogin() async {
       var oAuthService = ref.watch(oAuthServiceProvider);
       ref.watch(assetProvider.notifier).clearAllAsset();
-      OAuthConfigResponseDto? oAuthServerConfig;
+      String? oAuthServerUrl;
 
       try {
-        oAuthServerConfig = await oAuthService
-            .getOAuthServerConfig(sanitizeUrl(serverEndpointController.text));
+        oAuthServerUrl = await oAuthService
+            .getOAuthServerUrl(sanitizeUrl(serverEndpointController.text));
 
         isLoading.value = true;
       } catch (e) {
@@ -200,9 +202,8 @@ class LoginForm extends HookConsumerWidget {
         return;
       }
 
-      if (oAuthServerConfig != null && oAuthServerConfig.enabled) {
-        var loginResponseDto =
-            await oAuthService.oAuthLogin(oAuthServerConfig.url!);
+      if (oAuthServerUrl != null) {
+        var loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl);
 
         if (loginResponseDto != null) {
           var isSuccess = await ref
@@ -218,7 +219,7 @@ class LoginForm extends HookConsumerWidget {
             if (permission.isGranted || permission.isLimited) {
               ref.watch(backupProvider.notifier).resumeBackup();
             }
-            context.autoReplace(const TabControllerRoute());
+            context.replaceRoute(const TabControllerRoute());
           } else {
             ImmichToast.show(
               context: context,
@@ -264,7 +265,7 @@ class LoginForm extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                  onPressed: () => context.autoPush(const SettingsRoute()),
+                  onPressed: () => context.pushRoute(const SettingsRoute()),
                   icon: const Icon(Icons.settings_rounded),
                   label: const SizedBox.shrink(),
                 ),

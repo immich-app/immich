@@ -1,4 +1,4 @@
-import { api, ServerConfigDto, ServerFeaturesDto } from '@api';
+import { api, type ServerConfigDto, type ServerFeaturesDto } from '@api';
 import { writable } from 'svelte/store';
 
 export type FeatureFlags = ServerFeaturesDto & { loaded: boolean };
@@ -8,7 +8,6 @@ export const featureFlags = writable<FeatureFlags>({
   clipEncode: true,
   facialRecognition: true,
   sidecar: true,
-  tagImage: true,
   map: true,
   reverseGeocoding: true,
   search: true,
@@ -27,6 +26,8 @@ export const serverConfig = writable<ServerConfig>({
   loginPageMessage: '',
   trashDays: 30,
   isInitialized: false,
+  isOnboarded: false,
+  externalDomain: '',
 });
 
 export const loadConfig = async () => {

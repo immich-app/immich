@@ -11,6 +11,7 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from '@app/infra/entities';
+import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException } from '@nestjs/common';
 import { newCommunicationRepositoryMock, newSystemConfigRepositoryMock } from '@test';
 import { QueueName } from '../job';
@@ -29,12 +30,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
     [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
-    [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
+    [QueueName.FACE_DETECTION]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 5 },
-    [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
     [QueueName.MIGRATION]: { concurrency: 5 },
     [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
@@ -65,11 +64,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: true,
     url: 'http://immich-machine-learning:3003',
-    classification: {
-      enabled: false,
-      modelName: 'microsoft/resnet-50',
-      minScore: 0.9,
-    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -79,7 +73,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       minScore: 0.7,
       maxDistance: 0.6,
-      minFaces: 1,
+      minFaces: 3,
     },
   },
   map: {
@@ -106,7 +100,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
   passwordLogin: {
     enabled: true,
   },
+  server: {
+    externalDomain: '',
+    loginPageMessage: '',
+  },
   storageTemplate: {
+    enabled: false,
+    hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
   thumbnail: {
@@ -169,6 +169,16 @@ describe(SystemConfigService.name, () => {
   });
 
   describe('getConfig', () => {
+    let warnLog: jest.SpyInstance;
+
+    beforeEach(() => {
+      warnLog = jest.spyOn(ImmichLogger.prototype, 'warn');
+    });
+
+    afterEach(() => {
+      warnLog.mockRestore();
+    });
+
     it('should return the default config', async () => {
       configMock.load.mockResolvedValue([]);
 
@@ -217,9 +227,9 @@ describe(SystemConfigService.name, () => {
       { should: 'validate numbers', config: { ffmpeg: { crf: 'not-a-number' } } },
       { should: 'validate booleans', config: { oauth: { enabled: 'invalid' } } },
       { should: 'validate enums', config: { ffmpeg: { transcode: 'unknown' } } },
-      { should: 'validate top level unknown options', config: { unknownOption: true } },
-      { should: 'validate nested unknown options', config: { ffmpeg: { unknownOption: true } } },
       { should: 'validate required oauth fields', config: { oauth: { enabled: true } } },
+      { should: 'warn for top level unknown options', warn: true, config: { unknownOption: true } },
+      { should: 'warn for nested unknown options', warn: true, config: { ffmpeg: { unknownOption: true } } },
     ];
 
     for (const test of tests) {
@@ -227,7 +237,12 @@ describe(SystemConfigService.name, () => {
         process.env.IMMICH_CONFIG_FILE = 'immich-config.json';
         configMock.readFile.mockResolvedValue(JSON.stringify(test.config));
 
-        await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
+        if (test.warn) {
+          await sut.getConfig();
+          expect(warnLog).toHaveBeenCalled();
+        } else {
+          await expect(sut.getConfig()).rejects.toBeInstanceOf(Error);
+        }
       });
     }
   });

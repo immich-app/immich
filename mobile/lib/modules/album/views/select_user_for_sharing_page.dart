@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -12,6 +13,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 
+@RoutePage<List<String>>()
 class SelectUserForSharingPage extends HookConsumerWidget {
   const SelectUserForSharingPage({Key? key, required this.assets})
       : super(key: key);
@@ -35,9 +37,9 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         // ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
-        context.autoPop(true);
+        context.popRoute(true);
         context
-            .autoNavigate(const TabControllerRoute(children: [SharingRoute()]));
+            .navigateTo(const TabControllerRoute(children: [SharingRoute()]));
       }
 
       ScaffoldMessenger(
@@ -151,7 +153,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () async {
-            context.autoPop();
+            context.popRoute();
           },
         ),
         actions: [

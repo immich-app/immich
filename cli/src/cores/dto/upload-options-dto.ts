@@ -5,5 +5,6 @@ export class UploadOptionsDto {
   skipHash? = false;
   delete? = false;
   album? = false;
+  albumName? = '';
   includeHidden? = false;
 }

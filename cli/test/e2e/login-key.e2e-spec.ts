@@ -1,8 +1,8 @@
-import { api } from '@test/api';
-import { restoreTempFolder, testApp } from 'immich/test/test-utils';
-import { LoginResponseDto } from 'src/api/open-api';
 import { APIKeyCreateResponseDto } from '@app/domain';
-import LoginKey from 'src/commands/login/key';
+import { api } from '@api';
+import { restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
+import { LoginResponseDto } from '@immich/sdk';
+import { LoginKey } from 'src/commands/login/key';
 import { LoginError } from 'src/cores/errors/login-error';
 import { CLI_BASE_OPTIONS, spyOnConsole } from 'test/cli-test-utils';
 

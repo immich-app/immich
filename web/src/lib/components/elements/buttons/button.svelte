@@ -26,6 +26,8 @@
   export let fullwidth = false;
   export let border = false;
   export let title: string | undefined = '';
+  let className = '';
+  export { className as class };
 
   const colorClasses: Record<Color, string> = {
     primary:
@@ -36,7 +38,7 @@
       'text-gray-500 dark:text-immich-dark-primary enabled:hover:bg-gray-100 enabled:dark:hover:bg-gray-700',
     'light-red': 'bg-[#F9DEDC] text-[#410E0B] enabled:hover:bg-red-50',
     red: 'bg-red-500 text-white enabled:hover:bg-red-400',
-    green: 'bg-lime-600 text-white enabled:hover:bg-lime-500',
+    green: 'bg-green-500 text-gray-800 enabled:hover:bg-green-400/90',
     gray: 'bg-gray-500 dark:bg-gray-200 enabled:hover:bg-gray-500/75 enabled:dark:hover:bg-gray-200/80 text-white dark:text-immich-dark-gray',
     'transparent-gray':
       'dark:text-immich-dark-fg enabled:hover:bg-immich-primary/5 enabled:hover:text-gray-700 enabled:hover:dark:text-immich-dark-fg enabled:dark:hover:bg-immich-dark-primary/25',
@@ -60,7 +62,7 @@
   {disabled}
   {title}
   on:click
-  class="inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 {colorClasses[
+  class="{className} inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 {colorClasses[
     color
   ]} {sizeClasses[size]}"
   class:rounded-lg={rounded === 'lg'}

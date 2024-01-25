@@ -25,12 +25,24 @@
       "matchFileNames": ["server/**"],
       "groupName": "server",
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackagePrefixes": ["exiftool"],
+      "excludePackagePrefixes": ["exiftool", "reflect-metadata"],
+      "schedule": "on tuesday"
+    },
+    {
+      "matchFileNames": ["open-api/**"],
+      "groupName": "open-api",
+      "matchUpdateTypes": ["minor", "patch"],
       "schedule": "on tuesday"
     },
     {
       "groupName": "exiftool",
       "matchPackagePrefixes": ["exiftool"],
+      "schedule": "on tuesday"
+    },
+    {
+      "groupName": "svelte",
+      "matchUpdateTypes": ["major"],
+      "matchPackagePrefixes": ["@sveltejs"],
       "schedule": "on tuesday"
     },
     {
@@ -42,7 +54,7 @@
     {
       "matchFileNames": ["machine-learning/**"],
       "groupName": "machine-learning",
-      "matchUpdateTypes": ["minor", "patch"],
+      "rangeStrategy": "in-range-only",
       "schedule": "on tuesday"
     },
     {
@@ -59,12 +71,16 @@
       "matchDatasources": ["docker"],
       "matchPackageNames": ["node"],
       "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$",
-      "versioning": "node"
+      "versioning": "node",
+      "schedule": "on tuesday"
+    },
+    {
+      "packageNames": ["com.google.guava:guava"],
+      "versionScheme": "docker",
+      "schedule": "on tuesday"
     }
   ],
-  "ignorePaths": [
-    "mobile/openapi/pubspec.yaml"
-  ],
+  "ignorePaths": ["mobile/openapi/pubspec.yaml"],
   "ignoreDeps": [
     "http",
     "latlong2",
@@ -72,5 +88,5 @@
     "flutter_map",
     "flutter_map_heatmap"
   ],
-  "labels": ["renovate"]
+  "labels": ["dependencies", "renovate"]
 }

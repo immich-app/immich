@@ -20,7 +20,9 @@ import {
   IPartnerRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  IUserRepository,
   ImmichReadStream,
+  JobItem,
   TimeBucketOptions,
 } from '../repositories';
 import { StorageCore, StorageFolder } from '../storage';
@@ -70,9 +72,11 @@ export interface UploadRequest {
 }
 
 export interface UploadFile {
+  uuid: string;
   checksum: Buffer;
   originalPath: string;
   originalName: string;
+  size: number;
 }
 
 export class AssetService {
@@ -87,6 +91,7 @@ export class AssetService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
@@ -169,13 +174,13 @@ export class AssetService {
       [UploadFieldName.PROFILE_DATA]: originalExt,
     };
 
-    return sanitize(`${this.cryptoRepository.randomUUID()}${lookup[fieldName]}`);
+    return sanitize(`${file.uuid}${lookup[fieldName]}`);
   }
 
-  getUploadFolder({ auth, fieldName }: UploadRequest): string {
+  getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
     auth = this.access.requireUploadAccess(auth);
 
-    let folder = StorageCore.getFolderLocation(StorageFolder.UPLOAD, auth.user.id);
+    let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
     if (fieldName === UploadFieldName.PROFILE_DATA) {
       folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
     }
@@ -449,9 +454,9 @@ export class AssetService {
     );
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
-      }
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+      );
     }
 
     return true;
@@ -460,7 +465,15 @@ export class AssetService {
   async handleAssetDeletion(job: IAssetDeletionJob) {
     const { id, fromExternal } = job;
 
-    const asset = await this.assetRepository.getById(id);
+    const asset = await this.assetRepository.getById(id, {
+      faces: {
+        person: true,
+      },
+      library: true,
+      stack: true,
+      exifInfo: true,
+    });
+
     if (!asset) {
       return false;
     }
@@ -479,6 +492,7 @@ export class AssetService {
     }
 
     await this.assetRepository.remove(asset);
+    await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     this.communicationRepository.send(ClientEvent.ASSET_DELETE, asset.ownerId, id);
 
     // TODO refactor this to use cascades
@@ -504,9 +518,7 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_DELETE, ids);
 
     if (force) {
-      for (const id of ids) {
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id } });
-      }
+      await this.jobRepository.queueAll(ids.map((id) => ({ name: JobName.ASSET_DELETION, data: { id } })));
     } else {
       await this.assetRepository.softDeleteAll(ids);
       this.communicationRepository.send(ClientEvent.ASSET_TRASH, auth.user.id, ids);
@@ -529,9 +541,9 @@ export class AssetService {
 
     if (action == TrashAction.EMPTY_ALL) {
       for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          await this.jobRepository.queue({ name: JobName.ASSET_DELETION, data: { id: asset.id } });
-        }
+        await this.jobRepository.queueAll(
+          assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
+        );
       }
       return;
     }
@@ -550,7 +562,13 @@ export class AssetService {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, newParentId);
 
     const childIds: string[] = [];
-    const oldParent = await this.assetRepository.getById(oldParentId);
+    const oldParent = await this.assetRepository.getById(oldParentId, {
+      faces: {
+        person: true,
+      },
+      library: true,
+      stack: true,
+    });
     if (oldParent != null) {
       childIds.push(oldParent.id);
       // Get all children of old parent
@@ -566,21 +584,25 @@ export class AssetService {
   async run(auth: AuthDto, dto: AssetJobsDto) {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, dto.assetIds);
 
+    const jobs: JobItem[] = [];
+
     for (const id of dto.assetIds) {
       switch (dto.name) {
         case AssetJobName.REFRESH_METADATA:
-          await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          jobs.push({ name: JobName.METADATA_EXTRACTION, data: { id } });
           break;
 
         case AssetJobName.REGENERATE_THUMBNAIL:
-          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+          jobs.push({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
           break;
 
         case AssetJobName.TRANSCODE_VIDEO:
-          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id } });
           break;
       }
     }
+
+    await this.jobRepository.queueAll(jobs);
   }
 
   private async updateMetadata(dto: ISidecarWriteJob) {

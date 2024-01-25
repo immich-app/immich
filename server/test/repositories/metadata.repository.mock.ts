@@ -7,5 +7,6 @@ export const newMetadataRepositoryMock = (): jest.Mocked<IMetadataRepository> =>
     reverseGeocode: jest.fn(),
     readTags: jest.fn(),
     writeTags: jest.fn(),
+    extractBinaryTag: jest.fn(),
   };
 };

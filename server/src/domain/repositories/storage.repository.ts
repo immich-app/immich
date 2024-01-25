@@ -30,11 +30,12 @@ export interface IStorageRepository {
   unlink(filepath: string): Promise<void>;
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string, self?: boolean): Promise<void>;
-  moveFile(source: string, target: string): Promise<void>;
   checkFileExists(filepath: string, mode?: number): Promise<boolean>;
   mkdirSync(filepath: string): void;
   checkDiskUsage(folder: string): Promise<DiskUsage>;
   readdir(folder: string): Promise<string[]>;
   stat(filepath: string): Promise<Stats>;
   crawl(crawlOptions: CrawlOptionsDto): Promise<string[]>;
+  copyFile(source: string, target: string): Promise<void>;
+  rename(source: string, target: string): Promise<void>;
 }

@@ -16,10 +16,9 @@ import {
 const mockPingServer = jest.fn(() => Promise.resolve({ data: { res: 'pong' } }));
 const mockUserInfo = jest.fn(() => Promise.resolve({ data: { email: 'admin@example.com' } }));
 
-jest.mock('../api/open-api', () => {
+jest.mock('@immich/sdk', () => {
   return {
-    __esModule: true,
-    ...jest.requireActual('../api/open-api'),
+    ...jest.requireActual('@immich/sdk'),
     UserApi: jest.fn().mockImplementation(() => {
       return { getMyUserInfo: mockUserInfo };
     }),

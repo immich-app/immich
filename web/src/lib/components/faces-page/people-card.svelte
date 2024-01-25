@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PersonResponseDto, api } from '@api';
+  import { type PersonResponseDto, api } from '@api';
   import { getContextMenuPosition } from '$lib/utils/context-menu';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import IconButton from '../elements/buttons/icon-button.svelte';
@@ -46,7 +46,7 @@
   role="group"
 >
   <a href="{AppRoute.PEOPLE}/{person.id}?previousRoute={AppRoute.PEOPLE}" draggable="false">
-    <div class="h-48 w-48 rounded-xl brightness-95 filter">
+    <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
         {preload}
