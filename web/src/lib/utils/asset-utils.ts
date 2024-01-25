@@ -43,19 +43,7 @@ export const downloadBlob = (data: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-const downloadingArchives = new Set();
 export const downloadArchive = async (fileName: string, options: DownloadInfoDto) => {
-  const uniqueDownloadId = options.albumId ? `${options.albumId}` : generateUniqueDownloadId(options.assetIds?.sort());
-
-  if (downloadingArchives.has(uniqueDownloadId)) {
-    notificationController.show({
-      type: NotificationType.Warning,
-      message: `Please wait, the selected assets are currently being downloaded. You can start another download once this is complete.`,
-    });
-    return;
-  }
-
-  downloadingArchives.add(uniqueDownloadId);
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
@@ -63,7 +51,6 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadInfo = data;
   } catch (error) {
     handleError(error, 'Unable to download files');
-    downloadingArchives.delete(uniqueDownloadId);
     return;
   }
 
@@ -96,29 +83,15 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
       downloadBlob(data, archiveName);
     } catch (e) {
       handleError(e, 'Unable to download files');
-      downloadingArchives.delete(uniqueDownloadId);
       downloadManager.clear(downloadKey);
       return;
     } finally {
-      downloadingArchives.delete(uniqueDownloadId);
       setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
 };
 
-const downloadingFiles = new Set();
 export const downloadFile = async (asset: AssetResponseDto) => {
-  const fileChecksum = `${asset.checksum}`;
-
-  if (downloadingFiles.has(fileChecksum)) {
-    notificationController.show({
-      type: NotificationType.Warning,
-      message: `Please wait, '${asset.originalFileName}' is currently being downloaded. You can start another download once this is complete.`,
-    });
-    return;
-  }
-
-  downloadingFiles.add(fileChecksum);
 
   if (asset.isOffline) {
     notificationController.show({
@@ -170,10 +143,8 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       downloadBlob(data, filename);
     } catch (e) {
       handleError(e, `Error downloading ${filename}`);
-      downloadingFiles.delete(fileChecksum);
       downloadManager.clear(downloadKey);
     } finally {
-      downloadingFiles.delete(fileChecksum);
       setTimeout(() => downloadManager.clear(downloadKey), 5_000);
     }
   }
@@ -256,14 +227,4 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
     });
   }
   return ids;
-};
-
-const generateUniqueDownloadId = (assetIds: string[] | undefined) => {
-  const count = assetIds?.length || 0;
-  const middleIndex = Math.floor(count / 2);
-  const firstId = assetIds?.[0] || 'none';
-  const middleId = assetIds?.[middleIndex] || 'none';
-  const lastId = assetIds?.[count - 1] || 'none';
-
-  return `count-${count}-start-${firstId}-middle-${middleId}-end-${lastId}`;
 };
