@@ -400,6 +400,44 @@ export class AssetService {
     return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
+  async get(auth: AuthDto, id: string): Promise<AssetResponseDto> {
+    await this.access.requirePermission(auth, Permission.ASSET_READ, id);
+
+    const asset = await this.assetRepository.getById(id, {
+      exifInfo: true,
+      tags: true,
+      sharedLinks: true,
+      smartInfo: true,
+      owner: true,
+      faces: {
+        person: true,
+      },
+      stack: {
+        exifInfo: true,
+      },
+    });
+
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (!auth.sharedLink || auth.sharedLink?.showExif) {
+      const data = mapAsset(asset, { withStack: true });
+
+      if (data.ownerId !== auth.user.id) {
+        data.people = [];
+      }
+
+      if (auth.sharedLink) {
+        delete data.owner;
+      }
+
+      return data;
+    } else {
+      return mapAsset(asset, { stripMetadata: true, withStack: true });
+    }
+  }
+
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
 

@@ -45,8 +45,8 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
   controllers: [
     ActivityController,
     AssetsController,
-    AssetController,
     AssetControllerV1,
+    AssetController,
     AppController,
     AlbumController,
     APIKeyController,

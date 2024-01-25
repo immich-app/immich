@@ -18,7 +18,7 @@ import {
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
-import { sendFile } from '../../app.utils';
+import { UseValidation, sendFile } from '../../app.utils';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { FileUploadInterceptor, ImmichFile, Route, mapToUploadFile } from '../../interceptors';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
@@ -142,8 +142,10 @@ export class AssetController {
 
   /**
    * Get a single asset's information
+   * @deprecated Use `/asset/:id`
    */
   @SharedLinkRoute()
+  @UseValidation()
   @Get('/assetById/:id')
   getAssetById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.assetService.getAssetById(auth, id) as Promise<AssetResponseDto>;

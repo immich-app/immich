@@ -27,7 +27,7 @@
       assetId = link.assets[0].id;
     }
 
-    const { data } = await api.assetApi.getAssetById({ id: assetId });
+    const { data } = await api.assetApi.getAssetInfo({ id: assetId });
 
     return data;
   };
