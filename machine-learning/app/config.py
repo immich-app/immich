@@ -1,10 +1,13 @@
+import concurrent.futures
 import logging
 import os
 import sys
 from pathlib import Path
 from socket import socket
 
+import fastapi
 import starlette
+import uvicorn
 from gunicorn.arbiter import Arbiter
 from pydantic import BaseSettings
 from rich.console import Console
@@ -74,10 +77,16 @@ log_settings = LogSettings()
 class CustomRichHandler(RichHandler):
     def __init__(self) -> None:
         console = Console(color_system="standard", no_color=log_settings.no_color)
-        super().__init__(show_path=False, omit_repeated_times=False, console=console, tracebacks_suppress=[starlette])
+        super().__init__(
+            show_path=False,
+            omit_repeated_times=False,
+            console=console,
+            rich_tracebacks=True,
+            tracebacks_suppress=[uvicorn, starlette, fastapi, concurrent.futures],
+        )
 
 
-log = logging.getLogger("gunicorn.access")
+log = logging.getLogger("ml.log")
 log.setLevel(LOG_LEVELS.get(log_settings.log_level.lower(), logging.INFO))
 
 
