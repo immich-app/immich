@@ -214,6 +214,11 @@ On the other hand, Immich does scan video thumbnails for faces, so it can perfor
 
 No.
 
+### I'm getting a lot of "faces" that aren't faces, what can I do?
+
+You can increase the MIN DETECTION SCORE to 0.8 to help prevent bad thumbnails. However, a score of 0.9 might filter out too many real faces depending on the library used. If you just want to hide specific faces, you can adjust the 'MIN FACES DETECTED' setting in the administration panel  
+to increase the bar for what the algorithm considers a "core face" for that person, reducing the chance of bad thumbnails being chosen.
+
 ### The immich_model-cache volume takes up a lot of space, what could be the problem?
 
 If you installed several models and chose not to use some of them, it might be worth deleting the old models that are in immich_model-cache.
