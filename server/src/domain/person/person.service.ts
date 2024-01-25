@@ -335,8 +335,7 @@ export class PersonService {
     if (faces.length) {
       await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
 
-      const createFaces = [];
-      for (const face of faces) {
+      const createFaces = faces.map((face) => {
         const mappedFace = {
           assetId: asset.id,
           embedding: face.embedding,
@@ -348,8 +347,8 @@ export class PersonService {
           boundingBoxY2: face.boundingBox.y2,
         };
 
-        createFaces.push(this.repository.createFace(mappedFace));
-      }
+        return this.repository.createFace(mappedFace);
+      });
 
       const faceIds = await Promise.all(createFaces);
       await this.jobRepository.queueAll(faceIds.map((id) => ({ name: JobName.FACIAL_RECOGNITION, data: { id } })));
