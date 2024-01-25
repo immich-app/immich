@@ -1057,6 +1057,7 @@
     },
     "/asset/assetById/{id}": {
       "get": {
+        "deprecated": true,
         "description": "Get a single asset's information",
         "operationId": "getAssetById",
         "parameters": [
@@ -2319,6 +2320,54 @@
       }
     },
     "/asset/{id}": {
+      "get": {
+        "operationId": "getAssetInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      },
       "put": {
         "operationId": "updateAsset",
         "parameters": [

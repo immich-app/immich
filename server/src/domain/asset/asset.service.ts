@@ -15,7 +15,6 @@ import {
   IAccessRepository,
   IAssetRepository,
   ICommunicationRepository,
-  ICryptoRepository,
   IJobRepository,
   IPartnerRepository,
   IStorageRepository,
@@ -87,7 +86,6 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -398,6 +396,44 @@ export class AssetService {
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
     return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
+  }
+
+  async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
+    await this.access.requirePermission(auth, Permission.ASSET_READ, id);
+
+    const asset = await this.assetRepository.getById(id, {
+      exifInfo: true,
+      tags: true,
+      sharedLinks: true,
+      smartInfo: true,
+      owner: true,
+      faces: {
+        person: true,
+      },
+      stack: {
+        exifInfo: true,
+      },
+    });
+
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (auth.sharedLink && !auth.sharedLink.showExif) {
+      return mapAsset(asset, { stripMetadata: true, withStack: true });
+    }
+
+    const data = mapAsset(asset, { withStack: true });
+
+    if (auth.sharedLink) {
+      delete data.owner;
+    }
+
+    if (data.ownerId !== auth.user.id) {
+      data.people = [];
+    }
+
+    return data;
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {

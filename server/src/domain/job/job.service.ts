@@ -174,6 +174,7 @@ export class JobService {
       { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
       { name: JobName.CLEAN_OLD_AUDIT_LOGS },
       { name: JobName.USER_SYNC_USAGE },
+      { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } },
     ]);
   }
 
@@ -253,11 +254,6 @@ export class JobService {
         if (asset && asset.isVisible) {
           this.communicationRepository.send(ClientEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
-        break;
-      }
-
-      case JobName.FACE_DETECTION: {
-        await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: item.data });
         break;
       }
     }

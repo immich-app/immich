@@ -4,8 +4,17 @@ A short guide on connecting [pgAdmin](https://www.pgadmin.org/) to Immich.
 
 :::note
 
-- In order to connect to the database the immich_postgres container **must be running**.
-- The passwords and usernames used below match the ones specified in the example `.env` file. If changed, please use actual values instead.
+In order to connect to the database the immich_postgres container **must be running**.
+
+The passwords and usernames used below match the ones specified in the example `.env` file. If changed, please use actual values instead.
+
+**Optional:** To connect to the database **outside** of your Docker's network:
+
+- Expose port 5432 in your `docker-compose.yml` file.
+- Edit the PostgreSQL [`pg_hba.conf`](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html) file.
+- Make sure your firewall does not block access to port 5432.
+  Note that exposing the database port increases the risk of getting attacked by hackers.  
+  Make sure to remove the binding port after finishing the database's tasks.
 
 :::
 

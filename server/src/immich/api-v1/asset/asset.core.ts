@@ -2,12 +2,12 @@ import { AuthDto, IJobRepository, JobName, mimeTypes, UploadFile } from '@app/do
 import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { parse } from 'node:path';
-import { IAssetRepository } from './asset-repository';
+import { IAssetRepositoryV1 } from './asset-repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
 
 export class AssetCore {
   constructor(
-    private repository: IAssetRepository,
+    private repository: IAssetRepositoryV1,
     private jobRepository: IJobRepository,
   ) {}
 
