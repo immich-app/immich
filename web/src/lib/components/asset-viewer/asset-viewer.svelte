@@ -53,7 +53,6 @@
   export let album: AlbumResponseDto | null = null;
 
   let reactions: ActivityResponseDto[] = [];
-
   const { setAssetId } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
@@ -250,6 +249,11 @@
     isShowActivity = !isShowActivity;
   };
 
+  const handleRotate = () => {
+    const rotateImage = new CustomEvent('rotateImage');
+    window.dispatchEvent(rotateImage);
+  };
+
   const handleKeyboardPress = (event: KeyboardEvent) => {
     if (shouldIgnoreShortcut(event)) {
       return;
@@ -294,6 +298,11 @@
         isShowActivity = false;
         $isShowDetail = !$isShowDetail;
         return;
+      case 'R':
+      case 'r':
+        if (shiftKey) {
+          handleRotate();
+        }
     }
   };
 
@@ -594,6 +603,7 @@
         on:runJob={({ detail: job }) => handleRunJob(job)}
         on:playSlideShow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         on:unstack={handleUnstack}
+        on:rotate={handleRotate}
       />
     </div>
   {/if}

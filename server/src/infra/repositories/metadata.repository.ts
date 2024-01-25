@@ -14,7 +14,7 @@ import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMe
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
+import { DefaultReadTaskOptions, exiftool, WriteTags } from 'exiftool-vendored';
 import { createReadStream, existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import * as geotz from 'geo-tz';
@@ -205,7 +205,7 @@ export class MetadataRepository implements IMetadataRepository {
     return exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
-  async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+  async writeTags(path: string, tags: Partial<WriteTags>): Promise<void> {
     try {
       await exiftool.write(path, tags, ['-overwrite_original']);
     } catch (error) {

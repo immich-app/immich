@@ -27,6 +27,7 @@
       { key: ['i'], action: 'Show or hide info' },
       { key: ['⇧', 'a'], action: 'Archive or unarchive photo' },
       { key: ['⇧', 'd'], action: 'Download' },
+      { key: ['⇧', 'r'], action: 'Rotate' },
       { key: ['Space'], action: 'Play or pause video' },
       { key: ['Del'], action: 'Trash/Delete Asset', info: 'press ⇧ to permanently delete asset' },
     ],

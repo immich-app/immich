@@ -25,5 +25,6 @@ declare namespace svelteHTML {
   interface HTMLAttributes<T> {
     'on:copyImage'?: () => void;
     'on:zoomImage'?: () => void;
+    'on:rotateImage'?: () => void;
   }
 }

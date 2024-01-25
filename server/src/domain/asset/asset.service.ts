@@ -439,15 +439,15 @@ export class AssetService {
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, id);
 
-    const { description, dateTimeOriginal, latitude, longitude, ...rest } = dto;
-    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude });
+    const { description, dateTimeOriginal, latitude, longitude, orientation, ...rest } = dto;
+    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, orientation });
 
     const asset = await this.assetRepository.save({ id, ...rest });
     return mapAsset(asset);
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, removeParent, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, removeParent, dateTimeOriginal, latitude, longitude, orientation, ...options } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, ids);
 
     if (removeParent) {
@@ -468,7 +468,7 @@ export class AssetService {
     }
 
     for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude, orientation });
     }
 
     for (const id of ids) {
@@ -642,8 +642,8 @@ export class AssetService {
   }
 
   private async updateMetadata(dto: ISidecarWriteJob) {
-    const { id, description, dateTimeOriginal, latitude, longitude } = dto;
-    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude }, _.isUndefined);
+    const { id, description, dateTimeOriginal, latitude, longitude, orientation } = dto;
+    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, orientation }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });

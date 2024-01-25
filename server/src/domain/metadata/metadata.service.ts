@@ -1,7 +1,7 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
-import { ExifDateTime, Tags } from 'exiftool-vendored';
+import { ExifDateTime, Tags, WriteTags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { constants } from 'fs/promises';
 import _ from 'lodash';
@@ -303,19 +303,20 @@ export class MetadataService {
   }
 
   async handleSidecarWrite(job: ISidecarWriteJob) {
-    const { id, description, dateTimeOriginal, latitude, longitude } = job;
+    const { id, description, dateTimeOriginal, latitude, longitude, orientation } = job;
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
       return false;
     }
 
     const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
-    const exif = _.omitBy<Tags>(
+    const exif = _.omitBy<WriteTags>(
       {
         ImageDescription: description,
         CreationDate: dateTimeOriginal,
         GPSLatitude: latitude,
         GPSLongitude: longitude,
+        'Orientation#': orientation,
       },
       _.isUndefined,
     );

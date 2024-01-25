@@ -11,6 +11,7 @@ import {
   IsNotEmpty,
   IsPositive,
   IsString,
+  Max,
   Min,
   ValidateIf,
 } from 'class-validator';
@@ -208,6 +209,13 @@ export class AssetBulkUpdateDto extends BulkIdsDto {
   @IsLongitude()
   @IsNotEmpty()
   longitude?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Max(8)
+  @Type(() => Number)
+  orientation?: number;
 }
 
 export class UpdateAssetDto {
@@ -236,6 +244,13 @@ export class UpdateAssetDto {
   @IsLongitude()
   @IsNotEmpty()
   longitude?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Max(8)
+  @Type(() => Number)
+  orientation?: number;
 }
 
 export class RandomAssetsDto {

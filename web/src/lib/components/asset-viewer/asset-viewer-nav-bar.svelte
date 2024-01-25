@@ -36,7 +36,14 @@
 
   $: isOwner = asset.ownerId === $user?.id;
 
-  type MenuItemEvent = 'addToAlbum' | 'addToSharedAlbum' | 'asProfileImage' | 'runJob' | 'playSlideShow' | 'unstack';
+  type MenuItemEvent =
+    | 'addToAlbum'
+    | 'addToSharedAlbum'
+    | 'asProfileImage'
+    | 'runJob'
+    | 'playSlideShow'
+    | 'unstack'
+    | 'rotate';
 
   const dispatch = createEventDispatcher<{
     back: void;
@@ -53,6 +60,7 @@
     runJob: AssetJobName;
     playSlideShow: void;
     unstack: void;
+    rotate: void;
   }>();
 
   let contextMenuPosition = { x: 0, y: 0 };
@@ -175,7 +183,7 @@
                 text={asset.isArchived ? 'Unarchive' : 'Archive'}
               />
               <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
-
+              <MenuOption on:click={() => onMenuClick('rotate')} text="Rotate right" />
               {#if hasStackChildren}
                 <MenuOption on:click={() => onMenuClick('unstack')} text="Un-Stack" />
               {/if}
