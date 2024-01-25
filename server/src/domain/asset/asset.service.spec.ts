@@ -8,7 +8,6 @@ import {
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
-  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newPartnerRepositoryMock,
   newStorageRepositoryMock,
@@ -24,7 +23,6 @@ import {
   ClientEvent,
   IAssetRepository,
   ICommunicationRepository,
-  ICryptoRepository,
   IJobRepository,
   IPartnerRepository,
   IStorageRepository,
@@ -168,7 +166,6 @@ describe(AssetService.name, () => {
   let sut: AssetService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let userMock: jest.Mocked<IUserRepository>;
@@ -184,7 +181,6 @@ describe(AssetService.name, () => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
@@ -194,7 +190,6 @@ describe(AssetService.name, () => {
     sut = new AssetService(
       accessMock,
       assetMock,
-      cryptoMock,
       jobMock,
       configMock,
       storageMock,
@@ -654,6 +649,59 @@ describe(AssetService.name, () => {
       assetMock.getStatistics.mockResolvedValue(stats);
       await expect(sut.getStatistics(authStub.admin, {})).resolves.toEqual(statResponse);
       expect(assetMock.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {});
+    });
+  });
+
+  describe('get', () => {
+    it('should allow owner access', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.get(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should allow shared link access', async () => {
+      accessMock.asset.checkSharedLinkAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.get(authStub.adminSharedLink, assetStub.image.id);
+      expect(accessMock.asset.checkSharedLinkAccess).toHaveBeenCalledWith(
+        authStub.adminSharedLink.sharedLink?.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should allow partner sharing access', async () => {
+      accessMock.asset.checkPartnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.get(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.checkPartnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should allow shared album access', async () => {
+      accessMock.asset.checkAlbumAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      assetMock.getById.mockResolvedValue(assetStub.image);
+      await sut.get(authStub.admin, assetStub.image.id);
+      expect(accessMock.asset.checkAlbumAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([assetStub.image.id]),
+      );
+    });
+
+    it('should throw an error for no access', async () => {
+      await expect(sut.get(authStub.admin, assetStub.image.id)).rejects.toBeInstanceOf(BadRequestException);
+      expect(assetMock.getById).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error for an invalid shared link', async () => {
+      await expect(sut.get(authStub.adminSharedLink, assetStub.image.id)).rejects.toBeInstanceOf(BadRequestException);
+      expect(accessMock.asset.checkOwnerAccess).not.toHaveBeenCalled();
+      expect(assetMock.getById).not.toHaveBeenCalled();
     });
   });
 
