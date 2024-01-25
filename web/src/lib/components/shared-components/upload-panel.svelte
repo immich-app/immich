@@ -44,7 +44,7 @@
 
       if ($duplicateCounter > 0) {
         notificationController.show({
-          message: `Skipped ${$duplicateCounter} duplicate picture${$duplicateCounter > 1 ? 's' : ''}`,
+          message: `Skipped ${$duplicateCounter} duplicate asset${$duplicateCounter > 1 ? 's' : ''}`,
           type: NotificationType.Warning,
         });
       }
