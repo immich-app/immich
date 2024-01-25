@@ -46,11 +46,6 @@ export class SystemConfigLibraryWatchDto {
   @IsPositive()
   @ApiProperty({ type: 'integer' })
   interval!: number;
-
-  @IsInt()
-  @IsPositive()
-  @ApiProperty({ type: 'integer' })
-  binaryInterval!: number;
 }
 
 export class SystemConfigLibraryDto {

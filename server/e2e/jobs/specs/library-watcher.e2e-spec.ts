@@ -4,6 +4,8 @@ import * as fs from 'fs/promises';
 import { api } from '../../client';
 
 import { INestApplication } from '@nestjs/common';
+import { constant } from 'lodash';
+import path from 'path';
 import {
   IMMICH_TEST_ASSET_PATH,
   IMMICH_TEST_ASSET_TEMP_PATH,
@@ -13,12 +15,14 @@ import {
 } from '../utils';
 
 describe(`Library watcher (e2e)`, () => {
-  let app: INestApplication;
   let server: any;
   let admin: LoginResponseDto;
   let libraryService: LibraryService;
+  const configFilePath = process.env.IMMICH_CONFIG_FILE;
 
   beforeAll(async () => {
+    process.env.IMMICH_CONFIG_FILE = path.normalize(`${__dirname}/../config/library-watcher-e2e-config.json`);
+
     server = (await testApp.create()).getHttpServer();
     libraryService = testApp.get(LibraryService);
   });
@@ -39,6 +43,7 @@ describe(`Library watcher (e2e)`, () => {
   afterAll(async () => {
     await testApp.teardown();
     await restoreTempFolder();
+    process.env.IMMICH_CONFIG_FILE = configFilePath;
   });
 
   describe('Event handling', () => {
@@ -50,8 +55,6 @@ describe(`Library watcher (e2e)`, () => {
           type: LibraryType.EXTERNAL,
           importPaths: [`${IMMICH_TEST_ASSET_TEMP_PATH}`],
         });
-
-        await api.libraryApi.update(server, admin.accessToken, library.id, { isWatched: true });
       });
 
       it('should import a new file', async () => {
@@ -134,6 +137,10 @@ describe(`Library watcher (e2e)`, () => {
 
     describe('Multiple import paths', () => {
       beforeEach(async () => {
+        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
+        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
+        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
+
         library = await api.libraryApi.create(server, admin.accessToken, {
           type: LibraryType.EXTERNAL,
           importPaths: [
@@ -142,12 +149,6 @@ describe(`Library watcher (e2e)`, () => {
             `${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`,
           ],
         });
-
-        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
-        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
-        await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
-
-        await api.libraryApi.update(server, admin.accessToken, library.id, { isWatched: true });
       });
 
       it('should add new files in multiple import paths', async () => {
@@ -170,8 +171,8 @@ describe(`Library watcher (e2e)`, () => {
         await waitForEvent(libraryService, 'add');
         await waitForEvent(libraryService, 'add');
 
-        const afterAssets = await api.assetApi.getAllAssets(server, admin.accessToken);
-        expect(afterAssets.length).toEqual(3);
+        const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
+        expect(assets.length).toEqual(3);
       });
 
       it('should offline a removed file', async () => {
@@ -213,7 +214,6 @@ describe(`Library watcher (e2e)`, () => {
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir1`, { recursive: true });
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir2`, { recursive: true });
       await fs.mkdir(`${IMMICH_TEST_ASSET_TEMP_PATH}/dir3`, { recursive: true });
-      await api.libraryApi.update(server, admin.accessToken, library.id, { isWatched: true });
     });
 
     it('should use an updated import paths', async () => {

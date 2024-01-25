@@ -257,7 +257,6 @@ export interface SystemConfig {
       enabled: boolean;
       usePolling: boolean;
       interval: number;
-      binaryInterval: number;
     };
   };
   server: {

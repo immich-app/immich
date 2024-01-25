@@ -41,6 +41,8 @@ export class LibraryService extends EventEmitter {
   private access: AccessCore;
   private configCore: SystemConfigCore;
 
+  private watchLibraries = false;
+
   private watchers: Record<string, () => Promise<void>> = {};
 
   constructor(
@@ -65,6 +67,7 @@ export class LibraryService extends EventEmitter {
 
   async init() {
     const config = await this.configCore.getConfig();
+    this.watchLibraries = config.library.watch.enabled;
     this.jobRepository.addCronJob(
       'libraryScan',
       config.library.scan.cronExpression,
@@ -78,21 +81,21 @@ export class LibraryService extends EventEmitter {
   }
 
   async watch(id: string): Promise<boolean> {
-    await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
+    if (!this.watchLibraries) {
+      return false;
+    }
 
     const library = await this.findOrFail(id);
 
     if (library.type !== LibraryType.EXTERNAL) {
       throw new BadRequestException('Can only watch external libraries');
     } else if (library.importPaths.length === 0) {
-      return false;
-    } else if (!library.isWatched) {
-      return false;
+      return true;
     }
 
     await this.unwatch(id);
 
-    this.logger.log(`Starting to watch library ${library.id} with import paths ${library.importPaths}`);
+    this.logger.log(`Starting to watch library ${library.id} with import path(s) ${library.importPaths}`);
 
     const matcher = picomatch(`**/*{${mimeTypes.getSupportedFileExtensions().join(',')}}`, {
       nocase: true,
@@ -167,6 +170,7 @@ export class LibraryService extends EventEmitter {
     await new Promise<void>((resolve) => {
       watcher.on('ready', async () => {
         resolve();
+        this.logger.debug(`Watcher for library ${library.id} is ready`);
       });
     });
 
@@ -174,14 +178,14 @@ export class LibraryService extends EventEmitter {
   }
 
   async watchAll(): Promise<boolean> {
-    await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
+    if (!this.watchLibraries) {
+      return false;
+    }
 
     const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
 
     for (const library of libraries) {
-      if (library.isWatched) {
-        await this.watch(library.id);
-      }
+      await this.watch(library.id);
     }
 
     return true;
@@ -259,12 +263,11 @@ export class LibraryService extends EventEmitter {
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? [],
       isVisible: dto.isVisible ?? true,
-      isWatched: dto.isWatched ?? false,
     });
 
     this.logger.log(`Creating ${dto.type} library for user ${auth.user.name}`);
 
-    if (dto.type === LibraryType.EXTERNAL && library.isWatched) {
+    if (dto.type === LibraryType.EXTERNAL && this.watchLibraries) {
       await this.watch(library.id);
     }
 
@@ -275,24 +278,8 @@ export class LibraryService extends EventEmitter {
     await this.access.requirePermission(auth, Permission.LIBRARY_UPDATE, id);
     const library = await this.repository.update({ id, ...dto });
 
-    let watch = false;
-
-    if (dto.isWatched) {
-      // Throw error if watching is requested but not enabled in config
-      await this.configCore.requireFeature(FeatureFlag.LIBRARY_WATCH);
-
-      watch = true;
-    } else {
-      this.logger.debug(`Unwatching library ${id}`);
-      await this.unwatch(id);
-    }
-
     if (dto.importPaths || dto.exclusionPatterns) {
-      // If the watch feature flag is enabled, make sure to re-watch the new paths and exclusion patterns
-      watch = await this.configCore.hasFeature(FeatureFlag.LIBRARY_WATCH);
-    }
-
-    if (watch) {
+      // Re-watch library to use new paths and/or exclusion patterns
       await this.watch(id);
     }
 
@@ -308,7 +295,7 @@ export class LibraryService extends EventEmitter {
       throw new BadRequestException('Cannot delete the last upload library');
     }
 
-    if (library.isWatched) {
+    if (this.watchLibraries) {
       await this.unwatch(id);
     }
 

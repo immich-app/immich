@@ -104,5 +104,4 @@ export class ServerFeaturesDto implements FeatureFlags {
   passwordLogin!: boolean;
   sidecar!: boolean;
   search!: boolean;
-  libraryWatch!: boolean;
 }

@@ -130,7 +130,6 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: false,
       usePolling: false,
       interval: 10000,
-      binaryInterval: 10000,
     },
   },
   server: {
@@ -151,7 +150,6 @@ export enum FeatureFlag {
   PASSWORD_LOGIN = 'passwordLogin',
   CONFIG_FILE = 'configFile',
   TRASH = 'trash',
-  LIBRARY_WATCH = 'libraryWatch',
 }
 
 export type FeatureFlags = Record<FeatureFlag, boolean>;
@@ -193,8 +191,6 @@ export class SystemConfigCore {
           throw new BadRequestException('Search is not enabled');
         case FeatureFlag.OAUTH:
           throw new BadRequestException('OAuth is not enabled');
-        case FeatureFlag.LIBRARY_WATCH:
-          throw new BadRequestException('Library watching is not enabled');
         case FeatureFlag.PASSWORD_LOGIN:
           throw new BadRequestException('Password login is not enabled');
         case FeatureFlag.CONFIG_FILE:
@@ -228,7 +224,6 @@ export class SystemConfigCore {
       [FeatureFlag.OAUTH_AUTO_LAUNCH]: config.oauth.autoLaunch,
       [FeatureFlag.PASSWORD_LOGIN]: config.passwordLogin.enabled,
       [FeatureFlag.CONFIG_FILE]: !!process.env.IMMICH_CONFIG_FILE,
-      [FeatureFlag.LIBRARY_WATCH]: config.library.watch.enabled,
     };
   }
 
