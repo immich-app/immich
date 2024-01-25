@@ -332,8 +332,10 @@ export class PersonService {
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `vector(${face.embedding.length})` })));
 
-    for (const face of faces) {
-      const mappedFace = {
+    if (faces.length) {
+      await this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
+
+      const mappedFaces = faces.map((face) => ({
         assetId: asset.id,
         embedding: face.embedding,
         imageHeight: face.imageHeight,
@@ -342,9 +344,10 @@ export class PersonService {
         boundingBoxX2: face.boundingBox.x2,
         boundingBoxY1: face.boundingBox.y1,
         boundingBoxY2: face.boundingBox.y2,
-      };
+      }));
 
-      await this.repository.createFace(mappedFace);
+      const faceIds = await this.repository.createFaces(mappedFaces);
+      await this.jobRepository.queueAll(faceIds.map((id) => ({ name: JobName.FACIAL_RECOGNITION, data: { id } })));
     }
 
     await this.assetRepository.upsertJobStatus({
@@ -362,9 +365,15 @@ export class PersonService {
     }
 
     await this.jobRepository.waitForQueueCompletion(QueueName.THUMBNAIL_GENERATION, QueueName.FACE_DETECTION);
+    const { waiting } = await this.jobRepository.getJobCounts(QueueName.FACIAL_RECOGNITION);
 
     if (force) {
       await this.deleteAllPeople();
+    } else if (waiting) {
+      this.logger.debug(
+        `Skipping facial recognition queueing because ${waiting} job${waiting > 1 ? 's are' : ' is'} already queued`,
+      );
+      return true;
     }
 
     const facePagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>

@@ -1,5 +1,5 @@
 import { APIKeyCreateResponseDto } from '@app/domain';
-import { api } from '@test/../e2e/api/client';
+import { api } from '@api';
 import { IMMICH_TEST_ASSET_PATH, restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
 import { LoginResponseDto } from '@immich/sdk';
 import { Upload } from 'src/commands/upload';

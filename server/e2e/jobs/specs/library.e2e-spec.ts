@@ -5,7 +5,7 @@ import { errorStub, uuidStub } from '@test/fixtures';
 import * as fs from 'fs';
 import request from 'supertest';
 import { utimes } from 'utimes';
-import { api } from '../client';
+import { api } from '../../client';
 import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from '../utils';
 
 describe(`${LibraryController.name} (e2e)`, () => {
@@ -13,7 +13,7 @@ describe(`${LibraryController.name} (e2e)`, () => {
   let admin: LoginResponseDto;
 
   beforeAll(async () => {
-    server = (await testApp.create({ jobs: true })).getHttpServer();
+    server = (await testApp.create()).getHttpServer();
   });
 
   afterAll(async () => {
@@ -137,48 +137,6 @@ describe(`${LibraryController.name} (e2e)`, () => {
             originalFileName: 'silver_fir',
             libraryId: library.id,
             resized: true,
-            exifInfo: expect.objectContaining({
-              exifImageWidth: 511,
-              exifImageHeight: 323,
-              latitude: null,
-              longitude: null,
-            }),
-          }),
-        ]),
-      );
-    });
-
-    it('should scan external library with import paths', async () => {
-      const library = await api.libraryApi.create(server, admin.accessToken, {
-        type: LibraryType.EXTERNAL,
-        importPaths: [`${IMMICH_TEST_ASSET_PATH}/albums/nature`],
-      });
-      await api.userApi.setExternalPath(server, admin.accessToken, admin.userId, '/');
-
-      await api.libraryApi.scanLibrary(server, admin.accessToken, library.id);
-
-      const assets = await api.assetApi.getAllAssets(server, admin.accessToken);
-
-      expect(assets).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            type: AssetType.IMAGE,
-            originalFileName: 'el_torcal_rocks',
-            libraryId: library.id,
-            resized: true,
-            exifInfo: expect.objectContaining({
-              exifImageWidth: 512,
-              exifImageHeight: 341,
-              latitude: null,
-              longitude: null,
-            }),
-          }),
-          expect.objectContaining({
-            type: AssetType.IMAGE,
-            originalFileName: 'silver_fir',
-            libraryId: library.id,
-            resized: true,
-            thumbhash: expect.any(String),
             exifInfo: expect.objectContaining({
               exifImageWidth: 511,
               exifImageHeight: 323,

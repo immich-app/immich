@@ -9,8 +9,7 @@ services:
       context: ../../
       dockerfile: server/Dockerfile
       target: dev
-    entrypoint: ['/usr/local/bin/npm', 'run']
-    command: e2e:jobs
+    command: ['/usr/src/app/bin/immich-test', 'jobs']
     volumes:
       - /usr/src/app/node_modules
     environment:
@@ -18,7 +17,6 @@ services:
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - DB_DATABASE_NAME=e2e_test
-      - IMMICH_RUN_ALL_TESTS=true
     depends_on:
       - database
 
