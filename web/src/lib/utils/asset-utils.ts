@@ -92,7 +92,6 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
 };
 
 export const downloadFile = async (asset: AssetResponseDto) => {
-
   if (asset.isOffline) {
     notificationController.show({
       type: NotificationType.Info,
