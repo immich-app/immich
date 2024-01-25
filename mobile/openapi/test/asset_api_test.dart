@@ -72,6 +72,11 @@ void main() {
       // TODO
     });
 
+    //Future<AssetResponseDto> getAssetInfo(String id, { String key }) async
+    test('test getAssetInfo', () async {
+      // TODO
+    });
+
     //Future<List<String>> getAssetSearchTerms() async
     test('test getAssetSearchTerms', () async {
       // TODO

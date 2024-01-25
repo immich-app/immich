@@ -7147,12 +7147,60 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         getAssetById: async (id: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getAssetById', 'id', id)
             const localVarPath = `/asset/assetById/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAssetInfo: async (id: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getAssetInfo', 'id', id)
+            const localVarPath = `/asset/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -8609,10 +8657,22 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         async getAssetById(id: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetById(id, key, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} [key] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAssetInfo(id: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetInfo(id, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -8982,10 +9042,20 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * Get a single asset\'s information
          * @param {AssetApiGetAssetByIdRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
+         * @deprecated
          * @throws {RequiredError}
          */
         getAssetById(requestParameters: AssetApiGetAssetByIdRequest, options?: AxiosRequestConfig): AxiosPromise<AssetResponseDto> {
             return localVarFp.getAssetById(requestParameters.id, requestParameters.key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetApiGetAssetInfoRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAssetInfo(requestParameters: AssetApiGetAssetInfoRequest, options?: AxiosRequestConfig): AxiosPromise<AssetResponseDto> {
+            return localVarFp.getAssetInfo(requestParameters.id, requestParameters.key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9344,6 +9414,27 @@ export interface AssetApiGetAssetByIdRequest {
      * 
      * @type {string}
      * @memberof AssetApiGetAssetById
+     */
+    readonly key?: string
+}
+
+/**
+ * Request parameters for getAssetInfo operation in AssetApi.
+ * @export
+ * @interface AssetApiGetAssetInfoRequest
+ */
+export interface AssetApiGetAssetInfoRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetAssetInfo
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetApiGetAssetInfo
      */
     readonly key?: string
 }
@@ -10272,11 +10363,23 @@ export class AssetApi extends BaseAPI {
      * Get a single asset\'s information
      * @param {AssetApiGetAssetByIdRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
+     * @deprecated
      * @throws {RequiredError}
      * @memberof AssetApi
      */
     public getAssetById(requestParameters: AssetApiGetAssetByIdRequest, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getAssetById(requestParameters.id, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetApiGetAssetInfoRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getAssetInfo(requestParameters: AssetApiGetAssetInfoRequest, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAssetInfo(requestParameters.id, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
