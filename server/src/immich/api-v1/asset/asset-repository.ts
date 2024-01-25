@@ -20,12 +20,11 @@ export interface AssetOwnerCheck extends AssetCheck {
   ownerId: string;
 }
 
-export interface IAssetRepository {
+export interface IAssetRepositoryV1 {
   get(id: string): Promise<AssetEntity | null>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
@@ -34,10 +33,10 @@ export interface IAssetRepository {
   getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null>;
 }
 
-export const IAssetRepository = 'IAssetRepository';
+export const IAssetRepositoryV1 = 'IAssetRepositoryV1';
 
 @Injectable()
-export class AssetRepository implements IAssetRepository {
+export class AssetRepositoryV1 implements IAssetRepositoryV1 {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
@@ -91,34 +90,6 @@ export class AssetRepository implements IAssetRepository {
       `,
       [userId],
     );
-  }
-
-  /**
-   * Get a single asset information by its ID
-   * - include exif info
-   * @param assetId
-   */
-  getById(assetId: string): Promise<AssetEntity> {
-    return this.assetRepository.findOneOrFail({
-      where: {
-        id: assetId,
-      },
-      relations: {
-        exifInfo: true,
-        tags: true,
-        sharedLinks: true,
-        smartInfo: true,
-        owner: true,
-        faces: {
-          person: true,
-        },
-        stack: {
-          exifInfo: true,
-        },
-      },
-      // We are specifically asking for this asset. Return it even if it is soft deleted
-      withDeleted: true,
-    });
   }
 
   /**

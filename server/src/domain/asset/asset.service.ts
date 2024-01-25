@@ -15,7 +15,6 @@ import {
   IAccessRepository,
   IAssetRepository,
   ICommunicationRepository,
-  ICryptoRepository,
   IJobRepository,
   IPartnerRepository,
   IStorageRepository,
@@ -87,7 +86,6 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -400,7 +398,7 @@ export class AssetService {
     return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
-  async get(auth: AuthDto, id: string): Promise<AssetResponseDto> {
+  async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.access.requirePermission(auth, Permission.ASSET_READ, id);
 
     const asset = await this.assetRepository.getById(id, {
