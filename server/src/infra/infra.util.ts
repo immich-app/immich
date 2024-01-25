@@ -4,14 +4,17 @@ export const GENERATE_SQL_KEY = 'generate-sql-key';
 
 export interface GenerateSqlQueries {
   name?: string;
-  params?: any[];
+  params: unknown[];
 }
 
 /** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);
 
+const UUID = '00000000-0000-4000-a000-000000000000';
+
 export const DummyValue = {
-  UUID: '00000000-0000-4000-a000-000000000000',
+  UUID,
+  UUID_SET: new Set([UUID]),
   PAGINATION: { take: 10, skip: 0 },
   EMAIL: 'user@immich.app',
   STRING: 'abcdefghi',
