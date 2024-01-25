@@ -37,7 +37,7 @@ docker compose up -d    # Start remainder of Immich apps
 </TabItem>
   <TabItem value="Windows system based Backup" label="Windows system based Backup">
 
-```bash title='PowerShell'
+```powershell title='Backup'
 docker exec -t immich_postgres pg_dumpall -c -U postgres > "\path\to\backup\dump.sql"
 ```
 
