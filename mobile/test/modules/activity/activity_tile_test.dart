@@ -22,13 +22,13 @@ void main() {
   late Isar db;
 
   setUpAll(() async {
-    TestUtils.init();
     db = await TestUtils.initIsar();
     // For UserCircleAvatar
     Store.init(db);
     Store.put(StoreKey.currentUser, UserStub.admin);
     Store.put(StoreKey.serverEndpoint, '');
     Store.put(StoreKey.accessToken, '');
+    TestUtils.init();
   });
 
   setUp(() {

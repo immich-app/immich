@@ -27,11 +27,11 @@ void main() {
   late List<Override> overrides;
 
   setUpAll(() async {
-    TestUtils.init();
     db = await TestUtils.initIsar();
     Store.init(db);
     Store.put(StoreKey.currentUser, UserStub.admin);
     Store.put(StoreKey.serverEndpoint, '');
+    TestUtils.init();
   });
 
   setUp(() {
