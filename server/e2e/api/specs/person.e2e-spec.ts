@@ -38,11 +38,13 @@ describe(`${PersonController.name}`, () => {
       name: 'visible_person',
       thumbnailPath: '/thumbnail/face_asset',
     });
-    await personRepository.createFace({
-      assetId: faceAsset.id,
-      personId: visiblePerson.id,
-      embedding: Array.from({ length: 512 }, Math.random),
-    });
+    await personRepository.createFaces([
+      {
+        assetId: faceAsset.id,
+        personId: visiblePerson.id,
+        embedding: Array.from({ length: 512 }, Math.random),
+      },
+    ]);
 
     hiddenPerson = await personRepository.create({
       ownerId: loginResponse.userId,
@@ -50,11 +52,13 @@ describe(`${PersonController.name}`, () => {
       isHidden: true,
       thumbnailPath: '/thumbnail/face_asset',
     });
-    await personRepository.createFace({
-      assetId: faceAsset.id,
-      personId: hiddenPerson.id,
-      embedding: Array.from({ length: 512 }, Math.random),
-    });
+    await personRepository.createFaces([
+      {
+        assetId: faceAsset.id,
+        personId: hiddenPerson.id,
+        embedding: Array.from({ length: 512 }, Math.random),
+      },
+    ]);
   });
 
   describe('GET /person', () => {

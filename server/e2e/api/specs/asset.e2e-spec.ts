@@ -788,11 +788,13 @@ describe(`${AssetController.name} (e2e)`, () => {
       const personRepository = app.get<IPersonRepository>(IPersonRepository);
       const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
 
-      await personRepository.createFace({
-        assetId: asset1.id,
-        personId: person.id,
-        embedding: Array.from({ length: 512 }, Math.random),
-      });
+      await personRepository.createFaces([
+        {
+          assetId: asset1.id,
+          personId: person.id,
+          embedding: Array.from({ length: 512 }, Math.random),
+        },
+      ]);
 
       const { status, body } = await request(server)
         .put(`/asset/${asset1.id}`)
@@ -1377,11 +1379,13 @@ describe(`${AssetController.name} (e2e)`, () => {
           beforeEach(async () => {
             const personRepository = app.get<IPersonRepository>(IPersonRepository);
             const person = await personRepository.create({ ownerId: asset1.ownerId, name: 'Test Person' });
-            await personRepository.createFace({
-              assetId: asset1.id,
-              personId: person.id,
-              embedding: Array.from({ length: 512 }, Math.random),
-            });
+            await personRepository.createFaces([
+              {
+                assetId: asset1.id,
+                personId: person.id,
+                embedding: Array.from({ length: 512 }, Math.random),
+              },
+            ]);
           });
 
           it('should not return asset with facesRecognizedAt unset', async () => {

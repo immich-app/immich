@@ -738,7 +738,7 @@ describe(PersonService.name, () => {
           modelName: 'buffalo_l',
         },
       );
-      expect(personMock.createFace).not.toHaveBeenCalled();
+      expect(personMock.createFaces).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
       expect(jobMock.queueAll).not.toHaveBeenCalled();
 
@@ -750,7 +750,7 @@ describe(PersonService.name, () => {
     });
 
     it('should create a face with no person and queue recognition job', async () => {
-      personMock.createFace.mockResolvedValue(faceStub.face1.id);
+      personMock.createFaces.mockResolvedValue([faceStub.face1.id]);
       machineLearningMock.detectFaces.mockResolvedValue([detectFaceMock]);
       smartInfoMock.searchFaces.mockResolvedValue([{ face: faceStub.face1, distance: 0.7 }]);
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
@@ -767,7 +767,7 @@ describe(PersonService.name, () => {
 
       await sut.handleDetectFaces({ id: assetStub.image.id });
 
-      expect(personMock.createFace).toHaveBeenCalledWith(face);
+      expect(personMock.createFaces).toHaveBeenCalledWith([face]);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         { name: JobName.FACIAL_RECOGNITION, data: { id: faceStub.face1.id } },
       ]);
@@ -784,7 +784,7 @@ describe(PersonService.name, () => {
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
-      expect(personMock.createFace).not.toHaveBeenCalled();
+      expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
     it('should return true if face already has an assigned person', async () => {
@@ -794,7 +794,7 @@ describe(PersonService.name, () => {
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
       expect(personMock.create).not.toHaveBeenCalled();
-      expect(personMock.createFace).not.toHaveBeenCalled();
+      expect(personMock.createFaces).not.toHaveBeenCalled();
     });
 
     it('should match existing person', async () => {
