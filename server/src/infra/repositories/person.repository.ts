@@ -215,11 +215,12 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
-  async createFace(entity: AssetFaceEntity): Promise<void> {
+  async createFace(entity: AssetFaceEntity): Promise<string> {
     if (!entity.embedding) {
       throw new Error('Embedding is required to create a face');
     }
-    await this.assetFaceRepository.insert({ ...entity, embedding: () => asVector(entity.embedding, true) });
+    const res = await this.assetFaceRepository.insert({ ...entity, embedding: () => asVector(entity.embedding, true) });
+    return res.identifiers[0].id;
   }
 
   async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
