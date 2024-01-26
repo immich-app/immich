@@ -91,7 +91,6 @@ If your photos are on a network drive you will likely have to enable filesystem 
 
 - `usePolling` (default: `false`).
 - `interval`. (default: 10000). When using polling, this is how often (in milliseconds) the filesystem is polled.
-- `binaryInterval`. (default: 10000). When using polling, this is how often (in milliseconds) files with [binary extensions](https://github.com/sindresorhus/binary-extensions/blob/master/binary-extensions.json) are polled.
 
 ### Nightly job
 

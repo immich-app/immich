@@ -133,8 +133,7 @@ The default configuration looks like this:
     "watch": {
       "enabled": false,
       "usePolling": false,
-      "interval": 10000,
-      "binaryInterval": 10000
+      "interval": 10000
     }
   }
 }
