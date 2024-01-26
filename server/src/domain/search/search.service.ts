@@ -15,7 +15,7 @@ import {
   SearchStrategy,
 } from '../repositories';
 import { FeatureFlag, SystemConfigCore } from '../system-config';
-import { SearchDto, SearchPeopleDto } from './dto';
+import { SearchDto, SearchExploreDto, SearchPeopleDto } from './dto';
 import { SearchResponseDto } from './response-dto';
 
 @Injectable()
@@ -38,9 +38,9 @@ export class SearchService {
     return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
   }
 
-  async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
+  async getExploreData(auth: AuthDto, {size = 12}: SearchExploreDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     await this.configCore.requireFeature(FeatureFlag.SEARCH);
-    const options = { maxFields: 12, minAssetsPerField: 5 };
+    const options = { maxFields: size, minAssetsPerField: 1 };
     const results = await Promise.all([
       this.assetRepository.getAssetIdByCity(auth.user.id, options),
       this.assetRepository.getAssetIdByTag(auth.user.id, options),

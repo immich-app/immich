@@ -77,7 +77,7 @@ describe(SearchService.name, () => {
         { fieldName: 'smartInfo.tags', items: [{ value: 'train', data: mapAsset(assetStub.imageFrom2015) }] },
       ];
 
-      const result = await sut.getExploreData(authStub.user1);
+      const result = await sut.getExploreData(authStub.user1, {});
 
       expect(result).toEqual(expectedResponse);
     });

@@ -754,7 +754,7 @@ export class AssetRepository implements IAssetRepository {
       .innerJoin('exif', 'e', 'asset.id = e."assetId"')
       .addCommonTableExpression(cte, 'cities')
       .innerJoin('cities', 'c', 'c.city = e.city')
-      .limit(maxFields)
+      .limit(maxFields < 0 ? undefined : maxFields)
       .getRawMany();
 
     return { fieldName: 'exifInfo.city', items };
@@ -783,7 +783,7 @@ export class AssetRepository implements IAssetRepository {
       .innerJoin('smart_info', 'si', 'asset.id = si."assetId"')
       .addCommonTableExpression(cte, 'random_tags')
       .innerJoin('random_tags', 't', 'si.tags @> ARRAY[t.tag]')
-      .limit(maxFields)
+      .limit(maxFields < 0 ? undefined : maxFields)
       .getRawMany();
 
     return { fieldName: 'smartInfo.tags', items };

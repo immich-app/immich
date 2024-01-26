@@ -1,6 +1,7 @@
 import { AssetType } from '@app/infra/entities';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsNotEmpty, IsString, IsInt, Min } from 'class-validator';
 import { Optional, toBoolean } from '../../domain.util';
 
 export class SearchDto {
@@ -48,4 +49,13 @@ export class SearchPeopleDto {
   @Transform(toBoolean)
   @Optional()
   withHidden?: boolean;
+}
+
+
+export class SearchExploreDto {
+  @IsInt()
+  @Min(-1)
+  @Type(() => Number)
+  @Optional()
+  size?: number;
 }

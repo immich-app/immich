@@ -4620,7 +4620,16 @@
     "/search/explore": {
       "get": {
         "operationId": "getExploreData",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
