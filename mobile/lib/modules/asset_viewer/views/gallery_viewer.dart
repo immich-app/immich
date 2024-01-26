@@ -265,9 +265,9 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     void handleSwipeUpDown(DragUpdateDetails details) {
-      int sensitivity = 15;
-      int dxThreshold = 50;
-      double ratioThreshold = 3.0;
+      const int sensitivity = 15;
+      const int dxThreshold = 50;
+      const double ratioThreshold = 3.0;
 
       if (isZoomed.value) {
         return;
