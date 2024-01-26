@@ -12,8 +12,8 @@ Method | HTTP request | Description
 [**checkBulkUpload**](AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAssets**](AssetApi.md#deleteassets) | **DELETE** /asset | 
-[**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
-[**downloadFile**](AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
+[**downloadArchiveOld**](AssetApi.md#downloadarchiveold) | **POST** /asset/download/archive | 
+[**downloadFileOld**](AssetApi.md#downloadfileold) | **POST** /asset/download/{id} | 
 [**emptyTrash**](AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAllUserAssetsByDeviceId**](AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
@@ -24,7 +24,7 @@ Method | HTTP request | Description
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-[**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
+[**getDownloadInfoOld**](AssetApi.md#getdownloadinfoold) | **POST** /asset/download/info | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
@@ -209,8 +209,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **downloadArchive**
-> MultipartFile downloadArchive(assetIdsDto, key)
+# **downloadArchiveOld**
+> MultipartFile downloadArchiveOld(assetIdsDto, key)
 
 
 
@@ -237,10 +237,10 @@ final assetIdsDto = AssetIdsDto(); // AssetIdsDto |
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadArchive(assetIdsDto, key);
+    final result = api_instance.downloadArchiveOld(assetIdsDto, key);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->downloadArchive: $e\n');
+    print('Exception when calling AssetApi->downloadArchiveOld: $e\n');
 }
 ```
 
@@ -266,8 +266,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **downloadFile**
-> MultipartFile downloadFile(id, key)
+# **downloadFileOld**
+> MultipartFile downloadFileOld(id, key)
 
 
 
@@ -294,10 +294,10 @@ final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadFile(id, key);
+    final result = api_instance.downloadFileOld(id, key);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->downloadFile: $e\n');
+    print('Exception when calling AssetApi->downloadFileOld: $e\n');
 }
 ```
 
@@ -888,8 +888,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getDownloadInfo**
-> DownloadResponseDto getDownloadInfo(downloadInfoDto, key)
+# **getDownloadInfoOld**
+> DownloadResponseDto getDownloadInfoOld(downloadInfoDto, key)
 
 
 
@@ -916,10 +916,10 @@ final downloadInfoDto = DownloadInfoDto(); // DownloadInfoDto |
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getDownloadInfo(downloadInfoDto, key);
+    final result = api_instance.getDownloadInfoOld(downloadInfoDto, key);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->getDownloadInfo: $e\n');
+    print('Exception when calling AssetApi->getDownloadInfoOld: $e\n');
 }
 ```
 

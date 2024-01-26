@@ -94,8 +94,8 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
-*AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
-*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
+*AssetApi* | [**downloadArchiveOld**](doc//AssetApi.md#downloadarchiveold) | **POST** /asset/download/archive | 
+*AssetApi* | [**downloadFileOld**](doc//AssetApi.md#downloadfileold) | **POST** /asset/download/{id} | 
 *AssetApi* | [**emptyTrash**](doc//AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAllUserAssetsByDeviceId**](doc//AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
@@ -106,7 +106,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-*AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
+*AssetApi* | [**getDownloadInfoOld**](doc//AssetApi.md#getdownloadinfoold) | **POST** /asset/download/info | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
@@ -133,6 +133,9 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logoutAuthDevices**](doc//AuthenticationApi.md#logoutauthdevices) | **DELETE** /auth/devices | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
+*DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
+*DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /face | 
 *FaceApi* | [**reassignFacesById**](doc//FaceApi.md#reassignfacesbyid) | **PUT** /face/{id} | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 

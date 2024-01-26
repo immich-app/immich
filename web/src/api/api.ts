@@ -7,6 +7,7 @@ import {
   AssetJobName,
   AuditApi,
   AuthenticationApi,
+  DownloadApi,
   FaceApi,
   JobApi,
   JobName,
@@ -29,6 +30,7 @@ import type { ApiParams } from './types';
 class ImmichApi {
   public activityApi: ActivityApi;
   public albumApi: AlbumApi;
+  public downloadApi: DownloadApi;
   public libraryApi: LibraryApi;
   public assetApi: AssetApi;
   public auditApi: AuditApi;
@@ -58,6 +60,7 @@ class ImmichApi {
     this.activityApi = new ActivityApi(this.config);
     this.albumApi = new AlbumApi(this.config);
     this.auditApi = new AuditApi(this.config);
+    this.downloadApi = new DownloadApi(this.config);
     this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.authenticationApi = new AuthenticationApi(this.config);
