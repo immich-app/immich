@@ -11,7 +11,6 @@ Name | Type | Description | Notes
 **clipEncode** | **bool** |  | 
 **configFile** | **bool** |  | 
 **facialRecognition** | **bool** |  | 
-**libraryWatch** | **bool** |  | 
 **map** | **bool** |  | 
 **oauth** | **bool** |  | 
 **oauthAutoLaunch** | **bool** |  | 

@@ -7903,9 +7903,6 @@
             },
             "type": "array"
           },
-          "isWatched": {
-            "type": "boolean"
-          },
           "name": {
             "type": "string"
           },
@@ -7931,7 +7928,6 @@
           "exclusionPatterns",
           "id",
           "importPaths",
-          "isWatched",
           "name",
           "ownerId",
           "refreshedAt",
@@ -8700,9 +8696,6 @@
           "facialRecognition": {
             "type": "boolean"
           },
-          "libraryWatch": {
-            "type": "boolean"
-          },
           "map": {
             "type": "boolean"
           },
@@ -8732,7 +8725,6 @@
           "clipEncode",
           "configFile",
           "facialRecognition",
-          "libraryWatch",
           "map",
           "oauth",
           "oauthAutoLaunch",
@@ -9307,9 +9299,6 @@
       },
       "SystemConfigLibraryWatchDto": {
         "properties": {
-          "binaryInterval": {
-            "type": "integer"
-          },
           "enabled": {
             "type": "boolean"
           },
@@ -9321,7 +9310,6 @@
           }
         },
         "required": [
-          "binaryInterval",
           "enabled",
           "interval",
           "usePolling"
@@ -9759,9 +9747,6 @@
             "type": "array"
           },
           "isVisible": {
-            "type": "boolean"
-          },
-          "isWatched": {
             "type": "boolean"
           },
           "name": {

@@ -16,7 +16,6 @@ class UpdateLibraryDto {
     this.exclusionPatterns = const [],
     this.importPaths = const [],
     this.isVisible,
-    this.isWatched,
     this.name,
   });
 
@@ -38,14 +37,6 @@ class UpdateLibraryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isWatched;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? name;
 
   @override
@@ -53,7 +44,6 @@ class UpdateLibraryDto {
      other.exclusionPatterns == exclusionPatterns &&
      other.importPaths == importPaths &&
      other.isVisible == isVisible &&
-     other.isWatched == isWatched &&
      other.name == name;
 
   @override
@@ -62,11 +52,10 @@ class UpdateLibraryDto {
     (exclusionPatterns.hashCode) +
     (importPaths.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
-    (isWatched == null ? 0 : isWatched!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'UpdateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, isWatched=$isWatched, name=$name]';
+  String toString() => 'UpdateLibraryDto[exclusionPatterns=$exclusionPatterns, importPaths=$importPaths, isVisible=$isVisible, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -76,11 +65,6 @@ class UpdateLibraryDto {
       json[r'isVisible'] = this.isVisible;
     } else {
     //  json[r'isVisible'] = null;
-    }
-    if (this.isWatched != null) {
-      json[r'isWatched'] = this.isWatched;
-    } else {
-    //  json[r'isWatched'] = null;
     }
     if (this.name != null) {
       json[r'name'] = this.name;
@@ -105,7 +89,6 @@ class UpdateLibraryDto {
             ? (json[r'importPaths'] as List).cast<String>()
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
-        isWatched: mapValueOfType<bool>(json, r'isWatched'),
         name: mapValueOfType<String>(json, r'name'),
       );
     }

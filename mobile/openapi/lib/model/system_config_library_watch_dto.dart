@@ -13,13 +13,10 @@ part of openapi.api;
 class SystemConfigLibraryWatchDto {
   /// Returns a new [SystemConfigLibraryWatchDto] instance.
   SystemConfigLibraryWatchDto({
-    required this.binaryInterval,
     required this.enabled,
     required this.interval,
     required this.usePolling,
   });
-
-  int binaryInterval;
 
   bool enabled;
 
@@ -29,7 +26,6 @@ class SystemConfigLibraryWatchDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigLibraryWatchDto &&
-     other.binaryInterval == binaryInterval &&
      other.enabled == enabled &&
      other.interval == interval &&
      other.usePolling == usePolling;
@@ -37,17 +33,15 @@ class SystemConfigLibraryWatchDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (binaryInterval.hashCode) +
     (enabled.hashCode) +
     (interval.hashCode) +
     (usePolling.hashCode);
 
   @override
-  String toString() => 'SystemConfigLibraryWatchDto[binaryInterval=$binaryInterval, enabled=$enabled, interval=$interval, usePolling=$usePolling]';
+  String toString() => 'SystemConfigLibraryWatchDto[enabled=$enabled, interval=$interval, usePolling=$usePolling]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'binaryInterval'] = this.binaryInterval;
       json[r'enabled'] = this.enabled;
       json[r'interval'] = this.interval;
       json[r'usePolling'] = this.usePolling;
@@ -62,7 +56,6 @@ class SystemConfigLibraryWatchDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigLibraryWatchDto(
-        binaryInterval: mapValueOfType<int>(json, r'binaryInterval')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         interval: mapValueOfType<int>(json, r'interval')!,
         usePolling: mapValueOfType<bool>(json, r'usePolling')!,
@@ -113,7 +106,6 @@ class SystemConfigLibraryWatchDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'binaryInterval',
     'enabled',
     'interval',
     'usePolling',

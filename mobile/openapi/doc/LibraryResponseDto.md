@@ -13,7 +13,6 @@ Name | Type | Description | Notes
 **exclusionPatterns** | **List<String>** |  | [default to const []]
 **id** | **String** |  | 
 **importPaths** | **List<String>** |  | [default to const []]
-**isWatched** | **bool** |  | 
 **name** | **String** |  | 
 **ownerId** | **String** |  | 
 **refreshedAt** | [**DateTime**](DateTime.md) |  | 

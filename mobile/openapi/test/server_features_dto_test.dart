@@ -31,11 +31,6 @@ void main() {
       // TODO
     });
 
-    // bool libraryWatch
-    test('to test the property `libraryWatch`', () async {
-      // TODO
-    });
-
     // bool map
     test('to test the property `map`', () async {
       // TODO

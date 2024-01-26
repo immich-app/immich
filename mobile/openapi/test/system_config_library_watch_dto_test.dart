@@ -16,11 +16,6 @@ void main() {
   // final instance = SystemConfigLibraryWatchDto();
 
   group('test SystemConfigLibraryWatchDto', () {
-    // int binaryInterval
-    test('to test the property `binaryInterval`', () async {
-      // TODO
-    });
-
     // bool enabled
     test('to test the property `enabled`', () async {
       // TODO

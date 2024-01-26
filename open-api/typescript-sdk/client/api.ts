@@ -2078,12 +2078,6 @@ export interface LibraryResponseDto {
     'importPaths': Array<string>;
     /**
      * 
-     * @type {boolean}
-     * @memberof LibraryResponseDto
-     */
-    'isWatched': boolean;
-    /**
-     * 
      * @type {string}
      * @memberof LibraryResponseDto
      */
@@ -3110,12 +3104,6 @@ export interface ServerFeaturesDto {
      * @type {boolean}
      * @memberof ServerFeaturesDto
      */
-    'libraryWatch': boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof ServerFeaturesDto
-     */
     'map': boolean;
     /**
      * 
@@ -3900,12 +3888,6 @@ export interface SystemConfigLibraryScanDto {
 export interface SystemConfigLibraryWatchDto {
     /**
      * 
-     * @type {number}
-     * @memberof SystemConfigLibraryWatchDto
-     */
-    'binaryInterval': number;
-    /**
-     * 
      * @type {boolean}
      * @memberof SystemConfigLibraryWatchDto
      */
@@ -4518,12 +4500,6 @@ export interface UpdateLibraryDto {
      * @memberof UpdateLibraryDto
      */
     'isVisible'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UpdateLibraryDto
-     */
-    'isWatched'?: boolean;
     /**
      * 
      * @type {string}
