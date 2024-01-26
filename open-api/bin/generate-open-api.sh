@@ -19,11 +19,7 @@ function dart {
 
 function typescript {
   rm -rf ./typescript-sdk/client
-  cd ./templates/typescript
-  wget -O apiInner.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/typescript-axios/apiInner.mustache
-  patch -u apiInner.mustache < apiInner.mustache.patch
-  cd ../..
-  npx --yes @openapitools/openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ./typescript-sdk/client -t ./templates/typescript --additional-properties=useSingleRequestParameter=true
+  npx --yes @openapitools/openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ./typescript-sdk/client --additional-properties=useSingleRequestParameter=true
   npm --prefix typescript-sdk ci && npm --prefix typescript-sdk run build
 }
 

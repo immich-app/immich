@@ -165,7 +165,7 @@ class AssetApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  Future<Response> downloadArchiveWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
+  Future<Response> downloadArchiveOldWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/archive';
 
@@ -199,8 +199,8 @@ class AssetApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadArchive(AssetIdsDto assetIdsDto, { String? key, }) async {
-    final response = await downloadArchiveWithHttpInfo(assetIdsDto,  key: key, );
+  Future<MultipartFile?> downloadArchiveOld(AssetIdsDto assetIdsDto, { String? key, }) async {
+    final response = await downloadArchiveOldWithHttpInfo(assetIdsDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -220,7 +220,7 @@ class AssetApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<Response> downloadFileWithHttpInfo(String id, { String? key, }) async {
+  Future<Response> downloadFileOldWithHttpInfo(String id, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/{id}'
       .replaceAll('{id}', id);
@@ -255,8 +255,8 @@ class AssetApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadFile(String id, { String? key, }) async {
-    final response = await downloadFileWithHttpInfo(id,  key: key, );
+  Future<MultipartFile?> downloadFileOld(String id, { String? key, }) async {
+    final response = await downloadFileOldWithHttpInfo(id,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -853,7 +853,7 @@ class AssetApi {
   /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
+  Future<Response> getDownloadInfoOldWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/info';
 
@@ -887,8 +887,8 @@ class AssetApi {
   /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
-    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, );
+  Future<DownloadResponseDto?> getDownloadInfoOld(DownloadInfoDto downloadInfoDto, { String? key, }) async {
+    final response = await getDownloadInfoOldWithHttpInfo(downloadInfoDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -5,6 +5,7 @@ export * from './app.controller';
 export * from './asset.controller';
 export * from './audit.controller';
 export * from './auth.controller';
+export * from './download.controller';
 export * from './face.controller';
 export * from './job.controller';
 export * from './library.controller';

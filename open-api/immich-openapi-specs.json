@@ -1267,7 +1267,7 @@
     },
     "/asset/download/archive": {
       "post": {
-        "operationId": "downloadArchive",
+        "operationId": "downloadArchiveOld",
         "parameters": [
           {
             "name": "key",
@@ -1319,7 +1319,7 @@
     },
     "/asset/download/info": {
       "post": {
-        "operationId": "getDownloadInfo",
+        "operationId": "getDownloadInfoOld",
         "parameters": [
           {
             "name": "key",
@@ -1370,7 +1370,7 @@
     },
     "/asset/download/{id}": {
       "post": {
-        "operationId": "downloadFile",
+        "operationId": "downloadFileOld",
         "parameters": [
           {
             "name": "id",
@@ -3214,6 +3214,160 @@
         ],
         "tags": [
           "Authentication"
+        ]
+      }
+    },
+    "/download/archive": {
+      "post": {
+        "operationId": "downloadArchive",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Download"
+        ]
+      }
+    },
+    "/download/asset/{id}": {
+      "post": {
+        "operationId": "downloadFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Download"
+        ]
+      }
+    },
+    "/download/info": {
+      "post": {
+        "operationId": "getDownloadInfo",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DownloadInfoDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Download"
         ]
       }
     },
