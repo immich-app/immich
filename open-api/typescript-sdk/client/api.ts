@@ -7026,7 +7026,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        emptyTrash: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        emptyTrashOld: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset/trash/empty`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7896,9 +7896,9 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        restoreAssets: async (bulkIdsDto: BulkIdsDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        restoreAssetsOld: async (bulkIdsDto: BulkIdsDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'bulkIdsDto' is not null or undefined
-            assertParamExists('restoreAssets', 'bulkIdsDto', bulkIdsDto)
+            assertParamExists('restoreAssetsOld', 'bulkIdsDto', bulkIdsDto)
             const localVarPath = `/asset/restore`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7939,7 +7939,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        restoreTrash: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        restoreTrashOld: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset/trash/restore`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -8672,10 +8672,10 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async emptyTrash(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.emptyTrash(options);
+        async emptyTrashOld(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.emptyTrashOld(options);
             const index = configuration?.serverIndex ?? 0;
-            const operationBasePath = operationServerMap['AssetApi.emptyTrash']?.[index]?.url;
+            const operationBasePath = operationServerMap['AssetApi.emptyTrashOld']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
         },
         /**
@@ -8899,10 +8899,10 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async restoreAssets(bulkIdsDto: BulkIdsDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.restoreAssets(bulkIdsDto, options);
+        async restoreAssetsOld(bulkIdsDto: BulkIdsDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.restoreAssetsOld(bulkIdsDto, options);
             const index = configuration?.serverIndex ?? 0;
-            const operationBasePath = operationServerMap['AssetApi.restoreAssets']?.[index]?.url;
+            const operationBasePath = operationServerMap['AssetApi.restoreAssetsOld']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
         },
         /**
@@ -8910,10 +8910,10 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async restoreTrash(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.restoreTrash(options);
+        async restoreTrashOld(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.restoreTrashOld(options);
             const index = configuration?.serverIndex ?? 0;
-            const operationBasePath = operationServerMap['AssetApi.restoreTrash']?.[index]?.url;
+            const operationBasePath = operationServerMap['AssetApi.restoreTrashOld']?.[index]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
         },
         /**
@@ -9118,8 +9118,8 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        emptyTrash(options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.emptyTrash(options).then((request) => request(axios, basePath));
+        emptyTrashOld(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.emptyTrashOld(options).then((request) => request(axios, basePath));
         },
         /**
          * Get all AssetEntity belong to the user
@@ -9256,20 +9256,20 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {AssetApiRestoreAssetsRequest} requestParameters Request parameters.
+         * @param {AssetApiRestoreAssetsOldRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        restoreAssets(requestParameters: AssetApiRestoreAssetsRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.restoreAssets(requestParameters.bulkIdsDto, options).then((request) => request(axios, basePath));
+        restoreAssetsOld(requestParameters: AssetApiRestoreAssetsOldRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.restoreAssetsOld(requestParameters.bulkIdsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        restoreTrash(options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.restoreTrash(options).then((request) => request(axios, basePath));
+        restoreTrashOld(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.restoreTrashOld(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9849,15 +9849,15 @@ export interface AssetApiGetTimeBucketsRequest {
 }
 
 /**
- * Request parameters for restoreAssets operation in AssetApi.
+ * Request parameters for restoreAssetsOld operation in AssetApi.
  * @export
- * @interface AssetApiRestoreAssetsRequest
+ * @interface AssetApiRestoreAssetsOldRequest
  */
-export interface AssetApiRestoreAssetsRequest {
+export interface AssetApiRestoreAssetsOldRequest {
     /**
      * 
      * @type {BulkIdsDto}
-     * @memberof AssetApiRestoreAssets
+     * @memberof AssetApiRestoreAssetsOld
      */
     readonly bulkIdsDto: BulkIdsDto
 }
@@ -10434,8 +10434,8 @@ export class AssetApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public emptyTrash(options?: RawAxiosRequestConfig) {
-        return AssetApiFp(this.configuration).emptyTrash(options).then((request) => request(this.axios, this.basePath));
+    public emptyTrashOld(options?: RawAxiosRequestConfig) {
+        return AssetApiFp(this.configuration).emptyTrashOld(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10603,13 +10603,13 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
-     * @param {AssetApiRestoreAssetsRequest} requestParameters Request parameters.
+     * @param {AssetApiRestoreAssetsOldRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public restoreAssets(requestParameters: AssetApiRestoreAssetsRequest, options?: RawAxiosRequestConfig) {
-        return AssetApiFp(this.configuration).restoreAssets(requestParameters.bulkIdsDto, options).then((request) => request(this.axios, this.basePath));
+    public restoreAssetsOld(requestParameters: AssetApiRestoreAssetsOldRequest, options?: RawAxiosRequestConfig) {
+        return AssetApiFp(this.configuration).restoreAssetsOld(requestParameters.bulkIdsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10618,8 +10618,8 @@ export class AssetApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public restoreTrash(options?: RawAxiosRequestConfig) {
-        return AssetApiFp(this.configuration).restoreTrash(options).then((request) => request(this.axios, this.basePath));
+    public restoreTrashOld(options?: RawAxiosRequestConfig) {
+        return AssetApiFp(this.configuration).restoreTrashOld(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -18130,6 +18130,269 @@ export class TagApi extends BaseAPI {
      */
     public updateTag(requestParameters: TagApiUpdateTagRequest, options?: RawAxiosRequestConfig) {
         return TagApiFp(this.configuration).updateTag(requestParameters.id, requestParameters.updateTagDto, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * TrashApi - axios parameter creator
+ * @export
+ */
+export const TrashApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        emptyTrash: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/trash/empty`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {BulkIdsDto} bulkIdsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        restoreAssets: async (bulkIdsDto: BulkIdsDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'bulkIdsDto' is not null or undefined
+            assertParamExists('restoreAssets', 'bulkIdsDto', bulkIdsDto)
+            const localVarPath = `/trash/restore/assets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(bulkIdsDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        restoreTrash: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/trash/restore`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * TrashApi - functional programming interface
+ * @export
+ */
+export const TrashApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = TrashApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async emptyTrash(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.emptyTrash(options);
+            const index = configuration?.serverIndex ?? 0;
+            const operationBasePath = operationServerMap['TrashApi.emptyTrash']?.[index]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {BulkIdsDto} bulkIdsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async restoreAssets(bulkIdsDto: BulkIdsDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.restoreAssets(bulkIdsDto, options);
+            const index = configuration?.serverIndex ?? 0;
+            const operationBasePath = operationServerMap['TrashApi.restoreAssets']?.[index]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async restoreTrash(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.restoreTrash(options);
+            const index = configuration?.serverIndex ?? 0;
+            const operationBasePath = operationServerMap['TrashApi.restoreTrash']?.[index]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, operationBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * TrashApi - factory interface
+ * @export
+ */
+export const TrashApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = TrashApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        emptyTrash(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.emptyTrash(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {TrashApiRestoreAssetsRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        restoreAssets(requestParameters: TrashApiRestoreAssetsRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.restoreAssets(requestParameters.bulkIdsDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        restoreTrash(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.restoreTrash(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * Request parameters for restoreAssets operation in TrashApi.
+ * @export
+ * @interface TrashApiRestoreAssetsRequest
+ */
+export interface TrashApiRestoreAssetsRequest {
+    /**
+     * 
+     * @type {BulkIdsDto}
+     * @memberof TrashApiRestoreAssets
+     */
+    readonly bulkIdsDto: BulkIdsDto
+}
+
+/**
+ * TrashApi - object-oriented interface
+ * @export
+ * @class TrashApi
+ * @extends {BaseAPI}
+ */
+export class TrashApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TrashApi
+     */
+    public emptyTrash(options?: RawAxiosRequestConfig) {
+        return TrashApiFp(this.configuration).emptyTrash(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {TrashApiRestoreAssetsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TrashApi
+     */
+    public restoreAssets(requestParameters: TrashApiRestoreAssetsRequest, options?: RawAxiosRequestConfig) {
+        return TrashApiFp(this.configuration).restoreAssets(requestParameters.bulkIdsDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TrashApi
+     */
+    public restoreTrash(options?: RawAxiosRequestConfig) {
+        return TrashApiFp(this.configuration).restoreTrash(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

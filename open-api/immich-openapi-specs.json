@@ -1734,7 +1734,7 @@
     },
     "/asset/restore": {
       "post": {
-        "operationId": "restoreAssets",
+        "operationId": "restoreAssetsOld",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -2219,7 +2219,7 @@
     },
     "/asset/trash/empty": {
       "post": {
-        "operationId": "emptyTrash",
+        "operationId": "emptyTrashOld",
         "parameters": [],
         "responses": {
           "204": {
@@ -2244,7 +2244,7 @@
     },
     "/asset/trash/restore": {
       "post": {
-        "operationId": "restoreTrash",
+        "operationId": "restoreTrashOld",
         "parameters": [],
         "responses": {
           "204": {
@@ -5980,6 +5980,91 @@
         ],
         "tags": [
           "Tag"
+        ]
+      }
+    },
+    "/trash/empty": {
+      "post": {
+        "operationId": "emptyTrash",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Trash"
+        ]
+      }
+    },
+    "/trash/restore": {
+      "post": {
+        "operationId": "restoreTrash",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Trash"
+        ]
+      }
+    },
+    "/trash/restore/assets": {
+      "post": {
+        "operationId": "restoreAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Trash"
         ]
       }
     },

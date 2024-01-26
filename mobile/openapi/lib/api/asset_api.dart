@@ -271,7 +271,7 @@ class AssetApi {
   }
 
   /// Performs an HTTP 'POST /asset/trash/empty' operation and returns the [Response].
-  Future<Response> emptyTrashWithHttpInfo() async {
+  Future<Response> emptyTrashOldWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/trash/empty';
 
@@ -296,8 +296,8 @@ class AssetApi {
     );
   }
 
-  Future<void> emptyTrash() async {
-    final response = await emptyTrashWithHttpInfo();
+  Future<void> emptyTrashOld() async {
+    final response = await emptyTrashOldWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1327,7 +1327,7 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> restoreAssetsWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
+  Future<Response> restoreAssetsOldWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/restore';
 
@@ -1355,15 +1355,15 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<void> restoreAssets(BulkIdsDto bulkIdsDto,) async {
-    final response = await restoreAssetsWithHttpInfo(bulkIdsDto,);
+  Future<void> restoreAssetsOld(BulkIdsDto bulkIdsDto,) async {
+    final response = await restoreAssetsOldWithHttpInfo(bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
   /// Performs an HTTP 'POST /asset/trash/restore' operation and returns the [Response].
-  Future<Response> restoreTrashWithHttpInfo() async {
+  Future<Response> restoreTrashOldWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/trash/restore';
 
@@ -1388,8 +1388,8 @@ class AssetApi {
     );
   }
 
-  Future<void> restoreTrash() async {
-    final response = await restoreTrashWithHttpInfo();
+  Future<void> restoreTrashOld() async {
+    final response = await restoreTrashOldWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

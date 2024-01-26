@@ -47,6 +47,7 @@ part 'api/server_info_api.dart';
 part 'api/shared_link_api.dart';
 part 'api/system_config_api.dart';
 part 'api/tag_api.dart';
+part 'api/trash_api.dart';
 part 'api/user_api.dart';
 
 part 'model/api_key_create_dto.dart';
