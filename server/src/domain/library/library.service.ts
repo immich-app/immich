@@ -118,15 +118,7 @@ export class LibraryService extends EventEmitter {
     watcher.on('add', async (path) => {
       this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
       if (matcher(path)) {
-        await this.jobRepository.queue({
-          name: JobName.LIBRARY_SCAN_ASSET,
-          data: {
-            id: library.id,
-            assetPath: path,
-            ownerId: library.ownerId,
-            force: false,
-          },
-        });
+        await this.scanAssets(library.id, [path], library.ownerId, false);
       }
       this.emit('add', path);
     });
@@ -136,15 +128,7 @@ export class LibraryService extends EventEmitter {
 
       if (matcher(path)) {
         // Note: if the changed file was not previously imported, it will be imported now.
-        await this.jobRepository.queue({
-          name: JobName.LIBRARY_SCAN_ASSET,
-          data: {
-            id: library.id,
-            assetPath: path,
-            ownerId: library.ownerId,
-            force: false,
-          },
-        });
+        await this.scanAssets(library.id, [path], library.ownerId, false);
       }
       this.emit('change', path);
     });
@@ -270,6 +254,20 @@ export class LibraryService extends EventEmitter {
     }
 
     return mapLibrary(library);
+  }
+
+  private async scanAssets(libraryId: string, assetPaths: string[], ownerId: string, force = false) {
+    await this.jobRepository.queueAll(
+      assetPaths.map((assetPath) => ({
+        name: JobName.LIBRARY_SCAN_ASSET,
+        data: {
+          id: libraryId,
+          assetPath: path.normalize(assetPath),
+          ownerId,
+          force,
+        },
+      })),
+    );
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
@@ -561,17 +559,7 @@ export class LibraryService extends EventEmitter {
         this.logger.debug(`Will import ${filteredPaths.length} new asset(s)`);
       }
 
-      await this.jobRepository.queueAll(
-        filteredPaths.map((assetPath) => ({
-          name: JobName.LIBRARY_SCAN_ASSET,
-          data: {
-            id: job.id,
-            assetPath: path.normalize(assetPath),
-            ownerId: library.ownerId,
-            force: job.refreshAllFiles ?? false,
-          },
-        })),
-      );
+      await this.scanAssets(job.id, filteredPaths, library.ownerId, job.refreshAllFiles ?? false);
     }
 
     await this.repository.update({ id: job.id, refreshedAt: new Date() });
