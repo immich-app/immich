@@ -175,6 +175,34 @@ describe(LibraryService.name, () => {
       ]);
     });
 
+    it('should force queue new assets', async () => {
+      const mockLibraryJob: ILibraryRefreshJob = {
+        id: libraryStub.externalLibrary1.id,
+        refreshModifiedFiles: false,
+        refreshAllFiles: true,
+      };
+
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      storageMock.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
+      assetMock.getByLibraryId.mockResolvedValue([]);
+      libraryMock.getOnlineAssetPaths.mockResolvedValue([]);
+      userMock.get.mockResolvedValue(userStub.externalPath1);
+
+      await sut.handleQueueAssetRefresh(mockLibraryJob);
+
+      expect(jobMock.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.LIBRARY_SCAN_ASSET,
+          data: {
+            id: libraryStub.externalLibrary1.id,
+            ownerId: libraryStub.externalLibrary1.owner.id,
+            assetPath: '/data/user1/photo.jpg',
+            force: true,
+          },
+        },
+      ]);
+    });
+
     it("should mark assets outside of the user's external path as offline", async () => {
       const mockLibraryJob: ILibraryRefreshJob = {
         id: libraryStub.externalLibrary1.id,
@@ -654,16 +682,28 @@ describe(LibraryService.name, () => {
     });
 
     it('should unwatch an external library when deleted', async () => {
-      // TODO: refactor
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
-
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       libraryMock.getUploadLibraryCount.mockResolvedValue(1);
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
 
-      await sut.delete(authStub.admin, libraryStub.externalLibrary1.id);
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
 
-      expect(libraryMock.softDelete).toHaveBeenCalledWith(libraryStub.externalLibrary1.id);
+      const mockWatcher = newFSWatcherMock();
+
+      mockWatcher.on.mockImplementation((event, callback) => {
+        if (event === 'ready') {
+          callback();
+        }
+      });
+
+      storageMock.watch.mockReturnValue(mockWatcher);
+
+      await sut.init();
+      await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
+
+      await sut.delete(authStub.admin, libraryStub.externalLibraryWithImportPaths1.id);
+
+      expect(mockWatcher.close).toHaveBeenCalled();
     });
   });
 
@@ -862,6 +902,33 @@ describe(LibraryService.name, () => {
             exclusionPatterns: [],
             isVisible: true,
           }),
+        );
+      });
+
+      it('should create watched with import paths', async () => {
+        configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+        libraryMock.create.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+        libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+
+        const mockWatcher = newFSWatcherMock();
+
+        mockWatcher.on.mockImplementation((event, callback) => {
+          if (event === 'ready') {
+            callback();
+          }
+        });
+
+        storageMock.watch.mockReturnValue(mockWatcher);
+
+        await sut.init();
+        await sut.create(authStub.admin, {
+          type: LibraryType.EXTERNAL,
+          importPaths: libraryStub.externalLibraryWithImportPaths1.importPaths,
+        });
+
+        expect(storageMock.watch).toHaveBeenCalledWith(
+          libraryStub.externalLibraryWithImportPaths1.importPaths,
+          expect.anything(),
         );
       });
 
@@ -1178,15 +1245,17 @@ describe(LibraryService.name, () => {
 
         await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
 
-        expect(jobMock.queue).toHaveBeenCalledWith({
-          name: JobName.LIBRARY_SCAN_ASSET,
-          data: {
-            id: libraryStub.externalLibraryWithImportPaths1.id,
-            assetPath: '/foo/photo.jpg',
-            ownerId: libraryStub.externalLibraryWithImportPaths1.owner.id,
-            force: false,
+        expect(jobMock.queueAll).toHaveBeenCalledWith([
+          {
+            name: JobName.LIBRARY_SCAN_ASSET,
+            data: {
+              id: libraryStub.externalLibraryWithImportPaths1.id,
+              assetPath: '/foo/photo.jpg',
+              ownerId: libraryStub.externalLibraryWithImportPaths1.owner.id,
+              force: false,
+            },
           },
-        });
+        ]);
       });
 
       it('should handle a file change event', async () => {
@@ -1202,15 +1271,17 @@ describe(LibraryService.name, () => {
 
         await expect(sut.watch(libraryStub.externalLibraryWithImportPaths1.id)).resolves.toBeTruthy();
 
-        expect(jobMock.queue).toHaveBeenCalledWith({
-          name: JobName.LIBRARY_SCAN_ASSET,
-          data: {
-            id: libraryStub.externalLibraryWithImportPaths1.id,
-            assetPath: '/foo/photo.jpg',
-            ownerId: libraryStub.externalLibraryWithImportPaths1.owner.id,
-            force: false,
+        expect(jobMock.queueAll).toHaveBeenCalledWith([
+          {
+            name: JobName.LIBRARY_SCAN_ASSET,
+            data: {
+              id: libraryStub.externalLibraryWithImportPaths1.id,
+              assetPath: '/foo/photo.jpg',
+              ownerId: libraryStub.externalLibraryWithImportPaths1.owner.id,
+              force: false,
+            },
           },
-        });
+        ]);
       });
 
       it('should handle a file unlink event', async () => {
@@ -1340,6 +1411,54 @@ describe(LibraryService.name, () => {
           (libraryStub.externalLibrary2.importPaths, expect.anything()),
         ]),
       );
+    });
+
+    it('should not initialize when watching is disabled', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
+
+      await sut.init();
+      await expect(sut.watchAll()).resolves.toBeFalsy();
+
+      expect(storageMock.watch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('tearDown', () => {
+    it('should tear down all watchers', async () => {
+      libraryMock.getAll.mockResolvedValue([
+        libraryStub.externalLibraryWithImportPaths1,
+        libraryStub.externalLibraryWithImportPaths2,
+      ]);
+
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+
+      libraryMock.get.mockImplementation(async (id) => {
+        switch (id) {
+          case libraryStub.externalLibraryWithImportPaths1.id:
+            return libraryStub.externalLibraryWithImportPaths1;
+          case libraryStub.externalLibraryWithImportPaths2.id:
+            return libraryStub.externalLibraryWithImportPaths2;
+          default:
+            return null;
+        }
+      });
+
+      const mockWatcher = newFSWatcherMock();
+
+      mockWatcher.on.mockImplementation((event, callback) => {
+        if (event === 'ready') {
+          callback();
+        }
+      });
+
+      storageMock.watch.mockReturnValue(mockWatcher);
+
+      await sut.init();
+      await expect(sut.watchAll()).resolves.toBeTruthy();
+      await sut.teardown();
+
+      expect(mockWatcher.close).toHaveBeenCalledTimes(2);
     });
   });
 
