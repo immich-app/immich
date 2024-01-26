@@ -91,7 +91,7 @@ class CustomRichHandler(RichHandler):
                 if any(excluded in tb.tb_frame.f_code.co_filename for excluded in self.excluded):
                     tb.tb_frame.f_locals["_rich_traceback_omit"] = True
                 tb = tb.tb_next
-            
+
         return super().emit(record)
 
 
