@@ -1,13 +1,21 @@
 import 'dart:io';
+import 'dart:math' as math;
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asset_extensions.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/asset_people.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
 import 'package:immich_mobile/modules/map/widgets/map_thumbnail.dart';
+import 'package:immich_mobile/modules/search/models/curated_content.dart';
+import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
+import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
@@ -24,6 +32,10 @@ class ExifBottomSheet extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assetWithExif = ref.watch(assetDetailProvider(asset));
     final exifInfo = (assetWithExif.value ?? asset).exifInfo;
+    final peopleProvider =
+        ref.watch(assetPeopleNotifierProvider(asset).notifier);
+    final people = ref.watch(assetPeopleNotifierProvider(asset));
+    final double imageSize = math.min(context.width / 3, 150);
     var textColor = context.isDarkTheme ? Colors.white : Colors.black;
 
     bool hasCoordinates() =>
@@ -209,6 +221,69 @@ class ExifBottomSheet extends HookConsumerWidget {
             ],
           ),
         ],
+      );
+    }
+
+    showPersonNameEditModel(
+      String personId,
+      String personName,
+    ) {
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return PersonNameEditForm(personId: personId, personName: personName);
+        },
+      ).then((_) {
+        // ensure the people list is up-to-date.
+        peopleProvider.refresh();
+      });
+    }
+
+    buildPeople() {
+      return people.widgetWhen(
+        onData: (data) {
+          // either the server is not reachable or this asset has no people
+          if (data.isEmpty) {
+            return Container();
+          }
+
+          final curatedPeople =
+              data.map((p) => CuratedContent(id: p.id, label: p.name)).toList();
+
+          return Column(
+            children: [
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  "exif_bottom_sheet_people",
+                  style: context.textTheme.labelMedium?.copyWith(
+                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ).tr(),
+              ),
+              SizedBox(
+                height: imageSize,
+                child: CuratedPeopleRow(
+                  content: curatedPeople,
+                  onTap: (content, index) {
+                    context
+                        .pushRoute(
+                          PersonResultRoute(
+                            personId: content.id,
+                            personName: content.label,
+                          ),
+                        )
+                        .then((_) => peopleProvider.refresh());
+                  },
+                  onNameTap: (person, index) => {
+                    showPersonNameEditModel(person.id, person.label),
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       );
     }
 
