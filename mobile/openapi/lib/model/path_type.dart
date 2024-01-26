@@ -44,7 +44,7 @@ class PathType {
 
   static PathType? fromJson(dynamic value) => PathTypeTypeTransformer().decode(value);
 
-  static List<PathType>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PathType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <PathType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

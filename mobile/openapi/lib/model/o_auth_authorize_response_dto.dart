@@ -20,7 +20,7 @@ class OAuthAuthorizeResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthAuthorizeResponseDto &&
-     other.url == url;
+    other.url == url;
 
   @override
   int get hashCode =>

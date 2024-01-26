@@ -23,8 +23,8 @@ class SystemConfigTrashDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigTrashDto &&
-     other.days == days &&
-     other.enabled == enabled;
+    other.days == days &&
+    other.enabled == enabled;
 
   @override
   int get hashCode =>

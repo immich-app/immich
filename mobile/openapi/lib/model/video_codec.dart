@@ -36,7 +36,7 @@ class VideoCodec {
 
   static VideoCodec? fromJson(dynamic value) => VideoCodecTypeTransformer().decode(value);
 
-  static List<VideoCodec>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<VideoCodec> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <VideoCodec>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

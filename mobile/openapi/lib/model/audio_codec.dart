@@ -36,7 +36,7 @@ class AudioCodec {
 
   static AudioCodec? fromJson(dynamic value) => AudioCodecTypeTransformer().decode(value);
 
-  static List<AudioCodec>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AudioCodec> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AudioCodec>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

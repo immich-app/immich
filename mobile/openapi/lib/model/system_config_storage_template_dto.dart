@@ -26,9 +26,9 @@ class SystemConfigStorageTemplateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigStorageTemplateDto &&
-     other.enabled == enabled &&
-     other.hashVerificationEnabled == hashVerificationEnabled &&
-     other.template == template;
+    other.enabled == enabled &&
+    other.hashVerificationEnabled == hashVerificationEnabled &&
+    other.template == template;
 
   @override
   int get hashCode =>

@@ -177,7 +177,7 @@ class ActivityApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<ActivityResponseDto>') as List)
         .cast<ActivityResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

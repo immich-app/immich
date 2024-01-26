@@ -34,7 +34,7 @@ class LibraryType {
 
   static LibraryType? fromJson(dynamic value) => LibraryTypeTypeTransformer().decode(value);
 
-  static List<LibraryType>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<LibraryType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <LibraryType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

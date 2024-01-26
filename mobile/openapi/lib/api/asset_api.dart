@@ -408,7 +408,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -464,7 +464,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
         .cast<String>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -625,7 +625,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
         .cast<String>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -797,7 +797,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<CuratedLocationsResponseDto>') as List)
         .cast<CuratedLocationsResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -841,7 +841,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<CuratedObjectsResponseDto>') as List)
         .cast<CuratedObjectsResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -971,7 +971,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<MapMarkerResponseDto>') as List)
         .cast<MapMarkerResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1028,7 +1028,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<MemoryLaneResponseDto>') as List)
         .cast<MemoryLaneResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1082,7 +1082,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1202,7 +1202,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1317,7 +1317,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<TimeBucketResponseDto>') as List)
         .cast<TimeBucketResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1755,7 +1755,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

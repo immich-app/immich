@@ -41,14 +41,14 @@ class SystemConfigTemplateStorageOptionDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplateStorageOptionDto &&
-     other.dayOptions == dayOptions &&
-     other.hourOptions == hourOptions &&
-     other.minuteOptions == minuteOptions &&
-     other.monthOptions == monthOptions &&
-     other.presetOptions == presetOptions &&
-     other.secondOptions == secondOptions &&
-     other.weekOptions == weekOptions &&
-     other.yearOptions == yearOptions;
+    _deepEquality.equals(other.dayOptions, dayOptions) &&
+    _deepEquality.equals(other.hourOptions, hourOptions) &&
+    _deepEquality.equals(other.minuteOptions, minuteOptions) &&
+    _deepEquality.equals(other.monthOptions, monthOptions) &&
+    _deepEquality.equals(other.presetOptions, presetOptions) &&
+    _deepEquality.equals(other.secondOptions, secondOptions) &&
+    _deepEquality.equals(other.weekOptions, weekOptions) &&
+    _deepEquality.equals(other.yearOptions, yearOptions);
 
   @override
   int get hashCode =>
@@ -86,29 +86,29 @@ class SystemConfigTemplateStorageOptionDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigTemplateStorageOptionDto(
-        dayOptions: json[r'dayOptions'] is List
-            ? (json[r'dayOptions'] as List).cast<String>()
+        dayOptions: json[r'dayOptions'] is Iterable
+            ? (json[r'dayOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        hourOptions: json[r'hourOptions'] is List
-            ? (json[r'hourOptions'] as List).cast<String>()
+        hourOptions: json[r'hourOptions'] is Iterable
+            ? (json[r'hourOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        minuteOptions: json[r'minuteOptions'] is List
-            ? (json[r'minuteOptions'] as List).cast<String>()
+        minuteOptions: json[r'minuteOptions'] is Iterable
+            ? (json[r'minuteOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        monthOptions: json[r'monthOptions'] is List
-            ? (json[r'monthOptions'] as List).cast<String>()
+        monthOptions: json[r'monthOptions'] is Iterable
+            ? (json[r'monthOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        presetOptions: json[r'presetOptions'] is List
-            ? (json[r'presetOptions'] as List).cast<String>()
+        presetOptions: json[r'presetOptions'] is Iterable
+            ? (json[r'presetOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        secondOptions: json[r'secondOptions'] is List
-            ? (json[r'secondOptions'] as List).cast<String>()
+        secondOptions: json[r'secondOptions'] is Iterable
+            ? (json[r'secondOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        weekOptions: json[r'weekOptions'] is List
-            ? (json[r'weekOptions'] as List).cast<String>()
+        weekOptions: json[r'weekOptions'] is Iterable
+            ? (json[r'weekOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        yearOptions: json[r'yearOptions'] is List
-            ? (json[r'yearOptions'] as List).cast<String>()
+        yearOptions: json[r'yearOptions'] is Iterable
+            ? (json[r'yearOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

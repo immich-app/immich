@@ -377,17 +377,18 @@ Class | Method | HTTP request | Description
 ## Documentation For Authorization
 
 
-## bearer
+Authentication schemes defined for the API:
+### bearer
 
 - **Type**: HTTP Bearer authentication
 
-## cookie
+### cookie
 
 - **Type**: API key
 - **API key parameter name**: immich_access_token
 - **Location**: 
 
-## api_key
+### api_key
 
 - **Type**: API key
 - **API key parameter name**: x-api-key

@@ -68,23 +68,23 @@ class SystemConfigFFmpegDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegDto &&
-     other.accel == accel &&
-     other.bframes == bframes &&
-     other.cqMode == cqMode &&
-     other.crf == crf &&
-     other.gopSize == gopSize &&
-     other.maxBitrate == maxBitrate &&
-     other.npl == npl &&
-     other.preset == preset &&
-     other.refs == refs &&
-     other.targetAudioCodec == targetAudioCodec &&
-     other.targetResolution == targetResolution &&
-     other.targetVideoCodec == targetVideoCodec &&
-     other.temporalAQ == temporalAQ &&
-     other.threads == threads &&
-     other.tonemap == tonemap &&
-     other.transcode == transcode &&
-     other.twoPass == twoPass;
+    other.accel == accel &&
+    other.bframes == bframes &&
+    other.cqMode == cqMode &&
+    other.crf == crf &&
+    other.gopSize == gopSize &&
+    other.maxBitrate == maxBitrate &&
+    other.npl == npl &&
+    other.preset == preset &&
+    other.refs == refs &&
+    other.targetAudioCodec == targetAudioCodec &&
+    other.targetResolution == targetResolution &&
+    other.targetVideoCodec == targetVideoCodec &&
+    other.temporalAQ == temporalAQ &&
+    other.threads == threads &&
+    other.tonemap == tonemap &&
+    other.transcode == transcode &&
+    other.twoPass == twoPass;
 
   @override
   int get hashCode =>

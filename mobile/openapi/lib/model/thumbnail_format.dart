@@ -34,7 +34,7 @@ class ThumbnailFormat {
 
   static ThumbnailFormat? fromJson(dynamic value) => ThumbnailFormatTypeTransformer().decode(value);
 
-  static List<ThumbnailFormat>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ThumbnailFormat> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ThumbnailFormat>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
