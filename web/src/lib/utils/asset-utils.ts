@@ -47,7 +47,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
-    const { data } = await api.assetApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
+    const { data } = await api.downloadApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
     downloadInfo = data;
   } catch (error) {
     handleError(error, 'Unable to download files');
@@ -71,7 +71,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadManager.add(downloadKey, archive.size, abort);
 
     try {
-      const { data } = await api.assetApi.downloadArchive(
+      const { data } = await api.downloadApi.downloadArchive(
         { assetIdsDto: { assetIds: archive.assetIds }, key: api.getKey() },
         {
           responseType: 'blob',
@@ -121,7 +121,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       const abort = new AbortController();
       downloadManager.add(downloadKey, size, abort);
 
-      const { data } = await api.assetApi.downloadFile(
+      const { data } = await api.downloadApi.downloadFile(
         { id, key: api.getKey() },
         {
           responseType: 'blob',
