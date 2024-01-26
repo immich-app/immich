@@ -11,7 +11,7 @@ import path from 'path';
 import { EventEmitter } from 'stream';
 import { Server } from 'tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
-import { AppService } from '../../src/microservices/app.service';
+import { AppService, AppService as MicroAppService } from '../../src/microservices/app.service';
 
 export const IMMICH_TEST_ASSET_PATH = process.env.IMMICH_TEST_ASSET_PATH as string;
 export const IMMICH_TEST_ASSET_TEMP_PATH = path.normalize(`${IMMICH_TEST_ASSET_PATH}/temp/`);
@@ -62,7 +62,10 @@ let app: INestApplication;
 
 export const testApp = {
   create: async (): Promise<INestApplication> => {
-    const moduleFixture = await Test.createTestingModule({ imports: [AppModule], providers: [AppService] })
+    const moduleFixture = await Test.createTestingModule({
+      imports: [AppModule],
+      providers: [AppService, MicroAppService],
+    })
       .overrideModule(InfraModule)
       .useModule(InfraTestModule)
       .overrideProvider(IJobRepository)
@@ -89,6 +92,7 @@ export const testApp = {
     await app.listen(0);
     await db.reset();
     await app.get(AppService).init();
+    await app.get(MicroAppService).init();
 
     const port = app.getHttpServer().address().port;
     const protocol = app instanceof Server ? 'https' : 'http';
@@ -99,10 +103,13 @@ export const testApp = {
   reset: async (options?: ResetOptions) => {
     await db.reset(options);
     await app.get(AppService).init();
+
+    await app.get(MicroAppService).init();
   },
   get: (member: any) => app.get(member),
   teardown: async () => {
     if (app) {
+      await app.get(MicroAppService).teardown();
       await app.get(AppService).teardown();
       await app.close();
     }

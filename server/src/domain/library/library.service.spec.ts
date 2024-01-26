@@ -126,6 +126,54 @@ describe(LibraryService.name, () => {
 
       expect(jobMock.updateCronJob).toHaveBeenCalledWith('libraryScan', '0 1 * * *', true);
     });
+
+    it('should initialize watcher for all external libraries', async () => {
+      libraryMock.getAll.mockResolvedValue([
+        libraryStub.externalLibraryWithImportPaths1,
+        libraryStub.externalLibraryWithImportPaths2,
+      ]);
+
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
+
+      libraryMock.get.mockImplementation(async (id) => {
+        switch (id) {
+          case libraryStub.externalLibraryWithImportPaths1.id:
+            return libraryStub.externalLibraryWithImportPaths1;
+          case libraryStub.externalLibraryWithImportPaths2.id:
+            return libraryStub.externalLibraryWithImportPaths2;
+          default:
+            return null;
+        }
+      });
+
+      const mockWatcher = newFSWatcherMock();
+
+      mockWatcher.on.mockImplementation((event, callback) => {
+        if (event === 'ready') {
+          callback();
+        }
+      });
+
+      storageMock.watch.mockReturnValue(mockWatcher);
+
+      await sut.init();
+
+      expect(storageMock.watch.mock.calls).toEqual(
+        expect.arrayContaining([
+          (libraryStub.externalLibrary1.importPaths, expect.anything()),
+          (libraryStub.externalLibrary2.importPaths, expect.anything()),
+        ]),
+      );
+    });
+
+    it('should not initialize when watching is disabled', async () => {
+      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
+
+      await sut.init();
+
+      expect(storageMock.watch).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleQueueAssetRefresh', () => {
@@ -685,6 +733,7 @@ describe(LibraryService.name, () => {
       assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
       libraryMock.getUploadLibraryCount.mockResolvedValue(1);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+      libraryMock.getAll.mockResolvedValue([]);
 
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
 
@@ -909,6 +958,7 @@ describe(LibraryService.name, () => {
         configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
         libraryMock.create.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
+        libraryMock.getAll.mockResolvedValue([]);
 
         const mockWatcher = newFSWatcherMock();
 
@@ -1082,6 +1132,7 @@ describe(LibraryService.name, () => {
   describe('update', () => {
     beforeEach(async () => {
       configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
+      libraryMock.getAll.mockResolvedValue([]);
 
       await sut.init();
     });
@@ -1169,7 +1220,7 @@ describe(LibraryService.name, () => {
       const mockWatcher = newFSWatcherMock();
       beforeEach(async () => {
         configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
-
+        libraryMock.getAll.mockResolvedValue([]);
         await sut.init();
 
         storageMock.watch.mockReturnValue(mockWatcher);
@@ -1371,58 +1422,6 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('watchAll', () => {
-    it('should initialize watcher for all external libraries', async () => {
-      libraryMock.getAll.mockResolvedValue([
-        libraryStub.externalLibraryWithImportPaths1,
-        libraryStub.externalLibraryWithImportPaths2,
-      ]);
-
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
-      libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
-
-      libraryMock.get.mockImplementation(async (id) => {
-        switch (id) {
-          case libraryStub.externalLibraryWithImportPaths1.id:
-            return libraryStub.externalLibraryWithImportPaths1;
-          case libraryStub.externalLibraryWithImportPaths2.id:
-            return libraryStub.externalLibraryWithImportPaths2;
-          default:
-            return null;
-        }
-      });
-
-      const mockWatcher = newFSWatcherMock();
-
-      mockWatcher.on.mockImplementation((event, callback) => {
-        if (event === 'ready') {
-          callback();
-        }
-      });
-
-      storageMock.watch.mockReturnValue(mockWatcher);
-
-      await sut.init();
-      await expect(sut.watchAll()).resolves.toBeTruthy();
-
-      expect(storageMock.watch.mock.calls).toEqual(
-        expect.arrayContaining([
-          (libraryStub.externalLibrary1.importPaths, expect.anything()),
-          (libraryStub.externalLibrary2.importPaths, expect.anything()),
-        ]),
-      );
-    });
-
-    it('should not initialize when watching is disabled', async () => {
-      configMock.load.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
-
-      await sut.init();
-      await expect(sut.watchAll()).resolves.toBeFalsy();
-
-      expect(storageMock.watch).not.toHaveBeenCalled();
-    });
-  });
-
   describe('tearDown', () => {
     it('should tear down all watchers', async () => {
       libraryMock.getAll.mockResolvedValue([
@@ -1455,7 +1454,6 @@ describe(LibraryService.name, () => {
       storageMock.watch.mockReturnValue(mockWatcher);
 
       await sut.init();
-      await expect(sut.watchAll()).resolves.toBeTruthy();
       await sut.teardown();
 
       expect(mockWatcher.close).toHaveBeenCalledTimes(2);
@@ -1609,14 +1607,11 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleQueueAllScan({ force: true })).resolves.toBe(true);
 
-      expect(jobMock.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.LIBRARY_QUEUE_CLEANUP,
-            data: {},
-          },
-        ],
-      ]);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.LIBRARY_QUEUE_CLEANUP,
+        data: {},
+      });
+
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.LIBRARY_SCAN,

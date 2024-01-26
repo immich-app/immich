@@ -78,6 +78,14 @@ export class LibraryService extends EventEmitter {
     this.configCore.config$.subscribe((config) => {
       this.jobRepository.updateCronJob('libraryScan', config.library.scan.cronExpression, config.library.scan.enabled);
     });
+
+    if (this.watchLibraries) {
+      const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
+
+      for (const library of libraries) {
+        await this.watch(library.id);
+      }
+    }
   }
 
   async watch(id: string): Promise<boolean> {
@@ -155,20 +163,6 @@ export class LibraryService extends EventEmitter {
         resolve();
       });
     });
-
-    return true;
-  }
-
-  async watchAll(): Promise<boolean> {
-    if (!this.watchLibraries) {
-      return false;
-    }
-
-    const libraries = await this.repository.getAll(false, LibraryType.EXTERNAL);
-
-    for (const library of libraries) {
-      await this.watch(library.id);
-    }
 
     return true;
   }
