@@ -1,4 +1,4 @@
-import { DatabaseExtension, extName } from '@app/domain/repositories/database.repository';
+import { DatabaseExtension } from '@app/domain/repositories/database.repository';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 

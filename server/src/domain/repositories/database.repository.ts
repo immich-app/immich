@@ -7,6 +7,16 @@ export enum DatabaseExtension {
   VECTORS = 'vectors',
 }
 
+export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
+
+export interface UpdateExtensionOptions {
+  version?: Version;
+}
+
+export interface UpdateVectorExtensionOptions extends UpdateExtensionOptions {
+  reindex?: boolean;
+}
+
 export enum DatabaseLock {
   GeodataImport = 100,
   StorageTemplateMigration = 420,
@@ -25,10 +35,11 @@ export const IDatabaseRepository = 'IDatabaseRepository';
 export interface IDatabaseRepository {
   getExtensionVersion(extensionName: string): Promise<Version | null>;
   getAvailableExtensionVersion(extension: DatabaseExtension): Promise<Version | null>;
-  getPreferredVectorExtension(): DatabaseExtension;
+  getPreferredVectorExtension(): VectorExtension;
   getPostgresVersion(): Promise<Version>;
   createExtension(extension: DatabaseExtension): Promise<void>;
-  updateExtension(extension: DatabaseExtension, version?: Version): Promise<void>;
+  updateExtension(extension: DatabaseExtension, options: UpdateExtensionOptions): Promise<void>;
+  updateVectorExtension(extension: VectorExtension, options: UpdateVectorExtensionOptions): Promise<void>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
   isBusy(lock: DatabaseLock): boolean;

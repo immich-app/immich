@@ -51,7 +51,7 @@ export class Version implements IVersion {
     for (const [i, key] of this.types.entries()) {
       const diff = this[key] - version[key];
       if (diff !== 0) {
-        return [diff > 0 ? 1 : -1, (3 - i) as VersionType];
+        return [diff > 0 ? 1 : -1, (VersionType.MAJOR - i) as VersionType];
       }
     }
 

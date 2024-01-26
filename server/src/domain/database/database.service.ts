@@ -2,12 +2,12 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { Version, VersionType } from '../domain.constant';
-import { DatabaseExtension, IDatabaseRepository, extName } from '../repositories';
+import { DatabaseExtension, IDatabaseRepository, VectorExtension, extName } from '../repositories';
 
 @Injectable()
 export class DatabaseService {
   private logger = new ImmichLogger(DatabaseService.name);
-  private vectorExt: DatabaseExtension;
+  private vectorExt: VectorExtension;
   minPostgresVersion = 14;
   minVectorsVersion = new Version(0, 0, 0);
   vectorsVersionPin = VersionType.MINOR;
@@ -40,10 +40,12 @@ export class DatabaseService {
       const otherExt =
         this.vectorExt === DatabaseExtension.VECTORS ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;
       this.logger.fatal(`
-        Failed to activate the ${extName[this.vectorExt]} extension.
+        Failed to activate ${extName[this.vectorExt]} extension.
         Please ensure the Postgres instance has ${extName[this.vectorExt]} installed.
+
         If the Postgres instance already has ${extName[this.vectorExt]} installed, Immich may not have the necessary permissions to activate it.
         In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${this.vectorExt}' manually as a superuser.
+        See https://immich.app/docs/guides/database-queries for how to query the database.
 
         Alternatively, if your Postgres instance has ${extName[otherExt]}, you may use this instead by setting the environment variable 'IMMICH_VECTOR_EXTENSION=${otherExt}'.
         Note that switching between the two extensions after a successful startup is not supported.
@@ -60,7 +62,7 @@ export class DatabaseService {
       this.databaseRepository.getAvailableExtensionVersion(this.vectorExt),
     ]);
     if (version == null) {
-      throw new Error(`Unexpected: The ${extName[this.vectorExt]} extension is not installed.`);
+      throw new Error(`Unexpected: ${extName[this.vectorExt]} extension is not installed.`);
     }
 
     if (availableVersion == null) {
@@ -69,16 +71,24 @@ export class DatabaseService {
 
     const maxVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.vectorVersionPin : this.vectorsVersionPin;
     const isNewer = availableVersion.isNewerThan(version);
-    if (isNewer != null && isNewer < maxVersion) {
-      try {
-        await this.databaseRepository.updateExtension(this.vectorExt, availableVersion);
-      } catch (err) {
-        this.logger.warn(`
-          The ${extName[this.vectorExt]} extension version is ${version}, but ${availableVersion} is available.
-          Immich attempted to update the extension, but failed to do so.
-          This may be because Immich does not have the necessary permissions to update the extension.
-          Please run 'ALTER EXTENSION ${this.vectorExt} UPDATE' manually as a superuser.`);
-      }
+    if (isNewer == null || isNewer >= maxVersion) {
+      return;
+    }
+
+    try {
+      this.logger.log(`Updating ${extName[this.vectorExt]} extension to ${availableVersion}`);
+      await this.databaseRepository.updateVectorExtension(this.vectorExt, {
+        version: availableVersion,
+        reindex: isNewer >= VersionType.MINOR,
+      });
+    } catch (err) {
+      this.logger.warn(`
+        The ${extName[this.vectorExt]} extension version is ${version}, but ${availableVersion} is available.
+        Immich attempted to update the extension, but failed to do so.
+        This may be because Immich does not have the necessary permissions to update the extension.
+
+        Please run 'ALTER EXTENSION ${this.vectorExt} UPDATE' manually as a superuser.
+        See https://immich.app/docs/guides/database-queries for how to query the database.`);
     }
   }
 
@@ -91,7 +101,9 @@ export class DatabaseService {
     if (version.isEqual(new Version(0, 0, 0))) {
       this.logger.fatal(`
         The ${extName[this.vectorExt]} extension version is ${version}, which means it is a nightly release.
-        Please run 'DROP EXTENSION IF EXISTS ${this.vectorExt}' and switch to a release version.`);
+
+        Please run 'DROP EXTENSION IF EXISTS ${this.vectorExt}' and switch to a release version.
+        See https://immich.app/docs/guides/database-queries for how to query the database.`);
       throw new Error();
     }
 
@@ -106,8 +118,11 @@ export class DatabaseService {
 
       this.logger.fatal(`
         The ${extName[this.vectorExt]} extension version is ${version}, but Immich only supports ${releases}.
+
         If the Postgres instance already has a compatible version installed, Immich may not have the necessary permissions to activate it.
         In this case, please run 'ALTER EXTENSION UPDATE ${this.vectorExt}' manually as a superuser.
+        See https://immich.app/docs/guides/database-queries for how to query the database.
+
         Otherwise, please update the version of ${extName[this.vectorExt]} in the Postgres instance to a compatible version.`);
       throw new Error();
     }
