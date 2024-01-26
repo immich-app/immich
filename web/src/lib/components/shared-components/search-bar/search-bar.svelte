@@ -104,11 +104,12 @@
         bind:value
         bind:this={input}
         on:click={onFocusIn}
+        disabled={showFilter}
       />
 
       <div class="absolute inset-y-0 right-5 flex items-center pl-6">
         <div class="dark:text-immich-dark-fg/75">
-          <IconButton on:click={() => (showFilter = true)} title="Show search options">
+          <IconButton on:click={() => (showFilter = !showFilter)} title="Show search options">
             <Icon path={mdiTune} size="1.5em" />
           </IconButton>
         </div>

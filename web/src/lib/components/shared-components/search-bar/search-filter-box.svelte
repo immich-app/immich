@@ -16,13 +16,42 @@
   transition:fly={{ y: 25, duration: 250 }}
   class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 p-6"
 >
-  <p>FILTERS</p>
-  <hr />
+  <p class="text-xs py-2">FILTERS</p>
+  <hr class="py-2" />
 
   <form>
-    <div class="flex py-3">
-      <label for="subject">Subject</label>
-      <input type="text" id="subject" name="subjet" />
+    <div class="py-3">
+      <label class="immich-form-label" for="context">CONTEXT</label>
+      <input
+        class="immich-form-input w-full border border-gray-300"
+        type="text"
+        id="context"
+        name="context"
+        placeholder="Sunrise on the beach"
+      />
+    </div>
+
+    <div class="py-3">
+      <label class="immich-form-label" for="place">PLACE</label>
+      <input class="immich-form-input w-full border border-gray-300" type="text" id="place" name="place" />
+    </div>
+
+    <div class="flex justify-between gap-5">
+      <div class="py-3 flex-1">
+        <label class="immich-form-label" for="start-date">START DATE</label>
+        <input class="immich-form-input w-full border border-gray-300" type="date" id="start-date" name="start-date" />
+      </div>
+
+      <div class="py-3 flex-1">
+        <label class="immich-form-label" for="end-date">END DATE</label>
+        <input
+          class="immich-form-input w-full border border-gray-300"
+          type="date"
+          id="end-date"
+          name="end-date"
+          placeholder=""
+        />
+      </div>
     </div>
   </form>
 </div>
