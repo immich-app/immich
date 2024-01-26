@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type PersonResponseDto, api } from '@api';
+  import { type PersonResponseDto } from '@api';
   import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
@@ -7,6 +7,7 @@
   export let person: PersonResponseDto;
   export let name: string;
   export let suggestedPeople = false;
+  export let thumbnailData: string;
 
   const dispatch = createEventDispatcher<{
     change: string;
@@ -20,14 +21,7 @@
     ? 'rounded-t-lg dark:border-immich-dark-gray'
     : 'rounded-lg'}  bg-gray-100 p-2 dark:bg-gray-700"
 >
-  <ImageThumbnail
-    circle
-    shadow
-    url={api.getPeopleThumbnailUrl(person.id)}
-    altText={person.name}
-    widthStyle="2rem"
-    heightStyle="2rem"
-  />
+  <ImageThumbnail circle shadow url={thumbnailData} altText={person.name} widthStyle="2rem" heightStyle="2rem" />
   <form
     class="ml-4 flex w-full justify-between gap-16"
     autocomplete="off"
