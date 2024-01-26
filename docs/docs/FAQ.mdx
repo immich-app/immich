@@ -86,6 +86,10 @@ Also, there are additional jobs for person (face) thumbnails.
 
 There are no requirements for assets to be unique across users. If multiple users upload the same image they are processed as if they were distinct assets and jobs run and thumbnails are generated accordingly.
 
+### Why do HDR videos appear pale in Immich player but look normal after download?
+
+Immich uses a player with known HDR color display issues. We are experimenting with a different player that provides better color profiles for HDR content for future improvements.
+
 ### How can I delete transcoded videos without deleting the original?
 
 The transcode of an asset can be deleted by setting a transcode policy that makes it unnecessary, then running a transcoding job for that asset. This can be done on a per-asset basis by starting a transcoding job for an asset (with the _Refresh encoded videos_ button in the asset viewer options. Or, for all assets by running transcoding jobs for all assets.
@@ -210,6 +214,11 @@ On the other hand, Immich does scan video thumbnails for faces, so it can perfor
 
 No.
 
+### I'm getting a lot of "faces" that aren't faces, what can I do?
+
+You can increase the MIN DETECTION SCORE to 0.8 to help prevent bad thumbnails. However, a score of 0.9 might filter out too many real faces depending on the library used. If you just want to hide specific faces, you can adjust the 'MIN FACES DETECTED' setting in the administration panel  
+to increase the bar for what the algorithm considers a "core face" for that person, reducing the chance of bad thumbnails being chosen.
+
 ### The immich_model-cache volume takes up a lot of space, what could be the problem?
 
 If you installed several models and chose not to use some of them, it might be worth deleting the old models that are in immich_model-cache.
@@ -286,13 +295,18 @@ The non-root user/group needs read/write access to the volume mounts, including 
 Data for Immich comes in two forms:
 
 1. **Metadata** stored in a postgres database, persisted via the `pg_data` volume
-2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder.
+2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder, more [info](/docs/administration/backup-and-restore#asset-types-and-storage-locations).
 
 To remove the **Metadata** you can stop Immich and delete the volume.
 
 ```bash title="Remove Immich (containers and volumes)"
 docker compose down -v
 ```
+
+:::note Portainer
+If you use portainer, bring down the stack in portainer. Go into the volumes section  
+and remove all the volumes related to immcih then restart the stack.
+:::
 
 After removing the containers and volumes, the **Files** can be cleaned up (if necessary) from the `UPLOAD_LOCATION` by simply deleting any unwanted files or folders.
 

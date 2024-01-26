@@ -176,6 +176,12 @@ export class AssetController {
     return this.service.updateStackParent(auth, dto);
   }
 
+  @SharedLinkRoute()
+  @Get(':id')
+  getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
+    return this.service.get(auth, id) as Promise<AssetResponseDto>;
+  }
+
   @Put(':id')
   updateAsset(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateDto): Promise<AssetResponseDto> {
     return this.service.update(auth, id, dto);

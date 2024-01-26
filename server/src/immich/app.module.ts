@@ -5,7 +5,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AssetRepository, IAssetRepository } from './api-v1/asset/asset-repository';
+import { AssetRepositoryV1, IAssetRepositoryV1 } from './api-v1/asset/asset-repository';
 import { AssetController as AssetControllerV1 } from './api-v1/asset/asset.controller';
 import { AssetService } from './api-v1/asset/asset.service';
 import { AppGuard } from './app.guard';
@@ -45,8 +45,8 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
   controllers: [
     ActivityController,
     AssetsController,
-    AssetController,
     AssetControllerV1,
+    AssetController,
     AppController,
     AlbumController,
     APIKeyController,
@@ -68,7 +68,7 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
     { provide: APP_GUARD, useClass: AppGuard },
-    { provide: IAssetRepository, useClass: AssetRepository },
+    { provide: IAssetRepositoryV1, useClass: AssetRepositoryV1 },
     AppService,
     AssetService,
     FileUploadInterceptor,

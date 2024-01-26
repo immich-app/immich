@@ -6,7 +6,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { errorStub, userDto, userSignupStub, userStub } from '@test/fixtures';
 import request from 'supertest';
 import { Repository } from 'typeorm';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${UserController.name}`, () => {

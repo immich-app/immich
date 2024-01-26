@@ -71,10 +71,12 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 ## Features
 
+
 | Features                                     | Mobile | Web |
-| -------------------------------------------- | ------ | --- |
+| :--------------------------------------------- | -------- | ----- |
 | Upload and view videos and photos            | Yes    | Yes |
 | Auto backup when the app is opened           | Yes    | N/A |
+| Prevent duplication of assets                | Yes    | Yes |
 | Selective album(s) for backup                | Yes    | N/A |
 | Download photos and videos to local device   | Yes    | Yes |
 | Multi-user support                           | Yes    | Yes |
@@ -89,6 +91,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | OAuth support                                | Yes    | Yes |
 | API Keys                                     | N/A    | Yes |
 | LivePhoto/MotionPhoto backup and playback    | Yes    | Yes |
+| Support 360 degree image display             | No     | Yes |
 | User-defined storage structure               | Yes    | Yes |
 | Public Sharing                               | No     | Yes |
 | Archive and Favorites                        | Yes    | Yes |
@@ -118,6 +121,7 @@ If you feel like this is the right cause and the app is something you are seeing
 - ZCash: u1smm4wvqegcp46zss2jf5xptchgeczp4rx7a0wu3mermf2wxahm26yyz5w9mw3f2p4emwlljxjumg774kgs8rntt9yags0whnzane4n67z4c7gppq4yyvcj404ne3r769prwzd9j8ntvqp44fa6d67sf7rmcfjmds3gmeceff4u8e92rh38nd30cr96xw6vfhk6scu4ws90ldzupr3sz
 
 ## Contributors
+
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

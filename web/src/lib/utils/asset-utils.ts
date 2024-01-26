@@ -10,6 +10,7 @@ import {
   type UserResponseDto,
 } from '@api';
 import { handleError } from './handle-error';
+import { DateTime } from 'luxon';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
   api.albumApi
@@ -59,7 +60,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   for (let i = 0; i < downloadInfo.archives.length; i++) {
     const archive = downloadInfo.archives[i];
     const suffix = downloadInfo.archives.length === 1 ? '' : `+${i + 1}`;
-    const archiveName = fileName.replace('.zip', `${suffix}.zip`);
+    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyy-LL-dd-HH-mm-ss')}.zip`);
 
     let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {

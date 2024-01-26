@@ -4,7 +4,7 @@ import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dt
 import { SharedLinkType } from '@app/infra/entities';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 const user1SharedUser = 'user1SharedUser';

@@ -62,7 +62,7 @@
 
     // Get latest description from server
     if (newAsset.id && !api.isSharedLink) {
-      const { data } = await api.assetApi.getAssetById({ id: asset.id });
+      const { data } = await api.assetApi.getAssetInfo({ id: asset.id });
       people = data?.people || [];
 
       description = data.exifInfo?.description || '';
@@ -126,7 +126,7 @@
   };
 
   const handleRefreshPeople = async () => {
-    await api.assetApi.getAssetById({ id: asset.id }).then((res) => {
+    await api.assetApi.getAssetInfo({ id: asset.id }).then((res) => {
       people = res.data?.people || [];
       textArea.value = res.data?.exifInfo?.description || '';
     });
@@ -234,7 +234,7 @@
       {/key}
     </section>
   {:else if description}
-    <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+    <p class="px-4 break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
   {/if}
 
   {#if !api.isSharedLink && people.length > 0}

@@ -6,6 +6,10 @@ To alleviate [performance issues on low-memory systems](/docs/FAQ.mdx#why-is-imm
 - Copy the following `docker-compose.yml` to your ML system.
 - Start the container by running `docker-compose up -d` or `docker compose up -d` (depending on your Docker version).
 
+:::note Info
+Starting with version v1.93.0 face detection work and face recognize were split. From now on face detection is done in the immich_machine_learning service, but facial recognition is done in the immich_microservices service.
+:::
+
 ```yaml
 version: '3.8'
 
