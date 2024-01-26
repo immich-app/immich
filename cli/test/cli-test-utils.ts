@@ -9,7 +9,8 @@ export const TEST_IMMICH_API_KEY = 'pNussssKSYo5WasdgalvKJ1n9kdvaasdfbluPg';
 
 export const CLI_BASE_OPTIONS: BaseOptionsDto = { config: TEST_CONFIG_DIR };
 
-export const spyOnConsole = () => vi.spyOn(console, 'log').mockImplementation();
+// @ts-ignore - remove ternary after migration to vitest is complete
+export const spyOnConsole = () => globalThis.vi ? vi.spyOn(console, 'log').mockImplementation() : jest.spyOn(console, 'log').mockImplementation();
 
 export const createTestAuthFile = async (contents: string) => {
   if (!fs.existsSync(TEST_CONFIG_DIR)) {

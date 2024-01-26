@@ -43,7 +43,9 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.5.3",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "unplugin-swc": "^1.4.4",
+    "vitest": "^1.2.1"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
@@ -55,7 +57,7 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "check": "tsc --noEmit",
-    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand"
+    "test:e2e": "jest --config test/e2e/jest-e2e.json --runInBand # vitest --config vitest.e2e.config.ts"
   },
   "repository": {
     "type": "git",
