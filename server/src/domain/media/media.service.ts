@@ -167,12 +167,16 @@ export class MediaService {
       return false;
     }
 
-    const resizePath = await this.generateThumbnail(asset, 'jpeg');
+    const resizePath = await this.generateThumbnail(
+      asset,
+      'jpeg',
+      asset.exifInfo?.orientation ? parseInt(asset.exifInfo?.orientation) : undefined,
+    );
     await this.assetRepository.save({ id: asset.id, resizePath });
     return true;
   }
 
-  private async generateThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp') {
+  private async generateThumbnail(asset: AssetEntity, format: 'jpeg' | 'webp', orientation?: number) {
     const { thumbnail, ffmpeg } = await this.configCore.getConfig();
     const size = format === 'jpeg' ? thumbnail.jpegSize : thumbnail.webpSize;
     const path =
@@ -182,7 +186,7 @@ export class MediaService {
     switch (asset.type) {
       case AssetType.IMAGE:
         const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : thumbnail.colorspace;
-        const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality };
+        const thumbnailOptions = { format, size, colorspace, quality: thumbnail.quality, orientation };
         await this.mediaRepository.resize(asset.originalPath, path, thumbnailOptions);
         break;
 
@@ -214,7 +218,11 @@ export class MediaService {
       return false;
     }
 
-    const webpPath = await this.generateThumbnail(asset, 'webp');
+    const webpPath = await this.generateThumbnail(
+      asset,
+      'webp',
+      asset.exifInfo?.orientation ? parseInt(asset.exifInfo?.orientation) : undefined,
+    );
     await this.assetRepository.save({ id: asset.id, webpPath });
     return true;
   }

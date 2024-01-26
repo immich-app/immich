@@ -333,6 +333,9 @@ export class AssetService {
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, orientation });
 
     const asset = await this.assetRepository.save({ id, ...rest });
+    if (orientation) {
+      await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id } });
+    }
     return mapAsset(asset);
   }
 

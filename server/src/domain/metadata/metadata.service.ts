@@ -66,6 +66,21 @@ export enum Orientation {
   Rotate270CW = '8',
 }
 
+export const orientationExifToDegrees = (orientation: Orientation): number | undefined => {
+  switch (orientation) {
+    case Orientation.Horizontal:
+      return 0;
+    case Orientation.Rotate180:
+      return 180;
+    case Orientation.Rotate90CW:
+      return 90;
+    case Orientation.Rotate270CW:
+      return 270;
+    default:
+      return undefined;
+  }
+};
+
 type ExifEntityWithoutGeocodeAndTypeOrm = Omit<
   ExifEntity,
   'city' | 'state' | 'country' | 'description' | 'exifTextSearchableColumn'

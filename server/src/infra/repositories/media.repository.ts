@@ -1,4 +1,12 @@
-import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
+import {
+  CropOptions,
+  IMediaRepository,
+  Orientation,
+  ResizeOptions,
+  TranscodeOptions,
+  VideoInfo,
+  orientationExifToDegrees,
+} from '@app/domain';
 import { Colorspace } from '@app/infra/entities';
 import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
@@ -27,10 +35,18 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
+    const orientation = options.orientation;
+    const rotation =
+      options.format === 'webp'
+        ? orientation
+          ? orientationExifToDegrees(orientation.toString() as Orientation)
+          : undefined
+        : undefined;
     await sharp(input, { failOn: 'none' })
       .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
       .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-      .rotate()
+      .rotate(rotation)
+      .withMetadata({ orientation })
       .withIccProfile(options.colorspace)
       .toFormat(options.format, {
         quality: options.quality,

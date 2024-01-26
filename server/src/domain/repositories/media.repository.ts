@@ -8,6 +8,7 @@ export interface ResizeOptions {
   format: 'webp' | 'jpeg';
   colorspace: string;
   quality: number;
+  orientation?: number;
 }
 
 export interface VideoStreamInfo {
