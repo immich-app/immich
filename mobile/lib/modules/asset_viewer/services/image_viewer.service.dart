@@ -70,7 +70,7 @@ class ImageViewerService {
         return entity != null;
       } else {
         var res = await _apiService.assetApi
-            .downloadFileWithHttpInfo(asset.remoteId!);
+            .downloadFileOldWithHttpInfo(asset.remoteId!);
 
         if (res.statusCode != 200) {
           _log.severe(
