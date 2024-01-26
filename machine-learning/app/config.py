@@ -5,9 +5,6 @@ import sys
 from pathlib import Path
 from socket import socket
 
-import fastapi
-import starlette
-import uvicorn
 from gunicorn.arbiter import Arbiter
 from pydantic import BaseSettings
 from rich.console import Console
@@ -77,13 +74,25 @@ log_settings = LogSettings()
 class CustomRichHandler(RichHandler):
     def __init__(self) -> None:
         console = Console(color_system="standard", no_color=log_settings.no_color)
+        self.excluded = ["uvicorn", "starlette", "fastapi"]
         super().__init__(
             show_path=False,
             omit_repeated_times=False,
             console=console,
             rich_tracebacks=True,
-            tracebacks_suppress=[uvicorn, starlette, fastapi, concurrent.futures],
+            tracebacks_suppress=[*self.excluded, concurrent.futures],
         )
+
+    # hack to exclude certain modules from rich tracebacks
+    def emit(self, record: logging.LogRecord) -> None:
+        if record.exc_info is not None:
+            tb = record.exc_info[2]
+            while tb is not None:
+                if any(excluded in tb.tb_frame.f_code.co_filename for excluded in self.excluded):
+                    tb.tb_frame.f_locals["_rich_traceback_omit"] = True
+                tb = tb.tb_next
+            
+        return super().emit(record)
 
 
 log = logging.getLogger("ml.log")
