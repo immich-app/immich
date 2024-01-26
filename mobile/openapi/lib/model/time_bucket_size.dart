@@ -34,7 +34,7 @@ class TimeBucketSize {
 
   static TimeBucketSize? fromJson(dynamic value) => TimeBucketSizeTypeTransformer().decode(value);
 
-  static List<TimeBucketSize>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TimeBucketSize> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <TimeBucketSize>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

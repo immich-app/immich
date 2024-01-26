@@ -20,7 +20,7 @@ class ValidateAccessTokenResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ValidateAccessTokenResponseDto &&
-     other.authStatus == authStatus;
+    other.authStatus == authStatus;
 
   @override
   int get hashCode =>

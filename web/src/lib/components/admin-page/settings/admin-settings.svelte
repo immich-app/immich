@@ -9,6 +9,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import type { SettingsEventType } from './admin-settings';
   import { createEventDispatcher, onMount } from 'svelte';
+  import { cloneDeep } from 'lodash-es';
 
   export let config: SystemConfigDto;
 
@@ -25,16 +26,17 @@
     }
   };
 
-  const handleSave = async (config: Partial<SystemConfigDto>) => {
+  const handleSave = async (update: Partial<SystemConfigDto>) => {
     try {
-      const result = await api.systemConfigApi.updateConfig({
+      const { data: newConfig } = await api.systemConfigApi.updateConfig({
         systemConfigDto: {
           ...savedConfig,
-          ...config,
+          ...update,
         },
       });
 
-      savedConfig = { ...result.data };
+      config = cloneDeep(newConfig);
+      savedConfig = cloneDeep(newConfig);
       notificationController.show({ message: 'Settings saved', type: NotificationType.Info });
 
       dispatch('save');

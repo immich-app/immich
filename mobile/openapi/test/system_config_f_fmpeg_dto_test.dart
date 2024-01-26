@@ -21,6 +21,16 @@ void main() {
       // TODO
     });
 
+    // List<AudioCodec> acceptedAudioCodecs (default value: const [])
+    test('to test the property `acceptedAudioCodecs`', () async {
+      // TODO
+    });
+
+    // List<VideoCodec> acceptedVideoCodecs (default value: const [])
+    test('to test the property `acceptedVideoCodecs`', () async {
+      // TODO
+    });
+
     // int bframes
     test('to test the property `bframes`', () async {
       // TODO

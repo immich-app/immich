@@ -165,7 +165,7 @@ class AssetApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  Future<Response> downloadArchiveWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
+  Future<Response> downloadArchiveOldWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/archive';
 
@@ -199,8 +199,8 @@ class AssetApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadArchive(AssetIdsDto assetIdsDto, { String? key, }) async {
-    final response = await downloadArchiveWithHttpInfo(assetIdsDto,  key: key, );
+  Future<MultipartFile?> downloadArchiveOld(AssetIdsDto assetIdsDto, { String? key, }) async {
+    final response = await downloadArchiveOldWithHttpInfo(assetIdsDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -220,7 +220,7 @@ class AssetApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<Response> downloadFileWithHttpInfo(String id, { String? key, }) async {
+  Future<Response> downloadFileOldWithHttpInfo(String id, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/{id}'
       .replaceAll('{id}', id);
@@ -255,8 +255,8 @@ class AssetApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadFile(String id, { String? key, }) async {
-    final response = await downloadFileWithHttpInfo(id,  key: key, );
+  Future<MultipartFile?> downloadFileOld(String id, { String? key, }) async {
+    final response = await downloadFileOldWithHttpInfo(id,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -271,7 +271,7 @@ class AssetApi {
   }
 
   /// Performs an HTTP 'POST /asset/trash/empty' operation and returns the [Response].
-  Future<Response> emptyTrashWithHttpInfo() async {
+  Future<Response> emptyTrashOldWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/trash/empty';
 
@@ -296,8 +296,8 @@ class AssetApi {
     );
   }
 
-  Future<void> emptyTrash() async {
-    final response = await emptyTrashWithHttpInfo();
+  Future<void> emptyTrashOld() async {
+    final response = await emptyTrashOldWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -408,7 +408,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -464,7 +464,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
         .cast<String>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -625,7 +625,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
         .cast<String>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -797,7 +797,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<CuratedLocationsResponseDto>') as List)
         .cast<CuratedLocationsResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -841,7 +841,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<CuratedObjectsResponseDto>') as List)
         .cast<CuratedObjectsResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -853,7 +853,7 @@ class AssetApi {
   /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
+  Future<Response> getDownloadInfoOldWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/info';
 
@@ -887,8 +887,8 @@ class AssetApi {
   /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
-    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, );
+  Future<DownloadResponseDto?> getDownloadInfoOld(DownloadInfoDto downloadInfoDto, { String? key, }) async {
+    final response = await getDownloadInfoOldWithHttpInfo(downloadInfoDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -971,7 +971,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<MapMarkerResponseDto>') as List)
         .cast<MapMarkerResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1028,7 +1028,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<MemoryLaneResponseDto>') as List)
         .cast<MemoryLaneResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1082,7 +1082,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1202,7 +1202,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1317,7 +1317,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<TimeBucketResponseDto>') as List)
         .cast<TimeBucketResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -1327,7 +1327,7 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> restoreAssetsWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
+  Future<Response> restoreAssetsOldWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/restore';
 
@@ -1355,15 +1355,15 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<void> restoreAssets(BulkIdsDto bulkIdsDto,) async {
-    final response = await restoreAssetsWithHttpInfo(bulkIdsDto,);
+  Future<void> restoreAssetsOld(BulkIdsDto bulkIdsDto,) async {
+    final response = await restoreAssetsOldWithHttpInfo(bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
   /// Performs an HTTP 'POST /asset/trash/restore' operation and returns the [Response].
-  Future<Response> restoreTrashWithHttpInfo() async {
+  Future<Response> restoreTrashOldWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/trash/restore';
 
@@ -1388,8 +1388,8 @@ class AssetApi {
     );
   }
 
-  Future<void> restoreTrash() async {
-    final response = await restoreTrashWithHttpInfo();
+  Future<void> restoreTrashOld() async {
+    final response = await restoreTrashOldWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1755,7 +1755,7 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

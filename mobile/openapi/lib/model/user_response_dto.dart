@@ -71,22 +71,22 @@ class UserResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-     other.avatarColor == avatarColor &&
-     other.createdAt == createdAt &&
-     other.deletedAt == deletedAt &&
-     other.email == email &&
-     other.externalPath == externalPath &&
-     other.id == id &&
-     other.isAdmin == isAdmin &&
-     other.memoriesEnabled == memoriesEnabled &&
-     other.name == name &&
-     other.oauthId == oauthId &&
-     other.profileImagePath == profileImagePath &&
-     other.quotaSizeInBytes == quotaSizeInBytes &&
-     other.quotaUsageInBytes == quotaUsageInBytes &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.storageLabel == storageLabel &&
-     other.updatedAt == updatedAt;
+    other.avatarColor == avatarColor &&
+    other.createdAt == createdAt &&
+    other.deletedAt == deletedAt &&
+    other.email == email &&
+    other.externalPath == externalPath &&
+    other.id == id &&
+    other.isAdmin == isAdmin &&
+    other.memoriesEnabled == memoriesEnabled &&
+    other.name == name &&
+    other.oauthId == oauthId &&
+    other.profileImagePath == profileImagePath &&
+    other.quotaSizeInBytes == quotaSizeInBytes &&
+    other.quotaUsageInBytes == quotaUsageInBytes &&
+    other.shouldChangePassword == shouldChangePassword &&
+    other.storageLabel == storageLabel &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -165,8 +165,8 @@ class UserResponseDto {
 
       return UserResponseDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
-        createdAt: mapDateTime(json, r'createdAt', '')!,
-        deletedAt: mapDateTime(json, r'deletedAt', ''),
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        deletedAt: mapDateTime(json, r'deletedAt', r''),
         email: mapValueOfType<String>(json, r'email')!,
         externalPath: mapValueOfType<String>(json, r'externalPath'),
         id: mapValueOfType<String>(json, r'id')!,
@@ -179,7 +179,7 @@ class UserResponseDto {
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

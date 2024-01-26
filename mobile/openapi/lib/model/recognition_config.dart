@@ -41,12 +41,12 @@ class RecognitionConfig {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RecognitionConfig &&
-     other.enabled == enabled &&
-     other.maxDistance == maxDistance &&
-     other.minFaces == minFaces &&
-     other.minScore == minScore &&
-     other.modelName == modelName &&
-     other.modelType == modelType;
+    other.enabled == enabled &&
+    other.maxDistance == maxDistance &&
+    other.minFaces == minFaces &&
+    other.minScore == minScore &&
+    other.modelName == modelName &&
+    other.modelType == modelType;
 
   @override
   int get hashCode =>

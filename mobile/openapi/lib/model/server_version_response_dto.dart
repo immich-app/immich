@@ -26,9 +26,9 @@ class ServerVersionResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerVersionResponseDto &&
-     other.major == major &&
-     other.minor == minor &&
-     other.patch_ == patch_;
+    other.major == major &&
+    other.minor == minor &&
+    other.patch_ == patch_;
 
   @override
   int get hashCode =>

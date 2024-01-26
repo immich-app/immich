@@ -36,7 +36,7 @@ class PathEntityType {
 
   static PathEntityType? fromJson(dynamic value) => PathEntityTypeTypeTransformer().decode(value);
 
-  static List<PathEntityType>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PathEntityType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <PathEntityType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

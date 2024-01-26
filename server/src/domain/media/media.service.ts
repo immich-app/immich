@@ -2,6 +2,7 @@ import {
   AssetEntity,
   AssetPathType,
   AssetType,
+  AudioCodec,
   Colorspace,
   TranscodeHWAccel,
   TranscodePolicy,
@@ -326,9 +327,10 @@ export class MediaService {
     containerExtension: string,
     ffmpegConfig: SystemConfigFFmpegDto,
   ): boolean {
-    const isTargetVideoCodec = videoStream.codecName === ffmpegConfig.targetVideoCodec;
+    const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(videoStream.codecName as VideoCodec);
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
-    const isTargetAudioCodec = audioStream == null || audioStream.codecName === ffmpegConfig.targetAudioCodec;
+    const isTargetAudioCodec =
+      audioStream == null || ffmpegConfig.acceptedAudioCodecs.includes(audioStream.codecName as AudioCodec);
 
     this.logger.verbose(
       `${asset.id}: AudioCodecName ${audioStream?.codecName ?? 'None'}, AudioStreamCodecType ${

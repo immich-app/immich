@@ -13,6 +13,7 @@ import {
   DeviceIdDto,
   DownloadInfoDto,
   DownloadResponseDto,
+  DownloadService,
   MapMarkerDto,
   MapMarkerResponseDto,
   MemoryLaneDto,
@@ -21,7 +22,7 @@ import {
   TimeBucketAssetDto,
   TimeBucketDto,
   TimeBucketResponseDto,
-  TrashAction,
+  TrashService,
   UpdateAssetDto as UpdateDto,
   UpdateStackParentDto,
 } from '@app/domain';
@@ -65,7 +66,11 @@ export class AssetsController {
 @Authenticated()
 @UseValidation()
 export class AssetController {
-  constructor(private service: AssetService) {}
+  constructor(
+    private service: AssetService,
+    private downloadService: DownloadService,
+    private trashService: TrashService,
+  ) {}
 
   @Get('map-marker')
   getMapMarkers(@Auth() auth: AuthDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
@@ -82,31 +87,40 @@ export class AssetController {
     return this.service.getRandom(auth, dto.count ?? 1);
   }
 
+  /**
+   * @deprecated use `/download/info`
+   */
   @SharedLinkRoute()
   @Post('download/info')
-  getDownloadInfo(@Auth() auth: AuthDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
-    return this.service.getDownloadInfo(auth, dto);
+  getDownloadInfoOld(@Auth() auth: AuthDto, @Body() dto: DownloadInfoDto): Promise<DownloadResponseDto> {
+    return this.downloadService.getDownloadInfo(auth, dto);
   }
 
+  /**
+   * @deprecated use `/download/archive`
+   */
   @SharedLinkRoute()
   @Post('download/archive')
   @HttpCode(HttpStatus.OK)
   @FileResponse()
-  downloadArchive(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
-    return this.service.downloadArchive(auth, dto).then(asStreamableFile);
+  downloadArchiveOld(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
+    return this.downloadService.downloadArchive(auth, dto).then(asStreamableFile);
   }
 
+  /**
+   * @deprecated use `/download/:id`
+   */
   @SharedLinkRoute()
   @Post('download/:id')
   @HttpCode(HttpStatus.OK)
   @FileResponse()
-  async downloadFile(
+  async downloadFileOld(
     @Res() res: Response,
     @Next() next: NextFunction,
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
   ) {
-    await sendFile(res, next, () => this.service.downloadFile(auth, id));
+    await sendFile(res, next, () => this.downloadService.downloadFile(auth, id));
   }
 
   /**
@@ -152,22 +166,31 @@ export class AssetController {
     return this.service.deleteAll(auth, dto);
   }
 
+  /**
+   * @deprecated  use `POST /trash/restore/assets`
+   */
   @Post('restore')
   @HttpCode(HttpStatus.NO_CONTENT)
-  restoreAssets(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
-    return this.service.restoreAll(auth, dto);
+  restoreAssetsOld(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
+    return this.trashService.restoreAssets(auth, dto);
   }
 
+  /**
+   * @deprecated  use `POST /trash/empty`
+   */
   @Post('trash/empty')
   @HttpCode(HttpStatus.NO_CONTENT)
-  emptyTrash(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.handleTrashAction(auth, TrashAction.EMPTY_ALL);
+  emptyTrashOld(@Auth() auth: AuthDto): Promise<void> {
+    return this.trashService.empty(auth);
   }
 
+  /**
+   * @deprecated  use `POST /trash/restore`
+   */
   @Post('trash/restore')
   @HttpCode(HttpStatus.NO_CONTENT)
-  restoreTrash(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.handleTrashAction(auth, TrashAction.RESTORE_ALL);
+  restoreTrashOld(@Auth() auth: AuthDto): Promise<void> {
+    return this.trashService.restore(auth);
   }
 
   @Put('stack/parent')

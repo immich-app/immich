@@ -23,8 +23,8 @@ class FileChecksumResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is FileChecksumResponseDto &&
-     other.checksum == checksum &&
-     other.filename == filename;
+    other.checksum == checksum &&
+    other.filename == filename;
 
   @override
   int get hashCode =>

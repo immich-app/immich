@@ -189,7 +189,7 @@ class APIKeyApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<APIKeyResponseDto>') as List)
         .cast<APIKeyResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

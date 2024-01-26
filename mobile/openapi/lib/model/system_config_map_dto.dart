@@ -26,9 +26,9 @@ class SystemConfigMapDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMapDto &&
-     other.darkStyle == darkStyle &&
-     other.enabled == enabled &&
-     other.lightStyle == lightStyle;
+    other.darkStyle == darkStyle &&
+    other.enabled == enabled &&
+    other.lightStyle == lightStyle;
 
   @override
   int get hashCode =>

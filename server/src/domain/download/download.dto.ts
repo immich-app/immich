@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsPositive } from 'class-validator';
-import { Optional, ValidateUUID } from '../../domain.util';
+import { Optional, ValidateUUID } from '../domain.util';
 
 export class DownloadInfoDto {
   @ValidateUUID({ each: true, optional: true })

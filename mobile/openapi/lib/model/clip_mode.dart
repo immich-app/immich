@@ -34,7 +34,7 @@ class CLIPMode {
 
   static CLIPMode? fromJson(dynamic value) => CLIPModeTypeTransformer().decode(value);
 
-  static List<CLIPMode>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CLIPMode> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CLIPMode>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
