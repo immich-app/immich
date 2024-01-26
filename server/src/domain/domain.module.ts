@@ -7,6 +7,7 @@ import { AssetService } from './asset';
 import { AuditService } from './audit';
 import { AuthService } from './auth';
 import { DatabaseService } from './database';
+import { DownloadService } from './download';
 import { JobService } from './job';
 import { LibraryService } from './library';
 import { MediaService } from './media';
@@ -31,6 +32,7 @@ const providers: Provider[] = [
   AuditService,
   AuthService,
   DatabaseService,
+  DownloadService,
   ImmichLogger,
   JobService,
   LibraryService,

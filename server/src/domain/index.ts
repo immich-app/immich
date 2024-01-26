@@ -10,6 +10,7 @@ export * from './domain.config';
 export * from './domain.constant';
 export * from './domain.module';
 export * from './domain.util';
+export * from './download';
 export * from './job';
 export * from './library';
 export * from './media';

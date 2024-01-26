@@ -32,7 +32,7 @@ class ShareService {
           final fileName = asset.fileName;
           final tempFile = await File('${tempDir.path}/$fileName').create();
           final res = await _apiService.assetApi
-              .downloadFileWithHttpInfo(asset.remoteId!);
+              .downloadFileOldWithHttpInfo(asset.remoteId!);
 
           if (res.statusCode != 200) {
             _log.severe(

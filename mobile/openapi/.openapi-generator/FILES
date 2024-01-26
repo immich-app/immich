@@ -58,6 +58,7 @@ doc/CreateTagDto.md
 doc/CreateUserDto.md
 doc/CuratedLocationsResponseDto.md
 doc/CuratedObjectsResponseDto.md
+doc/DownloadApi.md
 doc/DownloadArchiveInfo.md
 doc/DownloadInfoDto.md
 doc/DownloadResponseDto.md
@@ -186,6 +187,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/audit_api.dart
 lib/api/authentication_api.dart
+lib/api/download_api.dart
 lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/library_api.dart
@@ -419,6 +421,7 @@ test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
 test/curated_locations_response_dto_test.dart
 test/curated_objects_response_dto_test.dart
+test/download_api_test.dart
 test/download_archive_info_test.dart
 test/download_info_dto_test.dart
 test/download_response_dto_test.dart
