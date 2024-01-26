@@ -83,18 +83,11 @@ export class AppService {
     });
 
     await this.metadataService.init();
-  }
-
-  async postInit() {
     await this.libraryService.watchAll();
-  }
-
-  async stopWatcher() {
-    await this.libraryService.unwatchAll();
   }
 
   async teardown() {
     await this.metadataService.teardown();
-    await this.stopWatcher();
+    await this.libraryService.teardown();
   }
 }

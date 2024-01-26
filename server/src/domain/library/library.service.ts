@@ -116,7 +116,7 @@ export class LibraryService extends EventEmitter {
     };
 
     watcher.on('add', async (path) => {
-      this.logger.debug(`File add event received for ${path} and library id ${library.id}}`);
+      this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
       if (matcher(path)) {
         await this.jobRepository.queue({
           name: JobName.LIBRARY_SCAN_ASSET,
@@ -132,7 +132,7 @@ export class LibraryService extends EventEmitter {
     });
 
     watcher.on('change', async (path) => {
-      this.logger.debug(`Detected file change: ${path}`);
+      this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
 
       if (matcher(path)) {
         // Note: if the changed file was not previously imported, it will be imported now.
@@ -150,7 +150,7 @@ export class LibraryService extends EventEmitter {
     });
 
     watcher.on('unlink', async (path) => {
-      this.logger.debug(`Detected removed file: ${path}`);
+      this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
       const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
 
       if (existingAssetEntity && matcher(path)) {
@@ -169,7 +169,6 @@ export class LibraryService extends EventEmitter {
     await new Promise<void>((resolve) => {
       watcher.on('ready', async () => {
         resolve();
-        this.logger.debug(`Watcher for library ${library.id} is ready`);
       });
     });
 
@@ -197,7 +196,7 @@ export class LibraryService extends EventEmitter {
     }
   }
 
-  async unwatchAll() {
+  async teardown() {
     for (const id in this.watchers) {
       await this.unwatch(id);
     }

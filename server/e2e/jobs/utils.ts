@@ -87,6 +87,7 @@ export const testApp = {
 
     app = await moduleFixture.createNestApplication().init();
     await app.listen(0);
+    await db.reset();
     await app.get(AppService).init();
 
     const port = app.getHttpServer().address().port;
@@ -96,12 +97,8 @@ export const testApp = {
     return app;
   },
   reset: async (options?: ResetOptions) => {
-    await app.get(AppService).init();
     await db.reset(options);
-    await app.get(AppService).postInit();
-  },
-  stopWatcher: async () => {
-    await app.get(AppService).stopWatcher();
+    await app.get(AppService).init();
   },
   get: (member: any) => app.get(member),
   teardown: async () => {

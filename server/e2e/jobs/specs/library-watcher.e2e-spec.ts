@@ -3,8 +3,6 @@ import { AssetType, LibraryType } from '@app/infra/entities';
 import * as fs from 'fs/promises';
 import { api } from '../../client';
 
-import { INestApplication } from '@nestjs/common';
-import { constant } from 'lodash';
 import path from 'path';
 import {
   IMMICH_TEST_ASSET_PATH,
@@ -37,7 +35,7 @@ describe(`Library watcher (e2e)`, () => {
   });
 
   afterEach(async () => {
-    await testApp.stopWatcher();
+    await libraryService.teardown();
   });
 
   afterAll(async () => {
