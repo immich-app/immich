@@ -29,10 +29,10 @@ class SystemConfigMachineLearningDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMachineLearningDto &&
-     other.clip == clip &&
-     other.enabled == enabled &&
-     other.facialRecognition == facialRecognition &&
-     other.url == url;
+    other.clip == clip &&
+    other.enabled == enabled &&
+    other.facialRecognition == facialRecognition &&
+    other.url == url;
 
   @override
   int get hashCode =>

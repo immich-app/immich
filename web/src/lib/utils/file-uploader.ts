@@ -83,7 +83,8 @@ async function fileUploader(asset: File, albumId: string | undefined = undefined
           key: api.getKey(),
         },
         {
-          onUploadProgress: ({ loaded, total }) => {
+          onUploadProgress: ({ event }) => {
+            const { loaded, total } = event;
             uploadAssetsStore.updateProgress(deviceAssetId, loaded, total);
           },
         },

@@ -40,7 +40,7 @@ class TranscodeHWAccel {
 
   static TranscodeHWAccel? fromJson(dynamic value) => TranscodeHWAccelTypeTransformer().decode(value);
 
-  static List<TranscodeHWAccel>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TranscodeHWAccel> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <TranscodeHWAccel>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

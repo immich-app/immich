@@ -62,7 +62,7 @@ class FaceApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetFaceResponseDto>') as List)
         .cast<AssetFaceResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

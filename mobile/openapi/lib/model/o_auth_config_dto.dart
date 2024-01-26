@@ -20,7 +20,7 @@ class OAuthConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthConfigDto &&
-     other.redirectUri == redirectUri;
+    other.redirectUri == redirectUri;
 
   @override
   int get hashCode =>

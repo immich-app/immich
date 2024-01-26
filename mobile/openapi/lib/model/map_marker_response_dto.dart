@@ -26,9 +26,9 @@ class MapMarkerResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapMarkerResponseDto &&
-     other.id == id &&
-     other.lat == lat &&
-     other.lon == lon;
+    other.id == id &&
+    other.lat == lat &&
+    other.lon == lon;
 
   @override
   int get hashCode =>

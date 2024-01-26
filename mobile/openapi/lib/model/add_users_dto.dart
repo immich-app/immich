@@ -20,7 +20,7 @@ class AddUsersDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AddUsersDto &&
-     other.sharedUserIds == sharedUserIds;
+    _deepEquality.equals(other.sharedUserIds, sharedUserIds);
 
   @override
   int get hashCode =>
@@ -44,8 +44,8 @@ class AddUsersDto {
       final json = value.cast<String, dynamic>();
 
       return AddUsersDto(
-        sharedUserIds: json[r'sharedUserIds'] is List
-            ? (json[r'sharedUserIds'] as List).cast<String>()
+        sharedUserIds: json[r'sharedUserIds'] is Iterable
+            ? (json[r'sharedUserIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

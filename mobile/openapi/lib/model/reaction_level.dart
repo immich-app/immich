@@ -34,7 +34,7 @@ class ReactionLevel {
 
   static ReactionLevel? fromJson(dynamic value) => ReactionLevelTypeTransformer().decode(value);
 
-  static List<ReactionLevel>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ReactionLevel> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ReactionLevel>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
