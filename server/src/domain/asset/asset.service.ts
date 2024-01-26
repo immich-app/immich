@@ -37,14 +37,12 @@ import {
   MemoryLaneDto,
   TimeBucketAssetDto,
   TimeBucketDto,
-  TrashAction,
   UpdateAssetDto,
   UpdateStackParentDto,
   mapStats,
 } from './dto';
 import {
   AssetResponseDto,
-  BulkIdsDto,
   MapMarkerResponseDto,
   MemoryLaneResponseDto,
   SanitizedAssetResponseDto,
@@ -449,37 +447,6 @@ export class AssetService {
       await this.assetRepository.softDeleteAll(ids);
       this.communicationRepository.send(ClientEvent.ASSET_TRASH, auth.user.id, ids);
     }
-  }
-
-  async handleTrashAction(auth: AuthDto, action: TrashAction): Promise<void> {
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getByUserId(pagination, auth.user.id, { trashedBefore: DateTime.now().toJSDate() }),
-    );
-
-    if (action == TrashAction.RESTORE_ALL) {
-      for await (const assets of assetPagination) {
-        const ids = assets.map((a) => a.id);
-        await this.assetRepository.restoreAll(ids);
-        this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
-      }
-      return;
-    }
-
-    if (action == TrashAction.EMPTY_ALL) {
-      for await (const assets of assetPagination) {
-        await this.jobRepository.queueAll(
-          assets.map((asset) => ({ name: JobName.ASSET_DELETION, data: { id: asset.id } })),
-        );
-      }
-      return;
-    }
-  }
-
-  async restoreAll(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
-    const { ids } = dto;
-    await this.access.requirePermission(auth, Permission.ASSET_RESTORE, ids);
-    await this.assetRepository.restoreAll(ids);
-    this.communicationRepository.send(ClientEvent.ASSET_RESTORE, auth.user.id, ids);
   }
 
   async updateStackParent(auth: AuthDto, dto: UpdateStackParentDto): Promise<void> {
