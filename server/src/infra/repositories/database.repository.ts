@@ -2,10 +2,10 @@ import {
   DatabaseExtension,
   DatabaseLock,
   IDatabaseRepository,
-  UpdateExtensionOptions,
-  UpdateVectorExtensionOptions,
   VectorExtension,
   Version,
+  VersionType,
+  extName,
 } from '@app/domain';
 import { vectorExt } from '@app/infra/database.config';
 import { Injectable } from '@nestjs/common';
@@ -50,23 +50,59 @@ export class DatabaseRepository implements IDatabaseRepository {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
   }
 
-  async updateExtension(extension: DatabaseExtension, { version }: UpdateExtensionOptions): Promise<void> {
-    await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO ${version}` : ''}'`);
+  async updateExtension(extension: DatabaseExtension, version?: Version): Promise<void> {
+    await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
   }
 
-  async updateVectorExtension(
-    extension: VectorExtension,
-    { version, reindex }: UpdateVectorExtensionOptions,
-  ): Promise<void> {
+  async setSearchPath(): Promise<void> {
+    await this.dataSource.query(`ALTER DATABASE immich SET search_path TO "$user", public, vectors`);
+  }
+
+  async updateVectorExtension(extension: VectorExtension, version?: Version): Promise<void> {
     await this.dataSource.manager.transaction(async (manager) => {
-      await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO ${version}` : ''}'`);
-      if (reindex) {
-        await manager.query(`DROP INDEX clip_index`);
-        await manager.query(`DROP INDEX face_index`);
-        await this.createVectorIndex(manager, 'clip_index', 'smart_search');
-        await this.createVectorIndex(manager, 'face_index', 'asset_faces');
+      let curVersion = await this.getExtensionVersion(extension);
+      if (!curVersion) {
+        throw new Error(`${extName[extension]} extension is not installed`);
       }
+
+      if (DatabaseExtension.VECTORS && version && curVersion.isOlderThan(version) >= VersionType.MINOR) {
+        this.vectorDown(manager);
+        this.vectorUp(manager);
+      }
+
+      await manager.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}-alpha'` : ''}`);
     });
+  }
+
+  private async vectorUp(manager: EntityManager): Promise<void> {
+    await manager.query(`CREATE EXTENSION IF NOT EXISTS ${vectorExt}`);
+    if (vectorExt === DatabaseExtension.VECTORS) {
+      await manager.query(`
+      ALTER DATABASE immich
+      SET search_path TO "$user", public, vectors`);
+    }
+
+    await manager.query(`
+      ALTER TABLE smart_search
+      ALTER COLUMN "embedding" TYPE vector(768)`);
+    await manager.query(`
+      ALTER TABLE asset_faces
+      ALTER COLUMN "embedding" TYPE vector(512)`);
+
+    await this.createVectorIndex(this.dataSource.manager, 'clip_index', 'smart_search');
+    await this.createVectorIndex(this.dataSource.manager, 'face_index', 'asset_faces');
+  }
+
+  private async vectorDown(manager: EntityManager): Promise<void> {
+    await manager.query(`DROP INDEX IF EXISTS clip_index`);
+    await manager.query(`DROP INDEX IF EXISTS face_index`);
+    await manager.query(`
+      ALTER TABLE smart_search
+      ALTER COLUMN "embedding" TYPE real[]`);
+    await manager.query(`
+      ALTER TABLE asset_faces
+      ALTER COLUMN "embedding" TYPE real[]`);
+    await manager.query(`DROP EXTENSION IF EXISTS ${vectorExt}`);
   }
 
   private async createVectorIndex(manager: EntityManager, indexName: string, table: string): Promise<void> {

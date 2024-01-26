@@ -9,14 +9,6 @@ export enum DatabaseExtension {
 
 export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
 
-export interface UpdateExtensionOptions {
-  version?: Version;
-}
-
-export interface UpdateVectorExtensionOptions extends UpdateExtensionOptions {
-  reindex?: boolean;
-}
-
 export enum DatabaseLock {
   GeodataImport = 100,
   StorageTemplateMigration = 420,
@@ -38,8 +30,9 @@ export interface IDatabaseRepository {
   getPreferredVectorExtension(): VectorExtension;
   getPostgresVersion(): Promise<Version>;
   createExtension(extension: DatabaseExtension): Promise<void>;
-  updateExtension(extension: DatabaseExtension, options: UpdateExtensionOptions): Promise<void>;
-  updateVectorExtension(extension: VectorExtension, options: UpdateVectorExtensionOptions): Promise<void>;
+  updateExtension(extension: DatabaseExtension, version?: Version): Promise<void>;
+  updateVectorExtension(extension: VectorExtension, version?: Version): Promise<void>;
+  setSearchPath(): Promise<void>;
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
   isBusy(lock: DatabaseLock): boolean;

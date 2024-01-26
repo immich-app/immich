@@ -9,7 +9,7 @@ export class DatabaseService {
   private logger = new ImmichLogger(DatabaseService.name);
   private vectorExt: VectorExtension;
   minPostgresVersion = 14;
-  minVectorsVersion = new Version(0, 0, 0);
+  minVectorsVersion = new Version(0, 2, 0);
   vectorsVersionPin = VersionType.MINOR;
   minVectorVersion = new Version(0, 5, 0);
   vectorVersionPin = VersionType.MAJOR;
@@ -20,6 +20,7 @@ export class DatabaseService {
 
   async init() {
     await this.assertPostgresql();
+    await this.databaseRepository.setSearchPath();
     await this.createVectorExtension();
     await this.updateVectorExtension();
     await this.assertVectorExtension();
@@ -77,10 +78,7 @@ export class DatabaseService {
 
     try {
       this.logger.log(`Updating ${extName[this.vectorExt]} extension to ${availableVersion}`);
-      await this.databaseRepository.updateVectorExtension(this.vectorExt, {
-        version: availableVersion,
-        reindex: isNewer >= VersionType.MINOR,
-      });
+      await this.databaseRepository.updateVectorExtension(this.vectorExt, availableVersion);
     } catch (err) {
       this.logger.warn(`
         The ${extName[this.vectorExt]} extension version is ${version}, but ${availableVersion} is available.

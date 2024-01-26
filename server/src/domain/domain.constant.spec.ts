@@ -204,20 +204,20 @@ describe('Version', () => {
     { this: new Version(0, 0, 0), other: new Version(0, 0, 1), compare: -1, type: VersionType.PATCH },
     { this: new Version(0, 0, 0), other: new Version(0, 1, 0), compare: -1, type: VersionType.MINOR },
     { this: new Version(0, 0, 0), other: new Version(1, 0, 0), compare: -1, type: VersionType.MAJOR },
-    { this: new Version(0, 0, 0), other: new Version(0, 0, 0), compare: 0, type: null },
-    { this: new Version(0, 0, 1), other: new Version(0, 0, 1), compare: 0, type: null },
-    { this: new Version(0, 1, 0), other: new Version(0, 1, 0), compare: 0, type: null },
-    { this: new Version(1, 0, 0), other: new Version(1, 0, 0), compare: 0, type: null },
-    { this: new Version(1, 0), other: new Version(1, 0, 0), compare: 0, type: null },
+    { this: new Version(0, 0, 0), other: new Version(0, 0, 0), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(0, 0, 1), other: new Version(0, 0, 1), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(0, 1, 0), other: new Version(0, 1, 0), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(1, 0, 0), other: new Version(1, 0, 0), compare: 0, type: VersionType.EQUAL },
+    { this: new Version(1, 0), other: new Version(1, 0, 0), compare: 0, type: VersionType.EQUAL },
     { this: new Version(1, 0), other: new Version(1, 0, 1), compare: -1, type: VersionType.PATCH },
     { this: new Version(1, 1), other: new Version(1, 0, 1), compare: 1, type: VersionType.MINOR },
-    { this: new Version(1), other: new Version(1, 0, 0), compare: 0, type: null },
+    { this: new Version(1), other: new Version(1, 0, 0), compare: 0, type: VersionType.EQUAL },
     { this: new Version(1), other: new Version(1, 0, 1), compare: -1, type: VersionType.PATCH },
   ];
 
   describe('isOlderThan', () => {
     for (const { this: thisVersion, other: otherVersion, compare, type } of tests) {
-      const expected = compare < 0 ? type : null;
+      const expected = compare < 0 ? type : VersionType.EQUAL;
       it(`should return '${expected}' when comparing ${thisVersion} to ${otherVersion}`, () => {
         expect(thisVersion.isOlderThan(otherVersion)).toEqual(expected);
       });
@@ -235,7 +235,7 @@ describe('Version', () => {
 
   describe('isNewerThan', () => {
     for (const { this: thisVersion, other: otherVersion, compare, type } of tests) {
-      const expected = compare > 0 ? type : null;
+      const expected = compare > 0 ? type : VersionType.EQUAL;
       it(`should return ${expected} when comparing ${thisVersion} to ${otherVersion}`, () => {
         expect(thisVersion.isNewerThan(otherVersion)).toEqual(expected);
       });
