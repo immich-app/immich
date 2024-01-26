@@ -23,8 +23,8 @@ class AssetFaceUpdateItem {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceUpdateItem &&
-     other.assetId == assetId &&
-     other.personId == personId;
+    other.assetId == assetId &&
+    other.personId == personId;
 
   @override
   int get hashCode =>

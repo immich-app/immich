@@ -35,12 +35,12 @@ class AuthDeviceResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AuthDeviceResponseDto &&
-     other.createdAt == createdAt &&
-     other.current == current &&
-     other.deviceOS == deviceOS &&
-     other.deviceType == deviceType &&
-     other.id == id &&
-     other.updatedAt == updatedAt;
+    other.createdAt == createdAt &&
+    other.current == current &&
+    other.deviceOS == deviceOS &&
+    other.deviceType == deviceType &&
+    other.id == id &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>

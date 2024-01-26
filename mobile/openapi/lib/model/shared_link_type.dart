@@ -34,7 +34,7 @@ class SharedLinkType {
 
   static SharedLinkType? fromJson(dynamic value) => SharedLinkTypeTypeTransformer().decode(value);
 
-  static List<SharedLinkType>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SharedLinkType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SharedLinkType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

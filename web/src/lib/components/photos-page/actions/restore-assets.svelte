@@ -22,7 +22,7 @@
 
     try {
       const ids = Array.from(getAssets()).map((a) => a.id);
-      await api.assetApi.restoreAssets({ bulkIdsDto: { ids } });
+      await api.trashApi.restoreAssets({ bulkIdsDto: { ids } });
       onRestore?.(ids);
 
       notificationController.show({

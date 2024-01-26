@@ -201,7 +201,7 @@ class AuditApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<FileChecksumResponseDto>') as List)
         .cast<FileChecksumResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

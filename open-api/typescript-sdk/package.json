@@ -18,11 +18,11 @@
     "build": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json"
   },
   "license": "MIT",
-  "dependencies": {
-    "axios": "^0.27.2"
-  },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.7"
   }
 }

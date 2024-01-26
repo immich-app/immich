@@ -53,18 +53,18 @@ class AllJobStatusResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
-     other.backgroundTask == backgroundTask &&
-     other.faceDetection == faceDetection &&
-     other.facialRecognition == facialRecognition &&
-     other.library_ == library_ &&
-     other.metadataExtraction == metadataExtraction &&
-     other.migration == migration &&
-     other.search == search &&
-     other.sidecar == sidecar &&
-     other.smartSearch == smartSearch &&
-     other.storageTemplateMigration == storageTemplateMigration &&
-     other.thumbnailGeneration == thumbnailGeneration &&
-     other.videoConversion == videoConversion;
+    other.backgroundTask == backgroundTask &&
+    other.faceDetection == faceDetection &&
+    other.facialRecognition == facialRecognition &&
+    other.library_ == library_ &&
+    other.metadataExtraction == metadataExtraction &&
+    other.migration == migration &&
+    other.search == search &&
+    other.sidecar == sidecar &&
+    other.smartSearch == smartSearch &&
+    other.storageTemplateMigration == storageTemplateMigration &&
+    other.thumbnailGeneration == thumbnailGeneration &&
+    other.videoConversion == videoConversion;
 
   @override
   int get hashCode =>

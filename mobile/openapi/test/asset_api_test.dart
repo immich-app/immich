@@ -36,18 +36,18 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> downloadArchive(AssetIdsDto assetIdsDto, { String key }) async
-    test('test downloadArchive', () async {
+    //Future<MultipartFile> downloadArchiveOld(AssetIdsDto assetIdsDto, { String key }) async
+    test('test downloadArchiveOld', () async {
       // TODO
     });
 
-    //Future<MultipartFile> downloadFile(String id, { String key }) async
-    test('test downloadFile', () async {
+    //Future<MultipartFile> downloadFileOld(String id, { String key }) async
+    test('test downloadFileOld', () async {
       // TODO
     });
 
-    //Future emptyTrash() async
-    test('test emptyTrash', () async {
+    //Future emptyTrashOld() async
+    test('test emptyTrashOld', () async {
       // TODO
     });
 
@@ -102,8 +102,8 @@ void main() {
       // TODO
     });
 
-    //Future<DownloadResponseDto> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String key }) async
-    test('test getDownloadInfo', () async {
+    //Future<DownloadResponseDto> getDownloadInfoOld(DownloadInfoDto downloadInfoDto, { String key }) async
+    test('test getDownloadInfoOld', () async {
       // TODO
     });
 
@@ -132,13 +132,13 @@ void main() {
       // TODO
     });
 
-    //Future restoreAssets(BulkIdsDto bulkIdsDto) async
-    test('test restoreAssets', () async {
+    //Future restoreAssetsOld(BulkIdsDto bulkIdsDto) async
+    test('test restoreAssetsOld', () async {
       // TODO
     });
 
-    //Future restoreTrash() async
-    test('test restoreTrash', () async {
+    //Future restoreTrashOld() async
+    test('test restoreTrashOld', () async {
       // TODO
     });
 

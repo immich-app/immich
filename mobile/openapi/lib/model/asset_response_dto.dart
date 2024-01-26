@@ -132,38 +132,38 @@ class AssetResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
-     other.checksum == checksum &&
-     other.deviceAssetId == deviceAssetId &&
-     other.deviceId == deviceId &&
-     other.duration == duration &&
-     other.exifInfo == exifInfo &&
-     other.fileCreatedAt == fileCreatedAt &&
-     other.fileModifiedAt == fileModifiedAt &&
-     other.hasMetadata == hasMetadata &&
-     other.id == id &&
-     other.isArchived == isArchived &&
-     other.isExternal == isExternal &&
-     other.isFavorite == isFavorite &&
-     other.isOffline == isOffline &&
-     other.isReadOnly == isReadOnly &&
-     other.isTrashed == isTrashed &&
-     other.libraryId == libraryId &&
-     other.livePhotoVideoId == livePhotoVideoId &&
-     other.localDateTime == localDateTime &&
-     other.originalFileName == originalFileName &&
-     other.originalPath == originalPath &&
-     other.owner == owner &&
-     other.ownerId == ownerId &&
-     other.people == people &&
-     other.resized == resized &&
-     other.smartInfo == smartInfo &&
-     other.stack == stack &&
-     other.stackCount == stackCount &&
-     other.stackParentId == stackParentId &&
-     other.tags == tags &&
-     other.thumbhash == thumbhash &&
-     other.type == type &&
-     other.updatedAt == updatedAt;
+    other.checksum == checksum &&
+    other.deviceAssetId == deviceAssetId &&
+    other.deviceId == deviceId &&
+    other.duration == duration &&
+    other.exifInfo == exifInfo &&
+    other.fileCreatedAt == fileCreatedAt &&
+    other.fileModifiedAt == fileModifiedAt &&
+    other.hasMetadata == hasMetadata &&
+    other.id == id &&
+    other.isArchived == isArchived &&
+    other.isExternal == isExternal &&
+    other.isFavorite == isFavorite &&
+    other.isOffline == isOffline &&
+    other.isReadOnly == isReadOnly &&
+    other.isTrashed == isTrashed &&
+    other.libraryId == libraryId &&
+    other.livePhotoVideoId == livePhotoVideoId &&
+    other.localDateTime == localDateTime &&
+    other.originalFileName == originalFileName &&
+    other.originalPath == originalPath &&
+    other.owner == owner &&
+    other.ownerId == ownerId &&
+    _deepEquality.equals(other.people, people) &&
+    other.resized == resized &&
+    other.smartInfo == smartInfo &&
+    _deepEquality.equals(other.stack, stack) &&
+    other.stackCount == stackCount &&
+    other.stackParentId == stackParentId &&
+    _deepEquality.equals(other.tags, tags) &&
+    other.thumbhash == thumbhash &&
+    other.type == type &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -282,8 +282,8 @@ class AssetResponseDto {
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duration: mapValueOfType<String>(json, r'duration')!,
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
+        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
+        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
@@ -294,7 +294,7 @@ class AssetResponseDto {
         isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
         libraryId: mapValueOfType<String>(json, r'libraryId')!,
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        localDateTime: mapDateTime(json, r'localDateTime', '')!,
+        localDateTime: mapDateTime(json, r'localDateTime', r'')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
@@ -308,7 +308,7 @@ class AssetResponseDto {
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

@@ -36,7 +36,7 @@ class CQMode {
 
   static CQMode? fromJson(dynamic value) => CQModeTypeTransformer().decode(value);
 
-  static List<CQMode>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CQMode> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CQMode>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

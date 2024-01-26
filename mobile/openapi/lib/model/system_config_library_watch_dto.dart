@@ -26,9 +26,9 @@ class SystemConfigLibraryWatchDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigLibraryWatchDto &&
-     other.enabled == enabled &&
-     other.interval == interval &&
-     other.usePolling == usePolling;
+    other.enabled == enabled &&
+    other.interval == interval &&
+    other.usePolling == usePolling;
 
   @override
   int get hashCode =>

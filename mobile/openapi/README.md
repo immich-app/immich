@@ -94,9 +94,9 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkBulkUpload**](doc//AssetApi.md#checkbulkupload) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAssets**](doc//AssetApi.md#deleteassets) | **DELETE** /asset | 
-*AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download/archive | 
-*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
-*AssetApi* | [**emptyTrash**](doc//AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
+*AssetApi* | [**downloadArchiveOld**](doc//AssetApi.md#downloadarchiveold) | **POST** /asset/download/archive | 
+*AssetApi* | [**downloadFileOld**](doc//AssetApi.md#downloadfileold) | **POST** /asset/download/{id} | 
+*AssetApi* | [**emptyTrashOld**](doc//AssetApi.md#emptytrashold) | **POST** /asset/trash/empty | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getAllUserAssetsByDeviceId**](doc//AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
@@ -106,14 +106,14 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-*AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **POST** /asset/download/info | 
+*AssetApi* | [**getDownloadInfoOld**](doc//AssetApi.md#getdownloadinfoold) | **POST** /asset/download/info | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getRandom**](doc//AssetApi.md#getrandom) | **GET** /asset/random | 
 *AssetApi* | [**getTimeBucket**](doc//AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 *AssetApi* | [**getTimeBuckets**](doc//AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-*AssetApi* | [**restoreAssets**](doc//AssetApi.md#restoreassets) | **POST** /asset/restore | 
-*AssetApi* | [**restoreTrash**](doc//AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
+*AssetApi* | [**restoreAssetsOld**](doc//AssetApi.md#restoreassetsold) | **POST** /asset/restore | 
+*AssetApi* | [**restoreTrashOld**](doc//AssetApi.md#restoretrashold) | **POST** /asset/trash/restore | 
 *AssetApi* | [**runAssetJobs**](doc//AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 *AssetApi* | [**searchAssets**](doc//AssetApi.md#searchassets) | **GET** /assets | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -133,6 +133,9 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logoutAuthDevices**](doc//AuthenticationApi.md#logoutauthdevices) | **DELETE** /auth/devices | 
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
+*DownloadApi* | [**downloadFile**](doc//DownloadApi.md#downloadfile) | **POST** /download/asset/{id} | 
+*DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /face | 
 *FaceApi* | [**reassignFacesById**](doc//FaceApi.md#reassignfacesbyid) | **PUT** /face/{id} | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
@@ -198,6 +201,9 @@ Class | Method | HTTP request | Description
 *TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
 *TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
 *TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
+*TrashApi* | [**emptyTrash**](doc//TrashApi.md#emptytrash) | **POST** /trash/empty | 
+*TrashApi* | [**restoreAssets**](doc//TrashApi.md#restoreassets) | **POST** /trash/restore/assets | 
+*TrashApi* | [**restoreTrash**](doc//TrashApi.md#restoretrash) | **POST** /trash/restore | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
 *UserApi* | [**deleteProfileImage**](doc//UserApi.md#deleteprofileimage) | **DELETE** /user/profile-image | 
@@ -375,17 +381,18 @@ Class | Method | HTTP request | Description
 ## Documentation For Authorization
 
 
-## bearer
+Authentication schemes defined for the API:
+### bearer
 
 - **Type**: HTTP Bearer authentication
 
-## cookie
+### cookie
 
 - **Type**: API key
 - **API key parameter name**: immich_access_token
 - **Location**: 
 
-## api_key
+### api_key
 
 - **Type**: API key
 - **API key parameter name**: x-api-key

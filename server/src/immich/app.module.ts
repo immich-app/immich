@@ -19,6 +19,7 @@ import {
   AssetsController,
   AuditController,
   AuthController,
+  DownloadController,
   FaceController,
   JobController,
   LibraryController,
@@ -30,6 +31,7 @@ import {
   SharedLinkController,
   SystemConfigController,
   TagController,
+  TrashController,
   UserController,
 } from './controllers';
 import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
@@ -52,6 +54,7 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
     APIKeyController,
     AuditController,
     AuthController,
+    DownloadController,
     FaceController,
     JobController,
     LibraryController,
@@ -62,6 +65,7 @@ import { ErrorInterceptor, FileUploadInterceptor } from './interceptors';
     SharedLinkController,
     SystemConfigController,
     TagController,
+    TrashController,
     UserController,
     PersonController,
   ],
