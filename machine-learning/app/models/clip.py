@@ -81,11 +81,11 @@ class BaseCLIPEncoder(InferenceModel):
 
     @property
     def textual_path(self) -> Path:
-        return self.textual_dir / "model.onnx"
+        return self.textual_dir / f"model.{self.preferred_runtime}"
 
     @property
     def visual_path(self) -> Path:
-        return self.visual_dir / "model.onnx"
+        return self.visual_dir / f"model.{self.preferred_runtime}"
 
     @property
     def tokenizer_file_path(self) -> Path:
