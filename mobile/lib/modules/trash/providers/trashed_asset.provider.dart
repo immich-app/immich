@@ -77,7 +77,7 @@ class TrashNotifier extends StateNotifier<bool> {
 
   Future<bool> restoreAssets(Iterable<Asset> assetList) async {
     try {
-      final result = await _trashService.restoreAssetsDeprecated(assetList);
+      final result = await _trashService.restoreAssets(assetList);
 
       if (result) {
         final remoteAssets = assetList.where((a) => a.isRemote).toList();
