@@ -453,6 +453,7 @@
                 bind:name
                 on:change={(event) => handleNameChange(event.detail)}
                 on:input={searchPeople}
+                {thumbnailData}
               />
             {:else}
               <div class="relative">
