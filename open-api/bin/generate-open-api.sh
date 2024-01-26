@@ -14,7 +14,6 @@ function dart {
   # Post generate patches
   patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api_client.dart <./patch/api_client.dart.patch
   patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api.dart <./patch/api.dart.patch
-  sed -i 's/0.17.0/0.18.0/g' ../mobile/openapi/pubspec.yaml
 }
 
 function typescript {
