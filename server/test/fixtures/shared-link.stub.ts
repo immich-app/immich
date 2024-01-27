@@ -248,6 +248,7 @@ export const sharedLinkStub = {
             profileDescription: 'sRGB',
             bitsPerSample: 8,
             colorspace: 'sRGB',
+            autoStackId: null,
           },
           tags: [],
           sharedLinks: [],

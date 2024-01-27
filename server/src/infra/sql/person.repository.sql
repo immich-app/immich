@@ -172,7 +172,7 @@ FROM
       "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
       "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
       "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-      "AssetFaceEntity__AssetFaceEntity_asset"."stackParentId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackParentId"
+      "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
     FROM
       "asset_faces" "AssetFaceEntity"
       LEFT JOIN "person" "AssetFaceEntity__AssetFaceEntity_person" ON "AssetFaceEntity__AssetFaceEntity_person"."id" = "AssetFaceEntity"."personId"
@@ -270,7 +270,7 @@ FROM
       "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
       "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
       "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
-      "AssetEntity"."stackParentId" AS "AssetEntity_stackParentId",
+      "AssetEntity"."stackId" AS "AssetEntity_stackId",
       "AssetEntity__AssetEntity_faces"."id" AS "AssetEntity__AssetEntity_faces_id",
       "AssetEntity__AssetEntity_faces"."assetId" AS "AssetEntity__AssetEntity_faces_assetId",
       "AssetEntity__AssetEntity_faces"."personId" AS "AssetEntity__AssetEntity_faces_personId",
@@ -303,6 +303,7 @@ FROM
       "AssetEntity__AssetEntity_exifInfo"."projectionType" AS "AssetEntity__AssetEntity_exifInfo_projectionType",
       "AssetEntity__AssetEntity_exifInfo"."city" AS "AssetEntity__AssetEntity_exifInfo_city",
       "AssetEntity__AssetEntity_exifInfo"."livePhotoCID" AS "AssetEntity__AssetEntity_exifInfo_livePhotoCID",
+      "AssetEntity__AssetEntity_exifInfo"."autoStackId" AS "AssetEntity__AssetEntity_exifInfo_autoStackId",
       "AssetEntity__AssetEntity_exifInfo"."state" AS "AssetEntity__AssetEntity_exifInfo_state",
       "AssetEntity__AssetEntity_exifInfo"."country" AS "AssetEntity__AssetEntity_exifInfo_country",
       "AssetEntity__AssetEntity_exifInfo"."make" AS "AssetEntity__AssetEntity_exifInfo_make",
@@ -376,7 +377,7 @@ SELECT
   "AssetFaceEntity__AssetFaceEntity_asset"."livePhotoVideoId" AS "AssetFaceEntity__AssetFaceEntity_asset_livePhotoVideoId",
   "AssetFaceEntity__AssetFaceEntity_asset"."originalFileName" AS "AssetFaceEntity__AssetFaceEntity_asset_originalFileName",
   "AssetFaceEntity__AssetFaceEntity_asset"."sidecarPath" AS "AssetFaceEntity__AssetFaceEntity_asset_sidecarPath",
-  "AssetFaceEntity__AssetFaceEntity_asset"."stackParentId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackParentId"
+  "AssetFaceEntity__AssetFaceEntity_asset"."stackId" AS "AssetFaceEntity__AssetFaceEntity_asset_stackId"
 FROM
   "asset_faces" "AssetFaceEntity"
   LEFT JOIN "assets" "AssetFaceEntity__AssetFaceEntity_asset" ON "AssetFaceEntity__AssetFaceEntity_asset"."id" = "AssetFaceEntity"."assetId"
