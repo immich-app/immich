@@ -10,9 +10,10 @@
     zone: string;
     offset: string;
   };
+  export let placeholder = '';
+
   let isOpened = false;
   let searchQuery = '';
-
   $: filteredOptions = options.filter((option) => option.zone.toLowerCase().includes(searchQuery.toLowerCase()));
 </script>
 
@@ -31,8 +32,10 @@
   </div>
 
   {#if isOpened}
-    <div class="absolute w-full top-full mt-2 dark:bg-gray-800 rounded-lg border border-gray-700">
-      <div class="relative border-b border-gray-700 flex">
+    <div
+      class="absolute w-full top-full mt-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-900"
+    >
+      <div class="relative border-b flex">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3">
           <div class="dark:text-immich-dark-fg/75">
             <button class="flex items-center">
@@ -42,18 +45,15 @@
         </div>
 
         <!-- svelte-ignore a11y-autofocus -->
-        <input
-          bind:value={searchQuery}
-          autofocus
-          placeholder="Search timezone..."
-          class="ml-9 grow bg-transparent py-2"
-        />
+        <input bind:value={searchQuery} autofocus {placeholder} class="ml-9 grow bg-transparent py-2" />
       </div>
       <div class="h-64 overflow-y-auto">
         {#each filteredOptions as option}
           <button
-            class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-700"
-            class:bg-gray-700={option.zone === selectedOption.zone}
+            class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-all
+             ${option.zone === selectedOption.zone ? 'bg-gray-300 dark:bg-gray-600' : ''}
+            "
+            class:bg-gray-300={option.zone === selectedOption.zone}
             on:click={() => {
               selectedOption = option;
               isOpened = false;

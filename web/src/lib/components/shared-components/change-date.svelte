@@ -124,7 +124,7 @@
         <label for="timezone">Timezone</label>
 
         <div class="relative">
-          <Combobox bind:selectedOption options={filteredTimezones} />
+          <Combobox bind:selectedOption options={filteredTimezones} placeholder="Search timezone..." />
           <!-- <input
             class="text-sm my-4 w-full bg-gray-200 p-3 rounded-lg dark:text-white dark:bg-gray-600"
             id="timezoneSearch"
