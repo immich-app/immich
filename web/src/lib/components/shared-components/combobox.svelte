@@ -59,7 +59,7 @@
               isOpened = false;
             }}
           >
-            {option.label} - {option.value}
+            {option.label}
           </button>
         {/each}
       </div>
