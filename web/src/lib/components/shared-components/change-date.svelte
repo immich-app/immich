@@ -30,7 +30,7 @@
   };
 
   const timezones: ZoneOption[] = Intl.supportedValuesOf('timeZone').map((zone: string) => ({
-    label: zone,
+    label: zone + ` (${DateTime.local({ zone }).toFormat('ZZ')})`,
     value: 'UTC' + DateTime.local({ zone }).toFormat('ZZ'),
   }));
 
