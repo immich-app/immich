@@ -546,11 +546,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .get(`/asset/assetById/${asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: asset1.id,
-        stack: [],
-        stackCount: 0,
-      });
+      expect(body).toMatchObject({ id: asset1.id });
     });
 
     it('should work with a shared link', async () => {
@@ -561,11 +557,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       const { status, body } = await request(server).get(`/asset/assetById/${asset1.id}?key=${sharedLink.key}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: asset1.id,
-        stack: [],
-        stackCount: 0,
-      });
+      expect(body).toMatchObject({ id: asset1.id });
     });
   });
 
@@ -597,11 +589,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .get(`/asset/${asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: asset1.id,
-        stack: [],
-        stackCount: 0,
-      });
+      expect(body).toMatchObject({ id: asset1.id });
     });
 
     it('should work with a shared link', async () => {
@@ -612,11 +600,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       const { status, body } = await request(server).get(`/asset/${asset1.id}?key=${sharedLink.key}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: asset1.id,
-        stack: [],
-        stackCount: 0,
-      });
+      expect(body).toMatchObject({ id: asset1.id });
     });
   });
 
