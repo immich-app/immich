@@ -21,10 +21,10 @@ class CreateAlbumPage extends HookConsumerWidget {
   final List<Asset>? initialAssets;
 
   const CreateAlbumPage({
-    Key? key,
+    super.key,
     required this.isSharedAlbum,
     this.initialAssets,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -25,7 +25,7 @@ const _defaultDecoration = BoxDecoration(
 /// to user gestures, updates to  the controller state and mounts the entire PhotoView Layout
 class PhotoViewCore extends StatefulWidget {
   const PhotoViewCore({
-    Key? key,
+    super.key,
     required this.imageProvider,
     required this.backgroundDecoration,
     required this.gaplessPlayback,
@@ -47,11 +47,10 @@ class PhotoViewCore extends StatefulWidget {
     required this.filterQuality,
     required this.disableGestures,
     required this.enablePanAlways,
-  })  : customChild = null,
-        super(key: key);
+  })  : customChild = null;
 
   const PhotoViewCore.customChild({
-    Key? key,
+    super.key,
     required this.customChild,
     required this.backgroundDecoration,
     this.heroAttributes,
@@ -73,8 +72,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.disableGestures,
     required this.enablePanAlways,
   })  : imageProvider = null,
-        gaplessPlayback = false,
-        super(key: key);
+        gaplessPlayback = false;
 
   final Decoration? backgroundDecoration;
   final ImageProvider? imageProvider;

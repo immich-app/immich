@@ -11,7 +11,7 @@ import 'package:immich_mobile/modules/shared_link/ui/shared_link_item.dart';
 
 @RoutePage()
 class SharedLinkPage extends HookConsumerWidget {
-  const SharedLinkPage({Key? key}) : super(key: key);
+  const SharedLinkPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

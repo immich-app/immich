@@ -389,13 +389,10 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     }
   }
 
-  Future<bool> onWillPop() async {
+  void onPopInvoked(_) async {
     if (widget.selectionActive && _selectedAssets.isNotEmpty) {
       _deselectAll();
-      return false;
     }
-
-    return true;
   }
 
   @override
@@ -438,8 +435,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: onWillPop,
+    return PopScope(
+      canPop: widget.selectionActive && _selectedAssets.isNotEmpty,
+      onPopInvoked: onPopInvoked,
       child: Stack(
         children: [
           _buildAssetGrid(),

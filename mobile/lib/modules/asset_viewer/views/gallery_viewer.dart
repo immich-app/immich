@@ -753,11 +753,10 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: WillPopScope(
-        onWillPop: () async {
+      body: PopScope(
+        onPopInvoked: (_) async {
           // Change immersive mode back to normal "edgeToEdge" mode
           await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          return true;
         },
         child: Stack(
           children: [

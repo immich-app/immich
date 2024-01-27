@@ -31,7 +31,7 @@ import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 class AlbumViewerPage extends HookConsumerWidget {
   final int albumId;
 
-  const AlbumViewerPage({Key? key, required this.albumId}) : super(key: key);
+  const AlbumViewerPage({super.key, required this.albumId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -6,9 +6,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 
 class DeleteDialog extends ConfirmDialog {
-  const DeleteDialog({Key? key, String? alert, required Function onDelete})
+  const DeleteDialog({super.key, String? alert, required Function onDelete})
       : super(
-          key: key,
           title: "delete_dialog_title",
           content: alert ?? "delete_dialog_alert",
           cancel: "delete_dialog_cancel",
