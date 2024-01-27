@@ -429,10 +429,10 @@ class BackupService {
 class MultipartRequest extends http.MultipartRequest {
   /// Creates a new [MultipartRequest].
   MultipartRequest(
-    String method,
-    Uri url, {
+    super.method,
+    super.url, {
     required this.onProgress,
-  }) : super(method, url);
+  });
 
   final void Function(int bytes, int totalBytes) onProgress;
 

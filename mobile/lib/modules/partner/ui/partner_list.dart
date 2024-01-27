@@ -7,7 +7,7 @@ import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/user_avatar.dart';
 
 class PartnerList extends HookConsumerWidget {
-  const PartnerList({Key? key, required this.partner}) : super(key: key);
+  const PartnerList({super.key, required this.partner});
 
   final List<User> partner;
 

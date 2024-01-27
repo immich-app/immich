@@ -5,7 +5,7 @@ import 'package:immich_mobile/modules/login/ui/change_password_form.dart';
 
 @RoutePage()
 class ChangePasswordPage extends HookConsumerWidget {
-  const ChangePasswordPage({Key? key}) : super(key: key);
+  const ChangePasswordPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

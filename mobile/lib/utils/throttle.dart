@@ -34,8 +34,8 @@ Throttler useThrottler({
 class _ThrottleHook extends Hook<Throttler> {
   const _ThrottleHook({
     required this.interval,
-    List<Object?>? keys,
-  }) : super(keys: keys);
+    super.keys,
+  });
 
   final Duration interval;
 

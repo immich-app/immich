@@ -34,7 +34,7 @@ abstract class _$AlbumActivity
   late final String albumId;
   late final String? assetId;
 
-  Future<List<Activity>> build(
+  FutureOr<List<Activity>> build(
     String albumId, [
     String? assetId,
   ]);
@@ -136,7 +136,7 @@ class AlbumActivityProvider extends AutoDisposeAsyncNotifierProviderImpl<
   final String? assetId;
 
   @override
-  Future<List<Activity>> runNotifierBuild(
+  FutureOr<List<Activity>> runNotifierBuild(
     covariant AlbumActivity notifier,
   ) {
     return notifier.build(

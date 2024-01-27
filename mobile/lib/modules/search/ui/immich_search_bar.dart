@@ -8,10 +8,10 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 class ImmichSearchBar extends HookConsumerWidget
     implements PreferredSizeWidget {
   const ImmichSearchBar({
-    Key? key,
+    super.key,
     required this.searchFocusNode,
     required this.onSubmitted,
-  }) : super(key: key);
+  });
 
   final FocusNode searchFocusNode;
   final Function(String) onSubmitted;

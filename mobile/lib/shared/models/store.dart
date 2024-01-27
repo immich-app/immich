@@ -95,15 +95,15 @@ class StoreValue {
 
   T? _extract<T>(StoreKey<T> key) {
     switch (key.type) {
-      case int:
+      case const (int):
         return intValue as T?;
-      case bool:
+      case const (bool):
         return intValue == null ? null : (intValue! == 1) as T;
-      case DateTime:
+      case const (DateTime):
         return intValue == null
             ? null
             : DateTime.fromMicrosecondsSinceEpoch(intValue!) as T;
-      case String:
+      case const (String):
         return strValue as T?;
       default:
         if (key.fromDb != null) {
@@ -117,16 +117,16 @@ class StoreValue {
     int? i;
     String? s;
     switch (key.type) {
-      case int:
+      case const (int):
         i = value as int?;
         break;
-      case bool:
+      case const (bool):
         i = value == null ? null : (value == true ? 1 : 0);
         break;
-      case DateTime:
+      case const (DateTime):
         i = value == null ? null : (value as DateTime).microsecondsSinceEpoch;
         break;
-      case String:
+      case const (String):
         s = value as String?;
         break;
       default:

@@ -13,7 +13,7 @@ import 'package:openapi/api.dart';
 
 @RoutePage()
 class SplashScreenPage extends HookConsumerWidget {
-  const SplashScreenPage({Key? key}) : super(key: key);
+  const SplashScreenPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

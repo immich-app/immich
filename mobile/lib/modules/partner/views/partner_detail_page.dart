@@ -11,7 +11,7 @@ import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 @RoutePage()
 class PartnerDetailPage extends HookConsumerWidget {
-  const PartnerDetailPage({Key? key, required this.partner}) : super(key: key);
+  const PartnerDetailPage({super.key, required this.partner});
 
   final User partner;
 
