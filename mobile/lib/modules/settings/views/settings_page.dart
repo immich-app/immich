@@ -12,7 +12,7 @@ import 'package:immich_mobile/modules/settings/ui/theme_setting/theme_setting.da
 
 @RoutePage()
 class SettingsPage extends HookConsumerWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +43,7 @@ class SettingsPage extends HookConsumerWidget {
               const LocalStorageSettings(),
               const AdvancedSettings(),
             ],
-          ).toList(),
+          ),
         ],
       ),
     );

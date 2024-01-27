@@ -5,10 +5,11 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
 @RoutePage()
 class FailedBackupStatusPage extends HookConsumerWidget {
-  const FailedBackupStatusPage({Key? key}) : super(key: key);
+  const FailedBackupStatusPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final errorBackupList = ref.watch(errorBackupListProvider);

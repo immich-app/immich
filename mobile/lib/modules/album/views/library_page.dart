@@ -13,7 +13,7 @@ import 'package:immich_mobile/shared/ui/immich_app_bar.dart';
 
 @RoutePage()
 class LibraryPage extends HookConsumerWidget {
-  const LibraryPage({Key? key}) : super(key: key);
+  const LibraryPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

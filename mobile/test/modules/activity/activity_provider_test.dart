@@ -73,7 +73,7 @@ void main() {
     listener = ListenerMock();
     container.listen(
       provider,
-      listener,
+      listener.call,
       fireImmediately: true,
     );
 

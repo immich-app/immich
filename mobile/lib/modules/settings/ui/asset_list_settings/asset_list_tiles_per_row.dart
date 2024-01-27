@@ -8,8 +8,8 @@ import 'package:immich_mobile/modules/settings/services/app_settings.service.dar
 
 class TilesPerRow extends HookConsumerWidget {
   const TilesPerRow({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

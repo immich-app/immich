@@ -9,8 +9,8 @@ import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart
 
 class ImageViewerQualitySetting extends HookConsumerWidget {
   const ImageViewerQualitySetting({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

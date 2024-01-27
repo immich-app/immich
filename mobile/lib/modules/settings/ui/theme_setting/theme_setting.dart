@@ -9,8 +9,8 @@ import 'package:immich_mobile/utils/immich_app_theme.dart';
 
 class ThemeSetting extends HookConsumerWidget {
   const ThemeSetting({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

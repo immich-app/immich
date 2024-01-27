@@ -13,7 +13,7 @@ import 'package:immich_mobile/shared/providers/tab.provider.dart';
 
 @RoutePage()
 class TabControllerPage extends HookConsumerWidget {
-  const TabControllerPage({Key? key}) : super(key: key);
+  const TabControllerPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -168,15 +168,6 @@ class TabControllerPage extends HookConsumerWidget {
       );
     }
 
-    Future<bool> returnBackToHome(TabsRouter tabsRouter) async {
-      bool atHomeTab = tabsRouter.activeIndex == 0;
-      if (!atHomeTab) {
-        tabsRouter.setActiveIndex(0);
-      }
-
-      return atHomeTab;
-    }
-
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
       routes: [
@@ -192,8 +183,10 @@ class TabControllerPage extends HookConsumerWidget {
       ),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
-        return WillPopScope(
-          onWillPop: () => returnBackToHome(tabsRouter),
+        return PopScope(
+          canPop: tabsRouter.activeIndex == 0,
+          onPopInvoked: (didPop) =>
+              !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: LayoutBuilder(
             builder: (context, constraints) {
               const medium = 600;
