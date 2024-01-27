@@ -1,4 +1,3 @@
-import { AssetStackEntity } from '@app/infra/entities/asset-stack.entity';
 import {
   Column,
   CreateDateColumn,
@@ -17,6 +16,7 @@ import {
 import { AlbumEntity } from './album.entity';
 import { AssetFaceEntity } from './asset-face.entity';
 import { AssetJobStatusEntity } from './asset-job-status.entity';
+import { AssetStackEntity } from './asset-stack.entity';
 import { ExifEntity } from './exif.entity';
 import { LibraryEntity } from './library.entity';
 import { SharedLinkEntity } from './shared-link.entity';

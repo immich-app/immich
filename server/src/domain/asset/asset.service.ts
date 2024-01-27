@@ -342,6 +342,7 @@ export class AssetService {
     const { ids, removeParent, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.access.requirePermission(auth, Permission.ASSET_UPDATE, ids);
 
+    // TODO: refactor this logic into separate API calls POST /stack, PUT /stack, etc.
     const stackIdsToCheckForDelete: string[] = [];
     if (removeParent) {
       (options as Partial<AssetEntity>).stack = null;
@@ -379,9 +380,7 @@ export class AssetService {
         await this.assetStackRepository.update({
           id: stack.id,
           primaryAssetId: primaryAsset.id,
-          assets: ids.map((id) => {
-            return { id } as AssetEntity;
-          }),
+          assets: ids.map((id) => ({ id }) as AssetEntity),
         });
       }
 
