@@ -93,10 +93,7 @@
       </div>
       <div class="flex flex-col w-full mt-2">
         <label for="timezone">Timezone</label>
-
-        <div class="relative">
-          <Combobox bind:selectedOption options={timezones} placeholder="Search timezone..." />
-        </div>
+        <Combobox bind:selectedOption options={timezones} placeholder="Search timezone..." />
       </div>
     </div>
   </ConfirmDialogue>
