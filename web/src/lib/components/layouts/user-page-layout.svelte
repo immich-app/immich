@@ -7,7 +7,7 @@
   export let hideNavbar = false;
   export let showUploadButton = false;
   export let title: string | undefined = undefined;
-  export let secondTitle: string | undefined = undefined;
+  export let description: string | undefined = undefined;
   export let scrollbar = true;
   export let admin = false;
 
@@ -40,8 +40,8 @@
       >
         <div class="flex gap-2 items-center">
           <div class="font-medium">{title}</div>
-          {#if secondTitle}
-            <p class="text-sm text-gray-400 dark:text-gray-600">{secondTitle}</p>
+          {#if description}
+            <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
           {/if}
         </div>
         <slot name="buttons" />

@@ -417,7 +417,7 @@
   </FullScreenModal>
 {/if}
 
-<UserPageLayout title="People" secondTitle={countTotalPeople !== 0 ? `(${countTotalPeople.toString()})` : undefined}>
+<UserPageLayout title="People" description={countTotalPeople !== 0 ? `(${countTotalPeople.toString()})` : undefined}>
   <svelte:fragment slot="buttons">
     {#if countTotalPeople > 0}
       <div class="flex gap-2 items-center justify-center">
