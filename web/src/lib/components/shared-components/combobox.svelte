@@ -1,20 +1,20 @@
-<script lang="ts">
+<script lang="ts" generics="T">
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
 
-  export let options: {
-    zone: string;
-    offset: string;
-  }[] = [];
-  export let selectedOption: {
-    zone: string;
-    offset: string;
+  type ComboBoxOption = {
+    label: string;
+    value: T;
   };
+
+  export let options: ComboBoxOption[] = [];
+  export let selectedOption: ComboBoxOption;
   export let placeholder = '';
 
   let isOpened = false;
   let searchQuery = '';
-  $: filteredOptions = options.filter((option) => option.zone.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
 </script>
 
 <div class="relative">
@@ -24,7 +24,7 @@
       searchQuery = '';
       isOpened = !isOpened;
     }}
-    >{selectedOption.zone}
+    >{selectedOption.label}
   </button>
 
   <div class="absolute right-0 top-0 h-full flex px-4 justify-center items-center">
@@ -51,15 +51,15 @@
         {#each filteredOptions as option}
           <button
             class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-all
-             ${option.zone === selectedOption.zone ? 'bg-gray-300 dark:bg-gray-600' : ''}
+             ${option.label === selectedOption.label ? 'bg-gray-300 dark:bg-gray-600' : ''}
             "
-            class:bg-gray-300={option.zone === selectedOption.zone}
+            class:bg-gray-300={option.label === selectedOption.label}
             on:click={() => {
               selectedOption = option;
               isOpened = false;
             }}
           >
-            {option.zone}
+            {option.label} - {option.value}
           </button>
         {/each}
       </div>
