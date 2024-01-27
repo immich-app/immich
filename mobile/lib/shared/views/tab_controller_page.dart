@@ -168,13 +168,6 @@ class TabControllerPage extends HookConsumerWidget {
       );
     }
 
-    void returnBackToHome(TabsRouter tabsRouter) {
-      bool atHomeTab = tabsRouter.activeIndex == 0;
-      if (!atHomeTab) {
-        tabsRouter.setActiveIndex(0);
-      }
-    }
-
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
       routes: [
@@ -192,7 +185,8 @@ class TabControllerPage extends HookConsumerWidget {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
-          onPopInvoked: (_) => returnBackToHome(tabsRouter),
+          onPopInvoked: (didPop) =>
+              !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: LayoutBuilder(
             builder: (context, constraints) {
               const medium = 600;

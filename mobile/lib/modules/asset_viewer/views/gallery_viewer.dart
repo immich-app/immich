@@ -751,14 +751,16 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     });
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: PopScope(
-        onPopInvoked: (_) async {
-          // Change immersive mode back to normal "edgeToEdge" mode
-          await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        },
-        child: Stack(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (_) {
+        // Change immersive mode back to normal "edgeToEdge" mode
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        context.pop();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
           children: [
             PhotoViewGallery.builder(
               scaleStateChangedCallback: (state) {
