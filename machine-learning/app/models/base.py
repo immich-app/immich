@@ -240,7 +240,7 @@ class InferenceModel(ABC):
 
     @property
     def preferred_runtime_default(self) -> ModelRuntime:
-        return ModelRuntime.ONNX if ann.ann.is_available and settings.ann else ModelRuntime.ARMNN
+        return ModelRuntime.ARMNN if ann.ann.is_available and settings.ann else ModelRuntime.ONNX
 
 
 # HF deep copies configs, so we need to make session options picklable
