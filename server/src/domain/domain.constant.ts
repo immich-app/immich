@@ -1,7 +1,7 @@
 import { AssetType } from '@app/infra/entities';
 import { Duration } from 'luxon';
 import { extname, join } from 'node:path';
-import pkg from 'src/../../package.json';
+import pkg from '../../package.json';
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
