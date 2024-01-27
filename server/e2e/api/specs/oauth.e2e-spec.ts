@@ -1,7 +1,7 @@
 import { OAuthController } from '@app/immich';
 import { errorStub } from '@test/fixtures';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${OAuthController.name} (e2e)`, () => {

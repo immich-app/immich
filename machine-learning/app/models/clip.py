@@ -23,7 +23,7 @@ class BaseCLIPEncoder(InferenceModel):
     def __init__(
         self,
         model_name: str,
-        cache_dir: str | None = None,
+        cache_dir: Path | str | None = None,
         mode: Literal["text", "vision"] | None = None,
         **model_kwargs: Any,
     ) -> None:
@@ -136,7 +136,7 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
     def __init__(
         self,
         model_name: str,
-        cache_dir: str | None = None,
+        cache_dir: Path | str | None = None,
         mode: Literal["text", "vision"] | None = None,
         **model_kwargs: Any,
     ) -> None:

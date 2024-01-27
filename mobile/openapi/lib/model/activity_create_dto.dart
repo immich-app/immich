@@ -41,10 +41,10 @@ class ActivityCreateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityCreateDto &&
-     other.albumId == albumId &&
-     other.assetId == assetId &&
-     other.comment == comment &&
-     other.type == type;
+    other.albumId == albumId &&
+    other.assetId == assetId &&
+    other.comment == comment &&
+    other.type == type;
 
   @override
   int get hashCode =>

@@ -23,8 +23,8 @@ class TimeBucketResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TimeBucketResponseDto &&
-     other.count == count &&
-     other.timeBucket == timeBucket;
+    other.count == count &&
+    other.timeBucket == timeBucket;
 
   @override
   int get hashCode =>

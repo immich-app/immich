@@ -29,10 +29,10 @@ class SearchAssetResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchAssetResponseDto &&
-     other.count == count &&
-     other.facets == facets &&
-     other.items == items &&
-     other.total == total;
+    other.count == count &&
+    _deepEquality.equals(other.facets, facets) &&
+    _deepEquality.equals(other.items, items) &&
+    other.total == total;
 
   @override
   int get hashCode =>

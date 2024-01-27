@@ -3,7 +3,7 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { SearchExploreResponseDto, api } from '@api';
+  import { type SearchExploreResponseDto, api } from '@api';
   import type { PageData } from './$types';
 
   export let data: PageData;
@@ -72,8 +72,13 @@
 
   {#if places.length > 0}
     <div class="mb-6 mt-2">
-      <div>
+      <div class="flex justify-between">
         <p class="mb-4 font-medium dark:text-immich-dark-fg">Places</p>
+        <a
+          href={AppRoute.PLACES}
+          class="pr-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          draggable="false">View All</a
+        >
       </div>
       <div class="flex flex-row flex-wrap gap-4">
         {#each places as item (item.data.id)}

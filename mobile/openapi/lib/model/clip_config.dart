@@ -41,10 +41,10 @@ class CLIPConfig {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CLIPConfig &&
-     other.enabled == enabled &&
-     other.mode == mode &&
-     other.modelName == modelName &&
-     other.modelType == modelType;
+    other.enabled == enabled &&
+    other.mode == mode &&
+    other.modelName == modelName &&
+    other.modelType == modelType;
 
   @override
   int get hashCode =>

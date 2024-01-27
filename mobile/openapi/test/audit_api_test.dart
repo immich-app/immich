@@ -22,7 +22,7 @@ void main() {
       // TODO
     });
 
-    //Future<AuditDeletesResponseDto> getAuditDeletes(EntityType entityType, DateTime after, { String userId }) async
+    //Future<AuditDeletesResponseDto> getAuditDeletes(DateTime after, EntityType entityType, { String userId }) async
     test('test getAuditDeletes', () async {
       // TODO
     });

@@ -7,7 +7,7 @@ import {
   AssetJobName,
   AuditApi,
   AuthenticationApi,
-  ConfigurationParameters,
+  DownloadApi,
   FaceApi,
   JobApi,
   JobName,
@@ -19,6 +19,7 @@ import {
   ServerInfoApi,
   SharedLinkApi,
   SystemConfigApi,
+  TrashApi,
   UserApi,
   UserApiFp,
   base,
@@ -30,6 +31,7 @@ import type { ApiParams } from './types';
 class ImmichApi {
   public activityApi: ActivityApi;
   public albumApi: AlbumApi;
+  public downloadApi: DownloadApi;
   public libraryApi: LibraryApi;
   public assetApi: AssetApi;
   public auditApi: AuditApi;
@@ -45,6 +47,7 @@ class ImmichApi {
   public personApi: PersonApi;
   public systemConfigApi: SystemConfigApi;
   public userApi: UserApi;
+  public trashApi: TrashApi;
 
   private config: configuration.Configuration;
   private key?: string;
@@ -53,12 +56,13 @@ class ImmichApi {
     return !!this.key;
   }
 
-  constructor(params: ConfigurationParameters) {
+  constructor(params: configuration.ConfigurationParameters) {
     this.config = new configuration.Configuration(params);
 
     this.activityApi = new ActivityApi(this.config);
     this.albumApi = new AlbumApi(this.config);
     this.auditApi = new AuditApi(this.config);
+    this.downloadApi = new DownloadApi(this.config);
     this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.authenticationApi = new AuthenticationApi(this.config);
@@ -73,6 +77,7 @@ class ImmichApi {
     this.personApi = new PersonApi(this.config);
     this.systemConfigApi = new SystemConfigApi(this.config);
     this.userApi = new UserApi(this.config);
+    this.trashApi = new TrashApi(this.config);
   }
 
   private createUrl(path: string, params?: Record<string, unknown>) {
@@ -136,7 +141,8 @@ class ImmichApi {
       [JobName.MetadataExtraction]: 'Extract Metadata',
       [JobName.Sidecar]: 'Sidecar Metadata',
       [JobName.SmartSearch]: 'Smart Search',
-      [JobName.RecognizeFaces]: 'Recognize Faces',
+      [JobName.FaceDetection]: 'Face Detection',
+      [JobName.FacialRecognition]: 'Facial Recognition',
       [JobName.VideoConversion]: 'Transcode Videos',
       [JobName.StorageTemplateMigration]: 'Storage Template Migration',
       [JobName.Migration]: 'Migration',

@@ -7,6 +7,7 @@ import { AssetService } from './asset';
 import { AuditService } from './audit';
 import { AuthService } from './auth';
 import { DatabaseService } from './database';
+import { DownloadService } from './download';
 import { JobService } from './job';
 import { LibraryService } from './library';
 import { MediaService } from './media';
@@ -21,6 +22,7 @@ import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
 import { SystemConfigService } from './system-config';
 import { TagService } from './tag';
+import { TrashService } from './trash';
 import { UserService } from './user';
 
 const providers: Provider[] = [
@@ -31,6 +33,7 @@ const providers: Provider[] = [
   AuditService,
   AuthService,
   DatabaseService,
+  DownloadService,
   ImmichLogger,
   JobService,
   LibraryService,
@@ -46,6 +49,7 @@ const providers: Provider[] = [
   StorageTemplateService,
   SystemConfigService,
   TagService,
+  TrashService,
   UserService,
 ];
 

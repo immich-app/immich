@@ -7,17 +7,233 @@ from unittest import mock
 
 import cv2
 import numpy as np
+import onnxruntime as ort
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 from pytest_mock import MockerFixture
 
-from .config import settings
+from .config import log, settings
 from .models.base import InferenceModel, PicklableSessionOptions
 from .models.cache import ModelCache
 from .models.clip import OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
 from .schemas import ModelType
+
+
+class TestBase:
+    CPU_EP = ["CPUExecutionProvider"]
+    CUDA_EP = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+    OV_EP = ["OpenVINOExecutionProvider", "CPUExecutionProvider"]
+    CUDA_EP_OUT_OF_ORDER = ["CPUExecutionProvider", "CUDAExecutionProvider"]
+    TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
+
+    @pytest.mark.providers(CPU_EP)
+    def test_sets_cpu_provider(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CPU_EP
+
+    @pytest.mark.providers(CUDA_EP)
+    def test_sets_cuda_provider_if_available(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CUDA_EP
+
+    @pytest.mark.providers(OV_EP)
+    def test_sets_openvino_provider_if_available(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.OV_EP
+
+    @pytest.mark.providers(CUDA_EP_OUT_OF_ORDER)
+    def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CUDA_EP
+
+    @pytest.mark.providers(TRT_EP)
+    def test_ignores_unsupported_providers(self, providers: list[str]) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.providers == self.CUDA_EP
+
+    def test_sets_provider_kwarg(self) -> None:
+        providers = ["CUDAExecutionProvider"]
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=providers)
+
+        assert encoder.providers == providers
+
+    def test_sets_default_provider_options(self) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
+
+        assert encoder.provider_options == [
+            {},
+            {"arena_extend_strategy": "kSameAsRequested"},
+        ]
+
+    def test_sets_provider_options_kwarg(self) -> None:
+        encoder = OpenCLIPEncoder(
+            "ViT-B-32__openai",
+            providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"],
+            provider_options=[],
+        )
+
+        assert encoder.provider_options == []
+
+    def test_sets_default_sess_options(self) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
+        assert encoder.sess_options.inter_op_num_threads == 1
+        assert encoder.sess_options.intra_op_num_threads == 2
+        assert encoder.sess_options.enable_cpu_mem_arena is False
+
+    def test_sets_default_sess_options_does_not_set_threads_if_non_cpu_and_default_threads(self) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
+
+        assert encoder.sess_options.inter_op_num_threads == 0
+        assert encoder.sess_options.intra_op_num_threads == 0
+
+    def test_sets_default_sess_options_sets_threads_if_non_cpu_and_set_threads(self, mocker: MockerFixture) -> None:
+        mock_settings = mocker.patch("app.models.base.settings", autospec=True)
+        mock_settings.model_inter_op_threads = 2
+        mock_settings.model_intra_op_threads = 4
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
+
+        assert encoder.sess_options.inter_op_num_threads == 2
+        assert encoder.sess_options.intra_op_num_threads == 4
+
+    def test_sets_sess_options_kwarg(self) -> None:
+        sess_options = ort.SessionOptions()
+        encoder = OpenCLIPEncoder(
+            "ViT-B-32__openai",
+            providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"],
+            provider_options=[],
+            sess_options=sess_options,
+        )
+
+        assert sess_options is encoder.sess_options
+
+    def test_sets_default_cache_dir(self) -> None:
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.cache_dir == Path("/cache/clip/ViT-B-32__openai")
+
+    def test_sets_cache_dir_kwarg(self) -> None:
+        cache_dir = Path("/test_cache")
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=cache_dir)
+
+        assert encoder.cache_dir == cache_dir
+
+    def test_casts_cache_dir_string_to_path(self) -> None:
+        cache_dir = "/test_cache"
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=cache_dir)
+
+        assert encoder.cache_dir == Path(cache_dir)
+
+    def test_clear_cache(self, mocker: MockerFixture) -> None:
+        mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
+        mock_rmtree.avoids_symlink_attacks = True
+        mock_cache_dir = mocker.Mock()
+        mock_cache_dir.exists.return_value = True
+        mock_cache_dir.is_dir.return_value = True
+        mocker.patch("app.models.base.Path", return_value=mock_cache_dir)
+        info = mocker.spy(log, "info")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=mock_cache_dir)
+        encoder.clear_cache()
+
+        mock_rmtree.assert_called_once_with(encoder.cache_dir)
+        info.assert_called_once()
+
+    def test_clear_cache_warns_if_path_does_not_exist(self, mocker: MockerFixture) -> None:
+        mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
+        mock_rmtree.avoids_symlink_attacks = True
+        mock_cache_dir = mocker.Mock()
+        mock_cache_dir.exists.return_value = False
+        mock_cache_dir.is_dir.return_value = True
+        mocker.patch("app.models.base.Path", return_value=mock_cache_dir)
+        warning = mocker.spy(log, "warning")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=mock_cache_dir)
+        encoder.clear_cache()
+
+        mock_rmtree.assert_not_called()
+        warning.assert_called_once()
+
+    def test_clear_cache_raises_exception_if_vulnerable_to_symlink_attack(self, mocker: MockerFixture) -> None:
+        mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
+        mock_rmtree.avoids_symlink_attacks = False
+        mock_cache_dir = mocker.Mock()
+        mock_cache_dir.exists.return_value = True
+        mock_cache_dir.is_dir.return_value = True
+        mocker.patch("app.models.base.Path", return_value=mock_cache_dir)
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=mock_cache_dir)
+        with pytest.raises(RuntimeError):
+            encoder.clear_cache()
+
+        mock_rmtree.assert_not_called()
+
+    def test_clear_cache_replaces_file_with_dir_if_path_is_file(self, mocker: MockerFixture) -> None:
+        mock_rmtree = mocker.patch("app.models.base.rmtree", autospec=True)
+        mock_rmtree.avoids_symlink_attacks = True
+        mock_cache_dir = mocker.Mock()
+        mock_cache_dir.exists.return_value = True
+        mock_cache_dir.is_dir.return_value = False
+        mocker.patch("app.models.base.Path", return_value=mock_cache_dir)
+        warning = mocker.spy(log, "warning")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=mock_cache_dir)
+        encoder.clear_cache()
+
+        mock_rmtree.assert_not_called()
+        mock_cache_dir.unlink.assert_called_once()
+        mock_cache_dir.mkdir.assert_called_once()
+        warning.assert_called_once()
+
+    def test_make_session_return_ann_if_available(self, mocker: MockerFixture) -> None:
+        mock_cache_dir = mocker.Mock()
+        mock_cache_dir.is_file.return_value = True
+        mock_cache_dir.with_suffix.return_value = mock_cache_dir
+        mocker.patch.object(settings, "ann", True)
+        mocker.patch("ann.ann.is_available", True)
+        mock_session = mocker.patch("app.models.base.AnnSession")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        encoder._make_session(mock_cache_dir)
+
+        mock_session.assert_called_once()
+
+    def test_make_session_return_ort_if_available_and_ann_is_not(self, mocker: MockerFixture) -> None:
+        mock_cache_dir = mocker.Mock()
+        mock_cache_dir.is_file.return_value = True
+        mock_cache_dir.with_suffix.return_value = mock_cache_dir
+        mocker.patch.object(settings, "ann", False)
+        mocker.patch("ann.ann.is_available", False)
+        mock_session = mocker.patch("app.models.base.ort.InferenceSession")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        encoder._make_session(mock_cache_dir)
+
+        mock_session.assert_called_once()
+
+    def test_make_session_raises_exception_if_path_does_not_exist(self, mocker: MockerFixture) -> None:
+        mock_cache_dir = mocker.Mock()
+        mock_cache_dir.is_file.return_value = False
+        mock_cache_dir.with_suffix.return_value = mock_cache_dir
+        mocker.patch("ann.ann.is_available", False)
+        mock_ann = mocker.patch("app.models.base.ort.InferenceSession")
+        mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+        with pytest.raises(ValueError):
+            encoder._make_session(mock_cache_dir)
+
+        mock_ann.assert_not_called()
+        mock_ort.assert_not_called()
 
 
 class TestCLIP:
@@ -41,7 +257,7 @@ class TestCLIP:
         mocked.run.return_value = [[self.embedding]]
         mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
 
-        clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="vision")
+        clip_encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="vision")
         embedding = clip_encoder.predict(pil_image)
 
         assert clip_encoder.mode == "vision"
@@ -66,7 +282,7 @@ class TestCLIP:
         mocked.run.return_value = [[self.embedding]]
         mocker.patch("app.models.clip.Tokenizer.from_file", autospec=True)
 
-        clip_encoder = OpenCLIPEncoder("ViT-B-32::openai", cache_dir="test_cache", mode="text")
+        clip_encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir="test_cache", mode="text")
         embedding = clip_encoder.predict("test search query")
 
         assert clip_encoder.mode == "text"
@@ -166,7 +382,7 @@ class TestEndpoints:
         pil_image.save(byte_image, format="jpeg")
         response = deployed_app.post(
             "http://localhost:3003/predict",
-            data={"modelName": "ViT-B-32::openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
+            data={"modelName": "ViT-B-32__openai", "modelType": "clip", "options": json.dumps({"mode": "vision"})},
             files={"image": byte_image.getvalue()},
         )
         assert response.status_code == 200
@@ -176,7 +392,7 @@ class TestEndpoints:
         response = deployed_app.post(
             "http://localhost:3003/predict",
             data={
-                "modelName": "ViT-B-32::openai",
+                "modelName": "ViT-B-32__openai",
                 "modelType": "clip",
                 "text": "test search query",
                 "options": json.dumps({"mode": "text"}),

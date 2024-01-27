@@ -11,7 +11,7 @@ import { INestApplication } from '@nestjs/common';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
 import { DateTime } from 'luxon';
 import request from 'supertest';
-import { api } from '../client';
+import { api } from '../../client';
 import { testApp } from '../utils';
 
 describe(`${SharedLinkController.name} (e2e)`, () => {

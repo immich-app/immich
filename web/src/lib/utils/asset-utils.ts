@@ -2,14 +2,15 @@ import { notificationController, NotificationType } from '$lib/components/shared
 import { downloadManager } from '$lib/stores/download';
 import {
   api,
-  BulkIdResponseDto,
-  AssetResponseDto,
-  DownloadResponseDto,
-  DownloadInfoDto,
+  type BulkIdResponseDto,
+  type AssetResponseDto,
+  type DownloadResponseDto,
+  type DownloadInfoDto,
   AssetTypeEnum,
-  UserResponseDto,
+  type UserResponseDto,
 } from '@api';
 import { handleError } from './handle-error';
+import { DateTime } from 'luxon';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: Array<string>): Promise<BulkIdResponseDto[]> =>
   api.albumApi
@@ -46,7 +47,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   let downloadInfo: DownloadResponseDto | null = null;
 
   try {
-    const { data } = await api.assetApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
+    const { data } = await api.downloadApi.getDownloadInfo({ downloadInfoDto: options, key: api.getKey() });
     downloadInfo = data;
   } catch (error) {
     handleError(error, 'Unable to download files');
@@ -59,7 +60,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
   for (let i = 0; i < downloadInfo.archives.length; i++) {
     const archive = downloadInfo.archives[i];
     const suffix = downloadInfo.archives.length === 1 ? '' : `+${i + 1}`;
-    const archiveName = fileName.replace('.zip', `${suffix}.zip`);
+    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyy-LL-dd-HH-mm-ss')}.zip`);
 
     let downloadKey = `${archiveName} `;
     if (downloadInfo.archives.length > 1) {
@@ -70,7 +71,7 @@ export const downloadArchive = async (fileName: string, options: DownloadInfoDto
     downloadManager.add(downloadKey, archive.size, abort);
 
     try {
-      const { data } = await api.assetApi.downloadArchive(
+      const { data } = await api.downloadApi.downloadArchive(
         { assetIdsDto: { assetIds: archive.assetIds }, key: api.getKey() },
         {
           responseType: 'blob',
@@ -120,11 +121,11 @@ export const downloadFile = async (asset: AssetResponseDto) => {
       const abort = new AbortController();
       downloadManager.add(downloadKey, size, abort);
 
-      const { data } = await api.assetApi.downloadFile(
+      const { data } = await api.downloadApi.downloadFile(
         { id, key: api.getKey() },
         {
           responseType: 'blob',
-          onDownloadProgress: (event: ProgressEvent) => {
+          onDownloadProgress: ({ event }) => {
             if (event.lengthComputable) {
               downloadManager.update(downloadKey, event.loaded, event.total);
             }

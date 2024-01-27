@@ -42,7 +42,7 @@ class LogLevel {
 
   static LogLevel? fromJson(dynamic value) => LogLevelTypeTransformer().decode(value);
 
-  static List<LogLevel>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<LogLevel> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <LogLevel>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

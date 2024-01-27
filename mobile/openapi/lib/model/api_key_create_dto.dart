@@ -26,7 +26,7 @@ class APIKeyCreateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyCreateDto &&
-     other.name == name;
+    other.name == name;
 
   @override
   int get hashCode =>

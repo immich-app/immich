@@ -70,7 +70,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAuditDeletes**
-> AuditDeletesResponseDto getAuditDeletes(entityType, after, userId)
+> AuditDeletesResponseDto getAuditDeletes(after, entityType, userId)
 
 
 
@@ -93,12 +93,12 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AuditApi();
-final entityType = ; // EntityType | 
 final after = 2013-10-20T19:20:30+01:00; // DateTime | 
+final entityType = ; // EntityType | 
 final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.getAuditDeletes(entityType, after, userId);
+    final result = api_instance.getAuditDeletes(after, entityType, userId);
     print(result);
 } catch (e) {
     print('Exception when calling AuditApi->getAuditDeletes: $e\n');
@@ -109,8 +109,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **entityType** | [**EntityType**](.md)|  | 
  **after** | **DateTime**|  | 
+ **entityType** | [**EntityType**](.md)|  | 
  **userId** | **String**|  | [optional] 
 
 ### Return type

@@ -62,21 +62,21 @@ class SystemConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
-     other.ffmpeg == ffmpeg &&
-     other.job == job &&
-     other.library_ == library_ &&
-     other.logging == logging &&
-     other.machineLearning == machineLearning &&
-     other.map == map &&
-     other.newVersionCheck == newVersionCheck &&
-     other.oauth == oauth &&
-     other.passwordLogin == passwordLogin &&
-     other.reverseGeocoding == reverseGeocoding &&
-     other.server == server &&
-     other.storageTemplate == storageTemplate &&
-     other.theme == theme &&
-     other.thumbnail == thumbnail &&
-     other.trash == trash;
+    other.ffmpeg == ffmpeg &&
+    other.job == job &&
+    other.library_ == library_ &&
+    other.logging == logging &&
+    other.machineLearning == machineLearning &&
+    other.map == map &&
+    other.newVersionCheck == newVersionCheck &&
+    other.oauth == oauth &&
+    other.passwordLogin == passwordLogin &&
+    other.reverseGeocoding == reverseGeocoding &&
+    other.server == server &&
+    other.storageTemplate == storageTemplate &&
+    other.theme == theme &&
+    other.thumbnail == thumbnail &&
+    other.trash == trash;
 
   @override
   int get hashCode =>

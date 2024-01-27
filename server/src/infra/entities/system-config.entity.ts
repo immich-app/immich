@@ -1,4 +1,4 @@
-import { QueueName } from '@app/domain';
+import { ConcurrentQueueName } from '@app/domain';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
@@ -18,7 +18,9 @@ export enum SystemConfigKey {
   FFMPEG_THREADS = 'ffmpeg.threads',
   FFMPEG_PRESET = 'ffmpeg.preset',
   FFMPEG_TARGET_VIDEO_CODEC = 'ffmpeg.targetVideoCodec',
+  FFMPEG_ACCEPTED_VIDEO_CODECS = 'ffmpeg.acceptedVideoCodecs',
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg.targetAudioCodec',
+  FFMPEG_ACCEPTED_AUDIO_CODECS = 'ffmpeg.acceptedAudioCodecs',
   FFMPEG_TARGET_RESOLUTION = 'ffmpeg.targetResolution',
   FFMPEG_MAX_BITRATE = 'ffmpeg.maxBitrate',
   FFMPEG_BFRAMES = 'ffmpeg.bframes',
@@ -35,7 +37,7 @@ export enum SystemConfigKey {
   JOB_THUMBNAIL_GENERATION_CONCURRENCY = 'job.thumbnailGeneration.concurrency',
   JOB_METADATA_EXTRACTION_CONCURRENCY = 'job.metadataExtraction.concurrency',
   JOB_VIDEO_CONVERSION_CONCURRENCY = 'job.videoConversion.concurrency',
-  JOB_RECOGNIZE_FACES_CONCURRENCY = 'job.recognizeFaces.concurrency',
+  JOB_FACE_DETECTION_CONCURRENCY = 'job.faceDetection.concurrency',
   JOB_CLIP_ENCODING_CONCURRENCY = 'job.smartSearch.concurrency',
   JOB_BACKGROUND_TASK_CONCURRENCY = 'job.backgroundTask.concurrency',
   JOB_STORAGE_TEMPLATE_MIGRATION_CONCURRENCY = 'job.storageTemplateMigration.concurrency',
@@ -162,7 +164,9 @@ export interface SystemConfig {
     threads: number;
     preset: string;
     targetVideoCodec: VideoCodec;
+    acceptedVideoCodecs: VideoCodec[];
     targetAudioCodec: AudioCodec;
+    acceptedAudioCodecs: AudioCodec[];
     targetResolution: string;
     maxBitrate: string;
     bframes: number;
@@ -176,7 +180,7 @@ export interface SystemConfig {
     accel: TranscodeHWAccel;
     tonemap: ToneMapping;
   };
-  job: Record<Exclude<QueueName, QueueName.STORAGE_TEMPLATE_MIGRATION>, { concurrency: number }>;
+  job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
     enabled: boolean;
     level: LogLevel;

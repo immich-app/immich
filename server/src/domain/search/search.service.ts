@@ -67,6 +67,7 @@ export class SearchService {
     }
     const strategy = dto.clip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
     const userIds = await this.getUserIdsToSearch(auth);
+    const withArchived = dto.withArchived || false;
 
     let assets: AssetEntity[] = [];
 
@@ -77,7 +78,12 @@ export class SearchService {
           { text: query },
           machineLearning.clip,
         );
-        assets = await this.smartInfoRepository.searchCLIP({ userIds: userIds, embedding, numResults: 100 });
+        assets = await this.smartInfoRepository.searchCLIP({
+          userIds: userIds,
+          embedding,
+          numResults: 100,
+          withArchived,
+        });
         break;
       case SearchStrategy.TEXT:
         assets = await this.assetRepository.searchMetadata(query, userIds, { numResults: 250 });

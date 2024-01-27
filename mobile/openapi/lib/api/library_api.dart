@@ -141,7 +141,7 @@ class LibraryApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<LibraryResponseDto>') as List)
         .cast<LibraryResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

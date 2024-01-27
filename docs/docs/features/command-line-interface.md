@@ -10,7 +10,7 @@ Immich has a CLI that allows you to perform certain actions from the command lin
 More features are planned for the future.
 
 :::tip Google Photos Takeout
-If you are looking to import your Google Photos takeout, we recommed this community maintained tool [immich-go](https://github.com/simulot/immich-go)
+If you are looking to import your Google Photos takeout, we recommend this community maintained tool [immich-go](https://github.com/simulot/immich-go)
 :::
 
 ## Requirements

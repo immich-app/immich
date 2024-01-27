@@ -1,5 +1,5 @@
 import { APIKeyCreateResponseDto } from '@app/domain';
-import { api } from '@test/../e2e/api/client';
+import { api } from '@api';
 import { restoreTempFolder, testApp } from '@test/../e2e/jobs/utils';
 import { LoginResponseDto } from '@immich/sdk';
 import { LoginKey } from 'src/commands/login/key';

@@ -37,6 +37,7 @@ export const openWebsocketConnection = async () => {
 
     websocket = io('', {
       path: '/api/socket.io',
+      transports: ['websocket'],
       reconnection: true,
       forceNew: true,
       autoConnect: true,

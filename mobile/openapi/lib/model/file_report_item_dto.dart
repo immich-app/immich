@@ -38,11 +38,11 @@ class FileReportItemDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is FileReportItemDto &&
-     other.checksum == checksum &&
-     other.entityId == entityId &&
-     other.entityType == entityType &&
-     other.pathType == pathType &&
-     other.pathValue == pathValue;
+    other.checksum == checksum &&
+    other.entityId == entityId &&
+    other.entityType == entityType &&
+    other.pathType == pathType &&
+    other.pathValue == pathValue;
 
   @override
   int get hashCode =>

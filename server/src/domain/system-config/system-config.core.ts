@@ -31,7 +31,9 @@ export const defaults = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
+    acceptedAudioCodecs: [AudioCodec.AAC],
     targetResolution: '720',
     maxBitrate: '0',
     bframes: -1,
@@ -49,7 +51,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
     [QueueName.SMART_SEARCH]: { concurrency: 2 },
     [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
+    [QueueName.FACE_DETECTION]: { concurrency: 2 },
     [QueueName.SEARCH]: { concurrency: 5 },
     [QueueName.SIDECAR]: { concurrency: 5 },
     [QueueName.LIBRARY]: { concurrency: 5 },
@@ -73,7 +75,7 @@ export const defaults = Object.freeze<SystemConfig>({
       modelName: 'buffalo_l',
       minScore: 0.7,
       maxDistance: 0.6,
-      minFaces: 1,
+      minFaces: 3,
     },
   },
   map: {
@@ -246,6 +248,14 @@ export class SystemConfigCore {
       if (configFilePath) {
         throw new Error(`Invalid value(s) in file: ${errors}`);
       }
+    }
+
+    if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
+      config.ffmpeg.acceptedVideoCodecs.unshift(config.ffmpeg.targetVideoCodec);
+    }
+
+    if (!config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)) {
+      config.ffmpeg.acceptedAudioCodecs.unshift(config.ffmpeg.targetAudioCodec);
     }
 
     return config;

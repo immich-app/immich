@@ -50,17 +50,17 @@ class ServerFeaturesDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
-     other.clipEncode == clipEncode &&
-     other.configFile == configFile &&
-     other.facialRecognition == facialRecognition &&
-     other.map == map &&
-     other.oauth == oauth &&
-     other.oauthAutoLaunch == oauthAutoLaunch &&
-     other.passwordLogin == passwordLogin &&
-     other.reverseGeocoding == reverseGeocoding &&
-     other.search == search &&
-     other.sidecar == sidecar &&
-     other.trash == trash;
+    other.clipEncode == clipEncode &&
+    other.configFile == configFile &&
+    other.facialRecognition == facialRecognition &&
+    other.map == map &&
+    other.oauth == oauth &&
+    other.oauthAutoLaunch == oauthAutoLaunch &&
+    other.passwordLogin == passwordLogin &&
+    other.reverseGeocoding == reverseGeocoding &&
+    other.search == search &&
+    other.sidecar == sidecar &&
+    other.trash == trash;
 
   @override
   int get hashCode =>

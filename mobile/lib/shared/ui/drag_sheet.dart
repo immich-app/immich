@@ -23,11 +23,13 @@ class ControlBoxButton extends StatelessWidget {
     required this.label,
     required this.iconData,
     this.onPressed,
+    this.onLongPressed,
   }) : super(key: key);
 
   final String label;
   final IconData iconData;
   final void Function()? onPressed;
+  final void Function()? onLongPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +37,7 @@ class ControlBoxButton extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       shape: const CircleBorder(),
       onPressed: onPressed,
+      onLongPress: onLongPressed,
       minWidth: 75.0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,

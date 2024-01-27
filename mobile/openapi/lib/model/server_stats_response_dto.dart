@@ -29,10 +29,10 @@ class ServerStatsResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerStatsResponseDto &&
-     other.photos == photos &&
-     other.usage == usage &&
-     other.usageByUser == usageByUser &&
-     other.videos == videos;
+    other.photos == photos &&
+    other.usage == usage &&
+    _deepEquality.equals(other.usageByUser, usageByUser) &&
+    other.videos == videos;
 
   @override
   int get hashCode =>

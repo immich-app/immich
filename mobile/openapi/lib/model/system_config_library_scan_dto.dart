@@ -23,8 +23,8 @@ class SystemConfigLibraryScanDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigLibraryScanDto &&
-     other.cronExpression == cronExpression &&
-     other.enabled == enabled;
+    other.cronExpression == cronExpression &&
+    other.enabled == enabled;
 
   @override
   int get hashCode =>

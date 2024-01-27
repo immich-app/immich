@@ -42,12 +42,12 @@ void main() {
       // TODO
     });
 
-    //Future<AlbumResponseDto> getAlbumInfo(String id, { bool withoutAssets, String key }) async
+    //Future<AlbumResponseDto> getAlbumInfo(String id, { String key, bool withoutAssets }) async
     test('test getAlbumInfo', () async {
       // TODO
     });
 
-    //Future<List<AlbumResponseDto>> getAllAlbums({ bool shared, String assetId }) async
+    //Future<List<AlbumResponseDto>> getAllAlbums({ String assetId, bool shared }) async
     test('test getAllAlbums', () async {
       // TODO
     });

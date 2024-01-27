@@ -54,7 +54,7 @@ class SearchApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<SearchExploreResponseDto>') as List)
         .cast<SearchExploreResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -63,18 +63,20 @@ class SearchApi {
   /// Performs an HTTP 'GET /search' operation and returns the [Response].
   /// Parameters:
   ///
+  /// * [bool] clip:
+  ///
+  /// * [bool] motion:
+  ///
   /// * [String] q:
   ///
   /// * [String] query:
   ///
-  /// * [bool] clip:
+  /// * [bool] recent:
   ///
   /// * [String] type:
   ///
-  /// * [bool] recent:
-  ///
-  /// * [bool] motion:
-  Future<Response> searchWithHttpInfo({ String? q, String? query, bool? clip, String? type, bool? recent, bool? motion, }) async {
+  /// * [bool] withArchived:
+  Future<Response> searchWithHttpInfo({ bool? clip, bool? motion, String? q, String? query, bool? recent, String? type, bool? withArchived, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search';
 
@@ -85,23 +87,26 @@ class SearchApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (clip != null) {
+      queryParams.addAll(_queryParams('', 'clip', clip));
+    }
+    if (motion != null) {
+      queryParams.addAll(_queryParams('', 'motion', motion));
+    }
     if (q != null) {
       queryParams.addAll(_queryParams('', 'q', q));
     }
     if (query != null) {
       queryParams.addAll(_queryParams('', 'query', query));
     }
-    if (clip != null) {
-      queryParams.addAll(_queryParams('', 'clip', clip));
+    if (recent != null) {
+      queryParams.addAll(_queryParams('', 'recent', recent));
     }
     if (type != null) {
       queryParams.addAll(_queryParams('', 'type', type));
     }
-    if (recent != null) {
-      queryParams.addAll(_queryParams('', 'recent', recent));
-    }
-    if (motion != null) {
-      queryParams.addAll(_queryParams('', 'motion', motion));
+    if (withArchived != null) {
+      queryParams.addAll(_queryParams('', 'withArchived', withArchived));
     }
 
     const contentTypes = <String>[];
@@ -120,19 +125,21 @@ class SearchApi {
 
   /// Parameters:
   ///
+  /// * [bool] clip:
+  ///
+  /// * [bool] motion:
+  ///
   /// * [String] q:
   ///
   /// * [String] query:
   ///
-  /// * [bool] clip:
+  /// * [bool] recent:
   ///
   /// * [String] type:
   ///
-  /// * [bool] recent:
-  ///
-  /// * [bool] motion:
-  Future<SearchResponseDto?> search({ String? q, String? query, bool? clip, String? type, bool? recent, bool? motion, }) async {
-    final response = await searchWithHttpInfo( q: q, query: query, clip: clip, type: type, recent: recent, motion: motion, );
+  /// * [bool] withArchived:
+  Future<SearchResponseDto?> search({ bool? clip, bool? motion, String? q, String? query, bool? recent, String? type, bool? withArchived, }) async {
+    final response = await searchWithHttpInfo( clip: clip, motion: motion, q: q, query: query, recent: recent, type: type, withArchived: withArchived, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -199,7 +206,7 @@ class SearchApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<PersonResponseDto>') as List)
         .cast<PersonResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+NODE_OPTIONS='--experimental-vm-modules' node /usr/src/app/node_modules/.bin/jest --config e2e/$1/jest-e2e.json --runInBand

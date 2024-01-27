@@ -5,14 +5,14 @@
   import { createEventDispatcher } from 'svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { mdiTimerSand, mdiDeleteOutline } from '@mdi/js';
-  import { OnDelete, deleteAssets } from '$lib/utils/actions';
+  import { type OnDelete, deleteAssets } from '$lib/utils/actions';
   import DeleteAssetDialog from '../delete-asset-dialog.svelte';
 
   export let onAssetDelete: OnDelete;
   export let menuItem = false;
   export let force = !$featureFlags.trash;
 
-  const { getOwnedAssets } = getAssetControlContext();
+  const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const dispatch = createEventDispatcher<{
     escape: void;
@@ -36,6 +36,7 @@
       .filter((a) => !a.isExternal)
       .map((a) => a.id);
     await deleteAssets(force, onAssetDelete, ids);
+    clearSelect();
     isShowConfirmation = false;
     loading = false;
   };

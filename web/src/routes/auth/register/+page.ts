@@ -7,7 +7,7 @@ export const load = (async () => {
   const { data } = await api.serverInfoApi.getServerConfig();
   if (data.isInitialized) {
     // Admin has been registered, redirect to login
-    throw redirect(302, AppRoute.AUTH_LOGIN);
+    redirect(302, AppRoute.AUTH_LOGIN);
   }
 
   return {

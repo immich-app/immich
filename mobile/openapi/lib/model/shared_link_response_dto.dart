@@ -65,20 +65,20 @@ class SharedLinkResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkResponseDto &&
-     other.album == album &&
-     other.allowDownload == allowDownload &&
-     other.allowUpload == allowUpload &&
-     other.assets == assets &&
-     other.createdAt == createdAt &&
-     other.description == description &&
-     other.expiresAt == expiresAt &&
-     other.id == id &&
-     other.key == key &&
-     other.password == password &&
-     other.showMetadata == showMetadata &&
-     other.token == token &&
-     other.type == type &&
-     other.userId == userId;
+    other.album == album &&
+    other.allowDownload == allowDownload &&
+    other.allowUpload == allowUpload &&
+    _deepEquality.equals(other.assets, assets) &&
+    other.createdAt == createdAt &&
+    other.description == description &&
+    other.expiresAt == expiresAt &&
+    other.id == id &&
+    other.key == key &&
+    other.password == password &&
+    other.showMetadata == showMetadata &&
+    other.token == token &&
+    other.type == type &&
+    other.userId == userId;
 
   @override
   int get hashCode =>
@@ -152,9 +152,9 @@ class SharedLinkResponseDto {
         allowDownload: mapValueOfType<bool>(json, r'allowDownload')!,
         allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
-        createdAt: mapDateTime(json, r'createdAt', '')!,
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', ''),
+        expiresAt: mapDateTime(json, r'expiresAt', r''),
         id: mapValueOfType<String>(json, r'id')!,
         key: mapValueOfType<String>(json, r'key')!,
         password: mapValueOfType<String>(json, r'password'),

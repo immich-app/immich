@@ -20,13 +20,11 @@ export interface AssetOwnerCheck extends AssetCheck {
   ownerId: string;
 }
 
-export interface IAssetRepository {
+export interface IAssetRepositoryV1 {
   get(id: string): Promise<AssetEntity | null>;
   create(asset: AssetCreate): Promise<AssetEntity>;
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
-  getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
@@ -35,10 +33,10 @@ export interface IAssetRepository {
   getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null>;
 }
 
-export const IAssetRepository = 'IAssetRepository';
+export const IAssetRepositoryV1 = 'IAssetRepositoryV1';
 
 @Injectable()
-export class AssetRepository implements IAssetRepository {
+export class AssetRepositoryV1 implements IAssetRepositoryV1 {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
@@ -95,34 +93,6 @@ export class AssetRepository implements IAssetRepository {
   }
 
   /**
-   * Get a single asset information by its ID
-   * - include exif info
-   * @param assetId
-   */
-  getById(assetId: string): Promise<AssetEntity> {
-    return this.assetRepository.findOneOrFail({
-      where: {
-        id: assetId,
-      },
-      relations: {
-        exifInfo: true,
-        tags: true,
-        sharedLinks: true,
-        smartInfo: true,
-        owner: true,
-        faces: {
-          person: true,
-        },
-        stack: {
-          exifInfo: true,
-        },
-      },
-      // We are specifically asking for this asset. Return it even if it is soft deleted
-      withDeleted: true,
-    });
-  }
-
-  /**
    * Get all assets belong to the user on the database
    * @param ownerId
    */
@@ -168,27 +138,6 @@ export class AssetRepository implements IAssetRepository {
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
     await this.exifRepository.upsert(exif, { conflictPaths: ['assetId'] });
-  }
-
-  /**
-   * Get assets by device's Id on the database
-   * @param ownerId
-   * @param deviceId
-   *
-   * @returns Promise<string[]> - Array of assetIds belong to the device
-   */
-  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
-    const items = await this.assetRepository.find({
-      select: { deviceAssetId: true },
-      where: {
-        ownerId,
-        deviceId,
-        isVisible: true,
-      },
-      withDeleted: true,
-    });
-
-    return items.map((asset) => asset.deviceAssetId);
   }
 
   /**

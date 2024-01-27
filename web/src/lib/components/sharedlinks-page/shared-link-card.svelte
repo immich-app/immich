@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
+  import { api, type AssetResponseDto, type SharedLinkResponseDto, SharedLinkType, ThumbnailFormat } from '@api';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import * as luxon from 'luxon';
@@ -27,7 +27,7 @@
       assetId = link.assets[0].id;
     }
 
-    const { data } = await api.assetApi.getAssetById({ id: assetId });
+    const { data } = await api.assetApi.getAssetInfo({ id: assetId });
 
     return data;
   };

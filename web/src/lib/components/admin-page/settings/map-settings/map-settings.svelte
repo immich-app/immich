@@ -1,13 +1,13 @@
 <script lang="ts">
   import type { SystemConfigDto } from '@api';
   import { isEqual } from 'lodash-es';
+  import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
+  import type { SettingsEventType } from '../admin-settings';
   import SettingAccordion from '../setting-accordion.svelte';
   import SettingButtonsRow from '../setting-buttons-row.svelte';
-  import SettingSwitch from '../setting-switch.svelte';
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-  import { createEventDispatcher } from 'svelte';
-  import type { SettingsEventType } from '../admin-settings';
+  import SettingSwitch from '../setting-switch.svelte';
 
   export let savedConfig: SystemConfigDto;
   export let defaultConfig: SystemConfigDto;
