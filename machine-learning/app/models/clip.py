@@ -148,7 +148,7 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
         context_length: int = text_cfg.get("context_length", 77)
         pad_token: int = self.tokenizer_cfg["pad_token"]
 
-        size: list | int = self.preprocess_cfg["size"]
+        size: list[int] | int = self.preprocess_cfg["size"]
         self.size = size[0] if isinstance(size, list) else size
 
         self.resampling = get_pil_resampling(self.preprocess_cfg["interpolation"])
