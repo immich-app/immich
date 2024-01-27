@@ -31,7 +31,9 @@ export const defaults = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetVideoCodec: VideoCodec.H264,
+    acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.AAC,
+    acceptedAudioCodecs: [AudioCodec.AAC],
     targetResolution: '720',
     maxBitrate: '0',
     bframes: -1,
@@ -246,6 +248,14 @@ export class SystemConfigCore {
       if (configFilePath) {
         throw new Error(`Invalid value(s) in file: ${errors}`);
       }
+    }
+
+    if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
+      config.ffmpeg.acceptedVideoCodecs.unshift(config.ffmpeg.targetVideoCodec);
+    }
+
+    if (!config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)) {
+      config.ffmpeg.acceptedAudioCodecs.unshift(config.ffmpeg.targetAudioCodec);
     }
 
     return config;

@@ -20,7 +20,7 @@ class SystemConfigLibraryDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigLibraryDto &&
-     other.scan == scan;
+    other.scan == scan;
 
   @override
   int get hashCode =>

@@ -44,11 +44,11 @@ class CreateLibraryDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
-     other.exclusionPatterns == exclusionPatterns &&
-     other.importPaths == importPaths &&
-     other.isVisible == isVisible &&
-     other.name == name &&
-     other.type == type;
+    _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
+    _deepEquality.equals(other.importPaths, importPaths) &&
+    other.isVisible == isVisible &&
+    other.name == name &&
+    other.type == type;
 
   @override
   int get hashCode =>
@@ -88,11 +88,11 @@ class CreateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return CreateLibraryDto(
-        exclusionPatterns: json[r'exclusionPatterns'] is List
-            ? (json[r'exclusionPatterns'] as List).cast<String>()
+        exclusionPatterns: json[r'exclusionPatterns'] is Iterable
+            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        importPaths: json[r'importPaths'] is List
-            ? (json[r'importPaths'] as List).cast<String>()
+        importPaths: json[r'importPaths'] is Iterable
+            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
         name: mapValueOfType<String>(json, r'name'),

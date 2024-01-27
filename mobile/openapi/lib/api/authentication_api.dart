@@ -101,7 +101,7 @@ class AuthenticationApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AuthDeviceResponseDto>') as List)
         .cast<AuthDeviceResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

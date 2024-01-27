@@ -46,8 +46,8 @@ void main() {
       // TODO
     });
 
-    //Future emptyTrash() async
-    test('test emptyTrash', () async {
+    //Future emptyTrashOld() async
+    test('test emptyTrashOld', () async {
       // TODO
     });
 
@@ -132,13 +132,13 @@ void main() {
       // TODO
     });
 
-    //Future restoreAssets(BulkIdsDto bulkIdsDto) async
-    test('test restoreAssets', () async {
+    //Future restoreAssetsOld(BulkIdsDto bulkIdsDto) async
+    test('test restoreAssetsOld', () async {
       // TODO
     });
 
-    //Future restoreTrash() async
-    test('test restoreTrash', () async {
+    //Future restoreTrashOld() async
+    test('test restoreTrashOld', () async {
       // TODO
     });
 

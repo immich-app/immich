@@ -47,16 +47,16 @@ class LibraryResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LibraryResponseDto &&
-     other.assetCount == assetCount &&
-     other.createdAt == createdAt &&
-     other.exclusionPatterns == exclusionPatterns &&
-     other.id == id &&
-     other.importPaths == importPaths &&
-     other.name == name &&
-     other.ownerId == ownerId &&
-     other.refreshedAt == refreshedAt &&
-     other.type == type &&
-     other.updatedAt == updatedAt;
+    other.assetCount == assetCount &&
+    other.createdAt == createdAt &&
+    _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
+    other.id == id &&
+    _deepEquality.equals(other.importPaths, importPaths) &&
+    other.name == name &&
+    other.ownerId == ownerId &&
+    other.refreshedAt == refreshedAt &&
+    other.type == type &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
@@ -103,19 +103,19 @@ class LibraryResponseDto {
 
       return LibraryResponseDto(
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
-        createdAt: mapDateTime(json, r'createdAt', '')!,
-        exclusionPatterns: json[r'exclusionPatterns'] is List
-            ? (json[r'exclusionPatterns'] as List).cast<String>()
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        exclusionPatterns: json[r'exclusionPatterns'] is Iterable
+            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         id: mapValueOfType<String>(json, r'id')!,
-        importPaths: json[r'importPaths'] is List
-            ? (json[r'importPaths'] as List).cast<String>()
+        importPaths: json[r'importPaths'] is Iterable
+            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         name: mapValueOfType<String>(json, r'name')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        refreshedAt: mapDateTime(json, r'refreshedAt', ''),
+        refreshedAt: mapDateTime(json, r'refreshedAt', r''),
         type: LibraryType.fromJson(json[r'type'])!,
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;

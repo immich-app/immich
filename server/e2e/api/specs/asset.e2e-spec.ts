@@ -10,7 +10,7 @@ import {
   usePagination,
 } from '@app/domain';
 import { AssetController } from '@app/immich';
-import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
+import { AssetEntity, AssetStackEntity, AssetType, SharedLinkType } from '@app/infra/entities';
 import { AssetRepository } from '@app/infra/repositories';
 import { INestApplication } from '@nestjs/common';
 import { errorStub, userDto, uuidStub } from '@test/fixtures';
@@ -94,32 +94,7 @@ describe(`${AssetController.name} (e2e)`, () => {
   });
 
   beforeEach(async () => {
-    await testApp.reset({ entities: [AssetEntity] });
-
-    [asset1, asset2, asset3, asset4, asset5] = await Promise.all([
-      createAsset(user1, new Date('1970-01-01')),
-      createAsset(user1, new Date('1970-02-10')),
-      createAsset(user1, new Date('1970-02-11'), {
-        isFavorite: true,
-        isArchived: true,
-        isExternal: true,
-        isReadOnly: true,
-        type: AssetType.VIDEO,
-        fileCreatedAt: yesterday.toJSDate(),
-        fileModifiedAt: yesterday.toJSDate(),
-        createdAt: yesterday.toJSDate(),
-        updatedAt: yesterday.toJSDate(),
-        localDateTime: yesterday.toJSDate(),
-      }),
-      createAsset(user2, new Date('1970-01-01')),
-      createAsset(user1, new Date('1970-01-01'), {
-        deletedAt: yesterday.toJSDate(),
-      }),
-    ]);
-  });
-
-  beforeEach(async () => {
-    await testApp.reset({ entities: [AssetEntity] });
+    await testApp.reset({ entities: [AssetEntity, AssetStackEntity] });
 
     [asset1, asset2, asset3, asset4, asset5] = await Promise.all([
       createAsset(user1, new Date('1970-01-01')),
@@ -571,11 +546,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .get(`/asset/assetById/${asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: asset1.id,
-        stack: [],
-        stackCount: 0,
-      });
+      expect(body).toMatchObject({ id: asset1.id });
     });
 
     it('should work with a shared link', async () => {
@@ -586,11 +557,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       const { status, body } = await request(server).get(`/asset/assetById/${asset1.id}?key=${sharedLink.key}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: asset1.id,
-        stack: [],
-        stackCount: 0,
-      });
+      expect(body).toMatchObject({ id: asset1.id });
     });
   });
 
@@ -622,11 +589,7 @@ describe(`${AssetController.name} (e2e)`, () => {
         .get(`/asset/${asset1.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: asset1.id,
-        stack: [],
-        stackCount: 0,
-      });
+      expect(body).toMatchObject({ id: asset1.id });
     });
 
     it('should work with a shared link', async () => {
@@ -637,11 +600,7 @@ describe(`${AssetController.name} (e2e)`, () => {
 
       const { status, body } = await request(server).get(`/asset/${asset1.id}?key=${sharedLink.key}`);
       expect(status).toBe(200);
-      expect(body).toMatchObject({
-        id: asset1.id,
-        stack: [],
-        stackCount: 0,
-      });
+      expect(body).toMatchObject({ id: asset1.id });
     });
   });
 
@@ -1371,7 +1330,7 @@ describe(`${AssetController.name} (e2e)`, () => {
       expect(status).toBe(204);
 
       const asset = await api.assetApi.get(server, user1.accessToken, asset1.id);
-      expect(asset.stack).toHaveLength(0);
+      expect(asset.stack).toBeUndefined();
     });
 
     it('should merge stack children', async () => {

@@ -6,12 +6,12 @@ import 'package:immich_mobile/modules/album/providers/album_title.provider.dart'
 
 class AlbumTitleTextField extends ConsumerWidget {
   const AlbumTitleTextField({
-    Key? key,
+    super.key,
     required this.isAlbumTitleEmpty,
     required this.albumTitleTextFieldFocusNode,
     required this.albumTitleController,
     required this.isAlbumTitleTextFieldFocus,
-  }) : super(key: key);
+  });
 
   final ValueNotifier<bool> isAlbumTitleEmpty;
   final FocusNode albumTitleTextFieldFocusNode;

@@ -1,14 +1,12 @@
-import { AssetCreate, IJobRepository, JobItem, JobItemHandler, LibraryResponseDto, QueueName } from '@app/domain';
+import { IJobRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
 import { AppModule } from '@app/immich';
 import { InfraModule, InfraTestModule, dataSource } from '@app/infra';
-import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { randomBytes } from 'crypto';
-import * as fs from 'fs';
 import { DateTime } from 'luxon';
-import path from 'path';
-import { Server } from 'tls';
+import * as fs from 'node:fs';
+import path from 'node:path';
+import { Server } from 'node:tls';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../../src/microservices/app.service';
 
@@ -120,38 +118,4 @@ export async function restoreTempFolder(): Promise<void> {
   }
   // Create temp folder
   await fs.promises.mkdir(IMMICH_TEST_ASSET_TEMP_PATH);
-}
-
-function randomDate(start: Date, end: Date): Date {
-  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-}
-
-let assetCount = 0;
-export function generateAsset(
-  userId: string,
-  libraries: LibraryResponseDto[],
-  other: Partial<AssetEntity> = {},
-): AssetCreate {
-  const id = assetCount++;
-  const { fileCreatedAt = randomDate(new Date(1970, 1, 1), new Date(2023, 1, 1)) } = other;
-
-  return {
-    createdAt: today.toJSDate(),
-    updatedAt: today.toJSDate(),
-    ownerId: userId,
-    checksum: randomBytes(20),
-    originalPath: `/tests/test_${id}`,
-    deviceAssetId: `test_${id}`,
-    deviceId: 'e2e-test',
-    libraryId: (
-      libraries.find(({ ownerId, type }) => ownerId === userId && type === LibraryType.UPLOAD) as LibraryResponseDto
-    ).id,
-    isVisible: true,
-    fileCreatedAt,
-    fileModifiedAt: new Date(),
-    localDateTime: fileCreatedAt,
-    type: AssetType.IMAGE,
-    originalFileName: `test_${id}`,
-    ...other,
-  };
 }

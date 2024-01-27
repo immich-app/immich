@@ -11,8 +11,8 @@ import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class AppBarProfileInfoBox extends HookConsumerWidget {
   const AppBarProfileInfoBox({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

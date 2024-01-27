@@ -54,7 +54,7 @@ class SearchApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<SearchExploreResponseDto>') as List)
         .cast<SearchExploreResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -206,7 +206,7 @@ class SearchApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<PersonResponseDto>') as List)
         .cast<PersonResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

@@ -14,7 +14,7 @@ Method | HTTP request | Description
 [**deleteAssets**](AssetApi.md#deleteassets) | **DELETE** /asset | 
 [**downloadArchiveOld**](AssetApi.md#downloadarchiveold) | **POST** /asset/download/archive | 
 [**downloadFileOld**](AssetApi.md#downloadfileold) | **POST** /asset/download/{id} | 
-[**emptyTrash**](AssetApi.md#emptytrash) | **POST** /asset/trash/empty | 
+[**emptyTrashOld**](AssetApi.md#emptytrashold) | **POST** /asset/trash/empty | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getAllUserAssetsByDeviceId**](AssetApi.md#getalluserassetsbydeviceid) | **GET** /asset/device/{deviceId} | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
@@ -30,8 +30,8 @@ Method | HTTP request | Description
 [**getRandom**](AssetApi.md#getrandom) | **GET** /asset/random | 
 [**getTimeBucket**](AssetApi.md#gettimebucket) | **GET** /asset/time-bucket | 
 [**getTimeBuckets**](AssetApi.md#gettimebuckets) | **GET** /asset/time-buckets | 
-[**restoreAssets**](AssetApi.md#restoreassets) | **POST** /asset/restore | 
-[**restoreTrash**](AssetApi.md#restoretrash) | **POST** /asset/trash/restore | 
+[**restoreAssetsOld**](AssetApi.md#restoreassetsold) | **POST** /asset/restore | 
+[**restoreTrashOld**](AssetApi.md#restoretrashold) | **POST** /asset/trash/restore | 
 [**runAssetJobs**](AssetApi.md#runassetjobs) | **POST** /asset/jobs | 
 [**searchAssets**](AssetApi.md#searchassets) | **GET** /assets | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -323,8 +323,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **emptyTrash**
-> emptyTrash()
+# **emptyTrashOld**
+> emptyTrashOld()
 
 
 
@@ -349,9 +349,9 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 
 try {
-    api_instance.emptyTrash();
+    api_instance.emptyTrashOld();
 } catch (e) {
-    print('Exception when calling AssetApi->emptyTrash: $e\n');
+    print('Exception when calling AssetApi->emptyTrashOld: $e\n');
 }
 ```
 
@@ -1266,8 +1266,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **restoreAssets**
-> restoreAssets(bulkIdsDto)
+# **restoreAssetsOld**
+> restoreAssetsOld(bulkIdsDto)
 
 
 
@@ -1293,9 +1293,9 @@ final api_instance = AssetApi();
 final bulkIdsDto = BulkIdsDto(); // BulkIdsDto | 
 
 try {
-    api_instance.restoreAssets(bulkIdsDto);
+    api_instance.restoreAssetsOld(bulkIdsDto);
 } catch (e) {
-    print('Exception when calling AssetApi->restoreAssets: $e\n');
+    print('Exception when calling AssetApi->restoreAssetsOld: $e\n');
 }
 ```
 
@@ -1320,8 +1320,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **restoreTrash**
-> restoreTrash()
+# **restoreTrashOld**
+> restoreTrashOld()
 
 
 
@@ -1346,9 +1346,9 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 
 try {
-    api_instance.restoreTrash();
+    api_instance.restoreTrashOld();
 } catch (e) {
-    print('Exception when calling AssetApi->restoreTrash: $e\n');
+    print('Exception when calling AssetApi->restoreTrashOld: $e\n');
 }
 ```
 

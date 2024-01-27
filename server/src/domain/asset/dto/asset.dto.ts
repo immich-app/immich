@@ -246,11 +246,6 @@ export class RandomAssetsDto {
   count?: number;
 }
 
-export enum TrashAction {
-  EMPTY_ALL = 'empty-all',
-  RESTORE_ALL = 'restore-all',
-}
-
 export class AssetBulkDeleteDto extends BulkIdsDto {
   @Optional()
   @IsBoolean()

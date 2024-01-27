@@ -32,11 +32,11 @@ class CuratedLocationsResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CuratedLocationsResponseDto &&
-     other.city == city &&
-     other.deviceAssetId == deviceAssetId &&
-     other.deviceId == deviceId &&
-     other.id == id &&
-     other.resizePath == resizePath;
+    other.city == city &&
+    other.deviceAssetId == deviceAssetId &&
+    other.deviceId == deviceId &&
+    other.id == id &&
+    other.resizePath == resizePath;
 
   @override
   int get hashCode =>

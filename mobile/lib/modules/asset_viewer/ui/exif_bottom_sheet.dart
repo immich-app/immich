@@ -19,7 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 class ExifBottomSheet extends HookConsumerWidget {
   final Asset asset;
 
-  const ExifBottomSheet({Key? key, required this.asset}) : super(key: key);
+  const ExifBottomSheet({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -14,8 +14,7 @@ import 'package:immich_mobile/shared/ui/user_circle_avatar.dart';
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
   final Album album;
 
-  const SelectAdditionalUserForSharingPage({Key? key, required this.album})
-      : super(key: key);
+  const SelectAdditionalUserForSharingPage({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

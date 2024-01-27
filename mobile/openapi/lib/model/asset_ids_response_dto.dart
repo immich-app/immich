@@ -26,9 +26,9 @@ class AssetIdsResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetIdsResponseDto &&
-     other.assetId == assetId &&
-     other.error == error &&
-     other.success == success;
+    other.assetId == assetId &&
+    other.error == error &&
+    other.success == success;
 
   @override
   int get hashCode =>
@@ -141,7 +141,7 @@ class AssetIdsResponseDtoErrorEnum {
 
   static AssetIdsResponseDtoErrorEnum? fromJson(dynamic value) => AssetIdsResponseDtoErrorEnumTypeTransformer().decode(value);
 
-  static List<AssetIdsResponseDtoErrorEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetIdsResponseDtoErrorEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetIdsResponseDtoErrorEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

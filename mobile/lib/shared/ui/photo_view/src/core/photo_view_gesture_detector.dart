@@ -7,7 +7,7 @@ import 'photo_view_hit_corners.dart';
 /// for the gist
 class PhotoViewGestureDetector extends StatelessWidget {
   const PhotoViewGestureDetector({
-    Key? key,
+    super.key,
     this.hitDetector,
     this.onScaleStart,
     this.onScaleUpdate,
@@ -20,7 +20,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.onTapUp,
     this.onTapDown,
     this.behavior,
-  }) : super(key: key);
+  });
 
   final GestureDoubleTapCallback? onDoubleTap;
   final HitCornersDetector? hitDetector;
@@ -63,14 +63,14 @@ class PhotoViewGestureDetector extends StatelessWidget {
     }
 
     if (onDragStart != null || onDragEnd != null || onDragUpdate != null) {
-      gestures[VerticalDragGestureRecognizer] = 
+      gestures[VerticalDragGestureRecognizer] =
           GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
         () => VerticalDragGestureRecognizer(debugOwner: this),
         (VerticalDragGestureRecognizer instance) {
           instance
-              ..onStart = onDragStart
-              ..onUpdate = onDragUpdate
-              ..onEnd = onDragEnd;
+            ..onStart = onDragStart
+            ..onUpdate = onDragUpdate
+            ..onEnd = onDragEnd;
         },
       );
     }
@@ -86,11 +86,11 @@ class PhotoViewGestureDetector extends StatelessWidget {
     gestures[PhotoViewGestureRecognizer] =
         GestureRecognizerFactoryWithHandlers<PhotoViewGestureRecognizer>(
       () => PhotoViewGestureRecognizer(
-          hitDetector: hitDetector,
-          debugOwner: this,
-          validateAxis: axis,
-          touchSlopFactor: touchSlopFactor,
-        ),
+        hitDetector: hitDetector,
+        debugOwner: this,
+        validateAxis: axis,
+        touchSlopFactor: touchSlopFactor,
+      ),
       (PhotoViewGestureRecognizer instance) {
         instance
           ..onStart = onScaleStart
@@ -110,11 +110,11 @@ class PhotoViewGestureDetector extends StatelessWidget {
 class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
   PhotoViewGestureRecognizer({
     this.hitDetector,
-    Object? debugOwner,
+    super.debugOwner,
     this.validateAxis,
     this.touchSlopFactor = 1,
     PointerDeviceKind? kind,
-  }) : super(debugOwner: debugOwner, supportedDevices: null);
+  }) : super(supportedDevices: null);
   final HitCornersDetector? hitDetector;
   final Axis? validateAxis;
   final double touchSlopFactor;
@@ -236,11 +236,11 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
 /// ```
 class PhotoViewGestureDetectorScope extends InheritedWidget {
   const PhotoViewGestureDetectorScope({
-    super.key, 
+    super.key,
     this.axis,
     this.touchSlopFactor = .2,
-    required Widget child,
-  }) : super(child: child);
+    required super.child,
+  });
 
   static PhotoViewGestureDetectorScope? of(BuildContext context) {
     final PhotoViewGestureDetectorScope? scope = context
@@ -254,11 +254,12 @@ class PhotoViewGestureDetectorScope extends InheritedWidget {
   // 0: most reactive but will not let tap recognizers accept gestures
   // <1: less reactive but gives the most leeway to other recognizers
   // 1: will not be able to compete with a `HorizontalDragGestureRecognizer` up the widget tree
-  final double touchSlopFactor;  
+  final double touchSlopFactor;
 
   @override
   bool updateShouldNotify(PhotoViewGestureDetectorScope oldWidget) {
-    return axis != oldWidget.axis && touchSlopFactor != oldWidget.touchSlopFactor;
+    return axis != oldWidget.axis &&
+        touchSlopFactor != oldWidget.touchSlopFactor;
   }
 }
 
@@ -269,15 +270,13 @@ class PhotoViewGestureDetectorScope extends InheritedWidget {
 class PhotoViewPageViewScrollPhysics extends ScrollPhysics {
   const PhotoViewPageViewScrollPhysics({
     this.touchSlopFactor = 0.1,
-    ScrollPhysics? parent,
-  }) : super(parent: parent);
-
+    super.parent,
+  });
 
   // in [0, 1]
   // 0: most reactive but will not let PhotoView recognizers accept gestures
   // 1: less reactive but gives the most leeway to PhotoView recognizers
   final double touchSlopFactor;
-
 
   @override
   PhotoViewPageViewScrollPhysics applyTo(ScrollPhysics? ancestor) {
@@ -286,7 +285,6 @@ class PhotoViewPageViewScrollPhysics extends ScrollPhysics {
       parent: buildParent(ancestor),
     );
   }
-
 
   @override
   double get dragStartDistanceMotionThreshold => kTouchSlop * touchSlopFactor;

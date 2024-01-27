@@ -51,10 +51,10 @@ class PersonUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
-     other.birthDate == birthDate &&
-     other.featureFaceAssetId == featureFaceAssetId &&
-     other.isHidden == isHidden &&
-     other.name == name;
+    other.birthDate == birthDate &&
+    other.featureFaceAssetId == featureFaceAssetId &&
+    other.isHidden == isHidden &&
+    other.name == name;
 
   @override
   int get hashCode =>
@@ -100,7 +100,7 @@ class PersonUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return PersonUpdateDto(
-        birthDate: mapDateTime(json, r'birthDate', ''),
+        birthDate: mapDateTime(json, r'birthDate', r''),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),

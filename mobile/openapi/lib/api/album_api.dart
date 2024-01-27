@@ -73,7 +73,7 @@ class AlbumApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
         .cast<BulkIdResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -379,7 +379,7 @@ class AlbumApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AlbumResponseDto>') as List)
         .cast<AlbumResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -434,7 +434,7 @@ class AlbumApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
         .cast<BulkIdResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

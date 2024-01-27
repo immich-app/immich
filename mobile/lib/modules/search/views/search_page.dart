@@ -22,7 +22,7 @@ import 'package:immich_mobile/shared/ui/scaffold_error_body.dart';
 @RoutePage()
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
-  SearchPage({Key? key}) : super(key: key);
+  SearchPage({super.key});
 
   FocusNode searchFocusNode = FocusNode();
 

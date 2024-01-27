@@ -23,8 +23,8 @@ class SystemConfigLoggingDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigLoggingDto &&
-     other.enabled == enabled &&
-     other.level == level;
+    other.enabled == enabled &&
+    other.level == level;
 
   @override
   int get hashCode =>

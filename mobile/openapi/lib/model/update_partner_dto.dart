@@ -20,7 +20,7 @@ class UpdatePartnerDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdatePartnerDto &&
-     other.inTimeline == inTimeline;
+    other.inTimeline == inTimeline;
 
   @override
   int get hashCode =>

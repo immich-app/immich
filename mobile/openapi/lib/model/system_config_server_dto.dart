@@ -23,8 +23,8 @@ class SystemConfigServerDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigServerDto &&
-     other.externalDomain == externalDomain &&
-     other.loginPageMessage == loginPageMessage;
+    other.externalDomain == externalDomain &&
+    other.loginPageMessage == loginPageMessage;
 
   @override
   int get hashCode =>

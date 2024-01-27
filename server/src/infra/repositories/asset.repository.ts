@@ -138,7 +138,7 @@ export class AssetRepository implements IAssetRepository {
 
     const withExif = Object.keys(exifWhere).length > 0 || _withExif;
 
-    const where = _.omitBy(
+    const where: FindOptionsWhere<AssetEntity> = _.omitBy(
       {
         ownerId,
         id,
@@ -182,10 +182,6 @@ export class AssetRepository implements IAssetRepository {
       builder.leftJoinAndSelect('faces.person', 'person');
     }
 
-    if (withStacked) {
-      builder.leftJoinAndSelect('asset.stack', 'stack');
-    }
-
     if (withSmartInfo) {
       builder.leftJoinAndSelect('asset.smartInfo', 'smartInfo');
     }
@@ -194,13 +190,20 @@ export class AssetRepository implements IAssetRepository {
       builder.withDeleted();
     }
 
-    builder
-      .where(where)
+    builder.where(where);
+
+    if (withStacked) {
+      builder
+        .leftJoinAndSelect('asset.stack', 'stack')
+        .leftJoinAndSelect('stack.assets', 'stackedAssets')
+        .andWhere(new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')));
+    }
+
+    return builder
       .skip(size * (page - 1))
       .take(size)
-      .orderBy('asset.fileCreatedAt', order ?? 'DESC');
-
-    return builder.getMany();
+      .orderBy('asset.fileCreatedAt', order ?? 'DESC')
+      .getMany();
   }
 
   create(asset: AssetCreate): Promise<AssetEntity> {
@@ -279,7 +282,9 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
-        stack: true,
+        stack: {
+          assets: true,
+        },
       };
     }
 
@@ -797,8 +802,14 @@ export class AssetRepository implements IAssetRepository {
       builder = builder.andWhere('asset.type = :assetType', { assetType });
     }
 
+    let stackJoined = false;
+
     if (exifInfo !== false) {
-      builder = builder.leftJoinAndSelect('asset.exifInfo', 'exifInfo').leftJoinAndSelect('asset.stack', 'stack');
+      stackJoined = true;
+      builder = builder
+        .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
+        .leftJoinAndSelect('asset.stack', 'stack')
+        .leftJoinAndSelect('stack.assets', 'stackedAssets');
     }
 
     if (albumId) {
@@ -829,7 +840,12 @@ export class AssetRepository implements IAssetRepository {
     }
 
     if (withStacked) {
-      builder = builder.andWhere('asset.stackParentId IS NULL');
+      if (!stackJoined) {
+        builder = builder.leftJoinAndSelect('asset.stack', 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
+      }
+      builder = builder.andWhere(
+        new Brackets((qb) => qb.where('stack.primaryAssetId = asset.id').orWhere('asset.stackId IS NULL')),
+      );
     }
 
     return builder;
