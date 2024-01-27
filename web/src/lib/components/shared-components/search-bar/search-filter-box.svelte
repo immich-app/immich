@@ -1,16 +1,11 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { savedSearchTerms } from '$lib/stores/search.store';
-  import { mdiMagnify, mdiClose } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
+  import Combobox, { type ComboBoxOption } from '../combobox.svelte';
 
-  const dispatch = createEventDispatcher<{
-    selectSearchTerm: string;
-    clearSearchTerm: string;
-    clearAllSearchTerms: void;
-  }>();
+  let selectedCountry: ComboBoxOption = { label: '', value: '' };
+  let selectedState: ComboBoxOption = { label: '', value: '' };
+  let selectedCity: ComboBoxOption = { label: '', value: '' };
 </script>
 
 <div
@@ -20,11 +15,11 @@
   <p class="text-xs py-2">FILTERS</p>
   <hr class="py-2" />
 
-  <form>
+  <form id="search-filter-form" autocomplete="off">
     <div class="py-3">
       <label class="immich-form-label" for="context">CONTEXT</label>
       <input
-        class="immich-form-input w-full border border-gray-300 dark:border-gray-500"
+        class="immich-form-input w-full border border-gray-300 dark:border-gray-500 mt-3"
         type="text"
         id="context"
         name="context"
@@ -33,20 +28,31 @@
     </div>
 
     <div class="py-3">
-      <label class="immich-form-label" for="place">PLACE</label>
-      <input
-        class="immich-form-input w-full border border-gray-300 dark:border-gray-500"
-        type="text"
-        id="place"
-        name="place"
-      />
+      <p class="immich-form-label">PLACE</p>
+
+      <div class="flex justify-between gap-5 mt-3">
+        <div class="w-full">
+          <p class="text-xs">COUNTRY</p>
+          <Combobox options={[]} selectedOption={selectedCountry} placeholder="Select country" />
+        </div>
+
+        <div class="w-full">
+          <p class="text-xs">STATE</p>
+          <Combobox options={[]} selectedOption={selectedState} placeholder="Select state" />
+        </div>
+
+        <div class="w-full">
+          <p class="text-xs">CITY</p>
+          <Combobox options={[]} selectedOption={selectedCity} placeholder="Select city" />
+        </div>
+      </div>
     </div>
 
     <div class="flex justify-between gap-5">
-      <div class="py-3 flex-1">
+      <div class="py-3 flex-1 mt">
         <label class="immich-form-label" for="start-date">START DATE</label>
         <input
-          class="immich-form-input w-full border border-gray-300 dark:border-gray-500"
+          class="immich-form-input w-full border border-gray-300 dark:border-gray-500 mt-3"
           type="date"
           id="start-date"
           name="start-date"
@@ -56,7 +62,7 @@
       <div class="py-3 flex-1">
         <label class="immich-form-label" for="end-date">END DATE</label>
         <input
-          class="immich-form-input w-full border border-gray-300 dark:border-gray-500"
+          class="immich-form-input w-full border border-gray-300 dark:border-gray-500 mt-3"
           type="date"
           id="end-date"
           name="end-date"

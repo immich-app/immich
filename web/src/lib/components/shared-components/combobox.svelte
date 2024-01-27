@@ -2,6 +2,12 @@
   // Necessary for eslint
   /* eslint-disable @typescript-eslint/no-explicit-any */
   type T = any;
+
+  export type Type = 'button' | 'submit' | 'reset';
+  export type ComboBoxOption = {
+    label: string;
+    value: T;
+  };
 </script>
 
 <script lang="ts" generics="T">
@@ -9,11 +15,7 @@
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
 
-  type ComboBoxOption = {
-    label: string;
-    value: T;
-  };
-
+  export let type: Type = 'button';
   export let options: ComboBoxOption[] = [];
   export let selectedOption: ComboBoxOption;
   export let placeholder = '';
@@ -40,9 +42,7 @@
 </script>
 
 <div class="relative" use:clickOutside on:outclick={handleOutClick}>
-  <button
-    class="text-sm text-left w-full bg-gray-200 p-3 rounded-lg dark:text-white dark:bg-gray-600 dark:hover:bg-gray-500 transition-all"
-    on:click={handleClick}
+  <button {type} class="immich-form-input text-sm text-left w-full min-h-[48px] transition-all" on:click={handleClick}
     >{selectedOption.label}
     <div class="absolute right-0 top-0 h-full flex px-4 justify-center items-center content-between">
       <Icon path={mdiUnfoldMoreHorizontal} />
@@ -56,7 +56,7 @@
       <div class="relative border-b flex">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3">
           <div class="dark:text-immich-dark-fg/75">
-            <button class="flex items-center">
+            <button {type} class="flex items-center">
               <Icon path={mdiMagnify} />
             </button>
           </div>
@@ -68,6 +68,7 @@
       <div class="h-64 overflow-y-auto">
         {#each filteredOptions as option (option.label)}
           <button
+            {type}
             class="block text-left w-full px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-all
              ${option.label === selectedOption.label ? 'bg-gray-300 dark:bg-gray-600' : ''}
             "
