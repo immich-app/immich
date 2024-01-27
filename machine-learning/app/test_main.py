@@ -197,9 +197,8 @@ class TestBase:
     def test_make_session_return_ann_if_available(self, mocker: MockerFixture) -> None:
         mock_cache_dir = mocker.Mock()
         mock_cache_dir.is_file.return_value = True
+        mock_cache_dir.suffix = ".armnn"
         mock_cache_dir.with_suffix.return_value = mock_cache_dir
-        mocker.patch.object(settings, "ann", True)
-        mocker.patch("ann.ann.is_available", True)
         mock_session = mocker.patch("app.models.base.AnnSession")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
@@ -208,24 +207,30 @@ class TestBase:
         mock_session.assert_called_once()
 
     def test_make_session_return_ort_if_available_and_ann_is_not(self, mocker: MockerFixture) -> None:
-        mock_cache_dir = mocker.Mock()
-        mock_cache_dir.is_file.return_value = True
-        mock_cache_dir.with_suffix.return_value = mock_cache_dir
-        mocker.patch.object(settings, "ann", False)
-        mocker.patch("ann.ann.is_available", False)
-        mock_session = mocker.patch("app.models.base.ort.InferenceSession")
+        mock_armnn_path = mocker.Mock()
+        mock_armnn_path.is_file.return_value = False
+        mock_armnn_path.suffix = ".armnn"
+        
+        mock_onnx_path = mocker.Mock()
+        mock_onnx_path.is_file.return_value = True
+        mock_onnx_path.suffix = ".onnx"
+        mock_armnn_path.with_suffix.return_value = mock_onnx_path
+
+        mock_ann = mocker.patch("app.models.base.AnnSession")
+        mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
-        encoder._make_session(mock_cache_dir)
+        encoder._make_session(mock_armnn_path)
 
-        mock_session.assert_called_once()
+        mock_ort.assert_called_once()
+        mock_ann.assert_not_called()
 
     def test_make_session_raises_exception_if_path_does_not_exist(self, mocker: MockerFixture) -> None:
         mock_cache_dir = mocker.Mock()
         mock_cache_dir.is_file.return_value = False
+        mock_cache_dir.suffix = ".onnx"
         mock_cache_dir.with_suffix.return_value = mock_cache_dir
-        mocker.patch("ann.ann.is_available", False)
-        mock_ann = mocker.patch("app.models.base.ort.InferenceSession")
+        mock_ann = mocker.patch("app.models.base.AnnSession")
         mock_ort = mocker.patch("app.models.base.ort.InferenceSession")
 
         encoder = OpenCLIPEncoder("ViT-B-32__openai")
