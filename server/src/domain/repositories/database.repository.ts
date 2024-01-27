@@ -34,6 +34,7 @@ export interface IDatabaseRepository {
   updateExtension(extension: DatabaseExtension, version?: Version): Promise<void>;
   updateVectorExtension(extension: VectorExtension, version?: Version): Promise<void>;
   setSearchPath(): Promise<void>;
+  vectorDown(): Promise<void>
   runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void>;
   withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R>;
   isBusy(lock: DatabaseLock): boolean;

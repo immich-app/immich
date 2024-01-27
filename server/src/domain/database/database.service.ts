@@ -1,11 +1,11 @@
 import { ImmichLogger } from '@app/infra/logger';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { Version, VersionType } from '../domain.constant';
 import { DatabaseExtension, DatabaseLock, IDatabaseRepository, VectorExtension, extName } from '../repositories';
 
 @Injectable()
-export class DatabaseService {
+export class DatabaseService implements OnModuleDestroy {
   private logger = new ImmichLogger(DatabaseService.name);
   private vectorExt: VectorExtension;
   minPostgresVersion = 14;
@@ -19,13 +19,19 @@ export class DatabaseService {
   }
 
   async init() {
+    await this.assertPostgresql();
+    await this.databaseRepository.setSearchPath();
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
-      await this.assertPostgresql();
-      await this.databaseRepository.setSearchPath();
       await this.createVectorExtension();
       await this.updateVectorExtension();
       await this.assertVectorExtension();
       await this.databaseRepository.runMigrations();
+    });
+  }
+
+  async onModuleDestroy() {
+    await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
+      await this.databaseRepository.vectorDown();
     });
   }
 
@@ -68,18 +74,22 @@ export class DatabaseService {
       throw new Error(`Unexpected: ${extName[this.vectorExt]} extension is not installed.`);
     }
 
+    this.logger.warn(`The ${extName[this.vectorExt]} extension version is ${version}.`);
+    this.logger.warn(`The ${extName[this.vectorExt]} available version is ${availableVersion}.`);
+
     if (availableVersion == null) {
       return;
     }
 
     const maxVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.vectorVersionPin : this.vectorsVersionPin;
     const isNewer = availableVersion.isNewerThan(version);
-    if (isNewer == null || isNewer >= maxVersion) {
+    if (isNewer == null || isNewer > maxVersion) {
+      this.logger.warn(`Not updating since isNewer=${isNewer}`);
       return;
     }
 
     try {
-      this.logger.log(`Updating ${extName[this.vectorExt]} extension to ${availableVersion}`);
+      this.logger.warn(`Updating ${extName[this.vectorExt]} extension to ${availableVersion}`);
       await this.databaseRepository.updateVectorExtension(this.vectorExt, availableVersion);
     } catch (err) {
       this.logger.warn(`
@@ -111,10 +121,10 @@ export class DatabaseService {
     const minVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.minVectorVersion : this.minVectorsVersion;
     const maxVersion = this.vectorExt === DatabaseExtension.VECTOR ? this.vectorVersionPin : this.vectorsVersionPin;
 
-    if (version.isOlderThan(minVersion) || (version.isNewerThan(minVersion) ?? 0) >= maxVersion) {
+    if (version.isOlderThan(minVersion) || version.isNewerThan(minVersion) > maxVersion) {
       const releases =
-        maxVersion !== VersionType.PATCH
-          ? `${minVersion} and later ${VersionType[maxVersion - 1].toLowerCase()} releases`
+        maxVersion !== VersionType.EQUAL
+          ? `${minVersion} and later ${VersionType[maxVersion].toLowerCase()} releases`
           : minVersion.toString();
 
       this.logger.fatal(`
