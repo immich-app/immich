@@ -1,3 +1,9 @@
+<script lang="ts" context="module">
+  // Necessary for eslint
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  type T = any;
+</script>
+
 <script lang="ts" generics="T">
   import Icon from '$lib/components/elements/icon.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
