@@ -443,10 +443,10 @@
     {/if}
   </svelte:fragment>
 
-  {#if countVisiblePeople > 0 && searchName ? searchedPeopleLocal.length !== 0 : true}
+  {#if countVisiblePeople > 0}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-9 gap-1">
       {#each people as person, idx (person.id)}
-        {#if !person.isHidden}
+        {#if !person.isHidden && (searchName ? searchedPeopleLocal.some((searchedPerson) => searchedPerson.id === person.id) : true)}
           <PeopleCard
             {person}
             preload={idx < 20}
@@ -527,7 +527,7 @@
           on:mouseleave={() => (eyeColorMap[person.id] = 'white')}
         >
           <ImageThumbnail
-            preload={idx < 20}
+            preload={searchName !== '' || idx < 20}
             bind:hidden={person.isHidden}
             shadow
             url={api.getPeopleThumbnailUrl(person.id)}

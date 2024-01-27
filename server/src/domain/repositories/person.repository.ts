@@ -54,8 +54,6 @@ export interface IPersonRepository {
   getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
   getStatistics(personId: string): Promise<PersonStatistics>;
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
-  getFaceById(id: string): Promise<AssetFaceEntity>;
-  getFaceByIdWithAssets(id: string): Promise<AssetFaceEntity | null>;
   getNumberOfPeople(userId: string): Promise<number>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;

@@ -8527,8 +8527,7 @@
         },
         "required": [
           "people",
-          "total",
-          "visible"
+          "total"
         ],
         "type": "object"
       },
