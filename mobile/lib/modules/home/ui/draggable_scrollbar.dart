@@ -64,7 +64,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.scrollbarTimeToFade = const Duration(milliseconds: 600),
     this.labelTextBuilder,
     this.labelConstraints,
-  })  : assert(child.scrollDirection == Axis.vertical);
+  }) : assert(child.scrollDirection == Axis.vertical);
 
   DraggableScrollbar.rrect({
     super.key,

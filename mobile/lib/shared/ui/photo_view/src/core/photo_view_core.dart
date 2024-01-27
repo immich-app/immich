@@ -47,7 +47,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.filterQuality,
     required this.disableGestures,
     required this.enablePanAlways,
-  })  : customChild = null;
+  }) : customChild = null;
 
   const PhotoViewCore.customChild({
     super.key,
@@ -357,15 +357,15 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             onScaleStart: onScaleStart,
             onScaleUpdate: onScaleUpdate,
             onScaleEnd: onScaleEnd,
-            onDragStart:  widget.onDragStart != null
-               ? (details) => widget.onDragStart!(context, details, value)
-               : null,
-            onDragEnd:  widget.onDragEnd != null
-               ? (details) => widget.onDragEnd!(context, details, value)
-               : null,
+            onDragStart: widget.onDragStart != null
+                ? (details) => widget.onDragStart!(context, details, value)
+                : null,
+            onDragEnd: widget.onDragEnd != null
+                ? (details) => widget.onDragEnd!(context, details, value)
+                : null,
             onDragUpdate: widget.onDragUpdate != null
-               ? (details) => widget.onDragUpdate!(context, details, value)
-               : null,
+                ? (details) => widget.onDragUpdate!(context, details, value)
+                : null,
             hitDetector: this,
             onTapUp: widget.onTapUp != null
                 ? (details) => widget.onTapUp!(context, details, value)
