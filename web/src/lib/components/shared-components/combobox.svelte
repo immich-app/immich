@@ -11,6 +11,8 @@
 </script>
 
 <script lang="ts" generics="T">
+  import { fly } from 'svelte/transition';
+
   import Icon from '$lib/components/elements/icon.svelte';
   import { clickOutside } from '$lib/utils/click-outside';
   import { mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
@@ -19,6 +21,7 @@
   export let options: ComboBoxOption[] = [];
   export let selectedOption: ComboBoxOption;
   export let placeholder = '';
+  export const label = '';
 
   let isOpen = false;
   let searchQuery = '';
@@ -51,7 +54,8 @@
 
   {#if isOpen}
     <div
-      class="absolute w-full top-full mt-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-900"
+      transition:fly={{ y: 25, duration: 250 }}
+      class="absolute w-full top-full mt-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-900 z-10"
     >
       <div class="relative border-b flex">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3">
