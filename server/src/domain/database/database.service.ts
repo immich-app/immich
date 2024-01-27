@@ -2,7 +2,7 @@ import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
 import { Version, VersionType } from '../domain.constant';
-import { DatabaseExtension, IDatabaseRepository, VectorExtension, extName } from '../repositories';
+import { DatabaseExtension, DatabaseLock, IDatabaseRepository, VectorExtension, extName } from '../repositories';
 
 @Injectable()
 export class DatabaseService {
@@ -19,12 +19,14 @@ export class DatabaseService {
   }
 
   async init() {
-    await this.assertPostgresql();
-    await this.databaseRepository.setSearchPath();
-    await this.createVectorExtension();
-    await this.updateVectorExtension();
-    await this.assertVectorExtension();
-    await this.databaseRepository.runMigrations();
+    await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
+      await this.assertPostgresql();
+      await this.databaseRepository.setSearchPath();
+      await this.createVectorExtension();
+      await this.updateVectorExtension();
+      await this.assertVectorExtension();
+      await this.databaseRepository.runMigrations();
+    });
   }
 
   private async assertPostgresql() {
@@ -87,6 +89,7 @@ export class DatabaseService {
 
         Please run 'ALTER EXTENSION ${this.vectorExt} UPDATE' manually as a superuser.
         See https://immich.app/docs/guides/database-queries for how to query the database.`);
+      this.logger.error(err);
     }
   }
 

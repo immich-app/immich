@@ -11,6 +11,7 @@ export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTO
 
 export enum DatabaseLock {
   GeodataImport = 100,
+  Migrations = 200,
   StorageTemplateMigration = 420,
   CLIPDimSize = 512,
 }
