@@ -31,14 +31,14 @@
     bind:value={name}
     on:input={() => dispatch('search', { force: false })}
   />
-  {#if name}
-    <button on:click={resetSearch}>
-      <Icon path={mdiClose} />
-    </button>
-  {/if}
   {#if isSearchingPeople}
     <div class="flex place-items-center">
       <LoadingSpinner />
     </div>
+  {/if}
+  {#if name}
+    <button on:click={resetSearch}>
+      <Icon path={mdiClose} />
+    </button>
   {/if}
 </div>

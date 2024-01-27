@@ -422,7 +422,7 @@
     {#if countTotalPeople > 0}
       <div class="flex gap-2 items-center justify-center">
         <div class="hidden sm:block">
-          <div class=" w-40 sm:w-48 md:w-52 lg:w-80 h-10">
+          <div class="w-40 lg:w-80 h-10">
             <SearchBar
               bind:name={searchName}
               {isSearchingPeople}
