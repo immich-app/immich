@@ -23,7 +23,6 @@ export enum AppRoute {
   PEOPLE = '/people',
   PLACES = '/places',
   PHOTOS = '/photos',
-  PLACES = '/places',
   EXPLORE = '/explore',
   SHARING = '/sharing',
   SHARED_LINKS = '/sharing/sharedlinks',
