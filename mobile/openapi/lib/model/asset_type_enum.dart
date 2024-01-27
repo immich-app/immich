@@ -38,7 +38,7 @@ class AssetTypeEnum {
 
   static AssetTypeEnum? fromJson(dynamic value) => AssetTypeEnumTypeTransformer().decode(value);
 
-  static List<AssetTypeEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetTypeEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

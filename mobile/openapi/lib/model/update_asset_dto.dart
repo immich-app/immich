@@ -71,12 +71,12 @@ class UpdateAssetDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
-     other.dateTimeOriginal == dateTimeOriginal &&
-     other.description == description &&
-     other.isArchived == isArchived &&
-     other.isFavorite == isFavorite &&
-     other.latitude == latitude &&
-     other.longitude == longitude;
+    other.dateTimeOriginal == dateTimeOriginal &&
+    other.description == description &&
+    other.isArchived == isArchived &&
+    other.isFavorite == isFavorite &&
+    other.latitude == latitude &&
+    other.longitude == longitude;
 
   @override
   int get hashCode =>
@@ -138,12 +138,8 @@ class UpdateAssetDto {
         description: mapValueOfType<String>(json, r'description'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        latitude: json[r'latitude'] == null
-            ? null
-            : num.parse(json[r'latitude'].toString()),
-        longitude: json[r'longitude'] == null
-            ? null
-            : num.parse(json[r'longitude'].toString()),
+        latitude: num.parse('${json[r'latitude']}'),
+        longitude: num.parse('${json[r'longitude']}'),
       );
     }
     return null;

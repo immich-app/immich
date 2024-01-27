@@ -23,8 +23,8 @@ class SearchExploreItem {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchExploreItem &&
-     other.data == data &&
-     other.value == value;
+    other.data == data &&
+    other.value == value;
 
   @override
   int get hashCode =>

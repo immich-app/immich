@@ -23,8 +23,8 @@ class AssetJobsDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetJobsDto &&
-     other.assetIds == assetIds &&
-     other.name == name;
+    _deepEquality.equals(other.assetIds, assetIds) &&
+    other.name == name;
 
   @override
   int get hashCode =>
@@ -50,8 +50,8 @@ class AssetJobsDto {
       final json = value.cast<String, dynamic>();
 
       return AssetJobsDto(
-        assetIds: json[r'assetIds'] is List
-            ? (json[r'assetIds'] as List).cast<String>()
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         name: AssetJobName.fromJson(json[r'name'])!,
       );

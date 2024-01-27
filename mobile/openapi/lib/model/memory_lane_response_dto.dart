@@ -23,8 +23,8 @@ class MemoryLaneResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryLaneResponseDto &&
-     other.assets == assets &&
-     other.title == title;
+    _deepEquality.equals(other.assets, assets) &&
+    other.title == title;
 
   @override
   int get hashCode =>

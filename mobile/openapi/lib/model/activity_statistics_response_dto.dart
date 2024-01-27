@@ -20,7 +20,7 @@ class ActivityStatisticsResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityStatisticsResponseDto &&
-     other.comments == comments;
+    other.comments == comments;
 
   @override
   int get hashCode =>

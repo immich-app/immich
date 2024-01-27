@@ -21,6 +21,7 @@ export enum AppRoute {
   ARCHIVE = '/archive',
   FAVORITES = '/favorites',
   PEOPLE = '/people',
+  PLACES = '/places',
   PHOTOS = '/photos',
   PLACES = '/places',
   EXPLORE = '/explore',

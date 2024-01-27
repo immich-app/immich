@@ -23,8 +23,8 @@ class UpdateStackParentDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateStackParentDto &&
-     other.newParentId == newParentId &&
-     other.oldParentId == oldParentId;
+    other.newParentId == newParentId &&
+    other.oldParentId == oldParentId;
 
   @override
   int get hashCode =>

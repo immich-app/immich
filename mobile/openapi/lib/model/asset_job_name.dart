@@ -36,7 +36,7 @@ class AssetJobName {
 
   static AssetJobName? fromJson(dynamic value) => AssetJobNameTypeTransformer().decode(value);
 
-  static List<AssetJobName>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetJobName> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetJobName>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

@@ -34,7 +34,7 @@ class Colorspace {
 
   static Colorspace? fromJson(dynamic value) => ColorspaceTypeTransformer().decode(value);
 
-  static List<Colorspace>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<Colorspace> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <Colorspace>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
