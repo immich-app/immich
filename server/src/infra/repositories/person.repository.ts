@@ -1,3 +1,5 @@
+import { InjectRepository } from '@nestjs/typeorm';
+import _ from 'lodash';
 import {
   AssetFaceId,
   IPersonRepository,
@@ -7,9 +9,7 @@ import {
   PersonSearchOptions,
   PersonStatistics,
   UpdateFacesData,
-} from '@app/domain';
-import { InjectRepository } from '@nestjs/typeorm';
-import _ from 'lodash';
+} from 'src/domain';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';

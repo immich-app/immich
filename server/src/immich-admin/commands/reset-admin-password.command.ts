@@ -1,5 +1,5 @@
-import { UserResponseDto, UserService } from '@app/domain';
 import { Command, CommandRunner, InquirerService, Question, QuestionSet } from 'nest-commander';
+import { UserResponseDto, UserService } from 'src/domain';
 
 @Command({
   name: 'reset-admin-password',

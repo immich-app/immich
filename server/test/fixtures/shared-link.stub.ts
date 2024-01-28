@@ -1,5 +1,5 @@
-import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, mapUser, SharedLinkResponseDto } from '@app/domain';
-import { AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from '@app/infra/entities';
+import { AlbumResponseDto, AssetResponseDto, ExifResponseDto, SharedLinkResponseDto, mapUser } from 'src/domain';
+import { AssetType, SharedLinkEntity, SharedLinkType, UserEntity } from 'src/infra/entities';
 import { assetStub } from './asset.stub';
 import { authStub } from './auth.stub';
 import { libraryStub } from './library.stub';

@@ -7,7 +7,7 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from '@app/infra/entities';
+} from 'src/infra/entities';
 import {
   assetStub,
   faceStub,
@@ -21,7 +21,7 @@ import {
   newSystemConfigRepositoryMock,
   personStub,
   probeStub,
-} from '@test';
+} from 'test';
 import { JobName } from '../job';
 import {
   IAssetRepository,

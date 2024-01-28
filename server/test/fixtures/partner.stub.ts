@@ -1,4 +1,4 @@
-import { PartnerEntity } from '@app/infra/entities';
+import { PartnerEntity } from 'src/infra/entities';
 import { userStub } from './user.stub';
 
 export const partnerStub = {

@@ -1,4 +1,4 @@
-import { AuthDto } from '@app/domain';
+import { AuthDto } from 'src/domain';
 import { SharedLinkEntity, UserEntity, UserTokenEntity } from '../../src/infra/entities';
 
 export const adminSignupStub = {

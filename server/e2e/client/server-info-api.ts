@@ -1,4 +1,4 @@
-import { ServerConfigDto } from '@app/domain';
+import { ServerConfigDto } from 'src/domain';
 import request from 'supertest';
 
 export const serverInfoApi = {

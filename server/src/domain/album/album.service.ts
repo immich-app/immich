@@ -1,5 +1,5 @@
-import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { AlbumEntity, AssetEntity, UserEntity } from 'src/infra/entities';
 import { AccessCore, Permission } from '../access';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from '../asset';
 import { AuthDto } from '../auth';

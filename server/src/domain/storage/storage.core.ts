@@ -1,7 +1,7 @@
-import { SystemConfigCore } from '@app/domain/system-config';
-import { AssetEntity, AssetPathType, PathType, PersonEntity, PersonPathType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { dirname, join, resolve } from 'node:path';
+import { SystemConfigCore } from 'src/domain/system-config';
+import { AssetEntity, AssetPathType, PathType, PersonEntity, PersonPathType } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
 import {
   IAssetRepository,

@@ -1,16 +1,16 @@
-import { AssetType, LibraryType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path from 'node:path';
 import { basename, parse } from 'path';
+import { AssetType, LibraryType } from 'src/infra/entities';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { mimeTypes } from '../domain.constant';
 import { usePagination, validateCronExpression } from '../domain.util';
 import { IBaseJob, IEntityJob, ILibraryFileJob, ILibraryRefreshJob, JOBS_ASSET_PAGINATION_SIZE, JobName } from '../job';
 
-import { ImmichLogger } from '@app/infra/logger';
+import { ImmichLogger } from 'src/infra/logger';
 import {
   IAccessRepository,
   IAssetRepository,

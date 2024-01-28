@@ -1,4 +1,4 @@
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from '@app/domain';
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from 'src/domain';
 import request from 'supertest';
 
 export const userApi = {

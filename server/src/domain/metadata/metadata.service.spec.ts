@@ -1,4 +1,9 @@
-import { AssetType, ExifEntity, SystemConfigKey } from '@app/infra/entities';
+import { randomBytes } from 'crypto';
+import { BinaryField } from 'exiftool-vendored';
+import { Stats } from 'fs';
+import { constants } from 'fs/promises';
+import { when } from 'jest-when';
+import { AssetType, ExifEntity, SystemConfigKey } from 'src/infra/entities';
 import {
   assetStub,
   fileStub,
@@ -15,12 +20,7 @@ import {
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   probeStub,
-} from '@test';
-import { randomBytes } from 'crypto';
-import { BinaryField } from 'exiftool-vendored';
-import { Stats } from 'fs';
-import { constants } from 'fs/promises';
-import { when } from 'jest-when';
+} from 'test';
 import { JobName } from '../job';
 import {
   ClientEvent,

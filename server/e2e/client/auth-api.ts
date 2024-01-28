@@ -1,6 +1,6 @@
-import { AuthDeviceResponseDto, LoginCredentialDto, LoginResponseDto, UserResponseDto } from '@app/domain';
-import { adminSignupStub, loginResponseStub, loginStub } from '@test';
+import { AuthDeviceResponseDto, LoginCredentialDto, LoginResponseDto, UserResponseDto } from 'src/domain';
 import request from 'supertest';
+import { adminSignupStub, loginResponseStub, loginStub } from 'test';
 
 export const authApi = {
   adminSignUp: async (server: any) => {

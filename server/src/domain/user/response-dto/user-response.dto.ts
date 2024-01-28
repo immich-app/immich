@@ -1,6 +1,6 @@
-import { UserAvatarColor, UserEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
+import { UserAvatarColor, UserEntity } from 'src/infra/entities';
 
 export const getRandomAvatarColor = (user: UserEntity): UserAvatarColor => {
   const values = Object.values(UserAvatarColor);

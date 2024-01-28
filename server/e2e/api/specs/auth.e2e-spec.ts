@@ -1,4 +1,5 @@
-import { AuthController } from '@app/immich';
+import { AuthController } from 'src/immich';
+import request from 'supertest';
 import {
   adminSignupStub,
   changePasswordStub,
@@ -7,8 +8,7 @@ import {
   loginResponseStub,
   loginStub,
   uuidStub,
-} from '@test/fixtures';
-import request from 'supertest';
+} from 'test/fixtures';
 import { api } from '../../client';
 import { testApp } from '../utils';
 

@@ -1,4 +1,4 @@
-import { UserAvatarColor, UserEntity } from '@app/infra/entities';
+import { UserAvatarColor, UserEntity } from 'src/infra/entities';
 import { authStub } from './auth.stub';
 
 export const userDto = {

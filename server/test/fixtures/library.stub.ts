@@ -1,4 +1,4 @@
-import { LibraryEntity, LibraryType } from '@app/infra/entities';
+import { LibraryEntity, LibraryType } from 'src/infra/entities';
 import { userStub } from './user.stub';
 
 export const libraryStub = {

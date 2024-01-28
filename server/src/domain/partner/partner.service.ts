@@ -1,5 +1,5 @@
-import { PartnerEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { PartnerEntity } from 'src/infra/entities';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { IAccessRepository, IPartnerRepository, PartnerDirection, PartnerIds } from '../repositories';

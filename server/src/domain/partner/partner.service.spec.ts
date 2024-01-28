@@ -1,6 +1,6 @@
-import { UserAvatarColor } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { authStub, newPartnerRepositoryMock, partnerStub } from '@test';
+import { UserAvatarColor } from 'src/infra/entities';
+import { authStub, newPartnerRepositoryMock, partnerStub } from 'test';
 import { IAccessRepository, IPartnerRepository, PartnerDirection } from '../repositories';
 import { PartnerResponseDto } from './partner.dto';
 import { PartnerService } from './partner.service';

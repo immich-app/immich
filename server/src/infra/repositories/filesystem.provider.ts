@@ -1,17 +1,17 @@
-import {
-  CrawlOptionsDto,
-  DiskUsage,
-  ImmichReadStream,
-  ImmichZipStream,
-  IStorageRepository,
-  mimeTypes,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
 import archiver from 'archiver';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs, { copyFile, readdir, rename, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import path from 'path';
+import {
+  CrawlOptionsDto,
+  DiskUsage,
+  IStorageRepository,
+  ImmichReadStream,
+  ImmichZipStream,
+  mimeTypes,
+} from 'src/domain';
+import { ImmichLogger } from 'src/infra/logger';
 
 export class FilesystemProvider implements IStorageRepository {
   private logger = new ImmichLogger(FilesystemProvider.name);

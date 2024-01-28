@@ -1,7 +1,7 @@
 // TODO: remove nestjs references from domain
-import { LogLevel } from '@app/infra/entities';
 import { ConfigModuleOptions } from '@nestjs/config';
 import Joi from 'joi';
+import { LogLevel } from 'src/infra/entities';
 
 const WHEN_DB_URL_SET = Joi.when('DB_URL', {
   is: Joi.exist(),

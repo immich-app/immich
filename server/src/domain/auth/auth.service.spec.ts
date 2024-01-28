@@ -1,5 +1,8 @@
-import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { IncomingHttpHeaders } from 'http';
+import { Issuer, generators } from 'openid-client';
+import { Socket } from 'socket.io';
+import { UserEntity } from 'src/infra/entities';
 import {
   IAccessRepositoryMock,
   authStub,
@@ -17,10 +20,7 @@ import {
   systemConfigStub,
   userStub,
   userTokenStub,
-} from '@test';
-import { IncomingHttpHeaders } from 'http';
-import { Issuer, generators } from 'openid-client';
-import { Socket } from 'socket.io';
+} from 'test';
 import {
   ICryptoRepository,
   IKeyRepository,

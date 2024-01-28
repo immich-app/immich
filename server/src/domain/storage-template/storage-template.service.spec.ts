@@ -1,3 +1,5 @@
+import { when } from 'jest-when';
+import { Stats } from 'node:fs';
 import {
   IAlbumRepository,
   IAssetRepository,
@@ -10,8 +12,8 @@ import {
   IUserRepository,
   StorageTemplateService,
   defaults,
-} from '@app/domain';
-import { AssetPathType, SystemConfigKey } from '@app/infra/entities';
+} from 'src/domain';
+import { AssetPathType, SystemConfigKey } from 'src/infra/entities';
 import {
   assetStub,
   newAlbumRepositoryMock,
@@ -24,9 +26,7 @@ import {
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   userStub,
-} from '@test';
-import { when } from 'jest-when';
-import { Stats } from 'node:fs';
+} from 'test';
 import { SystemConfigCore } from '../system-config';
 
 describe(StorageTemplateService.name, () => {

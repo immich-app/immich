@@ -1,5 +1,5 @@
-import { ExifEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
+import { ExifEntity } from 'src/infra/entities';
 
 export class ExifResponseDto {
   make?: string | null = null;

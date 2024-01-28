@@ -1,10 +1,10 @@
-import { envName, isDev, serverVersion } from '@app/domain';
-import { WebSocketAdapter } from '@app/infra';
-import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
+import { envName, isDev, serverVersion } from 'src/domain';
+import { WebSocketAdapter } from 'src/infra';
+import { ImmichLogger } from 'src/infra/logger';
 import { AppModule } from './app.module';
 import { AppService } from './app.service';
 import { useSwagger } from './app.utils';

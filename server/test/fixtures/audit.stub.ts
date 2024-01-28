@@ -1,4 +1,4 @@
-import { AuditEntity, DatabaseAction, EntityType } from '@app/infra/entities';
+import { AuditEntity, DatabaseAction, EntityType } from 'src/infra/entities';
 import { authStub } from './auth.stub';
 
 export const auditStub = {

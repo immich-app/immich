@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { when } from 'jest-when';
 import {
   IAccessRepositoryMock,
   assetStub,
@@ -6,8 +7,7 @@ import {
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newStorageRepositoryMock,
-} from '@test';
-import { when } from 'jest-when';
+} from 'test';
 import { Readable } from 'typeorm/platform/PlatformTools.js';
 import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { IAssetRepository, IStorageRepository } from '../repositories';

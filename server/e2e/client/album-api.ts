@@ -1,4 +1,4 @@
-import { AddUsersDto, AlbumResponseDto, BulkIdResponseDto, BulkIdsDto, CreateAlbumDto } from '@app/domain';
+import { AddUsersDto, AlbumResponseDto, BulkIdResponseDto, BulkIdsDto, CreateAlbumDto } from 'src/domain';
 import request from 'supertest';
 
 export const albumApi = {

@@ -1,4 +1,4 @@
-import { ISmartInfoRepository } from '@app/domain';
+import { ISmartInfoRepository } from 'src/domain';
 
 export const newSmartInfoRepositoryMock = (): jest.Mocked<ISmartInfoRepository> => {
   return {

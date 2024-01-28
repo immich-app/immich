@@ -1,13 +1,4 @@
 import {
-  AuthDto,
-  CreateUserDto as CreateDto,
-  CreateProfileImageDto,
-  CreateProfileImageResponseDto,
-  UpdateUserDto as UpdateDto,
-  UserResponseDto,
-  UserService,
-} from '@app/domain';
-import {
   Body,
   Controller,
   Delete,
@@ -25,6 +16,15 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import {
+  AuthDto,
+  CreateUserDto as CreateDto,
+  CreateProfileImageDto,
+  CreateProfileImageResponseDto,
+  UpdateUserDto as UpdateDto,
+  UserResponseDto,
+  UserService,
+} from 'src/domain';
 import { AdminRoute, Auth, Authenticated, FileResponse } from '../app.guard';
 import { UseValidation, sendFile } from '../app.utils';
 import { FileUploadInterceptor, Route } from '../interceptors';

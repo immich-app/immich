@@ -1,3 +1,6 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import {
   AssetIdsDto,
   AssetIdsResponseDto,
@@ -8,10 +11,7 @@ import {
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
   SharedLinkService,
-} from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+} from 'src/domain';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';

@@ -1,5 +1,5 @@
-import { ISystemMetadataRepository } from '@app/domain/repositories/system-metadata.repository';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ISystemMetadataRepository } from 'src/domain/repositories/system-metadata.repository';
 import { Repository } from 'typeorm';
 import { SystemMetadata, SystemMetadataEntity } from '../entities';
 

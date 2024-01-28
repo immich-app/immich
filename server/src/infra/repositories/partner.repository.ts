@@ -1,6 +1,6 @@
-import { IPartnerRepository, PartnerIds } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IPartnerRepository, PartnerIds } from 'src/domain';
 import { DeepPartial, Repository } from 'typeorm';
 import { PartnerEntity } from '../entities';
 

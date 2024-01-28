@@ -1,6 +1,6 @@
-import { IAssetStackRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IAssetStackRepository } from 'src/domain';
 import { Repository } from 'typeorm';
 import { AssetStackEntity } from '../entities';
 

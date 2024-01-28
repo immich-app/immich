@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import _ from 'lodash';
 import {
   albumStub,
   authStub,
@@ -9,8 +10,7 @@ import {
   newJobRepositoryMock,
   newUserRepositoryMock,
   userStub,
-} from '@test';
-import _ from 'lodash';
+} from 'test';
 import { BulkIdErrorReason } from '../asset';
 import { IAlbumRepository, IAssetRepository, IJobRepository, IUserRepository } from '../repositories';
 import { AlbumService } from './album.service';

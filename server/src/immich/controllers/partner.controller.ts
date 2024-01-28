@@ -1,7 +1,7 @@
-import { AuthDto, PartnerDirection, PartnerService } from '@app/domain';
-import { PartnerResponseDto, UpdatePartnerDto } from '@app/domain/partner/partner.dto';
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { AuthDto, PartnerDirection, PartnerService } from 'src/domain';
+import { PartnerResponseDto, UpdatePartnerDto } from 'src/domain/partner/partner.dto';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';

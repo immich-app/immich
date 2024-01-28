@@ -1,4 +1,4 @@
-import { SystemConfigKey } from '@app/infra/entities';
+import { SystemConfigKey } from 'src/infra/entities';
 import {
   assetStub,
   authStub,
@@ -9,7 +9,7 @@ import {
   newSmartInfoRepositoryMock,
   newSystemConfigRepositoryMock,
   personStub,
-} from '@test';
+} from 'test';
 import { mapAsset } from '../asset';
 import {
   IAssetRepository,

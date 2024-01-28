@@ -1,6 +1,6 @@
-import { SystemConfig } from '@app/infra/entities';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
+import { SystemConfig } from 'src/infra/entities';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigJobDto } from './system-config-job.dto';
 import { SystemConfigLibraryDto } from './system-config-library.dto';

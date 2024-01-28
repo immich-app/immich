@@ -1,11 +1,11 @@
-import { AssetCreate, IJobRepository, IMetadataRepository, LibraryResponseDto } from '@app/domain';
-import { AppModule } from '@app/immich';
-import { InfraModule, InfraTestModule, dataSource } from '@app/infra';
-import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { randomBytes } from 'crypto';
 import { DateTime } from 'luxon';
+import { AssetCreate, IJobRepository, IMetadataRepository, LibraryResponseDto } from 'src/domain';
+import { AppModule } from 'src/immich';
+import { InfraModule, InfraTestModule, dataSource } from 'src/infra';
+import { AssetEntity, AssetType, LibraryType } from 'src/infra/entities';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../../src/microservices/app.service';
 import { newJobRepositoryMock, newMetadataRepositoryMock } from '../../test';

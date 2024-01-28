@@ -1,9 +1,9 @@
-import { AlbumResponseDto, LoginResponseDto } from '@app/domain';
-import { AlbumController } from '@app/immich';
-import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
-import { SharedLinkType } from '@app/infra/entities';
-import { errorStub, userDto, uuidStub } from '@test/fixtures';
+import { AlbumResponseDto, LoginResponseDto } from 'src/domain';
+import { AlbumController } from 'src/immich';
+import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
+import { SharedLinkType } from 'src/infra/entities';
 import request from 'supertest';
+import { errorStub, userDto, uuidStub } from 'test/fixtures';
 import { api } from '../../client';
 import { testApp } from '../utils';
 

@@ -1,4 +1,4 @@
-import { ActivityCreateDto, ActivityResponseDto } from '@app/domain';
+import { ActivityCreateDto, ActivityResponseDto } from 'src/domain';
 import request from 'supertest';
 
 export const activityApi = {

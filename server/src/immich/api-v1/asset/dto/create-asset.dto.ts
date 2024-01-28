@@ -1,7 +1,7 @@
-import { Optional, toBoolean, UploadFieldName, ValidateUUID } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
+import { Optional, UploadFieldName, ValidateUUID, toBoolean } from 'src/domain';
 
 export class CreateAssetBase {
   @IsNotEmpty()

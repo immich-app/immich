@@ -1,6 +1,6 @@
-import { IActivityRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IActivityRepository } from 'src/domain';
 import { IsNull, Repository } from 'typeorm';
 import { ActivityEntity } from '../entities/activity.entity';
 import { DummyValue, GenerateSql } from '../infra.util';

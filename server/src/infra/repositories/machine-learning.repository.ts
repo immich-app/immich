@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common';
+import { readFile } from 'fs/promises';
 import {
   CLIPConfig,
   CLIPMode,
@@ -8,9 +10,7 @@ import {
   RecognitionConfig,
   TextModelInput,
   VisionModelInput,
-} from '@app/domain';
-import { Injectable } from '@nestjs/common';
-import { readFile } from 'fs/promises';
+} from 'src/domain';
 
 const errorPrefix = 'Machine learning request';
 

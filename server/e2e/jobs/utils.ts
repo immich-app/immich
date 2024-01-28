@@ -1,12 +1,12 @@
-import { IJobRepository, JobItem, JobItemHandler, QueueName } from '@app/domain';
-import { AppModule } from '@app/immich';
-import { InfraModule, InfraTestModule, dataSource } from '@app/infra';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { DateTime } from 'luxon';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { Server } from 'node:tls';
+import { IJobRepository, JobItem, JobItemHandler, QueueName } from 'src/domain';
+import { AppModule } from 'src/immich';
+import { InfraModule, InfraTestModule, dataSource } from 'src/infra';
 import { EntityTarget, ObjectLiteral } from 'typeorm';
 import { AppService } from '../../src/microservices/app.service';
 

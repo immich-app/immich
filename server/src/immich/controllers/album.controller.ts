@@ -1,3 +1,5 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
   AddUsersDto,
   AlbumCountResponseDto,
@@ -10,9 +12,7 @@ import {
   CreateAlbumDto as CreateDto,
   GetAlbumsDto,
   UpdateAlbumDto as UpdateDto,
-} from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+} from 'src/domain';
 import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
 import { Auth, Authenticated, SharedLinkRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';

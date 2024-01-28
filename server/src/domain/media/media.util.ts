@@ -1,4 +1,4 @@
-import { CQMode, ToneMapping, TranscodeHWAccel, VideoCodec } from '@app/infra/entities';
+import { CQMode, ToneMapping, TranscodeHWAccel, VideoCodec } from 'src/infra/entities';
 import {
   AudioStreamInfo,
   BitrateDistribution,

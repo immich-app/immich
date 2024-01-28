@@ -1,8 +1,8 @@
-import { AssetResponseDto, LoginResponseDto } from '@app/domain';
-import { AssetController } from '@app/immich';
 import { INestApplication } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import { readFile, writeFile } from 'fs/promises';
+import { AssetResponseDto, LoginResponseDto } from 'src/domain';
+import { AssetController } from 'src/immich';
 import { api } from '../../client';
 import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, db, restoreTempFolder, testApp } from '../utils';
 

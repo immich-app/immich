@@ -1,4 +1,3 @@
-import { AssetResponseDto, AssetService, AuthDto } from '@app/domain';
 import {
   Body,
   Controller,
@@ -17,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { AssetResponseDto, AssetService, AuthDto } from 'src/domain';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../../app.guard';
 import { UseValidation, sendFile } from '../../app.utils';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';

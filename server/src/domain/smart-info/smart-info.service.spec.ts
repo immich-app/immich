@@ -1,4 +1,4 @@
-import { AssetEntity, SystemConfigKey } from '@app/infra/entities';
+import { AssetEntity, SystemConfigKey } from 'src/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
@@ -7,7 +7,7 @@ import {
   newMachineLearningRepositoryMock,
   newSmartInfoRepositoryMock,
   newSystemConfigRepositoryMock,
-} from '@test';
+} from 'test';
 import { JobName } from '../job';
 import {
   IAssetRepository,

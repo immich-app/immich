@@ -1,4 +1,4 @@
-import { IDatabaseRepository, Version } from '@app/domain';
+import { IDatabaseRepository, Version } from 'src/domain';
 
 export const newDatabaseRepositoryMock = (): jest.Mocked<IDatabaseRepository> => {
   return {

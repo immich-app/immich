@@ -1,4 +1,7 @@
-import { AuthDto } from '@app/domain';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { AuthDto } from 'src/domain';
 import {
   ActivityDto,
   ActivitySearchDto,
@@ -6,10 +9,7 @@ import {
   ActivityCreateDto as CreateDto,
   ActivityResponseDto as ResponseDto,
   ActivityStatisticsResponseDto as StatsResponseDto,
-} from '@app/domain/activity';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+} from 'src/domain/activity';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';

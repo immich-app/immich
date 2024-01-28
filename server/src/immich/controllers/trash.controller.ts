@@ -1,6 +1,6 @@
-import { AuthDto, BulkIdsDto, TrashService } from '@app/domain';
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthDto, BulkIdsDto, TrashService } from 'src/domain';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 

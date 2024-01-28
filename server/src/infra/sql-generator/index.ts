@@ -1,10 +1,10 @@
-import { ISystemConfigRepository } from '@app/domain';
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { ISystemConfigRepository } from 'src/domain';
 import { databaseConfig } from '../database.config';
 import { databaseEntities } from '../entities';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from '../infra.util';

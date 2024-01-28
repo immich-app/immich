@@ -1,4 +1,21 @@
 import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Next,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+  StreamableFile,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
+import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetIdsDto,
@@ -25,24 +42,7 @@ import {
   TrashService,
   UpdateAssetDto as UpdateDto,
   UpdateStackParentDto,
-} from '@app/domain';
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Next,
-  Param,
-  Post,
-  Put,
-  Query,
-  Res,
-  StreamableFile,
-} from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
+} from 'src/domain';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
 import { Route } from '../interceptors';

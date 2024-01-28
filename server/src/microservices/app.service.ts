@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import {
   AssetService,
   AuditService,
@@ -14,8 +15,7 @@ import {
   StorageTemplateService,
   SystemConfigService,
   UserService,
-} from '@app/domain';
-import { Injectable } from '@nestjs/common';
+} from 'src/domain';
 
 @Injectable()
 export class AppService {

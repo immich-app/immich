@@ -1,3 +1,7 @@
+import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression, Interval } from '@nestjs/schedule';
+import { NextFunction, Request, Response } from 'express';
+import { readFileSync } from 'fs';
 import {
   AuthService,
   DatabaseService,
@@ -10,12 +14,8 @@ import {
   StorageService,
   SystemConfigService,
   WEB_ROOT_PATH,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
-import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression, Interval } from '@nestjs/schedule';
-import { NextFunction, Request, Response } from 'express';
-import { readFileSync } from 'fs';
+} from 'src/domain';
+import { ImmichLogger } from 'src/infra/logger';
 
 const render = (index: string, meta: OpenGraphTags) => {
   const tags = `

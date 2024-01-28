@@ -1,7 +1,7 @@
-import { AssetResponseDto } from '@app/domain';
-import { CreateAssetDto } from '@app/immich/api-v1/asset/dto/create-asset.dto';
-import { AssetFileUploadResponseDto } from '@app/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import { randomBytes } from 'crypto';
+import { AssetResponseDto } from 'src/domain';
+import { CreateAssetDto } from 'src/immich/api-v1/asset/dto/create-asset.dto';
+import { AssetFileUploadResponseDto } from 'src/immich/api-v1/asset/response-dto/asset-file-upload-response.dto';
 import request from 'supertest';
 
 type UploadDto = Partial<CreateAssetDto> & { content?: Buffer; filename?: string };

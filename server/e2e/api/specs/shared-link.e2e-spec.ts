@@ -1,16 +1,16 @@
+import { INestApplication } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import {
   AlbumResponseDto,
   AssetResponseDto,
   IAssetRepository,
   LoginResponseDto,
   SharedLinkResponseDto,
-} from '@app/domain';
-import { SharedLinkController } from '@app/immich';
-import { SharedLinkType } from '@app/infra/entities';
-import { INestApplication } from '@nestjs/common';
-import { errorStub, userDto, uuidStub } from '@test/fixtures';
-import { DateTime } from 'luxon';
+} from 'src/domain';
+import { SharedLinkController } from 'src/immich';
+import { SharedLinkType } from 'src/infra/entities';
 import request from 'supertest';
+import { errorStub, userDto, uuidStub } from 'test/fixtures';
 import { api } from '../../client';
 import { testApp } from '../utils';
 

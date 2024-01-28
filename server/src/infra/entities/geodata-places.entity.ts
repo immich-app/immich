@@ -1,5 +1,5 @@
-import { GeodataAdmin1Entity } from '@app/infra/entities/geodata-admin1.entity';
-import { GeodataAdmin2Entity } from '@app/infra/entities/geodata-admin2.entity';
+import { GeodataAdmin1Entity } from 'src/infra/entities/geodata-admin1.entity';
+import { GeodataAdmin2Entity } from 'src/infra/entities/geodata-admin2.entity';
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
 @Entity('geodata_places', { synchronize: false })

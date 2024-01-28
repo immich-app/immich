@@ -1,4 +1,4 @@
-import { SharedLinkEntity } from '@app/infra/entities';
+import { SharedLinkEntity } from 'src/infra/entities';
 
 export const ISharedLinkRepository = 'ISharedLinkRepository';
 

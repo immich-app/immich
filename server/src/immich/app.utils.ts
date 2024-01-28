@@ -1,14 +1,3 @@
-import {
-  CacheControl,
-  IMMICH_ACCESS_COOKIE,
-  IMMICH_API_KEY_HEADER,
-  IMMICH_API_KEY_NAME,
-  ImmichFileResponse,
-  ImmichReadStream,
-  isConnectionAborted,
-  serverVersion,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
 import { HttpException, INestApplication, StreamableFile } from '@nestjs/common';
 import {
   DocumentBuilder,
@@ -22,6 +11,17 @@ import { writeFileSync } from 'fs';
 import { access, constants } from 'fs/promises';
 import _ from 'lodash';
 import path, { isAbsolute } from 'path';
+import {
+  CacheControl,
+  IMMICH_ACCESS_COOKIE,
+  IMMICH_API_KEY_HEADER,
+  IMMICH_API_KEY_NAME,
+  ImmichFileResponse,
+  ImmichReadStream,
+  isConnectionAborted,
+  serverVersion,
+} from 'src/domain';
+import { ImmichLogger } from 'src/infra/logger';
 import { promisify } from 'util';
 
 import { applyDecorators, UsePipes, ValidationPipe } from '@nestjs/common';

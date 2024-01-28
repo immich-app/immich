@@ -1,4 +1,4 @@
-import { ISystemConfigRepository, SystemConfigCore } from '@app/domain';
+import { ISystemConfigRepository, SystemConfigCore } from 'src/domain';
 
 export const newSystemConfigRepositoryMock = (reset = true): jest.Mocked<ISystemConfigRepository> => {
   if (reset) {

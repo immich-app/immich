@@ -1,6 +1,6 @@
-import { ILibraryRepository, LibraryStatsResponseDto } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ILibraryRepository, LibraryStatsResponseDto } from 'src/domain';
 import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { LibraryEntity, LibraryType } from '../entities';

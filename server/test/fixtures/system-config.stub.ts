@@ -1,4 +1,4 @@
-import { SystemConfigEntity, SystemConfigKey } from '@app/infra/entities';
+import { SystemConfigEntity, SystemConfigKey } from 'src/infra/entities';
 
 export const systemConfigStub: Record<string, SystemConfigEntity[]> = {
   defaults: [],

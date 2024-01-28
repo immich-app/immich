@@ -1,6 +1,6 @@
-import { IKeyRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IKeyRepository } from 'src/domain';
 import { Repository } from 'typeorm';
 import { APIKeyEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';

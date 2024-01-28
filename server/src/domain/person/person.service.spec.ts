@@ -1,5 +1,5 @@
-import { AssetFaceEntity, Colorspace, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { AssetFaceEntity, Colorspace, SystemConfigKey } from 'src/infra/entities';
 import {
   IAccessRepositoryMock,
   assetStub,
@@ -17,7 +17,7 @@ import {
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   personStub,
-} from '@test';
+} from 'test';
 import { IsNull } from 'typeorm';
 import { BulkIdErrorReason } from '../asset';
 import { CacheControl, ImmichFileResponse } from '../domain.util';

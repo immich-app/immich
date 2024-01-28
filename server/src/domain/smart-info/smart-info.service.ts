@@ -1,5 +1,5 @@
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
+import { ImmichLogger } from 'src/infra/logger';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {

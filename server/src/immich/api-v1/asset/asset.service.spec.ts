@@ -1,5 +1,6 @@
-import { IAssetRepository, IJobRepository, ILibraryRepository, IUserRepository, JobName } from '@app/domain';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { when } from 'jest-when';
+import { IAssetRepository, IJobRepository, ILibraryRepository, IUserRepository, JobName } from 'src/domain';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, ExifEntity } from 'src/infra/entities';
 import {
   IAccessRepositoryMock,
   assetStub,
@@ -10,8 +11,7 @@ import {
   newJobRepositoryMock,
   newLibraryRepositoryMock,
   newUserRepositoryMock,
-} from '@test';
-import { when } from 'jest-when';
+} from 'test';
 import { QueryFailedError } from 'typeorm';
 import { IAssetRepositoryV1 } from './asset-repository';
 import { AssetService } from './asset.service';

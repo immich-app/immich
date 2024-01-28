@@ -1,6 +1,6 @@
-import { CLIPConfig, RecognitionConfig } from '@app/domain';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsObject, IsUrl, ValidateIf, ValidateNested } from 'class-validator';
+import { CLIPConfig, RecognitionConfig } from 'src/domain';
 
 export class SystemConfigMachineLearningDto {
   @IsBoolean()

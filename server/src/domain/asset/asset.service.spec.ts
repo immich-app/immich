@@ -1,5 +1,6 @@
-import { AssetEntity, AssetType } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { when } from 'jest-when';
+import { AssetEntity, AssetType } from 'src/infra/entities';
 import {
   IAccessRepositoryMock,
   assetStackStub,
@@ -15,8 +16,7 @@ import {
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
-} from '@test';
-import { when } from 'jest-when';
+} from 'test';
 import { JobName } from '../job';
 import {
   AssetStats,

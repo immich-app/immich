@@ -1,5 +1,5 @@
-import { Paginated, PaginationOptions } from '@app/domain';
 import _ from 'lodash';
+import { Paginated, PaginationOptions } from 'src/domain';
 import { Between, FindManyOptions, LessThanOrEqual, MoreThanOrEqual, ObjectLiteral, Repository } from 'typeorm';
 import { chunks, setUnion } from '../domain/domain.util';
 import { DATABASE_PARAMETER_CHUNK_SIZE } from './infra.util';

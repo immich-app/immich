@@ -1,5 +1,5 @@
-import { LogLevel } from '@app/infra/entities';
 import { CommandFactory } from 'nest-commander';
+import { LogLevel } from 'src/infra/entities';
 import { AppModule } from './app.module';
 
 export async function bootstrap() {

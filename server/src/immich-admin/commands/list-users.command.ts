@@ -1,5 +1,5 @@
-import { UserService } from '@app/domain';
 import { Command, CommandRunner } from 'nest-commander';
+import { UserService } from 'src/domain';
 import { CLI_USER } from '../constants';
 
 @Command({

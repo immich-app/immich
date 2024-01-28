@@ -1,4 +1,4 @@
-import { newStorageRepositoryMock } from '@test';
+import { newStorageRepositoryMock } from 'test';
 import { IStorageRepository } from '../repositories';
 import { StorageService } from './storage.service';
 

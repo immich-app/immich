@@ -1,7 +1,7 @@
-import { AssetType } from '@app/infra/entities';
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
+import { AssetType } from 'src/infra/entities';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 

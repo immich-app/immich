@@ -1,6 +1,6 @@
-import { GitHubRelease, IServerInfoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { GitHubRelease, IServerInfoRepository } from 'src/domain';
 
 @Injectable()
 export class ServerInfoRepository implements IServerInfoRepository {

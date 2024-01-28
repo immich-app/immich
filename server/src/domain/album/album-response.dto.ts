@@ -1,5 +1,5 @@
-import { AlbumEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
+import { AlbumEntity } from 'src/infra/entities';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { UserResponseDto, mapUser } from '../user';
 

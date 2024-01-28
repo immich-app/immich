@@ -1,6 +1,6 @@
-import { ActivityEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { ActivityEntity } from 'src/infra/entities';
 import { Optional, ValidateUUID } from '../domain.util';
 import { UserDto, mapSimpleUser } from '../user/response-dto';
 

@@ -1,10 +1,10 @@
-import { LoginResponseDto, UserResponseDto, UserService } from '@app/domain';
-import { AppModule, UserController } from '@app/immich';
-import { UserEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { errorStub, userDto, userSignupStub, userStub } from '@test/fixtures';
+import { LoginResponseDto, UserResponseDto, UserService } from 'src/domain';
+import { AppModule, UserController } from 'src/immich';
+import { UserEntity } from 'src/infra/entities';
 import request from 'supertest';
+import { errorStub, userDto, userSignupStub, userStub } from 'test/fixtures';
 import { Repository } from 'typeorm';
 import { api } from '../../client';
 import { testApp } from '../utils';

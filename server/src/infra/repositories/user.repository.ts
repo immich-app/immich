@@ -1,6 +1,6 @@
-import { IUserRepository, UserFindOptions, UserListFilter, UserStatsQueryResponse } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IUserRepository, UserFindOptions, UserListFilter, UserStatsQueryResponse } from 'src/domain';
 import { IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, UserEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';

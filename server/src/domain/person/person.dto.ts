@@ -1,7 +1,7 @@
-import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { AssetFaceEntity, PersonEntity } from 'src/infra/entities';
 import { AuthDto } from '../auth';
 import { Optional, ValidateUUID, toBoolean } from '../domain.util';
 

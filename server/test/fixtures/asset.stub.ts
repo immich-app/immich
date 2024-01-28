@@ -1,4 +1,4 @@
-import { AssetEntity, AssetStackEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetStackEntity, AssetType, ExifEntity } from 'src/infra/entities';
 import { authStub } from './auth.stub';
 import { fileStub } from './file.stub';
 import { libraryStub } from './library.stub';

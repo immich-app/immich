@@ -1,6 +1,6 @@
-import { APIKeyCreateResponseDto } from '@app/domain';
-import { apiKeyCreateStub } from '@test';
+import { APIKeyCreateResponseDto } from 'src/domain';
 import request from 'supertest';
+import { apiKeyCreateStub } from 'test';
 
 export const apiKeyApi = {
   createApiKey: async (server: any, accessToken: string) => {

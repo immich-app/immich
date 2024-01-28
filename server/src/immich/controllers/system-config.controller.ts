@@ -1,7 +1,7 @@
-import { SystemConfigDto, SystemConfigService, SystemConfigTemplateStorageOptionDto } from '@app/domain';
-import { MapThemeDto } from '@app/domain/system-config/system-config-map-theme.dto';
 import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { SystemConfigDto, SystemConfigService, SystemConfigTemplateStorageOptionDto } from 'src/domain';
+import { MapThemeDto } from 'src/domain/system-config/system-config-map-theme.dto';
 import { AdminRoute, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 

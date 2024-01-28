@@ -1,4 +1,4 @@
-import { DatabaseAction, EntityType } from '@app/infra/entities';
+import { DatabaseAction, EntityType } from 'src/infra/entities';
 import {
   IAccessRepositoryMock,
   auditStub,
@@ -10,7 +10,7 @@ import {
   newPersonRepositoryMock,
   newStorageRepositoryMock,
   newUserRepositoryMock,
-} from '@test';
+} from 'test';
 import {
   IAssetRepository,
   IAuditRepository,

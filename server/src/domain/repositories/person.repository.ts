@@ -1,4 +1,4 @@
-import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { AssetEntity, AssetFaceEntity, PersonEntity } from 'src/infra/entities';
 import { FindManyOptions, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
 import { Paginated, PaginationOptions } from '../domain.util';
 

@@ -1,4 +1,4 @@
-import { AlbumEntity } from '@app/infra/entities';
+import { AlbumEntity } from 'src/infra/entities';
 import { assetStub } from './asset.stub';
 import { authStub } from './auth.stub';
 import { userStub } from './user.stub';

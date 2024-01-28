@@ -1,5 +1,5 @@
-import { ImmichLogger } from '@app/infra/logger';
 import { Global, Module, Provider } from '@nestjs/common';
+import { ImmichLogger } from 'src/infra/logger';
 import { ActivityService } from './activity';
 import { AlbumService } from './album';
 import { APIKeyService } from './api-key';

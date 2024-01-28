@@ -1,3 +1,5 @@
+import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
   ServerConfigDto,
   ServerFeaturesDto,
@@ -8,9 +10,7 @@ import {
   ServerStatsResponseDto,
   ServerThemeDto,
   ServerVersionResponseDto,
-} from '@app/domain';
-import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+} from 'src/domain';
 import { AdminRoute, Authenticated, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 

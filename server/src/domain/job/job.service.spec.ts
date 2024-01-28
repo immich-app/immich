@@ -1,5 +1,5 @@
-import { SystemConfig, SystemConfigKey } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
+import { SystemConfig, SystemConfigKey } from 'src/infra/entities';
 import {
   assetStub,
   newAssetRepositoryMock,
@@ -7,7 +7,7 @@ import {
   newJobRepositoryMock,
   newPersonRepositoryMock,
   newSystemConfigRepositoryMock,
-} from '@test';
+} from 'test';
 import {
   IAssetRepository,
   ICommunicationRepository,

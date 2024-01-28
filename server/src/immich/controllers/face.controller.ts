@@ -1,6 +1,6 @@
-import { AssetFaceResponseDto, AuthDto, FaceDto, PersonResponseDto, PersonService } from '@app/domain';
 import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { AssetFaceResponseDto, AuthDto, FaceDto, PersonResponseDto, PersonService } from 'src/domain';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';

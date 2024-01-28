@@ -1,7 +1,7 @@
-import { AuthDto, IJobRepository, JobName, mimeTypes, UploadFile } from '@app/domain';
-import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { parse } from 'node:path';
+import { AuthDto, IJobRepository, JobName, mimeTypes, UploadFile } from 'src/domain';
+import { AssetEntity } from 'src/infra/entities';
 import { IAssetRepositoryV1 } from './asset-repository';
 import { CreateAssetDto } from './dto/create-asset.dto';
 

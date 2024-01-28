@@ -1,5 +1,3 @@
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
@@ -7,6 +5,8 @@ import { constants } from 'fs/promises';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { Subscription } from 'rxjs';
+import { AssetEntity, AssetType, ExifEntity } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, ISidecarWriteJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {

@@ -1,5 +1,5 @@
-import { IAccessRepository, chunks, setUnion } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IAccessRepository, chunks, setUnion } from 'src/domain';
 import { Brackets, In, Repository } from 'typeorm';
 import {
   ActivityEntity,

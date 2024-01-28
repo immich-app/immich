@@ -1,7 +1,7 @@
-import { PersonEntity } from '@app/infra/entities';
-import { PersonPathType } from '@app/infra/entities/move.entity';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { PersonEntity } from 'src/infra/entities';
+import { PersonPathType } from 'src/infra/entities/move.entity';
+import { ImmichLogger } from 'src/infra/logger';
 import { IsNull } from 'typeorm';
 import { AccessCore, Permission } from '../access';
 import { AssetResponseDto, BulkIdErrorReason, BulkIdResponseDto, mapAsset } from '../asset';

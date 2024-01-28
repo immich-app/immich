@@ -1,5 +1,3 @@
-import { AuthDto, AuthService, IMMICH_API_KEY_NAME, LoginDetails } from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
 import {
   CanActivate,
   ExecutionContext,
@@ -11,6 +9,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
+import { AuthDto, AuthService, IMMICH_API_KEY_NAME, LoginDetails } from 'src/domain';
+import { ImmichLogger } from 'src/infra/logger';
 import { UAParser } from 'ua-parser-js';
 
 export enum Metadata {

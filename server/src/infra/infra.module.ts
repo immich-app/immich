@@ -1,3 +1,8 @@
+import { BullModule } from '@nestjs/bullmq';
+import { Global, Module, Provider } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   IAccessRepository,
   IActivityRepository,
@@ -27,12 +32,7 @@ import {
   IUserRepository,
   IUserTokenRepository,
   immichAppConfig,
-} from '@app/domain';
-import { BullModule } from '@nestjs/bullmq';
-import { Global, Module, Provider } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
-import { TypeOrmModule } from '@nestjs/typeorm';
+} from 'src/domain';
 import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';

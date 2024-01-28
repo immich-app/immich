@@ -1,3 +1,6 @@
+import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import {
   AuthDto,
   AuthService,
@@ -8,10 +11,7 @@ import {
   OAuthConfigDto,
   OAuthConfigResponseDto,
   UserResponseDto,
-} from '@app/domain';
-import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+} from 'src/domain';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 

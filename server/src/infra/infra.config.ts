@@ -1,7 +1,7 @@
-import { QueueName } from '@app/domain';
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
+import { QueueName } from 'src/domain';
 
 function parseRedisConfig(): RedisOptions {
   const redisUrl = process.env.REDIS_URL;

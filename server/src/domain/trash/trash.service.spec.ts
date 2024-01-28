@@ -7,7 +7,7 @@ import {
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
-} from '@test';
+} from 'test';
 import { JobName } from '..';
 import { ClientEvent, IAssetRepository, ICommunicationRepository, IJobRepository } from '../repositories';
 import { TrashService } from './trash.service';

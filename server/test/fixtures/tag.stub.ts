@@ -1,5 +1,5 @@
-import { TagResponseDto } from '@app/domain';
-import { TagEntity, TagType } from '@app/infra/entities';
+import { TagResponseDto } from 'src/domain';
+import { TagEntity, TagType } from 'src/infra/entities';
 import { userStub } from './user.stub';
 
 export const tagStub = {

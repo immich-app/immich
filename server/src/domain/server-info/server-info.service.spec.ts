@@ -1,4 +1,4 @@
-import { SystemMetadataKey } from '@app/infra/entities';
+import { SystemMetadataKey } from 'src/infra/entities';
 import {
   newCommunicationRepositoryMock,
   newServerInfoRepositoryMock,
@@ -6,7 +6,7 @@ import {
   newSystemConfigRepositoryMock,
   newSystemMetadataRepositoryMock,
   newUserRepositoryMock,
-} from '@test';
+} from 'test';
 import { serverVersion } from '../domain.constant';
 import {
   ICommunicationRepository,

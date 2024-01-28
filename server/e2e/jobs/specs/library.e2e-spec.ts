@@ -1,9 +1,9 @@
-import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
-import { LibraryController } from '@app/immich';
-import { AssetType, LibraryType } from '@app/infra/entities';
-import { errorStub, uuidStub } from '@test/fixtures';
 import * as fs from 'fs';
+import { LibraryResponseDto, LoginResponseDto } from 'src/domain';
+import { LibraryController } from 'src/immich';
+import { AssetType, LibraryType } from 'src/infra/entities';
 import request from 'supertest';
+import { errorStub, uuidStub } from 'test/fixtures';
 import { utimes } from 'utimes';
 import { api } from '../../client';
 import { IMMICH_TEST_ASSET_PATH, IMMICH_TEST_ASSET_TEMP_PATH, restoreTempFolder, testApp } from '../utils';

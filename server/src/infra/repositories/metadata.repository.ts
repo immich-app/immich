@@ -1,25 +1,25 @@
-import {
-  citiesFile,
-  geodataAdmin1Path,
-  geodataAdmin2Path,
-  geodataCitites500Path,
-  geodataDatePath,
-  GeoPoint,
-  IMetadataRepository,
-  ImmichTags,
-  ISystemMetadataRepository,
-  ReverseGeocodeResult,
-} from '@app/domain';
-import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DefaultReadTaskOptions, exiftool, Tags } from 'exiftool-vendored';
+import { DefaultReadTaskOptions, Tags, exiftool } from 'exiftool-vendored';
 import { createReadStream, existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import * as geotz from 'geo-tz';
 import { getName } from 'i18n-iso-countries';
 import * as readLine from 'readline';
+import {
+  GeoPoint,
+  IMetadataRepository,
+  ISystemMetadataRepository,
+  ImmichTags,
+  ReverseGeocodeResult,
+  citiesFile,
+  geodataAdmin1Path,
+  geodataAdmin2Path,
+  geodataCitites500Path,
+  geodataDatePath,
+} from 'src/domain';
+import { GeodataAdmin1Entity, GeodataAdmin2Entity, GeodataPlacesEntity, SystemMetadataKey } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { DataSource, DeepPartial, QueryRunner, Repository } from 'typeorm';
 
 type GeoEntity = GeodataPlacesEntity | GeodataAdmin1Entity | GeodataAdmin2Entity;

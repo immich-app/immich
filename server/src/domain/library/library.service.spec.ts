@@ -1,6 +1,7 @@
-import { AssetType, LibraryType, SystemConfig, SystemConfigKey, UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
+import { AssetType, LibraryType, SystemConfig, SystemConfigKey, UserEntity } from 'src/infra/entities';
 
+import { Stats } from 'fs';
 import {
   assetStub,
   authStub,
@@ -15,8 +16,7 @@ import {
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   userStub,
-} from '@test';
-import { Stats } from 'fs';
+} from 'test';
 import { ILibraryFileJob, ILibraryRefreshJob, JobName } from '../job';
 import {
   IAssetRepository,

@@ -1,3 +1,4 @@
+import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
 import {
   AssetEntity,
   AssetPathType,
@@ -7,9 +8,8 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import { Inject, Injectable, UnsupportedMediaTypeException } from '@nestjs/common';
+} from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { usePagination } from '../domain.util';
 import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, QueueName } from '../job';
 import {

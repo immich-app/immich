@@ -1,6 +1,6 @@
-import { OAuthController } from '@app/immich';
-import { errorStub } from '@test/fixtures';
+import { OAuthController } from 'src/immich';
 import request from 'supertest';
+import { errorStub } from 'test/fixtures';
 import { api } from '../../client';
 import { testApp } from '../utils';
 

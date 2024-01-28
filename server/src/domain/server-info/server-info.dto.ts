@@ -1,5 +1,5 @@
-import { FeatureFlags, IVersion } from '@app/domain';
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
+import { FeatureFlags, IVersion } from 'src/domain';
 import { SystemConfigThemeDto } from '../system-config/dto/system-config-theme.dto';
 
 export class ServerPingResponse {

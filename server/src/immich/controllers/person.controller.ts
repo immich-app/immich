@@ -1,3 +1,6 @@
+import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { NextFunction, Response } from 'express';
 import {
   AssetFaceUpdateDto,
   AssetResponseDto,
@@ -11,10 +14,7 @@ import {
   PersonService,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-} from '@app/domain';
-import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
+} from 'src/domain';
 import { Auth, Authenticated, FileResponse } from '../app.guard';
 import { UseValidation, sendFile } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';

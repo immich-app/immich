@@ -1,9 +1,9 @@
-import { IPersonRepository, LoginResponseDto } from '@app/domain';
-import { PersonController } from '@app/immich';
-import { PersonEntity } from '@app/infra/entities';
 import { INestApplication } from '@nestjs/common';
-import { errorStub, uuidStub } from '@test/fixtures';
+import { IPersonRepository, LoginResponseDto } from 'src/domain';
+import { PersonController } from 'src/immich';
+import { PersonEntity } from 'src/infra/entities';
 import request from 'supertest';
+import { errorStub, uuidStub } from 'test/fixtures';
 import { api } from '../../client';
 import { testApp } from '../utils';
 

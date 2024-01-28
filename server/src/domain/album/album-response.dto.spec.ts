@@ -1,4 +1,4 @@
-import { albumStub } from '@test';
+import { albumStub } from 'test';
 import { mapAlbum } from './album-response.dto';
 
 describe('mapAlbum', () => {

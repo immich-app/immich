@@ -1,6 +1,6 @@
-import { AssetEntity } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
+import { AssetEntity } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthDto } from '../auth';
 import { PersonResponseDto } from '../person';

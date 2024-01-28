@@ -1,13 +1,4 @@
 import {
-  AuthService,
-  ClientEvent,
-  ICommunicationRepository,
-  OnConnectCallback,
-  OnServerEventCallback,
-  ServerEvent,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
-import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -15,6 +6,15 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import {
+  AuthService,
+  ClientEvent,
+  ICommunicationRepository,
+  OnConnectCallback,
+  OnServerEventCallback,
+  ServerEvent,
+} from 'src/domain';
+import { ImmichLogger } from 'src/infra/logger';
 
 @WebSocketGateway({
   cors: true,

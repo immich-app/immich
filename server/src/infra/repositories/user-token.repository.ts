@@ -1,6 +1,6 @@
-import { IUserTokenRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IUserTokenRepository } from 'src/domain';
 import { Repository } from 'typeorm';
 import { UserTokenEntity } from '../entities';
 import { DummyValue, GenerateSql } from '../infra.util';

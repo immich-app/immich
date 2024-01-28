@@ -1,7 +1,8 @@
+import { BadRequestException } from '@nestjs/common';
 import {
   AudioCodec,
-  Colorspace,
   CQMode,
+  Colorspace,
   LogLevel,
   SystemConfig,
   SystemConfigEntity,
@@ -10,13 +11,12 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import { BadRequestException } from '@nestjs/common';
-import { newCommunicationRepositoryMock, newSystemConfigRepositoryMock } from '@test';
+} from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
+import { newCommunicationRepositoryMock, newSystemConfigRepositoryMock } from 'test';
 import { QueueName } from '../job';
 import { ICommunicationRepository, ISmartInfoRepository, ISystemConfigRepository, ServerEvent } from '../repositories';
-import { defaults, SystemConfigValidator } from './system-config.core';
+import { SystemConfigValidator, defaults } from './system-config.core';
 import { SystemConfigService } from './system-config.service';
 
 const updates: SystemConfigEntity[] = [

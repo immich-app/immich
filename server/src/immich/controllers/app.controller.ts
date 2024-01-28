@@ -1,6 +1,6 @@
-import { SystemConfigService } from '@app/domain';
 import { Controller, Get, Header } from '@nestjs/common';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { SystemConfigService } from 'src/domain';
 import { PublicRoute } from '../app.guard';
 
 @Controller()

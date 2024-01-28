@@ -1,6 +1,6 @@
-import { AssetType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { AssetType } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { mapAsset } from '../asset';
 import {
   ClientEvent,

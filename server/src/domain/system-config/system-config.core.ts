@@ -1,7 +1,13 @@
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { CronExpression } from '@nestjs/schedule';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import * as _ from 'lodash';
+import { Subject } from 'rxjs';
 import {
   AudioCodec,
-  Colorspace,
   CQMode,
+  Colorspace,
   LogLevel,
   SystemConfig,
   SystemConfigEntity,
@@ -11,14 +17,8 @@ import {
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
-} from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { CronExpression } from '@nestjs/schedule';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
-import * as _ from 'lodash';
-import { Subject } from 'rxjs';
+} from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from '../repositories';
 import { SystemConfigDto } from './dto';

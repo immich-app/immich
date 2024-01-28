@@ -1,4 +1,4 @@
-import { PartnerResponseDto } from '@app/domain';
+import { PartnerResponseDto } from 'src/domain';
 import request from 'supertest';
 
 export const partnerApi = {

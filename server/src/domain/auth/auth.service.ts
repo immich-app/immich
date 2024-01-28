@@ -1,5 +1,3 @@
-import { SystemConfig, UserEntity } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import {
   BadRequestException,
   Inject,
@@ -11,6 +9,8 @@ import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { DateTime } from 'luxon';
 import { ClientMetadata, Issuer, UserinfoResponse, custom, generators } from 'openid-client';
+import { SystemConfig, UserEntity } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { AccessCore, Permission } from '../access';
 import {
   IAccessRepository,

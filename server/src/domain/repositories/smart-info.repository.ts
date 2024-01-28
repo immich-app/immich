@@ -1,4 +1,4 @@
-import { AssetEntity, AssetFaceEntity, SmartInfoEntity } from '@app/infra/entities';
+import { AssetEntity, AssetFaceEntity, SmartInfoEntity } from 'src/infra/entities';
 
 export const ISmartInfoRepository = 'ISmartInfoRepository';
 

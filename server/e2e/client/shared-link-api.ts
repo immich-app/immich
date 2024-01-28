@@ -1,4 +1,4 @@
-import { SharedLinkCreateDto, SharedLinkResponseDto } from '@app/domain';
+import { SharedLinkCreateDto, SharedLinkResponseDto } from 'src/domain';
 import request from 'supertest';
 
 export const sharedLinkApi = {

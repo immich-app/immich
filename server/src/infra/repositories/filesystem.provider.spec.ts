@@ -1,5 +1,5 @@
-import { CrawlOptionsDto } from '@app/domain';
 import mockfs from 'mock-fs';
+import { CrawlOptionsDto } from 'src/domain';
 import { FilesystemProvider } from './filesystem.provider';
 
 interface Test {

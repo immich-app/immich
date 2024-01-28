@@ -1,10 +1,11 @@
-import { UserEntity } from '@app/infra/entities';
 import {
   BadRequestException,
   ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { when } from 'jest-when';
+import { UserEntity } from 'src/infra/entities';
 import {
   authStub,
   newAlbumRepositoryMock,
@@ -15,8 +16,7 @@ import {
   newStorageRepositoryMock,
   newUserRepositoryMock,
   userStub,
-} from '@test';
-import { when } from 'jest-when';
+} from 'test';
 import { CacheControl, ImmichFileResponse } from '../domain.util';
 import { JobName } from '../job';
 import {

@@ -1,8 +1,8 @@
-import { LibraryResponseDto, LoginResponseDto } from '@app/domain';
-import { LibraryController } from '@app/immich';
-import { LibraryType } from '@app/infra/entities';
-import { errorStub, userDto, uuidStub } from '@test/fixtures';
+import { LibraryResponseDto, LoginResponseDto } from 'src/domain';
+import { LibraryController } from 'src/immich';
+import { LibraryType } from 'src/infra/entities';
 import request from 'supertest';
+import { errorStub, userDto, uuidStub } from 'test/fixtures';
 import { api } from '../../client';
 import { testApp } from '../utils';
 

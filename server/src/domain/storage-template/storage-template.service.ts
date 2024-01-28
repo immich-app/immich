@@ -1,10 +1,10 @@
-import { AssetEntity, AssetPathType, AssetType, SystemConfig } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
+import { AssetEntity, AssetPathType, AssetType, SystemConfig } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import {

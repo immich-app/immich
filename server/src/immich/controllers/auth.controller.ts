@@ -1,3 +1,6 @@
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
 import {
   AuthDeviceResponseDto,
   AuthDto,
@@ -13,10 +16,7 @@ import {
   UserResponseDto,
   ValidateAccessTokenResponseDto,
   mapUser,
-} from '@app/domain';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+} from 'src/domain';
 import { Auth, Authenticated, GetLoginDetails, PublicRoute } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';

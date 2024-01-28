@@ -1,5 +1,5 @@
-import { SearchResult } from '@app/domain';
-import { AssetEntity, ExifEntity, SmartInfoEntity } from '@app/infra/entities';
+import { SearchResult } from 'src/domain';
+import { AssetEntity, ExifEntity, SmartInfoEntity } from 'src/infra/entities';
 import { assetStub } from '.';
 
 export const searchStub = {

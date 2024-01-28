@@ -1,3 +1,4 @@
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import {
   AccessCore,
   AssetResponseDto,
@@ -15,10 +16,9 @@ import {
   getLivePhotoMotionFilename,
   mapAsset,
   mimeTypes,
-} from '@app/domain';
-import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
-import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+} from 'src/domain';
+import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity, AssetType, LibraryType } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { QueryFailedError } from 'typeorm';
 import { IAssetRepositoryV1 } from './asset-repository';
 import { AssetCore } from './asset.core';

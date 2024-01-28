@@ -1,4 +1,4 @@
-import { AssetType } from '@app/infra/entities';
+import { AssetType } from 'src/infra/entities';
 
 export enum SearchStrategy {
   CLIP = 'CLIP',

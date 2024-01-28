@@ -1,3 +1,5 @@
+import { INestApplication } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import {
   AssetResponseDto,
   IAssetRepository,
@@ -8,14 +10,12 @@ import {
   WithoutProperty,
   mapAsset,
   usePagination,
-} from '@app/domain';
-import { AssetController } from '@app/immich';
-import { AssetEntity, AssetStackEntity, AssetType, SharedLinkType } from '@app/infra/entities';
-import { AssetRepository } from '@app/infra/repositories';
-import { INestApplication } from '@nestjs/common';
-import { errorStub, userDto, uuidStub } from '@test/fixtures';
-import { randomBytes } from 'crypto';
+} from 'src/domain';
+import { AssetController } from 'src/immich';
+import { AssetEntity, AssetStackEntity, AssetType, SharedLinkType } from 'src/infra/entities';
+import { AssetRepository } from 'src/infra/repositories';
 import request from 'supertest';
+import { errorStub, userDto, uuidStub } from 'test/fixtures';
 import { api } from '../../client';
 import { generateAsset, testApp, today, yesterday } from '../utils';
 

@@ -1,7 +1,7 @@
-import { DatabaseExtension, DatabaseLock, IDatabaseRepository, Version } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
+import { DatabaseExtension, DatabaseLock, IDatabaseRepository, Version } from 'src/domain';
 import { DataSource, QueryRunner } from 'typeorm';
 
 @Injectable()

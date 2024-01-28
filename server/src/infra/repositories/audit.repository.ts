@@ -1,5 +1,5 @@
-import { AuditSearch, IAuditRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AuditSearch, IAuditRepository } from 'src/domain';
 import { LessThan, MoreThan, Repository } from 'typeorm';
 import { AuditEntity } from '../entities';
 

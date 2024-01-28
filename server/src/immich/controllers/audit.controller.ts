@@ -1,3 +1,5 @@
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
@@ -7,9 +9,7 @@ import {
   FileChecksumResponseDto,
   FileReportDto,
   FileReportFixDto,
-} from '@app/domain';
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+} from 'src/domain';
 import { AdminRoute, Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 

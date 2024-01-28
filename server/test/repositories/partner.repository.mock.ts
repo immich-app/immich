@@ -1,4 +1,4 @@
-import { IPartnerRepository } from '@app/domain';
+import { IPartnerRepository } from 'src/domain';
 
 export const newPartnerRepositoryMock = (): jest.Mocked<IPartnerRepository> => {
   return {

@@ -1,5 +1,5 @@
-import { AssetEntity, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { AssetEntity, SharedLinkEntity, SharedLinkType } from 'src/infra/entities';
 import { AccessCore, Permission } from '../access';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
 import { AuthDto } from '../auth';

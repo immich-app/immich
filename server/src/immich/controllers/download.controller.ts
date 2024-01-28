@@ -1,7 +1,7 @@
-import { AssetIdsDto, AuthDto, DownloadInfoDto, DownloadResponseDto, DownloadService } from '@app/domain';
 import { Body, Controller, HttpCode, HttpStatus, Next, Param, Post, Res, StreamableFile } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { AssetIdsDto, AuthDto, DownloadInfoDto, DownloadResponseDto, DownloadService } from 'src/domain';
 import { Auth, Authenticated, FileResponse, SharedLinkRoute } from '../app.guard';
 import { UseValidation, asStreamableFile, sendFile } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';

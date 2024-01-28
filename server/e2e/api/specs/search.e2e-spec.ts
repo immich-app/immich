@@ -1,3 +1,4 @@
+import { INestApplication } from '@nestjs/common';
 import {
   AssetResponseDto,
   IAssetRepository,
@@ -5,11 +6,10 @@ import {
   LibraryResponseDto,
   LoginResponseDto,
   mapAsset,
-} from '@app/domain';
-import { SearchController } from '@app/immich';
-import { INestApplication } from '@nestjs/common';
-import { errorStub, searchStub } from '@test/fixtures';
+} from 'src/domain';
+import { SearchController } from 'src/immich';
 import request from 'supertest';
+import { errorStub, searchStub } from 'test/fixtures';
 import { api } from '../../client';
 import { generateAsset, testApp } from '../utils';
 

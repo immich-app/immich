@@ -1,7 +1,7 @@
-import { SystemMetadataKey } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { SystemMetadataKey } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { Version, isDev, mimeTypes, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import {

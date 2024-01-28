@@ -1,9 +1,9 @@
-import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
-import { Colorspace } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import sharp from 'sharp';
+import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from 'src/domain';
+import { Colorspace } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { Writable } from 'stream';
 import { promisify } from 'util';
 

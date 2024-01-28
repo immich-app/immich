@@ -1,4 +1,3 @@
-import { validateCronExpression } from '@app/domain';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -11,6 +10,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { validateCronExpression } from 'src/domain';
 
 const isEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 

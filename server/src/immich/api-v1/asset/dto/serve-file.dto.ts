@@ -1,7 +1,7 @@
-import { Optional, toBoolean } from '@app/domain';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean } from 'class-validator';
+import { Optional, toBoolean } from 'src/domain';
 
 export class ServeFileDto {
   @Optional()

@@ -1,5 +1,5 @@
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
+import { ImmichLogger } from 'src/infra/logger';
 import { QueryFailedError } from 'typeorm';
 import { Version } from '../domain.constant';
 import { DatabaseExtension, IDatabaseRepository } from '../repositories';

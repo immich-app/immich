@@ -1,10 +1,10 @@
-import { DomainModule } from '@app/domain';
-import { InfraModule } from '@app/infra';
-import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DomainModule } from 'src/domain';
+import { InfraModule } from 'src/infra';
+import { AssetEntity, ExifEntity } from 'src/infra/entities';
 import { AssetRepositoryV1, IAssetRepositoryV1 } from './api-v1/asset/asset-repository';
 import { AssetController as AssetControllerV1 } from './api-v1/asset/asset.controller';
 import { AssetService } from './api-v1/asset/asset.service';

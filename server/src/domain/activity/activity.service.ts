@@ -1,5 +1,5 @@
-import { ActivityEntity } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
+import { ActivityEntity } from 'src/infra/entities';
 import { AccessCore, Permission } from '../access';
 import { AuthDto } from '../auth';
 import { IAccessRepository, IActivityRepository } from '../repositories';

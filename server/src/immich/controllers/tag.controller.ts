@@ -1,3 +1,5 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
   AssetIdsDto,
   AssetIdsResponseDto,
@@ -7,9 +9,7 @@ import {
   TagResponseDto,
   TagService,
   UpdateTagDto,
-} from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+} from 'src/domain';
 import { Auth, Authenticated } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';

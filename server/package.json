@@ -149,12 +149,6 @@
       }
     },
     "testEnvironment": "node",
-    "moduleNameMapper": {
-      "^@test(|/.*)$": "<rootDir>/test/$1",
-      "^@app/immich(|/.*)$": "<rootDir>/src/immich/$1",
-      "^@app/infra(|/.*)$": "<rootDir>/src/infra/$1",
-      "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
-    },
     "globalSetup": "<rootDir>/test/global-setup.js"
   },
   "volta": {

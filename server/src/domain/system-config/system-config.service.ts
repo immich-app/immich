@@ -1,8 +1,8 @@
-import { LogLevel, SystemConfig } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Inject, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
+import { LogLevel, SystemConfig } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import {
   ClientEvent,
   ICommunicationRepository,

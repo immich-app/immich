@@ -1,7 +1,7 @@
-import { LoginResponseDto } from '@app/domain';
-import { ServerInfoController } from '@app/immich';
-import { errorStub, userDto } from '@test/fixtures';
+import { LoginResponseDto } from 'src/domain';
+import { ServerInfoController } from 'src/immich';
 import request from 'supertest';
+import { errorStub, userDto } from 'test/fixtures';
 import { api } from '../../client';
 import { testApp } from '../utils';
 

@@ -1,20 +1,20 @@
-import {
-  IJobRepository,
-  JobCounts,
-  JobItem,
-  JobName,
-  JOBS_TO_QUEUE,
-  QueueCleanType,
-  QueueName,
-  QueueStatus,
-} from '@app/domain';
-import { ImmichLogger } from '@app/infra/logger';
 import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
 import { CronJob, CronTime } from 'cron';
+import {
+  IJobRepository,
+  JOBS_TO_QUEUE,
+  JobCounts,
+  JobItem,
+  JobName,
+  QueueCleanType,
+  QueueName,
+  QueueStatus,
+} from 'src/domain';
+import { ImmichLogger } from 'src/infra/logger';
 import { setTimeout } from 'timers/promises';
 import { bullConfig } from '../infra.config';
 

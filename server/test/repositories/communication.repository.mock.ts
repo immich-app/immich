@@ -1,4 +1,4 @@
-import { ICommunicationRepository } from '@app/domain';
+import { ICommunicationRepository } from 'src/domain';
 
 export const newCommunicationRepositoryMock = (): jest.Mocked<ICommunicationRepository> => {
   return {

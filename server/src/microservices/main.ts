@@ -1,7 +1,7 @@
-import { envName, serverVersion } from '@app/domain';
-import { WebSocketAdapter } from '@app/infra';
-import { ImmichLogger } from '@app/infra/logger';
 import { NestFactory } from '@nestjs/core';
+import { envName, serverVersion } from 'src/domain';
+import { WebSocketAdapter } from 'src/infra';
+import { ImmichLogger } from 'src/infra/logger';
 import { MicroservicesModule } from './microservices.module';
 
 const logger = new ImmichLogger('ImmichMicroservice');

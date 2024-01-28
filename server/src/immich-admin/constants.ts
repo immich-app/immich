@@ -1,5 +1,5 @@
-import { AuthDto } from '@app/domain';
-import { UserEntity } from '@app/infra/entities';
+import { AuthDto } from 'src/domain';
+import { UserEntity } from 'src/infra/entities';
 
 export const CLI_USER: AuthDto = {
   user: {

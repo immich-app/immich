@@ -1,4 +1,4 @@
-import { IStorageRepository, StorageCore } from '@app/domain';
+import { IStorageRepository, StorageCore } from 'src/domain';
 
 export const newStorageRepositoryMock = (reset = true): jest.Mocked<IStorageRepository> => {
   if (reset) {

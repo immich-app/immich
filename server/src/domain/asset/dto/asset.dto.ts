@@ -1,4 +1,3 @@
-import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -14,6 +13,7 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
+import { AssetType } from 'src/infra/entities';
 import { Optional, QueryBoolean, QueryDate, ValidateUUID } from '../../domain.util';
 import { BulkIdsDto } from '../response-dto';
 

@@ -1,9 +1,9 @@
-import { Embedding, EmbeddingSearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from '@app/domain';
-import { getCLIPModelInfo } from '@app/domain/smart-info/smart-info.constant';
-import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from '@app/infra/entities';
-import { ImmichLogger } from '@app/infra/logger';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Embedding, EmbeddingSearch, FaceEmbeddingSearch, FaceSearchResult, ISmartInfoRepository } from 'src/domain';
+import { getCLIPModelInfo } from 'src/domain/smart-info/smart-info.constant';
+import { AssetEntity, AssetFaceEntity, SmartInfoEntity, SmartSearchEntity } from 'src/infra/entities';
+import { ImmichLogger } from 'src/infra/logger';
 import { Repository } from 'typeorm';
 import { DummyValue, GenerateSql } from '../infra.util';
 import { asVector, isValidInteger } from '../infra.utils';
