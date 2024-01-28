@@ -18,7 +18,7 @@ from .models.base import InferenceModel, PicklableSessionOptions
 from .models.cache import ModelCache
 from .models.clip import OpenCLIPEncoder
 from .models.facial_recognition import FaceRecognizer
-from .schemas import ModelType
+from .schemas import ModelRuntime, ModelType
 
 
 class TestBase:
@@ -126,6 +126,30 @@ class TestBase:
         encoder = OpenCLIPEncoder("ViT-B-32__openai", cache_dir=cache_dir)
 
         assert encoder.cache_dir == cache_dir
+    
+    def test_sets_default_preferred_runtime(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "ann", True)
+        mocker.patch("ann.ann.is_available", False)
+        
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.preferred_runtime == ModelRuntime.ONNX
+    
+    def test_sets_default_preferred_runtime_to_armnn_if_available(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "ann", True)
+        mocker.patch("ann.ann.is_available", True)
+        
+        encoder = OpenCLIPEncoder("ViT-B-32__openai")
+
+        assert encoder.preferred_runtime == ModelRuntime.ARMNN
+
+    def test_sets_preferred_runtime_kwarg(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "ann", False)
+        mocker.patch("ann.ann.is_available", False)
+
+        encoder = OpenCLIPEncoder("ViT-B-32__openai", preferred_runtime=ModelRuntime.ARMNN)
+
+        assert encoder.preferred_runtime == ModelRuntime.ARMNN
 
     def test_casts_cache_dir_string_to_path(self) -> None:
         cache_dir = "/test_cache"
