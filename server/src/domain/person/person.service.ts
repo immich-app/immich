@@ -258,7 +258,7 @@ export class PersonService {
 
   private async deleteAllPeople() {
     const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.repository.getAll(pagination),
+      this.repository.getAll({ ...pagination, skip: 0 }),
     );
 
     for await (const people of personPagination) {
