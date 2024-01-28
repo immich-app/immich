@@ -146,7 +146,7 @@ class InferenceModel(ABC):
 
     @property
     def cached(self) -> bool:
-        return self.cache_dir.exists() and any(self.cache_dir.iterdir())
+        return self.cache_dir.is_dir() and any(self.cache_dir.iterdir())
 
     @property
     def providers(self) -> list[str]:
