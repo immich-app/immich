@@ -38,7 +38,7 @@ class TranscodePolicy {
 
   static TranscodePolicy? fromJson(dynamic value) => TranscodePolicyTypeTransformer().decode(value);
 
-  static List<TranscodePolicy>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TranscodePolicy> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <TranscodePolicy>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

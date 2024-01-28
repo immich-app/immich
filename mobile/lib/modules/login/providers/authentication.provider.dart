@@ -63,7 +63,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     if (Platform.isIOS) {
       var iosInfo = await deviceInfoPlugin.iosInfo;
       _apiService.authenticationApi.apiClient
-          .addDefaultHeader('deviceModel', iosInfo.utsname.machine ?? '');
+          .addDefaultHeader('deviceModel', iosInfo.utsname.machine);
       _apiService.authenticationApi.apiClient
           .addDefaultHeader('deviceType', 'iOS');
     } else {

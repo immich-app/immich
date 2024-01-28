@@ -679,25 +679,6 @@ describe(AssetService.name, () => {
     });
   });
 
-  describe('restoreAll', () => {
-    it('should require asset restore access for all ids', async () => {
-      await expect(
-        sut.deleteAll(authStub.user1, {
-          ids: ['asset-1'],
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('should restore a batch of assets', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset1', 'asset2']));
-
-      await sut.restoreAll(authStub.user1, { ids: ['asset1', 'asset2'] });
-
-      expect(assetMock.restoreAll).toHaveBeenCalledWith(['asset1', 'asset2']);
-      expect(jobMock.queue.mock.calls).toEqual([]);
-    });
-  });
-
   describe('handleAssetDeletion', () => {
     beforeEach(() => {
       when(jobMock.queue)

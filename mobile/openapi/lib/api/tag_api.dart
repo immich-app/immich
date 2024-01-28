@@ -141,7 +141,7 @@ class TagApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<TagResponseDto>') as List)
         .cast<TagResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -192,7 +192,7 @@ class TagApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
         .cast<AssetResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -295,7 +295,7 @@ class TagApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
         .cast<AssetIdsResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -350,7 +350,7 @@ class TagApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
         .cast<AssetIdsResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;

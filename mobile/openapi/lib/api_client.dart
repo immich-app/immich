@@ -143,19 +143,19 @@ class ApiClient {
     );
   }
 
-  Future<dynamic> deserializeAsync(String json, String targetType, {bool growable = false,}) =>
+  Future<dynamic> deserializeAsync(String value, String targetType, {bool growable = false,}) =>
     // ignore: deprecated_member_use_from_same_package
-    deserialize(json, targetType, growable: growable);
+    deserialize(value, targetType, growable: growable);
 
   @Deprecated('Scheduled for removal in OpenAPI Generator 6.x. Use deserializeAsync() instead.')
-  Future<dynamic> deserialize(String json, String targetType, {bool growable = false,}) async {
+  Future<dynamic> deserialize(String value, String targetType, {bool growable = false,}) async {
     // Remove all spaces. Necessary for regular expressions as well.
     targetType = targetType.replaceAll(' ', ''); // ignore: parameter_assignments
 
     // If the expected target type is String, nothing to do...
     return targetType == 'String'
-      ? json
-      : _deserialize(await compute((String j) => jsonDecode(j), json), targetType, growable: growable);
+      ? value
+      : fromJson(await compute((String j) => json.decode(j), value), targetType, growable: growable);
   }
 
   // ignore: deprecated_member_use_from_same_package
@@ -164,7 +164,8 @@ class ApiClient {
   @Deprecated('Scheduled for removal in OpenAPI Generator 6.x. Use serializeAsync() instead.')
   String serialize(Object? value) => value == null ? '' : json.encode(value);
 
-  static dynamic _deserialize(dynamic value, String targetType, {bool growable = false}) {
+  /// Returns a native instance of an OpenAPI class matching the [specified type][targetType].
+  static dynamic fromJson(dynamic value, String targetType, {bool growable = false,}) {
     try {
       switch (targetType) {
         case 'String':
@@ -499,18 +500,18 @@ class ApiClient {
           dynamic match;
           if (value is List && (match = _regList.firstMatch(targetType)?.group(1)) != null) {
             return value
-              .map<dynamic>((dynamic v) => _deserialize(v, match, growable: growable,))
+              .map<dynamic>((dynamic v) => fromJson(v, match, growable: growable,))
               .toList(growable: growable);
           }
           if (value is Set && (match = _regSet.firstMatch(targetType)?.group(1)) != null) {
             return value
-              .map<dynamic>((dynamic v) => _deserialize(v, match, growable: growable,))
+              .map<dynamic>((dynamic v) => fromJson(v, match, growable: growable,))
               .toSet();
           }
           if (value is Map && (match = _regMap.firstMatch(targetType)?.group(1)) != null) {
             return Map<String, dynamic>.fromIterables(
               value.keys.cast<String>(),
-              value.values.map<dynamic>((dynamic v) => _deserialize(v, match, growable: growable,)),
+              value.values.map<dynamic>((dynamic v) => fromJson(v, match, growable: growable,)),
             );
           }
       }
@@ -540,6 +541,17 @@ class DeserializationMessage {
 }
 
 /// Primarily intended for use in an isolate.
+Future<dynamic> decodeAsync(DeserializationMessage message) async {
+  // Remove all spaces. Necessary for regular expressions as well.
+  final targetType = message.targetType.replaceAll(' ', '');
+
+  // If the expected target type is String, nothing to do...
+  return targetType == 'String'
+    ? message.json
+    : json.decode(message.json);
+}
+
+/// Primarily intended for use in an isolate.
 Future<dynamic> deserializeAsync(DeserializationMessage message) async {
   // Remove all spaces. Necessary for regular expressions as well.
   final targetType = message.targetType.replaceAll(' ', '');
@@ -547,8 +559,8 @@ Future<dynamic> deserializeAsync(DeserializationMessage message) async {
   // If the expected target type is String, nothing to do...
   return targetType == 'String'
     ? message.json
-    : ApiClient._deserialize(
-        jsonDecode(message.json),
+    : ApiClient.fromJson(
+        json.decode(message.json),
         targetType,
         growable: message.growable,
       );

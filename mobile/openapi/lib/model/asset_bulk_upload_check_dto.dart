@@ -20,7 +20,7 @@ class AssetBulkUploadCheckDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckDto &&
-     other.assets == assets;
+    _deepEquality.equals(other.assets, assets);
 
   @override
   int get hashCode =>

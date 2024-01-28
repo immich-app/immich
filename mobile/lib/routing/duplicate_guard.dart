@@ -8,7 +8,9 @@ class DuplicateGuard extends AutoRouteGuard {
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     // Duplicate navigation
     if (resolver.route.name == router.current.name) {
-      debugPrint('DuplicateGuard: Preventing duplicate route navigation for ${resolver.route.name}');
+      debugPrint(
+        'DuplicateGuard: Preventing duplicate route navigation for ${resolver.route.name}',
+      );
       resolver.next(false);
     } else {
       resolver.next(true);

@@ -12,7 +12,8 @@
   import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
   import SettingSelect from '../setting-select.svelte';
   import SettingSwitch from '../setting-switch.svelte';
-  import { isEqual } from 'lodash-es';
+  import SettingCheckboxes from '../setting-checkboxes.svelte';
+  import { isEqual, sortBy } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import SettingAccordion from '../setting-accordion.svelte';
   import { mdiHelpCircleOutline } from '@mdi/js';
@@ -89,6 +90,21 @@
           ]}
           name="acodec"
           isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
+          on:select={() => (config.ffmpeg.acceptedAudioCodecs = [config.ffmpeg.targetAudioCodec])}
+        />
+
+        <SettingCheckboxes
+          label="ACCEPTED AUDIO CODECS"
+          {disabled}
+          desc="Select which audio codecs do not need to be transcoded. Only used for certain transcode policies."
+          bind:value={config.ffmpeg.acceptedAudioCodecs}
+          name="audioCodecs"
+          options={[
+            { value: AudioCodec.Aac, text: 'AAC' },
+            { value: AudioCodec.Mp3, text: 'MP3' },
+            { value: AudioCodec.Libopus, text: 'Opus' },
+          ]}
+          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
         />
 
         <SettingSelect
@@ -103,6 +119,21 @@
           ]}
           name="vcodec"
           isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
+          on:select={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
+        />
+
+        <SettingCheckboxes
+          label="ACCEPTED VIDEO CODECS"
+          {disabled}
+          desc="Select which video codecs do not need to be transcoded. Only used for certain transcode policies."
+          bind:value={config.ffmpeg.acceptedVideoCodecs}
+          name="videoCodecs"
+          options={[
+            { value: VideoCodec.H264, text: 'H.264' },
+            { value: VideoCodec.Hevc, text: 'HEVC' },
+            { value: VideoCodec.Vp9, text: 'VP9' },
+          ]}
+          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedVideoCodecs), sortBy(savedConfig.ffmpeg.acceptedVideoCodecs))}
         />
 
         <SettingSelect
@@ -150,11 +181,11 @@
             { value: TranscodePolicy.All, text: 'All videos' },
             {
               value: TranscodePolicy.Optimal,
-              text: 'Videos higher than target resolution or not in the desired format',
+              text: 'Videos higher than target resolution or not in an accepted format',
             },
             {
               value: TranscodePolicy.Required,
-              text: 'Only videos not in the desired format',
+              text: 'Only videos not in an accepted format',
             },
             {
               value: TranscodePolicy.Disabled,

@@ -125,7 +125,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
         { id, key: api.getKey() },
         {
           responseType: 'blob',
-          onDownloadProgress: (event: ProgressEvent) => {
+          onDownloadProgress: ({ event }) => {
             if (event.lengthComputable) {
               downloadManager.update(downloadKey, event.loaded, event.total);
             }

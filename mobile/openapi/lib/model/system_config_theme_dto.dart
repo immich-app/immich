@@ -20,7 +20,7 @@ class SystemConfigThemeDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigThemeDto &&
-     other.customCss == customCss;
+    other.customCss == customCss;
 
   @override
   int get hashCode =>

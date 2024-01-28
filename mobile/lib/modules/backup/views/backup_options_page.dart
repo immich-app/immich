@@ -25,7 +25,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
 class BackupOptionsPage extends HookConsumerWidget {
-  const BackupOptionsPage({Key? key}) : super(key: key);
+  const BackupOptionsPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);

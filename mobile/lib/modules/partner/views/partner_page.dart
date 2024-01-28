@@ -12,7 +12,7 @@ import 'package:immich_mobile/shared/ui/user_avatar.dart';
 
 @RoutePage()
 class PartnerPage extends HookConsumerWidget {
-  const PartnerPage({Key? key}) : super(key: key);
+  const PartnerPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

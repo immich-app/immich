@@ -73,7 +73,7 @@ class SharedLinkApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
         .cast<AssetIdsResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -164,7 +164,7 @@ class SharedLinkApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<SharedLinkResponseDto>') as List)
         .cast<SharedLinkResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
@@ -380,7 +380,7 @@ class SharedLinkApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
         .cast<AssetIdsResponseDto>()
-        .toList();
+        .toList(growable: false);
 
     }
     return null;
