@@ -144,11 +144,11 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
     def _load(self) -> None:
         super()._load()
+        text_cfg: dict[str, Any] = self.model_cfg["text_cfg"]
+        context_length: int = text_cfg.get("context_length", 77)
+        pad_token: int = self.tokenizer_cfg["pad_token"]
 
-        context_length = self.model_cfg["text_cfg"]["context_length"]
-        pad_token = self.tokenizer_cfg["pad_token"]
-
-        size = self.preprocess_cfg["size"]
+        size: list[int] | int = self.preprocess_cfg["size"]
         self.size = size[0] if isinstance(size, list) else size
 
         self.resampling = get_pil_resampling(self.preprocess_cfg["interpolation"])
@@ -157,7 +157,7 @@ class OpenCLIPEncoder(BaseCLIPEncoder):
 
         log.debug(f"Loading tokenizer for CLIP model '{self.model_name}'")
         self.tokenizer: Tokenizer = Tokenizer.from_file(self.tokenizer_file_path.as_posix())
-        pad_id = self.tokenizer.token_to_id(pad_token)
+        pad_id: int = self.tokenizer.token_to_id(pad_token)
         self.tokenizer.enable_padding(length=context_length, pad_token=pad_token, pad_id=pad_id)
         self.tokenizer.enable_truncation(max_length=context_length)
         log.debug(f"Loaded tokenizer for CLIP model '{self.model_name}'")
