@@ -7,6 +7,8 @@ from pydantic import BaseModel
 
 
 class StrEnum(str, Enum):
+    value: str
+
     def __str__(self) -> str:
         return self.value
 
