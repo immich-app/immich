@@ -2577,12 +2577,6 @@ export interface PeopleResponseDto {
      * @memberof PeopleResponseDto
      */
     'total': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof PeopleResponseDto
-     */
-    'visible': number;
 }
 /**
  * 

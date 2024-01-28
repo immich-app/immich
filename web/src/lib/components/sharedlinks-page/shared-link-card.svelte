@@ -8,6 +8,7 @@
   import { goto } from '$app/navigation';
   import { mdiCircleEditOutline, mdiContentCopy, mdiDelete, mdiOpenInNew } from '@mdi/js';
   import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+  import { AppRoute } from '$lib/constants';
 
   export let link: SharedLinkResponseDto;
 
@@ -120,8 +121,8 @@
             <div
               class="hover:cursor-pointer"
               title="Go to share page"
-              on:click={() => goto(`/share/${link.key}`)}
-              on:keydown={() => goto(`/share/${link.key}`)}
+              on:click={() => goto(`${AppRoute.SHARE}/${link.key}`)}
+              on:keydown={() => goto(`${AppRoute.SHARE}/${link.key}`)}
             >
               <Icon path={mdiOpenInNew} />
             </div>

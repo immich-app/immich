@@ -338,6 +338,17 @@ ORDER BY
 LIMIT
   1000
 
+-- PersonRepository.getNumberOfPeople
+SELECT
+  COUNT(DISTINCT ("person"."id")) AS "cnt"
+FROM
+  "person" "person"
+  LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
+WHERE
+  "person"."ownerId" = $1
+HAVING
+  COUNT("face"."assetId") != 0
+
 -- PersonRepository.getFacesByIds
 SELECT
   "AssetFaceEntity"."id" AS "AssetFaceEntity_id",

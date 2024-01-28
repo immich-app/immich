@@ -26,6 +26,11 @@ class ModelType(str, Enum):
     FACIAL_RECOGNITION = "facial-recognition"
 
 
+class ModelRuntime(str, Enum):
+    ONNX = "onnx"
+    ARMNN = "armnn"
+
+
 class HasProfiling(Protocol):
     profiling: dict[str, float]
 
