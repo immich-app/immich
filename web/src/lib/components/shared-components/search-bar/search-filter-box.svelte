@@ -3,28 +3,23 @@
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '../combobox.svelte';
 
+  enum MediaType {
+    All = 'all',
+    Image = 'image',
+    Video = 'video',
+  }
+
   let selectedCountry: ComboBoxOption = { label: '', value: '' };
   let selectedState: ComboBoxOption = { label: '', value: '' };
   let selectedCity: ComboBoxOption = { label: '', value: '' };
+
+  let mediaType: MediaType = MediaType.All;
 </script>
 
 <div
   transition:fly={{ y: 25, duration: 250 }}
   class="absolute w-full rounded-b-3xl border border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-800 dark:bg-immich-dark-gray dark:text-gray-300 p-6"
 >
-  <div class="mb-5">
-    <p class="text-xs py-2">PRE-FILTER</p>
-    <hr class="py-2" />
-    <div class="flex flex-wrap gap-4">
-      <Button size="sm">
-        <p class="text-xs">Photos and videos not in albums</p>
-      </Button>
-      <Button size="sm">
-        <p class="text-xs">All videos</p>
-      </Button>
-    </div>
-  </div>
-
   <p class="text-xs py-2">FILTERS</p>
   <hr class="py-2" />
 
@@ -32,7 +27,7 @@
     <div class="py-3">
       <label class="immich-form-label" for="context">CONTEXT</label>
       <input
-        class="immich-form-input w-full mt-3"
+        class="immich-form-input hover:cursor-text w-full mt-3"
         type="text"
         id="context"
         name="context"
@@ -40,52 +35,106 @@
       />
     </div>
 
+    <!-- MEDIA TYPE -->
+    <div class="py-3">
+      <p class="immich-form-label">MEDIA TYPE</p>
+
+      <div class="flex gap-5 mt-3">
+        <label
+          for="type-all"
+          class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
+        >
+          <input bind:group={mediaType} value={MediaType.All} type="radio" name="radio-type" id="type-all" />All</label
+        >
+
+        <label
+          for="type-image"
+          class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
+        >
+          <input
+            bind:group={mediaType}
+            value={MediaType.Image}
+            type="radio"
+            name="radio-type"
+            id="type-image"
+          />Image</label
+        >
+
+        <label
+          for="type-video"
+          class="text-base flex place-items-center gap-1 hover:cursor-pointer text-black dark:text-white"
+        >
+          <input
+            bind:group={mediaType}
+            value={MediaType.Video}
+            type="radio"
+            name="radio-type"
+            id="type-video"
+          />Video</label
+        >
+      </div>
+    </div>
+
+    <!-- LOCATION -->
     <div class="py-3">
       <p class="immich-form-label">PLACE</p>
 
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
-          <p class="text-xs">Country</p>
+          <p class="text-sm text-black dark:text-white">Country</p>
           <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
         </div>
 
         <div class="w-full">
-          <p class="text-xs">State</p>
+          <p class="text-sm text-black dark:text-white">State</p>
           <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
         </div>
 
         <div class="w-full">
-          <p class="text-xs">City</p>
+          <p class="text-sm text-black dark:text-white">City</p>
           <Combobox options={[]} selectedOption={selectedCity} placeholder="Search city..." />
         </div>
       </div>
     </div>
 
+    <!-- CAMERA MODEL -->
     <div class="py-3">
       <p class="immich-form-label">CAMERA</p>
 
       <div class="flex justify-between gap-5 mt-3">
         <div class="w-full">
-          <p class="text-xs">Make</p>
+          <p class="text-sm text-black dark:text-white">Make</p>
           <Combobox options={[]} selectedOption={selectedCountry} placeholder="Search country..." />
         </div>
 
         <div class="w-full">
-          <p class="text-xs">Model</p>
+          <p class="text-sm text-black dark:text-white">Model</p>
           <Combobox options={[]} selectedOption={selectedState} placeholder="Search state..." />
         </div>
       </div>
     </div>
 
+    <!-- DATE RANGE -->
     <div class="flex justify-between gap-5">
       <div class="py-3 flex-1 mt">
         <label class="immich-form-label" for="start-date">START DATE</label>
-        <input class="immich-form-input w-full mt-3" type="date" id="start-date" name="start-date" />
+        <input
+          class="immich-form-input w-full mt-3 hover:cursor-pointer"
+          type="date"
+          id="start-date"
+          name="start-date"
+        />
       </div>
 
       <div class="py-3 flex-1">
         <label class="immich-form-label" for="end-date">END DATE</label>
-        <input class="immich-form-input w-full mt-3" type="date" id="end-date" name="end-date" placeholder="" />
+        <input
+          class="immich-form-input w-full mt-3 hover:cursor-pointer"
+          type="date"
+          id="end-date"
+          name="end-date"
+          placeholder=""
+        />
       </div>
     </div>
 
